@@ -1,0 +1,9 @@
+{
+    "orientation": "both",
+    "padding": [0, 10, 0, 10],
+    "path": "src\\vanilla\\svg\\acquisition.svg",
+    "style": {
+        "width": 200,
+        "height": 100
+    }
+}
