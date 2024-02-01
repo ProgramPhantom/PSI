@@ -7,7 +7,7 @@ import Pulse180 from "./pulses/simple/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import Channel from "./channel"
 import ImagePulse from "./pulses/image/imagePulse";
-import Aquisition from "./pulses/image/aquisition";
+import Aquire from "./pulses/image/aquire";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -40,7 +40,7 @@ export default class Sequence {
         "Pulse180": Pulse180,
     }
     static ImagePulseCommands: {[name: string]: typeof ImagePulse;} = {
-        "Aquisition": Aquisition,
+        "Aquire": Aquire,
     }
     static AllCommands = Object.keys(Sequence.SimplePulseCommands).concat(
                                      ...Object.keys(Sequence.ImagePulseCommands));
