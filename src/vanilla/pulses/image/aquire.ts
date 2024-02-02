@@ -24,5 +24,6 @@ export default class Aquire extends SVGPulse {
                 offset: number[]=[0, 0]) {
 
         super(path, timestamp, orientation, padding, style, offset)
+        
     }
 }

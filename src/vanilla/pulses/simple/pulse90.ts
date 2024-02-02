@@ -22,6 +22,6 @@ export default class Pulse90 extends SimplePulse {
                 style: simplePulseStyle=Pulse90.defaults.style,
                 offset: number[]=[0, 0]) {
 
-        super( timestamp, orientation, padding, style, offset)
+        super(orientation, timestamp, padding, style, offset)
     }
 }

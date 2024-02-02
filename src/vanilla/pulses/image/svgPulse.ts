@@ -101,7 +101,6 @@ export default class SVGPulse extends ImagePulse {
         var width = obj.width();
         var height = obj.height();
 
-        console.log("drawing SVG");
         var foreignObject = surface.foreignObject(200, 100);
         foreignObject.add(obj);
         foreignObject.move(this.x, this.y);

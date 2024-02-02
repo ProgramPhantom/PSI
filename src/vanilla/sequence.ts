@@ -8,6 +8,8 @@ import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import Channel from "./channel"
 import ImagePulse from "./pulses/image/imagePulse";
 import Aquire from "./pulses/image/aquire";
+import Label from "./label";
+import { json } from "stream/consumers";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -48,7 +50,9 @@ export default class Sequence {
 
     nmrScript: string;
     surface: Svg;
-    channels: {[name: string]: Channel;} = {};  
+    channels: {[name: string]: Channel;} = {};
+    freeLabels: Label[] = [];
+
     errors: ScriptSyntaxError[];
 
     width: number;
@@ -85,6 +89,9 @@ export default class Sequence {
             channel.draw(this.surface, yCurs);
             yCurs = channel.bottomBound;
         })
+        this.freeLabels.forEach((label) => {
+            label.draw(this.surface);
+        })
     } 
 
     parseNMRScript() {
@@ -111,32 +118,22 @@ export default class Sequence {
                     break;
                 case "/":
                     continue;
+                case "$":
+                    // var commandEval = this.parseCommand(line, lineNum);
+                    var closeTex = line.lastIndexOf("$");
+                    var tex = line.substring(1, closeTex);
+                    var config = line.substring(closeTex+1, line.length);
+
+                    var args = this.parseCommand( "$" + config, lineNum)
+
+                    var newLab = Label.anyArgConstruct(tex, args.arguments);
+                    this.freeLabels.push(newLab);
+
+                    break;
                 case "~":
-                    // Create Channel
-                    var openIndex = line.indexOf("(")
-                    if (openIndex == -1) {
-                        throw new ScriptSyntaxError(SyntaxErrorType.MISSING_BRACKETS, 
-                                "Missing brackets on line " + lineNum);
-                    }
+                    var commandEval = this.parseCommand(line, lineNum);
 
-                    var channelIdentifier = line.substring(1, openIndex);
-                    if ((Sequence.specialCharacters.some(v => channelIdentifier.includes(v)))) {
-                        throw new ScriptSyntaxError(SyntaxErrorType.INVALID_CHANNEL_IDENTIFIER,
-                                        "Invalid character in channel identifier");
-                    }
-
-                    var closeIndex = line.indexOf(")")
-                    if (closeIndex == -1) {
-                        throw new ScriptSyntaxError(SyntaxErrorType.MISSING_BRACKETS, 
-                                "Missing brackets on line " + lineNum);
-
-                    }
-                    
-                    // Channel arguments: 
-                    var argumentString = line.substring(openIndex+1, closeIndex);
-                    console.log(channelIdentifier);
-                    
-                    this.defineChannel(channelIdentifier);
+                    this.defineChannel(commandEval.commandBody);
                     console.log(this.channels);
                     break;  
 
@@ -155,6 +152,41 @@ export default class Sequence {
         }
 
         console.log("ERRORS: " + this.errors.toString());
+    }
+
+    parseCommand(line: string, lineNum: number): {commandBody: string, arguments: any} {
+        var openIndex = line.indexOf("(")  // Open
+        if (openIndex == -1) {
+            throw new ScriptSyntaxError(SyntaxErrorType.MISSING_BRACKETS, 
+                    "Missing open bracket on line " + lineNum);
+        }
+
+        var body = line.substring(1, openIndex);
+        if ((Sequence.specialCharacters.some(v => body.includes(v)))) {
+            throw new ScriptSyntaxError(SyntaxErrorType.INVALID_CHANNEL_IDENTIFIER,
+                            "Invalid character in command on line " + lineNum);
+        }
+
+        var closeIndex = line.indexOf(")")  // Close
+        if (closeIndex == -1) {
+            throw new ScriptSyntaxError(SyntaxErrorType.MISSING_BRACKETS, 
+                    "Missing close bracket on line " + lineNum);
+        }
+
+        // Args
+        var argumentString = line.substring(openIndex+1, closeIndex);
+        if (argumentString !== "") {
+            try {
+                var jsonArg = JSON.parse(argumentString);
+            } catch (err) {
+                throw new ScriptSyntaxError(SyntaxErrorType.ARGUMENT_ERROR,
+                    "Argument error");
+            }
+        } else {
+            var jsonArg = JSON.parse("{}");
+        }
+
+        return {commandBody: body, arguments: jsonArg}
     }
 
     parseDefaultLine(line: string, lineNum: number) {

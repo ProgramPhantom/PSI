@@ -1,6 +1,6 @@
 import Temporal, {Orientation, orientationEval, temporalInterface, temporalStyle} from "../../temporal";
 import * as defaultPulse from "../../default/180pulse.json"
-import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
+import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
 
 
@@ -39,6 +39,7 @@ export default class SimplePulse extends Temporal {
     public static anyArgConstruct(elementType: typeof SimplePulse, args: any): SimplePulse {
         console.log("ARGS --------------");
         console.log(args);
+        // const options = opts ? { ...DEFAULT_OPTIONS, ...opts } : DEFAULT_OPTIONS;
         
         var defaultStyleWithArgs: simplePulseStyle = elementType.defaults.style;
         if (args.style !== undefined) {
@@ -80,12 +81,13 @@ export default class SimplePulse extends Temporal {
     }
 
 
-    draw(surface: Svg) {
+    draw(surface: SVG.Svg) {
         surface.rect(this.width, this.height)
         .attr(this.style)
         .move(this.x, this.y)
         // BAD FIX
         .attr({"stroke-width": this.style.strokeWidth});
+
     }
 
     verticalProtrusion(channelThickness: number) : number[] {

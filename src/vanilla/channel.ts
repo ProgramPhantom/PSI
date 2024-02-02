@@ -7,6 +7,7 @@ import Pulse180 from "./pulses/simple/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
+import Label from "./label";
  
 
 export interface channelInterface {
@@ -106,8 +107,7 @@ export default class Channel extends Drawable {
     } 
 
     drawRect(surface: Svg) {
-        //Draws bar
-        console.log("Y Here: " + this.y);
+        // Draws bar
         surface.rect(this.width, this.style.thickness)
         .attr(this.style).move(this.x, this.y);
     }
@@ -156,6 +156,12 @@ export default class Channel extends Drawable {
         this.temporalElements.push(pulse);
         
         console.log(this.temporalElements);
+    }
+
+    addTeXLabel(text: string, x: number, y: number) {
+        const lab = new Label(text, x, y);
+
+
     }
 
     removePulse() {

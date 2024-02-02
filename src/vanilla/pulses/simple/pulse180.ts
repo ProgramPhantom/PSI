@@ -22,6 +22,6 @@ export default class Pulse180 extends SimplePulse {
                 padding: number[]=Pulse180.defaults.padding, 
                 style: simplePulseStyle=Pulse180.defaults.style) {
 
-        super(timestamp, orientation, padding, style)
+        super( orientation, timestamp, padding, style)
     }
 }
