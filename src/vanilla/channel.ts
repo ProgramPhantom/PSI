@@ -1,13 +1,13 @@
 import * as defaultSeq from "./default/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Temporal, { Orientation } from "./temporal";
+import Temporal, { LabelPosition, Orientation, labelable } from "./temporal";
 import Pulse90 from "./pulses/simple/pulse90";
 import Pulse180 from "./pulses/simple/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
-import Label, { hasLabel, labelInterface } from "./label";
+import Label, { labelInterface } from "./label";
  
 
 export interface channelInterface {
@@ -28,7 +28,7 @@ export interface channelStyle {
 
 
 
-export default class Channel extends Drawable implements hasLabel {
+export default class Channel extends Drawable implements labelable {
     static defaults: channelInterface = {
         temporalElements: [],
     
@@ -46,7 +46,6 @@ export default class Channel extends Drawable implements hasLabel {
 
     style: channelStyle;
     pad: number[];
-    label?: Label;
 
     maxTopProtrusion: number;
     maxBottomProtrusion: number;
@@ -54,6 +53,8 @@ export default class Channel extends Drawable implements hasLabel {
     bottomBound: number;
     
     temporalElements: Temporal[];
+    label?: Label;
+    labelPosition: LabelPosition=LabelPosition.Left;
 
     constructor(pad: number[]=Channel.defaults.padding, 
                 style: channelStyle=Channel.defaults.style,
@@ -178,20 +179,16 @@ export default class Channel extends Drawable implements hasLabel {
         }
 
         if (this.label) {
-            // Cannot get dimensions until drawn apparently so this draws, sets dim and removes
-            this.label.computeDimensions(surface);
-            console.log("height", this.height);
+
             var y = this.y + this.style.thickness/2 - this.label.height/2;
             var x = this.label.padding[3];
 
-            console.log("x", x, "y", y);
 
             var hOffset: number = x + this.label.width + this.label.padding[1];
 
             this.label.position(x, y);
             this.label.draw(surface);
             
-
             return [hOffset, this.label.height];
         }
 

@@ -30,7 +30,7 @@ export default function Canvas(props:  {props: string}) {
 
         if (svgSurface === null) {
             console.log("adding SVG");
-            var svg = SVG().addTo("#" + CANVASID).size("500px", "300px").attr({id: SVGID});
+            var svg = SVG().addTo("#" + CANVASID).size("500px", "400px").attr({id: SVGID});
             svgObj.current = svg;
         }
         

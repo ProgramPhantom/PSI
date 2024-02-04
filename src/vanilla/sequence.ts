@@ -169,6 +169,9 @@ export default class Sequence {
     }
 
     parseCommand(line: string, lineNum: number): {commandBody: string, arguments: any} {
+
+        console.log(line);
+
         var openIndex = line.indexOf("(")  // Open
         if (openIndex == -1) {
             throw new ScriptSyntaxError(SyntaxErrorType.MISSING_BRACKETS, 
@@ -186,22 +189,10 @@ export default class Sequence {
             throw new ScriptSyntaxError(SyntaxErrorType.MISSING_BRACKETS, 
                     "Missing close bracket on line " + lineNum);
         }
-
+        
         // Args
         var argumentString = line.substring(openIndex+1, closeIndex);
-        if (argumentString !== "") {
-            // So user does not need to write // for their tex
-            argumentString = argumentString.replace(`\\`, "\\\\");
-
-            try {
-                var jsonArg = JSON.parse(argumentString);
-            } catch (err) {
-                throw new ScriptSyntaxError(SyntaxErrorType.ARGUMENT_ERROR,
-                    "Argument error");
-            }
-        } else {
-            var jsonArg = JSON.parse("{}");
-        }
+        var jsonArg = this.parseArgument(argumentString);
 
         return {commandBody: body, arguments: jsonArg}
     }
@@ -233,9 +224,19 @@ export default class Sequence {
         }
 
         var argumentString = line.substring(openIndex+1, closeIndex);
-        if (argumentString !== "") {
+        var jsonArg = this.parseArgument(argumentString);
+        
+        this.addPulse(channelIdentifier, channelCommand, jsonArg);
+    }
+
+    parseArgument(argString: string) : any {
+        if (argString !== "") {
+            // So user does not need to write // for their tex
+            argString = argString.replace("\\", "\\\\");
+            
+
             try {
-                var jsonArg = JSON.parse(argumentString);
+                var jsonArg = JSON.parse(argString);
             } catch (err) {
                 throw new ScriptSyntaxError(SyntaxErrorType.ARGUMENT_ERROR,
                     "Argument error");
@@ -243,9 +244,8 @@ export default class Sequence {
         } else {
             var jsonArg = JSON.parse("{}");
         }
-        
-        this.addPulse(channelIdentifier, channelCommand, jsonArg);
 
+        return jsonArg;
     }
     
     defineChannel(name: string, args: any) {

@@ -5,17 +5,13 @@ import * as defaultLabel from "./default/label.json";
 
 
 export interface labelInterface {
-    text: string,
-    x: number,
-    y: number,
-    padding: number[],
-    size: number
+    text?: string,
+    x?: number,
+    y?: number,
+    padding?: number[],
+    size?: number
 }
 
-export interface hasLabel {
-    label?: Label,
-    drawLabel(surface: Svg): number[] | void,
-}
 
 export default class Label extends Drawable {
     static defaults: labelInterface = {
@@ -26,17 +22,15 @@ export default class Label extends Drawable {
         size: defaultLabel.scale
     }
 
-    public static anyArgConstruct(args: any): Label {
+    public static anyArgConstruct(args: labelInterface): Label {
         const options = args ? { ...Label.defaults, ...args} : Label.defaults;
 
-        console.log(options);
-
         return new Label(
-            options.text,
-            options.x,
-            options.y,
-            options.padding,
-            options.size
+            options.text!,
+            options.x!,
+            options.y!,
+            options.padding!,
+            options.size!
         )
     }
 
@@ -56,6 +50,7 @@ export default class Label extends Drawable {
 
         [this.width, this.height] = [0, 0]
 
+        this.computeDimensions();
     }
 
     draw(surface: Svg) {
@@ -72,21 +67,20 @@ export default class Label extends Drawable {
 
     // Sets this.width and this.height
     // Currently needs to add and remove the svg to find these dimensions, not ideal
-    computeDimensions(surface: Svg) {
+    computeDimensions() {
         const SVGEquation = TeXToSVG(this.text); 
 
-        // Create and add
-        var SVGobj = SVG(SVGEquation);
-        SVGobj.id("svgTempID");
-        surface.add(SVGobj);
+        var temp = SVG().addTo('#canvasDiv').size(300, 300)
 
-        // Do this so its the right size
+        var SVGobj = SVG(SVGEquation);
+        
+        SVGobj.id("svgTempID");
         SVGobj.attr({preserveAspectRatio: "xMinYMin"})
         SVGobj.width(this.size);
         SVGobj.attr("height", null);
 
+        temp.add(SVGobj);
 
-        // Get using this method instead 
         var content = document.getElementById("svgTempID");
         SVGobj.attr("id", null);
         
@@ -96,9 +90,10 @@ export default class Label extends Drawable {
         this.width = width;
         this.height = height;
 
-        console.log(width, height);
-
         SVGobj.remove();
+        temp.remove();
+
+        console.log(width, height);
     }
 
     // Sets x and y at the same time

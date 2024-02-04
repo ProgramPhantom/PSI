@@ -1,12 +1,12 @@
-import Temporal, {Orientation, orientationEval, temporalInterface, temporalStyle} from "../../temporal";
+import Temporal, {LabelPosition, Orientation, orientationEval, positionEval, temporalInterface, temporalStyle, labelable} from "../../temporal";
 import * as defaultPulse from "../../default/180pulse.json"
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
-
+import Label, { labelInterface } from "../../label";
 
 
 export interface simplePulseInterface extends temporalInterface {
-    style: simplePulseStyle
+    style: simplePulseStyle,
 }
 export interface simplePulseStyle extends temporalStyle {
     // Sent to .attr
@@ -17,64 +17,57 @@ export interface simplePulseStyle extends temporalStyle {
 
 
 
-export default class SimplePulse extends Temporal {
+export default class SimplePulse extends Temporal  {
     // Default is currently 180 Pulse
     static defaults: simplePulseInterface = {
         padding: defaultPulse.padding,
         orientation: orientationEval[defaultPulse.orientation],
+        labelPosition: positionEval[defaultPulse.labelPosition],
         style: {
             width: defaultPulse.width,
             height: defaultPulse.height,
             fill: defaultPulse.fill,
             stroke: defaultPulse.stroke,
             strokeWidth: defaultPulse.strokeWidth
-        }
+        },
+        label: defaultPulse.label,
     }
     
 
 
     // A pulse that is an svg rect
     style: simplePulseStyle;
+    lable?: Label;
     
     public static anyArgConstruct(elementType: typeof SimplePulse, args: any): SimplePulse {
-        console.log("ARGS --------------");
-        console.log(args);
-        // const options = opts ? { ...DEFAULT_OPTIONS, ...opts } : DEFAULT_OPTIONS;
+        const options = args ? { ...elementType.defaults, ...args} : elementType.defaults;
         
-        var defaultStyleWithArgs: simplePulseStyle = elementType.defaults.style;
-        if (args.style !== undefined) {
-            defaultStyleWithArgs = {
-                width: args.style.width ?? elementType.defaults.style.width,
-                height: args.style.height ?? elementType.defaults.style.height,
-                fill: args.style.fill ?? elementType.defaults.style.fill,
-                stroke: args.style.stroke ?? elementType.defaults.style.stroke,
-                strokeWidth: args.style.strokeWidth ?? elementType.defaults.style.strokeWidth,
-            }
-        }
-        
-        var defaultWithArgs: simplePulseInterface = {
-            padding: args.padding ?? elementType.defaults.padding,
-            orientation: orientationEval[args.orientation] ?? elementType.defaults.orientation,
-            style: defaultStyleWithArgs
-        }
+        console.log(options);
 
-        var el = new elementType(defaultWithArgs.orientation,
-                                 0,
-                                 defaultWithArgs.padding,
-                                 defaultWithArgs.style)
+        var el = new elementType(0,
+                                 options.orientation,
+                                 options.labelPoisition,
+                                 options.padding,
+                                 options.style,
+                                 options.label)
 
         return el;
     }
 
-    constructor(orientation: Orientation, 
-                timestamp: number, 
+    constructor(timestamp: number, 
+                orientation: Orientation, 
+                labelPoisition: LabelPosition,
                 padding: number[], 
                 style: simplePulseStyle,
+                label: labelInterface,
                 offset: number[]=[0, 0]) {
 
-        super(timestamp, orientation, 
+        super(timestamp, 
+              orientation,
+              labelPoisition,
               padding, 
-              style, 
+              style,
+              label,
               offset);
 
         this.style = style;
@@ -88,9 +81,15 @@ export default class SimplePulse extends Temporal {
         // BAD FIX
         .attr({"stroke-width": this.style.strokeWidth});
 
+        if (this.label) {
+            this.drawLabel(surface);
+        }
+
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
+        var dimensions = [];
+
         switch (this.orientation) {
             case Orientation.Top:
                 var actualHeight = this.height;
@@ -98,7 +97,8 @@ export default class SimplePulse extends Temporal {
                     actualHeight -= this.style.strokeWidth!/2;
                 }
                 
-                return [actualHeight, 0];
+                dimensions = [actualHeight, 0];
+                break;
 
             case Orientation.Bottom:
                 var actualHeight = this.height;
@@ -106,7 +106,8 @@ export default class SimplePulse extends Temporal {
                     actualHeight += this.style.strokeWidth!/2;
                 }
 
-                return [0, actualHeight];
+                dimensions = [0, actualHeight];
+                break;
 
             case Orientation.Both: // LOOK AT THIS
                 var actualHeight = this.height/2 - channelThickness/2;
@@ -114,8 +115,16 @@ export default class SimplePulse extends Temporal {
                     actualHeight += this.style.strokeWidth!/2;
                 }
 
-                return [actualHeight, actualHeight];
+                dimensions = [actualHeight, actualHeight];
+                break;
         }
+
+
+        if (this.label) {
+            dimensions[0] += this.label.height + this.label.padding[0]+ this.label.padding[2];
+        }
+
+        return dimensions;
     }
 
     positionVertically(y: number, channelThickness: number): number[] {
@@ -150,5 +159,6 @@ export default class SimplePulse extends Temporal {
     
         return protrusion;
     }
+
 }
 
