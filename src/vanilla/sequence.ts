@@ -16,6 +16,7 @@ enum SyntaxErrorType {
     INVALID_CHANNEL_IDENTIFIER = "INVALID_COMMAND_CHARACTER",
     INVALID_CHANNEL_COMMAND = "INVALID_CHANNEL_COMMAND",
     CHANNEL_IDENTIFIER_UNDEFINED = "CHANNEL_IDENTIFIER_UNDEFINED",
+    TEX_TAG_NOT_CLOSED = "TEX_TAG_NOT_CLOSED",
     MISSING_BRACKETS = "MISSING_BRACKETS",
     ARGUMENT_ERROR = "ARGUMENT_ERROR",
     EXPRESSION_NO_EFFECT = "EXPRESSION_NO_EFFECT",
@@ -105,7 +106,7 @@ export default class Sequence {
 
         for (let lineNum = 0; lineNum<lines.length; lineNum++) {
             var line = lines[lineNum];
-            if (line === "\n") {continue;}
+            if (line === "") {continue;}
             this.errors = [];
 
             var commandType = line[0];
@@ -120,20 +121,33 @@ export default class Sequence {
                     continue;
                 case "$":
                     // var commandEval = this.parseCommand(line, lineNum);
+                    var openTex = line.indexOf("$");
                     var closeTex = line.lastIndexOf("$");
+
+                    if (openTex === closeTex) {
+                        throw new ScriptSyntaxError(SyntaxErrorType.TEX_TAG_NOT_CLOSED,
+                            "You must enclose LaTeX in $ on line " + lineNum);
+                    }
+
                     var tex = line.substring(1, closeTex);
                     var config = line.substring(closeTex+1, line.length);
 
-                    var args = this.parseCommand( "$" + config, lineNum)
+                    let args = this.parseCommand( "$" + config, lineNum)
+                    args.arguments["text"] = tex;
 
-                    var newLab = Label.anyArgConstruct(tex, args.arguments);
+                    console.log(args.arguments["text"]);
+
+                    var newLab = Label.anyArgConstruct(args.arguments);
                     this.freeLabels.push(newLab);
 
                     break;
                 case "~":
                     var commandEval = this.parseCommand(line, lineNum);
+                    let jsonArgs = commandEval.arguments;
 
-                    this.defineChannel(commandEval.commandBody);
+                    this.defineChannel(commandEval.commandBody, jsonArgs);
+
+
                     console.log(this.channels);
                     break;  
 
@@ -176,6 +190,9 @@ export default class Sequence {
         // Args
         var argumentString = line.substring(openIndex+1, closeIndex);
         if (argumentString !== "") {
+            // So user does not need to write // for their tex
+            argumentString = argumentString.replace(`\\`, "\\\\");
+
             try {
                 var jsonArg = JSON.parse(argumentString);
             } catch (err) {
@@ -231,8 +248,10 @@ export default class Sequence {
 
     }
     
-    defineChannel(name: string) {
+    defineChannel(name: string, args: any) {
         var newChannel = new Channel();
+
+        newChannel.label = Label.anyArgConstruct(args);
 
         this.channels[name] = newChannel;
     }

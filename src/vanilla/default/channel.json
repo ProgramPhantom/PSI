@@ -1,7 +1,7 @@
 {
     "padding": [20, 20, 20, 20],
 
-    "thickness": 6,
+    "thickness": 2,
     "fill": "#000000",
     "stroke": null,
     "strokeWidth": null

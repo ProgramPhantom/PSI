@@ -1,6 +1,7 @@
 {
-    "text": "\\phi \\lambda",
+    "text": "^{1}\\textrm{H}",
     "x": 0,
     "y": 0,
-    "scale": 1
+    "padding": [0, 0, 0, 10],
+    "scale": 25
 }

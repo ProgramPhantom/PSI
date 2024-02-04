@@ -7,14 +7,14 @@ import Pulse180 from "./pulses/simple/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
-import Label from "./label";
+import Label, { hasLabel, labelInterface } from "./label";
  
 
 export interface channelInterface {
     temporalElements: Temporal[],
-
     padding: number[],
-    style: channelStyle
+    style: channelStyle,
+    label?: labelInterface
 }
 
 
@@ -28,7 +28,7 @@ export interface channelStyle {
 
 
 
-export default class Channel extends Drawable {
+export default class Channel extends Drawable implements hasLabel {
     static defaults: channelInterface = {
         temporalElements: [],
     
@@ -46,6 +46,7 @@ export default class Channel extends Drawable {
 
     style: channelStyle;
     pad: number[];
+    label?: Label;
 
     maxTopProtrusion: number;
     maxBottomProtrusion: number;
@@ -58,7 +59,8 @@ export default class Channel extends Drawable {
                 style: channelStyle=Channel.defaults.style,
                 temporalElements: Temporal[]=[...Channel.defaults.temporalElements],
                 // ARRAYS USE REFERENCE!!!!! WAS UPDATING 
-                offset: number[]=[0, 0]) {
+                offset: number[]=[0, 0],
+                label?: Label) {
                 
         super(0, 0, offset);
 
@@ -75,6 +77,7 @@ export default class Channel extends Drawable {
         this.width = 0;
 
         this.temporalElements = temporalElements;
+        this.label = label;
     }
     
 
@@ -82,7 +85,14 @@ export default class Channel extends Drawable {
         console.log("--- drawing channel ---");
         console.log(this.temporalElements);
 
-        this.positionRect(yCursor);
+
+        this.computeY(yCursor);
+
+        var labelHOffset = this.drawLabel(surface);
+        console.log(labelHOffset);
+        this.computeX(labelHOffset[0]);
+        
+
         this.positionElements();
 
         this.temporalElements.forEach(element => {
@@ -91,20 +101,22 @@ export default class Channel extends Drawable {
         this.drawRect(surface);
     }
 
-    positionRect(yCursor: number=0) {
+    computeY(yCursor: number=0) {
         this.computeVerticalBounds();
 
         this.topBound = yCursor;
         
-        var rectPos = this.pad[0] + yCursor + this.maxTopProtrusion;
-        this.y = rectPos;
+        var rectPosY = yCursor + this.pad[0] + this.maxTopProtrusion;
+        this.y = rectPosY;
 
         this.bottomBound = this.y + this.style.thickness + 
                            this.maxBottomProtrusion + 
                            this.pad[2];
+    }
 
-        this.x = this.pad[3];
-    } 
+    computeX(labelOffsetX: number=0) {
+        this.x = this.pad[3] + labelOffsetX;
+    }
 
     drawRect(surface: Svg) {
         // Draws bar
@@ -143,8 +155,8 @@ export default class Channel extends Drawable {
         })
 
         this.width = currentX - this.x;
+        
     }
-
 
     addSimplePulse(elementType: typeof SimplePulse, args: any) {
         var pulse = elementType.anyArgConstruct(elementType, args);
@@ -158,13 +170,32 @@ export default class Channel extends Drawable {
         console.log(this.temporalElements);
     }
 
-    addTeXLabel(text: string, x: number, y: number) {
-        const lab = new Label(text, x, y);
+    // Draws the channel label
+    // It is required that computeY has been ran for this to work
+    drawLabel(surface: Svg) : number[] {
+        if (this.temporalElements.length === 0) {
+            return [0, 0];
+        }
 
+        if (this.label) {
+            // Cannot get dimensions until drawn apparently so this draws, sets dim and removes
+            this.label.computeDimensions(surface);
+            console.log("height", this.height);
+            var y = this.y + this.style.thickness/2 - this.label.height/2;
+            var x = this.label.padding[3];
 
-    }
+            console.log("x", x, "y", y);
 
-    removePulse() {
+            var hOffset: number = x + this.label.width + this.label.padding[1];
+
+            this.label.position(x, y);
+            this.label.draw(surface);
+            
+
+            return [hOffset, this.label.height];
+        }
+
+        return [0, 0];
     }
 
 }

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="500px" height="300px" id="svgSurface">
+    <svg viewBox="0 -883.9 1186.6 883.9" x="0" y="0" width="100">
+        <defs>
+            <path id="MJX-1-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path>
+            <path id="MJX-1-TEX-N-48" d="M128 622Q121 629 117 631T101 634T58 637H25V683H36Q57 680 180 680Q315 680 324 683H335V637H302Q262 636 251 634T233 622L232 500V378H517V622Q510 629 506 631T490 634T447 637H414V683H425Q446 680 569 680Q704 680 713 683H724V637H691Q651 636 640 634T622 622V61Q628 51 639 49T691 46H724V0H713Q692 3 569 3Q434 3 425 0H414V46H447Q489 47 498 49T517 61V332H232V197L233 61Q239 51 250 49T302 46H335V0H324Q303 3 180 3Q45 3 36 0H25V46H58Q100 47 109 49T128 61V622Z"></path>
+        </defs>
+        
+        <g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1,0,0,-1,0,0)">
+            <g data-mml-node="math">
+                <g data-mml-node="msup">
+                    <g data-mml-node="mi"></g>
+                    <g data-mml-node="TeXAtom" transform="translate(33,413) scale(0.707)" data-mjx-texclass="ORD">
+                    <g data-mml-node="mn">
+                    <use data-c="31" xlink:href="#MJX-1-TEX-N-31"></use>
+                </g>
+            </g>
+        </g>
+        
+        <g data-mml-node="mtext" transform="translate(436.6,0)">
+            <use data-c="48" xlink:href="#MJX-1-TEX-N-48"></use>
+        </g>
+    </g>
+    </g>
+    </svg>
+    <rect width="0" height="6" thickness="6" fill="#000000" x="60" y="20"></rect>
+</svg>
+
