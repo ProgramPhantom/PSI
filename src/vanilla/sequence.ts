@@ -201,6 +201,8 @@ export default class Sequence {
         var dotIndex = line.indexOf(".");
         var openIndex = line.indexOf("(");
         var closeIndex = line.indexOf(")");
+
+
         if (dotIndex === -1) {
             throw new ScriptSyntaxError(SyntaxErrorType.EXPRESSION_NO_EFFECT, 
                         "Expression has no effect");  
@@ -258,8 +260,6 @@ export default class Sequence {
 
     addPulse(channelName: string, elementName: string, args: any) {
         var channel: Channel = this.channels[channelName];
-
-
 
         // If adding a simple pulse
         if (Object.keys(Sequence.SimplePulseCommands).includes(elementName)) {

@@ -43,13 +43,17 @@ export default class SimplePulse extends Temporal  {
         const options = args ? { ...elementType.defaults, ...args} : elementType.defaults;
         
         console.log(options);
+        console.log(options.labelPosition)
 
         var el = new elementType(0,
                                  options.orientation,
-                                 options.labelPoisition,
+                                 options.labelPosition,
                                  options.padding,
                                  options.style,
                                  options.label)
+
+        console.log(el.labelPosition);
+        console.log(el.orientation)
 
         return el;
     }
@@ -121,7 +125,15 @@ export default class SimplePulse extends Temporal  {
 
 
         if (this.label) {
-            dimensions[0] += this.label.height + this.label.padding[0]+ this.label.padding[2];
+            switch (this.labelPosition) {
+                case LabelPosition.Top:
+                    dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
+                    break;
+                case LabelPosition.Bottom:
+                    dimensions[1] += this.label.height + this.label.padding[0] + this.label.padding[2];
+                    break;    
+            }
+            
         }
 
         return dimensions;

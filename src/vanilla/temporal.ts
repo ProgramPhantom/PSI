@@ -69,6 +69,7 @@ export default abstract class Temporal extends Drawable implements labelable {
         super(0, 0, offset);
 
         this.timestamp = timestamp;
+        console.log("Or at init ", orientation);
         this.orientation = orientation;
 
         this.padding = padding;
@@ -78,6 +79,7 @@ export default abstract class Temporal extends Drawable implements labelable {
         this.height = style.height;
 
         this.label = Label.anyArgConstruct(label);
+        console.log("Pos at init ", labelPosition);
         this.labelPosition = labelPosition;
     }
 
@@ -135,14 +137,22 @@ export default abstract class Temporal extends Drawable implements labelable {
     }
 
     drawLabel(surface: Svg): number[] {
+        // LIMITATION: top pad does not start from the bottom of the channel bar
+        
         if (this.label) {
             var x, y;
 
             switch (this.labelPosition) {
+                
+
                 case LabelPosition.Top:
                     x = this.x + this.width/2 - this.label.width/2;
-
                     y = this.y - this.label.height - this.label.padding[2];
+                    break;
+                case LabelPosition.Bottom:
+                    x = this.x + this.width/2 - this.label.width/2;
+                    y = this.y + this.height + this.label.padding[0];
+
                     break;
                 default:
                     x = 0;

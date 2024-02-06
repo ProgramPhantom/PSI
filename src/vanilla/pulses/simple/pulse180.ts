@@ -28,12 +28,12 @@ export default class Pulse180 extends SimplePulse {
     }
     
     constructor(timestamp: number=0, 
-        orientation: Orientation=Pulse180.defaults.orientation, 
-        labelPosition: LabelPosition=Pulse180.defaults.labelPosition,
-        padding: number[]=Pulse180.defaults.padding, 
-        style: simplePulseStyle=Pulse180.defaults.style,
-        label: labelInterface=Pulse180.defaults.label,
-        offset: number[]=[0, 0]) {
+                orientation: Orientation=Pulse180.defaults.orientation, 
+                labelPosition: LabelPosition=Pulse180.defaults.labelPosition,
+                padding: number[]=Pulse180.defaults.padding, 
+                style: simplePulseStyle=Pulse180.defaults.style,
+                label: labelInterface=Pulse180.defaults.label,
+                offset: number[]=[0, 0]) {
 
         super(timestamp, orientation, labelPosition, padding, style, label, offset)
     }

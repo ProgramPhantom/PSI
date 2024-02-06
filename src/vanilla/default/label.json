@@ -2,6 +2,6 @@
     "text": "^{1}\\textrm{H}",
     "x": 0,
     "y": 0,
-    "padding": [0, 0, 0, 10],
+    "padding": [0, 0, 10, 0],
     "scale": 25
 }
