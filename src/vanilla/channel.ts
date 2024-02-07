@@ -51,6 +51,8 @@ export default class Channel extends Drawable implements labelable {
     bottomBound: number;
     
     temporalElements: Temporal[];
+    hSections: number[] = [];
+
     label?: Label;
     labelPosition: LabelPosition=LabelPosition.Left;
 
@@ -65,7 +67,7 @@ export default class Channel extends Drawable implements labelable {
         this.style = style;
         this.pad = pad;
 
-        this.maxTopProtrusion = 0;
+        this.maxTopProtrusion = 0;  // Move this to element
         this.maxBottomProtrusion = style.thickness;
         this.topBound = 0;
         this.bottomBound = style.thickness;
@@ -77,7 +79,7 @@ export default class Channel extends Drawable implements labelable {
     }
     
 
-    draw(surface: Svg, yCursor: number=0) {
+    draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
         console.log("--- drawing channel ---");
         console.log(this.temporalElements);
 
@@ -89,7 +91,7 @@ export default class Channel extends Drawable implements labelable {
         this.computeX(labelHOffset[0]);
         
 
-        this.positionElements();
+        this.positionElements(timestampWidths);
 
         this.temporalElements.forEach(element => {
             element.draw(surface);
@@ -139,27 +141,44 @@ export default class Channel extends Drawable implements labelable {
         this.bounds = {width: this.width, height}
     }
 
-    positionElements() {
-        var currentX = this.x;
+    positionElements(timestampWidths: number[]) {
+        var xCurs = this.x;
 
-        this.temporalElements.forEach((element) => {
-            element.positionVertically(this.y, this.style.thickness);
+        // Current alignment style: centre
 
-            currentX += element.padding[3]  // LEFT PAD
+        for (var i = 0; i < this.temporalElements.length; i++) {
+            var temporalEl = this.temporalElements[i];
+            temporalEl.positionVertically(this.y, this.style.thickness);
 
-            element.x = currentX;
-            currentX += element.width;
+            if (i < timestampWidths.length) {  // Should always fire with current config
+                
+                var sectionWidth = timestampWidths[i];
 
-            currentX += element.padding[1]  // RIGHT PAD
-        })
+                xCurs += sectionWidth / 2;
+                temporalEl.centreXPos(xCurs)
+                xCurs += sectionWidth / 2;
+            } else {
+                xCurs += temporalEl.padding[3]  // LEFT PAD
 
-        var width = currentX - this.x;
+                temporalEl.x = xCurs;
+                xCurs += temporalEl.width;  // WIDTH
+    
+                xCurs += temporalEl.padding[1]  // RIGHT PAD
+            }
+        }
+
+        var width = xCurs - this.x;
         this.bounds = {width: width, height: this.height}
+
     }
 
-    addSimplePulse(elementType: typeof SimplePulse, args: any) {
+    addSimplePulse(elementType: typeof SimplePulse, args: any): number[] {
         var pulse = elementType.anyArgConstruct(elementType, args);
         this.temporalElements.push(pulse);
+
+        this.hSections.push(pulse.actualWidth);
+        
+        return this.hSections;
     }
 
     addImagePulse(elementType: typeof ImagePulse, args: any) {
@@ -168,6 +187,7 @@ export default class Channel extends Drawable implements labelable {
         
         console.log(this.temporalElements);
     }
+
 
     // Draws the channel label
     // It is required that computeY has been ran for this to work

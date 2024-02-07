@@ -2,6 +2,22 @@ import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Label, { labelInterface } from "./label";
 
+interface Dim {
+    width: number,
+    height: number
+}
+
+interface Bounds {
+    top: number,
+    bottom: number,
+    left: number,
+    right: number
+
+    width: number,
+    height: number,
+}
+
+
 export enum Orientation { Top="top", Bottom="bottom", Both="both" }
 export const orientationEval: {[name: string]: Orientation} = {
     "top": Orientation.Top,
@@ -20,13 +36,11 @@ export const positionEval: {[name: string]: LabelPosition} = {
     "bottom": LabelPosition.Bottom,
     "left": LabelPosition.Left
 }
-
 export interface labelable {
     label?: Label,
     labelPosition: LabelPosition,
     drawLabel(surface: Svg): number[],
 }
-
 
 
 export interface temporalInterface {
@@ -36,6 +50,7 @@ export interface temporalInterface {
     padding: number[],
     label: labelInterface
 }
+
 
 
 
@@ -50,6 +65,8 @@ export default abstract class Temporal extends Drawable implements labelable {
 
     label?: Label;
     labelPosition: LabelPosition;
+
+    private _actualBounds?: Bounds;
 
     constructor(timestamp: number,
                 orientation: Orientation,
@@ -72,6 +89,10 @@ export default abstract class Temporal extends Drawable implements labelable {
         }
         if (dim) {
             this.bounds = dim;
+            this.actualBounds = {
+                width: dim.width + padding[1] + padding[3],
+                height: dim.height + padding[0] + padding[2]
+            }
         }
         
         this.labelPosition = labelPosition;
@@ -163,4 +184,37 @@ export default abstract class Temporal extends Drawable implements labelable {
         return [0, 0];
     }
 
+    centreXPos(x: number) {
+        this.x = x - this.width/2;
+    }
+
+    get actualBounds(): Bounds {
+        if (this._actualBounds) {
+            return this._actualBounds;
+        }
+        throw new Error("Element has no dimensions");
+    }
+    set actualBounds(b: Dim)  {
+        var top = this.y;
+        var left = this.x;
+
+        var bottom = this.y + b.height;
+        var right = this.x + b.width;
+
+
+        this._actualBounds = {top: top, right: right, bottom: bottom, left: left, width: b.width, height: b.height};
+    }
+
+    get actualWidth(): number {
+        if (this._actualBounds) {
+            return this._actualBounds.width;
+        }
+        throw new Error("Dimensions undefined")
+    }
+    get actualHeight(): number {
+        if (this._actualBounds) {
+            return this._actualBounds.height;
+        }
+        throw new Error("Dimensions undefined")
+    }
 }

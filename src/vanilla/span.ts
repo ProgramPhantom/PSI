@@ -20,7 +20,9 @@ export default class Span extends Temporal implements labelable {
         super(timestamp, orientation, labelPosition, padding, offset, label,)
 
         this.spanWidth = width;
-        this.arrow = new Arrow(10, 10, 50, 50, arrowStyle)
+        this.arrow = new Arrow(10, 10, 100, 50, arrowStyle)
+
+        this.bounds = {width: width, height: 40}
     }
 
     public draw(surface: Svg): void {

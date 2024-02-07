@@ -63,6 +63,9 @@ export default class Sequence {
 
     padding: number[];
 
+    temporalSections: number[][] = [];
+    maxTimespans: number[] = [];
+
     constructor(mnrScript: string, surface: Svg) {
         this.width = 0;
         this.height = 0;
@@ -72,7 +75,9 @@ export default class Sequence {
         this.surface = surface; 
         this.channels = {};  // Wierdest bug ever happening here
 
-
+        this.defineChannel("p1", {});
+        var testSpan = new Span(0, 100, Orientation.Top, LabelPosition.Top, [0, 0, 0, 0], {thickness: 4, headStyle: headStyle.Default, stroke: "red"})
+        this.channels["p1"].temporalElements.push(testSpan);
 
 
         this.errors = [];
@@ -90,7 +95,7 @@ export default class Sequence {
         var yCurs = 0;
 
         Object.values(this.channels).forEach((channel) => {
-            channel.draw(this.surface, yCurs);
+            channel.draw(this.surface, this.maxTimespans, yCurs);
             yCurs = channel.bottomBound;
         })
         this.freeLabels.forEach((label) => {
@@ -264,12 +269,46 @@ export default class Sequence {
     addPulse(channelName: string, elementName: string, args: any) {
         var channel: Channel = this.channels[channelName];
 
+        var sections: number[] = [];
+
         // If adding a simple pulse
         if (Object.keys(Sequence.SimplePulseCommands).includes(elementName)) {
-            channel.addSimplePulse(Sequence.SimplePulseCommands[elementName], args);
+            sections = channel.addSimplePulse(Sequence.SimplePulseCommands[elementName], args);
         } else if (Object.keys(Sequence.ImagePulseCommands).includes(elementName)) {
             channel.addImagePulse(Sequence.ImagePulseCommands[elementName], args);
         }
+
+        this.temporalSections.push(sections);
+        console.log("Temporal Sections", this.temporalSections)
+        this.computeTimespans();
         
+    }
+
+    alignTemporals() {
+        // This function uses max timespans to align similarly positioned elements
+
+
+    }
+
+    computeTimespans() {
+        var max: number[] = [];
+
+        for (var channelIndex = 0; channelIndex < this.temporalSections.length; channelIndex++) {
+            var currChannel = this.temporalSections[channelIndex];
+
+            for (var i = 0; i < currChannel.length; i++) {
+                if (i < max.length) { // If this isn't new territory
+                    if (currChannel[i] > max[i]) {
+                        max[i] = currChannel[i];
+                    }
+                } else {
+                    max.push(currChannel[i]);
+                }
+            }
+        }
+
+        this.maxTimespans = max;
+        console.log("MAX TIMESPANS");
+        console.log(this.maxTimespans);
     }
 }
