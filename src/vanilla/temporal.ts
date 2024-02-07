@@ -34,14 +34,10 @@ export interface temporalInterface {
     labelPosition: LabelPosition,
 
     padding: number[],
-    style: temporalStyle,
     label: labelInterface
 }
 
-export interface temporalStyle {
-    width: number,
-    height: number,
-}
+
 
 Orientation.Both.toString()
 
@@ -51,10 +47,7 @@ export default abstract class Temporal extends Drawable implements labelable {
     orientation: Orientation;
 
     padding: number[];
-    width: number;
-    height: number;
 
-    style: temporalStyle;
     label?: Label;
     labelPosition: LabelPosition;
 
@@ -62,24 +55,25 @@ export default abstract class Temporal extends Drawable implements labelable {
                 orientation: Orientation,
                 labelPosition: LabelPosition,
                 padding: number[],
-                style: temporalStyle,
-                label: labelInterface,
-                offset: number[]=[0, 0], ) {
+                offset: number[]=[0, 0],
+                label?: labelInterface,
+                dim?: {width: number, height: number}) {
 
         super(0, 0, offset);
 
         this.timestamp = timestamp;
-        console.log("Or at init ", orientation);
-        this.orientation = orientation;
 
+        this.orientation = orientation;
         this.padding = padding;
 
-        this.style = style;
-        this.width = style.width;
-        this.height = style.height;
-
-        this.label = Label.anyArgConstruct(label);
-        console.log("Pos at init ", labelPosition);
+        
+        if (label) {
+            this.label = Label.anyArgConstruct(label);
+        }
+        if (dim) {
+            this.bounds = dim;
+        }
+        
         this.labelPosition = labelPosition;
     }
 

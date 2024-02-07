@@ -1,4 +1,4 @@
-import Temporal, {LabelPosition, Orientation, orientationEval, positionEval, temporalInterface, temporalStyle, labelable} from "../../temporal";
+import Temporal, {LabelPosition, Orientation, orientationEval, positionEval, temporalInterface, labelable} from "../../temporal";
 import * as defaultPulse from "../../default/180pulse.json"
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
@@ -8,8 +8,9 @@ import Label, { labelInterface } from "../../label";
 export interface simplePulseInterface extends temporalInterface {
     style: simplePulseStyle,
 }
-export interface simplePulseStyle extends temporalStyle {
-    // Sent to .attr
+export interface simplePulseStyle {
+    width: number,
+    height: number,
     fill: string,
     stroke?: string | null,  // Optional
     strokeWidth?: number | null
@@ -33,8 +34,6 @@ export default class SimplePulse extends Temporal  {
         label: defaultPulse.label,
     }
     
-
-
     // A pulse that is an svg rect
     style: simplePulseStyle;
     lable?: Label;
@@ -70,9 +69,9 @@ export default class SimplePulse extends Temporal  {
               orientation,
               labelPoisition,
               padding, 
-              style,
+              offset,
               label,
-              offset);
+              {width: style.width, height: style.height});
 
         this.style = style;
     }

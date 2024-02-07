@@ -1,4 +1,4 @@
-import * as defaultSeq from "./default/channel.json"
+import * as defaultChan from "./default/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { LabelPosition, Orientation, labelable } from "./temporal";
@@ -30,19 +30,17 @@ export interface channelStyle {
 
 export default class Channel extends Drawable implements labelable {
     static defaults: channelInterface = {
-        temporalElements: [],
+        temporalElements: defaultChan.temporalElements,
     
-        padding: defaultSeq.padding,
+        padding: defaultChan.padding,
         style: {
-            thickness: defaultSeq.thickness,
-            fill: defaultSeq.fill,
-            stroke: defaultSeq.stroke,
-            strokeWidth: defaultSeq.strokeWidth
+            thickness: defaultChan.thickness,
+            fill: defaultChan.fill,
+            stroke: defaultChan.stroke,
+            strokeWidth: defaultChan.strokeWidth
         }
     }
 
-    width: number;
-    height: number;  // Excludes padding
 
     style: channelStyle;
     pad: number[];
@@ -58,24 +56,21 @@ export default class Channel extends Drawable implements labelable {
 
     constructor(pad: number[]=Channel.defaults.padding, 
                 style: channelStyle=Channel.defaults.style,
-                temporalElements: Temporal[]=[...Channel.defaults.temporalElements],
-                // ARRAYS USE REFERENCE!!!!! WAS UPDATING 
+                temporalElements: Temporal[]=[...Channel.defaults.temporalElements], // ARRAYS USE REFERENCE!!!!! WAS UPDATING 
                 offset: number[]=[0, 0],
                 label?: Label) {
                 
         super(0, 0, offset);
 
         this.style = style;
-
         this.pad = pad;
 
         this.maxTopProtrusion = 0;
         this.maxBottomProtrusion = style.thickness;
         this.topBound = 0;
         this.bottomBound = style.thickness;
-        
-        this.height = style.thickness;
-        this.width = 0;
+
+        this.bounds = {width: 0, height: style.thickness};
 
         this.temporalElements = temporalElements;
         this.label = label;
@@ -137,11 +132,14 @@ export default class Channel extends Drawable implements labelable {
 
         this.maxTopProtrusion = Math.max(...topProtrusion);
         this.maxBottomProtrusion = Math.max(...bottomProtrusion);
-        this.height = this.maxBottomProtrusion + 
+
+        var height = this.maxBottomProtrusion + 
                       this.maxTopProtrusion + this.style.thickness;
+
+        this.bounds = {width: this.width, height}
     }
 
-    positionElements() : void {
+    positionElements() {
         var currentX = this.x;
 
         this.temporalElements.forEach((element) => {
@@ -155,8 +153,8 @@ export default class Channel extends Drawable implements labelable {
             currentX += element.padding[1]  // RIGHT PAD
         })
 
-        this.width = currentX - this.x;
-        
+        var width = currentX - this.x;
+        this.bounds = {width: width, height: this.height}
     }
 
     addSimplePulse(elementType: typeof SimplePulse, args: any) {

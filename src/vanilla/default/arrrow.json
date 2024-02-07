@@ -1,0 +1,12 @@
+{
+    "x": 0,
+    "y": 0,
+    "x2": 50,
+    "y2": 50,
+
+    "style": {
+        "thickness": 4, 
+        "headStyle": "default", 
+        "stroke": "black"
+    }
+}

@@ -1,7 +1,7 @@
 import * as defaultSeq from "./default/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Temporal, { Orientation } from "./temporal";
+import Temporal, { LabelPosition, Orientation } from "./temporal";
 import Pulse90 from "./pulses/simple/pulse90";
 import Pulse180 from "./pulses/simple/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
@@ -10,6 +10,8 @@ import ImagePulse from "./pulses/image/imagePulse";
 import Aquire from "./pulses/image/aquire";
 import Label from "./label";
 import { json } from "stream/consumers";
+import Arrow, { headStyle } from "./arrow";
+import Span from "./span";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -70,8 +72,9 @@ export default class Sequence {
         this.surface = surface; 
         this.channels = {};  // Wierdest bug ever happening here
 
-        
-        console.log("HERE" );
+
+
+
         this.errors = [];
 
         try {

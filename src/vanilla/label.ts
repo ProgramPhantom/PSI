@@ -37,8 +37,6 @@ export default class Label extends Drawable {
     text: string;
     size: number;
 
-    width: number;
-    height: number;
     padding: number[];
     
     constructor(text: string, x: number, y: number, padding: number[], size: number) {
@@ -47,8 +45,6 @@ export default class Label extends Drawable {
         this.text = text;
         this.size = size;
         this.padding = padding;
-
-        [this.width, this.height] = [0, 0]
 
         this.computeDimensions();
     }
@@ -87,13 +83,15 @@ export default class Label extends Drawable {
         var width = content!.getBoundingClientRect().width;
         var height = content!.getBoundingClientRect().height;
 
-        this.width = width;
-        this.height = height;
+        var width = width;
+        var height = height;
 
         SVGobj.remove();
         temp.remove();
 
         console.log(width, height);
+
+        this.bounds = {width, height};
     }
 
     // Sets x and y at the same time

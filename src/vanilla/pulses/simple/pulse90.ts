@@ -33,8 +33,6 @@ export default class Pulse90 extends SimplePulse {
                 label: labelInterface=Pulse90.defaults.label,
                 offset: number[]=[0, 0]) {
 
-        console.log("lP in construct: ", labelPosition);
-
         super(timestamp, orientation, labelPosition, padding, style, label, offset)
     }
 }
