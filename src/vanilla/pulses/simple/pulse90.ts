@@ -30,7 +30,7 @@ export default class Pulse90 extends SimplePulse {
                 labelPosition: LabelPosition=Pulse90.defaults.labelPosition,
                 padding: number[]=Pulse90.defaults.padding, 
                 style: simplePulseStyle=Pulse90.defaults.style,
-                label: labelInterface=Pulse90.defaults.label,
+                label: labelInterface=Pulse90.defaults.label!,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, orientation, labelPosition, padding, style, label, offset)

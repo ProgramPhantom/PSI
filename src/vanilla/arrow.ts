@@ -1,7 +1,7 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Drawable } from "./drawable";
 import { labelable } from "./temporal";
-import * as defaultArrow from "./default/arrrow.json"
+import * as defaultArrow from "./default/arrow.json"
 
 
 export enum headStyle {
@@ -12,9 +12,6 @@ export const headStyleEval: {[name: string]: headStyle} = {
     "default": headStyle.Default,
     "thin": headStyle.Thin,
 }
-
-
-
 
 export interface arrowInterface {
     x: number,
@@ -44,11 +41,8 @@ export default class Arrow extends Drawable {
         },
     }
 
-
-
     x2: number;
     y2: number;
-
 
     style: arrowStyle;
 
@@ -71,17 +65,21 @@ export default class Arrow extends Drawable {
       <defs>
           <marker 
             id='head' 
-            orient="auto-start-reverse" 
-            markerWidth='2' 
-            markerHeight='4' 
-            refX='0.1' 
-            refY='2'
-            >
-            <path d='M0,0 V4 L2,2 Z' fill="${this.style.stroke}" />
+            viewBox="0 0 20 20"
+            refX="0"
+            refY="3"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto-start-reverse">
+            <path d="M 0 0 L 8 3 L 0 6 z" />
           </marker>
         </defs>
       `
 
+      // Could do some maths to automatically scale arrow head
+      // to thickness but not now
+    
+      const arbiraryAdjustment = 13;
       var arrowSVG = `<svg>
             ${def}
           <path
@@ -90,13 +88,13 @@ export default class Arrow extends Drawable {
             marker-end='url(#head)'
             stroke-width='${this.style.thickness}'
             stroke='${this.style.stroke}'  
-            d='M${this.x},${this.y}, ${this.x2} ${this.y2}'
+            d='M${this.x + arbiraryAdjustment},${this.y}, ${this.x2 -  arbiraryAdjustment} ${this.y2}'
           />
                 
         </svg>`
 
         console.log(this.x, this.y, this.x2, this.y2)
-        
+
         var svgObj = SVG(arrowSVG);
         surface.add(svgObj);
     }

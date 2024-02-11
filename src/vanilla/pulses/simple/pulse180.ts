@@ -32,7 +32,7 @@ export default class Pulse180 extends SimplePulse {
                 labelPosition: LabelPosition=Pulse180.defaults.labelPosition,
                 padding: number[]=Pulse180.defaults.padding, 
                 style: simplePulseStyle=Pulse180.defaults.style,
-                label: labelInterface=Pulse180.defaults.label,
+                label: labelInterface=Pulse180.defaults.label!,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, orientation, labelPosition, padding, style, label, offset)

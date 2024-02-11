@@ -76,7 +76,6 @@ export default class SimplePulse extends Temporal  {
         this.style = style;
     }
 
-
     draw(surface: SVG.Svg) {
         surface.rect(this.width, this.height)
         .attr(this.style)

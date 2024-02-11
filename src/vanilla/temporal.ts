@@ -48,7 +48,7 @@ export interface temporalInterface {
     labelPosition: LabelPosition,
 
     padding: number[],
-    label: labelInterface
+    label?: labelInterface
 }
 
 
@@ -173,7 +173,7 @@ export default abstract class Temporal extends Drawable implements labelable {
                     x = 0;
                     y = 0;
             }
-
+            console.log(`pos label at: ${x}, ${y}`)
 
             this.label.position(x, y);
             this.label.draw(surface);

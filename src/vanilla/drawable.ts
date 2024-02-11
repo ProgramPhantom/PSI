@@ -28,6 +28,9 @@ export abstract class Drawable {
         this._y = y;
 
         this.offset = offset;
+        if (dim) {
+            this.bounds = dim;
+        }
     }
 
     public abstract draw(surface: Svg): void;
@@ -41,9 +44,17 @@ export abstract class Drawable {
 
     set x(val: number) {
         this._x = val;
+
+        if (this._bounds) {  // Recalculate bounds
+            this.bounds = {width: this.width, height: this.height};
+        }
     }
     set y(val: number) {
         this._y = val;
+
+        if (this._bounds) {  // Recalculate bounds
+            this.bounds = {width: this.width, height: this.height};
+        }
     }
 
 
@@ -59,7 +70,6 @@ export abstract class Drawable {
 
         var bottom = this._y + b.height;
         var right = this._x + b.width;
-
 
         this._bounds = {top: top, right: right, bottom: bottom, left: left, width: b.width, height: b.height};
     }

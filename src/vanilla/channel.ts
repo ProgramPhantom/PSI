@@ -8,6 +8,7 @@ import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
 import Label, { labelInterface } from "./label";
+import Span from "./span";
  
 
 export interface channelInterface {
@@ -148,6 +149,8 @@ export default class Channel extends Drawable implements labelable {
 
         for (var i = 0; i < this.temporalElements.length; i++) {
             var temporalEl = this.temporalElements[i];
+            console.log(temporalEl.bounds);
+
             temporalEl.positionVertically(this.y, this.style.thickness);
 
             if (i < timestampWidths.length) {  // Should always fire with current config
@@ -160,6 +163,7 @@ export default class Channel extends Drawable implements labelable {
             } else {
                 xCurs += temporalEl.padding[3]  // LEFT PAD
 
+                console.log("putting at ", xCurs)
                 temporalEl.x = xCurs;
                 xCurs += temporalEl.width;  // WIDTH
     
@@ -186,6 +190,21 @@ export default class Channel extends Drawable implements labelable {
         this.temporalElements.push(pulse);
         
         console.log(this.temporalElements);
+    }
+
+    addSpan(elementType: typeof Span, args: any, width: number=0, ): number[] {
+
+        if (width !== 0) {  // If width provided by hSections
+            var span = elementType.anyArgConstruct(elementType, {...args, width})
+        } else {
+            var span = elementType.anyArgConstruct(elementType, args)
+        }
+        
+        this.temporalElements.push(span);
+
+        this.hSections.push(span.actualWidth);
+        
+        return this.hSections;
     }
 
 

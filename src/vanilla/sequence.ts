@@ -47,8 +47,13 @@ export default class Sequence {
     static ImagePulseCommands: {[name: string]: typeof ImagePulse;} = {
         "Aquire": Aquire,
     }
+    static SpanCommands: {[name: string]: typeof Span;} = {
+        "Span": Span,
+    }
     static AllCommands = Object.keys(Sequence.SimplePulseCommands).concat(
-                                     ...Object.keys(Sequence.ImagePulseCommands));
+                                    ...Object.keys(Sequence.ImagePulseCommands)).concat(
+                                    ...Object.keys(Sequence.SpanCommands)
+                                    );
                          
 
     nmrScript: string;
@@ -74,11 +79,6 @@ export default class Sequence {
         this.nmrScript = mnrScript;
         this.surface = surface; 
         this.channels = {};  // Wierdest bug ever happening here
-
-        this.defineChannel("p1", {});
-        var testSpan = new Span(0, 100, Orientation.Top, LabelPosition.Top, [0, 0, 0, 0], {thickness: 4, headStyle: headStyle.Default, stroke: "red"})
-        this.channels["p1"].temporalElements.push(testSpan);
-
 
         this.errors = [];
 
@@ -268,14 +268,18 @@ export default class Sequence {
 
     addPulse(channelName: string, elementName: string, args: any) {
         var channel: Channel = this.channels[channelName];
+        var currTimestamp = channel.temporalElements.length;
 
         var sections: number[] = [];
 
-        // If adding a simple pulse
+        // This can be better
         if (Object.keys(Sequence.SimplePulseCommands).includes(elementName)) {
             sections = channel.addSimplePulse(Sequence.SimplePulseCommands[elementName], args);
         } else if (Object.keys(Sequence.ImagePulseCommands).includes(elementName)) {
             channel.addImagePulse(Sequence.ImagePulseCommands[elementName], args);
+        } else if (Object.keys(Sequence.SpanCommands).includes(elementName)) {
+            console.log("SPAN");  // THIS NEEDS FIXING
+            channel.addSpan(Sequence.SpanCommands[elementName], args, currTimestamp > this.maxTimespans.length ? 0 : this.maxTimespans[currTimestamp])
         }
 
         this.temporalSections.push(sections);
@@ -284,11 +288,6 @@ export default class Sequence {
         
     }
 
-    alignTemporals() {
-        // This function uses max timespans to align similarly positioned elements
-
-
-    }
 
     computeTimespans() {
         var max: number[] = [];
