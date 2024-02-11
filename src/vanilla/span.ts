@@ -30,7 +30,7 @@ export default class Span extends Temporal implements labelable {
         const spanOptions = args ? { ...elementType.defaults,  ...args, style: styleOptions, label: labelOptions} : elementType.defaults;
 
         console.log("options: ", spanOptions)
-        var el = new elementType(0,
+        var el = new elementType(spanOptions.timestamp,
             spanOptions.orientation,
             spanOptions.labelPosition,
             spanOptions.padding,

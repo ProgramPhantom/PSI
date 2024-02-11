@@ -50,10 +50,13 @@ export default class Sequence {
     static SpanCommands: {[name: string]: typeof Span;} = {
         "Span": Span,
     }
+    static ChannelCommands: string[] = [
+        "sync"
+    ]
     static AllCommands = Object.keys(Sequence.SimplePulseCommands).concat(
                                     ...Object.keys(Sequence.ImagePulseCommands)).concat(
-                                    ...Object.keys(Sequence.SpanCommands)
-                                    );
+                                    ...Object.keys(Sequence.SpanCommands),
+                                    ...Sequence.ChannelCommands);
                          
 
     nmrScript: string;
@@ -236,7 +239,7 @@ export default class Sequence {
         var argumentString = line.substring(openIndex+1, closeIndex);
         var jsonArg = this.parseArgument(argumentString);
         
-        this.addPulse(channelIdentifier, channelCommand, jsonArg);
+        this.channelCommand(channelIdentifier, channelCommand, jsonArg);
     }
 
     parseArgument(argString: string) : any {
@@ -266,26 +269,42 @@ export default class Sequence {
         this.channels[name] = newChannel;
     }
 
-    addPulse(channelName: string, elementName: string, args: any) {
+    channelCommand(channelName: string, commandName: string, args: any) {
         var channel: Channel = this.channels[channelName];
         var currTimestamp = channel.temporalElements.length;
 
         var sections: number[] = [];
 
         // This can be better
-        if (Object.keys(Sequence.SimplePulseCommands).includes(elementName)) {
-            sections = channel.addSimplePulse(Sequence.SimplePulseCommands[elementName], args);
-        } else if (Object.keys(Sequence.ImagePulseCommands).includes(elementName)) {
-            channel.addImagePulse(Sequence.ImagePulseCommands[elementName], args);
-        } else if (Object.keys(Sequence.SpanCommands).includes(elementName)) {
+        if (Object.keys(Sequence.SimplePulseCommands).includes(commandName)) {
+            sections = channel.addSimplePulse(Sequence.SimplePulseCommands[commandName], args);
+        } else if (Object.keys(Sequence.ImagePulseCommands).includes(commandName)) {
+            channel.addImagePulse(Sequence.ImagePulseCommands[commandName], args);
+        } else if (Object.keys(Sequence.SpanCommands).includes(commandName)) {
             console.log("SPAN");  // THIS NEEDS FIXING
-            channel.addSpan(Sequence.SpanCommands[elementName], args, currTimestamp > this.maxTimespans.length ? 0 : this.maxTimespans[currTimestamp])
+            channel.addSpan(Sequence.SpanCommands[commandName], args, currTimestamp > this.maxTimespans.length ? 0 : this.maxTimespans[currTimestamp])
+        } else if (Sequence.ChannelCommands.includes(commandName)) {
+            this.syncChannels(channelName, args);
         }
 
         this.temporalSections.push(sections);
         console.log("Temporal Sections", this.temporalSections)
         this.computeTimespans();
         
+    }
+
+    syncChannels(reference: string, targets: any) {
+        var referenceChan = this.channels[reference];
+        var referenceCurs = referenceChan.elementCursor;
+
+        if (!targets.targets) {
+            // Sync all
+            Object.keys(this.channels).forEach((val) => {
+                if (val !== reference) {
+                    this.channels[val].jumpTimespan(referenceCurs-1);
+                }
+            })
+        }
     }
 
 

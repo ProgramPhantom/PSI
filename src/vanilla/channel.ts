@@ -53,6 +53,7 @@ export default class Channel extends Drawable implements labelable {
     
     temporalElements: Temporal[];
     hSections: number[] = [];
+    elementCursor: number = -1;
 
     label?: Label;
     labelPosition: LabelPosition=LabelPosition.Left;
@@ -81,17 +82,11 @@ export default class Channel extends Drawable implements labelable {
     
 
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
-        console.log("--- drawing channel ---");
-        console.log(this.temporalElements);
-
-
         this.computeY(yCursor);
 
         var labelHOffset = this.drawLabel(surface);
-        console.log(labelHOffset);
         this.computeX(labelHOffset[0]);
         
-
         this.positionElements(timestampWidths);
 
         this.temporalElements.forEach(element => {
@@ -144,31 +139,31 @@ export default class Channel extends Drawable implements labelable {
 
     positionElements(timestampWidths: number[]) {
         var xCurs = this.x;
+        var currTimestamp = -1;
 
         // Current alignment style: centre
 
         for (var i = 0; i < this.temporalElements.length; i++) {
-            var temporalEl = this.temporalElements[i];
-            console.log(temporalEl.bounds);
 
+            // For all temporal elements
+            var temporalEl = this.temporalElements[i];
+            
             temporalEl.positionVertically(this.y, this.style.thickness);
 
-            if (i < timestampWidths.length) {  // Should always fire with current config
-                
-                var sectionWidth = timestampWidths[i];
+            console.log("TIMESTAMP");
+            console.log(temporalEl.timestamp, currTimestamp);
 
-                xCurs += sectionWidth / 2;
-                temporalEl.centreXPos(xCurs)
-                xCurs += sectionWidth / 2;
-            } else {
-                xCurs += temporalEl.padding[3]  // LEFT PAD
-
-                console.log("putting at ", xCurs)
-                temporalEl.x = xCurs;
-                xCurs += temporalEl.width;  // WIDTH
-    
-                xCurs += temporalEl.padding[1]  // RIGHT PAD
+            for (var space = currTimestamp+1; space < temporalEl.timestamp; space++) {
+                xCurs += timestampWidths[space];
+                console.log("spacing ", timestampWidths[space]);
             }
+
+            var sectionWidth = timestampWidths[temporalEl.timestamp];
+
+            xCurs += sectionWidth / 2;
+            temporalEl.centreXPos(xCurs)
+            xCurs += sectionWidth / 2;
+            currTimestamp = temporalEl.timestamp;
         }
 
         var width = xCurs - this.x;
@@ -177,11 +172,13 @@ export default class Channel extends Drawable implements labelable {
     }
 
     addSimplePulse(elementType: typeof SimplePulse, args: any): number[] {
-        var pulse = elementType.anyArgConstruct(elementType, args);
+        this.elementCursor += 1;
+
+        var pulse = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor});
         this.temporalElements.push(pulse);
 
+
         this.hSections.push(pulse.actualWidth);
-        
         return this.hSections;
     }
 
@@ -193,20 +190,26 @@ export default class Channel extends Drawable implements labelable {
     }
 
     addSpan(elementType: typeof Span, args: any, width: number=0, ): number[] {
+        this.elementCursor += 1;
 
         if (width !== 0) {  // If width provided by hSections
-            var span = elementType.anyArgConstruct(elementType, {...args, width})
+            var span = elementType.anyArgConstruct(elementType, {...args, width, timestamp: this.elementCursor})
         } else {
-            var span = elementType.anyArgConstruct(elementType, args)
+            var span = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor})
         }
         
         this.temporalElements.push(span);
-
         this.hSections.push(span.actualWidth);
         
         return this.hSections;
     }
 
+    jumpTimespan(newCurs: number) {
+        for (var empty = this.elementCursor; empty < newCurs; empty++) {
+            this.hSections.push(0);
+        }
+        this.elementCursor = newCurs
+    }
 
     // Draws the channel label
     // It is required that computeY has been ran for this to work

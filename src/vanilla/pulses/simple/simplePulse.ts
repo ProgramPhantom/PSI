@@ -40,19 +40,16 @@ export default class SimplePulse extends Temporal  {
     
     public static anyArgConstruct(elementType: typeof SimplePulse, args: any): SimplePulse {
         const options = args ? { ...elementType.defaults, ...args} : elementType.defaults;
-        
-        console.log(options);
-        console.log(options.labelPosition)
 
-        var el = new elementType(0,
+       console.log("creating at timestamp: ", options.timestamp)
+
+        var el = new elementType(options.timestamp,
                                  options.orientation,
                                  options.labelPosition,
                                  options.padding,
                                  options.style,
                                  options.label)
 
-        console.log(el.labelPosition);
-        console.log(el.orientation)
 
         return el;
     }
