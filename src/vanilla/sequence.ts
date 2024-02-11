@@ -1,7 +1,8 @@
 import * as defaultSeq from "./default/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Temporal, { LabelPosition, Orientation } from "./temporal";
+import Temporal, { Orientation } from "./temporal";
+import { LabelPosition } from "./label";
 import Pulse90 from "./pulses/simple/pulse90";
 import Pulse180 from "./pulses/simple/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";

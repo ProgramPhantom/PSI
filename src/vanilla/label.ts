@@ -6,19 +6,28 @@ import * as defaultLabel from "./default/label.json";
 
 export interface labelInterface {
     text?: string,
-    x?: number,
-    y?: number,
     padding?: number[],
+    labelPosition: LabelPosition,
     size?: number
+}
+
+export enum LabelPosition {Top="top",
+                           Right="right",
+                           Bottom="bottom",
+                           Left="left"}
+export const positionEval: {[name: string]: LabelPosition} = {
+    "top": LabelPosition.Top,
+    "right": LabelPosition.Right,
+    "bottom": LabelPosition.Bottom,
+    "left": LabelPosition.Left
 }
 
 
 export default class Label extends Drawable {
     static defaults: labelInterface = {
         text: defaultLabel.text,
-        x: defaultLabel.x,
-        y: defaultLabel.y,
         padding: defaultLabel.padding,
+        labelPosition: positionEval[defaultLabel.labelPosition],
         size: defaultLabel.scale
     }
 
@@ -27,9 +36,8 @@ export default class Label extends Drawable {
 
         return new Label(
             options.text!,
-            options.x!,
-            options.y!,
             options.padding!,
+            options.labelPosition!,
             options.size!
         )
     }
@@ -38,13 +46,15 @@ export default class Label extends Drawable {
     size: number;
 
     padding: number[];
+    labelPosition: LabelPosition;
     
-    constructor(text: string, x: number, y: number, padding: number[], size: number) {
-        super(x, y);
+    constructor(text: string, padding: number[], labelPosition: LabelPosition, size: number) {
+        super(0, 0);
 
         this.text = text;
         this.size = size;
         this.padding = padding;
+        this.labelPosition = labelPosition;
 
         this.computeDimensions();
     }
@@ -58,7 +68,6 @@ export default class Label extends Drawable {
         SVGobj.width(this.size);
         SVGobj.attr("height", null);
         surface.add(SVGobj);
-        
     }
 
     // Sets this.width and this.height

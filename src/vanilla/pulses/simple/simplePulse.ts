@@ -1,8 +1,8 @@
-import Temporal, {LabelPosition, Orientation, orientationEval, positionEval, temporalInterface, labelable} from "../../temporal";
+import Temporal, {Orientation, orientationEval, temporalInterface, labelable} from "../../temporal";
 import * as defaultPulse from "../../default/180pulse.json"
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
-import Label, { labelInterface } from "../../label";
+import Label, { LabelPosition, labelInterface, positionEval } from "../../label";
 
 
 export interface simplePulseInterface extends temporalInterface {
@@ -23,7 +23,7 @@ export default class SimplePulse extends Temporal  {
     static defaults: simplePulseInterface = {
         padding: defaultPulse.padding,
         orientation: orientationEval[defaultPulse.orientation],
-        labelPosition: positionEval[defaultPulse.labelPosition],
+        
         style: {
             width: defaultPulse.width,
             height: defaultPulse.height,
@@ -31,7 +31,12 @@ export default class SimplePulse extends Temporal  {
             stroke: defaultPulse.stroke,
             strokeWidth: defaultPulse.strokeWidth
         },
-        label: defaultPulse.label,
+        label: {
+            text: defaultPulse.label.text,
+            padding: defaultPulse.label.padding,
+            labelPosition: positionEval[defaultPulse.label.labelPosition],
+            size: defaultPulse.label.size
+        },
     }
     
     // A pulse that is an svg rect
@@ -39,24 +44,21 @@ export default class SimplePulse extends Temporal  {
     lable?: Label;
     
     public static anyArgConstruct(elementType: typeof SimplePulse, args: any): SimplePulse {
-        const options = args ? { ...elementType.defaults, ...args} : elementType.defaults;
-
-       console.log("creating at timestamp: ", options.timestamp)
+        const styleOptions = args.style ? {...elementType.defaults.style, ...args.style} : elementType.defaults.style;
+        const labelOptions = args.label ? {...elementType.defaults.label, ...args.label} : elementType.defaults.label;
+        const options = args ? { ...elementType.defaults, ...args, style: styleOptions, label: labelOptions} : elementType.defaults;
 
         var el = new elementType(options.timestamp,
                                  options.orientation,
-                                 options.labelPosition,
                                  options.padding,
                                  options.style,
                                  options.label)
-
 
         return el;
     }
 
     constructor(timestamp: number, 
                 orientation: Orientation, 
-                labelPoisition: LabelPosition,
                 padding: number[], 
                 style: simplePulseStyle,
                 label: labelInterface,
@@ -64,7 +66,6 @@ export default class SimplePulse extends Temporal  {
 
         super(timestamp, 
               orientation,
-              labelPoisition,
               padding, 
               offset,
               label,
@@ -120,7 +121,7 @@ export default class SimplePulse extends Temporal  {
 
 
         if (this.label) {
-            switch (this.labelPosition) {
+            switch (this.label.labelPosition) {
                 case LabelPosition.Top:
                     dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
                     break;

@@ -1,15 +1,16 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
-import Temporal, {Orientation, orientationEval, temporalInterface, temporalStyle} from "../../temporal";
+import Temporal, {Orientation, orientationEval, temporalInterface} from "../../temporal";
 import * as defaultPulse from "../../default/imagePulse.json"
-
+import { positionEval } from "../../label";
 
 export interface imagePulseInterface extends temporalInterface {
     path: string,
     style: imagePulseStyle,
 }
 
-export interface imagePulseStyle extends temporalStyle {
- 
+export interface imagePulseStyle {
+    width: number,
+    height: number
 }
 
 export default class ImagePulse extends Temporal {
@@ -21,54 +22,46 @@ export default class ImagePulse extends Temporal {
         style: {
             width: defaultPulse.style.width,
             height: defaultPulse.style.height,
+        },
+        label: {
+            text: defaultPulse.label.text,
+            padding: defaultPulse.label.padding,
+            labelPosition: positionEval[defaultPulse.label.labelPosition],
+            size: defaultPulse.label.size
         }
     }
 
     public static anyArgConstruct(elementType: typeof ImagePulse, args: any): ImagePulse {
-        // This seems wrong
-        var defaultStyleWithArgs: imagePulseStyle = elementType.defaults.style;
-        if (args.style !== undefined) {
-            defaultStyleWithArgs = {
-                width: args.style.width ?? elementType.defaults.style.width,
-                height: args.style.height ?? elementType.defaults.style.height,
-            }
-        }
-        
-        var defaultWithArgs: imagePulseInterface = {
-            padding: args.padding ?? elementType.defaults.padding,
-            orientation: orientationEval[args.orientation] ?? elementType.defaults.orientation,
-            path: args.path ?? elementType.defaults.path,
-            style: defaultStyleWithArgs
-        }
+        const styleOptions = args.style ? {...elementType.defaults.style, ...args.style} : elementType.defaults.style;
+        const labelOptions = args.label ? {...elementType.defaults.label, ...args.label} : elementType.defaults.label;
+        const options = args ? { ...elementType.defaults, ...args, style: styleOptions, label: labelOptions} : elementType.defaults;
 
-        
-
-        var el = new elementType(defaultWithArgs.path,
-                                 defaultWithArgs.orientation,
-                                 0,
-                                 defaultWithArgs.padding,
-                                 defaultWithArgs.style)
+        var el = new elementType(options.timestamp,
+                                 options.path,
+                                 options.orientation,
+                                 options.padding,
+                                 options.style)
 
         return el;
     }
 
+    style: imagePulseStyle;
     path: string;
 
-    constructor(path: string,
+    constructor(timestamp: number, 
+                path: string,
                 orientation: Orientation, 
-                timestamp: number, 
                 padding: number[], 
                 style: imagePulseStyle,
                 offset: number[]=[0, 0]) {
 
-        super(timestamp, orientation, 
+        super(timestamp, 
+              orientation, 
               padding, 
-              style, 
               offset);
 
         this.style = style;
         this.path = path;
-        
     }
 
 

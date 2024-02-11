@@ -5,5 +5,12 @@
     "style": {
         "width": 50,
         "height": 50
+    },
+
+    "label": {
+        "text": "\\tau",
+        "padding": [0, 0, 10, 0],
+        "labelPosition": "top",
+        "size": 30
     }
 }

@@ -13,17 +13,18 @@ export default class Aquire extends SVGPulse {
         style: {
             width: defaultPulse.style.width,
             height: defaultPulse.style.height,
-        }
+        },
+        label: undefined,
     }
     
-    constructor(path: string=Aquire.defaults.path,
+    constructor(timestamp: number=0, 
+                path: string=Aquire.defaults.path,
                 orientation: Orientation=Aquire.defaults.orientation, 
-                timestamp: number=0, 
                 padding: number[]=Aquire.defaults.padding, 
                 style: svgPulseStyle=Aquire.defaults.style,
                 offset: number[]=[0, 0]) {
 
-        super(path, timestamp, orientation, padding, style, offset)
+        super(timestamp, path, orientation, padding, style, offset)
         
     }
 }

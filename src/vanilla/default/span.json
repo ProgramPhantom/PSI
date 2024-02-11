@@ -1,6 +1,5 @@
 {
     "orientation": "top",
-    "labelPosition": "top",
     "padding": [10, 0, 10, 0],
     "width": 100,
 
@@ -12,9 +11,8 @@
 
     "label": {
         "text": "\\tau",
-        "x": 0,
-        "y": 0,
         "padding": [7, 0, 10, 0],
+        "labelPosition": "top",
         "size": 10
     }
 }

@@ -1,13 +1,13 @@
 import * as defaultChan from "./default/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Temporal, { LabelPosition, Orientation, labelable } from "./temporal";
+import Temporal, { Orientation, labelable } from "./temporal";
 import Pulse90 from "./pulses/simple/pulse90";
 import Pulse180 from "./pulses/simple/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
-import Label, { labelInterface } from "./label";
+import Label, { labelInterface, LabelPosition } from "./label";
 import Span from "./span";
  
 

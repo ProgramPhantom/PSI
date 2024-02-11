@@ -1,6 +1,6 @@
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Label, { labelInterface } from "./label";
+import Label, { labelInterface, LabelPosition } from "./label";
 
 interface Dim {
     width: number,
@@ -17,7 +17,6 @@ interface Bounds {
     height: number,
 }
 
-
 export enum Orientation { Top="top", Bottom="bottom", Both="both" }
 export const orientationEval: {[name: string]: Orientation} = {
     "top": Orientation.Top,
@@ -25,28 +24,14 @@ export const orientationEval: {[name: string]: Orientation} = {
     "both": Orientation.Both
 }
 
-
-export enum LabelPosition {Top="top",
-                           Right="right",
-                           Bottom="bottom",
-                           Left="left"}
-export const positionEval: {[name: string]: LabelPosition} = {
-    "top": LabelPosition.Top,
-    "right": LabelPosition.Right,
-    "bottom": LabelPosition.Bottom,
-    "left": LabelPosition.Left
-}
 export interface labelable {
     label?: Label,
-    labelPosition: LabelPosition,
     drawLabel(surface: Svg): number[],
 }
 
 
 export interface temporalInterface {
     orientation: Orientation,
-    labelPosition: LabelPosition,
-
     padding: number[],
     label?: labelInterface
 }
@@ -64,13 +49,11 @@ export default abstract class Temporal extends Drawable implements labelable {
     padding: number[];
 
     label?: Label;
-    labelPosition: LabelPosition;
 
     private _actualBounds?: Bounds;
 
     constructor(timestamp: number,
                 orientation: Orientation,
-                labelPosition: LabelPosition,
                 padding: number[],
                 offset: number[]=[0, 0],
                 label?: labelInterface,
@@ -94,8 +77,6 @@ export default abstract class Temporal extends Drawable implements labelable {
                 height: dim.height + padding[0] + padding[2]
             }
         }
-        
-        this.labelPosition = labelPosition;
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
@@ -156,11 +137,11 @@ export default abstract class Temporal extends Drawable implements labelable {
         
         if (this.label) {
             var x, y;
-
-            switch (this.labelPosition) {
+            
+            switch (this.label.labelPosition) {
                 
 
-                case LabelPosition.Top:
+                case LabelPosition.Bottom:
                     x = this.x + this.width/2 - this.label.width/2;
                     y = this.y - this.label.height - this.label.padding[2];
                     break;
