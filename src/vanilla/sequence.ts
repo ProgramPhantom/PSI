@@ -95,16 +95,22 @@ export default class Sequence {
     }
     
 
-    draw() {
+    draw(): {width: number, height: number} {
         var yCurs = 0;
+        var dim = {width: 0, height: 0}
 
         Object.values(this.channels).forEach((channel) => {
             channel.draw(this.surface, this.maxTimespans, yCurs);
-            yCurs = channel.bottomBound;
+            yCurs = channel.bounds.bottom;
+            
+            this.height += channel.height;
+            this.width += channel.width;
         })
         this.freeLabels.forEach((label) => {
             label.draw(this.surface);
         })
+
+        return {width: 0, height: 0}
     } 
 
     parseNMRScript() {
@@ -176,8 +182,6 @@ export default class Sequence {
 
             }
         }
-
-        console.log("ERRORS: " + this.errors.toString());
     }
 
     parseCommand(line: string, lineNum: number): {commandBody: string, arguments: any} {
@@ -280,10 +284,10 @@ export default class Sequence {
         if (Object.keys(Sequence.SimplePulseCommands).includes(commandName)) {
             sections = channel.addSimplePulse(Sequence.SimplePulseCommands[commandName], args);
         } else if (Object.keys(Sequence.ImagePulseCommands).includes(commandName)) {
-            channel.addImagePulse(Sequence.ImagePulseCommands[commandName], args);
+            sections = channel.addImagePulse(Sequence.ImagePulseCommands[commandName], args);
         } else if (Object.keys(Sequence.SpanCommands).includes(commandName)) {
             console.log("SPAN");  // THIS NEEDS FIXING
-            channel.addSpan(Sequence.SpanCommands[commandName], args, currTimestamp > this.maxTimespans.length ? 0 : this.maxTimespans[currTimestamp])
+            sections = channel.addSpan(Sequence.SpanCommands[commandName], args, currTimestamp > this.maxTimespans.length ? 0 : this.maxTimespans[currTimestamp])
         } else if (Sequence.ChannelCommands.includes(commandName)) {
             this.syncChannels(channelName, args);
         }
@@ -307,7 +311,6 @@ export default class Sequence {
             })
         }
     }
-
 
     computeTimespans() {
         var max: number[] = [];

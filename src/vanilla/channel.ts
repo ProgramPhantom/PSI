@@ -42,14 +42,15 @@ export default class Channel extends Drawable implements labelable {
         }
     }
 
-
     style: channelStyle;
     pad: number[];
 
     maxTopProtrusion: number;
     maxBottomProtrusion: number;
-    topBound: number;
-    bottomBound: number;
+
+    barWidth: number;
+    barX: number;
+    barY: number;
     
     temporalElements: Temporal[];
     hSections: number[] = [];
@@ -65,16 +66,17 @@ export default class Channel extends Drawable implements labelable {
                 label?: Label) {
                 
         super(0, 0, offset);
+        this.barX = 0;
+        this.barY = 0;
 
         this.style = style;
         this.pad = pad;
 
         this.maxTopProtrusion = 0;  // Move this to element
         this.maxBottomProtrusion = style.thickness;
-        this.topBound = 0;
-        this.bottomBound = style.thickness;
 
         this.bounds = {width: 0, height: style.thickness};
+        this.barWidth = 0;
 
         this.temporalElements = temporalElements;
         this.label = label;
@@ -82,40 +84,46 @@ export default class Channel extends Drawable implements labelable {
     
 
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
-        this.computeY(yCursor);
+        this.y = yCursor;
 
-        var labelHOffset = this.drawLabel(surface);
-        this.computeX(labelHOffset[0]);
-        
+        this.computeBarY(yCursor);
+
+        var labelOffset = this.drawLabel(surface);
+        this.bounds = {width: this.width + labelOffset[0] + this.pad[1] + this.pad[3], 
+            height: this.height + this.pad[0] + this.pad[2]}
+        // CURRENTLY IGNORING VERTICAL LABEL IMPACT
+
+        this.computeBarX(labelOffset[0]);
         this.positionElements(timestampWidths);
 
         this.temporalElements.forEach(element => {
             element.draw(surface);
         });
         this.drawRect(surface);
+
+        console.log("CHANNEL DIMENSIONS: ", this.width, this.height)
     }
 
-    computeY(yCursor: number=0) {
+    computeBarY(yCursor: number=0) {
         this.computeVerticalBounds();
 
-        this.topBound = yCursor;
-        
         var rectPosY = yCursor + this.pad[0] + this.maxTopProtrusion;
-        this.y = rectPosY;
-
-        this.bottomBound = this.y + this.style.thickness + 
-                           this.maxBottomProtrusion + 
-                           this.pad[2];
+        console.log("RECT POS", rectPosY)
+        this.barY = rectPosY;
+        
+        console.log("CHANNEL HEIGHT: ", this.height)
+        
     }
 
-    computeX(labelOffsetX: number=0) {
-        this.x = this.pad[3] + labelOffsetX;
+    computeBarX(labelOffsetX: number=0) {
+        this.barX = this.pad[3] + labelOffsetX;
     }
 
     drawRect(surface: Svg) {
         // Draws bar
-        surface.rect(this.width, this.style.thickness)
-        .attr(this.style).move(this.x, this.y);
+        surface.rect(this.barWidth, this.style.thickness)
+        .attr(this.style).move(this.barX, this.barY);
+
     }
 
     computeVerticalBounds() {
@@ -131,14 +139,15 @@ export default class Channel extends Drawable implements labelable {
         this.maxTopProtrusion = Math.max(...topProtrusion);
         this.maxBottomProtrusion = Math.max(...bottomProtrusion);
 
+
         var height = this.maxBottomProtrusion + 
                       this.maxTopProtrusion + this.style.thickness;
-
+        
         this.bounds = {width: this.width, height}
     }
 
     positionElements(timestampWidths: number[]) {
-        var xCurs = this.x;
+        var xCurs = this.barX;
         var currTimestamp = -1;
 
         // Current alignment style: centre
@@ -148,14 +157,10 @@ export default class Channel extends Drawable implements labelable {
             // For all temporal elements
             var temporalEl = this.temporalElements[i];
             
-            temporalEl.positionVertically(this.y, this.style.thickness);
+            temporalEl.positionVertically(this.barY, this.style.thickness);
 
-            console.log("TIMESTAMP");
-            console.log(temporalEl.timestamp, currTimestamp);
-
-            for (var space = currTimestamp+1; space < temporalEl.timestamp; space++) {
+            for (var space = currTimestamp+1; space < temporalEl.timestamp; space++) {  // Shift if gap in timestamps
                 xCurs += timestampWidths[space];
-                console.log("spacing ", timestampWidths[space]);
             }
 
             var sectionWidth = timestampWidths[temporalEl.timestamp];
@@ -166,9 +171,8 @@ export default class Channel extends Drawable implements labelable {
             currTimestamp = temporalEl.timestamp;
         }
 
-        var width = xCurs - this.x;
-        this.bounds = {width: width, height: this.height}
-
+        this.barWidth = xCurs - this.barX;
+        this.bounds = {width: this.width + this.barWidth, height: this.height}
     }
 
     addSimplePulse(elementType: typeof SimplePulse, args: any): number[] {
@@ -182,11 +186,14 @@ export default class Channel extends Drawable implements labelable {
         return this.hSections;
     }
 
-    addImagePulse(elementType: typeof ImagePulse, args: any) {
-        var pulse = elementType.anyArgConstruct(elementType, args);
+    addImagePulse(elementType: typeof ImagePulse, args: any): number[] {
+        this.elementCursor += 1;
+
+        var pulse = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor});
         this.temporalElements.push(pulse);
         
-        console.log(this.temporalElements);
+        this.hSections.push(pulse.actualWidth);
+        return this.hSections;
     }
 
     addSpan(elementType: typeof Span, args: any, width: number=0, ): number[] {
@@ -220,9 +227,8 @@ export default class Channel extends Drawable implements labelable {
 
         if (this.label) {
 
-            var y = this.y + this.style.thickness/2 - this.label.height/2;
+            var y = this.barY + this.style.thickness/2 - this.label.height/2;
             var x = this.label.padding[3];
-
 
             var hOffset: number = x + this.label.width + this.label.padding[1];
 

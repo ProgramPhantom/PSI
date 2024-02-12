@@ -1,6 +1,6 @@
 {
     "text": "^{1}\\textrm{H}",
-    "padding": [0, 0, 10, 0],
+    "padding": [0, 0, 0, 0],
     "labelPosition": "top",
     "scale": 25
 }

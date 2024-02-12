@@ -33,7 +33,7 @@ export default class Label extends Drawable {
 
     public static anyArgConstruct(args: labelInterface): Label {
         const options = args ? { ...Label.defaults, ...args} : Label.defaults;
-
+        console.log("LABEL PAD: ", options.padding);
         return new Label(
             options.text!,
             options.padding!,

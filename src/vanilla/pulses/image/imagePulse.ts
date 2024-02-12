@@ -1,7 +1,7 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import Temporal, {Orientation, orientationEval, temporalInterface} from "../../temporal";
 import * as defaultPulse from "../../default/imagePulse.json"
-import { positionEval } from "../../label";
+import { positionEval, labelInterface } from "../../label";
 
 export interface imagePulseInterface extends temporalInterface {
     path: string,
@@ -36,11 +36,13 @@ export default class ImagePulse extends Temporal {
         const labelOptions = args.label ? {...elementType.defaults.label, ...args.label} : elementType.defaults.label;
         const options = args ? { ...elementType.defaults, ...args, style: styleOptions, label: labelOptions} : elementType.defaults;
 
+        console.log("TIMESTAMP", options.timestamp)
         var el = new elementType(options.timestamp,
                                  options.path,
                                  options.orientation,
                                  options.padding,
-                                 options.style)
+                                 options.style,
+                                 options.label)
 
         return el;
     }
@@ -53,12 +55,15 @@ export default class ImagePulse extends Temporal {
                 orientation: Orientation, 
                 padding: number[], 
                 style: imagePulseStyle,
+                label?: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
               orientation, 
               padding, 
-              offset);
+              offset,
+              label,
+              {width: style.width, height: style.height});
 
         this.style = style;
         this.path = path;

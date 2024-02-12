@@ -3,7 +3,7 @@ import Temporal, {Orientation, orientationEval, temporalInterface,} from "../../
 import ImagePulse, { imagePulseStyle } from "./imagePulse";
 import * as defaultPulse from "../../default/svgPulse.json"
 import * as defaultSVG from "../../svg/acquisition.svg"
-import { positionEval } from "../../label";
+import { positionEval, labelInterface } from "../../label";
 
 
 
@@ -43,21 +43,6 @@ export default class SVGPulse extends ImagePulse {
         return str
     }
 
-    public static anyArgConstruct(elementType: typeof ImagePulse, args: any): ImagePulse {
-        const styleOptions = args.style ? {...elementType.defaults.style, ...args.style} : elementType.defaults.style;
-        const labelOptions = args.label ? {...elementType.defaults.label, ...args.label} : elementType.defaults.label;
-        const options = args ? { ...elementType.defaults, ...args, style: styleOptions, label: labelOptions} : elementType.defaults;
-
-
-        var el = new elementType(options.timestamp,
-                                 options.path,
-                                 options.orientation,
-                                 options.padding,
-                                 options.style)
-
-        return el;
-    }
-
     svgContent: string;
 
     constructor(timestamp: number,
@@ -65,12 +50,14 @@ export default class SVGPulse extends ImagePulse {
                 orientation: Orientation, 
                 padding: number[], 
                 style: svgPulseStyle,
+                label?: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp,  
               path, orientation,
               padding, 
-              style, 
+              style,
+              label,
               offset);
 
         this.style = style;

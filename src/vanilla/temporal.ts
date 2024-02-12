@@ -92,14 +92,18 @@ export default abstract class Temporal extends Drawable implements labelable {
                 break;
 
             case Orientation.Both:
-                dimensions = [this.height - channelThickness/2, 
-                this.height - channelThickness/2];
+                dimensions = [this.height/2 - channelThickness/2, 
+                this.height/2 - channelThickness/2];
+
+                console.log("Protrusion", dimensions)
                 break;
         }
 
         if (this.label) {
             dimensions[0] += this.label.height + this.label.padding[0]+ this.label.padding[2];
         }
+
+        
 
         return dimensions;
     }
@@ -141,7 +145,7 @@ export default abstract class Temporal extends Drawable implements labelable {
             switch (this.label.labelPosition) {
                 
 
-                case LabelPosition.Bottom:
+                case LabelPosition.Top:
                     x = this.x + this.width/2 - this.label.width/2;
                     y = this.y - this.label.height - this.label.padding[2];
                     break;
@@ -151,11 +155,11 @@ export default abstract class Temporal extends Drawable implements labelable {
 
                     break;
                 default:
+                    console.log("DEFAULT");
                     x = 0;
                     y = 0;
             }
             
-            this.label.text = this.timestamp.toString();
             this.label.position(x, y);
             this.label.draw(surface);
 
