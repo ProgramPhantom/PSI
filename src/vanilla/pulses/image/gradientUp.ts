@@ -1,5 +1,5 @@
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import * as defaultPulse from "../../default/aquire.json"
+import * as defaultPulse from "../../default/gradientup.json"
 import { Orientation, orientationEval } from "../../temporal.ts";
 import SVGPulse from "./svgPulse.ts";
 import { svgPulseInterface, svgPulseStyle } from "./svgPulse.ts";
@@ -12,7 +12,7 @@ const DEFAULTSVG = await fetch(defaultPulse.path).then(
 )
 
 
-export default class Aquire extends SVGPulse {
+export default class GradientUp extends SVGPulse {
     static defaults: svgPulseInterface = {
         padding: defaultPulse.padding,
         orientation: orientationEval[defaultPulse.orientation],
@@ -25,12 +25,12 @@ export default class Aquire extends SVGPulse {
     }
 
     constructor(timestamp: number=0, 
-                path: string=Aquire.defaults.path,
-                orientation: Orientation=Aquire.defaults.orientation, 
-                padding: number[]=Aquire.defaults.padding, 
-                style: svgPulseStyle=Aquire.defaults.style,
-                label: labelInterface=Aquire.defaults.label!,
-                offset: number[]=[0, 0]) {
+                path: string=GradientUp.defaults.path,
+                orientation: Orientation=GradientUp.defaults.orientation, 
+                padding: number[]=GradientUp.defaults.padding, 
+                style: svgPulseStyle=GradientUp.defaults.style,
+                label: labelInterface=GradientUp.defaults.label!,
+                offset: number[]=[0, 1]) {
 
         super(timestamp, path, orientation, padding, style, label, offset)
 

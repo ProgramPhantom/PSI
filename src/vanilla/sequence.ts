@@ -13,6 +13,7 @@ import Label from "./label";
 import { json } from "stream/consumers";
 import Arrow, { headStyle } from "./arrow";
 import Span from "./span";
+import GradientUp from "./pulses/image/gradientUp";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -47,6 +48,7 @@ export default class Sequence {
     }
     static ImagePulseCommands: {[name: string]: typeof ImagePulse;} = {
         "Aquire": Aquire,
+        "GradientUp": GradientUp
     }
     static SpanCommands: {[name: string]: typeof Span;} = {
         "Span": Span,

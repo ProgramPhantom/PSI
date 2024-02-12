@@ -1,0 +1,10 @@
+{
+    "orientation": "top",
+    "padding": [0, 10, 0, 10],
+    "path": "\\src\\assets\\gradientup.svg",
+    "style": {
+        "width": 50,
+        "height": 20
+    }
+
+}

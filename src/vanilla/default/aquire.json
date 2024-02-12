@@ -1,7 +1,7 @@
 {
     "orientation": "both",
     "padding": [0, 10, 0, 10],
-    "path": "src\\vanilla\\svg\\acquisition.svg",
+    "path": "\\src\\assets\\aquire.svg",
     "style": {
         "width": 200,
         "height": 100
