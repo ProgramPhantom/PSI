@@ -1,5 +1,5 @@
 {
-    "gridOn": true,
+    "gridOn": false,
     "gridStyle": {
         "gridPositioning": "start",
         "stroke": "black",

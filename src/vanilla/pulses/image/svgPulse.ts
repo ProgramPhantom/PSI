@@ -89,7 +89,7 @@ export default class SVGPulse extends ImagePulse {
         obj.move(this.x + this.offset[0], this.y + this.offset[1]);
         obj.size(this.width, this.height);
         obj.attr({"preserveAspectRatio": "none"})
-
+        obj.attr({"stroke": "black"})
         // var foreignObject = surface.foreignObject(200, 200);
         surface.add(obj);
 

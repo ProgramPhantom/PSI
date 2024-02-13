@@ -28,8 +28,6 @@ export interface channelStyle {
 }
 
 
-
-
 export default class Channel extends Drawable implements labelable {
     static defaults: channelInterface = {
         temporalElements: defaultChan.temporalElements,

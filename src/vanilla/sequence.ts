@@ -16,6 +16,8 @@ import ChirpLoHi from "./default/classes/chirpLoHi";
 import Abstraction from "./abstraction";
 import * as defaultSequence from "./default/data/sequence.json"
 import ChirpHiLo from "./default/classes/chirpHiLo";
+import SaltireLoHi from "./default/classes/saltireLoHi";
+import SaltireHiLo from "./default/classes/saltireHiLo";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -73,7 +75,9 @@ export default class Sequence {
     static ImagePulseCommands: {[name: string]: typeof ImagePulse;} = {
         "Aquire": Aquire,
         "ChirpLoHi": ChirpLoHi,
-        "ChirpHiLo": ChirpHiLo
+        "ChirpHiLo": ChirpHiLo,
+        "SaltireLoHi": SaltireLoHi,
+        "SaltireHiLo": SaltireHiLo
     }
     static Span: {[name: string]: typeof Span} = {
         "Span": Span,

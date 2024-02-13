@@ -1,5 +1,5 @@
 {
-    "width": 20,
+    "width": 10,
     "height": 70,
     "padding": [0, 10, 0, 10],
 
@@ -19,7 +19,7 @@
         "padding": [0, 0, 10, 0],
         "labelPosition": "top",
         "style": {
-            "size": 30,
+            "size": 20,
             "colour": "black"
         }
     }
