@@ -1,6 +1,6 @@
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import * as defaultPulse from "../../default/aquire.json"
-import { Alignment, Orientation, temporalPosition} from "../../temporal.ts";
+import { Alignment, Orientation, temporalConfig} from "../../temporal.ts";
 import SVGPulse from "./svgPulse.ts";
 import { svgPulseInterface, svgPulseStyle } from "./svgPulse.ts";
 import Label, {labelInterface} from '../../label.ts';
@@ -15,10 +15,11 @@ const DEFAULTSVG = await fetch(defaultPulse.path).then(
 export default class Aquire extends SVGPulse {
     static defaults: svgPulseInterface = {
         padding: defaultPulse.padding,
-        positioning: {
-            orientation: Orientation[defaultPulse.positioning.orientation as keyof typeof Orientation],
-            alginment: Alignment[defaultPulse.positioning.alignment as keyof typeof Alignment],
-            overridePad: defaultPulse.positioning.overridePad,
+        config: {
+            orientation: Orientation[defaultPulse.config.orientation as keyof typeof Orientation],
+            alginment: Alignment[defaultPulse.config.alignment as keyof typeof Alignment],
+            overridePad: defaultPulse.config.overridePad,
+            inheritWidth: defaultPulse.config.inheritWidth
         },
         path: defaultPulse.path,
         style: {
@@ -30,13 +31,13 @@ export default class Aquire extends SVGPulse {
 
     constructor(timestamp: number=0, 
                 path: string=Aquire.defaults.path,
-                positioning: temporalPosition=Aquire.defaults.positioning, 
+                config: temporalConfig=Aquire.defaults.config, 
                 padding: number[]=Aquire.defaults.padding, 
                 style: svgPulseStyle=Aquire.defaults.style,
                 label: labelInterface=Aquire.defaults.label!,
                 offset: number[]=[0, 0]) {
 
-        super(timestamp, path, positioning, padding, style, label, offset)
+        super(timestamp, path, config, padding, style, label, offset)
 
     }
 

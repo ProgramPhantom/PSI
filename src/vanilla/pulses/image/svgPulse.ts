@@ -1,5 +1,5 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
-import Temporal, {Alignment, Orientation, temporalInterface, temporalPosition} from "../../temporal";
+import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig} from "../../temporal";
 import ImagePulse, { imagePulseStyle } from "./imagePulse";
 import * as defaultPulse from "../../default/svgPulse.json"
 import {LabelPosition, labelInterface } from "../../label";
@@ -19,10 +19,11 @@ export default class SVGPulse extends ImagePulse {
     static defaults: svgPulseInterface = {
         padding: defaultPulse.padding,
 
-        positioning: {
-            orientation: Orientation[defaultPulse.positioning.orientation  as keyof typeof Orientation],
-            alginment: Alignment[defaultPulse.positioning.alignment as keyof typeof Alignment],
-            overridePad: defaultPulse.positioning.overridePad,
+        config: {
+            orientation: Orientation[defaultPulse.config.orientation  as keyof typeof Orientation],
+            alginment: Alignment[defaultPulse.config.alignment as keyof typeof Alignment],
+            overridePad: defaultPulse.config.overridePad,
+            inheritWidth: defaultPulse.config.inheritWidth
         },
 
         path: defaultPulse.path,
@@ -46,7 +47,7 @@ export default class SVGPulse extends ImagePulse {
 
     constructor(timestamp: number,
                 path: string,
-                positioning: temporalPosition, 
+                config: temporalConfig, 
                 padding: number[], 
                 style: svgPulseStyle,
                 label?: labelInterface,
@@ -54,7 +55,7 @@ export default class SVGPulse extends ImagePulse {
 
         super(timestamp,  
               path, 
-              positioning,
+              config,
               padding, 
               style,
               label,

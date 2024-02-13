@@ -1,22 +1,24 @@
 import { Svg } from "@svgdotjs/svg.js";
 import Arrow, { arrowStyle, headStyleEval } from "./arrow";
 import { LabelPosition, labelInterface } from "./label";
-import Temporal, { Alignment, Orientation, labelable, temporalInterface, temporalPosition } from "./temporal";
+import Temporal, { Alignment, Orientation, labelable, temporalInterface, temporalConfig } from "./temporal";
 import * as defaultSpan from "./default/span.json"
 import { UpdateObj } from "./util";
 
 
 interface spanInterface extends temporalInterface {
+    
     width: number,
     style: arrowStyle
 }   
 
 export default class Span extends Temporal implements labelable {
     static defaults: spanInterface = {
-        positioning: {
-            orientation: Orientation[defaultSpan.positioning.orientation as keyof typeof Orientation],
-            alginment: Alignment[defaultSpan.positioning.alignment as keyof typeof Alignment],
-            overridePad: defaultSpan.positioning.overridePad,
+        config: {
+            orientation: Orientation[defaultSpan.config.orientation as keyof typeof Orientation],
+            alginment: Alignment[defaultSpan.config.alignment as keyof typeof Alignment],
+            overridePad: defaultSpan.config.overridePad,
+            inheritWidth: defaultSpan.config.inheritWidth,
         },
 
         padding: defaultSpan.padding,
@@ -42,12 +44,12 @@ export default class Span extends Temporal implements labelable {
         const spanOptions = args ? UpdateObj(Span.defaults, args) : elementType.defaults;
 
         var el = new elementType(spanOptions.timestamp,
-            spanOptions.positioning,
-            spanOptions.padding,
-            spanOptions.style,
-            spanOptions.width,
-            spanOptions.offset,
-            spanOptions.label)
+                                 spanOptions.config,
+                                 spanOptions.padding,
+                                 spanOptions.style,
+                                 spanOptions.width,
+                                 spanOptions.offset,
+                                 spanOptions.label)
 
         return el;
     }
@@ -56,15 +58,15 @@ export default class Span extends Temporal implements labelable {
     arrowStyle: arrowStyle;
 
     constructor(timestamp: number=0,
-                positioning: temporalPosition=Span.defaults.positioning, 
+                config: temporalConfig=Span.defaults.config, 
                 padding: number[]=Span.defaults.padding, 
                 style: arrowStyle=Span.defaults.style, 
                 width: number=Span.defaults.width,
                 offset: number[]=[0,0],
                 label?: labelInterface, ) {
             
-        super(timestamp, positioning, padding, offset, label,)
-            
+        super(timestamp, config, padding, offset, label,)
+
         this.bounds = {width: width, height: style.thickness + padding[2]}
         this.actualBounds = {width: padding[3] + width + padding[1], height: padding[0] + style.thickness + padding[2]}
                     

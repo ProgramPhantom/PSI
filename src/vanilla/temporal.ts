@@ -19,18 +19,16 @@ interface Bounds {
 
 export enum Orientation { top="top", bottom="bottom", both="both" }
 
-export enum Alignment {
-    Left="left",
-    Centre="centre",
-    Right="right"
-}
+export enum Alignment {Left="left", Centre="centre", Right="right"}
 
 
 
-export interface temporalPosition {
+
+export interface temporalConfig {
     orientation: Orientation,
     alginment: Alignment,
     overridePad: boolean
+    inheritWidth: boolean,
 }
 
 export interface labelable {
@@ -40,7 +38,7 @@ export interface labelable {
 
 
 export interface temporalInterface {
-    positioning: temporalPosition,
+    config: temporalConfig,
     padding: number[],
     label?: labelInterface | null
 }
@@ -50,7 +48,7 @@ export interface temporalInterface {
 export default abstract class Temporal extends Drawable implements labelable {
     // An element that relates to a point in time
     timestamp: number;
-    positioning: temporalPosition;
+    config: temporalConfig;
 
     padding: number[];
 
@@ -59,7 +57,7 @@ export default abstract class Temporal extends Drawable implements labelable {
     private _actualBounds?: Bounds;
 
     constructor(timestamp: number,
-                positioning: temporalPosition,
+                config: temporalConfig,
                 padding: number[],
                 offset: number[]=[0, 0],
                 label?: labelInterface,
@@ -69,7 +67,7 @@ export default abstract class Temporal extends Drawable implements labelable {
 
         this.timestamp = timestamp;
 
-        this.positioning = positioning;
+        this.config = config;
         this.padding = padding;
 
         
@@ -88,7 +86,7 @@ export default abstract class Temporal extends Drawable implements labelable {
     verticalProtrusion(channelThickness: number) : number[] {
         var dimensions: number[] = [];
 
-        switch (this.positioning.orientation) {
+        switch (this.config.orientation) {
             case Orientation.top:
                 dimensions = [this.height, 0];
                 break;
@@ -103,7 +101,7 @@ export default abstract class Temporal extends Drawable implements labelable {
                 break;
 
             default:
-                console.error("UNKNOWN ORIENTATION: ", this.positioning.orientation)
+                console.error("UNKNOWN ORIENTATION: ", this.config.orientation)
         }
 
       
@@ -141,11 +139,11 @@ export default abstract class Temporal extends Drawable implements labelable {
     positionVertically(y: number, channelThickness: number) : number[] {
         
         
-        console.log("POS", typeof this.positioning.orientation)
+        console.log("POS", typeof this.config.orientation)
 
         var protrusion = this.verticalProtrusion(channelThickness); 
         
-        switch (this.positioning.orientation) {
+        switch (this.config.orientation) {
             case Orientation.top:
                 console.log("TOP")
                 this.y = y - this.height;

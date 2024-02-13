@@ -1,5 +1,5 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
-import Temporal, {Alignment, Orientation, temporalInterface, temporalPosition} from "../../temporal";
+import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig} from "../../temporal";
 import * as defaultPulse from "../../default/imagePulse.json"
 import Label, {LabelPosition, labelInterface } from "../../label";
 import { UpdateObj } from "../../util";
@@ -20,10 +20,11 @@ export default class ImagePulse extends Temporal {
     static defaults: imagePulseInterface = {
         padding: defaultPulse.padding,
 
-        positioning: {
-            orientation: Orientation[defaultPulse.positioning.orientation  as keyof typeof Orientation],
-            alginment: Alignment[defaultPulse.positioning.alignment as keyof typeof Alignment],
-            overridePad: defaultPulse.positioning.overridePad,
+        config: {
+            orientation: Orientation[defaultPulse.config.orientation  as keyof typeof Orientation],
+            alginment: Alignment[defaultPulse.config.alignment as keyof typeof Alignment],
+            overridePad: defaultPulse.config.overridePad,
+            inheritWidth: defaultPulse.config.inheritWidth,
         },
 
         path: defaultPulse.path,
@@ -47,7 +48,7 @@ export default class ImagePulse extends Temporal {
 
         var el = new elementType(options.timestamp,
                                  options.path,
-                                 options.positioning,
+                                 options.config,
                                  options.padding,
                                  options.style,
                                  options.label)
@@ -60,14 +61,14 @@ export default class ImagePulse extends Temporal {
 
     constructor(timestamp: number, 
                 path: string,
-                positioning: temporalPosition, 
+                config: temporalConfig, 
                 padding: number[], 
                 style: imagePulseStyle,
                 label?: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
-              positioning, 
+              config, 
               padding, 
               offset,
               label,

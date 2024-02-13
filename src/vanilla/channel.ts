@@ -162,14 +162,18 @@ export default class Channel extends Drawable implements labelable {
 
             var sectionWidth = timestampWidths[temporalEl.timestamp];  // Width of section this element goes in
 
-            switch (temporalEl.positioning.alginment) {
+            if (temporalEl.config.inheritWidth) {
+                temporalEl.bounds = {width: sectionWidth, height: temporalEl.height};
+            }
+
+            switch (temporalEl.config.alginment) {
                 case Alignment.Centre:
                     xCurs += sectionWidth / 2;
                     temporalEl.centreXPos(xCurs)
                     xCurs += sectionWidth / 2;
                     break;
                 case Alignment.Left:
-                    if (temporalEl.positioning.overridePad) {
+                    if (temporalEl.config.overridePad) {
                         temporalEl.x = xCurs;
                         xCurs += sectionWidth
                     } else {
@@ -178,7 +182,7 @@ export default class Channel extends Drawable implements labelable {
                     }
                     break;
                 case Alignment.Right:
-                    if (temporalEl.positioning.overridePad) {
+                    if (temporalEl.config.overridePad) {
                         temporalEl.x = xCurs + sectionWidth - temporalEl.width;
                         xCurs += sectionWidth
                     } else {
@@ -225,15 +229,11 @@ export default class Channel extends Drawable implements labelable {
         return this.hSections;
     }
 
-    addSpan(elementType: typeof Span, args: any, width: number=0, ): number[] {
+    addSpan(elementType: typeof Span, args: any): number[] {
         this.elementCursor += 1;
 
-        if (width !== 0) {  // If width provided by hSections
-            var span = elementType.anyArgConstruct(elementType, {...args, width, timestamp: this.elementCursor})
-        } else {
-            var span = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor})
-        }
-        
+        var span = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor})
+
         this.temporalElements.push(span);
         this.hSections.push(span.actualWidth);
         

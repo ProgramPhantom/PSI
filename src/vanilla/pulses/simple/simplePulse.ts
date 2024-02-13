@@ -1,4 +1,4 @@
-import Temporal, {Orientation, temporalInterface, labelable, temporalPosition, Alignment} from "../../temporal";
+import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "../../temporal";
 import * as defaultPulse from "../../default/180pulse.json"
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
@@ -22,10 +22,11 @@ export default class SimplePulse extends Temporal  {
     // Default is currently 180 Pulse
     static defaults: simplePulseInterface = {
         padding: defaultPulse.padding,
-        positioning: {
-            orientation: Orientation[defaultPulse.positioning.orientation as keyof typeof Orientation],
-            alginment: Alignment[defaultPulse.positioning.alignment as keyof typeof Alignment],
-            overridePad: defaultPulse.positioning.overridePad,
+        config: {
+            orientation: Orientation[defaultPulse.config.orientation as keyof typeof Orientation],
+            alginment: Alignment[defaultPulse.config.alignment as keyof typeof Alignment],
+            overridePad: defaultPulse.config.overridePad,
+            inheritWidth: defaultPulse.config.inheritWidth,
         },
         
         style: {
@@ -56,7 +57,7 @@ export default class SimplePulse extends Temporal  {
         console.log(options);
 
         var el = new elementType(options.timestamp,
-                                 options.positioning,
+                                 options.config,
                                  options.padding,
                                  options.style,
                                  options.label)
@@ -65,14 +66,14 @@ export default class SimplePulse extends Temporal  {
     }
 
     constructor(timestamp: number, 
-                positioning: temporalPosition, 
+                config: temporalConfig, 
                 padding: number[], 
                 style: simplePulseStyle,
                 label: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
-              positioning,
+              config,
               padding, 
               offset,
               label,
@@ -82,8 +83,11 @@ export default class SimplePulse extends Temporal  {
     }
 
     draw(surface: SVG.Svg) {
+        console.log(this.width)
+
         surface.rect(this.width, this.height)
-        .attr(this.style)
+        .attr({fill: this.style.fill,
+                stroke: this.style.stroke})
         .move(this.x, this.y)
         // BAD FIX
         .attr({"stroke-width": this.style.strokeWidth});
@@ -98,7 +102,7 @@ export default class SimplePulse extends Temporal  {
         // Differs to Temporal due to the stroke width interferring.
         var dimensions: number[] = [];
 
-        switch (this.positioning.orientation) {
+        switch (this.config.orientation) {
             case Orientation.top:
                 var actualHeight = this.height;
                 if (this.style.strokeWidth) {
@@ -138,9 +142,9 @@ export default class SimplePulse extends Temporal  {
     positionVertically(y: number, channelThickness: number): number[] {
         var protrusion = this.verticalProtrusion(channelThickness);
 
-        console.log("POS VER SP", this.positioning.orientation)
+        console.log("POS VER SP", this.config.orientation)
 
-        switch (this.positioning.orientation) {
+        switch (this.config.orientation) {
             case Orientation.top:
                 this.y = y - this.height;
                 if (this.style.strokeWidth) {

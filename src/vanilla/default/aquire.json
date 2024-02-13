@@ -1,8 +1,9 @@
 {
-    "positioning": {
+    "config": {
         "orientation": "both",
         "alignment": "centre",
-        "overridePad": false
+        "overridePad": false,
+        "inheritWidth": false
     },
 
     "padding": [0, 10, 0, 10],

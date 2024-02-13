@@ -294,7 +294,7 @@ export default class Sequence {
             sections = channel.addImagePulse(Sequence.ImagePulseCommands[commandName], args);
         } else if (Object.keys(Sequence.Span).includes(commandName)) {
             // THIS NEEDS MAKING BETTER
-            sections = channel.addSpan(Sequence.Span[commandName], args, currTimestamp > this.maxTimespans.length ? 0 : this.maxTimespans[currTimestamp])
+            sections = channel.addSpan(Sequence.Span[commandName], args)
         } else if (Object.keys(Sequence.Abstraction).includes(commandName)) {
             sections = channel.addAbstraction(Sequence.Abstraction[commandName], args);
             

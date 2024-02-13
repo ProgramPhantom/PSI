@@ -1,4 +1,4 @@
-import Temporal, {Orientation, temporalInterface, labelable, temporalPosition, Alignment} from "./temporal";
+import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "./temporal";
 import * as defaultAbstraction from "./default/abstraction.json"
 import * as SVG from '@svgdotjs/svg.js'
 import Label, { LabelPosition, labelInterface} from "./label";
@@ -24,10 +24,11 @@ export default class Abstraction extends Temporal {
     
     static defaults: abstractionInterface = {
         padding: defaultAbstraction.padding,
-        positioning: {
-            orientation: Orientation[defaultAbstraction.positioning.orientation as keyof typeof Orientation],
-            alginment: Alignment[defaultAbstraction.positioning.alignment as keyof typeof Alignment],
-            overridePad: defaultAbstraction.positioning.overridePad,
+        config: {
+            orientation: Orientation[defaultAbstraction.config.orientation as keyof typeof Orientation],
+            alginment: Alignment[defaultAbstraction.config.alignment as keyof typeof Alignment],
+            overridePad: defaultAbstraction.config.overridePad,
+            inheritWidth: defaultAbstraction.config.inheritWidth,
         },
     
         style: {
@@ -57,7 +58,7 @@ export default class Abstraction extends Temporal {
         const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;
 
         var el = new elementType(options.timestamp,
-                                 options.positioning,
+                                 options.config,
                                  options.padding,
                                  options.style,
                                  options.label)
@@ -66,14 +67,14 @@ export default class Abstraction extends Temporal {
     }
 
     constructor(timestamp: number,
-                positioning: temporalPosition, 
+                config: temporalConfig, 
                 padding: number[], 
                 style: abstractionStyle,
                 label: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
-              positioning,
+              config,
               padding, 
               offset,
               label,

@@ -1,17 +1,18 @@
 import SimplePulse, {simplePulseInterface, simplePulseStyle} from "./simplePulse.ts";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import * as defaultPulse from "../../default/180pulse.json"
-import { Alignment, Orientation, temporalPosition } from "../../temporal.ts";
+import { Alignment, Orientation, temporalConfig } from "../../temporal.ts";
 import { LabelPosition, labelInterface } from "../../label.ts";
 import { off } from "process";
 
 export default class Pulse180 extends SimplePulse {
     static defaults: simplePulseInterface = {
         padding: defaultPulse.padding,
-        positioning: {
-            orientation: Orientation[defaultPulse.positioning.orientation  as keyof typeof Orientation],
-            alginment: Alignment[defaultPulse.positioning.alignment as keyof typeof Alignment],
-            overridePad: defaultPulse.positioning.overridePad,
+        config: {
+            orientation: Orientation[defaultPulse.config.orientation  as keyof typeof Orientation],
+            alginment: Alignment[defaultPulse.config.alignment as keyof typeof Alignment],
+            overridePad: defaultPulse.config.overridePad,
+            inheritWidth: defaultPulse.config.inheritWidth,
         },
 
         style: {
@@ -33,12 +34,12 @@ export default class Pulse180 extends SimplePulse {
     }
     
     constructor(timestamp: number=0, 
-                positioning: temporalPosition=Pulse180.defaults.positioning, 
+                config: temporalConfig=Pulse180.defaults.config, 
                 padding: number[]=Pulse180.defaults.padding, 
                 style: simplePulseStyle=Pulse180.defaults.style,
                 label: labelInterface=Pulse180.defaults.label!,
                 offset: number[]=[0, 0]) {
 
-        super(timestamp, positioning, padding, style, label, offset)
+        super(timestamp, config, padding, style, label, offset)
     }
 }

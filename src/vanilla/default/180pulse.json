@@ -2,10 +2,11 @@
     "width": 40,
     "height": 70,
     "padding": [0, 10, 0, 10],
-    "positioning": {
+    "config": {
         "orientation": "top",
         "alignment": "centre",
-        "overridePad": false
+        "overridePad": false,
+        "inheritWidth": false
     },
 
     "fill": "#ffffff",
