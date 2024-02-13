@@ -18,6 +18,7 @@ import * as defaultSequence from "./default/data/sequence.json"
 import ChirpHiLo from "./default/classes/chirpHiLo";
 import SaltireLoHi from "./default/classes/saltireLoHi";
 import SaltireHiLo from "./default/classes/saltireHiLo";
+import HalfSine from "./default/classes/halfsine";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -77,7 +78,8 @@ export default class Sequence {
         "ChirpLoHi": ChirpLoHi,
         "ChirpHiLo": ChirpHiLo,
         "SaltireLoHi": SaltireLoHi,
-        "SaltireHiLo": SaltireHiLo
+        "SaltireHiLo": SaltireHiLo,
+        "HalfSine": HalfSine
     }
     static Span: {[name: string]: typeof Span} = {
         "Span": Span,
