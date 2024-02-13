@@ -1,0 +1,43 @@
+let s = {
+  text: "text",
+  embed: {
+    num: 14,
+    embed2: {
+      info: "deep"
+    }
+  },
+  list: [1, 4],
+  num2: 23,
+  notHere: null
+}
+
+function FlattenObj(obj: any) {
+  var keyval = Object.entries(obj);
+  let newObj = {}
+
+  keyval.forEach(([key, val]) => {
+    if (typeof val === "object" &&
+      !Array.isArray(val) &&
+      val !== null) {
+
+      console.log("OBJECT");
+      console.log(key);
+
+      newObj = {
+        ...newObj,
+        ...FlattenObj(val)
+      };
+      console.log(key);
+
+    } else {
+			newObj[key] = val;
+    }
+
+    
+  })
+
+  return newObj;
+}
+var f = FlattenObj(s);
+
+console.log(f);

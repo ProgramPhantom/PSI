@@ -14,6 +14,7 @@ import { json } from "stream/consumers";
 import Arrow, { headStyle } from "./arrow";
 import Span from "./span";
 import GradientUp from "./pulses/image/gradientUp";
+import Abstraction from "./abstraction";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -50,15 +51,19 @@ export default class Sequence {
         "Aquire": Aquire,
         "GradientUp": GradientUp
     }
-    static SpanCommands: {[name: string]: typeof Span;} = {
+    static Span: {[name: string]: typeof Span} = {
         "Span": Span,
+    }
+    static Abstraction: {[name: string]: typeof Abstraction} = {
+        "Abstraction": Abstraction
     }
     static ChannelCommands: string[] = [
         "sync"
     ]
     static AllCommands = Object.keys(Sequence.SimplePulseCommands).concat(
-                                    ...Object.keys(Sequence.ImagePulseCommands)).concat(
-                                    ...Object.keys(Sequence.SpanCommands),
+                                    ...Object.keys(Sequence.ImagePulseCommands),
+                                    ...Object.keys(Sequence.Span),
+                                    ...Object.keys(Sequence.Abstraction),
                                     ...Sequence.ChannelCommands);
                          
 
@@ -287,12 +292,15 @@ export default class Sequence {
             sections = channel.addSimplePulse(Sequence.SimplePulseCommands[commandName], args);
         } else if (Object.keys(Sequence.ImagePulseCommands).includes(commandName)) {
             sections = channel.addImagePulse(Sequence.ImagePulseCommands[commandName], args);
-        } else if (Object.keys(Sequence.SpanCommands).includes(commandName)) {
-            console.log("SPAN");  // THIS NEEDS FIXING
-            sections = channel.addSpan(Sequence.SpanCommands[commandName], args, currTimestamp > this.maxTimespans.length ? 0 : this.maxTimespans[currTimestamp])
+        } else if (Object.keys(Sequence.Span).includes(commandName)) {
+            // THIS NEEDS MAKING BETTER
+            sections = channel.addSpan(Sequence.Span[commandName], args, currTimestamp > this.maxTimespans.length ? 0 : this.maxTimespans[currTimestamp])
+        } else if (Object.keys(Sequence.Abstraction).includes(commandName)) {
+            sections = channel.addAbstraction(Sequence.Abstraction[commandName], args);
+            
         } else if (Sequence.ChannelCommands.includes(commandName)) {
             this.syncChannels(channelName, args);
-        }
+        }console.log(commandName);
 
         this.temporalSections.push(sections);
         console.log("Temporal Sections", this.temporalSections)

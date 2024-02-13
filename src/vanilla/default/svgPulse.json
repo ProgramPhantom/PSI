@@ -11,6 +11,9 @@
         "text": "\\tau",
         "padding": [0, 0, 10, 0],
         "labelPosition": "top",
-        "size": 30
+        "style": {
+            "size": 30,
+            "colour": "black"
+        }
     }
 }

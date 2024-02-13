@@ -4,6 +4,7 @@ import { labelInterface } from "./label";
 import Temporal, { Orientation, labelable, orientationEval, temporalInterface } from "./temporal";
 import { positionEval } from "./label";
 import * as defaultSpan from "./default/span.json"
+import { UpdateObj } from "./util";
 
 
 interface spanInterface extends temporalInterface {
@@ -24,15 +25,17 @@ export default class Span extends Temporal implements labelable {
             text: defaultSpan.label.text,
             padding: defaultSpan.label.padding,
             labelPosition: positionEval[defaultSpan.label.labelPosition],
-            size: defaultSpan.label.size
+            style: {
+                size: defaultSpan.label.style.size,
+                colour: defaultSpan.label.style.colour
+            }
         },
         width: defaultSpan.width
     }
 
     public static anyArgConstruct(elementType: typeof Span, args: any): Span {
-        const styleOptions = args.style ? {...elementType.defaults.style, ...args.style} : elementType.defaults.style;
-        const labelOptions = args.label ? {...elementType.defaults.label, ...args.label} : elementType.defaults.label;
-        const spanOptions = args ? { ...elementType.defaults,  ...args, style: styleOptions, label: labelOptions} : elementType.defaults;
+
+        const spanOptions = args ? UpdateObj(Span.defaults, args) : elementType.defaults;
 
         console.log("options: ", spanOptions)
         var el = new elementType(spanOptions.timestamp,

@@ -9,6 +9,7 @@ import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
 import Label, { labelInterface, LabelPosition } from "./label";
 import Span from "./span";
+import Abstraction from "./abstraction";
  
 
 export interface channelInterface {
@@ -175,6 +176,7 @@ export default class Channel extends Drawable implements labelable {
         this.bounds = {width: this.width + this.barWidth, height: this.height}
     }
 
+
     addSimplePulse(elementType: typeof SimplePulse, args: any): number[] {
         this.elementCursor += 1;
 
@@ -210,6 +212,18 @@ export default class Channel extends Drawable implements labelable {
         
         return this.hSections;
     }
+
+    addAbstraction(elementType: typeof Abstraction, args: any) {
+        this.elementCursor += 1;
+
+        var abs = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor})
+
+        this.temporalElements.push(abs);
+        this.hSections.push(abs.actualWidth);
+
+        return this.hSections;
+    }
+
 
     jumpTimespan(newCurs: number) {
         for (var empty = this.elementCursor; empty < newCurs; empty++) {

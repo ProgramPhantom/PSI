@@ -2,5 +2,8 @@
     "text": "^{1}\\textrm{H}",
     "padding": [0, 0, 0, 0],
     "labelPosition": "top",
-    "scale": 25
+    "style": {
+        "size": 30,
+        "colour": "black"
+    }
 }

@@ -10,9 +10,12 @@
     },
 
     "label": {
-        "text": "\\tau",
+        "text": "\\lambda",
         "padding": [7, 0, 10, 0],
         "labelPosition": "top",
-        "size": 10
+        "style": {
+            "size": 10,
+            "colour": "black"
+        }
     }
 }

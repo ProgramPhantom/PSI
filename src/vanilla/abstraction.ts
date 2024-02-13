@@ -1,14 +1,15 @@
-import Temporal, {Orientation, orientationEval, temporalInterface, labelable} from "../../temporal";
-import * as defaultPulse from "../../default/180pulse.json"
+import Temporal, {Orientation, orientationEval, temporalInterface, labelable} from "./temporal";
+import * as defaultAbstraction from "./default/abstraction.json"
 import * as SVG from '@svgdotjs/svg.js'
-import SVGPulse from "../image/svgPulse";
-import Label, { LabelPosition, labelInterface, positionEval } from "../../label";
-import {UpdateObj} from "../../util";
+import Label, { LabelPosition, labelInterface, positionEval } from "./label";
+import { UpdateObj } from "./util";
 
-export interface simplePulseInterface extends temporalInterface {
-    style: simplePulseStyle,
+
+export interface abstractionInterface extends temporalInterface {
+    style: abstractionStyle,
 }
-export interface simplePulseStyle {
+
+export interface abstractionStyle {
     width: number,
     height: number,
     fill: string,
@@ -18,35 +19,40 @@ export interface simplePulseStyle {
 
 
 
-export default class SimplePulse extends Temporal  {
-    // Default is currently 180 Pulse
-    static defaults: simplePulseInterface = {
-        padding: defaultPulse.padding,
-        orientation: orientationEval[defaultPulse.orientation],
-        
+export default class Abstraction extends Temporal {
+    // Default is currently 180 Pulse 
+    
+    static defaults: abstractionInterface = {
+        padding: defaultAbstraction.padding,
+        orientation: orientationEval[defaultAbstraction.orientation],
+    
         style: {
-            width: defaultPulse.width,
-            height: defaultPulse.height,
-            fill: defaultPulse.fill,
-            stroke: defaultPulse.stroke,
-            strokeWidth: defaultPulse.strokeWidth
+            width: defaultAbstraction.style.width,
+            height: defaultAbstraction.style.height,
+            fill: defaultAbstraction.style.fill,
+            stroke: defaultAbstraction.style.stroke,
+            strokeWidth: defaultAbstraction.style.strokeWidth
         },
         label: {
-            text: defaultPulse.label.text,
-            padding: defaultPulse.label.padding,
-            labelPosition: positionEval[defaultPulse.label.labelPosition],
+            text: defaultAbstraction.label.text,
+            padding: defaultAbstraction.label.padding,
+            labelPosition: positionEval[defaultAbstraction.label.labelPosition],
             style: {
-                size: defaultPulse.label.style.size,
-                colour: defaultPulse.label.style.colour
+                size: defaultAbstraction.label.style.size,
+                colour: defaultAbstraction.label.style.colour
             }
         },
-    }
+    } 
+    
+   
+   
     
     // A pulse that is an svg rect
-    style: simplePulseStyle;
+    style: abstractionStyle;
     lable?: Label;
+
     
-    public static anyArgConstruct(elementType: typeof SimplePulse, args: any): SimplePulse {
+    public static anyArgConstruct(elementType: typeof Abstraction, args: any): Abstraction {
         const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;
 
         var el = new elementType(options.timestamp,
@@ -58,10 +64,10 @@ export default class SimplePulse extends Temporal  {
         return el;
     }
 
-    constructor(timestamp: number, 
+    constructor(timestamp: number,
                 orientation: Orientation, 
                 padding: number[], 
-                style: simplePulseStyle,
+                style: abstractionStyle,
                 label: labelInterface,
                 offset: number[]=[0, 0]) {
 
@@ -85,7 +91,6 @@ export default class SimplePulse extends Temporal  {
         if (this.label) {
             this.drawLabel(surface);
         }
-
     }
 
     verticalProtrusion(channelThickness: number) : number[] {

@@ -12,6 +12,9 @@
         "text": "90^{\\circ}",
         "padding": [0, 0, 10, 0],
         "labelPosition": "top",
-        "size": 20
+        "style": {
+            "size": 30,
+            "colour": "black"
+        }
     }
 }

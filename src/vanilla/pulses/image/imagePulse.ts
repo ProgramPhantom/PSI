@@ -2,6 +2,8 @@ import { SVG, Svg } from "@svgdotjs/svg.js";
 import Temporal, {Orientation, orientationEval, temporalInterface} from "../../temporal";
 import * as defaultPulse from "../../default/imagePulse.json"
 import { positionEval, labelInterface } from "../../label";
+import { UpdateObj } from "../../util";
+
 
 export interface imagePulseInterface extends temporalInterface {
     path: string,
@@ -27,16 +29,16 @@ export default class ImagePulse extends Temporal {
             text: defaultPulse.label.text,
             padding: defaultPulse.label.padding,
             labelPosition: positionEval[defaultPulse.label.labelPosition],
-            size: defaultPulse.label.size
+            style: {
+                size: defaultPulse.label.style.size,
+                colour: defaultPulse.label.style.colour
+            }
         }
     }
 
     public static anyArgConstruct(elementType: typeof ImagePulse, args: any): ImagePulse {
-        const styleOptions = args.style ? {...elementType.defaults.style, ...args.style} : elementType.defaults.style;
-        const labelOptions = args.label ? {...elementType.defaults.label, ...args.label} : elementType.defaults.label;
-        const options = args ? { ...elementType.defaults, ...args, style: styleOptions, label: labelOptions} : elementType.defaults;
+        const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;
 
-        console.log("TIMESTAMP", options.timestamp)
         var el = new elementType(options.timestamp,
                                  options.path,
                                  options.orientation,

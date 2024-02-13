@@ -33,7 +33,7 @@ export interface labelable {
 export interface temporalInterface {
     orientation: Orientation,
     padding: number[],
-    label?: labelInterface
+    label?: labelInterface | null
 }
 
 
@@ -66,7 +66,7 @@ export default abstract class Temporal extends Drawable implements labelable {
         this.orientation = orientation;
         this.padding = padding;
 
-        
+        console.log("LAB INTERFACE", label)
         if (label) {
             this.label = Label.anyArgConstruct(label);
         }
@@ -152,8 +152,13 @@ export default abstract class Temporal extends Drawable implements labelable {
                 case LabelPosition.Bottom:
                     x = this.x + this.width/2 - this.label.width/2;
                     y = this.y + this.height + this.label.padding[0];
-
                     break;
+
+                case LabelPosition.Centre:
+                        x = this.x + this.width/2 - this.label.width/2;
+                        y = this.y + this.height /2 - this.label.height/2 + this.label.padding[0];
+    
+                        break;
                 default:
                     console.log("DEFAULT");
                     x = 0;

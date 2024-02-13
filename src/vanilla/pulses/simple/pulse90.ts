@@ -22,7 +22,10 @@ export default class Pulse90 extends SimplePulse {
             text: defaultPulse.label.text,
             padding: defaultPulse.label.padding,
             labelPosition: positionEval[defaultPulse.label.labelPosition],
-            size: defaultPulse.label.size,
+            style: {
+                size: defaultPulse.label.style.size,
+                colour: defaultPulse.label.style.colour
+            }
         }
     }
     
