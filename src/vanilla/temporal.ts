@@ -139,13 +139,13 @@ export default abstract class Temporal extends Drawable implements labelable {
     positionVertically(y: number, channelThickness: number) : number[] {
         
         
-        console.log("POS", typeof this.config.orientation)
+        
 
         var protrusion = this.verticalProtrusion(channelThickness); 
         
         switch (this.config.orientation) {
             case Orientation.top:
-                console.log("TOP")
+                
                 this.y = y - this.height;
                 break;
 
@@ -156,7 +156,7 @@ export default abstract class Temporal extends Drawable implements labelable {
 
             case Orientation.both:
                 this.y = y + channelThickness/2 - this.height/2;
-                console.log("DEFAULTING")
+                
                 break;
         }
 

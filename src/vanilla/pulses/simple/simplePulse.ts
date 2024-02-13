@@ -54,7 +54,7 @@ export default class SimplePulse extends Temporal  {
     public static anyArgConstruct(elementType: typeof SimplePulse, args: any): SimplePulse {
         const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;
 
-        console.log(options);
+        
 
         var el = new elementType(options.timestamp,
                                  options.config,
@@ -83,7 +83,7 @@ export default class SimplePulse extends Temporal  {
     }
 
     draw(surface: SVG.Svg) {
-        console.log(this.width)
+        
 
         surface.rect(this.width, this.height)
         .attr({fill: this.style.fill,
@@ -142,7 +142,7 @@ export default class SimplePulse extends Temporal  {
     positionVertically(y: number, channelThickness: number): number[] {
         var protrusion = this.verticalProtrusion(channelThickness);
 
-        console.log("POS VER SP", this.config.orientation)
+        
 
         switch (this.config.orientation) {
             case Orientation.top:

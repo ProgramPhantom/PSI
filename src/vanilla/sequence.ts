@@ -1,4 +1,3 @@
-import * as defaultSeq from "./default/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Orientation } from "./temporal";
@@ -15,6 +14,7 @@ import Arrow, { headStyle } from "./arrow";
 import Span from "./span";
 import GradientUp from "./pulses/image/gradientUp";
 import Abstraction from "./abstraction";
+import * as defaultSequence from "./default/sequence.json"
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -40,8 +40,30 @@ export class ScriptSyntaxError extends Error {
     }
 }
 
+export enum gridPositioning {start="start", centre="centre"}
+export interface sequenceConfig {
+    gridOn: boolean,
+    gridStyle: gridStyle
+}
+
+interface gridStyle {
+    gridPositioning: gridPositioning,
+    stroke: string,
+    strokeWidth: number,
+    dashing: number[] | null
+}
 
 export default class Sequence {
+    static defaults: sequenceConfig = {
+        gridOn: defaultSequence.gridOn,
+        gridStyle: {
+            gridPositioning: gridPositioning[defaultSequence.gridStyle.gridPositioning as keyof typeof gridPositioning],
+            stroke: defaultSequence.gridStyle.stroke,
+            strokeWidth: defaultSequence.gridStyle.strokeWidth,
+            dashing: defaultSequence.gridStyle.dashing
+        }
+    }
+
     static specialCharacters: string[] = ["#", "~", "/", ">"]
     static SimplePulseCommands: {[name: string]: typeof SimplePulse;} = {
         "Pulse90": Pulse90,
@@ -78,14 +100,16 @@ export default class Sequence {
     height: number;  // Excludes padding
 
     padding: number[];
+    conf: sequenceConfig;
 
     temporalSections: number[][] = [];
     maxTimespans: number[] = [];
 
-    constructor(mnrScript: string, surface: Svg) {
+    constructor(mnrScript: string, surface: Svg, conf: sequenceConfig=Sequence.defaults) {
         this.width = 0;
         this.height = 0;
         this.padding = [0, 0, 0, 0];
+        this.conf = conf;
 
         this.nmrScript = mnrScript;
         this.surface = surface; 
@@ -117,6 +141,12 @@ export default class Sequence {
             label.draw(this.surface);
         })
 
+        if (this.conf.gridOn) {
+            this.drawGrid();
+        }
+        
+
+        // what?
         return {width: 0, height: 0}
     } 
 
@@ -341,6 +371,41 @@ export default class Sequence {
 
         this.maxTimespans = max;
         
+        
+    }
+
+    drawGrid() {
+        // Line style: 
+        var attr = {...this.conf.gridStyle, "stroke-dasharray": this.conf.gridStyle.dashing,
+                    "stroke-width": this.conf.gridStyle.strokeWidth}
+        
+        switch (this.conf.gridStyle.gridPositioning) {
+            case gridPositioning.start:
+                var cursX = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
+                this.surface.line(cursX, 0, cursX, this.height)
+                    .attr(attr);
+                
+                // Vertical Lines
+                this.maxTimespans.forEach(span => {
+                    cursX += span;
+                    this.surface.line(cursX, 0, cursX, this.height)
+                    .attr(attr);
+                    
+                });
+                break;
+            case gridPositioning.centre:
+                var cursX = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
+
+                // Vertical Lines
+                this.maxTimespans.forEach(span => {
+                    cursX += span/2;
+                    this.surface.line(cursX, 0, cursX, this.height)
+                    .attr(attr);
+                    // MAKE IT NOT GO THROUGH ELEMENTS
+                    cursX += span/2;
+                });
+                break;
+        }
         
     }
 }

@@ -1,0 +1,9 @@
+{
+    "gridOn": true,
+    "gridStyle": {
+        "gridPositioning": "centre",
+        "stroke": "black",
+        "strokeWidth": 1,
+        "dashing": [5, 7]
+    }
+}
