@@ -1,5 +1,10 @@
 {
-    "orientation": "both",
+    "positioning": {
+        "orientation": "top",
+        "alignment": "centre",
+        "overridePad": false
+    },
+    
     "padding": [0, 10, 0, 10],
     "path": "src\\vanilla\\svg\\acquisition.svg",
     "style": {

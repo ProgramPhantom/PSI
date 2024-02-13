@@ -11,7 +11,7 @@ function App() {
 
   
   function TypeEvent(script: string) {
-    console.log(script);
+    
 
     setTextboxValue(script);
   }

@@ -32,7 +32,7 @@ export default function Canvas(props:  {props: string}) {
         
 
         if (svgSurface === null) {
-            console.log("adding SVG");
+            
             var svg = SVG().addTo("#" + CANVASID).size("800px", "400px").attr({id: SVGID});
             svgObj.current = svg;
         }
@@ -42,7 +42,7 @@ export default function Canvas(props:  {props: string}) {
 
 
     function ConstructSequence() {
-        console.log("CONSTRUCTING SEQUENCE");
+        
         svgObj.current!.clear();
         diagram.current = new Sequence(props.props, svgObj.current!);
         diagram.current.draw();

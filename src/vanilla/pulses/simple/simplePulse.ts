@@ -1,8 +1,8 @@
-import Temporal, {Orientation, orientationEval, temporalInterface, labelable} from "../../temporal";
+import Temporal, {Orientation, temporalInterface, labelable, temporalPosition, Alignment} from "../../temporal";
 import * as defaultPulse from "../../default/180pulse.json"
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
-import Label, { LabelPosition, labelInterface, positionEval } from "../../label";
+import Label, { LabelPosition, labelInterface } from "../../label";
 import {UpdateObj} from "../../util";
 
 export interface simplePulseInterface extends temporalInterface {
@@ -22,7 +22,11 @@ export default class SimplePulse extends Temporal  {
     // Default is currently 180 Pulse
     static defaults: simplePulseInterface = {
         padding: defaultPulse.padding,
-        orientation: orientationEval[defaultPulse.orientation],
+        positioning: {
+            orientation: Orientation[defaultPulse.positioning.orientation as keyof typeof Orientation],
+            alginment: Alignment[defaultPulse.positioning.alignment as keyof typeof Alignment],
+            overridePad: defaultPulse.positioning.overridePad,
+        },
         
         style: {
             width: defaultPulse.width,
@@ -34,7 +38,7 @@ export default class SimplePulse extends Temporal  {
         label: {
             text: defaultPulse.label.text,
             padding: defaultPulse.label.padding,
-            labelPosition: positionEval[defaultPulse.label.labelPosition],
+            labelPosition: LabelPosition[defaultPulse.label.labelPosition as keyof typeof LabelPosition],
             style: {
                 size: defaultPulse.label.style.size,
                 colour: defaultPulse.label.style.colour
@@ -49,8 +53,10 @@ export default class SimplePulse extends Temporal  {
     public static anyArgConstruct(elementType: typeof SimplePulse, args: any): SimplePulse {
         const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;
 
+        console.log(options);
+
         var el = new elementType(options.timestamp,
-                                 options.orientation,
+                                 options.positioning,
                                  options.padding,
                                  options.style,
                                  options.label)
@@ -59,14 +65,14 @@ export default class SimplePulse extends Temporal  {
     }
 
     constructor(timestamp: number, 
-                orientation: Orientation, 
+                positioning: temporalPosition, 
                 padding: number[], 
                 style: simplePulseStyle,
                 label: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
-              orientation,
+              positioning,
               padding, 
               offset,
               label,
@@ -89,10 +95,11 @@ export default class SimplePulse extends Temporal  {
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
-        var dimensions = [];
+        // Differs to Temporal due to the stroke width interferring.
+        var dimensions: number[] = [];
 
-        switch (this.orientation) {
-            case Orientation.Top:
+        switch (this.positioning.orientation) {
+            case Orientation.top:
                 var actualHeight = this.height;
                 if (this.style.strokeWidth) {
                     actualHeight -= this.style.strokeWidth!/2;
@@ -101,7 +108,7 @@ export default class SimplePulse extends Temporal  {
                 dimensions = [actualHeight, 0];
                 break;
 
-            case Orientation.Bottom:
+            case Orientation.bottom:
                 var actualHeight = this.height;
                 if (this.style.strokeWidth) {
                     actualHeight += this.style.strokeWidth!/2;
@@ -110,7 +117,7 @@ export default class SimplePulse extends Temporal  {
                 dimensions = [0, actualHeight];
                 break;
 
-            case Orientation.Both: // LOOK AT THIS
+            case Orientation.both: // LOOK AT THIS
                 var actualHeight = this.height/2 - channelThickness/2;
                 if (this.style.strokeWidth) {
                     actualHeight += this.style.strokeWidth!/2;
@@ -121,17 +128,9 @@ export default class SimplePulse extends Temporal  {
         }
 
 
-        if (this.label) {
-            switch (this.label.labelPosition) {
-                case LabelPosition.Top:
-                    dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
-                    break;
-                case LabelPosition.Bottom:
-                    dimensions[1] += this.label.height + this.label.padding[0] + this.label.padding[2];
-                    break;    
-            }
-            
-        }
+        var labelPro = this.labelVerticalProtrusion(channelThickness);
+        dimensions[0] += labelPro[0];
+        dimensions[1] += labelPro[1];
 
         return dimensions;
     }
@@ -139,17 +138,17 @@ export default class SimplePulse extends Temporal  {
     positionVertically(y: number, channelThickness: number): number[] {
         var protrusion = this.verticalProtrusion(channelThickness);
 
-        switch (this.orientation) {
-            case Orientation.Top:
+        console.log("POS VER SP", this.positioning.orientation)
+
+        switch (this.positioning.orientation) {
+            case Orientation.top:
                 this.y = y - this.height;
-
-
                 if (this.style.strokeWidth) {
                     this.y += this.style.strokeWidth!/2;
                 }
                 break;
 
-            case Orientation.Bottom:
+            case Orientation.bottom:
                 this.y = y + channelThickness;
 
                 if (this.style.strokeWidth) {
@@ -157,7 +156,7 @@ export default class SimplePulse extends Temporal  {
                 }
                 break;
 
-            case Orientation.Both:
+            case Orientation.both:
                 this.y = y + channelThickness/2 - this.height/2
 
                 if (this.style.strokeWidth) {

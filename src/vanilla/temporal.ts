@@ -17,11 +17,20 @@ interface Bounds {
     height: number,
 }
 
-export enum Orientation { Top="top", Bottom="bottom", Both="both" }
-export const orientationEval: {[name: string]: Orientation} = {
-    "top": Orientation.Top,
-    "bottom": Orientation.Bottom,
-    "both": Orientation.Both
+export enum Orientation { top="top", bottom="bottom", both="both" }
+
+export enum Alignment {
+    Left="left",
+    Centre="centre",
+    Right="right"
+}
+
+
+
+export interface temporalPosition {
+    orientation: Orientation,
+    alginment: Alignment,
+    overridePad: boolean
 }
 
 export interface labelable {
@@ -31,20 +40,17 @@ export interface labelable {
 
 
 export interface temporalInterface {
-    orientation: Orientation,
+    positioning: temporalPosition,
     padding: number[],
     label?: labelInterface | null
 }
 
 
 
-
-Orientation.Both.toString()
-
 export default abstract class Temporal extends Drawable implements labelable {
     // An element that relates to a point in time
     timestamp: number;
-    orientation: Orientation;
+    positioning: temporalPosition;
 
     padding: number[];
 
@@ -53,7 +59,7 @@ export default abstract class Temporal extends Drawable implements labelable {
     private _actualBounds?: Bounds;
 
     constructor(timestamp: number,
-                orientation: Orientation,
+                positioning: temporalPosition,
                 padding: number[],
                 offset: number[]=[0, 0],
                 label?: labelInterface,
@@ -63,10 +69,10 @@ export default abstract class Temporal extends Drawable implements labelable {
 
         this.timestamp = timestamp;
 
-        this.orientation = orientation;
+        this.positioning = positioning;
         this.padding = padding;
 
-        console.log("LAB INTERFACE", label)
+        
         if (label) {
             this.label = Label.anyArgConstruct(label);
         }
@@ -80,52 +86,79 @@ export default abstract class Temporal extends Drawable implements labelable {
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
-        var dimensions = [];
+        var dimensions: number[] = [];
 
-        switch (this.orientation) {
-            case Orientation.Top:
+        switch (this.positioning.orientation) {
+            case Orientation.top:
                 dimensions = [this.height, 0];
                 break;
 
-            case Orientation.Bottom:
+            case Orientation.bottom:
                 dimensions = [0, this.height];
                 break;
 
-            case Orientation.Both:
+            case Orientation.both:
                 dimensions = [this.height/2 - channelThickness/2, 
-                this.height/2 - channelThickness/2];
-
-                console.log("Protrusion", dimensions)
+                this.height/2 - channelThickness/2];    
                 break;
+
+            default:
+                console.error("UNKNOWN ORIENTATION: ", this.positioning.orientation)
         }
+
+      
+        var labelPro = this.labelVerticalProtrusion(channelThickness);  // 0, 0 if no label
+        dimensions[0] += labelPro[0];
+        dimensions[1] += labelPro[1];
+        
+        return dimensions;
+    }
+
+    labelVerticalProtrusion(channelThickness: number): number[] {
+        // Above, below
+        var dimensions: number[] = [0, 0];
 
         if (this.label) {
-            dimensions[0] += this.label.height + this.label.padding[0]+ this.label.padding[2];
+            switch (this.label.labelPosition) {
+                case LabelPosition.top:
+                    dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
+                    break;
+                case LabelPosition.bottom:
+                    dimensions[1] += this.label.height + this.label.padding[0] + this.label.padding[2];
+                    break;
+                case LabelPosition.centre:
+                    
+                    break;
+                default:
+                    throw new Error("NOT IMPLEMENTED");
+            }
+            
         }
-
-        
 
         return dimensions;
     }
 
     positionVertically(y: number, channelThickness: number) : number[] {
-        console.log("Positioning type:");
-        console.log(typeof this)
-        console.log(this.orientation);
+        
+        
+        console.log("POS", typeof this.positioning.orientation)
 
         var protrusion = this.verticalProtrusion(channelThickness); 
         
-        switch (this.orientation) {
-            case Orientation.Top:
+        switch (this.positioning.orientation) {
+            case Orientation.top:
+                console.log("TOP")
                 this.y = y - this.height;
                 break;
 
-            case Orientation.Bottom:
+            case Orientation.bottom:
                 this.y = y + channelThickness;
+
                 break;
 
-            case Orientation.Both:
+            case Orientation.both:
                 this.y = y + channelThickness/2 - this.height/2;
+                console.log("DEFAULTING")
                 break;
         }
 
@@ -145,22 +178,22 @@ export default abstract class Temporal extends Drawable implements labelable {
             switch (this.label.labelPosition) {
                 
 
-                case LabelPosition.Top:
+                case LabelPosition.top:
                     x = this.x + this.width/2 - this.label.width/2;
                     y = this.y - this.label.height - this.label.padding[2];
                     break;
-                case LabelPosition.Bottom:
+                case LabelPosition.bottom:
                     x = this.x + this.width/2 - this.label.width/2;
                     y = this.y + this.height + this.label.padding[0];
                     break;
 
-                case LabelPosition.Centre:
+                case LabelPosition.centre:
                         x = this.x + this.width/2 - this.label.width/2;
                         y = this.y + this.height /2 - this.label.height/2 + this.label.padding[0];
     
                         break;
                 default:
-                    console.log("DEFAULT");
+                    
                     x = 0;
                     y = 0;
             }

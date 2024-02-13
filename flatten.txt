@@ -20,14 +20,14 @@ function FlattenObj(obj: any) {
       !Array.isArray(val) &&
       val !== null) {
 
-      console.log("OBJECT");
-      console.log(key);
+      
+      
 
       newObj = {
         ...newObj,
         ...FlattenObj(val)
       };
-      console.log(key);
+      
 
     } else {
 			newObj[key] = val;
@@ -40,4 +40,4 @@ function FlattenObj(obj: any) {
 }
 var f = FlattenObj(s);
 
-console.log(f);
+

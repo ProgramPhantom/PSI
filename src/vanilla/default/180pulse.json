@@ -2,7 +2,11 @@
     "width": 40,
     "height": 70,
     "padding": [0, 10, 0, 10],
-    "orientation": "top",
+    "positioning": {
+        "orientation": "top",
+        "alignment": "centre",
+        "overridePad": false
+    },
 
     "fill": "#ffffff",
     "stroke": "#000000",

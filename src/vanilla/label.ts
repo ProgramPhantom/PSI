@@ -17,25 +17,18 @@ export interface labelStyle {
     colour: string
 }
 
-export enum LabelPosition {Top="top",
-                           Right="right",
-                           Bottom="bottom",
-                           Left="left",
-                           Centre="centre"}
-export const positionEval: {[name: string]: LabelPosition} = {
-    "top": LabelPosition.Top,
-    "right": LabelPosition.Right,
-    "bottom": LabelPosition.Bottom,
-    "left": LabelPosition.Left,
-    "centre": LabelPosition.Centre
-}
+export enum LabelPosition {top="top",
+                           right="right",
+                           bottom="bottom",
+                           left="left",
+                           centre="centre"}
 
 
 export default class Label extends Drawable {
     static defaults: labelInterface = {
         text: defaultLabel.text,
         padding: defaultLabel.padding,
-        labelPosition: positionEval[defaultLabel.labelPosition],
+        labelPosition: LabelPosition[defaultLabel.labelPosition as keyof typeof LabelPosition],
         style: {
             size: defaultLabel.style.size,
             colour: defaultLabel.style.colour
@@ -78,7 +71,7 @@ export default class Label extends Drawable {
         SVGobj.move(this.x, this.y);
         SVGobj.attr({preserveAspectRatio: "xMinYMin"})
         SVGobj.width(this.style.size);
-        console.log("SET COLOUR AS ", this.style.colour);
+        
         SVGobj.attr({"height": null, "style": `color:${this.style.colour}`});
         surface.add(SVGobj);
     }
@@ -111,7 +104,7 @@ export default class Label extends Drawable {
         SVGobj.remove();
         temp.remove();
 
-        console.log(width, height);
+        
 
         this.bounds = {width, height};
     }

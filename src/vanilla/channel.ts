@@ -1,7 +1,7 @@
 import * as defaultChan from "./default/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Temporal, { Orientation, labelable } from "./temporal";
+import Temporal, { Alignment, Orientation, labelable } from "./temporal";
 import Pulse90 from "./pulses/simple/pulse90";
 import Pulse180 from "./pulses/simple/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
@@ -58,7 +58,7 @@ export default class Channel extends Drawable implements labelable {
     elementCursor: number = -1;
 
     label?: Label;
-    labelPosition: LabelPosition=LabelPosition.Left;
+    labelPosition: LabelPosition=LabelPosition.left;
 
     constructor(pad: number[]=Channel.defaults.padding, 
                 style: channelStyle=Channel.defaults.style,
@@ -102,17 +102,17 @@ export default class Channel extends Drawable implements labelable {
         });
         this.drawRect(surface);
 
-        console.log("CHANNEL DIMENSIONS: ", this.width, this.height)
+        
     }
 
     computeBarY(yCursor: number=0) {
         this.computeVerticalBounds();
 
         var rectPosY = yCursor + this.pad[0] + this.maxTopProtrusion;
-        console.log("RECT POS", rectPosY)
+        
         this.barY = rectPosY;
         
-        console.log("CHANNEL HEIGHT: ", this.height)
+        
         
     }
 
@@ -153,24 +153,51 @@ export default class Channel extends Drawable implements labelable {
 
         // Current alignment style: centre
 
-        for (var i = 0; i < this.temporalElements.length; i++) {
-
-            // For all temporal elements
-            var temporalEl = this.temporalElements[i];
-            
+        this.temporalElements.forEach((temporalEl, i) => {
             temporalEl.positionVertically(this.barY, this.style.thickness);
 
             for (var space = currTimestamp+1; space < temporalEl.timestamp; space++) {  // Shift if gap in timestamps
                 xCurs += timestampWidths[space];
             }
 
-            var sectionWidth = timestampWidths[temporalEl.timestamp];
+            var sectionWidth = timestampWidths[temporalEl.timestamp];  // Width of section this element goes in
 
-            xCurs += sectionWidth / 2;
-            temporalEl.centreXPos(xCurs)
-            xCurs += sectionWidth / 2;
+            switch (temporalEl.positioning.alginment) {
+                case Alignment.Centre:
+                    xCurs += sectionWidth / 2;
+                    temporalEl.centreXPos(xCurs)
+                    xCurs += sectionWidth / 2;
+                    break;
+                case Alignment.Left:
+                    if (temporalEl.positioning.overridePad) {
+                        temporalEl.x = xCurs;
+                        xCurs += sectionWidth
+                    } else {
+                        temporalEl.x = xCurs + temporalEl.padding[3];
+                        xCurs += sectionWidth
+                    }
+                    break;
+                case Alignment.Right:
+                    if (temporalEl.positioning.overridePad) {
+                        temporalEl.x = xCurs + sectionWidth - temporalEl.width;
+                        xCurs += sectionWidth
+                    } else {
+                        temporalEl.x = xCurs + sectionWidth - temporalEl.width - temporalEl.padding[1];
+                        xCurs += sectionWidth
+                    }
+                    break;
+                default: 
+                    // Centre
+                    xCurs += sectionWidth / 2;
+                    temporalEl.centreXPos(xCurs)
+                    xCurs += sectionWidth / 2;
+                    break;
+
+            }
+
             currTimestamp = temporalEl.timestamp;
-        }
+        })
+
 
         this.barWidth = xCurs - this.barX;
         this.bounds = {width: this.width + this.barWidth, height: this.height}
@@ -219,6 +246,7 @@ export default class Channel extends Drawable implements labelable {
         var abs = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor})
 
         this.temporalElements.push(abs);
+        
         this.hSections.push(abs.actualWidth);
 
         return this.hSections;

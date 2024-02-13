@@ -1,7 +1,7 @@
-import Temporal, {Orientation, orientationEval, temporalInterface, labelable} from "./temporal";
+import Temporal, {Orientation, temporalInterface, labelable, temporalPosition, Alignment} from "./temporal";
 import * as defaultAbstraction from "./default/abstraction.json"
 import * as SVG from '@svgdotjs/svg.js'
-import Label, { LabelPosition, labelInterface, positionEval } from "./label";
+import Label, { LabelPosition, labelInterface} from "./label";
 import { UpdateObj } from "./util";
 
 
@@ -24,7 +24,11 @@ export default class Abstraction extends Temporal {
     
     static defaults: abstractionInterface = {
         padding: defaultAbstraction.padding,
-        orientation: orientationEval[defaultAbstraction.orientation],
+        positioning: {
+            orientation: Orientation[defaultAbstraction.positioning.orientation as keyof typeof Orientation],
+            alginment: Alignment[defaultAbstraction.positioning.alignment as keyof typeof Alignment],
+            overridePad: defaultAbstraction.positioning.overridePad,
+        },
     
         style: {
             width: defaultAbstraction.style.width,
@@ -36,16 +40,13 @@ export default class Abstraction extends Temporal {
         label: {
             text: defaultAbstraction.label.text,
             padding: defaultAbstraction.label.padding,
-            labelPosition: positionEval[defaultAbstraction.label.labelPosition],
+            labelPosition: LabelPosition[defaultAbstraction.label.labelPosition as keyof typeof LabelPosition],
             style: {
                 size: defaultAbstraction.label.style.size,
                 colour: defaultAbstraction.label.style.colour
             }
         },
     } 
-    
-   
-   
     
     // A pulse that is an svg rect
     style: abstractionStyle;
@@ -56,7 +57,7 @@ export default class Abstraction extends Temporal {
         const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;
 
         var el = new elementType(options.timestamp,
-                                 options.orientation,
+                                 options.positioning,
                                  options.padding,
                                  options.style,
                                  options.label)
@@ -65,14 +66,14 @@ export default class Abstraction extends Temporal {
     }
 
     constructor(timestamp: number,
-                orientation: Orientation, 
+                positioning: temporalPosition, 
                 padding: number[], 
                 style: abstractionStyle,
                 label: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
-              orientation,
+              positioning,
               padding, 
               offset,
               label,
@@ -93,86 +94,7 @@ export default class Abstraction extends Temporal {
         }
     }
 
-    verticalProtrusion(channelThickness: number) : number[] {
-        var dimensions = [];
 
-        switch (this.orientation) {
-            case Orientation.Top:
-                var actualHeight = this.height;
-                if (this.style.strokeWidth) {
-                    actualHeight -= this.style.strokeWidth!/2;
-                }
-                
-                dimensions = [actualHeight, 0];
-                break;
-
-            case Orientation.Bottom:
-                var actualHeight = this.height;
-                if (this.style.strokeWidth) {
-                    actualHeight += this.style.strokeWidth!/2;
-                }
-
-                dimensions = [0, actualHeight];
-                break;
-
-            case Orientation.Both: // LOOK AT THIS
-                var actualHeight = this.height/2 - channelThickness/2;
-                if (this.style.strokeWidth) {
-                    actualHeight += this.style.strokeWidth!/2;
-                }
-
-                dimensions = [actualHeight, actualHeight];
-                break;
-        }
-
-
-        if (this.label) {
-            switch (this.label.labelPosition) {
-                case LabelPosition.Top:
-                    dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
-                    break;
-                case LabelPosition.Bottom:
-                    dimensions[1] += this.label.height + this.label.padding[0] + this.label.padding[2];
-                    break;    
-            }
-            
-        }
-
-        return dimensions;
-    }
-
-    positionVertically(y: number, channelThickness: number): number[] {
-        var protrusion = this.verticalProtrusion(channelThickness);
-
-        switch (this.orientation) {
-            case Orientation.Top:
-                this.y = y - this.height;
-
-
-                if (this.style.strokeWidth) {
-                    this.y += this.style.strokeWidth!/2;
-                }
-                break;
-
-            case Orientation.Bottom:
-                this.y = y + channelThickness;
-
-                if (this.style.strokeWidth) {
-                    this.y = this.y - this.style.strokeWidth!/2;
-                }
-                break;
-
-            case Orientation.Both:
-                this.y = y + channelThickness/2 - this.height/2
-
-                if (this.style.strokeWidth) {
-                    this.y = this.y;
-                }
-                break;
-        }
-    
-        return protrusion;
-    }
 
 }
 

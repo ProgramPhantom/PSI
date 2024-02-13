@@ -93,7 +93,7 @@ export default class Arrow extends Drawable {
                 
         </svg>`
 
-        console.log(this.x, this.y, this.x2, this.y2)
+        
 
         var svgObj = SVG(arrowSVG);
         surface.add(svgObj);

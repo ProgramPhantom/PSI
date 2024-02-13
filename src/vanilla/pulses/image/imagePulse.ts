@@ -1,7 +1,7 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
-import Temporal, {Orientation, orientationEval, temporalInterface} from "../../temporal";
+import Temporal, {Alignment, Orientation, temporalInterface, temporalPosition} from "../../temporal";
 import * as defaultPulse from "../../default/imagePulse.json"
-import { positionEval, labelInterface } from "../../label";
+import Label, {LabelPosition, labelInterface } from "../../label";
 import { UpdateObj } from "../../util";
 
 
@@ -19,7 +19,13 @@ export default class ImagePulse extends Temporal {
     // png or jpeg
     static defaults: imagePulseInterface = {
         padding: defaultPulse.padding,
-        orientation: orientationEval[defaultPulse.orientation],
+
+        positioning: {
+            orientation: Orientation[defaultPulse.positioning.orientation  as keyof typeof Orientation],
+            alginment: Alignment[defaultPulse.positioning.alignment as keyof typeof Alignment],
+            overridePad: defaultPulse.positioning.overridePad,
+        },
+
         path: defaultPulse.path,
         style: {
             width: defaultPulse.style.width,
@@ -28,7 +34,7 @@ export default class ImagePulse extends Temporal {
         label: {
             text: defaultPulse.label.text,
             padding: defaultPulse.label.padding,
-            labelPosition: positionEval[defaultPulse.label.labelPosition],
+            labelPosition: LabelPosition[defaultPulse.label.labelPosition as keyof typeof LabelPosition],
             style: {
                 size: defaultPulse.label.style.size,
                 colour: defaultPulse.label.style.colour
@@ -41,7 +47,7 @@ export default class ImagePulse extends Temporal {
 
         var el = new elementType(options.timestamp,
                                  options.path,
-                                 options.orientation,
+                                 options.positioning,
                                  options.padding,
                                  options.style,
                                  options.label)
@@ -54,14 +60,14 @@ export default class ImagePulse extends Temporal {
 
     constructor(timestamp: number, 
                 path: string,
-                orientation: Orientation, 
+                positioning: temporalPosition, 
                 padding: number[], 
                 style: imagePulseStyle,
                 label?: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
-              orientation, 
+              positioning, 
               padding, 
               offset,
               label,

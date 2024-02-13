@@ -1,11 +1,9 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
-import Temporal, {Orientation, orientationEval, temporalInterface,} from "../../temporal";
+import Temporal, {Alignment, Orientation, temporalInterface, temporalPosition} from "../../temporal";
 import ImagePulse, { imagePulseStyle } from "./imagePulse";
 import * as defaultPulse from "../../default/svgPulse.json"
-import * as defaultSVG from "../../svg/acquisition.svg"
-import { positionEval, labelInterface } from "../../label";
+import {LabelPosition, labelInterface } from "../../label";
 
-import * as svgContent from "../../../assets/aquire.svg";
 
 export interface svgPulseInterface extends temporalInterface {
     path: string,
@@ -20,7 +18,13 @@ export default class SVGPulse extends ImagePulse {
     // svg
     static defaults: svgPulseInterface = {
         padding: defaultPulse.padding,
-        orientation: orientationEval[defaultPulse.orientation],
+
+        positioning: {
+            orientation: Orientation[defaultPulse.positioning.orientation  as keyof typeof Orientation],
+            alginment: Alignment[defaultPulse.positioning.alignment as keyof typeof Alignment],
+            overridePad: defaultPulse.positioning.overridePad,
+        },
+
         path: defaultPulse.path,
         style: {
             width: defaultPulse.style.width,
@@ -29,7 +33,7 @@ export default class SVGPulse extends ImagePulse {
         label: {
             text: defaultPulse.label.text,
             padding: defaultPulse.label.padding,
-            labelPosition: positionEval[defaultPulse.label.labelPosition],
+            labelPosition: LabelPosition[defaultPulse.label.labelPosition as keyof typeof LabelPosition],
             style: {
                 size: defaultPulse.label.style.size,
                 colour: defaultPulse.label.style.colour
@@ -42,14 +46,15 @@ export default class SVGPulse extends ImagePulse {
 
     constructor(timestamp: number,
                 path: string,
-                orientation: Orientation, 
+                positioning: temporalPosition, 
                 padding: number[], 
                 style: svgPulseStyle,
                 label?: labelInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp,  
-              path, orientation,
+              path, 
+              positioning,
               padding, 
               style,
               label,
@@ -59,12 +64,12 @@ export default class SVGPulse extends ImagePulse {
 
         this.path = path;
 
-        console.log("LOADING SVG");
+        
 
         this.svgContent = this.getSVG();
 
 
-        console.log(this.svgContent);
+        
     }
         
     getSVG(): string {
@@ -88,6 +93,6 @@ export default class SVGPulse extends ImagePulse {
         surface.add(obj);
 
 
-        console.log("GRADIENT HEIGHT", this.height)
+        
     }
 }

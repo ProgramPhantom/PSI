@@ -1,6 +1,11 @@
 {
-    "padding": [0, 10, 0, 10],
-    "orientation": "top",
+    "padding": [0, 0, 0, 0],
+    "positioning": {
+        "orientation": "top",
+        "alignment": "centre",
+        "overridePad": false
+    },
+    
     "style": {
         "width": 100,
         "height": 30,

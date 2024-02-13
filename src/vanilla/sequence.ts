@@ -96,7 +96,7 @@ export default class Sequence {
         try {
             this.parseNMRScript();
         } catch (e) {
-            console.log(e);
+            
         }
         
     }
@@ -125,7 +125,7 @@ export default class Sequence {
 
 
         // Converts script into objects
-        console.log("COMPILING SCRIPT");
+        
         
         var lines: string[] = this.nmrScript.split("\n");
 
@@ -160,7 +160,7 @@ export default class Sequence {
                     let args = this.parseCommand( "$" + config, lineNum)
                     args.arguments["text"] = tex;
 
-                    console.log(args.arguments["text"]);
+                    
 
                     var newLab = Label.anyArgConstruct(args.arguments);
                     this.freeLabels.push(newLab);
@@ -173,7 +173,7 @@ export default class Sequence {
                     this.defineChannel(commandEval.commandBody, jsonArgs);
 
 
-                    console.log(this.channels);
+                    
                     break;  
 
                 default:
@@ -193,7 +193,7 @@ export default class Sequence {
 
     parseCommand(line: string, lineNum: number): {commandBody: string, arguments: any} {
 
-        console.log(line);
+        
 
         var openIndex = line.indexOf("(")  // Open
         if (openIndex == -1) {
@@ -300,10 +300,10 @@ export default class Sequence {
             
         } else if (Sequence.ChannelCommands.includes(commandName)) {
             this.syncChannels(channelName, args);
-        }console.log(commandName);
+        }
 
         this.temporalSections.push(sections);
-        console.log("Temporal Sections", this.temporalSections)
+        
         this.computeTimespans();
         
     }
@@ -340,7 +340,7 @@ export default class Sequence {
         }
 
         this.maxTimespans = max;
-        console.log("MAX TIMESPANS");
-        console.log(this.maxTimespans);
+        
+        
     }
 }
