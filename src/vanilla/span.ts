@@ -2,7 +2,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import Arrow, { arrowStyle, headStyleEval } from "./arrow";
 import { LabelPosition, labelInterface } from "./label";
 import Temporal, { Alignment, Orientation, labelable, temporalInterface, temporalConfig } from "./temporal";
-import * as defaultSpan from "./default/span.json"
+import * as defaultSpan from "./default/data/span.json"
 import { UpdateObj } from "./util";
 
 

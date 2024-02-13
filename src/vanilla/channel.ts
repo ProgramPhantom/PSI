@@ -1,9 +1,9 @@
-import * as defaultChan from "./default/channel.json"
+import * as defaultChan from "./default/data/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Alignment, Orientation, labelable } from "./temporal";
-import Pulse90 from "./pulses/simple/pulse90";
-import Pulse180 from "./pulses/simple/pulse180";
+import Pulse90 from "./default/classes/pulse90";
+import Pulse180 from "./default/classes/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";

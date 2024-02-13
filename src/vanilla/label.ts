@@ -1,7 +1,7 @@
 import { Drawable } from "./drawable";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
-import * as defaultLabel from "./default/label.json";
+import * as defaultLabel from "./default/data/label.json";
 import { UpdateObj } from "./util";
 
 

@@ -1,5 +1,5 @@
 import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "./temporal";
-import * as defaultAbstraction from "./default/abstraction.json"
+import * as defaultAbstraction from "./default/data/abstraction.json"
 import * as SVG from '@svgdotjs/svg.js'
 import Label, { LabelPosition, labelInterface} from "./label";
 import { UpdateObj } from "./util";

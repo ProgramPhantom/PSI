@@ -2,19 +2,20 @@ import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Orientation } from "./temporal";
 import { LabelPosition } from "./label";
-import Pulse90 from "./pulses/simple/pulse90";
-import Pulse180 from "./pulses/simple/pulse180";
+import Pulse90 from "./default/classes/pulse90";
+import Pulse180 from "./default/classes/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import Channel from "./channel"
 import ImagePulse from "./pulses/image/imagePulse";
-import Aquire from "./pulses/image/aquire";
+import Aquire from "./default/classes/aquire";
 import Label from "./label";
 import { json } from "stream/consumers";
 import Arrow, { headStyle } from "./arrow";
 import Span from "./span";
-import GradientUp from "./pulses/image/gradientUp";
+import ChirpLoHi from "./default/classes/chirpLoHi";
 import Abstraction from "./abstraction";
-import * as defaultSequence from "./default/sequence.json"
+import * as defaultSequence from "./default/data/sequence.json"
+import ChirpHiLo from "./default/classes/chirpHiLo";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -71,7 +72,8 @@ export default class Sequence {
     }
     static ImagePulseCommands: {[name: string]: typeof ImagePulse;} = {
         "Aquire": Aquire,
-        "GradientUp": GradientUp
+        "ChirpLoHi": ChirpLoHi,
+        "ChirpHiLo": ChirpHiLo
     }
     static Span: {[name: string]: typeof Span} = {
         "Span": Span,

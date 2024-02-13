@@ -1,7 +1,7 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig} from "../../temporal";
 import ImagePulse, { imagePulseStyle } from "./imagePulse";
-import * as defaultPulse from "../../default/svgPulse.json"
+import * as defaultPulse from "../../default/data/svgPulse.json"
 import {LabelPosition, labelInterface } from "../../label";
 
 

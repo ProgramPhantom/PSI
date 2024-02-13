@@ -1,5 +1,5 @@
 import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "../../temporal";
-import * as defaultPulse from "../../default/180pulse.json"
+import * as defaultPulse from "../../default/data/180pulse.json"
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
 import Label, { LabelPosition, labelInterface } from "../../label";

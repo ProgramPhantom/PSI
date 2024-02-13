@@ -1,7 +1,7 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Drawable } from "./drawable";
 import { labelable } from "./temporal";
-import * as defaultArrow from "./default/arrow.json"
+import * as defaultArrow from "./default/data/arrow.json"
 
 
 export enum headStyle {
