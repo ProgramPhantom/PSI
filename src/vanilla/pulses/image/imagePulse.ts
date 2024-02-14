@@ -17,31 +17,7 @@ export interface imagePulseStyle {
 
 export default class ImagePulse extends Temporal {
     // png or jpeg
-    static defaults: imagePulseInterface = {
-        padding: defaultPulse.padding,
-
-        config: {
-            orientation: Orientation[defaultPulse.config.orientation  as keyof typeof Orientation],
-            alginment: Alignment[defaultPulse.config.alignment as keyof typeof Alignment],
-            overridePad: defaultPulse.config.overridePad,
-            inheritWidth: defaultPulse.config.inheritWidth,
-        },
-
-        path: defaultPulse.path,
-        style: {
-            width: defaultPulse.style.width,
-            height: defaultPulse.style.height,
-        },
-        label: {
-            text: defaultPulse.label.text,
-            padding: defaultPulse.label.padding,
-            labelPosition: LabelPosition[defaultPulse.label.labelPosition as keyof typeof LabelPosition],
-            style: {
-                size: defaultPulse.label.style.size,
-                colour: defaultPulse.label.style.colour
-            }
-        }
-    }
+    static defaults: imagePulseInterface = {...<any>defaultPulse}
 
     public static anyArgConstruct(elementType: typeof ImagePulse, args: any): ImagePulse {
         const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;

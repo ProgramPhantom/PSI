@@ -13,31 +13,7 @@ interface spanInterface extends temporalInterface {
 }   
 
 export default class Span extends Temporal implements labelable {
-    static defaults: spanInterface = {
-        config: {
-            orientation: Orientation[defaultSpan.config.orientation as keyof typeof Orientation],
-            alginment: Alignment[defaultSpan.config.alignment as keyof typeof Alignment],
-            overridePad: defaultSpan.config.overridePad,
-            inheritWidth: defaultSpan.config.inheritWidth,
-        },
-
-        padding: defaultSpan.padding,
-        style: {
-            thickness: defaultSpan.style.thickness,
-            headStyle: headStyleEval[defaultSpan.style.headStyle],
-            stroke: defaultSpan.style.stroke
-        },
-        label: {
-            text: defaultSpan.label.text,
-            padding: defaultSpan.label.padding,
-            labelPosition: LabelPosition[defaultSpan.label.labelPosition as keyof typeof LabelPosition],
-            style: {
-                size: defaultSpan.label.style.size,
-                colour: defaultSpan.label.style.colour
-            }
-        },
-        width: defaultSpan.width
-    }
+    static defaults: spanInterface = {...<any>defaultSpan}
 
     public static anyArgConstruct(elementType: typeof Span, args: any): Span {
 

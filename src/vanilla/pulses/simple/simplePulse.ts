@@ -20,32 +20,7 @@ export interface simplePulseStyle {
 
 export default class SimplePulse extends Temporal  {
     // Default is currently 180 Pulse
-    static defaults: simplePulseInterface = {
-        padding: defaultPulse.padding,
-        config: {
-            orientation: Orientation[defaultPulse.config.orientation as keyof typeof Orientation],
-            alginment: Alignment[defaultPulse.config.alignment as keyof typeof Alignment],
-            overridePad: defaultPulse.config.overridePad,
-            inheritWidth: defaultPulse.config.inheritWidth,
-        },
-        
-        style: {
-            width: defaultPulse.width,
-            height: defaultPulse.height,
-            fill: defaultPulse.fill,
-            stroke: defaultPulse.stroke,
-            strokeWidth: defaultPulse.strokeWidth
-        },
-        label: {
-            text: defaultPulse.label.text,
-            padding: defaultPulse.label.padding,
-            labelPosition: LabelPosition[defaultPulse.label.labelPosition as keyof typeof LabelPosition],
-            style: {
-                size: defaultPulse.label.style.size,
-                colour: defaultPulse.label.style.colour
-            }
-        },
-    }
+    static defaults: simplePulseInterface = {...<any>defaultPulse}
     
     // A pulse that is an svg rect
     style: simplePulseStyle;

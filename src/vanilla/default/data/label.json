@@ -3,7 +3,7 @@
     "padding": [0, 0, 0, 0],
     "labelPosition": "top",
     "style": {
-        "size": 30,
+        "size": 15,
         "colour": "black"
     }
 }

@@ -58,15 +58,7 @@ interface gridStyle {
 }
 
 export default class Sequence {
-    static defaults: sequenceConfig = {
-        gridOn: defaultSequence.gridOn,
-        gridStyle: {
-            gridPositioning: gridPositioning[defaultSequence.gridStyle.gridPositioning as keyof typeof gridPositioning],
-            stroke: defaultSequence.gridStyle.stroke,
-            strokeWidth: defaultSequence.gridStyle.strokeWidth,
-            dashing: defaultSequence.gridStyle.dashing
-        }
-    }
+    static defaults: sequenceConfig = {...<any>defaultSequence}
 
     static specialCharacters: string[] = ["#", "~", "/", ">"]
     static SimplePulseCommands: {[name: string]: typeof SimplePulse;} = {

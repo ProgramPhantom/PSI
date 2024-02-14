@@ -25,15 +25,7 @@ export enum LabelPosition {top="top",
 
 
 export default class Label extends Drawable {
-    static defaults: labelInterface = {
-        text: defaultLabel.text,
-        padding: defaultLabel.padding,
-        labelPosition: LabelPosition[defaultLabel.labelPosition as keyof typeof LabelPosition],
-        style: {
-            size: defaultLabel.style.size,
-            colour: defaultLabel.style.colour
-        }
-    }
+    static defaults: labelInterface = {...<any>defaultLabel}
 
     public static anyArgConstruct(args: labelInterface): Label {
         const styleOptions = args.style ? {...Label.defaults.style, ...args.style} : Label.defaults.style;

@@ -11,6 +11,15 @@
     "style": {
         "width": 200,
         "height": 100
-    }
+    },
 
+    "label": {
+        "text": "90^{\\circ}",
+        "padding": [0, 0, 0, 0],
+        "labelPosition": "top",
+        "style": {
+            "size": 20,
+            "colour": "black"
+        }
+    }
 }

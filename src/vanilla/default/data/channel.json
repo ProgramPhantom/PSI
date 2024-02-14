@@ -2,8 +2,20 @@
     "temporalElements": [],
     "padding": [10, 0, 10, 15],
 
-    "thickness": 3,
-    "fill": "#000000",
-    "stroke": null,
-    "strokeWidth": null
+    "style": {
+        "thickness": 3,
+        "fill": "#000000",
+        "stroke": null,
+        "strokeWidth": null
+    },
+    "label": {
+        "text": "^{1}\\textrm{C}",
+        "padding": [0, 0, 10, 0],
+        "labelPosition": "top",
+        "style": {
+            "size": 20,
+            "colour": "black"
+        }
+    }
+    
 }

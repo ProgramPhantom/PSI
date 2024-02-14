@@ -1,4 +1,4 @@
-import * as defaultChan from "./default/data/channel.json"
+import * as defaultChannel from "./default/data/channel.json"
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Alignment, Orientation, labelable } from "./temporal";
@@ -29,17 +29,7 @@ export interface channelStyle {
 
 
 export default class Channel extends Drawable implements labelable {
-    static defaults: channelInterface = {
-        temporalElements: defaultChan.temporalElements,
-    
-        padding: defaultChan.padding,
-        style: {
-            thickness: defaultChan.thickness,
-            fill: defaultChan.fill,
-            stroke: defaultChan.stroke,
-            strokeWidth: defaultChan.strokeWidth
-        }
-    }
+    static defaults: channelInterface = {...<any>defaultChannel}
 
     style: channelStyle;
     pad: number[];
@@ -164,7 +154,7 @@ export default class Channel extends Drawable implements labelable {
                 temporalEl.bounds = {width: sectionWidth, height: temporalEl.height};
             }
 
-            switch (temporalEl.config.alginment) {
+            switch (temporalEl.config.alignment) {
                 case Alignment.Centre:
                     xCurs += sectionWidth / 2;
                     temporalEl.centreXPos(xCurs)

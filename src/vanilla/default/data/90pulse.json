@@ -1,6 +1,4 @@
 {
-    "width": 10,
-    "height": 70,
     "padding": [0, 10, 0, 10],
 
     "config": {
@@ -10,9 +8,13 @@
         "inheritWidth": false
     },
 
-    "fill": "#000000",
-    "stroke": null,
-    "strokeWidth": null,
+    "style": {
+        "width": 10,
+        "height": 70,
+        "fill": "#000000",
+        "stroke": null,
+        "strokeWidth": null
+    },
 
     "label": {
         "text": "90^{\\circ}",

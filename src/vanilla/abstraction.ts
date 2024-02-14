@@ -22,32 +22,7 @@ export interface abstractionStyle {
 export default class Abstraction extends Temporal {
     // Default is currently 180 Pulse 
     
-    static defaults: abstractionInterface = {
-        padding: defaultAbstraction.padding,
-        config: {
-            orientation: Orientation[defaultAbstraction.config.orientation as keyof typeof Orientation],
-            alginment: Alignment[defaultAbstraction.config.alignment as keyof typeof Alignment],
-            overridePad: defaultAbstraction.config.overridePad,
-            inheritWidth: defaultAbstraction.config.inheritWidth,
-        },
-    
-        style: {
-            width: defaultAbstraction.style.width,
-            height: defaultAbstraction.style.height,
-            fill: defaultAbstraction.style.fill,
-            stroke: defaultAbstraction.style.stroke,
-            strokeWidth: defaultAbstraction.style.strokeWidth
-        },
-        label: {
-            text: defaultAbstraction.label.text,
-            padding: defaultAbstraction.label.padding,
-            labelPosition: LabelPosition[defaultAbstraction.label.labelPosition as keyof typeof LabelPosition],
-            style: {
-                size: defaultAbstraction.label.style.size,
-                colour: defaultAbstraction.label.style.colour
-            }
-        },
-    } 
+    static defaults: abstractionInterface = {...<any>defaultAbstraction}
     
     // A pulse that is an svg rect
     style: abstractionStyle;

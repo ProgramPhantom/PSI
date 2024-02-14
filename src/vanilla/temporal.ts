@@ -17,16 +17,16 @@ interface Bounds {
     height: number,
 }
 
-export enum Orientation { top="top", bottom="bottom", both="both" }
+export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both" }
 
-export enum Alignment {Left="left", Centre="centre", Right="right"}
+export enum Alignment {Left=<any>"left", Centre=<any>"centre", Right=<any>"right"}
 
 
 
 
 export interface temporalConfig {
     orientation: Orientation,
-    alginment: Alignment,
+    alignment: Alignment,
     overridePad: boolean
     inheritWidth: boolean,
 }

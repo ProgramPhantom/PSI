@@ -13,23 +13,7 @@ const DEFAULTSVG = await fetch(defaultPulse.path).then(
 
 
 export default class ChirpLoHi extends SVGPulse {
-    static defaults: svgPulseInterface = {
-        padding: defaultPulse.padding,
-
-        config: {
-            orientation: Orientation[defaultPulse.config.orientation as keyof typeof Orientation],
-            alginment: Alignment[defaultPulse.config.alignment as keyof typeof Alignment],
-            overridePad: defaultPulse.config.overridePad,
-            inheritWidth: defaultPulse.config.inheritWidth,
-        },
-
-        path: defaultPulse.path,
-        style: {
-            width: defaultPulse.style.width,
-            height: defaultPulse.style.height,
-        },
-        label: undefined
-    }
+    static defaults: svgPulseInterface = {...<any>defaultPulse};
 
     constructor(timestamp: number=0, 
                 path: string=ChirpLoHi.defaults.path,

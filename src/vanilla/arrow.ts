@@ -29,17 +29,7 @@ export interface arrowStyle {
 
 
 export default class Arrow extends Drawable {
-    static defaults: arrowInterface = {
-        x: defaultArrow.x,
-        y: defaultArrow.y,
-        x2: defaultArrow.x2,
-        y2: defaultArrow.y2,
-        style: {
-            thickness: defaultArrow.style.thickness, 
-            headStyle: headStyleEval[defaultArrow.style.headStyle], 
-            stroke: defaultArrow.style.stroke,
-        },
-    }
+    static defaults: arrowInterface = {...<any>defaultArrow}
 
     x2: number;
     y2: number;
