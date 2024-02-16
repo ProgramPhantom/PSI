@@ -2,9 +2,9 @@ import { arrowStyle } from "./arrow";
 import { Drawable } from "./drawable";
 import Label, { LabelPosition, labelInterface } from "./label";
 import { labelable } from "./temporal";
-import * as defaultBigSpan from "./default/data/bigspan.json";
-import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
+import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";
+import Bracket, { Side, bracketType } from "./bracket";
 
 interface Dim {
     width: number,
@@ -27,11 +27,16 @@ export interface bigSpanInterface {
     label?: labelInterface | null
 }
 
+interface timespanBracket {
+    timespanRange: number[],
+    bracket: Bracket,
+}
+
 export default class AnnotationLayer extends Drawable {
     private _actualBounds?: Bounds;
 
     labels: {[timestamp: number]: Label[]} = [];
-    spans: Span[] = [];
+    longs: timespanBracket[] = [];
 
     padding: number[];
 
@@ -48,7 +53,6 @@ export default class AnnotationLayer extends Drawable {
     }
 
     draw(surface: Svg, timestampWidths: number[]=[], startX: number=0, startY: number=0) {
-        var heights: {[timestamp: number]: number} = [];
 
         this.timestampWidths = timestampWidths;
         this.x = startX;
@@ -59,11 +63,36 @@ export default class AnnotationLayer extends Drawable {
             this.timestampX.push(w + this.timestampX[i]);
         })
 
+        var maxYLong = this.drawLongs(surface, this.y);
+        var maxYLabel = this.drawLabels(surface, maxYLong);
+        
+
+        console.log("MAX HEIGTH Lab", maxYLabel )
+        console.log("MAX HEIGTH long", maxYLong )
+
+
+        var maxY = maxYLabel > maxYLong ? maxYLabel : maxYLong;
+
+        var height = maxY - this.y;
+        console.log("HEIGHT: 000000", height);
+        var width = this.timestampX[this.timestampX.length-1] - this.timestampX[0];
+
+        this.bounds = {width: width, height: height};
+        this.actualBounds = {
+            width: width,
+            height: height + this.padding[2]  // Includes top pad
+        }
+    }
+
+    drawLabels(surface: Svg, startY: number): number {
+        var heights = new Array<number>(this.timestampX.length);
+        heights.fill(startY);
+
+        console.log("LABELS: --- ", Object.entries(this.labels));
+
+        // Draw labels
         for (const [key, value] of Object.entries(this.labels)) {
             var timestamp = parseInt(key);  // really?...
-            if (!Object.keys(heights).includes(key)) {
-                heights[timestamp] = 0;
-            }
 
             value.forEach((l) => {
                 var yCurs = heights[timestamp];
@@ -84,39 +113,85 @@ export default class AnnotationLayer extends Drawable {
 
                 console.log("ANNOTATION X", parseInt(key));
 
-                heights[timestamp] += l.height;
-
+                
                 switch (l.labelPosition) {
                     case LabelPosition.centre:
                         l.x = x + timeWidth/2 - l.width/2;
-                        l.y = yCurs + this.y;
+                        l.y = heights[timestamp] + this.y;
                         break;
                     default:
                         l.x = x;
-                        l.y = yCurs + this.y;
+                        l.y = heights[timestamp] + this.y;
                         break;
-        
+                        
                 }
+
+                heights[timestamp] += l.height;
 
                 console.log("X FOR ANNO", x);
                 l.draw(surface);
             }) 
         }
 
-        var height = Math.max(...Object.values(heights));
-        console.log("MAX HEIGHT: ", height);
-        var width = this.timestampX[this.timestampX.length-1] - this.timestampX[0];
+        if (Object.values(heights).length != 0) {
+            return Math.max(...Object.values(heights))
+        } else {
+            return 0;
+        }
+    }
 
-        this.bounds = {width: width, height: height};
-        this.actualBounds = {
-            width: width,
-            height: this.padding[0] + height + this.padding[2]
+    drawLongs(surface: Svg, startY: number): number {
+
+        var ys = new Array<number>(this.timestampX.length-1);
+        ys.fill(startY);
+        console.log(ys);
+
+        // Draw Longs
+        for (const timeLong of this.longs) {
+            var timespanRange = timeLong["timespanRange"];
+            var long = timeLong["bracket"];
+
+            var x1 = this.timestampX[timespanRange[0]];
+            var x2 = this.timestampX[timespanRange[1]+1]  // To the other side of last
+
+            // Find y
+            var longHeight = Math.abs(long.protrusion);
+
+            var relaventYs = [...ys].splice(timespanRange[0], timespanRange[1] - timespanRange[0])
+            var thisStartY = Math.max(...relaventYs);
+            
+            var y = thisStartY;
+            console.log("SETTING LONG AT: ", x1, y, x2, y);
+
+            long.x1 = x1;
+            long.x2 = x2;
+
+            long.y1 = y;
+            long.y2 = y;
+
+            long.y = y;
+            long.x = x1;
+
+            long.draw(surface);
+
+            for (var i = timespanRange[0]; i < timespanRange[1]+1; i++) {  // Apply height
+                ys[i] += long.totalProtrusion;
+            }
+        }
+
+        console.log("LONG HEIGTHS", ys);
+        var longHeight = Math.max(...ys);
+
+        if (longHeight !== Infinity) {
+            return longHeight;
+        } else {
+            return 0;
         }
     }
 
     annotateLabel(label: Label, timestamp: number) {
         var newLabel = label;
-
+        console.log("ANNOTATING LABEL");
 
         if (this.labels[timestamp] === undefined) {
             this.labels[timestamp] = [newLabel];
@@ -126,8 +201,9 @@ export default class AnnotationLayer extends Drawable {
         
     }
 
-    annotateSpan(timespanStart: number, timespanEnd: number, label?: Label) {
-
+    annotateLong(bracket: Bracket, timespanStart: number, timespanEnd: number) {
+        console.log("ADDING LONG");
+        this.longs.push({timespanRange: [timespanStart, timespanEnd], bracket: bracket})
     }
 
     get actualBounds(): Bounds {

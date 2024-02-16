@@ -18,10 +18,10 @@
 
     "label": {
         "text": "90^{\\circ}",
-        "padding": [0, 0, 0, 0],
+        "padding": [0, 0, 10, 0],
         "labelPosition": "top",
         "style": {
-            "size": 20,
+            "size": 15,
             "colour": "black"
         }
     }

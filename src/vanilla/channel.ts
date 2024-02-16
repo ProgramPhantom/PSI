@@ -11,12 +11,14 @@ import Label, { labelInterface, LabelPosition } from "./label";
 import Span from "./span";
 import Abstraction from "./abstraction";
 import AnnotationLayer from "./annotationLayer";
+import Bracket from "./bracket";
  
 
 export interface channelInterface {
     temporalElements: Temporal[],
     padding: number[],
     style: channelStyle,
+    annotationStyle: channelAnnotation,
     label?: labelInterface
 }
 
@@ -26,6 +28,10 @@ export interface channelStyle {
     fill: string,
     stroke?: string | null,  
     strokeWidth?: number | null
+}
+
+export interface channelAnnotation {
+    padding: number[]
 }
 
 
@@ -79,32 +85,34 @@ export default class Channel extends Drawable implements labelable {
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
         this.y = yCursor;
 
-
         var labelOffsetX = this.label ? this.label.actualBounds.width : 0;
         this.computeBarX(this.label!.actualBounds.width);
-
 
         this.timespanX.push(this.barX);
         timestampWidths.forEach((w, i) => {
             this.timespanX.push(w + this.timespanX[i]);
         })
         
-
+        // Add annotation
+        var annotationHeight  = 0;
         if (this.annotationLayer) {
             this.annotationLayer.draw(surface, timestampWidths, this.barX, this.y);
             yCursor += this.annotationLayer.actualHeight;
+            annotationHeight = this.annotationLayer.actualHeight;
+            console.log(this.annotationLayer.actualHeight)
         }
 
-        // Add annotation
-
         this.computeBarY(yCursor);
+        
+        
+
         this.drawLabel(surface);
 
         
         console.log("TIMESPAN X ", this.timespanX)
         
         this.bounds = {width: this.width + labelOffsetX + this.pad[1] + this.pad[3], 
-            height: this.height + this.pad[0] + this.pad[2]}
+            height: this.height + this.pad[0] + this.pad[2] + annotationHeight}
         
 
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
@@ -243,7 +251,7 @@ export default class Channel extends Drawable implements labelable {
 
     addAnnotationLabel(args: any) {
         if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer([0, 0, 0, 0])
+            this.annotationLayer = new AnnotationLayer(Channel.defaults.annotationStyle.padding)
         }
         var timestamp;
         console.log(args.timestamp);
@@ -260,8 +268,37 @@ export default class Channel extends Drawable implements labelable {
         }
 
         var newLabel = Label.anyArgConstruct(args);
-
         this.annotationLayer.annotateLabel(newLabel, timestamp);
+    }
+
+    addAnnotationLong(args: any) {
+        if (!this.annotationLayer) {
+            this.annotationLayer = new AnnotationLayer(Channel.defaults.annotationStyle.padding)
+        }
+
+        var timestampStart;
+        var timestampEnd;
+
+        
+        timestampStart = args.timestampStart ? args.timestampStart : undefined;
+        timestampEnd = args.timestampStart ? args.timestampStart : undefined;
+        
+        if (timestampStart == -1 || timestampEnd == -1) {
+            // throw
+            timestampStart = 0;
+            timestampEnd = 1;
+        }
+        if (timestampStart === timestampEnd) {
+            timestampStart = 0;
+            timestampEnd = 1;
+            // return; // Throw
+        }
+
+        var range = args.range ? args.range : [timestampStart ? timestampStart : 0, timestampEnd ? timestampEnd : 1];
+
+        var long = Bracket.anyArgConstruct(args);
+
+        this.annotationLayer.annotateLong(long, range[0], range[1]);
     }
 
     addAbstraction(elementType: typeof Abstraction, args: any) {

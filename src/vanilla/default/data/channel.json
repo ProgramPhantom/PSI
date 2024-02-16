@@ -16,6 +16,10 @@
             "size": 20,
             "colour": "black"
         }
+    },
+
+    "annotationStyle": {
+        "padding": [0, 0, 5, 0]
     }
     
 }

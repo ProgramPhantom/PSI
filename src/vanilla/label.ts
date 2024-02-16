@@ -42,7 +42,6 @@ export default class Label extends Drawable {
     static defaults: labelInterface = {...<any>defaultLabel}
 
     public static anyArgConstruct(args: labelInterface): Label {
-        const styleOptions = args.style ? {...Label.defaults.style, ...args.style} : Label.defaults.style;
         const options = args ? UpdateObj(Label.defaults, args) : Label.defaults;
 
         return new Label(

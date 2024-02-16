@@ -1,0 +1,22 @@
+{
+    "side": "top",
+    "protrusion": 7,
+
+    "style": {
+        "strokeWidth": 1,
+        "bracketType": "curly",
+        "expression": 0.7,
+        "stroke": "black"
+    },
+
+
+    "label": {
+        "text": "90^{\\circ}",
+        "padding": [0, 0, 3, 0],
+        "labelPosition": "top",
+        "style": {
+            "size": 20,
+            "colour": "black"
+        }
+    }
+}

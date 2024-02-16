@@ -80,9 +80,22 @@ export abstract class Drawable {
         }
         throw new Error("Dimensions undefined")
     }
+    set width(width: number) {
+        if (this._bounds) {
+            this._bounds.width = width;
+        }
+        throw new Error("Dimensions undefined")
+    }
+
     get height(): number {
         if (this._bounds) {
             return this._bounds.height;
+        }
+        throw new Error("Dimensions undefined")
+    }
+    set height(height: number) {
+        if (this._bounds) {
+            this._bounds.height = height;
         }
         throw new Error("Dimensions undefined")
     }

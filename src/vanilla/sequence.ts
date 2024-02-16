@@ -81,7 +81,8 @@ export default class Sequence {
     }
     static ChannelCommands: string[] = [
         "sync",
-        "AnnotateLabel"
+        "AnnotateLabel",
+        "AnnotateLong"
     ]
     static AllCommands = Object.keys(Sequence.SimplePulseCommands).concat(
                                     ...Object.keys(Sequence.ImagePulseCommands),
@@ -337,6 +338,10 @@ export default class Sequence {
                 case "AnnotateLabel":
                     channel.addAnnotationLabel(args);
                     break;
+                case "AnnotateLong":
+                    channel.addAnnotationLong(args);
+                    break;
+
             }
         }
 

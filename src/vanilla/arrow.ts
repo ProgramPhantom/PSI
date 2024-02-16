@@ -5,12 +5,8 @@ import * as defaultArrow from "./default/data/arrow.json"
 
 
 export enum headStyle {
-    Default="default",
-    Thin="thin"
-}
-export const headStyleEval: {[name: string]: headStyle} = {
-    "default": headStyle.Default,
-    "thin": headStyle.Thin,
+    default="default",
+    thin="thin"
 }
 
 export interface arrowInterface {
