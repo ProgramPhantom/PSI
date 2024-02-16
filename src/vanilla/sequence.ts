@@ -80,7 +80,8 @@ export default class Sequence {
         "Abstraction": Abstraction
     }
     static ChannelCommands: string[] = [
-        "sync"
+        "sync",
+        "AnnotateLabel"
     ]
     static AllCommands = Object.keys(Sequence.SimplePulseCommands).concat(
                                     ...Object.keys(Sequence.ImagePulseCommands),
@@ -329,7 +330,14 @@ export default class Sequence {
             sections = channel.addAbstraction(Sequence.Abstraction[commandName], args);
             
         } else if (Sequence.ChannelCommands.includes(commandName)) {
-            this.syncChannels(channelName, args);
+            switch (commandName) {
+                case "sync":
+                    this.syncChannels(channelName, args);
+                    break;
+                case "AnnotateLabel":
+                    channel.addAnnotationLabel(args);
+                    break;
+            }
         }
 
         this.temporalSections.push(sections);

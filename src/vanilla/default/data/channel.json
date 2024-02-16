@@ -1,6 +1,6 @@
 {
     "temporalElements": [],
-    "padding": [10, 0, 10, 15],
+    "padding": [0, 0, 10, 15],
 
     "style": {
         "thickness": 3,
@@ -10,7 +10,7 @@
     },
     "label": {
         "text": "^{1}\\textrm{C}",
-        "padding": [0, 0, 10, 0],
+        "padding": [0, 0, 0, 0],
         "labelPosition": "top",
         "style": {
             "size": 20,

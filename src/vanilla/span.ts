@@ -7,7 +7,7 @@ import { UpdateObj } from "./util";
 
 
 interface spanInterface extends temporalInterface {
-    
+
     width: number,
     style: arrowStyle
 }   
@@ -36,7 +36,7 @@ export default class Span extends Temporal implements labelable {
     constructor(timestamp: number=0,
                 config: temporalConfig=Span.defaults.config, 
                 padding: number[]=Span.defaults.padding, 
-                style: arrowStyle=Span.defaults.style, 
+                style: arrowStyle=Span.defaults.style,
                 width: number=Span.defaults.width,
                 offset: number[]=[0,0],
                 label?: labelInterface, ) {

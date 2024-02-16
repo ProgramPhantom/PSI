@@ -10,6 +10,7 @@ import ImagePulse from "./pulses/image/imagePulse";
 import Label, { labelInterface, LabelPosition } from "./label";
 import Span from "./span";
 import Abstraction from "./abstraction";
+import AnnotationLayer from "./annotationLayer";
  
 
 export interface channelInterface {
@@ -42,7 +43,10 @@ export default class Channel extends Drawable implements labelable {
     barY: number;
     
     temporalElements: Temporal[];
+    annotationLayer?: AnnotationLayer;
+
     hSections: number[] = [];
+    timespanX: number[] = [];
     elementCursor: number = -1;
 
     label?: Label;
@@ -75,14 +79,37 @@ export default class Channel extends Drawable implements labelable {
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
         this.y = yCursor;
 
-        this.computeBarY(yCursor);
 
-        var labelOffset = this.drawLabel(surface);
-        this.bounds = {width: this.width + labelOffset[0] + this.pad[1] + this.pad[3], 
+        var labelOffsetX = this.label ? this.label.actualBounds.width : 0;
+        this.computeBarX(this.label!.actualBounds.width);
+
+
+        this.timespanX.push(this.barX);
+        timestampWidths.forEach((w, i) => {
+            this.timespanX.push(w + this.timespanX[i]);
+        })
+        
+
+        if (this.annotationLayer) {
+            this.annotationLayer.draw(surface, timestampWidths, this.barX, this.y);
+            yCursor += this.annotationLayer.actualHeight;
+        }
+
+        // Add annotation
+
+        this.computeBarY(yCursor);
+        this.drawLabel(surface);
+
+        
+        console.log("TIMESPAN X ", this.timespanX)
+        
+        this.bounds = {width: this.width + labelOffsetX + this.pad[1] + this.pad[3], 
             height: this.height + this.pad[0] + this.pad[2]}
+        
+
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
 
-        this.computeBarX(labelOffset[0]);
+        
         this.positionElements(timestampWidths);
 
         this.temporalElements.forEach(element => {
@@ -99,9 +126,6 @@ export default class Channel extends Drawable implements labelable {
         var rectPosY = yCursor + this.pad[0] + this.maxTopProtrusion;
         
         this.barY = rectPosY;
-        
-        
-        
     }
 
     computeBarX(labelOffsetX: number=0) {
@@ -136,65 +160,54 @@ export default class Channel extends Drawable implements labelable {
     }
 
     positionElements(timestampWidths: number[]) {
-        var xCurs = this.barX;
-        var currTimestamp = -1;
-
         // Current alignment style: centre
 
         this.temporalElements.forEach((temporalEl, i) => {
+            var tempX = 0;
+            var timespanWidth = 0;
+
             temporalEl.positionVertically(this.barY, this.style.thickness);
 
-            for (var space = currTimestamp+1; space < temporalEl.timestamp; space++) {  // Shift if gap in timestamps
-                xCurs += timestampWidths[space];
-            }
-
-            var sectionWidth = timestampWidths[temporalEl.timestamp];  // Width of section this element goes in
+            tempX = this.timespanX[temporalEl.timestamp]
+            timespanWidth = timestampWidths[temporalEl.timestamp]
 
             if (temporalEl.config.inheritWidth) {
-                temporalEl.bounds = {width: sectionWidth, height: temporalEl.height};
+                temporalEl.bounds = {width: timespanWidth, height: temporalEl.height};
+                console.log("Inheriting width of ", timespanWidth)
             }
 
             switch (temporalEl.config.alignment) {
                 case Alignment.Centre:
-                    xCurs += sectionWidth / 2;
-                    temporalEl.centreXPos(xCurs)
-                    xCurs += sectionWidth / 2;
+                    temporalEl.centreXPos(tempX + timespanWidth/2);
                     break;
                 case Alignment.Left:
                     if (temporalEl.config.overridePad) {
-                        temporalEl.x = xCurs;
-                        xCurs += sectionWidth
+                        temporalEl.x = tempX;
                     } else {
-                        temporalEl.x = xCurs + temporalEl.padding[3];
-                        xCurs += sectionWidth
+                        temporalEl.x = tempX + temporalEl.padding[3];
                     }
                     break;
                 case Alignment.Right:
                     if (temporalEl.config.overridePad) {
-                        temporalEl.x = xCurs + sectionWidth - temporalEl.width;
-                        xCurs += sectionWidth
+                        temporalEl.x = tempX + timespanWidth - temporalEl.width;
                     } else {
-                        temporalEl.x = xCurs + sectionWidth - temporalEl.width - temporalEl.padding[1];
-                        xCurs += sectionWidth
+                        temporalEl.x = tempX + timespanWidth - temporalEl.width - temporalEl.padding[1];
                     }
                     break;
                 default: 
                     // Centre
-                    xCurs += sectionWidth / 2;
-                    temporalEl.centreXPos(xCurs)
-                    xCurs += sectionWidth / 2;
+                    temporalEl.centreXPos(tempX + timespanWidth/2);
                     break;
 
             }
-
-            currTimestamp = temporalEl.timestamp;
         })
 
-
-        this.barWidth = xCurs - this.barX;
+        console.log("BAR X ", this.barX)
+        this.barWidth = this.timespanX[this.timespanX.length-1] - this.barX;
+        console.log(this.timespanX[this.timespanX.length-1]);
+        console.log("BAR WIDTH: ", this.barWidth);
         this.bounds = {width: this.width + this.barWidth, height: this.height}
     }
-
 
     addSimplePulse(elementType: typeof SimplePulse, args: any): number[] {
         this.elementCursor += 1;
@@ -228,6 +241,29 @@ export default class Channel extends Drawable implements labelable {
         return this.hSections;
     }
 
+    addAnnotationLabel(args: any) {
+        if (!this.annotationLayer) {
+            this.annotationLayer = new AnnotationLayer([0, 0, 0, 0])
+        }
+        var timestamp;
+        console.log(args.timestamp);
+
+        if (args.timestamp !== undefined) {
+            timestamp = args.timestamp;
+        } else {
+            timestamp = this.elementCursor;
+        }
+        console.log("TIME STAMP IS", timestamp)
+
+        if (timestamp == -1) {
+            return;
+        }
+
+        var newLabel = Label.anyArgConstruct(args);
+
+        this.annotationLayer.annotateLabel(newLabel, timestamp);
+    }
+
     addAbstraction(elementType: typeof Abstraction, args: any) {
         this.elementCursor += 1;
 
@@ -240,7 +276,6 @@ export default class Channel extends Drawable implements labelable {
         return this.hSections;
     }
 
-
     jumpTimespan(newCurs: number) {
         for (var empty = this.elementCursor; empty < newCurs; empty++) {
             this.hSections.push(0);
@@ -251,9 +286,10 @@ export default class Channel extends Drawable implements labelable {
     // Draws the channel label
     // It is required that computeY has been ran for this to work
     drawLabel(surface: Svg) : number[] {
+        /*  Draw label with no temp elements?
         if (this.temporalElements.length === 0) {
             return [0, 0];
-        }
+        }*/
 
         if (this.label) {
 
@@ -270,5 +306,6 @@ export default class Channel extends Drawable implements labelable {
 
         return [0, 0];
     }
+
 
 }

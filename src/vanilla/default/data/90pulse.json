@@ -1,9 +1,9 @@
 {
-    "padding": [0, 10, 0, 10],
+    "padding": [0, 5, 0, 5],
 
     "config": {
         "orientation": "top",
-        "alignment": "centre",
+        "alignment": "left",
         "overridePad": false,
         "inheritWidth": false
     },
@@ -18,7 +18,7 @@
 
     "label": {
         "text": "90^{\\circ}",
-        "padding": [0, 0, 10, 0],
+        "padding": [0, 0, 0, 0],
         "labelPosition": "top",
         "style": {
             "size": 20,

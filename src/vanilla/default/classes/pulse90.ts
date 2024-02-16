@@ -17,5 +17,7 @@ export default class Pulse90 extends SimplePulse {
         offset: number[]=[0, 0]) {
 
         super(timestamp, config, padding, style, label, offset)
+
+        console.log(this.width)
     }
 }
