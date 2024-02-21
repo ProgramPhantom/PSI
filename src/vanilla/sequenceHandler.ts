@@ -1,5 +1,5 @@
 import { Channel } from "diagnostics_channel";
-// import Abstraction from "./abstraction";
+import Abstraction from "./abstraction";
 // import Aquire from "./default/classes/aquire";
 // import ChirpHiLo from "./default/classes/chirpHiLo";
 // import ChirpLoHi from "./default/classes/chirpLoHi";
@@ -227,9 +227,10 @@ export default class SequenceHandler {
         ]
     }
     
-    static commands: {[name: string]: object} = {
+    static commands: {[name: string]: any} = {
         ...SVGPulse.defaults,
         ...SimplePulse.defaults,
+        ...Abstraction.defaults
     }
 
 
@@ -262,9 +263,14 @@ export default class SequenceHandler {
 
         this.sequence.defineChannel("p1", {});
 
-        this.parseScript(initialCode);
+        try {
+            this.parseScript(initialCode);
+        } catch {
+            
+        }
+        
 
-        console.log(SVGPulse.defaults);
+        console.log(SequenceHandler.commands);
     }
 
     parseScript(text: string) {
@@ -548,14 +554,19 @@ export default class SequenceHandler {
         }
 
         console.log(Object.keys(SimplePulse.defaults));
+
    
         if (Object.keys(SVGPulse.defaults).includes(commandName)) {
-            var defArgObj1 = SVGPulse.defaults[commandName]; 
-            this.sequence.addTemporal(channelName, SVGPulse.anyArgConstruct(defArgObj1, args))
+            var svgDef = SVGPulse.defaults[commandName]; 
+            this.sequence.addTemporal(channelName, SVGPulse.anyArgConstruct(svgDef, args))
         } else if (Object.keys(SimplePulse.defaults).includes(commandName)) {
-            var defArgObj2 = SimplePulse.defaults[commandName]; 
-            this.sequence.addTemporal(channelName, SimplePulse.anyArgConstruct(defArgObj2, args))
-        } else {
+            var simpDef = SimplePulse.defaults[commandName]; 
+            this.sequence.addTemporal(channelName, SimplePulse.anyArgConstruct(simpDef, args))
+        } else if (Object.keys(Abstraction.defaults).includes(commandName)) {
+            var absDef = Abstraction.defaults[commandName];
+            this.sequence.addTemporal(channelName, Abstraction.anyArgConstruct(absDef, args))
+        } 
+        else {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])
         }
 

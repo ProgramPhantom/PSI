@@ -22,7 +22,9 @@ export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both"
 
 export enum Alignment {Left=<any>"left", Centre=<any>"centre", Right=<any>"right"}
 
-
+export interface IHasAssembler {
+    anyArgConstruct(defaultArgs: temporalInterface, args: any): object;
+}
 export interface labelable {
     label?: Label,
     drawLabel(surface: Svg): number[],

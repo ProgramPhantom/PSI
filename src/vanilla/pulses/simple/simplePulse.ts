@@ -18,14 +18,14 @@ export interface simplePulseStyle {
 
 
 
-export default class SimplePulse extends Temporal {
+export default class SimplePulse extends Temporal  {
     // Default is currently 180 Pulse
     static defaults: {[key: string]: simplePulseInterface} = {...<any>defs}
     
     // A pulse that is an svg rect
     style: simplePulseStyle;
     
-    static anyArgConstruct(defaultArgs: simplePulseInterface, args: any): SimplePulse {
+    static anyArgConstruct(defaultArgs: simplePulseInterface, args: simplePulseInterface): SimplePulse {
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
         var el = new SimplePulse(options.timestamp,

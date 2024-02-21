@@ -280,18 +280,6 @@ export default class Channel extends Drawable implements labelable {
         this.annotationLayer.annotateLong(long, range[0], range[1]);
     }
 
-    addAbstraction(elementType: typeof Abstraction, args: any) {
-        this.elementCursor += 1;
-
-        var abs = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor})
-
-        this.temporalElements.push(abs);
-        
-        this.hSections.push(abs.actualWidth);
-
-        return this.hSections;
-    }
-
     jumpTimespan(newCurs: number) {
         for (var empty = this.elementCursor; empty < newCurs; empty++) {
             this.hSections.push(0);
