@@ -41,3 +41,28 @@ function FlattenObj(obj: any) {
 var f = FlattenObj(s);
 
 
+static fullParse(defaults: any, args: any) {
+        for (var [key, val] of Object.entries(args)) {
+            console.log(key)
+    
+            if (typeof val === "object" && // If val is object ei {}
+                !Array.isArray(val) &&
+                val !== null) {
+                    console.log("going deeper")
+                    SequenceHandler.fullParse(defaults[key], val)
+            } else {
+                if (Array.isArray(defaults[key])) {
+                    console.log("array")
+                    try {
+                        args[key] = JSON.parse("" + val)
+                    } catch {
+                        throw new ScriptIssue(ArgumentError.ARGUMENT_INVALID_TYPE, `The argument '${key}' cannot be parsed to type 'array`)
+                    }
+                    
+                } else if (typeof defaults[key] === "number") {
+                    args[key] = parseFloat(val + "");
+                }
+            }
+    
+        } 
+    }

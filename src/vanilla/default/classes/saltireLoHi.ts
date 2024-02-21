@@ -1,6 +1,6 @@
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import * as defaultPulse from "../data/saltirelohi.json"
-import { Alignment, Orientation, temporalConfig } from "../../temporal.ts";
+import * as defaultPulse from "../data/svgPulse/saltirelohi.json"
+import { Alignment, IDefaultConstruct, Orientation, temporalConfig } from "../../temporal.ts";
 import SVGPulse from "../../pulses/image/svgPulse.ts";
 import { svgPulseInterface, svgPulseStyle } from "../../pulses/image/svgPulse.ts";
 import Label, {labelInterface} from '../../label.ts';
@@ -12,19 +12,14 @@ const DEFAULTSVG = await fetch(defaultPulse.path).then(
 )
 
 
-export default class SaltireLoHi extends SVGPulse {
+export default class SaltireLoHi extends SVGPulse implements IDefaultConstruct {
     static defaults: svgPulseInterface = {...<any>defaultPulse}
 
-    constructor(timestamp: number=0, 
-                path: string=SaltireLoHi.defaults.path,
-                config: temporalConfig=SaltireLoHi.defaults.config, 
-                padding: number[]=SaltireLoHi.defaults.padding, 
-                style: svgPulseStyle=SaltireLoHi.defaults.style,
-                label: labelInterface=SaltireLoHi.defaults.label!,
+    constructor(timestamp: number=0,
+                params: svgPulseInterface=SaltireLoHi.defaults,
                 offset: number[]=[0, 1]) {
 
-        super(timestamp, path, config, padding, style, label, offset)
-
+        super(timestamp, params, offset);
     }
 
     getSVG(): string {

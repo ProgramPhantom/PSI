@@ -23,11 +23,11 @@ export default class ImagePulse extends Temporal {
         const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;
 
         var el = new elementType(options.timestamp,
-                                 options.path,
-                                 options.config,
-                                 options.padding,
-                                 options.style,
-                                 options.label)
+                                 {path: options.path,
+                                  config: options.config,
+                                  padding: options.padding,
+                                  style: options.style,
+                                  label: options.label})
 
         return el;
     }
@@ -36,22 +36,15 @@ export default class ImagePulse extends Temporal {
     path: string;
 
     constructor(timestamp: number, 
-                path: string,
-                config: temporalConfig, 
-                padding: number[], 
-                style: imagePulseStyle,
-                label?: labelInterface,
+                params: imagePulseInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
-              config, 
-              padding, 
-              offset,
-              label,
-              {width: style.width, height: style.height});
+              params,
+              offset);
 
-        this.style = style;
-        this.path = path;
+        this.style = params.style;
+        this.path = params.path;
     }
 
 

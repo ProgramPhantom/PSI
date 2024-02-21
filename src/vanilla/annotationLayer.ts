@@ -67,14 +67,14 @@ export default class AnnotationLayer extends Drawable {
         var maxYLabel = this.drawLabels(surface, maxYLong);
         
 
-        console.log("MAX HEIGTH Lab", maxYLabel )
-        console.log("MAX HEIGTH long", maxYLong )
+        
+        
 
 
         var maxY = maxYLabel > maxYLong ? maxYLabel : maxYLong;
 
         var height = maxY - this.y;
-        console.log("HEIGHT: 000000", height);
+        
         var width = this.timestampX[this.timestampX.length-1] - this.timestampX[0];
 
         this.bounds = {width: width, height: height};
@@ -88,7 +88,7 @@ export default class AnnotationLayer extends Drawable {
         var heights = new Array<number>(this.timestampX.length);
         heights.fill(startY);
 
-        console.log("LABELS: --- ", Object.entries(this.labels));
+        
 
         // Draw labels
         for (const [key, value] of Object.entries(this.labels)) {
@@ -100,8 +100,8 @@ export default class AnnotationLayer extends Drawable {
                 var x;
                 var timeWidth;
 
-                console.log(timestamp);
-                console.log(this.timestampWidths)
+                
+                
 
                 if (timestamp < this.timestampWidths.length) {
                     x = this.timestampX[timestamp];
@@ -111,7 +111,7 @@ export default class AnnotationLayer extends Drawable {
                     timeWidth = 0;
                 }
 
-                console.log("ANNOTATION X", parseInt(key));
+                
 
                 
                 switch (l.labelPosition) {
@@ -128,7 +128,7 @@ export default class AnnotationLayer extends Drawable {
 
                 heights[timestamp] += l.height;
 
-                console.log("X FOR ANNO", x);
+                
                 l.draw(surface);
             }) 
         }
@@ -144,7 +144,7 @@ export default class AnnotationLayer extends Drawable {
 
         var ys = new Array<number>(this.timestampX.length-1);
         ys.fill(startY);
-        console.log(ys);
+        
 
         // Draw Longs
         for (const timeLong of this.longs) {
@@ -161,7 +161,7 @@ export default class AnnotationLayer extends Drawable {
             var thisStartY = Math.max(...relaventYs);
             
             var y = thisStartY;
-            console.log("SETTING LONG AT: ", x1, y, x2, y);
+            
 
             long.x1 = x1;
             long.x2 = x2;
@@ -179,7 +179,7 @@ export default class AnnotationLayer extends Drawable {
             }
         }
 
-        console.log("LONG HEIGTHS", ys);
+        
         var longHeight = Math.max(...ys);
 
         if (longHeight !== Infinity) {
@@ -191,7 +191,7 @@ export default class AnnotationLayer extends Drawable {
 
     annotateLabel(label: Label, timestamp: number) {
         var newLabel = label;
-        console.log("ANNOTATING LABEL");
+        
 
         if (this.labels[timestamp] === undefined) {
             this.labels[timestamp] = [newLabel];
@@ -202,7 +202,7 @@ export default class AnnotationLayer extends Drawable {
     }
 
     annotateLong(bracket: Bracket, timespanStart: number, timespanEnd: number) {
-        console.log("ADDING LONG");
+        
         this.longs.push({timespanRange: [timespanStart, timespanEnd], bracket: bracket})
     }
 

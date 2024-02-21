@@ -1,8 +1,11 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig} from "../../temporal";
 import ImagePulse, { imagePulseStyle } from "./imagePulse";
-import * as defaultPulse from "../../default/data/svgPulse.json"
+import * as defaultPulse from "../../default/data/svgPulse/svgPulse.json"
 import {LabelPosition, labelInterface } from "../../label";
+import { UpdateObj } from "../../util";
+import {defs} from "../../default/data/svgPulse"
+
 
 
 export interface svgPulseInterface extends temporalInterface {
@@ -10,42 +13,50 @@ export interface svgPulseInterface extends temporalInterface {
     style: svgPulseStyle,
 }
 
-export interface svgPulseStyle extends imagePulseStyle {
- 
+export interface svgPulseStyle {
+    width: number,
+    height: number
 }
 
-export default class SVGPulse extends ImagePulse {
+export default class SVGPulse extends Temporal {
     // svg
-    static defaults: svgPulseInterface = {...<any>defaultPulse}
+    static defaults: {[key: string]: svgPulseInterface} = {...<any>defs};
+
+    static anyArgConstruct(defaultArgs: svgPulseInterface, args: svgPulseInterface): SVGPulse {
+        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
+
+        var el = new SVGPulse(options.timestamp,
+                                {path: options.path,
+                                 config: options.config,
+                                 padding: options.padding,
+                                 style: options.style,
+                                 label: options.label})
+
+        return el;
+    }
 
     svgContent: string;
+    style: imagePulseStyle;
+    path: string;
 
     constructor(timestamp: number,
-                path: string,
-                config: temporalConfig, 
-                padding: number[], 
-                style: svgPulseStyle,
-                label?: labelInterface,
+                params: svgPulseInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp,  
-              path, 
-              config,
-              padding, 
-              style,
-              label,
+              params,
               offset);
 
-        this.style = style;
-
-        this.path = path;
-
-        
+        this.style = params.style;
+        this.path = params.path;
 
         this.svgContent = this.getSVG();
 
-
-        
+        this.bounds = {width: this.style.width, height: this.style.height};
+        this.actualBounds = {
+            width: this.bounds.width + this.padding[1] + this.padding[3],
+            height: this.bounds.height + this.padding[0] + this.padding[2]
+        }
     }
         
     getSVG(): string {

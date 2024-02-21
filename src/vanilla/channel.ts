@@ -48,7 +48,7 @@ export default class Channel extends Drawable implements labelable {
     barX: number;
     barY: number;
     
-    temporalElements: Temporal[];
+    private temporalElements: Temporal[];
     annotationLayer?: AnnotationLayer;
 
     hSections: number[] = [];
@@ -99,7 +99,7 @@ export default class Channel extends Drawable implements labelable {
             this.annotationLayer.draw(surface, timestampWidths, this.barX, this.y);
             yCursor += this.annotationLayer.actualHeight;
             annotationHeight = this.annotationLayer.actualHeight;
-            console.log(this.annotationLayer.actualHeight)
+            
         }
 
         this.computeBarY(yCursor);
@@ -109,7 +109,7 @@ export default class Channel extends Drawable implements labelable {
         this.drawLabel(surface);
 
         
-        console.log("TIMESPAN X ", this.timespanX)
+        
         
         this.bounds = {width: this.width + labelOffsetX + this.pad[1] + this.pad[3], 
             height: this.height + this.pad[0] + this.pad[2] + annotationHeight}
@@ -181,7 +181,7 @@ export default class Channel extends Drawable implements labelable {
 
             if (temporalEl.config.inheritWidth) {
                 temporalEl.bounds = {width: timespanWidth, height: temporalEl.height};
-                console.log("Inheriting width of ", timespanWidth)
+                
             }
 
             switch (temporalEl.config.alignment) {
@@ -210,42 +210,21 @@ export default class Channel extends Drawable implements labelable {
             }
         })
 
-        console.log("BAR X ", this.barX)
+        
         this.barWidth = this.timespanX[this.timespanX.length-1] - this.barX;
-        console.log(this.timespanX[this.timespanX.length-1]);
-        console.log("BAR WIDTH: ", this.barWidth);
+        
+        
         this.bounds = {width: this.width + this.barWidth, height: this.height}
     }
 
-    addSimplePulse(elementType: typeof SimplePulse, args: any): number[] {
+
+    addTemporal(obj: Temporal): number[] {
         this.elementCursor += 1;
+        obj.timestamp = this.elementCursor;
 
-        var pulse = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor});
-        this.temporalElements.push(pulse);
+        this.temporalElements.push(obj);
+        this.hSections.push(obj.actualWidth);
 
-
-        this.hSections.push(pulse.actualWidth);
-        return this.hSections;
-    }
-
-    addImagePulse(elementType: typeof ImagePulse, args: any): number[] {
-        this.elementCursor += 1;
-
-        var pulse = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor});
-        this.temporalElements.push(pulse);
-        
-        this.hSections.push(pulse.actualWidth);
-        return this.hSections;
-    }
-
-    addSpan(elementType: typeof Span, args: any): number[] {
-        this.elementCursor += 1;
-
-        var span = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor})
-
-        this.temporalElements.push(span);
-        this.hSections.push(span.actualWidth);
-        
         return this.hSections;
     }
 
@@ -254,14 +233,14 @@ export default class Channel extends Drawable implements labelable {
             this.annotationLayer = new AnnotationLayer(Channel.defaults.annotationStyle.padding)
         }
         var timestamp;
-        console.log(args.timestamp);
+        
 
         if (args.timestamp !== undefined) {
             timestamp = args.timestamp;
         } else {
             timestamp = this.elementCursor;
         }
-        console.log("TIME STAMP IS", timestamp)
+        
 
         if (timestamp == -1) {
             return;

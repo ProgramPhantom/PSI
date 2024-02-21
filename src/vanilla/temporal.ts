@@ -1,6 +1,7 @@
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Label, { labelInterface, LabelPosition } from "./label";
+import { UpdateObj } from "./util";
 
 interface Dim {
     width: number,
@@ -22,7 +23,10 @@ export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both"
 export enum Alignment {Left=<any>"left", Centre=<any>"centre", Right=<any>"right"}
 
 
-
+export interface labelable {
+    label?: Label,
+    drawLabel(surface: Svg): number[],
+}
 
 export interface temporalConfig {
     orientation: Orientation,
@@ -30,12 +34,6 @@ export interface temporalConfig {
     overridePad: boolean
     inheritWidth: boolean,
 }
-
-export interface labelable {
-    label?: Label,
-    drawLabel(surface: Svg): number[],
-}
-
 
 export interface temporalInterface {
     config: temporalConfig,
@@ -47,6 +45,7 @@ export interface temporalInterface {
 
 export default abstract class Temporal extends Drawable implements labelable {
     // An element that relates to a point in time
+  
     timestamp: number;
     config: temporalConfig;
 
@@ -57,30 +56,21 @@ export default abstract class Temporal extends Drawable implements labelable {
     private _actualBounds?: Bounds;
 
     constructor(timestamp: number,
-                config: temporalConfig,
-                padding: number[],
-                offset: number[]=[0, 0],
-                label?: labelInterface,
-                dim?: {width: number, height: number}) {
+                params: temporalInterface,
+                offset: number[]=[0, 0]) {
 
         super(0, 0, offset);
 
         this.timestamp = timestamp;
 
-        this.config = config;
-        this.padding = padding;
+        this.config = params.config;
+        this.padding = params.padding;
 
         
-        if (label) {
-            this.label = Label.anyArgConstruct(label);
+        if (params.label) {
+            this.label = Label.anyArgConstruct(params.label);
         }
-        if (dim) {
-            this.bounds = dim;
-            this.actualBounds = {
-                width: dim.width + padding[1] + padding[3],
-                height: dim.height + padding[0] + padding[2]
-            }
-        }
+        
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
@@ -208,6 +198,7 @@ export default abstract class Temporal extends Drawable implements labelable {
     centreXPos(x: number) {
         this.x = x - this.width/2;
     }
+
 
     get actualBounds(): Bounds {
         if (this._actualBounds) {

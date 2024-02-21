@@ -3,6 +3,7 @@ import { SVG, extend as SVGextend, Element as SVGElement, Svg } from '@svgdotjs/
 import Channel from './vanilla/channel';
 import { channelInterface, channelStyle } from './vanilla/channel';
 import Sequence from "./vanilla/sequence";
+import SequenceHandler from './vanilla/sequenceHandler';
 
 const CANVASID = "canvasDiv";
 const SVGID = "svgSurface"
@@ -22,7 +23,7 @@ const EXAMPLE = {
 
 export default function Canvas(props:  {props: string}) {
     const svgObj = useRef<Svg>();
-    const diagram = useRef<Sequence>();
+    const handle = useRef<SequenceHandler>();
     const [script, setScript] = useState<string>("");
 
 
@@ -44,18 +45,18 @@ export default function Canvas(props:  {props: string}) {
     function ConstructSequence() {
         
         svgObj.current!.clear();
-        diagram.current = new Sequence(props.props, svgObj.current!);
-        diagram.current.draw();
+        handle.current = new SequenceHandler(props.props, svgObj.current!);
+        handle.current.draw();
 
-        var canvasWidth = diagram.current.width;
+        var canvasWidth = handle.current.sequence.width;
         var canvasHeight = DEFAULT_HEIGHT;
 
     
-        if (diagram.current.width > DEFAULT_WIDTH ) {
-            canvasWidth = diagram.current.width;
+        if (handle.current.sequence.width > DEFAULT_WIDTH ) {
+            canvasWidth = handle.current.sequence.width;
         } 
-        if (diagram.current.height > DEFAULT_HEIGHT ) {
-            canvasHeight = diagram.current.height;
+        if (handle.current.sequence.height > DEFAULT_HEIGHT ) {
+            canvasHeight = handle.current.sequence.height;
         } 
         
         svgObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)

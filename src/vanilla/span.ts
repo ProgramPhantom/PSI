@@ -15,7 +15,7 @@ interface spanInterface extends temporalInterface {
 export default class Span extends Temporal implements labelable {
     static defaults: spanInterface = {...<any>defaultSpan}
 
-    public static anyArgConstruct(elementType: typeof Span, args: any): Span {
+    static anyArgConstruct(elementType: typeof Span, args: any): Span {
 
         const spanOptions = args ? UpdateObj(Span.defaults, args) : elementType.defaults;
 

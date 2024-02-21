@@ -1,5 +1,5 @@
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import * as defaultPulse from "../data/chirplohi.json"
+import * as defaultPulse from "../data/svgPulse/chirplohi.json"
 import { Alignment, Orientation, temporalConfig } from "../../temporal.ts";
 import SVGPulse from "../../pulses/image/svgPulse.ts";
 import { svgPulseInterface, svgPulseStyle } from "../../pulses/image/svgPulse.ts";

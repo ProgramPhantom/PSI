@@ -14,6 +14,7 @@
     "@types/mathjax": "^0.0.40",
     "@types/node": "^20.11.10",
     "better-react-mathjax": "^2.0.3",
+    "fs": "^0.0.1-security",
     "mathjax": "^3.2.2",
     "mathjax-full": "^3.2.2",
     "memfs": "^4.6.0",

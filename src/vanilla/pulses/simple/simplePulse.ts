@@ -1,9 +1,9 @@
 import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "../../temporal";
-import * as defaultPulse from "../../default/data/180pulse.json"
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
 import Label, { LabelPosition, labelInterface } from "../../label";
 import {UpdateObj} from "../../util";
+import {defs} from "../../default/data/simplePulse"
 
 export interface simplePulseInterface extends temporalInterface {
     style: simplePulseStyle,
@@ -12,54 +12,49 @@ export interface simplePulseStyle {
     width: number,
     height: number,
     fill: string,
-    stroke?: string | null,  // Optional
-    strokeWidth?: number | null
+    stroke: string,  // Optional
+    strokeWidth: number
 }
 
 
 
-export default class SimplePulse extends Temporal  {
+export default class SimplePulse extends Temporal {
     // Default is currently 180 Pulse
-    static defaults: simplePulseInterface = {...<any>defaultPulse}
+    static defaults: {[key: string]: simplePulseInterface} = {...<any>defs}
     
     // A pulse that is an svg rect
     style: simplePulseStyle;
-    lable?: Label;
     
-    public static anyArgConstruct(elementType: typeof SimplePulse, args: any): SimplePulse {
-        const options = args ? UpdateObj(elementType.defaults, args) : elementType.defaults;
+    static anyArgConstruct(defaultArgs: simplePulseInterface, args: any): SimplePulse {
+        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
-        
-
-        var el = new elementType(options.timestamp,
-                                 options.config,
-                                 options.padding,
-                                 options.style,
-                                 options.label)
+        var el = new SimplePulse(options.timestamp,
+                                {config: options.config,
+                                 padding: options.padding,
+                                 style: options.style,
+                                 label: options.label})
 
         return el;
     }
 
     constructor(timestamp: number, 
-                config: temporalConfig, 
-                padding: number[], 
-                style: simplePulseStyle,
-                label: labelInterface,
+                params: simplePulseInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
-              config,
-              padding, 
-              offset,
-              label,
-              {width: style.width, height: style.height});
+              params,
+              offset);
 
-        this.style = style;
+        this.style = params.style;
+
+        this.bounds = {width: this.style.width, height: this.style.height};
+        this.actualBounds = {
+            width: this.bounds.width + this.padding[1] + this.padding[3],
+            height: this.bounds.height + this.padding[0] + this.padding[2]
+        }
     }
 
     draw(surface: SVG.Svg) {
-        
-
         surface.rect(this.width, this.height)
         .attr({fill: this.style.fill,
                 stroke: this.style.stroke})
