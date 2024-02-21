@@ -67,7 +67,8 @@ enum TokenType {
     Argument="argument",
     SpecialCommandSpecifier="specialcommandspecifier",
     NewLine="newline",
-    BinThis="binthis"
+    BinThis="binthis",
+    RunCommand="runcommand"
 }
 interface ScriptToken {
     type: TokenType,
@@ -76,7 +77,9 @@ interface ScriptToken {
     line: number,
 }
 
-type TrainsitionRule = {input: string, newState: ParseState, tokenType?: TokenType};
+interface TrainsitionRule {input: string, newState: ParseState, tokenType?: TokenType, 
+                           ignore?: boolean,
+                           extraBehaviour?: {type: TokenType, content: string},};
 enum ParseState {
     Start="start",  //0
     Channel="channel",  // 1 
@@ -111,11 +114,12 @@ class StateDiagram {
         this.startCol = 1;
     }
 
-    input(c: string, thiscol: number, line: number): {newState: ParseState, token: ScriptToken | undefined} {
+    input(c: string, thiscol: number, line: number): {newState: ParseState, token: ScriptToken | undefined, extraToken?: ScriptToken} {
         this.currCol = thiscol;
         var currRules = this.transitionRules[this.currState];
         var newState = this.currState;
         var token: ScriptToken | undefined;
+        var extraToken: ScriptToken | undefined = undefined;
 
         console.log(currRules )
 
@@ -143,15 +147,30 @@ class StateDiagram {
                     this.startCol = this.currCol+1;
                     this.selection = "";
                 } else {
-                    this.selection += c;
+                    if (rule.ignore === undefined) {
+                        this.selection += c;
+                    }
+                    
                     console.log(this.selection);
+                }
+
+                if (rule.extraBehaviour !== undefined) {
+                    extraToken = {
+                        type: rule.extraBehaviour.type,
+                        content: rule.extraBehaviour.content,
+                        columns: [this.startCol, this.currCol],
+                        line: line
+                    }
+
+                    this.startCol = this.currCol+1;
+                    this.selection = "";
                 }
                 break;  // Do first rule
             }
         }
         this.currState = newState;
         
-        return {newState: newState, token: token};
+        return {newState: newState, token: token, extraToken: extraToken};
     }
 }
 
@@ -179,7 +198,7 @@ export default class SequenceHandler {
                     {input: "[(]", newState: ParseState.NextParam, tokenType: TokenType.ChannelCommand},
                     SequenceHandler.characterError,
         ],
-        "nextparam": [{input: "[)]", newState: ParseState.Start},
+        "nextparam": [{input: "[)]", newState: ParseState.Start, extraBehaviour: {type: TokenType.RunCommand, content: ")"}},
                       SequenceHandler.characterError, // Next Param
                       {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Paremeter}
         ],
@@ -191,21 +210,20 @@ export default class SequenceHandler {
         "subparam": [SequenceHandler.characterError,
                      {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Paremeter}
         ],
-        "argument": [{input: "[)]", newState: ParseState.Start, tokenType: TokenType.Argument},
+        "argument": [{input: "[)]", newState: ParseState.Start, tokenType: TokenType.Argument, extraBehaviour: {type: TokenType.RunCommand, content: ")"}},
                      {input: "[,]", newState: ParseState.NextParam, tokenType: TokenType.Argument},
-                     {input: "[[]", newState: ParseState.List, tokenType: TokenType.BinThis},
-                     {input: '["]', newState: ParseState.String, tokenType: TokenType.BinThis},
+                     {input: "[[]", newState: ParseState.List, ignore: true},
+                     {input: '["]', newState: ParseState.String, ignore: true},
                      SequenceHandler.characterError,
                      {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Argument}
         ],
-        "list": [{input: "[\\]]", newState: ParseState.Argument, tokenType: TokenType.BinThis},
+        "list": [{input: "[\\]]", newState: ParseState.Argument, ignore: true},
                  {input: "[,]", newState: ParseState.List},
                  {input: SequenceHandler.alphaNumericRegex, newState: ParseState.List},
         ],
-        "string": [{input: '["]', newState: ParseState.Argument, tokenType: TokenType.BinThis},
+        "string": [{input: '["]', newState: ParseState.Argument, ignore: true},
                    {input: "[\\\\]", newState: ParseState.String},
                    {input: SequenceHandler.alphaNumericRegex, newState: ParseState.String},
-
         ]
     }
     
@@ -255,9 +273,10 @@ export default class SequenceHandler {
         // 1 ----- Tokenise script:
         this.tokenise();
 
+        /*
         if (!this.validSyntax) {
-            return;
-        }
+            console.log("INVALID SYNTAX");
+        }*/
         if (this.tokenStream.length === 0) {
             return;
         }
@@ -285,6 +304,10 @@ export default class SequenceHandler {
 
         for (const tok of this.tokenStream) {
             console.log(tok);
+
+            if (tok.type === TokenType.NewLine) {
+                continue;
+            }
 
             switch (currState) {
                 case State.Start: 
@@ -323,13 +346,13 @@ export default class SequenceHandler {
                     break;
                 case State.NextParam:
                     switch (tok.type) {
-                        case TokenType.NewLine:
-                            currState = State.Start;
-                            this.runCommand(command, workingChannel, propList);
-                            break;
                         case TokenType.Property:
                             currState = State.ReadParam;
                             propList.push({propTree: [tok]})
+                            break;
+                        case TokenType.RunCommand:
+                            currState = State.Start;
+                            this.runCommand(command, workingChannel, propList);
                             break;
                         default:
                             throw new Error("Invalid token order");
@@ -354,7 +377,7 @@ export default class SequenceHandler {
                             currState = State.ReadParam;
                             propList.push({propTree: [tok]})
                             break;
-                        case TokenType.NewLine:
+                        case TokenType.RunCommand:
                             currState = State.Start;
                             this.runCommand(command, workingChannel, propList);
                             break;
@@ -367,7 +390,11 @@ export default class SequenceHandler {
             }
         }
 
-        this.runCommand(command, workingChannel, propList);
+        if (this.tokenStream[this.tokenStream.length-1].type === TokenType.Argument) {
+            this.runCommand(command, workingChannel, propList);
+        }
+
+        // this.runCommand(command, workingChannel, propList);
     }
 
     tokenise() {
@@ -405,6 +432,10 @@ export default class SequenceHandler {
                 tokens.push(result.token);
             }
 
+            if (result.extraToken) {
+                tokens.push(result.extraToken);
+            }
+
         }
 
         if (stateSystem.currState === ParseState.Start) {
@@ -414,9 +445,9 @@ export default class SequenceHandler {
         }
 
 
-        
+       
         this.tokenStream = tokens;
-
+        console.log("TOKEN STREAM: ", this.tokenStream)
         
     }
 
