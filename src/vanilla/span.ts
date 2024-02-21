@@ -13,19 +13,20 @@ interface spanInterface extends temporalInterface {
 }   
 
 export default class Span extends Temporal implements labelable {
-    static defaults: spanInterface = {...<any>defaultSpan}
+    static defaults: {[name: string]: spanInterface} = {"span": {...<any>defaultSpan }}
 
-    static anyArgConstruct(elementType: typeof Span, args: any): Span {
+    static anyArgConstruct(defaultArgs: temporalInterface, args: any): Span {
 
-        const spanOptions = args ? UpdateObj(Span.defaults, args) : elementType.defaults;
+        const spanOptions = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
-        var el = new elementType(spanOptions.timestamp,
-                                 spanOptions.config,
-                                 spanOptions.padding,
-                                 spanOptions.style,
-                                 spanOptions.width,
-                                 spanOptions.offset,
-                                 spanOptions.label)
+        var el = new Span(spanOptions.timestamp,
+                                 {config: spanOptions.config,
+                                  padding: spanOptions.padding,
+                                  style: spanOptions.style,
+                                  width: spanOptions.width,
+                                  label: spanOptions.label},
+                                  spanOptions.offset
+                                 )
 
         return el;
     }
@@ -34,19 +35,15 @@ export default class Span extends Temporal implements labelable {
     arrowStyle: arrowStyle;
 
     constructor(timestamp: number=0,
-                config: temporalConfig=Span.defaults.config, 
-                padding: number[]=Span.defaults.padding, 
-                style: arrowStyle=Span.defaults.style,
-                width: number=Span.defaults.width,
-                offset: number[]=[0,0],
-                label?: labelInterface, ) {
+                params: spanInterface,
+                offset: number[]=[0,0]) {
             
-        super(timestamp, config, padding, offset, label,)
+        super(timestamp, params, offset)
 
-        this.bounds = {width: width, height: style.thickness + padding[2]}
-        this.actualBounds = {width: padding[3] + width + padding[1], height: padding[0] + style.thickness + padding[2]}
+        this.bounds = {width: params.width, height: params.style.thickness + params.padding[2]}
+        this.actualBounds = {width: params.padding[3] + params.width + params.padding[1], height: params.padding[0] + params.style.thickness + params.padding[2]}
                     
-        this.arrowStyle = style;
+        this.arrowStyle = params.style;
     }
 
     public draw(surface: Svg): void {

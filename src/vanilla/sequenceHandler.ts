@@ -230,7 +230,8 @@ export default class SequenceHandler {
     static commands: {[name: string]: any} = {
         ...SVGPulse.defaults,
         ...SimplePulse.defaults,
-        ...Abstraction.defaults
+        ...Abstraction.defaults,
+        ...Span.defaults
     }
 
 
@@ -266,7 +267,7 @@ export default class SequenceHandler {
         try {
             this.parseScript(initialCode);
         } catch {
-            
+
         }
         
 
@@ -307,6 +308,12 @@ export default class SequenceHandler {
         var propList: {propTree: ScriptToken[], arg?: ScriptToken}[] = []; 
         var workingChannel: ScriptToken = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1};
         var command: ScriptToken = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1};
+
+        function reset() {
+            propList = []; 
+            workingChannel = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1};
+            command = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1};
+        }
 
         for (const tok of this.tokenStream) {
             console.log(tok);
@@ -359,6 +366,7 @@ export default class SequenceHandler {
                         case TokenType.RunCommand:
                             currState = State.Start;
                             this.runCommand(command, workingChannel, propList);
+                            reset()
                             break;
                         default:
                             throw new Error("Invalid token order");
@@ -386,6 +394,7 @@ export default class SequenceHandler {
                         case TokenType.RunCommand:
                             currState = State.Start;
                             this.runCommand(command, workingChannel, propList);
+                            reset();
                             break;
                         default:
                             throw new Error("Invalid token order");
@@ -517,6 +526,9 @@ export default class SequenceHandler {
                 }
                 else {
                     console.log("is string:", val.content)
+                    console.log("inner", inner)
+                    var temp = inner[thisProp.content]
+                    Object.assign(inner, inner[thisProp.content]);
                     inner[thisProp.content] = val.content;
                 }
             } else {
@@ -565,7 +577,10 @@ export default class SequenceHandler {
         } else if (Object.keys(Abstraction.defaults).includes(commandName)) {
             var absDef = Abstraction.defaults[commandName];
             this.sequence.addTemporal(channelName, Abstraction.anyArgConstruct(absDef, args))
-        } 
+        } else if (Object.keys(Span.defaults).includes(commandName)) {
+            var spanDef = Span.defaults[commandName];
+            this.sequence.addTemporal(channelName, Span.anyArgConstruct(spanDef, args))
+        }
         else {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])
         }
