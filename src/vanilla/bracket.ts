@@ -23,6 +23,8 @@ export interface bracketInterface {
     protrusion: number,
     style: bracketStyle,
     label: labelInterface,
+
+    timespan?: number[],
 }
 
 export interface bracketStyle {
@@ -35,16 +37,17 @@ export interface bracketStyle {
 
 
 export default class Bracket extends Drawable implements labelable {
-    static defaults: bracketInterface = {...<any>defaultBracket}
+    static defaults: {[key: string]: bracketInterface} = {"horizontal": {...<any>defaultBracket}}
 
-    public static anyArgConstruct(args: bracketInterface): Bracket {
-        const options = args ? UpdateObj(Bracket.defaults, args) : Bracket.defaults;
+    public static anyArgConstruct(defaultArgs: bracketInterface, args: bracketInterface): Bracket {
+        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
         return new Bracket(
             {protrusion: options.protrusion,
              side: options.side,
              style: options.style,
-             label: options.label}
+             label: options.label,
+             timespan: options.timespan}
         )
     }
 
@@ -63,6 +66,7 @@ export default class Bracket extends Drawable implements labelable {
     side: Side;
 
     label?: Label;
+    timespan?: number[];
 
     constructor(params: bracketInterface,
                 offset: number[]=[0, 0]) {
@@ -80,7 +84,6 @@ export default class Bracket extends Drawable implements labelable {
         this.bracketProtrusion = Math.abs(params.protrusion);
         this.totalProtrusion = 0;
         
-
         switch (this.side) {
             case Side.top:
                 this.protrusion = -params.protrusion;
@@ -99,6 +102,7 @@ export default class Bracket extends Drawable implements labelable {
         if (params.label) {
             this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
         }
+        this.timespan = params.timespan;
         
         this.computeTotalProtrusion();
     }

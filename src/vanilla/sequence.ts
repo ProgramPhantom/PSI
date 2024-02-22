@@ -20,6 +20,7 @@ import SaltireLoHi from "./default/classes/saltireLoHi";
 import SaltireHiLo from "./default/classes/saltireHiLo";
 import HalfSine from "./default/classes/halfsine";
 import SequenceHandler from "./sequenceHandler";
+import Bracket from "./bracket";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -203,6 +204,11 @@ export default class Sequence {
     }
 
     addLabel(channelName: string, obj: Label) {
-        this.channels[channelName].addAnnotationLabel(obj)
+        this.channels[channelName].addAnnotationLabel(obj);
+    }
+
+    addAnnotationLong(channelName: string, obj: Bracket) {
+        console.log("ADDING LONG")
+        this.channels[channelName].addAnnotationLong(obj);
     }
 }

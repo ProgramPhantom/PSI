@@ -1,6 +1,6 @@
 import * as defaultChannel from "./default/data/channel.json"
 import { Drawable } from "./drawable";
-import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
+import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Alignment, Orientation, labelable } from "./temporal";
 import Pulse90 from "./default/classes/pulse90";
 import Pulse180 from "./default/classes/pulse180";
@@ -11,7 +11,7 @@ import Label, { labelInterface, LabelPosition } from "./label";
 import Span from "./span";
 import Abstraction from "./abstraction";
 import AnnotationLayer from "./annotationLayer";
-import Bracket from "./bracket";
+import Bracket, { bracketInterface } from "./bracket";
  
 
 export interface channelInterface {
@@ -103,12 +103,7 @@ export default class Channel extends Drawable implements labelable {
 
         this.computeBarY(yCursor);
         
-        
-
         this.drawLabel(surface);
-
-        
-        
         
         this.bounds = {width: this.width + labelOffsetX + this.padding[1] + this.padding[3], 
             height: this.height + this.padding[0] + this.padding[2] + annotationHeight}
@@ -142,7 +137,9 @@ export default class Channel extends Drawable implements labelable {
     drawRect(surface: Svg) {
         // Draws bar
         surface.rect(this.barWidth, this.style.thickness)
-        .attr(this.style).move(this.barX, this.barY);
+        .attr(this.style).move(this.barX, this.barY).attr({
+            "shape-rendering": "crispEdges"
+        });
 
     }
 
@@ -246,34 +243,32 @@ export default class Channel extends Drawable implements labelable {
         this.annotationLayer.annotateLabel(lab, timestamp);
     }
 
-    addAnnotationLong(args: any) {
+    addAnnotationLong(brack: Bracket) {
         if (!this.annotationLayer) {
             this.annotationLayer = new AnnotationLayer(Channel.default.annotationStyle.padding)
         }
 
-        var timestampStart;
-        var timestampEnd;
-
-        
-        timestampStart = args.timestampStart ? args.timestampStart : undefined;
-        timestampEnd = args.timestampStart ? args.timestampStart : undefined;
-        
-        if (timestampStart == -1 || timestampEnd == -1) {
-            // throw
+        var timestampStart: number;
+        var timestampEnd: number;
+        console.log(brack.timespan)
+        if (brack.timespan === undefined) {
             timestampStart = 0;
             timestampEnd = 1;
+        } else if(brack.timespan.length == 1) {
+            timestampStart = brack.timespan[0];
+            timestampEnd = timestampStart + 1;
+        } else if (brack.timespan.length >= 2) {
+            timestampStart = brack.timespan[0];
+            timestampEnd = brack.timespan[1];
+        } else {
+            timestampStart = brack.timespan[0];
+            timestampEnd = brack.timespan[1];
         }
-        if (timestampStart === timestampEnd) {
-            timestampStart = 0;
-            timestampEnd = 1;
-            // return; // Throw
-        }
 
-        var range = args.range ? args.range : [timestampStart ? timestampStart : 0, timestampEnd ? timestampEnd : 1];
 
-        var long = Bracket.anyArgConstruct(args);
-
-        this.annotationLayer.annotateLong(long, range[0], range[1]);
+        var range = brack.timespan ? brack.timespan : [timestampStart, timestampEnd];
+        console.log(range);
+        this.annotationLayer.annotateLong(brack, range[0], range[1]);
     }
 
     jumpTimespan(newCurs: number) {

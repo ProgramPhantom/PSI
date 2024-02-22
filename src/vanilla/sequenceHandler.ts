@@ -131,8 +131,6 @@ class StateDiagram {
             if (c.match(rule.input)) { 
                 newState = rule.newState;
 
-                
-
                 if (rule.ignore === undefined) {
                     this.selection += c;
                     
@@ -240,6 +238,7 @@ export default class SequenceHandler {
         ...Abstraction.defaults,
         ...Span.defaults,
         ...Label.defaults,
+        ...Bracket.defaults,
     }
 
     static UtilCommands: {[character: string]: any} = {
@@ -501,6 +500,7 @@ export default class SequenceHandler {
             } else if (props.length === 1) {  // At the end of the prop chain
                 if (Array.isArray(defaultHere)) {
                     try {
+                        console.log("PARSING ARRAY: ", val.content)
                         var elements = val.content.split(",");
                         let elementsNum = elements.map(Number);
                         inner[thisProp.content] = elementsNum;
@@ -590,9 +590,12 @@ export default class SequenceHandler {
             var spanDef = Span.defaults[commandName];
             this.sequence.addTemporal(channelName, Span.anyArgConstruct(spanDef, args))
         } else if (Object.keys(Label.defaults).includes(commandName)) {
-            
             var labelDef = Label.defaults[commandName];
             this.sequence.addLabel(channelName, Label.anyArgConstruct(labelDef, args))
+        } else if (Object.keys(Bracket.defaults).includes(commandName)) {
+            console.log("LONG")
+            var brackDef = Bracket.defaults[commandName];
+            this.sequence.addAnnotationLong(channelName, Bracket.anyArgConstruct(brackDef, args))
         }
         else {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])

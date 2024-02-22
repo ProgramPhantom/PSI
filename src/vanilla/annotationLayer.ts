@@ -81,16 +81,16 @@ export default class AnnotationLayer extends Drawable {
     }
 
     drawLabels(surface: Svg, startY: number): number {
-        var heights = new Array<number>(this.timestampX.length);
-        heights.fill(startY);
-        console.log("start positions: ", heights);
+        var ys = new Array<number>(this.timestampX.length);
+        ys.fill(startY);
+        
 
         // Draw labels
         for (const [key, value] of Object.entries(this.labels)) {
             var timestamp = parseInt(key);  // really?...
 
             value.forEach((l) => {
-                var yCurs = heights[timestamp];
+                var yCurs = ys[timestamp];
 
                 var x;
                 var timeWidth;
@@ -107,24 +107,24 @@ export default class AnnotationLayer extends Drawable {
                 switch (l.labelPosition) {
                     case LabelPosition.centre:
                         l.x = x + timeWidth/2 - l.width/2;
-                        l.y = heights[timestamp];
+                        l.y = ys[timestamp];
                         break;
                     default:
                         l.x = x;
-                        l.y = heights[timestamp];
+                        l.y = ys[timestamp];
                         break;
                         
                 }
 
-                heights[timestamp] += l.height;
+                ys[timestamp] += l.height;
 
                 
                 l.draw(surface);
             }) 
         }
 
-        if (Object.values(heights).length != 0) {
-            return Math.max(...Object.values(heights))
+        if (Object.values(ys).length != 0) {
+            return Math.max(...Object.values(ys))
         } else {
             return 0;
         }
@@ -134,7 +134,7 @@ export default class AnnotationLayer extends Drawable {
 
         var ys = new Array<number>(this.timestampX.length-1);
         ys.fill(startY);
-        
+        console.log("start positions: ", ys);
 
         // Draw Longs
         for (const timeLong of this.longs) {
@@ -143,6 +143,10 @@ export default class AnnotationLayer extends Drawable {
 
             var x1 = this.timestampX[timespanRange[0]];
             var x2 = this.timestampX[timespanRange[1]+1]  // To the other side of last
+
+            console.log(this.timestampX);
+            console.log(timespanRange)
+            console.log(x1, x2)
 
             // Find y
             var longHeight = Math.abs(long.protrusion);
@@ -192,7 +196,6 @@ export default class AnnotationLayer extends Drawable {
     }
 
     annotateLong(bracket: Bracket, timespanStart: number, timespanEnd: number) {
-        
         this.longs.push({timespanRange: [timespanStart, timespanEnd], bracket: bracket})
     }
 

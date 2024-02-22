@@ -1,11 +1,12 @@
 {
+    "timespan": [0, 1],
     "side": "top",
     "protrusion": 7,
 
     "style": {
         "strokeWidth": 1,
         "bracketType": "curly",
-        "expression": 0.7,
+        "expression": 0.5,
         "stroke": "black"
     },
 

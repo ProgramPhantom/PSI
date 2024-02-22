@@ -60,7 +60,9 @@ export default class SimplePulse extends Temporal  {
                 stroke: this.style.stroke})
         .move(this.x, this.y)
         // BAD FIX
-        .attr({"stroke-width": this.style.strokeWidth});
+        .attr({"stroke-width": this.style.strokeWidth,
+               "shape-rendering": "crispEdges"
+        });
 
         if (this.label) {
             this.drawLabel(surface);
