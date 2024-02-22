@@ -123,19 +123,19 @@ class StateDiagram {
         var token: ScriptToken | undefined;
         var extraToken: ScriptToken | undefined = undefined;
 
-        console.log(currRules )
+        
 
         for (const rule of currRules) {
-            console.log(rule.input);
+            
 
             if (c.match(rule.input)) { 
                 newState = rule.newState;
 
-                console.log("TOKEN SELECTION: ", this.selection);
+                
 
                 if (rule.ignore === undefined) {
                     this.selection += c;
-                    console.log("adding to selection");
+                    
                 }
 
                 if (rule.tokenType !== undefined) {
@@ -143,7 +143,7 @@ class StateDiagram {
                         continue;
                     }
 
-                    console.log("CREATING TOKEN");
+                    
                     token = {
                         type: rule.tokenType,
                         content: this.selection,
@@ -263,11 +263,11 @@ export default class SequenceHandler {
         try {
             this.parseScript(initialCode);
         } catch (e){
-            console.log(e)
+            
         }
         
 
-        console.log(SequenceHandler.ContentCommands);
+        
     }
 
     parseScript(text: string) {
@@ -278,13 +278,13 @@ export default class SequenceHandler {
 
         /*
         if (!this.validSyntax) {
-            console.log("INVALID SYNTAX");
+            
         }*/
         if (this.tokenStream.length === 0) {
             return;
         }
 
-        console.log(this.tokenStream);
+        
         
         enum State {
             Start,
@@ -312,7 +312,7 @@ export default class SequenceHandler {
         }
 
         for (const tok of this.tokenStream) {
-            console.log(tok);
+            
 
             if (tok.type === TokenType.NewLine) {
                 continue;
@@ -327,7 +327,7 @@ export default class SequenceHandler {
                             break;
                         case TokenType.SpecialCommandSpecifier:
                             command = tok;
-                            console.log("SETTING SPECIAL COMMAND: ", command)
+                            
                             currState = State.SpecialCommand;
                             break;
                         default:
@@ -398,7 +398,7 @@ export default class SequenceHandler {
                     }
                     break;
                 default:
-                    console.log("Went wrong");
+                    
             }
         }
 
@@ -431,7 +431,7 @@ export default class SequenceHandler {
 
             var result = stateSystem.input(c, columnNow, lineNow);
 
-            console.log("Result: ", result);
+            
 
             if (result.newState === ParseState.Error) {
                 throw new ScriptIssue(SyntaxError.SYNTAX_ERROR, "Syntax Error", [columnStart, columnNow], [lineStart, lineNow])
@@ -459,12 +459,12 @@ export default class SequenceHandler {
 
        
         this.tokenStream = tokens;
-        console.log("TOKEN STREAM: ", this.tokenStream)
+        
         
     }
 
     runCommand(command: ScriptToken, channel: ScriptToken, props: {propTree: ScriptToken[], arg?: ScriptToken}[]) {
-        console.log("Running command", command, channel, props);
+        
 
         if (Object.keys(SequenceHandler.UtilCommands).includes(command.content) ) {  // Its a util command
             var argTemplate: any = SequenceHandler.UtilCommands[command.content];  
@@ -491,7 +491,7 @@ export default class SequenceHandler {
             if (props.length > 1) {
                 var tokenVal = thisProp.content;
                 var furtherIn: {[name: string]: any} = {};
-                console.log("passing inner: ", inner[thisProp.content])
+                
                 furtherIn[tokenVal] = setChild(val, props.splice(1, props.length-1), defaultHere, 
                                                inner[thisProp.content] ?? {});
                 
@@ -515,7 +515,7 @@ export default class SequenceHandler {
                         throw new ScriptIssue(ArgumentError.ARGUMENT_INVALID_PARSE, 
                             `Cannot parse argument '${val.content}. Should be of type 'number'`, val.columns, [val.line, val.line]);
                     }
-                    console.log("DEFUALT HERE: ", defaultHere);
+                    
                     
                 } else if (typeof defaultHere === "boolean") {
                     try {
@@ -526,8 +526,8 @@ export default class SequenceHandler {
                     }
                 }
                 else {
-                    console.log("is string:", val.content)
-                    console.log("inner", inner)
+                    
+                    
                     var temp = inner[thisProp.content]
                     Object.assign(inner, inner[thisProp.content]);
                     inner[thisProp.content] = val.content;
@@ -548,9 +548,9 @@ export default class SequenceHandler {
         }
 
        
-        console.log("ARG TEMPLATE: ", argTemplate)
+        
         const fullArgs = argObj ? UpdateObj(argTemplate, argObj) : argTemplate;
-        console.log("FULL ARGS: ", fullArgs)
+        
 
         switch (command.type) {
             case TokenType.ChannelCommand:
@@ -558,7 +558,7 @@ export default class SequenceHandler {
                 break;
             case TokenType.SpecialCommandSpecifier:
                 this.utilCommand(command, channel, fullArgs);
-                console.log("running util command");
+                
                 break;
             default:
                 throw Error;
@@ -576,7 +576,7 @@ export default class SequenceHandler {
             throw new ScriptIssue(CommandError.CHANNEL_IDENTIFIER_UNDEFINED, `Undefined channel: '${channelName}'`, channel.columns, [channel.line, channel.line])
         }
 
-        console.log(Object.keys(SimplePulse.defaults));
+        
 
    
         if (Object.keys(SVGPulse.defaults).includes(commandName)) {
@@ -596,7 +596,7 @@ export default class SequenceHandler {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])
         }
 
-        console.log(args);
+        
     }
 
     utilCommand(command: ScriptToken, channel: ScriptToken, args: any) {

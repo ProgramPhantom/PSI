@@ -24,7 +24,7 @@ for (const p of svgPaths) {
     svgContent[p] = svg;
 }
 
-console.log(svgContent);
+
     
 
                       
@@ -81,7 +81,7 @@ export default class SVGPulse extends Temporal {
     }
         
     getSVG(): string {
-        console.log(this.path)
+        
         return svgContent[this.path]
     }
 
@@ -94,11 +94,42 @@ export default class SVGPulse extends Temporal {
         obj.attr({"preserveAspectRatio": "none"})
         obj.attr({"stroke": "black"})
         // var foreignObject = surface.foreignObject(200, 200);
-        surface.add(obj);
+        
 
+        if (this.config.orientation === Orientation.bottom) {
+            console.log("TRANSFORMING")
+            obj.children().forEach((c) => {
+                c.transform({
+                    flip: "y",
+                })
+            })
+        }
+        surface.add(obj);
 
         if (this.label) {
             this.drawLabel(surface);
         }
+    }
+
+    positionVertically(y: number, channelThickness: number) : number[] {
+        var protrusion = this.verticalProtrusion(channelThickness); 
+        
+        switch (this.config.orientation) {
+            case Orientation.top:
+                this.y = y - this.height;
+                break;
+
+            case Orientation.bottom:
+                this.y = y + channelThickness;
+
+                break;
+
+            case Orientation.both:
+                this.y = y + channelThickness/2 - this.height/2;
+                
+                break;
+        }
+
+       return protrusion;
     }
 }
