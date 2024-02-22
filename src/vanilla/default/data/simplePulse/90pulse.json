@@ -3,7 +3,7 @@
 
     "config": {
         "orientation": "top",
-        "alignment": "left",
+        "alignment": "centre",
         "overridePad": false,
         "inheritWidth": false
     },

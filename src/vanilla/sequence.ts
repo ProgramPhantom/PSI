@@ -118,9 +118,9 @@ export default class Sequence {
     } 
 
     defineChannel(name: string, args: any) {
-        var newChannel = new Channel();
+        var newChannel = new Channel(args, [0, 0]);
 
-        newChannel.label = Label.anyArgConstruct(args);
+        newChannel.label = Label.anyArgConstruct(args.label);
 
         this.channels[name] = newChannel;
     }

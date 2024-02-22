@@ -17,9 +17,11 @@ import Bracket from "./bracket";
 export interface channelInterface {
     temporalElements: Temporal[],
     padding: number[],
+
     style: channelStyle,
-    annotationStyle: channelAnnotation,
     label?: labelInterface
+    
+    annotationStyle: channelAnnotation,
 }
 
 
@@ -36,10 +38,10 @@ export interface channelAnnotation {
 
 
 export default class Channel extends Drawable implements labelable {
-    static defaults: channelInterface = {...<any>defaultChannel}
+    static default: channelInterface = {...<any>defaultChannel}
 
     style: channelStyle;
-    pad: number[];
+    padding: number[];
 
     maxTopProtrusion: number;
     maxBottomProtrusion: number;
@@ -58,27 +60,24 @@ export default class Channel extends Drawable implements labelable {
     label?: Label;
     labelPosition: LabelPosition=LabelPosition.left;
 
-    constructor(pad: number[]=Channel.defaults.padding, 
-                style: channelStyle=Channel.defaults.style,
-                temporalElements: Temporal[]=[...Channel.defaults.temporalElements], // ARRAYS USE REFERENCE!!!!! WAS UPDATING 
-                offset: number[]=[0, 0],
-                label?: Label) {
+    constructor(params: channelInterface,
+                offset: number[]=[0, 0]) {
                 
         super(0, 0, offset);
         this.barX = 0;
         this.barY = 0;
 
-        this.style = style;
-        this.pad = pad;
+        this.style = params.style;
+        this.padding = params.padding;
 
         this.maxTopProtrusion = 0;  // Move this to element
-        this.maxBottomProtrusion = style.thickness;
+        this.maxBottomProtrusion = this.style.thickness;
 
-        this.bounds = {width: 0, height: style.thickness};
+        this.bounds = {width: 0, height: this.style.thickness};
         this.barWidth = 0;
 
-        this.temporalElements = temporalElements;
-        this.label = label;
+        this.temporalElements = [...params.temporalElements];  // please please PLEASE do this (list is ref type)
+        this.label = this.label;
     }
     
 
@@ -111,8 +110,8 @@ export default class Channel extends Drawable implements labelable {
         
         
         
-        this.bounds = {width: this.width + labelOffsetX + this.pad[1] + this.pad[3], 
-            height: this.height + this.pad[0] + this.pad[2] + annotationHeight}
+        this.bounds = {width: this.width + labelOffsetX + this.padding[1] + this.padding[3], 
+            height: this.height + this.padding[0] + this.padding[2] + annotationHeight}
         
 
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
@@ -131,13 +130,13 @@ export default class Channel extends Drawable implements labelable {
     computeBarY(yCursor: number=0) {
         this.computeVerticalBounds();
 
-        var rectPosY = yCursor + this.pad[0] + this.maxTopProtrusion;
+        var rectPosY = yCursor + this.padding[0] + this.maxTopProtrusion;
         
         this.barY = rectPosY;
     }
 
     computeBarX(labelOffsetX: number=0) {
-        this.barX = this.pad[3] + labelOffsetX;
+        this.barX = this.padding[3] + labelOffsetX;
     }
 
     drawRect(surface: Svg) {
@@ -230,7 +229,7 @@ export default class Channel extends Drawable implements labelable {
 
     addAnnotationLabel(args: any) {
         if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer(Channel.defaults.annotationStyle.padding)
+            this.annotationLayer = new AnnotationLayer(Channel.default.annotationStyle.padding)
         }
         var timestamp;
         
@@ -252,7 +251,7 @@ export default class Channel extends Drawable implements labelable {
 
     addAnnotationLong(args: any) {
         if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer(Channel.defaults.annotationStyle.padding)
+            this.annotationLayer = new AnnotationLayer(Channel.default.annotationStyle.padding)
         }
 
         var timestampStart;

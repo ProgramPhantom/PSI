@@ -1,4 +1,3 @@
-import { Channel } from "diagnostics_channel";
 import Abstraction from "./abstraction";
 // import Aquire from "./default/classes/aquire";
 // import ChirpHiLo from "./default/classes/chirpHiLo";
@@ -19,6 +18,8 @@ import Label from "./label";
 import Temporal, { temporalInterface } from "./temporal";
 import { Drawable } from "./drawable";
 import SVGPulse, {  } from "./pulses/image/svgPulse";
+import Channel, { channelInterface } from "./channel";
+import { UpdateObj } from "./util";
 
 // ----- ERROR STUFF -----
 enum SyntaxError {
@@ -81,11 +82,12 @@ interface TrainsitionRule {input: string, newState: ParseState, tokenType?: Toke
                            ignore?: boolean,
                            extraBehaviour?: {type: TokenType, content: string},};
 enum ParseState {
-    Start="start",  //0
-    Channel="channel",  // 1 
-    Command="command",  // 2
-    NextParam="nextparam",  // 4
-    Paremeter="parameter",  // 3
+    Start="start",
+    Channel="channel",  
+    SpecialChannelCommand="specialchannelcommand",
+    Command="command",  
+    NextParam="nextparam",  
+    Paremeter="parameter",  
     SubParam="subparam",
     Argument="argument",
     List="list",
@@ -129,7 +131,12 @@ class StateDiagram {
             if (c.match(rule.input)) { 
                 newState = rule.newState;
 
-                console.log(rule.tokenType)
+                console.log("TOKEN SELECTION: ", this.selection);
+
+                if (rule.ignore === undefined) {
+                    this.selection += c;
+                    console.log("adding to selection");
+                }
 
                 if (rule.tokenType !== undefined) {
                     if (rule.tokenType === TokenType.BinThis) {
@@ -146,13 +153,7 @@ class StateDiagram {
 
                     this.startCol = this.currCol+1;
                     this.selection = "";
-                } else {
-                    if (rule.ignore === undefined) {
-                        this.selection += c;
-                    }
-                    
-                    console.log(this.selection);
-                }
+                } 
 
                 if (rule.extraBehaviour !== undefined) {
                     extraToken = {
@@ -186,32 +187,37 @@ export default class SequenceHandler {
     static characterError = {input: SequenceHandler.specialCharacters.join("|"), newState: ParseState.Error};
 
     static Transitions: {[id: string]: TrainsitionRule[]} = {
-        "start": [{input: "[~]", newState: ParseState.Channel, tokenType: TokenType.SpecialCommandSpecifier},
+        "start": [{input: "[~]", newState: ParseState.SpecialChannelCommand, tokenType: TokenType.SpecialCommandSpecifier},
                   SequenceHandler.characterError,
                   {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Channel}
         ],
-        "channel": [{input: "[.]", newState: ParseState.Command, tokenType: TokenType.Channel},
+        "channel": [{input: "[.]", newState: ParseState.Command, tokenType: TokenType.Channel, ignore: true},
                     SequenceHandler.characterError,
                     {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Channel},  // ANY
         ],
+        "specialchannelcommand": [{input: "[(]", newState: ParseState.NextParam, tokenType: TokenType.Channel, ignore: true},
+                                   SequenceHandler.characterError,
+                                  {input: SequenceHandler.alphaNumericRegex, newState: ParseState.SpecialChannelCommand},  // ANY
+                                   
+        ],
         "command": [{input: SequenceHandler.alphaNumericRegex, newState: ParseState.Command},  // Command
-                    {input: "[(]", newState: ParseState.NextParam, tokenType: TokenType.ChannelCommand},
+                    {input: "[(]", newState: ParseState.NextParam, tokenType: TokenType.ChannelCommand, ignore: true},
                     SequenceHandler.characterError,
         ],
-        "nextparam": [{input: "[)]", newState: ParseState.Start, extraBehaviour: {type: TokenType.RunCommand, content: ")"}},
+        "nextparam": [{input: "[)]", newState: ParseState.Start, extraBehaviour: {type: TokenType.RunCommand, content: ")"}, ignore: true},
                       SequenceHandler.characterError, // Next Param
                       {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Paremeter}
         ],
-        "parameter": [{input: "[=]", newState: ParseState.Argument, tokenType: TokenType.Property},
-                      {input: "[.]", newState: ParseState.SubParam, tokenType: TokenType.Property},
+        "parameter": [{input: "[=]", newState: ParseState.Argument, tokenType: TokenType.Property, ignore: true},
+                      {input: "[.]", newState: ParseState.SubParam, tokenType: TokenType.Property, ignore: true},
                       SequenceHandler.characterError,
                       {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Paremeter},
         ],
         "subparam": [SequenceHandler.characterError,
                      {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Paremeter}
         ],
-        "argument": [{input: "[)]", newState: ParseState.Start, tokenType: TokenType.Argument, extraBehaviour: {type: TokenType.RunCommand, content: ")"}},
-                     {input: "[,]", newState: ParseState.NextParam, tokenType: TokenType.Argument},
+        "argument": [{input: "[)]", newState: ParseState.Start, tokenType: TokenType.Argument, extraBehaviour: {type: TokenType.RunCommand, content: ")"}, ignore: true},
+                     {input: "[,]", newState: ParseState.NextParam, tokenType: TokenType.Argument, ignore: true},
                      {input: "[[]", newState: ParseState.List, ignore: true},
                      {input: '["]', newState: ParseState.String, ignore: true},
                      SequenceHandler.characterError,
@@ -226,27 +232,19 @@ export default class SequenceHandler {
                    {input: SequenceHandler.alphaNumericRegex, newState: ParseState.String},
         ]
     }
-    
-    static commands: {[name: string]: any} = {
+
+    // TODO: change this and make something for special commands
+    static ContentCommands: {[name: string]: any} = {
         ...SVGPulse.defaults,
         ...SimplePulse.defaults,
         ...Abstraction.defaults,
-        ...Span.defaults
+        ...Span.defaults,
     }
 
-
-    static UtilCommands: string[] = [
-        "sync",
-    ]
-
-    
-    /*
-    static ContentCommands = [...Object.keys(SequenceHandler.SimplePulseCommands),
-                              ...Object.keys(SequenceHandler.ImagePulseCommands),
-                              ...Object.keys(SequenceHandler.Span),
-                              ...Object.keys(SequenceHandler.Abstraction)];*/
-
-        
+    static UtilCommands: {[character: string]: any} = {
+        "@": Channel.default,
+        "~": Channel.default
+    }
 
     scriptFlags: ScriptIssue[] = [];
     script: string = "";
@@ -262,16 +260,14 @@ export default class SequenceHandler {
         this.sequence = new Sequence("", surface)
         this.surface = surface;
 
-        this.sequence.defineChannel("p1", {});
-
         try {
             this.parseScript(initialCode);
-        } catch {
-
+        } catch (e){
+            console.log(e)
         }
         
 
-        console.log(SequenceHandler.commands);
+        console.log(SequenceHandler.ContentCommands);
     }
 
     parseScript(text: string) {
@@ -331,6 +327,7 @@ export default class SequenceHandler {
                             break;
                         case TokenType.SpecialCommandSpecifier:
                             command = tok;
+                            console.log("SETTING SPECIAL COMMAND: ", command)
                             currState = State.SpecialCommand;
                             break;
                         default:
@@ -469,11 +466,15 @@ export default class SequenceHandler {
     runCommand(command: ScriptToken, channel: ScriptToken, props: {propTree: ScriptToken[], arg?: ScriptToken}[]) {
         console.log("Running command", command, channel, props);
 
-        if (!Object.keys(SequenceHandler.commands).includes(command.content)) {
-            throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${command.content}'`, command.columns, [command.line, command.line])
+        if (Object.keys(SequenceHandler.UtilCommands).includes(command.content) ) {  // Its a util command
+            var argTemplate: any = SequenceHandler.UtilCommands[command.content];  
+        } else if (Object.keys(SequenceHandler.ContentCommands).includes(command.content)) {  // Its a content command
+            var argTemplate: any = SequenceHandler.ContentCommands[command.content];  
+        } else {
+            throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${command.content}'`, command.columns, [command.line, command.line]);
         }
-
-        var argTemplate: any = SequenceHandler.commands[command.content];  // Defaults
+        
+        
 
         var argObj: any = {};
 
@@ -544,13 +545,23 @@ export default class SequenceHandler {
             }
             
             Object.assign(argObj, setChild(p.arg, p.propTree, argTemplate, argObj)) ;
-
         }
-        console.log("args: ", argObj)
+
+       
+        console.log("ARG TEMPLATE: ", argTemplate)
+        const fullArgs = argObj ? UpdateObj(argTemplate, argObj) : argTemplate;
+        console.log("FULL ARGS: ", fullArgs)
 
         switch (command.type) {
             case TokenType.ChannelCommand:
                 this.channelCommand(command, channel, argObj);
+                break;
+            case TokenType.SpecialCommandSpecifier:
+                this.utilCommand(command, channel, fullArgs);
+                console.log("running util command");
+                break;
+            default:
+                throw Error;
         }
     }
 
@@ -588,7 +599,13 @@ export default class SequenceHandler {
         console.log(args);
     }
 
-    
+    utilCommand(command: ScriptToken, channel: ScriptToken, args: any) {
+        switch (command.content) {
+            case "~":
+                this.sequence.defineChannel(channel.content, <channelInterface>args);
+                break;
+        }
+    }
 
     draw() {
         this.sequence.draw();
