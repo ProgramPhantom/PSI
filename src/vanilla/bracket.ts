@@ -18,6 +18,13 @@ export enum Side {
     right="right",
 }
 
+export interface bracketInterface {
+    side: Side,
+    protrusion: number,
+    style: bracketStyle,
+    label: labelInterface,
+}
+
 export interface bracketStyle {
     strokeWidth: number,
     bracketType: bracketType,
@@ -25,12 +32,6 @@ export interface bracketStyle {
     stroke: string,
 }
 
-export interface bracketInterface {
-    side: Side,
-    protrusion: number,
-    style: bracketStyle,
-    label: labelInterface,
-}
 
 
 export default class Bracket extends Drawable implements labelable {
@@ -40,10 +41,10 @@ export default class Bracket extends Drawable implements labelable {
         const options = args ? UpdateObj(Bracket.defaults, args) : Bracket.defaults;
 
         return new Bracket(
-            options.protrusion,
-            options.side,
-            options.style,
-            options.label
+            {protrusion: options.protrusion,
+             side: options.side,
+             style: options.style,
+             label: options.label}
         )
     }
 
@@ -63,10 +64,7 @@ export default class Bracket extends Drawable implements labelable {
 
     label?: Label;
 
-    constructor(protrusion: number=Bracket.defaults.protrusion,
-                side: Side=Bracket.defaults.side,
-                style: bracketStyle=Bracket.defaults.style,
-                label: labelInterface=Bracket.defaults.label,
+    constructor(params: bracketInterface,
                 offset: number[]=[0, 0]) {
 
         super(0, 0, offset)
@@ -76,32 +74,30 @@ export default class Bracket extends Drawable implements labelable {
         this.x2 = 50;
         this.y2 = 40;
 
-        this.style = style;
+        this.style = params.style;
         
-        this.side = side;
-        this.bracketProtrusion = Math.abs(protrusion);
+        this.side = params.side;
+        this.bracketProtrusion = Math.abs(params.protrusion);
         this.totalProtrusion = 0;
         
 
         switch (this.side) {
             case Side.top:
-                this.protrusion = -protrusion;
+                this.protrusion = -params.protrusion;
                 break;
             case Side.right:
-                this.protrusion = -protrusion;
+                this.protrusion = -params.protrusion;
                 break;
             case Side.left:
-                this.protrusion = protrusion;
+                this.protrusion = params.protrusion;
                 break;
             case Side.bottom:
-                this.protrusion = protrusion;
+                this.protrusion = params.protrusion;
                 break;
         }
 
-        
-
-        if (label) {
-            this.label = Label.anyArgConstruct(label);
+        if (params.label) {
+            this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
         }
         
         this.computeTotalProtrusion();

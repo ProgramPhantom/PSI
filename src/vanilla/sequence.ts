@@ -1,7 +1,7 @@
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Orientation } from "./temporal";
-import { LabelPosition } from "./label";
+import { LabelPosition, labelInterface } from "./label";
 import Pulse90 from "./default/classes/pulse90";
 import Pulse180 from "./default/classes/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
@@ -120,7 +120,7 @@ export default class Sequence {
     defineChannel(name: string, args: any) {
         var newChannel = new Channel(args, [0, 0]);
 
-        newChannel.label = Label.anyArgConstruct(args.label);
+        newChannel.label = Label.anyArgConstruct(Label.defaults["label"], args.label);
 
         this.channels[name] = newChannel;
     }
@@ -200,5 +200,9 @@ export default class Sequence {
         this.temporalSections[channelName] = widths;
         
         this.computeTimespans();
+    }
+
+    addLabel(channelName: string, obj: Label) {
+        this.channels[channelName].addAnnotationLabel(obj)
     }
 }

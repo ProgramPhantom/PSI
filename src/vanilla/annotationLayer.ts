@@ -57,6 +57,7 @@ export default class AnnotationLayer extends Drawable {
         this.timestampWidths = timestampWidths;
         this.x = startX;
         this.y = startY + this.padding[0];
+        console.log(startY)
 
         this.timestampX.push(this.x);
         this.timestampWidths.forEach((w, i) => {
@@ -65,11 +66,6 @@ export default class AnnotationLayer extends Drawable {
 
         var maxYLong = this.drawLongs(surface, this.y);
         var maxYLabel = this.drawLabels(surface, maxYLong);
-        
-
-        
-        
-
 
         var maxY = maxYLabel > maxYLong ? maxYLabel : maxYLong;
 
@@ -87,8 +83,7 @@ export default class AnnotationLayer extends Drawable {
     drawLabels(surface: Svg, startY: number): number {
         var heights = new Array<number>(this.timestampX.length);
         heights.fill(startY);
-
-        
+        console.log("start positions: ", heights);
 
         // Draw labels
         for (const [key, value] of Object.entries(this.labels)) {
@@ -100,8 +95,6 @@ export default class AnnotationLayer extends Drawable {
                 var x;
                 var timeWidth;
 
-                
-                
 
                 if (timestamp < this.timestampWidths.length) {
                     x = this.timestampX[timestamp];
@@ -111,17 +104,14 @@ export default class AnnotationLayer extends Drawable {
                     timeWidth = 0;
                 }
 
-                
-
-                
                 switch (l.labelPosition) {
                     case LabelPosition.centre:
                         l.x = x + timeWidth/2 - l.width/2;
-                        l.y = heights[timestamp] + this.y;
+                        l.y = heights[timestamp];
                         break;
                     default:
                         l.x = x;
-                        l.y = heights[timestamp] + this.y;
+                        l.y = heights[timestamp];
                         break;
                         
                 }

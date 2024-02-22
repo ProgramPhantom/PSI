@@ -239,6 +239,7 @@ export default class SequenceHandler {
         ...SimplePulse.defaults,
         ...Abstraction.defaults,
         ...Span.defaults,
+        ...Label.defaults,
     }
 
     static UtilCommands: {[character: string]: any} = {
@@ -547,10 +548,7 @@ export default class SequenceHandler {
             Object.assign(argObj, setChild(p.arg, p.propTree, argTemplate, argObj)) ;
         }
 
-       
-        
         const fullArgs = argObj ? UpdateObj(argTemplate, argObj) : argTemplate;
-        
 
         switch (command.type) {
             case TokenType.ChannelCommand:
@@ -578,7 +576,7 @@ export default class SequenceHandler {
 
         
 
-   
+        // I am not yet experienced enough in Typescript to find a better solution to this
         if (Object.keys(SVGPulse.defaults).includes(commandName)) {
             var svgDef = SVGPulse.defaults[commandName]; 
             this.sequence.addTemporal(channelName, SVGPulse.anyArgConstruct(svgDef, args))
@@ -591,6 +589,10 @@ export default class SequenceHandler {
         } else if (Object.keys(Span.defaults).includes(commandName)) {
             var spanDef = Span.defaults[commandName];
             this.sequence.addTemporal(channelName, Span.anyArgConstruct(spanDef, args))
+        } else if (Object.keys(Label.defaults).includes(commandName)) {
+            
+            var labelDef = Label.defaults[commandName];
+            this.sequence.addLabel(channelName, Label.anyArgConstruct(labelDef, args))
         }
         else {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])

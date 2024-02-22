@@ -70,7 +70,7 @@ export default abstract class Temporal extends Drawable implements labelable {
 
         
         if (params.label) {
-            this.label = Label.anyArgConstruct(params.label);
+            this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
         }
         
     }
@@ -152,7 +152,7 @@ export default abstract class Temporal extends Drawable implements labelable {
     }
 
     addLabel(args: labelInterface) {
-        this.label = Label.anyArgConstruct(args);
+        this.label = Label.anyArgConstruct(Label.defaults["label"], args);
     }
 
     drawLabel(surface: Svg): number[] {

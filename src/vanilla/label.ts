@@ -20,10 +20,12 @@ interface Bounds {
 }
 
 export interface labelInterface {
-    text?: string,
-    padding?: number[],
+    padding: number[],
+    text: string,
     labelPosition: LabelPosition,
-    style?: labelStyle,
+    style: labelStyle,
+
+    timestamp?: number,
 }
 
 export interface labelStyle {
@@ -39,16 +41,17 @@ export enum LabelPosition {top="top",
 
 
 export default class Label extends Drawable {
-    static defaults: labelInterface = {...<any>defaultLabel}
+    static defaults: {[key: string]: labelInterface} = {"label": {...<any>defaultLabel}}
 
-    public static anyArgConstruct(args: labelInterface): Label {
-        const options = args ? UpdateObj(Label.defaults, args) : Label.defaults;
+    public static anyArgConstruct(defaultArgs: labelInterface, args: labelInterface): Label {
+        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
         return new Label(
-            options.text!,
-            options.padding!,
-            options.labelPosition!,
-            options.style!
+            {text: options.text,
+            padding: options.padding,
+            labelPosition: options.labelPosition,
+            style: options.style,
+            timestamp: options.timestamp}
         )
     }
 
@@ -59,14 +62,20 @@ export default class Label extends Drawable {
 
     padding: number[];
     labelPosition: LabelPosition;
+
+    timestamp?: number;
     
-    constructor(text: string, padding: number[], labelPosition: LabelPosition, style: labelStyle) {
+    constructor(params: labelInterface,
+                offset: number[]=[0, 0]) {
+
         super(0, 0);
 
-        this.text = text;
-        this.style = style;
-        this.padding = padding;
-        this.labelPosition = labelPosition;
+        this.text = params.text;
+        this.style = params.style;
+        this.padding = params.padding;
+        this.labelPosition = params.labelPosition;
+
+        this.timestamp = params.timestamp;
 
         this.computeDimensions();
     }

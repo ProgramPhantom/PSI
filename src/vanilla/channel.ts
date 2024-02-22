@@ -227,26 +227,23 @@ export default class Channel extends Drawable implements labelable {
         return this.hSections;
     }
 
-    addAnnotationLabel(args: any) {
+    addAnnotationLabel(lab: Label) {
         if (!this.annotationLayer) {
             this.annotationLayer = new AnnotationLayer(Channel.default.annotationStyle.padding)
         }
         var timestamp;
         
-
-        if (args.timestamp !== undefined) {
-            timestamp = args.timestamp;
+        if (lab.timestamp !== undefined) {
+            timestamp = lab.timestamp;
         } else {
             timestamp = this.elementCursor;
         }
-        
 
         if (timestamp == -1) {
             return;
         }
 
-        var newLabel = Label.anyArgConstruct(args);
-        this.annotationLayer.annotateLabel(newLabel, timestamp);
+        this.annotationLayer.annotateLabel(lab, timestamp);
     }
 
     addAnnotationLong(args: any) {
