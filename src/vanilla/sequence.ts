@@ -5,7 +5,7 @@ import { LabelPosition, labelInterface } from "./label";
 import Pulse90 from "./default/classes/pulse90";
 import Pulse180 from "./default/classes/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
-import Channel from "./channel"
+import Channel, { channelInterface } from "./channel"
 import ImagePulse from "./pulses/image/imagePulse";
 import Aquire from "./default/classes/aquire";
 import Label from "./label";
@@ -21,6 +21,7 @@ import SaltireHiLo from "./default/classes/saltireHiLo";
 import HalfSine from "./default/classes/halfsine";
 import SequenceHandler from "./sequenceHandler";
 import Bracket from "./bracket";
+import { NumberAlias } from "svg.js";
 
 enum SyntaxErrorType {
     INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
@@ -46,25 +47,88 @@ export class ScriptSyntaxError extends Error {
     }
 }
 
-export enum gridPositioning {start="start", centre="centre"}
-export interface sequenceConfig {
+export enum GridPositioning {start="start", centre="centre"}
+
+interface sequenceInterface {
+    padding: number[],
+    grid: gridInterface
+}
+interface gridInterface {
     gridOn: boolean,
-    gridStyle: gridStyle
+    gridPositioning: GridPositioning,
+    lineStyle: Line,
 }
 
-interface gridStyle {
-    gridPositioning: gridPositioning,
+export interface Line {
     stroke: string,
     strokeWidth: number,
-    dashing: number[] | null
+    dashing: number[]
+}
+
+export class Grid {
+    gridOn: boolean;
+    vLines: {[timestamp: number]: Line} = {};
+    style: Line;
+    gridPositioning: GridPositioning;
+
+    constructor(params: gridInterface) {
+        this.gridOn = params.gridOn;
+        this.style = params.lineStyle;
+        this.gridPositioning = params.gridPositioning;
+        console.log(params)
+    }
+
+    draw(surface: Svg, timestampX: number[], height: number) {
+        var attr: any;
+
+       
+
+        switch (this.gridPositioning) {
+            case GridPositioning.start:
+                var cursX = timestampX[0];
+                console.log("in here")                
+                for (const [timestamp, line] of Object.entries(this.vLines)) {
+                    attr = {"stroke-width": line.strokeWidth,
+                            "stroke-dasharray": line.dashing,
+                            "stroke": line.stroke}
+
+                    cursX = timestampX[parseInt(timestamp)];
+                        
+                    surface.line(cursX, 0, cursX, height)
+                    .attr(attr);
+                    console.log(attr);
+                    console.log("DRAWING AT", cursX, height)
+                }
+                console.log("Free")
+                break;
+            case GridPositioning.centre:
+                var cursX = timestampX[0];
+
+                for (const [timestamp, line] of Object.entries(this.vLines)) {
+                    attr = {"stroke-width": line.strokeWidth,
+                            "stroke-dasharray": line.dashing,
+                            "stroke": line.stroke}
+
+                    cursX = timestampX[parseInt(timestamp)];
+                    var width = timestampX[parseInt(timestamp)+1] - timestampX[parseInt(timestamp)];
+                        
+                    cursX += width/2;
+                    surface.line(cursX, 0, cursX, height)
+                    .attr({...line});
+                   
+                }
+
+                break;
+            default: 
+                console.log("ERROR")
+                throw Error;
+            }
+    }
 }
 
 export default class Sequence {
-    static defaults: sequenceConfig = {...<any>defaultSequence}
+    static defaults: {[key: string]: sequenceInterface} = {"empty": {...<any>defaultSequence}}
 
-    static specialCharacters: string[] = ["#", "~", "/", ">"]
-                         
-    nmrScript: string;
     surface: Svg;
     channels: {[name: string]: Channel;} = {};
     freeLabels: Label[] = [];
@@ -75,18 +139,20 @@ export default class Sequence {
     height: number;  // Excludes padding
 
     padding: number[];
-    conf: sequenceConfig;
+    grid: Grid;
 
     temporalSections: {[channelName: string]: number[]} = {};
     maxTimespans: number[] = [];
+    timestampX: number[] = [];
 
-    constructor(mnrScript: string, surface: Svg, conf: sequenceConfig=Sequence.defaults) {
+    constructor(surface: Svg, params: sequenceInterface) {
         this.width = 0;
         this.height = 0;
-        this.padding = [0, 0, 0, 0];
-        this.conf = conf;
 
-        this.nmrScript = mnrScript;
+        this.padding = params.padding;
+        console.log(params.grid.lineStyle)
+        this.grid = new Grid(params.grid);
+
         this.surface = surface; 
         this.channels = {};  // Wierdest bug ever happening here
 
@@ -109,10 +175,17 @@ export default class Sequence {
             label.draw(this.surface);
         })
 
-        if (this.conf.gridOn) {
-            this.drawGrid();
+        var xBar = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
+        console.log(xBar);
+        this.timestampX.push(xBar);
+        this.maxTimespans.forEach((t, i) => {
+            this.timestampX.push(t + this.timestampX[i])
+        })
+
+        if (this.grid.gridOn) {
+            console.log("DRAWING GRID")
+            this.grid.draw(this.surface, this.timestampX, this.height);
         }
-        
 
         // what?
         return {width: 0, height: 0}
@@ -142,9 +215,10 @@ export default class Sequence {
 
     computeTimespans() {
         var max: number[] = [];
+        var xBar = 0;
 
         for (const currChannel of Object.values(this.temporalSections)) {
-
+            
             for (var i = 0; i < currChannel.length; i++) {
                 if (i < max.length) { // If this isn't new territory
                     if (currChannel[i] > max[i]) {
@@ -157,50 +231,18 @@ export default class Sequence {
         }
 
         this.maxTimespans = max;
-        
-        
-    }
 
-    drawGrid() {
-        // Line style: 
-        var attr = {...this.conf.gridStyle, "stroke-dasharray": this.conf.gridStyle.dashing,
-                    "stroke-width": this.conf.gridStyle.strokeWidth}
         
-        switch (this.conf.gridStyle.gridPositioning) {
-            case gridPositioning.start:
-                var cursX = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
-                this.surface.line(cursX, 0, cursX, this.height)
-                    .attr(attr);
-                
-                // Vertical Lines
-                this.maxTimespans.forEach(span => {
-                    cursX += span;
-                    this.surface.line(cursX, 0, cursX, this.height)
-                    .attr(attr);
-                    
-                });
-                break;
-            case gridPositioning.centre:
-                var cursX = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
+        console.log()
 
-                // Vertical Lines
-                this.maxTimespans.forEach(span => {
-                    cursX += span/2;
-                    this.surface.line(cursX, 0, cursX, this.height)
-                    .attr(attr);
-                    // MAKE IT NOT GO THROUGH ELEMENTS
-                    cursX += span/2;
-                });
-                break;
-        }
-        
     }
 
     addTemporal(channelName: string, obj: Temporal) {
         var widths = this.channels[channelName].addTemporal(obj);
         this.temporalSections[channelName] = widths;
-        
-        this.computeTimespans();
+
+        this.computeTimespans()
+        console.log("ADDED TEMPORAL")
     }
 
     addLabel(channelName: string, obj: Label) {
@@ -210,5 +252,13 @@ export default class Sequence {
     addAnnotationLong(channelName: string, obj: Bracket) {
         console.log("ADDING LONG")
         this.channels[channelName].addAnnotationLong(obj);
+    }
+
+    addVLine(channelName: string, obj: Line) {
+        var channel: Channel = this.channels[channelName];
+
+        console.log("originalLine: ", obj)
+
+        this.grid.vLines[channel.elementCursor] = obj;
     }
 }

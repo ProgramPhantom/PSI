@@ -9,7 +9,7 @@ import Abstraction from "./abstraction";
 // import SaltireLoHi from "./default/classes/saltireLoHi";
 import ImagePulse from "./pulses/image/imagePulse";
 import SimplePulse from "./pulses/simple/simplePulse";
-import Sequence, { ScriptSyntaxError } from "./sequence";
+import Sequence, { Line, ScriptSyntaxError } from "./sequence";
 import Span from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
@@ -175,17 +175,33 @@ class StateDiagram {
 
 
 export default class SequenceHandler {
+    // TODO: change this and make something for special commands
+    static ContentCommands: {[name: string]: any} = {
+        ...SVGPulse.defaults,
+        ...SimplePulse.defaults,
+        ...Abstraction.defaults,
+        ...Span.defaults,
+        ...Label.defaults,
+        ...Bracket.defaults,
+    }
+
+    static ChannelUtil: {[character: string]: any} = {
+        "@": Channel.default,
+        "~": Channel.default,
+        "|": Sequence.defaults["empty"].grid.lineStyle,
+    }
 
     static specialCharacters: string[] = ["#", "~", "`", ">", "=", "[(]", "[)]", "[+]", "[.]", "[*]", "[/]", ]
-    static specialCommands: string[] = ["#", "~"]
+    static specialCommands: string[] = ["[#]", "[~]", "[|]"]
 
     static specialCharacterRegex: string = SequenceHandler.specialCharacters.join("|");
+    static util: string = SequenceHandler.specialCommands.join("|");
     static alphaNumericRegex: string = "^[a-zA-Z0-9_]*$";
 
     static characterError = {input: SequenceHandler.specialCharacters.join("|"), newState: ParseState.Error};
 
     static Transitions: {[id: string]: TrainsitionRule[]} = {
-        "start": [{input: "[~]", newState: ParseState.SpecialChannelCommand, tokenType: TokenType.SpecialCommandSpecifier},
+        "start": [{input: SequenceHandler.util, newState: ParseState.SpecialChannelCommand, tokenType: TokenType.SpecialCommandSpecifier},
                   SequenceHandler.characterError,
                   {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Channel}
         ],
@@ -231,19 +247,8 @@ export default class SequenceHandler {
         ]
     }
 
-    // TODO: change this and make something for special commands
-    static ContentCommands: {[name: string]: any} = {
-        ...SVGPulse.defaults,
-        ...SimplePulse.defaults,
-        ...Abstraction.defaults,
-        ...Span.defaults,
-        ...Label.defaults,
-        ...Bracket.defaults,
-    }
-
-    static UtilCommands: {[character: string]: any} = {
-        "@": Channel.default,
-        "~": Channel.default
+    static SequenceUtil: {[character: string]: any} = {
+        
     }
 
     scriptFlags: ScriptIssue[] = [];
@@ -257,7 +262,7 @@ export default class SequenceHandler {
     surface: Svg;
 
     constructor(initialCode: string, surface: Svg) {
-        this.sequence = new Sequence("", surface)
+        this.sequence = new Sequence(surface, Sequence.defaults["empty"])
         this.surface = surface;
 
         try {
@@ -280,6 +285,8 @@ export default class SequenceHandler {
         if (!this.validSyntax) {
             
         }*/
+
+        console.log(this.tokenStream)
         if (this.tokenStream.length === 0) {
             return;
         }
@@ -405,7 +412,8 @@ export default class SequenceHandler {
         if (this.tokenStream[this.tokenStream.length-1].type === TokenType.Argument) {
             this.runCommand(command, workingChannel, propList);
         }
-
+        
+        
         // this.runCommand(command, workingChannel, propList);
     }
 
@@ -442,6 +450,7 @@ export default class SequenceHandler {
                 lineStart = lineNow;
 
                 tokens.push(result.token);
+                console.log("TOKEN PRODUCED: ", result.token)
             }
 
             if (result.extraToken) {
@@ -464,18 +473,16 @@ export default class SequenceHandler {
     }
 
     runCommand(command: ScriptToken, channel: ScriptToken, props: {propTree: ScriptToken[], arg?: ScriptToken}[]) {
-        
-
-        if (Object.keys(SequenceHandler.UtilCommands).includes(command.content) ) {  // Its a util command
-            var argTemplate: any = SequenceHandler.UtilCommands[command.content];  
+        if (Object.keys(SequenceHandler.ChannelUtil).includes(command.content) ) {  // Its a util command
+            var argTemplate: any = SequenceHandler.ChannelUtil[command.content];  
         } else if (Object.keys(SequenceHandler.ContentCommands).includes(command.content)) {  // Its a content command
             var argTemplate: any = SequenceHandler.ContentCommands[command.content];  
         } else {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${command.content}'`, command.columns, [command.line, command.line]);
         }
-        
-        
 
+        console.log("Running command ", command, channel, props)
+        
         var argObj: any = {};
 
         function setChild(val: ScriptToken, props: ScriptToken[], defs: any, exsisting: any): any {  // Created javascript obj from 
@@ -608,6 +615,9 @@ export default class SequenceHandler {
         switch (command.content) {
             case "~":
                 this.sequence.defineChannel(channel.content, <channelInterface>args);
+                break;
+            case "|":
+                this.sequence.addVLine(channel.content, <Line>args)
                 break;
         }
     }

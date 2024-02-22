@@ -1,9 +1,12 @@
 {
-    "gridOn": true,
-    "gridStyle": {
+    "grid": {
+        "gridOn": true,
         "gridPositioning": "start",
-        "stroke": "black",
-        "strokeWidth": 1,
-        "dashing": [5, 7]
+        "lineStyle": {
+            "stroke": "black",
+            "strokeWidth": 1,
+            "dashing": [5, 7]
+        }
     }
+    
 }
