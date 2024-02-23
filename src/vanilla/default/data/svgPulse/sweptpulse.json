@@ -1,0 +1,25 @@
+{
+    "config": {
+        "orientation": "top",
+        "alignment": "centre",
+        "overridePad": false,
+        "inheritWidth": false
+    },
+
+    "padding": [0, 10, 0, 10],
+    "path": "\\src\\assets\\sweptpulse.svg",
+    "style": {
+        "width": 15,
+        "height": 40
+    },
+
+    "label": {
+        "text": "\\tau",
+        "padding": [0, 0, 10, 0],
+        "labelPosition": "top",
+        "style": {
+            "size": 30,
+            "colour": "black"
+        }
+    }
+}

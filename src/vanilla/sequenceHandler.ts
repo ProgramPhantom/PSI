@@ -587,6 +587,7 @@ export default class SequenceHandler {
         if (Object.keys(SVGPulse.defaults).includes(commandName)) {
             var svgDef = SVGPulse.defaults[commandName]; 
             this.sequence.addTemporal(channelName, SVGPulse.anyArgConstruct(svgDef, args))
+            console.log(svgDef)
         } else if (Object.keys(SimplePulse.defaults).includes(commandName)) {
             var simpDef = SimplePulse.defaults[commandName]; 
             this.sequence.addTemporal(channelName, SimplePulse.anyArgConstruct(simpDef, args))

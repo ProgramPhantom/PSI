@@ -12,7 +12,8 @@ const svgPaths = ["\\src\\assets\\aquire2.svg",
                   "\\src\\assets\\saltirehilo.svg",
                   "\\src\\assets\\halfsine.svg",
                   "\\src\\assets\\chirplohi.svg",
-                  "\\src\\assets\\chirphilo.svg"]
+                  "\\src\\assets\\chirphilo.svg",
+                  "\\src\\assets\\sweptpulse.svg"]
 
 for (const p of svgPaths) {
     var svg = await fetch(p).then(
@@ -62,7 +63,7 @@ export default class SVGPulse extends Temporal {
 
     constructor(timestamp: number,
                 params: svgPulseInterface,
-                offset: number[]=[0, 0]) {
+                offset: number[]=[0, 1]) {
 
         super(timestamp,  
               params,
@@ -81,7 +82,8 @@ export default class SVGPulse extends Temporal {
     }
         
     getSVG(): string {
-        
+        console.log(svgContent)
+        console.log(svgContent[this.path])
         return svgContent[this.path]
     }
 
