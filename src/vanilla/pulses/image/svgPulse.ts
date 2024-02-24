@@ -14,7 +14,9 @@ const svgPaths = ["\\src\\assets\\aquire2.svg",
                   "\\src\\assets\\chirplohi.svg",
                   "\\src\\assets\\chirphilo.svg",
                   "\\src\\assets\\ampseries.svg",
-                  "\\src\\assets\\180.svg"]
+                  "\\src\\assets\\180.svg",
+                  "\\src\\assets\\trapezium.svg",
+                  "\\src\\assets\\talltrapezium.svg"]
 
 for (const p of svgPaths) {
     var svg = await fetch(p).then(

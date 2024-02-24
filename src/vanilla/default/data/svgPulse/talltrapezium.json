@@ -1,0 +1,25 @@
+{
+    "config": {
+        "orientation": "top",
+        "alignment": "centre",
+        "overridePad": false,
+        "inheritWidth": false
+    },
+
+    "padding": [0, 0, 0, 0],
+    "path": "\\src\\assets\\talltrapezium.svg",
+    "style": {
+        "width": 15,
+        "height": 25
+    },
+
+    "label": {
+        "text": "\\tau",
+        "padding": [0, 0, 10, 0],
+        "labelPosition": "top",
+        "style": {
+            "size": 10,
+            "colour": "black"
+        }
+    }
+}
