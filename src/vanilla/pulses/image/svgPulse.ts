@@ -13,7 +13,7 @@ const svgPaths = ["\\src\\assets\\aquire2.svg",
                   "\\src\\assets\\halfsine.svg",
                   "\\src\\assets\\chirplohi.svg",
                   "\\src\\assets\\chirphilo.svg",
-                  "\\src\\assets\\sweptpulse.svg"]
+                  "\\src\\assets\\ampseries.svg"]
 
 for (const p of svgPaths) {
     var svg = await fetch(p).then(
@@ -63,7 +63,7 @@ export default class SVGPulse extends Temporal {
 
     constructor(timestamp: number,
                 params: svgPulseInterface,
-                offset: number[]=[0, 1]) {
+                offset: number[]=[0, 0.5]) {
 
         super(timestamp,  
               params,
@@ -91,21 +91,30 @@ export default class SVGPulse extends Temporal {
     draw(surface: Svg) {
         
         var obj = SVG(this.svgContent);
-        obj.move(this.x + this.offset[0], this.y + this.offset[1]);
-        obj.size(this.width, this.height);
+        obj.move(0, 0);
         obj.attr({"preserveAspectRatio": "none"})
         obj.attr({"stroke": "black"})
         // var foreignObject = surface.foreignObject(200, 200);
-        
+   
 
+        // obj.transform({flip: "y", originX: 0, originY: 175})
         if (this.config.orientation === Orientation.bottom) {
+            this.offset[1] = - this.offset[1];
+
             console.log("TRANSFORMING")
             obj.children().forEach((c) => {
-                c.transform({
-                    flip: "y",
-                })
+                // console.log(parseInt(c.height()))
+                // c.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: <number>c.height()})
+                c.transform({flip: "y", origin: "bottom left"})
+                c.translate(0, -<number>obj.height())
+                //c.transform({origin: "top"});
+                //c.scale(1, -1);
+ 
             })
         }
+
+        obj.move(this.x + this.offset[0], this.y + this.offset[1]);
+        obj.size(this.width, this.height);
         surface.add(obj);
 
         if (this.label) {
