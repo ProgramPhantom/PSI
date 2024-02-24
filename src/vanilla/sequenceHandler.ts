@@ -187,15 +187,15 @@ export default class SequenceHandler {
 
     static ChannelUtil: {[character: string]: any} = {
         "@": Channel.default,
+        ">": Channel.default,  // FIX ME!!
         "~": Channel.default,
         "|": Sequence.defaults["empty"].grid.lineStyle,
     }
 
-    static specialCharacters: string[] = ["#", "~", "`", ">", "=", "[(]", "[)]", "[+]", "[.]", "[*]", "[/]", ]
-    static specialCommands: string[] = ["[#]", "[~]", "[|]"]
+    static specialCharacters: string[] = ["-", "#", "~", "`", ">", "=", "[(]", "[)]", "[+]", "[.]", "[*]", "[/]", "[}]", "[{}]"]
 
     static specialCharacterRegex: string = SequenceHandler.specialCharacters.join("|");
-    static util: string = SequenceHandler.specialCommands.join("|");
+    static util: string = "[" + Object.keys(SequenceHandler.ChannelUtil).join("]|[") + "]";
     static alphaNumericRegex: string = "^[a-zA-Z0-9_]*$";
 
     static characterError = {input: SequenceHandler.specialCharacters.join("|"), newState: ParseState.Error};
@@ -243,6 +243,7 @@ export default class SequenceHandler {
         ],
         "string": [{input: '["]', newState: ParseState.Argument, ignore: true},
                    {input: "[\\\\]", newState: ParseState.String},
+                   {input: SequenceHandler.specialCharacterRegex, newState: ParseState.String },
                    {input: SequenceHandler.alphaNumericRegex, newState: ParseState.String},
         ]
     }
@@ -268,7 +269,7 @@ export default class SequenceHandler {
         try {
             this.parseScript(initialCode);
         } catch (e){
-            
+            console.log(e)
         }
         
 
@@ -619,6 +620,12 @@ export default class SequenceHandler {
                 break;
             case "|":
                 this.sequence.addVLine(channel.content, <Line>args)
+                break;
+            case "@":
+                this.sequence.syncOn(channel.content, undefined);
+                break;
+            case ">":
+                this.sequence.syncNext(channel.content, undefined);
                 break;
         }
     }

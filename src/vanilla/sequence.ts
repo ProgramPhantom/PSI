@@ -138,6 +138,8 @@ export default class Sequence {
     width: number;
     height: number;  // Excludes padding
 
+    channelWidths: number[]=[];
+
     padding: number[];
     grid: Grid;
 
@@ -169,11 +171,15 @@ export default class Sequence {
             yCurs = channel.bounds.bottom;
             
             this.height += channel.height;
-            this.width += channel.width;
+            this.channelWidths.push(channel.width);
+
+            console.log(channel.width)
         })
         this.freeLabels.forEach((label) => {
             label.draw(this.surface);
         })
+
+        this.width = Math.max(...this.channelWidths);
 
         var xBar = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
         console.log(xBar);
@@ -199,15 +205,33 @@ export default class Sequence {
         this.channels[name] = newChannel;
     }
 
-    syncChannels(reference: string, targets: any) {
+    syncOn(reference: string, targets: any) {
         var referenceChan = this.channels[reference];
         var referenceCurs = referenceChan.elementCursor;
 
-        if (!targets.targets) {
+        console.log("SYNCING CHANNELS");
+
+        if (!targets) {
             // Sync all
             Object.keys(this.channels).forEach((val) => {
                 if (val !== reference) {
                     this.channels[val].jumpTimespan(referenceCurs-1);
+                }
+            })
+        }
+    }
+
+    syncNext(reference: string, targets: any) {
+        var referenceChan = this.channels[reference];
+        var referenceCurs = referenceChan.elementCursor;
+
+        console.log("SYNCING CHANNELS");
+
+        if (!targets) {
+            // Sync all
+            Object.keys(this.channels).forEach((val) => {
+                if (val !== reference) {
+                    this.channels[val].jumpTimespan(referenceCurs);
                 }
             })
         }

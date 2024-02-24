@@ -1,5 +1,5 @@
 {
-    "padding": [0, 5, 0, 5],
+    "padding": [0, 1, 0, 1],
 
     "config": {
         "orientation": "top",
@@ -9,15 +9,15 @@
     },
 
     "style": {
-        "width": 10,
-        "height": 70,
+        "width": 7,
+        "height": 50,
         "fill": "#000000",
         "stroke": "",
         "strokeWidth": 0
     },
 
     "label": {
-        "text": "90^{\\circ}",
+        "text": "",
         "padding": [0, 0, 10, 0],
         "labelPosition": "top",
         "style": {

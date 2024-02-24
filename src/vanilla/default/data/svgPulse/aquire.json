@@ -6,15 +6,15 @@
         "inheritWidth": false
     },
 
-    "padding": [0, 10, 0, 10],
+    "padding": [0, 0, 0, 0],
     "path": "\\src\\assets\\aquire2.svg",
     "style": {
-        "width": 200,
-        "height": 100
+        "width": 150,
+        "height": 75
     },
 
     "label": {
-        "text": "90^{\\circ}",
+        "text": "",
         "padding": [0, 0, 0, 0],
         "labelPosition": "top",
         "style": {

@@ -6,7 +6,7 @@
         "inheritWidth": false
     },
 
-    "padding": [0, 10, 0, 10],
+    "padding": [0, 1, 0, 1],
     "path": "\\src\\assets\\chirplohi.svg",
     "style": {
         "width": 50,

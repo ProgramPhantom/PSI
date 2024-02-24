@@ -170,7 +170,7 @@ parseCommand(line: string, lineNum: number): {commandBody: string, arguments: an
         } else if (Sequence.ChannelCommands.includes(commandName)) {
             switch (commandName) {
                 case "sync":
-                    this.syncChannels(channelName, args);
+                    this.syncOn(channelName, args);
                     break;
                 case "AnnotateLabel":
                     channel.addAnnotationLabel(args);
