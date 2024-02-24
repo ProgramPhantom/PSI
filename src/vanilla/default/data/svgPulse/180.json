@@ -1,0 +1,25 @@
+{
+    "config": {
+        "orientation": "top",
+        "alignment": "centre",
+        "overridePad": false,
+        "inheritWidth": false
+    },
+
+    "padding": [0, 10, 0, 10],
+    "path": "\\src\\assets\\180.svg",
+    "style": {
+        "width": 50,
+        "height": 50
+    },
+
+    "label": {
+        "text": "\\tau",
+        "padding": [0, 0, 10, 0],
+        "labelPosition": "top",
+        "style": {
+            "size": 30,
+            "colour": "black"
+        }
+    }
+}

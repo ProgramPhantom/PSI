@@ -117,10 +117,11 @@ export default abstract class Temporal extends Drawable implements labelable {
                     dimensions[1] += this.label.height + this.label.padding[0] + this.label.padding[2];
                     break;
                 case LabelPosition.centre:
-                    
+                    // No protrusion
                     break;
                 default:
-                    throw new Error("NOT IMPLEMENTED");
+                    dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
+
             }
             
         }
