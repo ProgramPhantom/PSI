@@ -18,11 +18,12 @@
 
     "label": {
         "text": "",
-        "padding": [0, 0, 10, 0],
-        "labelPosition": "top",
+        "padding": [0, 0, 3, 0],
+        "position": "top",
         "style": {
             "size": 15,
             "colour": "black"
         }
     }
+
 }

@@ -16,10 +16,20 @@
     "label": {
         "text": "\\tau",
         "padding": [0, 0, 10, 0],
-        "labelPosition": "top",
+        "position": "top",
         "style": {
             "size": 30,
             "colour": "black"
+        }
+    },
+
+    "arrow": {
+        "padding": [0, 0, 0, 0],
+        "position": "inline",
+        "style": {
+            "thickness": 2, 
+            "headStyle": "default", 
+            "stroke": "black"
         }
     }
 }

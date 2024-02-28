@@ -2,7 +2,7 @@ import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Drawable } from "./drawable";
 import { labelable } from "./temporal";
 import * as defaultBracket from "./default/data/bracket.json"
-import Label, { labelInterface, LabelPosition } from "./label";
+import Label, { labelInterface, Position } from "./label";
 import { UpdateObj } from "./util";
 
 

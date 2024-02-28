@@ -3,7 +3,7 @@ import * as defaultPulse from "../data/svgPulse/aquire.json"
 import { Alignment, Orientation, temporalConfig} from "../../temporal.ts";
 import SVGPulse from "../../pulses/image/svgPulse.ts";
 import { svgPulseInterface, svgPulseStyle } from "../../pulses/image/svgPulse.ts";
-import Label, {LabelPosition, labelInterface} from '../../label.ts';
+import Label, {Position, labelInterface} from '../../label.ts';
 
 const DEFAULTSVG = await fetch(defaultPulse.path).then(
     (response) => response.text()

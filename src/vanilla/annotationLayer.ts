@@ -1,6 +1,6 @@
 import { arrowStyle } from "./arrow";
 import { Drawable } from "./drawable";
-import Label, { LabelPosition, labelInterface } from "./label";
+import Label, { Position, labelInterface } from "./label";
 import { labelable } from "./temporal";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";
@@ -57,7 +57,7 @@ export default class AnnotationLayer extends Drawable {
         this.timestampWidths = timestampWidths;
         this.x = startX;
         this.y = startY + this.padding[0];
-        console.log(startY)
+        
 
         this.timestampX.push(this.x);
         this.timestampWidths.forEach((w, i) => {
@@ -104,8 +104,8 @@ export default class AnnotationLayer extends Drawable {
                     timeWidth = 0;
                 }
 
-                switch (l.labelPosition) {
-                    case LabelPosition.centre:
+                switch (l.position) {
+                    case Position.centre:
                         l.x = x + timeWidth/2 - l.width/2;
                         l.y = ys[timestamp];
                         break;
@@ -134,7 +134,7 @@ export default class AnnotationLayer extends Drawable {
 
         var ys = new Array<number>(this.timestampX.length-1);
         ys.fill(startY);
-        console.log("start positions: ", ys);
+        
 
         // Draw Longs
         for (const timeLong of this.longs) {
@@ -144,9 +144,9 @@ export default class AnnotationLayer extends Drawable {
             var x1 = this.timestampX[timespanRange[0]];
             var x2 = this.timestampX[timespanRange[1]+1]  // To the other side of last
 
-            console.log(this.timestampX);
-            console.log(timespanRange)
-            console.log(x1, x2)
+            
+            
+            
 
             // Find y
             var longHeight = Math.abs(long.protrusion);

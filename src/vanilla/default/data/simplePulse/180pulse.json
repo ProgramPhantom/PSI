@@ -19,7 +19,7 @@
     "label": {
         "text": "",
         "padding": [0, 0, 10, 0],
-        "labelPosition": "top",
+        "position": "top",
         "style": {
             "size": 20,
             "colour": "black"

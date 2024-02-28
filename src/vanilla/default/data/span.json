@@ -6,22 +6,32 @@
         "inheritWidth": true
     },
     
-    "padding": [0, 0, 10, 0],
+    "padding": [0, 0, 5, 0],
     "width": 10,
 
     "style": {
-        "thickness": 3, 
+        "thickness": 2, 
         "headStyle": "default", 
         "stroke": "black"
     },
 
     "label": {
         "text": "\\lambda",
-        "padding": [7, 0, 10, 0],
-        "labelPosition": "top",
+        "padding": [0, 0, 5, 0],
+        "position": "top",
         "style": {
             "size": 10,
             "colour": "black"
+        }
+    },
+
+    "arrow": {
+        "padding": [0, 0, 4, 0],
+        "position": "inline",
+        "style": {
+            "thickness": 2, 
+            "headStyle": "default", 
+            "stroke": "black"
         }
     }
 }

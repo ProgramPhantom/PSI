@@ -16,7 +16,7 @@
     "label": {
         "text": "\\tau",
         "padding": [0, 0, 10, 0],
-        "labelPosition": "top",
+        "position": "top",
         "style": {
             "size": 30,
             "colour": "black"

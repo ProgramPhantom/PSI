@@ -2,7 +2,7 @@ import { SVG, Svg } from "@svgdotjs/svg.js";
 import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig} from "../../temporal";
 import ImagePulse, { imagePulseStyle } from "./imagePulse";
 import * as defaultPulse from "../../default/data/svgPulse/svgPulse.json"
-import {LabelPosition, labelInterface } from "../../label";
+import {Position, labelInterface } from "../../label";
 import { UpdateObj } from "../../util";
 import {defs} from "../../default/data/svgPulse"
 
@@ -28,11 +28,6 @@ for (const p of svgPaths) {
     svgContent[p] = svg;
 }
 
-
-    
-
-                      
-
 export interface svgPulseInterface extends temporalInterface {
     path: string,
     style: svgPulseStyle,
@@ -55,7 +50,8 @@ export default class SVGPulse extends Temporal {
                                  config: options.config,
                                  padding: options.padding,
                                  style: options.style,
-                                 label: options.label})
+                                 label: options.label,
+                                 arrow: options.arrow})
 
         return el;
     }
@@ -85,8 +81,8 @@ export default class SVGPulse extends Temporal {
     }
         
     getSVG(): string {
-        console.log(svgContent)
-        console.log(svgContent[this.path])
+        
+        
         return svgContent[this.path]
     }
 
@@ -104,9 +100,9 @@ export default class SVGPulse extends Temporal {
         if (this.config.orientation === Orientation.bottom) {
             this.offset[1] = - this.offset[1];
 
-            console.log("TRANSFORMING")
+            
             obj.children().forEach((c) => {
-                // console.log(parseInt(c.height()))
+                // 
                 // c.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: <number>c.height()})
                 c.transform({flip: "y", origin: "bottom left"})
                 c.translate(0, -<number>obj.height())

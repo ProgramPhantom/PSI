@@ -1,7 +1,7 @@
 import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "./temporal";
 import * as defaultAbstraction from "./default/data/abstraction.json"
 import * as SVG from '@svgdotjs/svg.js'
-import Label, { LabelPosition, labelInterface} from "./label";
+import Label, { Position, labelInterface} from "./label";
 import { UpdateObj } from "./util";
 
 
@@ -61,7 +61,8 @@ export default class Abstraction extends Temporal {
         .attr(this.style)
         .move(this.x, this.y)
         // BAD FIX
-        .attr({"stroke-width": this.style.strokeWidth});
+        .attr({"stroke-width": this.style.strokeWidth,
+               "shape-rendering": "crispEdges"});
 
         if (this.label) {
             this.drawLabel(surface);

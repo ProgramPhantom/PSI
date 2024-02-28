@@ -17,7 +17,7 @@
     "label": {
         "text": "\\textrm{Abstract}",
         "padding": [0, 0, 0, 0],
-        "labelPosition": "centre",
+        "position": "centre",
         "style": {
             "size": 60,
             "colour": "white"

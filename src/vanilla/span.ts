@@ -1,15 +1,14 @@
 import { Svg } from "@svgdotjs/svg.js";
-import Arrow, { arrowStyle } from "./arrow";
-import { LabelPosition, labelInterface } from "./label";
+import Arrow, { arrowInterface, arrowStyle } from "./arrow";
+import { Position, labelInterface } from "./label";
 import Temporal, { Alignment, Orientation, labelable, temporalInterface, temporalConfig } from "./temporal";
 import * as defaultSpan from "./default/data/span.json"
 import { UpdateObj } from "./util";
 
 
 interface spanInterface extends temporalInterface {
-
     width: number,
-    style: arrowStyle
+    arrow: arrowInterface
 }   
 
 export default class Span extends Temporal implements labelable {
@@ -17,43 +16,39 @@ export default class Span extends Temporal implements labelable {
 
     static anyArgConstruct(defaultArgs: temporalInterface, args: any): Span {
 
-        const spanOptions = args ? UpdateObj(defaultArgs, args) : defaultArgs;
+        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
-        var el = new Span(spanOptions.timestamp,
-                                 {config: spanOptions.config,
-                                  padding: spanOptions.padding,
-                                  style: spanOptions.style,
-                                  width: spanOptions.width,
-                                  label: spanOptions.label},
-                                  spanOptions.offset
-                                 )
+        var el = new Span(options.timestamp,
+                         {config: options.config,
+                          padding: options.padding,
+                          arrow: options.arrow,
+                          width: options.width,
+                          label: options.label},
+                          options.offset)
 
         return el;
     }
 
-    arrow?: Arrow;
-    arrowStyle: arrowStyle;
+    arrow: Arrow;
 
-    constructor(timestamp: number=0,
+    constructor(timestamp: number,
                 params: spanInterface,
                 offset: number[]=[0,0]) {
             
         super(timestamp, params, offset)
 
-        this.bounds = {width: params.width, height: params.style.thickness + params.padding[2]}
-        this.actualBounds = {width: params.padding[3] + params.width + params.padding[1], height: params.padding[0] + params.style.thickness + params.padding[2]}
-                    
-        this.arrowStyle = params.style;
+        this.arrow = Arrow.anyArgConstruct(Arrow.defaults["arrow"], params.arrow);
+
+        this.bounds = {width: params.width, height: params.arrow.style.thickness + params.padding[2]}
+        this.actualBounds = {width: params.padding[3] + params.width + params.padding[1], height: params.padding[0] + params.arrow.style.thickness + params.padding[2]}
+
     }
 
     public draw(surface: Svg): void {
-        this.arrow = new Arrow(this.x, this.y, this.x + this.width, this.y, this.arrowStyle)
-        
-        this.arrow.draw(surface);
-
         if (this.label) {
             this.drawLabel(surface);
         }
+        
     }
 
     

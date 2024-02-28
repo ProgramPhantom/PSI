@@ -1,11 +1,8 @@
 {
-    "x": 0,
-    "y": 0,
-    "x2": 50,
-    "y2": 50,
+    "padding": [0, 0, 0, 0],
 
     "style": {
-        "thickness": 4, 
+        "thickness": 2, 
         "headStyle": "default", 
         "stroke": "black"
     }

@@ -1,7 +1,9 @@
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Label, { labelInterface, LabelPosition } from "./label";
+import Label, { labelInterface, Position } from "./label";
 import { UpdateObj } from "./util";
+import Arrow, { ArrowPosition, arrowInterface } from "./arrow";
+import { H } from "mathjax-full/js/output/common/FontData";
 
 interface Dim {
     width: number,
@@ -40,7 +42,8 @@ export interface temporalConfig {
 export interface temporalInterface {
     config: temporalConfig,
     padding: number[],
-    label?: labelInterface | null
+    label?: labelInterface | null,
+    arrow?: arrowInterface | null,
 }
 
 
@@ -52,8 +55,10 @@ export default abstract class Temporal extends Drawable implements labelable {
     config: temporalConfig;
 
     padding: number[];
+    barThickness: number = 3;
 
     label?: Label;
+    arrow?: Arrow;
 
     private _actualBounds?: Bounds;
 
@@ -69,8 +74,13 @@ export default abstract class Temporal extends Drawable implements labelable {
         this.padding = params.padding;
 
         
+        
         if (params.label) {
             this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
+        }
+        if (params.arrow) {
+            this.arrow = Arrow.anyArgConstruct(Arrow.defaults["arrow"], params.arrow)
+            console.log(this.arrow)
         }
         
     }
@@ -109,21 +119,28 @@ export default abstract class Temporal extends Drawable implements labelable {
         var dimensions: number[] = [0, 0];
 
         if (this.label) {
-            switch (this.label.labelPosition) {
-                case LabelPosition.top:
+            switch (this.label.position) {
+                case Position.top:
                     dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
                     break;
-                case LabelPosition.bottom:
+                case Position.bottom:
                     dimensions[1] += this.label.height + this.label.padding[0] + this.label.padding[2];
                     break;
-                case LabelPosition.centre:
+                case Position.centre:
                     // No protrusion
                     break;
                 default:
                     dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
 
             }
-            
+        }
+
+        if (this.arrow) {
+            if (this.arrow.position === ArrowPosition.above) {
+                dimensions[0] += this.arrow.style.thickness + this.arrow.padding[0] + this.arrow.padding[2];
+            } else if (this.arrow.position === ArrowPosition.under) {
+                dimensions[1] += this.arrow.style.thickness + this.arrow.padding[0] + this.arrow.padding[2];
+            }
         }
 
         return dimensions;
@@ -158,46 +175,88 @@ export default abstract class Temporal extends Drawable implements labelable {
 
     drawLabel(surface: Svg): number[] {
         // LIMITATION: top pad does not start from the bottom of the channel bar
-        
+        var width = 0;
+        var height = 0;
+        var labelX, labelY = 0;
+        var level;
+        console.log("DRAWING")
+
         if (this.label) {
-            var x, y;
-            
-            switch (this.label.labelPosition) {
-                
-
-                case LabelPosition.top:
-                    x = this.x + this.width/2 - this.label.width/2;
-                    y = this.y - this.label.height - this.label.padding[2];
+            switch (this.label.position) {
+                case Position.top:
+                    labelX = this.x + this.width/2 - this.label.width/2;
+                    labelY = this.y - this.label.height - this.label.padding[2];
                     break;
-                case LabelPosition.bottom:
-                    x = this.x + this.width/2 - this.label.width/2;
-                    y = this.y + this.height + this.label.padding[0];
+                case Position.bottom:
+                    labelX = this.x + this.width/2 - this.label.width/2;
+                    labelY = this.y + this.height + this.label.padding[0];
                     break;
 
-                case LabelPosition.centre:
-                        x = this.x + this.width/2 - this.label.width/2;
-                        y = this.y + this.height /2 - this.label.height/2 + this.label.padding[0];
-    
-                        break;
+                case Position.centre:
+                    labelX = this.x + this.width/2 - this.label.width/2;
+                    labelY = this.y + this.height /2 - this.label.height/2 + this.label.padding[0];
+
+                    break;
                 default:
-                    
-                    x = 0;
-                    y = 0;
+                    labelX = 0;
+                    labelY = 0;
             }
-            
-            this.label.position(x, y);
-            this.label.draw(surface);
 
-            return [this.label.width, this.label.height];
+            
+
+            width += this.label.width
+            height += this.label.height;
         }
 
-        return [0, 0];
+        if (this.arrow) {
+            switch (this.arrow.position) {
+                case ArrowPosition.above:
+                    level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
+                    this.arrow.set(this.x, level, this.x + this.width, level);
+                    height += this.arrow.actualBounds.height;
+
+                    if ((this.label !== undefined) && this.label.position === Position.top) {
+                        labelY -= this.arrow.actualHeight;
+                    }
+                    break;
+                case ArrowPosition.inline:
+                    if (this.label) {
+                        this.label.style.background = "white";
+                        level = labelY + this.label.height/2;
+                    } else {
+                        level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
+                    }
+                    
+                    this.arrow.set(this.x, level, this.x + this.width, level);
+                    break;
+                case ArrowPosition.under:
+                    level = this.y + this.height + this.arrow.padding[0] + this.barThickness + this.arrow.style.thickness;
+                    this.arrow.set(this.x, level, this.x + this.width, level);
+
+                    if ((this.label !== undefined) && this.label.position === Position.bottom) {
+                        labelY += this.arrow.actualHeight;
+                    }
+
+                    break;
+                default:
+                    throw new Error(`Unknown arrow position '${this.arrow.position}'`)
+            }
+
+            this.arrow.draw(surface);
+        }
+
+        if (this.label) {
+            this.label.move(labelX, labelY);
+            this.label.draw(surface);
+        }
+
+
+        return [width, height];
     }
 
     centreXPos(x: number) {
         this.x = x - this.width/2;
     }
-
 
     get actualBounds(): Bounds {
         if (this._actualBounds) {

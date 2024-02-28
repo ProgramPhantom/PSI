@@ -1,10 +1,10 @@
 {
     "timespan": [0, 1],
     "side": "top",
-    "protrusion": 7,
+    "protrusion": 20,
 
     "style": {
-        "strokeWidth": 1,
+        "strokeWidth": 2,
         "bracketType": "curly",
         "expression": 0.5,
         "stroke": "black"
@@ -14,7 +14,7 @@
     "label": {
         "text": "90^{\\circ}",
         "padding": [0, 0, 3, 0],
-        "labelPosition": "top",
+        "position": "top",
         "style": {
             "size": 20,
             "colour": "black"

@@ -2,7 +2,7 @@ import SimplePulse, {simplePulseInterface, simplePulseStyle} from "../../pulses/
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import * as defaultPulse from "../data/simplePulse/180pulse.json"
 import { Alignment, IDefaultConstruct, Orientation, temporalConfig } from "../../temporal.ts";
-import { LabelPosition, labelInterface } from "../../label.ts";
+import { Position, labelInterface } from "../../label.ts";
 import { off } from "process";
 
 export default class Pulse180 extends SimplePulse {

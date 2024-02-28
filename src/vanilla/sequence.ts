@@ -1,7 +1,7 @@
 import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Orientation } from "./temporal";
-import { LabelPosition, labelInterface } from "./label";
+import { Position, labelInterface } from "./label";
 import Pulse90 from "./default/classes/pulse90";
 import Pulse180 from "./default/classes/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
@@ -10,7 +10,7 @@ import ImagePulse from "./pulses/image/imagePulse";
 import Aquire from "./default/classes/aquire";
 import Label from "./label";
 import { json } from "stream/consumers";
-import Arrow, { headStyle } from "./arrow";
+import Arrow, { HeadStyle } from "./arrow";
 import Span from "./span";
 import ChirpLoHi from "./default/classes/chirpLoHi";
 import Abstraction from "./abstraction";
@@ -75,7 +75,7 @@ export class Grid {
         this.gridOn = params.gridOn;
         this.style = params.lineStyle;
         this.gridPositioning = params.gridPositioning;
-        console.log(params)
+        
     }
 
     draw(surface: Svg, timestampX: number[], height: number) {
@@ -86,7 +86,7 @@ export class Grid {
         switch (this.gridPositioning) {
             case GridPositioning.start:
                 var cursX = timestampX[0];
-                console.log("in here")                
+                
                 for (const [timestamp, line] of Object.entries(this.vLines)) {
                     attr = {"stroke-width": line.strokeWidth,
                             "stroke-dasharray": line.dashing,
@@ -96,10 +96,10 @@ export class Grid {
                         
                     surface.line(cursX, 0, cursX, height)
                     .attr(attr);
-                    console.log(attr);
-                    console.log("DRAWING AT", cursX, height)
+                    
+                    
                 }
-                console.log("Free")
+                
                 break;
             case GridPositioning.centre:
                 var cursX = timestampX[0];
@@ -120,7 +120,7 @@ export class Grid {
 
                 break;
             default: 
-                console.log("ERROR")
+                
                 throw Error;
             }
     }
@@ -152,7 +152,7 @@ export default class Sequence {
         this.height = 0;
 
         this.padding = params.padding;
-        console.log(params.grid.lineStyle)
+        
         this.grid = new Grid(params.grid);
 
         this.surface = surface; 
@@ -173,7 +173,7 @@ export default class Sequence {
             this.height += channel.height;
             this.channelWidths.push(channel.width);
 
-            console.log(channel.width)
+            
         })
         this.freeLabels.forEach((label) => {
             label.draw(this.surface);
@@ -182,14 +182,14 @@ export default class Sequence {
         this.width = Math.max(...this.channelWidths);
 
         var xBar = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
-        console.log(xBar);
+        
         this.timestampX.push(xBar);
         this.maxTimespans.forEach((t, i) => {
             this.timestampX.push(t + this.timestampX[i])
         })
 
         if (this.grid.gridOn) {
-            console.log("DRAWING GRID")
+            
             this.grid.draw(this.surface, this.timestampX, this.height);
         }
 
@@ -209,7 +209,7 @@ export default class Sequence {
         var referenceChan = this.channels[reference];
         var referenceCurs = referenceChan.elementCursor;
 
-        console.log("SYNCING CHANNELS");
+        
 
         if (!targets) {
             // Sync all
@@ -225,7 +225,7 @@ export default class Sequence {
         var referenceChan = this.channels[reference];
         var referenceCurs = referenceChan.elementCursor;
 
-        console.log("SYNCING CHANNELS");
+        
 
         if (!targets) {
             // Sync all
@@ -257,7 +257,7 @@ export default class Sequence {
         this.maxTimespans = max;
 
         
-        console.log()
+        
 
     }
 
@@ -266,7 +266,7 @@ export default class Sequence {
         this.temporalSections[channelName] = widths;
 
         this.computeTimespans()
-        console.log("ADDED TEMPORAL")
+        
     }
 
     addLabel(channelName: string, obj: Label) {
@@ -274,15 +274,15 @@ export default class Sequence {
     }
 
     addAnnotationLong(channelName: string, obj: Bracket) {
-        console.log("ADDING LONG")
+        
         this.channels[channelName].addAnnotationLong(obj);
     }
 
     addVLine(channelName: string, obj: Line) {
         var channel: Channel = this.channels[channelName];
 
-        console.log("originalLine: ", obj)
+        
 
-        this.grid.vLines[channel.elementCursor] = obj;
+        this.grid.vLines[channel.elementCursor+1] = obj;
     }
 }

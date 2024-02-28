@@ -7,7 +7,7 @@ import Pulse180 from "./default/classes/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
-import Label, { labelInterface, LabelPosition } from "./label";
+import Label, { labelInterface, Position } from "./label";
 import Span from "./span";
 import Abstraction from "./abstraction";
 import AnnotationLayer from "./annotationLayer";
@@ -58,7 +58,7 @@ export default class Channel extends Drawable implements labelable {
     elementCursor: number = -1;
 
     label?: Label;
-    labelPosition: LabelPosition=LabelPosition.left;
+    position: Position=Position.left;
 
     constructor(params: channelInterface,
                 offset: number[]=[0, 0]) {
@@ -213,10 +213,10 @@ export default class Channel extends Drawable implements labelable {
         this.bounds = {width: this.width + this.barWidth, height: this.height}
     }
 
-
     addTemporal(obj: Temporal): number[] {
         this.elementCursor += 1;
         obj.timestamp = this.elementCursor;
+        obj.barThickness = this.style.thickness;
 
         this.temporalElements.push(obj);
         this.hSections.push(obj.actualWidth);
@@ -250,7 +250,7 @@ export default class Channel extends Drawable implements labelable {
 
         var timestampStart: number;
         var timestampEnd: number;
-        console.log(brack.timespan)
+        
         if (brack.timespan === undefined) {
             timestampStart = 0;
             timestampEnd = 1;
@@ -267,7 +267,7 @@ export default class Channel extends Drawable implements labelable {
 
 
         var range = brack.timespan ? brack.timespan : [timestampStart, timestampEnd];
-        console.log(range);
+        
         this.annotationLayer.annotateLong(brack, range[0], range[1]);
     }
 
@@ -293,7 +293,7 @@ export default class Channel extends Drawable implements labelable {
 
             var hOffset: number = x + this.label.width + this.label.padding[1];
 
-            this.label.position(x, y);
+            this.label.move(x, y);
             this.label.draw(surface);
             
             return [hOffset, this.label.height];

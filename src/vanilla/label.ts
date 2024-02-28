@@ -22,7 +22,7 @@ interface Bounds {
 export interface labelInterface {
     padding: number[],
     text: string,
-    labelPosition: LabelPosition,
+    position: Position,
     style: labelStyle,
 
     timestamp?: number,
@@ -30,10 +30,11 @@ export interface labelInterface {
 
 export interface labelStyle {
     size: number,
-    colour: string
+    colour: string,
+    background?: string,
 }
 
-export enum LabelPosition {top="top",
+export enum Position {top="top",
                            right="right",
                            bottom="bottom",
                            left="left",
@@ -49,7 +50,7 @@ export default class Label extends Drawable {
         return new Label(
             {text: options.text,
             padding: options.padding,
-            labelPosition: options.labelPosition,
+            position: options.position,
             style: options.style,
             timestamp: options.timestamp}
         )
@@ -61,7 +62,7 @@ export default class Label extends Drawable {
     style: labelStyle;
 
     padding: number[];
-    labelPosition: LabelPosition;
+    position: Position;
 
     timestamp?: number;
     
@@ -73,7 +74,7 @@ export default class Label extends Drawable {
         this.text = params.text;
         this.style = params.style;
         this.padding = params.padding;
-        this.labelPosition = params.labelPosition;
+        this.position = params.position;
 
         this.timestamp = params.timestamp;
 
@@ -89,6 +90,12 @@ export default class Label extends Drawable {
         SVGobj.width(this.style.size);
         
         SVGobj.attr({"height": null, "style": `color:${this.style.colour}`});
+        var group = SVGobj.children()[1];
+
+        if (this.style.background) {
+            group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
+        }
+        
         surface.add(SVGobj);
     }
 
@@ -128,7 +135,7 @@ export default class Label extends Drawable {
     }
 
     // Sets x and y at the same time
-    position(x?: number, y?: number) {
+    move(x?: number, y?: number) {
         this.x = x ?? this.x;
         this.y = y ?? this.y;
     }

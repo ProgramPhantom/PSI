@@ -192,7 +192,8 @@ export default class SequenceHandler {
         "|": Sequence.defaults["empty"].grid.lineStyle,
     }
 
-    static specialCharacters: string[] = ["-", "#", "~", "`", ">", "=", "[(]", "[)]", "[+]", "[.]", "[*]", "[/]", "[}]", "[{}]"]
+    static specialCharacters: string[] = ["-", "#", "~", "`", ">", "=", "[(]", "[)]", "[+]", "[.]", "[*]", "[/]", "[}]", "[{]",
+                                          ";", "[\\^]"]
 
     static specialCharacterRegex: string = SequenceHandler.specialCharacters.join("|");
     static util: string = "[" + Object.keys(SequenceHandler.ChannelUtil).join("]|[") + "]";
@@ -287,7 +288,7 @@ export default class SequenceHandler {
             
         }*/
 
-        console.log(this.tokenStream)
+        
         if (this.tokenStream.length === 0) {
             return;
         }
@@ -451,7 +452,7 @@ export default class SequenceHandler {
                 lineStart = lineNow;
 
                 tokens.push(result.token);
-                console.log("TOKEN PRODUCED: ", result.token)
+                
             }
 
             if (result.extraToken) {
@@ -482,7 +483,7 @@ export default class SequenceHandler {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${command.content}'`, command.columns, [command.line, command.line]);
         }
 
-        console.log("Running command ", command, channel, props)
+        console.log("runing command:", command, channel, props)
         
         var argObj: any = {};
 
@@ -508,7 +509,7 @@ export default class SequenceHandler {
             } else if (props.length === 1) {  // At the end of the prop chain
                 if (Array.isArray(defaultHere)) {
                     try {
-                        console.log("PARSING ARRAY: ", val.content)
+                        
                         var elements = val.content.split(",");
                         let elementsNum = elements.map(Number);
                         inner[thisProp.content] = elementsNum;
@@ -588,7 +589,7 @@ export default class SequenceHandler {
         if (Object.keys(SVGPulse.defaults).includes(commandName)) {
             var svgDef = SVGPulse.defaults[commandName]; 
             this.sequence.addTemporal(channelName, SVGPulse.anyArgConstruct(svgDef, args))
-            console.log(svgDef)
+            
         } else if (Object.keys(SimplePulse.defaults).includes(commandName)) {
             var simpDef = SimplePulse.defaults[commandName]; 
             this.sequence.addTemporal(channelName, SimplePulse.anyArgConstruct(simpDef, args))
@@ -602,7 +603,7 @@ export default class SequenceHandler {
             var labelDef = Label.defaults[commandName];
             this.sequence.addLabel(channelName, Label.anyArgConstruct(labelDef, args))
         } else if (Object.keys(Bracket.defaults).includes(commandName)) {
-            console.log("LONG")
+            
             var brackDef = Bracket.defaults[commandName];
             this.sequence.addAnnotationLong(channelName, Bracket.anyArgConstruct(brackDef, args))
         }

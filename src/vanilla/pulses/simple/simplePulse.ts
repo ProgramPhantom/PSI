@@ -1,7 +1,7 @@
 import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "../../temporal";
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
-import Label, { LabelPosition, labelInterface } from "../../label";
+import Label, { Position, labelInterface } from "../../label";
 import {UpdateObj} from "../../util";
 import {defs} from "../../default/data/simplePulse"
 
@@ -32,7 +32,8 @@ export default class SimplePulse extends Temporal  {
                                 {config: options.config,
                                  padding: options.padding,
                                  style: options.style,
-                                 label: options.label})
+                                 label: options.label,
+                                 arrow: options.arrow})
 
         return el;
     }
@@ -44,7 +45,8 @@ export default class SimplePulse extends Temporal  {
         super(timestamp, 
               params,
               offset);
-
+        
+        console.log("ARROW:" , params.arrow)
         this.style = params.style;
 
         this.bounds = {width: this.style.width, height: this.style.height};
@@ -63,6 +65,10 @@ export default class SimplePulse extends Temporal  {
         .attr({"stroke-width": this.style.strokeWidth,
                "shape-rendering": "crispEdges"
         });
+
+        if (this.arrow) {
+            this.draw
+        }
 
         if (this.label) {
             this.drawLabel(surface);
