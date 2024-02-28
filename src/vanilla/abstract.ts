@@ -1,15 +1,15 @@
 import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "./temporal";
-import * as defaultAbstraction from "./default/data/abstraction.json"
+import * as defaultAbstract from "./default/data/abstract.json"
 import * as SVG from '@svgdotjs/svg.js'
 import Label, { Position, labelInterface} from "./label";
 import { UpdateObj } from "./util";
 
-
-export interface abstractionInterface extends temporalInterface {
-    style: abstractionStyle,
+export interface abstractInterface extends temporalInterface {
+    text: string,
+    style: abstractStyle,
 }
 
-export interface abstractionStyle {
+export interface abstractStyle {
     width: number,
     height: number,
     fill: string,
@@ -19,28 +19,31 @@ export interface abstractionStyle {
 
 
 
-export default class Abstraction extends Temporal {
+export default class Abstract extends Temporal {
     // Default is currently 180 Pulse 
     
-    static defaults: {[key: string]: abstractionInterface} = {"abstraction": {...<any>defaultAbstraction }}
+    static defaults: {[key: string]: abstractInterface} = {"abstract": {...<any>defaultAbstract }}
     
     // A pulse that is an svg rect
-    style: abstractionStyle;
+    style: abstractStyle;
+    textLabel: Label;
     
-    public static anyArgConstruct(defaultArgs: abstractionInterface, args: any): Abstraction {
+    public static anyArgConstruct(defaultArgs: abstractInterface, args: any): Abstract {
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
-        var el = new Abstraction(options.timestamp,
+        var el = new Abstract(options.timestamp,
                                  {config: options.config,
                                   padding: options.padding,
+                                  text: options.text,
                                   style: options.style,
-                                  label: options.label})
+                                  label: options.label,
+                                  arrow: options.arrow})
 
         return el;
     }
 
     constructor(timestamp: number,
-                params: abstractionInterface,
+                params: abstractInterface,
                 offset: number[]=[0, 0]) {
 
         super(timestamp, 
@@ -48,6 +51,7 @@ export default class Abstraction extends Temporal {
               offset);
 
         this.style = params.style;
+        this.textLabel = Label.anyArgConstruct(Label.defaults["label"], {text: params.text, position: Position.centre, style: {size: 60, colour: "white"}})
 
         this.bounds = {width: this.style.width, height: this.style.height};
         this.actualBounds = {
@@ -64,10 +68,23 @@ export default class Abstraction extends Temporal {
         .attr({"stroke-width": this.style.strokeWidth,
                "shape-rendering": "crispEdges"});
 
+        console.log(this.textLabel.text)
+        this.drawText(surface);
+
         if (this.label) {
             this.drawLabel(surface);
         }
     }
+
+    drawText(surface: SVG.Svg) {
+        var textX = this.x + this.width/2 - this.textLabel.width/2;
+        var textY = this.y + this.height /2 - this.textLabel.height/2 + this.textLabel.padding[0];
+     
+        this.textLabel.move(textX, textY);
+        this.textLabel.draw(surface);
+    }
+
+    
 
 }
 

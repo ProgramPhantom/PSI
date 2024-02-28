@@ -13,7 +13,7 @@ import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
 import Span from "./span";
 import ChirpLoHi from "./default/classes/chirpLoHi";
-import Abstraction from "./abstraction";
+import Abstract from "./abstract";
 import * as defaultSequence from "./default/data/sequence.json"
 import ChirpHiLo from "./default/classes/chirpHiLo";
 import SaltireLoHi from "./default/classes/saltireLoHi";

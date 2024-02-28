@@ -164,8 +164,8 @@ parseCommand(line: string, lineNum: number): {commandBody: string, arguments: an
         } else if (Object.keys(Sequence.Span).includes(commandName)) {
             // THIS NEEDS MAKING BETTER
             sections = channel.addSpan(Sequence.Span[commandName], args)
-        } else if (Object.keys(Sequence.Abstraction).includes(commandName)) {
-            sections = channel.addAbstraction(Sequence.Abstraction[commandName], args);
+        } else if (Object.keys(Sequence.Abstract).includes(commandName)) {
+            sections = channel.addAbstract(Sequence.Abstract[commandName], args);
             
         } else if (Sequence.ChannelCommands.includes(commandName)) {
             switch (commandName) {

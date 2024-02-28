@@ -1,4 +1,4 @@
-import Abstraction from "./abstraction";
+import Abstract from "./abstract";
 // import Aquire from "./default/classes/aquire";
 // import ChirpHiLo from "./default/classes/chirpHiLo";
 // import ChirpLoHi from "./default/classes/chirpLoHi";
@@ -179,7 +179,7 @@ export default class SequenceHandler {
     static ContentCommands: {[name: string]: any} = {
         ...SVGPulse.defaults,
         ...SimplePulse.defaults,
-        ...Abstraction.defaults,
+        ...Abstract.defaults,
         ...Span.defaults,
         ...Label.defaults,
         ...Bracket.defaults,
@@ -593,9 +593,9 @@ export default class SequenceHandler {
         } else if (Object.keys(SimplePulse.defaults).includes(commandName)) {
             var simpDef = SimplePulse.defaults[commandName]; 
             this.sequence.addTemporal(channelName, SimplePulse.anyArgConstruct(simpDef, args))
-        } else if (Object.keys(Abstraction.defaults).includes(commandName)) {
-            var absDef = Abstraction.defaults[commandName];
-            this.sequence.addTemporal(channelName, Abstraction.anyArgConstruct(absDef, args))
+        } else if (Object.keys(Abstract.defaults).includes(commandName)) {
+            var absDef = Abstract.defaults[commandName];
+            this.sequence.addTemporal(channelName, Abstract.anyArgConstruct(absDef, args))
         } else if (Object.keys(Span.defaults).includes(commandName)) {
             var spanDef = Span.defaults[commandName];
             this.sequence.addTemporal(channelName, Span.anyArgConstruct(spanDef, args))

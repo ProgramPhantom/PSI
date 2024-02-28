@@ -44,7 +44,7 @@ export enum Position {top="top",
 export default class Label extends Drawable {
     static defaults: {[key: string]: labelInterface} = {"label": {...<any>defaultLabel}}
 
-    public static anyArgConstruct(defaultArgs: labelInterface, args: labelInterface): Label {
+    public static anyArgConstruct(defaultArgs: labelInterface, args: any): Label {
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
         return new Label(

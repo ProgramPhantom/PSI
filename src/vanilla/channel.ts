@@ -9,7 +9,7 @@ import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
 import Label, { labelInterface, Position } from "./label";
 import Span from "./span";
-import Abstraction from "./abstraction";
+import Abstract from "./abstract";
 import AnnotationLayer from "./annotationLayer";
 import Bracket, { bracketInterface } from "./bracket";
  
