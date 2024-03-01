@@ -66,7 +66,7 @@ export default function Canvas(props:  {props: string}) {
 
         
         
-        svgObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
+        svgObj.current!.size(`${canvasWidth+5}px`, `${canvasHeight}px`)
     
     }
 

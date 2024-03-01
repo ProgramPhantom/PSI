@@ -4,7 +4,7 @@ import Label, { Position, labelInterface } from "./label";
 import { labelable } from "./temporal";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";
-import Bracket, { Side, bracketType } from "./bracket";
+import Bracket, { Direction, bracketType } from "./bracket";
 
 interface Dim {
     width: number,
@@ -144,9 +144,6 @@ export default class AnnotationLayer extends Drawable {
             var x1 = this.timestampX[timespanRange[0]];
             var x2 = this.timestampX[timespanRange[1]+1]  // To the other side of last
 
-            
-            
-            
 
             // Find y
             var longHeight = Math.abs(long.protrusion);

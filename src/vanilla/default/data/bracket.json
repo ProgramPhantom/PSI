@@ -1,22 +1,22 @@
 {
     "timespan": [0, 1],
-    "side": "top",
-    "protrusion": 20,
+    "side": "down",
+    "protrusion": 6,
 
     "style": {
-        "strokeWidth": 2,
-        "bracketType": "curly",
+        "strokeWidth": 1,
+        "bracketType": "square",
         "expression": 0.5,
         "stroke": "black"
     },
 
 
     "label": {
-        "text": "90^{\\circ}",
+        "text": "\\tau",
         "padding": [0, 0, 3, 0],
         "position": "top",
         "style": {
-            "size": 20,
+            "size": 10,
             "colour": "black"
         }
     }

@@ -11,15 +11,15 @@ export enum bracketType {
     square="square"
 }
 
-export enum Side {
-    top="top",
-    bottom="bottom",
+export enum Direction {
+    down="down",
+    up="up",
     left="left",
     right="right",
 }
 
 export interface bracketInterface {
-    side: Side,
+    side: Direction,
     protrusion: number,
     style: bracketStyle,
     label: labelInterface,
@@ -63,7 +63,7 @@ export default class Bracket extends Drawable implements labelable {
     bracketProtrusion: number;
     totalProtrusion: number;
 
-    side: Side;
+    direction: Direction;
 
     label?: Label;
     timespan?: number[];
@@ -80,21 +80,21 @@ export default class Bracket extends Drawable implements labelable {
 
         this.style = params.style;
         
-        this.side = params.side;
+        this.direction = params.side;
         this.bracketProtrusion = Math.abs(params.protrusion);
         this.totalProtrusion = 0;
         
-        switch (this.side) {
-            case Side.top:
+        switch (this.direction) {
+            case Direction.down:
                 this.protrusion = -params.protrusion;
                 break;
-            case Side.right:
+            case Direction.right:
                 this.protrusion = -params.protrusion;
                 break;
-            case Side.left:
+            case Direction.left:
                 this.protrusion = params.protrusion;
                 break;
-            case Side.bottom:
+            case Direction.up:
                 this.protrusion = params.protrusion;
                 break;
         }
@@ -111,8 +111,8 @@ export default class Bracket extends Drawable implements labelable {
         // Position the bracket and the label:
 
 
-        switch (this.side) {
-            case Side.top:
+        switch (this.direction) {
+            case Direction.down:
                 var width = this.x2 - this.x1;
 
                 // Label on top
@@ -127,7 +127,7 @@ export default class Bracket extends Drawable implements labelable {
                 this.y1 = this.y + this.bracketProtrusion + pro[1];
                 this.y2 = this.y + this.bracketProtrusion + pro[1];
                 break;
-            case Side.bottom:
+            case Direction.up:
                 var width = this.x2 - this.x1;
 
                 if (this.label) {
@@ -147,12 +147,18 @@ export default class Bracket extends Drawable implements labelable {
         
         switch (this.style.bracketType) {
             case bracketType.curly:
-                var path = this.createPath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
-                var svgString = `<path d="${path}">`;
+                var d = this.curlyPath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
+                var svgString = `<path d="${d}">`;
+                break;
+            case bracketType.square:
+                var d = this.squarePath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
+                var svgString = `<path d="${d}">`; 
+                console.log(this.x1, this.y1, this.x2, this.y2)
+                console.log(d)
                 break;
             default:
-                var path = this.createPath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
-                var svgString = `<path d="${path}">`; 
+                var d = this.curlyPath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
+                var svgString = `<path d="${d}">`; 
                 break;
         }
 
@@ -178,7 +184,7 @@ export default class Bracket extends Drawable implements labelable {
     //returns path string d for <path d="This string">
 	//a curly brace between x1,y1 and x2,y2, w pixels wide 
 	//and q factor, .5 is normal, higher q = more expressive bracket 
-    createPath(x1: number, y1: number,x2: number,y2: number, w: number, q: number) {
+    curlyPath(x1: number, y1: number, x2: number,y2: number, w: number, q: number) {
 		//Calculate unit vector
 			var dx = x1-x2;
 			var dy = y1-y2;
@@ -206,6 +212,33 @@ export default class Bracket extends Drawable implements labelable {
           		" T " + tx1 + " " + ty1 );
 	}
 
+    squarePath(x1: number, y1: number, x2: number,y2: number, w: number, q: number) {
+        var grad = (y2 - y1)/(x2-x1);
+        var theta = Math.atan(-1/grad);
+
+        var deltaX = w * Math.cos(theta);
+        var deltaY = w * Math.sin(theta);
+
+        switch (this.direction) {
+            case Direction.down:
+            case Direction.left:
+                var vertex1 = [x1 - deltaX, y1 - deltaY];
+                var vertex2 = [x2 - deltaX, y2 - deltaY];
+                break;
+            case Direction.right:
+            case Direction.up:
+                var vertex1 = [x1 + deltaX, y1 + deltaY];
+                var vertex2 = [x2 + deltaX, y2 + deltaY];
+                break;
+            default:
+                throw new Error("unkown bracket direction!");
+        }
+
+
+        var d = `M ${x1} ${y1} L${vertex1[0]} ${vertex1[1]} L${vertex2[0]} ${vertex2[1]} L${x2} ${y2}`
+        return d;
+    }
+
     drawLabel(surface: Svg): number[] {
         if (!this.label) {
             return [0, 0];
@@ -225,13 +258,13 @@ export default class Bracket extends Drawable implements labelable {
         var totalProtrusion = this.bracketProtrusion;
 
         if (this.label) {
-            switch(this.side) {
-                case Side.top:
-                case Side.bottom:
+            switch(this.direction) {
+                case Direction.down:
+                case Direction.bottom:
                     totalProtrusion += this.label.height + this.label.padding[0] + this.label.padding[2] ;
                     break;
-                case Side.left:
-                case Side.right:
+                case Direction.left:
+                case Direction.right:
                     totalProtrusion += this.label.width + this.label.padding[3] + this.label.padding[1];
                     break;
             }
