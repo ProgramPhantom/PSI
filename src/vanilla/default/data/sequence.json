@@ -7,6 +7,28 @@
             "strokeWidth": 1,
             "dashing": [5, 7]
         }
+    },
+
+    "bracket": {
+        "protrusion": 2,
+        "adjustment": [0, 2],
+
+        "style": {
+            "strokeWidth": 1,
+            "bracketType": "square",
+            "expression": 0.5,
+            "stroke": "black"
+        },
+
+        "label": {
+            "text": "\\tau",
+            "padding": [2, 2, 3, 2],
+            "position": "bottom",
+            "style": {
+                "size": 10,
+                "colour": "black"
+            }
+        }
     }
     
 }

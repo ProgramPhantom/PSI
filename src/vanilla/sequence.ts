@@ -20,43 +20,22 @@ import SaltireLoHi from "./default/classes/saltireLoHi";
 import SaltireHiLo from "./default/classes/saltireHiLo";
 import HalfSine from "./default/classes/halfsine";
 import SequenceHandler from "./sequenceHandler";
-import Bracket from "./bracket";
+import Bracket, { Direction, bracketInterface } from "./bracket";
 import { NumberAlias } from "svg.js";
 
-enum SyntaxErrorType {
-    INVALID_COMMAND_CHARACTER = "INVALID_CHANNEL_IDENTIFIER" ,
-    INVALID_CHANNEL_IDENTIFIER = "INVALID_COMMAND_CHARACTER",
-    INVALID_CHANNEL_COMMAND = "INVALID_CHANNEL_COMMAND",
-    CHANNEL_IDENTIFIER_UNDEFINED = "CHANNEL_IDENTIFIER_UNDEFINED",
-    TEX_TAG_NOT_CLOSED = "TEX_TAG_NOT_CLOSED",
-    MISSING_BRACKETS = "MISSING_BRACKETS",
-    ARGUMENT_ERROR = "ARGUMENT_ERROR",
-    EXPRESSION_NO_EFFECT = "EXPRESSION_NO_EFFECT",
-    NULL_LINE="NULL_LINE",
-}
-
-
-export class ScriptSyntaxError extends Error {
-    errType: SyntaxErrorType;
-    cause: any;
-
-    constructor(errType: SyntaxErrorType, message: string, cause?: any) {
-        super(message);
-        this.errType = errType;
-        this.cause = cause;
-    }
-}
-
-export enum GridPositioning {start="start", centre="centre"}
 
 interface sequenceInterface {
     padding: number[],
-    grid: gridInterface
+    grid: gridInterface,
+    bracket: bracketInterface
 }
+export enum GridPositioning {start="start", centre="centre"}
+
 interface gridInterface {
     gridOn: boolean,
     gridPositioning: GridPositioning,
     lineStyle: Line,
+    
 }
 
 export interface Line {
@@ -131,9 +110,9 @@ export default class Sequence {
 
     surface: Svg;
     channels: {[name: string]: Channel;} = {};
-    freeLabels: Label[] = [];
 
-    errors: ScriptSyntaxError[];
+    freeLabels: Label[] = [];
+    brackets: Bracket[] = [];
 
     width: number;
     height: number;  // Excludes padding
@@ -142,6 +121,7 @@ export default class Sequence {
 
     padding: number[];
     grid: Grid;
+
 
     temporalSections: {[channelName: string]: number[]} = {};
     maxTimespans: number[] = [];
@@ -157,8 +137,6 @@ export default class Sequence {
 
         this.surface = surface; 
         this.channels = {};  // Wierdest bug ever happening here
-
-        this.errors = [];
     }
     
 
@@ -172,20 +150,15 @@ export default class Sequence {
             
             this.height += channel.height;
             this.channelWidths.push(channel.width);
-
         })
         this.freeLabels.forEach((label) => {
             label.draw(this.surface);
         })
+        this.brackets.forEach((bracket) => {
+            bracket.draw(this.surface);
+        })
 
         this.width = Math.max(...this.channelWidths);
-
-        var xBar = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
-        
-        this.timestampX.push(xBar);
-        this.maxTimespans.forEach((t, i) => {
-            this.timestampX.push(t + this.timestampX[i])
-        })
 
         if (this.grid.gridOn) {
             
@@ -238,7 +211,7 @@ export default class Sequence {
 
     computeTimespans() {
         var max: number[] = [];
-        var xBar = 0;
+        var xBar = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
 
         for (const currChannel of Object.values(this.temporalSections)) {
             
@@ -255,9 +228,11 @@ export default class Sequence {
 
         this.maxTimespans = max;
 
-        
-        
-
+        console.log("XBAR: ", xBar)
+        this.timestampX = [xBar];
+        this.maxTimespans.forEach((w, i) => {
+            this.timestampX.push(w + this.timestampX[i]);
+        })
     }
 
     addTemporal(channelName: string, obj: Temporal) {
@@ -279,9 +254,28 @@ export default class Sequence {
 
     addVLine(channelName: string, obj: Line) {
         var channel: Channel = this.channels[channelName];
-
-        
-
         this.grid.vLines[channel.elementCursor+1] = obj;
     }
+
+    addBracket(channelName: string, bracket: Bracket, direction: Direction) {
+        // Put this here to expand later for multi channel bracket
+        var channel = this.channels[channelName]
+        console.log(channel.height)
+        var x: number = this.timestampX[channel.elementCursor+1];
+        console.log(this.timestampX)
+        
+        bracket.x = x;
+        bracket.y = channel.y;
+
+        bracket.x1 = x;
+        bracket.x2 = x;
+        bracket.direction = direction;
+
+        bracket.y1 = channel.y + bracket.style.strokeWidth - bracket.adjustment[0];
+        bracket.y2 = channel.y + channel.height + bracket.adjustment[1];
+
+        console.log(bracket.x1, bracket.y1, bracket.x2, bracket.y2)
+        this.brackets.push(bracket);
+    }
 }
+

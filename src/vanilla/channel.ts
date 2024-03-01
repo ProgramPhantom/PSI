@@ -77,7 +77,11 @@ export default class Channel extends Drawable implements labelable {
         this.barWidth = 0;
 
         this.temporalElements = [...params.temporalElements];  // please please PLEASE do this (list is ref type)
-        this.label = this.label;
+        
+        if (params.label) {
+            this.label = Label.anyArgConstruct(Channel.default.label!, params.label);
+            this.barX = this.padding[3] + this.label.actualWidth;
+        }
     }
     
 
@@ -85,7 +89,6 @@ export default class Channel extends Drawable implements labelable {
         this.y = yCursor;
 
         var labelOffsetX = this.label ? this.label.actualBounds.width : 0;
-        this.computeBarX(this.label!.actualBounds.width);
 
         this.timespanX.push(this.barX);
         timestampWidths.forEach((w, i) => {
@@ -129,10 +132,6 @@ export default class Channel extends Drawable implements labelable {
         this.barY = rectPosY;
     }
 
-    computeBarX(labelOffsetX: number=0) {
-        this.barX = this.padding[3] + labelOffsetX;
-    }
-
     drawRect(surface: Svg) {
         // Draws bar
         surface.rect(this.barWidth, this.style.thickness)
@@ -161,6 +160,7 @@ export default class Channel extends Drawable implements labelable {
         
         this.bounds = {width: this.width, height}
     }
+
 
     positionElements(timestampWidths: number[]) {
         // Current alignment style: centre
@@ -199,11 +199,13 @@ export default class Channel extends Drawable implements labelable {
                     }
                     break;
                 case Alignment.Right:
+                    console.log("RIGHT", temporalEl.width)
                     if (temporalEl.config.overridePad) {
                         temporalEl.x = tempX + timespanWidth - temporalEl.width;
                     } else {
                         temporalEl.x = tempX + timespanWidth - temporalEl.width - temporalEl.padding[1];
                     }
+
                     break;
                 default: 
                     // Centre
@@ -238,6 +240,7 @@ export default class Channel extends Drawable implements labelable {
         this.temporalElements.push(obj);
         this.hSections.push(...sections);
 
+        this.computeVerticalBounds();
         return this.hSections;
     }
 

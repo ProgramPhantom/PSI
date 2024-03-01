@@ -41,8 +41,8 @@ export interface temporalConfig {
 }
 
 export interface temporalInterface {
-    config: temporalConfig,
     padding: number[],
+    config: temporalConfig,
     label?: labelInterface | null,
     arrow?: arrowInterface | null,
 }

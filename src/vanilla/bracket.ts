@@ -19,11 +19,10 @@ export enum Direction {
 }
 
 export interface bracketInterface {
-    side: Direction,
     protrusion: number,
     style: bracketStyle,
     label: labelInterface,
-
+    adjustment: number[],
     timespan?: number[],
 }
 
@@ -44,7 +43,7 @@ export default class Bracket extends Drawable implements labelable {
 
         return new Bracket(
             {protrusion: options.protrusion,
-             side: options.side,
+             adjustment: options.adjustment,
              style: options.style,
              label: options.label,
              timespan: options.timespan}
@@ -63,13 +62,14 @@ export default class Bracket extends Drawable implements labelable {
     bracketProtrusion: number;
     totalProtrusion: number;
 
-    direction: Direction;
+    direction: Direction = Direction.down;
+    adjustment: number[];
 
     label?: Label;
     timespan?: number[];
 
     constructor(params: bracketInterface,
-                offset: number[]=[0, 0]) {
+                offset: number[]=[-1, 0]) {
 
         super(0, 0, offset)
 
@@ -79,8 +79,8 @@ export default class Bracket extends Drawable implements labelable {
         this.y2 = 40;
 
         this.style = params.style;
+        this.adjustment = params.adjustment;
         
-        this.direction = params.side;
         this.bracketProtrusion = Math.abs(params.protrusion);
         this.totalProtrusion = 0;
         
@@ -140,11 +140,48 @@ export default class Bracket extends Drawable implements labelable {
 
                 this.y1 = this.y;
                 this.y2 = this.y;
-                
+                break;
+            case Direction.right:
+                if (this.label) {
+                    switch (this.label.position) {
+                        case Position.top:
+                            this.label.x = this.x + this.label.padding[3];
+                            this.label.y = this.y + this.label.padding[0];
+                            console.log(this.y, this.label.height)
+                            break;
+                        case Position.bottom:
+                            this.label.x = this.x;
+                            this.label.y = this.y2 - this.adjustment[1] + this.label.padding[0];
+                            break;
+                        default:
+                            throw new Error("Can only use bottom or top for vertical bracket label");
+                    }
+
+                    this.drawLabel(surface);
+                }
+                break;
+            case Direction.left:
+                if (this.label) {
+                    switch (this.label.position) {
+                        case Position.top:
+                            this.label.x = this.x + this.label.padding[3] + this.bracketProtrusion;
+                            this.label.y = this.y + this.label.padding[0];
+                            console.log(this.y, this.label.height)
+                            break;
+                        case Position.bottom:
+                            this.label.x = this.x + this.label.padding[3] + this.bracketProtrusion;
+                            this.label.y = this.y2 - this.adjustment[1] + this.label.padding[0];
+                            break;
+                        default:
+                            throw new Error("Can only use bottom or top for vertical bracket label");
+                    }
+
+                    this.drawLabel(surface);
+                }
                 break;
         }
         
-        
+        console.log(this.x1, this.y1, this.x2, this.y2)
         switch (this.style.bracketType) {
             case bracketType.curly:
                 var d = this.curlyPath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
@@ -153,15 +190,14 @@ export default class Bracket extends Drawable implements labelable {
             case bracketType.square:
                 var d = this.squarePath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
                 var svgString = `<path d="${d}">`; 
-                console.log(this.x1, this.y1, this.x2, this.y2)
-                console.log(d)
+                
                 break;
             default:
                 var d = this.curlyPath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
                 var svgString = `<path d="${d}">`; 
                 break;
         }
-
+        console.log(svgString)
 
         var svgObj = SVG(svgString);
 
@@ -174,10 +210,6 @@ export default class Bracket extends Drawable implements labelable {
         surface.add(svgObj);
 
 
-    }
-
-    positionFlat(surface: Svg) {
-        
     }
 
     // https://gist.github.com/alexhornbake/6005176
@@ -260,7 +292,7 @@ export default class Bracket extends Drawable implements labelable {
         if (this.label) {
             switch(this.direction) {
                 case Direction.down:
-                case Direction.bottom:
+                case Direction.up:
                     totalProtrusion += this.label.height + this.label.padding[0] + this.label.padding[2] ;
                     break;
                 case Direction.left:

@@ -1,7 +1,7 @@
 {
     "timespan": [0, 1],
-    "side": "down",
     "protrusion": 6,
+    "adjustment": [0, 0],
 
     "style": {
         "strokeWidth": 1,

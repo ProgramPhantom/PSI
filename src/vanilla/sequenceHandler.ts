@@ -9,11 +9,11 @@ import Abstract from "./abstract";
 // import SaltireLoHi from "./default/classes/saltireLoHi";
 import ImagePulse from "./pulses/image/imagePulse";
 import SimplePulse from "./pulses/simple/simplePulse";
-import Sequence, { Line, ScriptSyntaxError } from "./sequence";
+import Sequence, { Line } from "./sequence";
 import Span from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
-import Bracket from "./bracket";
+import Bracket, { Direction, bracketInterface } from "./bracket";
 import Label from "./label";
 import Temporal, { temporalInterface } from "./temporal";
 import { Drawable } from "./drawable";
@@ -190,13 +190,15 @@ export default class SequenceHandler {
         ">": Channel.default,  // FIX ME!!
         "~": Channel.default,
         "|": Sequence.defaults["empty"].grid.lineStyle,
+        "[": Sequence.defaults["empty"].bracket,
+        "]": Sequence.defaults["empty"].bracket,
     }
 
     static specialCharacters: string[] = ["-", "#", "~", "`", ">", "=", "[(]", "[)]", "[+]", "[.]", "[*]", "[/]", "[}]", "[{]",
                                           ";", "[\\^]"]
 
     static specialCharacterRegex: string = SequenceHandler.specialCharacters.join("|");
-    static util: string = "[" + Object.keys(SequenceHandler.ChannelUtil).join("]|[") + "]";
+    static util: string = "[" + Object.keys(SequenceHandler.ChannelUtil).join("]|[\\") + "]";
     static alphaNumericRegex: string = "^[a-zA-Z0-9_]*$";
 
     static characterError = {input: SequenceHandler.specialCharacters.join("|"), newState: ParseState.Error};
@@ -603,6 +605,12 @@ export default class SequenceHandler {
                 break;
             case ">":
                 this.sequence.syncNext(channel.content, undefined);
+                break;
+            case "[":
+                this.sequence.addBracket(channel.content, Bracket.anyArgConstruct(Sequence.defaults["empty"].bracket, <bracketInterface>args), Direction.right)
+                break;
+            case "]":
+                this.sequence.addBracket(channel.content, Bracket.anyArgConstruct(Sequence.defaults["empty"].bracket, <bracketInterface>args), Direction.left)
                 break;
         }
     }
