@@ -3,14 +3,24 @@
         "orientation": "top",
         "alignment": "centre",
         "overridePad": false,
-        "inheritWidth": false
+        "inheritWidth": false,
+        "noSections": 1
     },
 
-    "padding": [0, 10, 0, 10],
+    "padding": [0, 1, 0, 1],
     "path": "\\src\\assets\\saltirehilo.svg",
     "style": {
         "width": 50,
         "height": 20
+    },
+    "label": {
+        "text": "",
+        "padding": [3, 0, 6, 0],
+        "position": "top",
+        "style": {
+            "size": 10,
+            "colour": "black"
+        }
     }
 
 }

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@svgdotjs/svg.draggable.js": "^3.0.3",
     "@svgdotjs/svg.js": "^3.2.0",
     "@types/mathjax": "^0.0.40",
     "@types/node": "^20.11.10",

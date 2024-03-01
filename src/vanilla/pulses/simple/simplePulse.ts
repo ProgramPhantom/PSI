@@ -4,6 +4,8 @@ import SVGPulse from "../image/svgPulse";
 import Label, { Position, labelInterface } from "../../label";
 import {UpdateObj} from "../../util";
 import {defs} from "../../default/data/simplePulse"
+import '@svgdotjs/svg.draggable.js';
+import { Rect } from "@svgdotjs/svg.js";
 
 export interface simplePulseInterface extends temporalInterface {
     style: simplePulseStyle,
@@ -57,7 +59,9 @@ export default class SimplePulse extends Temporal  {
     }
 
     draw(surface: SVG.Svg) {
-        surface.rect(this.width, this.height)
+        
+
+        var rect = surface.rect(this.width, this.height)
         .attr({fill: this.style.fill,
                 stroke: this.style.stroke})
         .move(this.x, this.y)
@@ -65,6 +69,8 @@ export default class SimplePulse extends Temporal  {
         .attr({"stroke-width": this.style.strokeWidth,
                "shape-rendering": "crispEdges"
         });
+
+        rect.draggable();
 
         if (this.arrow) {
             this.draw
@@ -74,6 +80,10 @@ export default class SimplePulse extends Temporal  {
             this.drawLabel(surface);
         }
 
+    }
+
+    goToStart(el: Rect) {
+        el.move(this.x, this.y);
     }
 
     verticalProtrusion(channelThickness: number) : number[] {

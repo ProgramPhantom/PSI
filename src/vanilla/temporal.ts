@@ -37,6 +37,7 @@ export interface temporalConfig {
     alignment: Alignment,
     overridePad: boolean
     inheritWidth: boolean,
+    noSections: number,
 }
 
 export interface temporalInterface {
@@ -51,7 +52,7 @@ export interface temporalInterface {
 export default abstract class Temporal extends Drawable implements labelable {
     // An element that relates to a point in time
   
-    timestamp: number;
+    timestamp: number | number[];
     config: temporalConfig;
 
     padding: number[];
@@ -73,8 +74,6 @@ export default abstract class Temporal extends Drawable implements labelable {
         this.config = params.config;
         this.padding = params.padding;
 
-        
-        
         if (params.label) {
             this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
         }
@@ -173,8 +172,7 @@ export default abstract class Temporal extends Drawable implements labelable {
         this.label = Label.anyArgConstruct(Label.defaults["label"], args);
     }
 
-    drawLabel(surface: Svg): number[] {
-        // LIMITATION: top pad does not start from the bottom of the channel bar
+    drawLabel(surface: Svg, ): number[] {
         var width = 0;
         var height = 0;
         var labelX, labelY = 0;
@@ -189,7 +187,7 @@ export default abstract class Temporal extends Drawable implements labelable {
                     break;
                 case Position.bottom:
                     labelX = this.x + this.width/2 - this.label.width/2;
-                    labelY = this.y + this.height + this.label.padding[0];
+                    labelY = this.y + this.height + this.label.padding[0] + this.barThickness;
                     break;
 
                 case Position.centre:

@@ -62,7 +62,7 @@ export default class SVGPulse extends Temporal {
 
     constructor(timestamp: number,
                 params: svgPulseInterface,
-                offset: number[]=[0, 0.5]) {
+                offset: number[]=[0, 1]) {
 
         super(timestamp,  
               params,
@@ -81,8 +81,6 @@ export default class SVGPulse extends Temporal {
     }
         
     getSVG(): string {
-        
-        
         return svgContent[this.path]
     }
 
@@ -92,9 +90,11 @@ export default class SVGPulse extends Temporal {
         var obj = SVG(this.svgContent);
         obj.move(0, 0);
         obj.attr({"preserveAspectRatio": "none"})
-        obj.attr({"stroke": "black"})
         // var foreignObject = surface.foreignObject(200, 200);
-   
+        
+        obj.children().forEach((c) => {
+            c.attr({"vector-effect": "non-scaling-stroke"})
+        })
 
         // obj.transform({flip: "y", originX: 0, originY: 175})
         if (this.config.orientation === Orientation.bottom) {
@@ -108,7 +108,7 @@ export default class SVGPulse extends Temporal {
                 c.translate(0, -<number>obj.height())
                 //c.transform({origin: "top"});
                 //c.scale(1, -1);
- 
+                
             })
         }
 

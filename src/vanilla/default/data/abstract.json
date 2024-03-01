@@ -13,7 +13,8 @@
         "height": 30,
         "fill": "black",
         "stroke": null,
-        "strokeWidth": null
+        "strokeWidth": null,
+        "noSections": 1
     },
 
     "label": {

@@ -233,12 +233,12 @@ export default class SequenceHandler {
         ],
         "argument": [{input: "[)]", newState: ParseState.Start, tokenType: TokenType.Argument, extraBehaviour: {type: TokenType.RunCommand, content: ")"}, ignore: true},
                      {input: "[,]", newState: ParseState.NextParam, tokenType: TokenType.Argument, ignore: true},
-                     {input: "[[]", newState: ParseState.List, ignore: true},
+                     {input: "[[]", newState: ParseState.List},
                      {input: '["]', newState: ParseState.String, ignore: true},
                      SequenceHandler.characterError,
                      {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Argument}
         ],
-        "list": [{input: "[\\]]", newState: ParseState.Argument, ignore: true},
+        "list": [{input: "[\\]]", newState: ParseState.Argument},
                  {input: "[,]", newState: ParseState.List},
                  {input: SequenceHandler.alphaNumericRegex, newState: ParseState.List},
         ],
@@ -272,9 +272,6 @@ export default class SequenceHandler {
         } catch (e){
             console.log(e)
         }
-        
-
-        
     }
 
     parseScript(text: string) {
@@ -507,40 +504,19 @@ export default class SequenceHandler {
                 Object.assign(inner, furtherIn);
 
             } else if (props.length === 1) {  // At the end of the prop chain
-                if (Array.isArray(defaultHere)) {
-                    try {
-                        
-                        var elements = val.content.split(",");
-                        let elementsNum = elements.map(Number);
-                        inner[thisProp.content] = elementsNum;
-                    } catch {
-                        throw new ScriptIssue(ArgumentError.ARGUMENT_INVALID_PARSE, 
-                            `Cannot parse argument '${val.content}. Should be of type 'Array'`, val.columns, [val.line, val.line]);
-                    }
-                }
-                else if (typeof defaultHere === "number") {
-                    try {
-                        inner[thisProp.content] = JSON.parse(val.content);
-                    } catch {
-                        throw new ScriptIssue(ArgumentError.ARGUMENT_INVALID_PARSE, 
-                            `Cannot parse argument '${val.content}. Should be of type 'number'`, val.columns, [val.line, val.line]);
-                    }
+                
+                try {
+                    inner[thisProp.content] = JSON.parse(val.content);
+                } catch {
+                    //if (val.content.match(SequenceHandler.alphaNumericRegex)) {
+                        var temp = inner[thisProp.content]
+                        Object.assign(inner, inner[thisProp.content]);
+                        inner[thisProp.content] = val.content;
+                    //} else {
+                    //    throw new ScriptIssue(ArgumentError.ARGUMENT_INVALID_PARSE, `Cannot parse argument line: ${val.line}, column: ${val.columns[0]}`, 
+                    //    val.columns, [val.line, val.line])
+                    //}
                     
-                    
-                } else if (typeof defaultHere === "boolean") {
-                    try {
-                        inner[thisProp.content] = JSON.parse(val.content);
-                    } catch {
-                        throw new ScriptIssue(ArgumentError.ARGUMENT_INVALID_PARSE, 
-                                `Cannot parse argument '${val.content}. Should be of type 'boolean'`, val.columns, [val.line, val.line]);
-                    }
-                }
-                else {
-                    
-                    
-                    var temp = inner[thisProp.content]
-                    Object.assign(inner, inner[thisProp.content]);
-                    inner[thisProp.content] = val.content;
                 }
             } else {
                 return val;

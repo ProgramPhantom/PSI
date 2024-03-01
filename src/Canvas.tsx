@@ -46,7 +46,12 @@ export default function Canvas(props:  {props: string}) {
         
         svgObj.current!.clear();
         handle.current = new SequenceHandler(props.props, svgObj.current!);
-        handle.current.draw();
+        try {
+            handle.current.draw();
+        } catch (e) {
+            console.log("RUNTIME ERROR: " + e);
+        }
+        
 
         var canvasWidth = handle.current.sequence.width;
         var canvasHeight = DEFAULT_HEIGHT;

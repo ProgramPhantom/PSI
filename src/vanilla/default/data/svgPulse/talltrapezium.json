@@ -3,7 +3,8 @@
         "orientation": "top",
         "alignment": "centre",
         "overridePad": false,
-        "inheritWidth": false
+        "inheritWidth": false,
+        "noSections": 1
     },
 
     "padding": [0, 0, 0, 0],
@@ -15,8 +16,8 @@
 
     "label": {
         "text": "\\tau",
-        "padding": [0, 0, 10, 0],
-        "position": "top",
+        "padding": [3, 0, 6, 0],
+        "position": "bottom",
         "style": {
             "size": 10,
             "colour": "black"

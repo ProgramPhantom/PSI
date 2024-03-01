@@ -98,7 +98,6 @@ export default class Channel extends Drawable implements labelable {
             this.annotationLayer.draw(surface, timestampWidths, this.barX, this.y);
             yCursor += this.annotationLayer.actualHeight;
             annotationHeight = this.annotationLayer.actualHeight;
-            
         }
 
         this.computeBarY(yCursor);
@@ -165,19 +164,27 @@ export default class Channel extends Drawable implements labelable {
 
     positionElements(timestampWidths: number[]) {
         // Current alignment style: centre
-
-        this.temporalElements.forEach((temporalEl, i) => {
+        this.temporalElements.forEach((temporalEl) => {
             var tempX = 0;
             var timespanWidth = 0;
 
             temporalEl.positionVertically(this.barY, this.style.thickness);
 
-            tempX = this.timespanX[temporalEl.timestamp]
-            timespanWidth = timestampWidths[temporalEl.timestamp]
+            if (Array.isArray(temporalEl.timestamp)) {
+                tempX = this.timespanX[temporalEl.timestamp[0]]
 
+                for (var i = temporalEl.timestamp[0]; i <= temporalEl.timestamp[1]; i++) {
+                    timespanWidth += timestampWidths[i];
+                }
+                
+            } else {
+                tempX = this.timespanX[temporalEl.timestamp]
+                timespanWidth = timestampWidths[temporalEl.timestamp]
+            }
+            
             if (temporalEl.config.inheritWidth) {
                 temporalEl.bounds = {width: timespanWidth, height: temporalEl.height};
-                
+                console.log(temporalEl.bounds)
             }
 
             switch (temporalEl.config.alignment) {
@@ -215,11 +222,21 @@ export default class Channel extends Drawable implements labelable {
 
     addTemporal(obj: Temporal): number[] {
         this.elementCursor += 1;
-        obj.timestamp = this.elementCursor;
         obj.barThickness = this.style.thickness;
 
+        if (obj.config.noSections > 1) {
+            obj.timestamp = [this.elementCursor, this.elementCursor+obj.config.noSections-1];
+            console.log(obj.timestamp)
+            this.elementCursor += obj.config.noSections - 1;
+        } else {
+            obj.timestamp = this.elementCursor;
+        }
+
+        var sections = new Array<number>(obj.config.noSections);
+        sections.fill(obj.actualWidth / obj.config.noSections);
+
         this.temporalElements.push(obj);
-        this.hSections.push(obj.actualWidth);
+        this.hSections.push(...sections);
 
         return this.hSections;
     }

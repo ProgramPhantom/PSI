@@ -173,7 +173,6 @@ export default class Sequence {
             this.height += channel.height;
             this.channelWidths.push(channel.width);
 
-            
         })
         this.freeLabels.forEach((label) => {
             label.draw(this.surface);
@@ -266,7 +265,7 @@ export default class Sequence {
         this.temporalSections[channelName] = widths;
 
         this.computeTimespans()
-        
+        console.log(this.temporalSections)
     }
 
     addLabel(channelName: string, obj: Label) {
