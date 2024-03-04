@@ -54,26 +54,28 @@ export default function Canvas(props:  {props: string}) {
         
 
         var canvasWidth = handle.current.sequence.width;
-        var canvasHeight = DEFAULT_HEIGHT;
+        var canvasHeight = handle.current.sequence.height;
 
     
-        if (handle.current.sequence.width > DEFAULT_WIDTH ) {
-            canvasWidth = handle.current.sequence.width;
-        } 
-        if (handle.current.sequence.height > DEFAULT_HEIGHT ) {
-            canvasHeight = handle.current.sequence.height;
-        } 
+        // if (handle.current.sequence.width > DEFAULT_WIDTH ) {
+        //     canvasWidth = handle.current.sequence.width;
+        // } 
+        // if (handle.current.sequence.height > DEFAULT_HEIGHT ) {
+        //     canvasHeight = handle.current.sequence.height;
+        // } 
 
         
         
-        svgObj.current!.size(`${canvasWidth+15}px`, `${canvasHeight}px`)
-    
+        // svgObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
+        svgObj.current!.size(`${canvasWidth*2}px`, `${canvasHeight*2}px`)
+        svgObj.current?.rect().attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%"})
+        svgObj.current!.viewbox(0, 0, canvasWidth, canvasHeight)
     }
 
 
     return (
         <>
-        <div id={"canvasDiv"}></div>
+            <div id={"canvasDiv"} style={{minHeight: 400}}></div>
         </>
     )
 }

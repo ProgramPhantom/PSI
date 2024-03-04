@@ -18,7 +18,6 @@ function App() {
 
   return (
       <>
-        <div id={"canvasDiv"}></div>
         <Canvas props={textboxValue}></Canvas>
         <Editor Parse={TypeEvent}></Editor>
       </>
