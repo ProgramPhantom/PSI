@@ -11,8 +11,6 @@ function App() {
 
   
   function TypeEvent(script: string) {
-    
-
     setTextboxValue(script);
   }
 
@@ -20,12 +18,9 @@ function App() {
 
   return (
       <>
-      <button onClick={() => TypeEvent}>Draw</button>
-
-      <div id={"canvasDiv"}></div>
-      <Canvas props={textboxValue}></Canvas>
-      <Editor Parse={TypeEvent}></Editor>
-      
+        <div id={"canvasDiv"}></div>
+        <Canvas props={textboxValue}></Canvas>
+        <Editor Parse={TypeEvent}></Editor>
       </>
     )
 }
