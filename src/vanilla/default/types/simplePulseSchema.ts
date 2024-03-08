@@ -110,6 +110,70 @@ export const schema: Schema = {
       }]
     },
     {
+      "component": "sub-form",
+      "name": "style",
+      "title": "Style",
+      "fields": [
+      {
+        "component": "text-field",
+        "name": "style.width",
+        "label": "Width",
+        "required": true,
+        "initialValue": def.style.width,
+        "validate": [
+          {
+            "type": "pattern",
+            "pattern": "^[0-9_]+$",
+            "message": "incorrect format"
+          }
+        ]
+      },
+      {
+        "component": "text-field",
+        "name": "style.height",
+        "label": "Height",
+        "required": true,
+        "initialValue": def.style.height,
+        "validate": [
+          {
+            "type": "pattern",
+            "pattern": "^[0-9_]+$",
+            "message": "incorrect format"
+          }
+        ]
+      },
+      {
+        "component": "text-field",
+        "name": "style.fill",
+        "label": "Fill",
+        "required": true,
+        "helperText": "(html color eg 'black' or '#000000')",
+        "initialValue": def.style.fill,
+      },
+      {
+        "component": "text-field",
+        "name": "style.stroke",
+        "label": "Stroke",
+        "required": true,
+        "helperText": "stroke colour (html color eg 'black' or '#000000')",
+        "initialValue": def.style.stroke,
+      },
+      {
+        "component": "text-field",
+        "name": "style.strokeWidth",
+        "label": "Stroke Width",
+        "required": true,
+        "initialValue": def.style.strokeWidth,
+        "validate": [
+          {
+            "type": "pattern",
+            "pattern": "^[0-9_]+$",
+            "message": "incorrect format"
+          }
+        ]
+      }]
+    },
+    {
       "component": "switch",
       "name": "arrowOn",
       "label": "Arrow",

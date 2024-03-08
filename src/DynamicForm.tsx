@@ -11,7 +11,7 @@ import useFormApi from '@data-driven-forms/react-form-renderer/use-form-api';
 
 
 //import * as schema from "./vanilla/default/types/testSchema.json"
-import {schema} from "./vanilla/default/types/testSchema"
+import {schema} from "./vanilla/default/types/simplePulseSchema"
 
 
 function DynamicForm(props: {AddCommand: (line: string) => void, temporalName: string, channelName: string,}) {
