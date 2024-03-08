@@ -1,4 +1,5 @@
 {
+
     "padding": [0, 1, 0, 1],
 
     "config": {
@@ -17,13 +18,25 @@
         "strokeWidth": 0
     },
 
+    "labelOn": false,
     "label": {
-        "text": "",
+        "text": "\\mathrm{90}",
         "padding": [0, 0, 3, 0],
         "position": "top",
         "style": {
-            "size": 15,
+            "size": 10,
             "colour": "black"
+        }
+    },
+
+    "arrowOn": false,
+    "arrow": {
+        "padding": [0, 0, 10, 0],
+        "position": "top",
+        "style": {
+            "thickness": 2, 
+            "headStyle": "default", 
+            "stroke": "black"
         }
     }
 

@@ -29,7 +29,7 @@ export interface IHasAssembler {
 }
 export interface labelable {
     label?: Label,
-    drawLabel(surface: Svg): number[],
+    posDrawDecoration(surface: Svg): number[],
 }
 
 export interface temporalConfig {
@@ -43,8 +43,11 @@ export interface temporalConfig {
 export interface temporalInterface {
     padding: number[],
     config: temporalConfig,
-    label?: labelInterface | null,
-    arrow?: arrowInterface | null,
+    labelOn: boolean,
+    arrowOn: boolean,
+
+    label: labelInterface,
+    arrow: arrowInterface,
 }
 
 
@@ -58,7 +61,9 @@ export default abstract class Temporal extends Drawable implements labelable {
     padding: number[];
     barThickness: number = 3;
 
+    labelOn: boolean;
     label?: Label;
+    arrowOn: boolean;
     arrow?: Arrow;
 
     private _actualBounds?: Bounds;
@@ -74,14 +79,16 @@ export default abstract class Temporal extends Drawable implements labelable {
         this.config = params.config;
         this.padding = params.padding;
 
-        if (params.label) {
+        this.labelOn = params.labelOn;
+        this.arrowOn = params.arrowOn;
+
+        if (params.labelOn) {
             this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
         }
-        if (params.arrow) {
+        if (params.arrowOn) {
             this.arrow = Arrow.anyArgConstruct(Arrow.defaults["arrow"], params.arrow)
-            console.log(this.arrow)
         }
-        
+        console.log("arrow on?", params.arrowOn)
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
@@ -114,8 +121,9 @@ export default abstract class Temporal extends Drawable implements labelable {
     }
 
     labelVerticalProtrusion(channelThickness: number): number[] {
-        // Above, below
+        // top, below
         var dimensions: number[] = [0, 0];
+        channelThickness
 
         if (this.label) {
             switch (this.label.position) {
@@ -135,9 +143,9 @@ export default abstract class Temporal extends Drawable implements labelable {
         }
 
         if (this.arrow) {
-            if (this.arrow.position === ArrowPosition.above) {
+            if (this.arrow.position === ArrowPosition.top) {
                 dimensions[0] += this.arrow.style.thickness + this.arrow.padding[0] + this.arrow.padding[2];
-            } else if (this.arrow.position === ArrowPosition.under) {
+            } else if (this.arrow.position === ArrowPosition.bottom) {
                 dimensions[1] += this.arrow.style.thickness + this.arrow.padding[0] + this.arrow.padding[2];
             }
         }
@@ -172,12 +180,12 @@ export default abstract class Temporal extends Drawable implements labelable {
         this.label = Label.anyArgConstruct(Label.defaults["label"], args);
     }
 
-    drawLabel(surface: Svg, ): number[] {
+    posDrawDecoration(surface: Svg, ): number[] {
         var width = 0;
         var height = 0;
         var labelX, labelY = 0;
         var level;
-        console.log("DRAWING")
+        
 
         if (this.label) {
             switch (this.label.position) {
@@ -200,15 +208,13 @@ export default abstract class Temporal extends Drawable implements labelable {
                     labelY = 0;
             }
 
-            
-
             width += this.label.width
             height += this.label.height;
         }
 
         if (this.arrow) {
             switch (this.arrow.position) {
-                case ArrowPosition.above:
+                case ArrowPosition.top:
                     level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
                     this.arrow.set(this.x, level, this.x + this.width, level);
                     height += this.arrow.actualBounds.height;
@@ -227,7 +233,7 @@ export default abstract class Temporal extends Drawable implements labelable {
                     
                     this.arrow.set(this.x, level, this.x + this.width, level);
                     break;
-                case ArrowPosition.under:
+                case ArrowPosition.bottom:
                     level = this.y + this.height + this.arrow.padding[0] + this.barThickness + this.arrow.style.thickness;
                     this.arrow.set(this.x, level, this.x + this.width, level);
 
@@ -251,6 +257,8 @@ export default abstract class Temporal extends Drawable implements labelable {
 
         return [width, height];
     }
+
+
 
     centreXPos(x: number) {
         this.x = x - this.width/2;

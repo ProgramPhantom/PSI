@@ -2,23 +2,15 @@ import { Drawable } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Orientation } from "./temporal";
 import { Position, labelInterface } from "./label";
-import Pulse90 from "./default/classes/pulse90";
-import Pulse180 from "./default/classes/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import Channel, { channelInterface } from "./channel"
 import ImagePulse from "./pulses/image/imagePulse";
-import Aquire from "./default/classes/aquire";
 import Label from "./label";
 import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
 import Span from "./span";
-import ChirpLoHi from "./default/classes/chirpLoHi";
 import Abstract from "./abstract";
 import * as defaultSequence from "./default/data/sequence.json"
-import ChirpHiLo from "./default/classes/chirpHiLo";
-import SaltireLoHi from "./default/classes/saltireLoHi";
-import SaltireHiLo from "./default/classes/saltireHiLo";
-import HalfSine from "./default/classes/halfsine";
 import SequenceHandler from "./sequenceHandler";
 import Bracket, { Direction, bracketInterface } from "./bracket";
 import { NumberAlias } from "svg.js";
@@ -108,7 +100,6 @@ export class Grid {
 export default class Sequence {
     static defaults: {[key: string]: sequenceInterface} = {"empty": {...<any>defaultSequence}}
 
-    surface: Svg;
     channels: {[name: string]: Channel;} = {};
 
     freeLabels: Label[] = [];
@@ -127,7 +118,7 @@ export default class Sequence {
     maxTimespans: number[] = [];
     timestampX: number[] = [];
 
-    constructor(surface: Svg, params: sequenceInterface) {
+    constructor(params: sequenceInterface) {
         this.width = 0;
         this.height = 0;
 
@@ -135,35 +126,39 @@ export default class Sequence {
         
         this.grid = new Grid(params.grid);
 
-        this.surface = surface; 
         this.channels = {};  // Wierdest bug ever happening here
     }
     
 
-    draw(): {width: number, height: number} {
+    draw(surface: Svg): {width: number, height: number} {
         var yCurs = 0;
         var dim = {width: 0, height: 0}
+        this.width = 0;
+        this.height = 0;
+        
 
         Object.values(this.channels).forEach((channel) => {
-            channel.draw(this.surface, this.maxTimespans, yCurs);
+            channel.draw(surface, this.maxTimespans, yCurs);
             yCurs = channel.bounds.bottom;
             
             this.height += channel.height;
             this.channelWidths.push(channel.width);
         })
         this.freeLabels.forEach((label) => {
-            label.draw(this.surface);
+            label.draw(surface);
         })
         this.brackets.forEach((bracket) => {
-            bracket.draw(this.surface);
+            bracket.draw(surface);
         })
 
         this.width = Math.max(...this.channelWidths);
 
         if (this.grid.gridOn) {
             
-            this.grid.draw(this.surface, this.timestampX, this.height);
+            this.grid.draw(surface, this.timestampX, this.height);
         }
+
+        
 
         // what?
         return {width: 0, height: 0}
@@ -228,7 +223,7 @@ export default class Sequence {
 
         this.maxTimespans = max;
 
-        console.log("XBAR: ", xBar)
+        
         this.timestampX = [xBar];
         this.maxTimespans.forEach((w, i) => {
             this.timestampX.push(w + this.timestampX[i]);
@@ -240,7 +235,7 @@ export default class Sequence {
         this.temporalSections[channelName] = widths;
 
         this.computeTimespans()
-        console.log(this.temporalSections)
+        
     }
 
     addLabel(channelName: string, obj: Label) {
@@ -260,9 +255,9 @@ export default class Sequence {
     addBracket(channelName: string, bracket: Bracket, direction: Direction) {
         // Put this here to expand later for multi channel bracket
         var channel = this.channels[channelName]
-        console.log(channel.height)
+        
         var x: number = this.timestampX[channel.elementCursor+1];
-        console.log(this.timestampX)
+        
         
         bracket.x = x;
         bracket.y = channel.y;
@@ -274,7 +269,7 @@ export default class Sequence {
         bracket.y1 = channel.y + bracket.style.strokeWidth - bracket.adjustment[0];
         bracket.y2 = channel.y + channel.height + bracket.adjustment[1];
 
-        console.log(bracket.x1, bracket.y1, bracket.x2, bracket.y2)
+        
         this.brackets.push(bracket);
     }
 }

@@ -1,6 +1,6 @@
 {
     "temporalElements": [],
-    "padding": [0, 0, 10, 15],
+    "padding": [10, 10, 10, 15],
 
     "style": {
         "thickness": 3,

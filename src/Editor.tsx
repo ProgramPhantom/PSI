@@ -1,9 +1,10 @@
-import React, { ChangeEvent } from 'react'
+import React, { ChangeEvent, useEffect, useState } from 'react'
 
 type InputEvent = ChangeEvent<HTMLTextAreaElement>;
 
 interface EditorProps {
     Parse(text: string): void,
+    editorText: string
 }
 
 const style: any = {width: "100%",
@@ -18,22 +19,27 @@ const style: any = {width: "100%",
                     fontFamily: "Lucida Sans Typewriter",
                 }
 
+function Editor(props: {editorText: string, Parse: (text: string) => void}) {
+    const [internalState, setInternalState] = useState(props.editorText);
+    useEffect(() => {
+
+    }) 
+    
 
 
 
-
-const Editor: React.FC<EditorProps> = ({Parse}: EditorProps) => {
     return (
         <div>
-            <h2 style={{margin: "0 0 8px 7px", textDecoration: "underline", fontFamily: "lucidabright", fontSize: "20px"}}>Script</h2>
+            <h2 style={{margin: "0 0 8px 7px", textDecoration: "bottomline", fontFamily: "lucidabright", fontSize: "20px"}}>Script</h2>
             <textarea rows={10} cols={100} color='grey' 
-                  onChange={(e: InputEvent) => Parse(e.target.value)}
+                  onChange={(e: InputEvent) => {props.Parse(e.target.value)}}
                   spellCheck="false"
                   style={style}
+                  value={props.editorText}
                   ></textarea >
         </div>
-        
     )
 }
 
 export default Editor
+// Parse(e.target.value); setInternalState(e.target.value)

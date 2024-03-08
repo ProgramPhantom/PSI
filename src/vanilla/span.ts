@@ -19,11 +19,13 @@ export default class Span extends Temporal implements labelable {
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
         var el = new Span(options.timestamp,
-                         {config: options.config,
+                         {width: options.width,
+                          config: options.config,
                           padding: options.padding,
-                          arrow: options.arrow,
-                          width: options.width,
-                          label: options.label},
+                          labelOn: options.labelOn,
+                          label: options.label,
+                          arrowOn: options.arrowOn,
+                          arrow: options.arrow,},
                           options.offset)
 
         return el;
@@ -46,7 +48,7 @@ export default class Span extends Temporal implements labelable {
 
     public draw(surface: Svg): void {
         if (this.label) {
-            this.drawLabel(surface);
+            this.posDrawDecoration(surface);
         }
         
     }

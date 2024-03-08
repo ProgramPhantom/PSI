@@ -14,6 +14,7 @@
         "height": 75
     },
 
+    "labelOn": false,
     "label": {
         "text": "",
         "padding": [0, 0, 0, 0],
@@ -21,6 +22,16 @@
         "style": {
             "size": 20,
             "colour": "black"
+        }
+    },
+    "arrowOn": false,
+    "arrow": {
+        "padding": [0, 0, 0, 0],
+        "position": "inline",
+        "style": {
+            "thickness": 2, 
+            "headStyle": "default", 
+            "stroke": "black"
         }
     }
 }

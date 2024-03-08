@@ -2,8 +2,6 @@ import * as defaultChannel from "./default/data/channel.json"
 import { Drawable } from "./drawable";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Alignment, Orientation, labelable } from "./temporal";
-import Pulse90 from "./default/classes/pulse90";
-import Pulse180 from "./default/classes/pulse180";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
 import ImagePulse from "./pulses/image/imagePulse";
@@ -105,7 +103,7 @@ export default class Channel extends Drawable implements labelable {
 
         this.computeBarY(yCursor);
         
-        this.drawLabel(surface);
+        this.positionLabel(surface);
         
         this.bounds = {width: this.width + labelOffsetX + this.padding[1] + this.padding[3], 
             height: this.height + this.padding[0] + this.padding[2] + annotationHeight}
@@ -184,7 +182,7 @@ export default class Channel extends Drawable implements labelable {
             
             if (temporalEl.config.inheritWidth) {
                 temporalEl.bounds = {width: timespanWidth, height: temporalEl.height};
-                console.log(temporalEl.bounds)
+                
             }
 
             switch (temporalEl.config.alignment) {
@@ -199,7 +197,7 @@ export default class Channel extends Drawable implements labelable {
                     }
                     break;
                 case Alignment.Right:
-                    console.log("RIGHT", temporalEl.width)
+                    
                     if (temporalEl.config.overridePad) {
                         temporalEl.x = tempX + timespanWidth - temporalEl.width;
                     } else {
@@ -228,7 +226,7 @@ export default class Channel extends Drawable implements labelable {
 
         if (obj.config.noSections > 1) {
             obj.timestamp = [this.elementCursor, this.elementCursor+obj.config.noSections-1];
-            console.log(obj.timestamp)
+            
             this.elementCursor += obj.config.noSections - 1;
         } else {
             obj.timestamp = this.elementCursor;
@@ -300,7 +298,7 @@ export default class Channel extends Drawable implements labelable {
 
     // Draws the channel label
     // It is required that computeY has been ran for this to work
-    drawLabel(surface: Svg) : number[] {
+    positionLabel(surface: Svg) : number[] {
         /*  Draw label with no temp elements?
         if (this.temporalElements.length === 0) {
             return [0, 0];

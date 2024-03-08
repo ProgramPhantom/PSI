@@ -1,0 +1,40 @@
+{
+    "temporalInterface": {
+        "padding": {
+            "type": "number[]"
+        },
+        "config": {
+            "type": "INTERFACE",
+            "interfaceName": "temporalConfig"
+        },
+        "label": {
+            "type": "INTERFACE",
+            "interfaceName": "labelInterface",
+            "optional": true
+        },
+        "arrow": {
+            "type": "INTERFACE",
+            "interfaceName": "arrowInterface",
+            "optional": true
+        }
+    },
+    "temporalConfig": {
+        "orientation": {
+            "type": "ENUM",
+            "enumName": "Orientation"
+        },
+        "alignmnet": {
+            "type": "ENUM",
+            "enumName": "Alignment"
+        },
+        "overridePad": {
+            "type": "boolean"
+        },
+        "inheritWidth": {
+            "type": "boolean"
+        },
+        "noSections": {
+            "type": "number"
+        }
+    }
+}

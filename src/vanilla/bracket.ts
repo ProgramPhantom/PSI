@@ -120,7 +120,7 @@ export default class Bracket extends Drawable implements labelable {
                     // If centre:
                     this.label.x = this.x + width/2 - this.label.width/2;
                     this.label.y = this.y + this.label.padding[0];
-                    var pro = this.drawLabel(surface);
+                    var pro = this.posDrawDecoration(surface);
                 } else {
                     var pro = [0, 0];
                 }
@@ -133,7 +133,7 @@ export default class Bracket extends Drawable implements labelable {
                 if (this.label) {
                     this.label.x = this.x + width/2 - this.label.width/2;
                     this.label.y = this.y + this.bracketProtrusion;
-                    var pro = this.drawLabel(surface);
+                    var pro = this.posDrawDecoration(surface);
                 } else {
                     var pro = [0, 0];
                 }
@@ -147,7 +147,7 @@ export default class Bracket extends Drawable implements labelable {
                         case Position.top:
                             this.label.x = this.x + this.label.padding[3];
                             this.label.y = this.y + this.label.padding[0];
-                            console.log(this.y, this.label.height)
+                            
                             break;
                         case Position.bottom:
                             this.label.x = this.x;
@@ -157,7 +157,7 @@ export default class Bracket extends Drawable implements labelable {
                             throw new Error("Can only use bottom or top for vertical bracket label");
                     }
 
-                    this.drawLabel(surface);
+                    this.posDrawDecoration(surface);
                 }
                 break;
             case Direction.left:
@@ -166,7 +166,7 @@ export default class Bracket extends Drawable implements labelable {
                         case Position.top:
                             this.label.x = this.x + this.label.padding[3] + this.bracketProtrusion;
                             this.label.y = this.y + this.label.padding[0];
-                            console.log(this.y, this.label.height)
+                            
                             break;
                         case Position.bottom:
                             this.label.x = this.x + this.label.padding[3] + this.bracketProtrusion;
@@ -176,19 +176,19 @@ export default class Bracket extends Drawable implements labelable {
                             throw new Error("Can only use bottom or top for vertical bracket label");
                     }
 
-                    this.drawLabel(surface);
+                    this.posDrawDecoration(surface);
                 }
                 break;
         }
         
-        console.log(this.x1, this.y1, this.x2, this.y2)
+        
         switch (this.style.bracketType) {
             case bracketType.curly:
                 var d = this.curlyPath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
                 var svgString = `<path d="${d}">`;
                 break;
             case bracketType.square:
-                var d = this.squarePath(this.x1, this.y1, this.x2, this.y2, this.protrusion, this.style.expression);
+                var d = this.squarePath(this.x1, this.y1, this.x2, this.y2, this.protrusion);
                 var svgString = `<path d="${d}">`; 
                 
                 break;
@@ -197,7 +197,7 @@ export default class Bracket extends Drawable implements labelable {
                 var svgString = `<path d="${d}">`; 
                 break;
         }
-        console.log(svgString)
+        
 
         var svgObj = SVG(svgString);
 
@@ -244,7 +244,7 @@ export default class Bracket extends Drawable implements labelable {
           		" T " + tx1 + " " + ty1 );
 	}
 
-    squarePath(x1: number, y1: number, x2: number,y2: number, w: number, q: number) {
+    squarePath(x1: number, y1: number, x2: number,y2: number, w: number) {
         var grad = (y2 - y1)/(x2-x1);
         var theta = Math.atan(-1/grad);
 
@@ -271,7 +271,7 @@ export default class Bracket extends Drawable implements labelable {
         return d;
     }
 
-    drawLabel(surface: Svg): number[] {
+    posDrawDecoration(surface: Svg): number[] {
         if (!this.label) {
             return [0, 0];
         }

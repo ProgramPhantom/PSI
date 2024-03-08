@@ -14,6 +14,7 @@
         "height": 10
     },
 
+    "labelOn": false,
     "label": {
         "text": "\\tau",
         "padding": [0, 0, 10, 0],
@@ -21,6 +22,16 @@
         "style": {
             "size": 10,
             "colour": "black"
+        }
+    },
+    "arrowOn": false,
+    "arrow": {
+        "padding": [0, 0, 0, 0],
+        "position": "inline",
+        "style": {
+            "thickness": 2, 
+            "headStyle": "default", 
+            "stroke": "black"
         }
     }
 }

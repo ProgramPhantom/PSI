@@ -4,6 +4,7 @@ import TeXToSVG from "tex-to-svg";
 import * as defaultLabel from "./default/data/label.json";
 import { UpdateObj } from "./util";
 
+
 interface Dim {
     width: number,
     height: number
@@ -35,10 +36,10 @@ export interface labelStyle {
 }
 
 export enum Position {top="top",
-                           right="right",
-                           bottom="bottom",
-                           left="left",
-                           centre="centre"}
+                      right="right",
+                      bottom="bottom",
+                      left="left",
+                      centre="centre"}
 
 
 export default class Label extends Drawable {
@@ -69,7 +70,7 @@ export default class Label extends Drawable {
     constructor(params: labelInterface,
                 offset: number[]=[0, 0]) {
 
-        super(0, 0);
+        super(0, 0, offset);
 
         this.text = params.text;
         this.style = params.style;

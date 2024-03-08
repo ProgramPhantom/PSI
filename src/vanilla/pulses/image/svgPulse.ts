@@ -1,10 +1,9 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig} from "../../temporal";
 import ImagePulse, { imagePulseStyle } from "./imagePulse";
-import * as defaultPulse from "../../default/data/svgPulse/svgPulse.json"
 import {Position, labelInterface } from "../../label";
 import { UpdateObj } from "../../util";
-import {defs} from "../../default/data/svgPulse"
+import {svgPulses} from "../../default/data/svgPulse"
 
 const svgContent: {[path: string]: string} = {}
 const svgPaths = ["\\src\\assets\\aquire2.svg",
@@ -40,7 +39,7 @@ export interface svgPulseStyle {
 
 export default class SVGPulse extends Temporal {
     // svg
-    static defaults: {[key: string]: svgPulseInterface} = {...<any>defs};
+    static defaults: {[key: string]: svgPulseInterface} = {...<any>svgPulses};
 
     static anyArgConstruct(defaultArgs: svgPulseInterface, args: svgPulseInterface): SVGPulse {
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
@@ -50,7 +49,9 @@ export default class SVGPulse extends Temporal {
                                  config: options.config,
                                  padding: options.padding,
                                  style: options.style,
+                                 labelOn: options.labelOn,
                                  label: options.label,
+                                 arrowOn: options.arrowOn,
                                  arrow: options.arrow})
 
         return el;
@@ -116,8 +117,8 @@ export default class SVGPulse extends Temporal {
         obj.size(this.width, this.height);
         surface.add(obj);
 
-        if (this.label) {
-            this.drawLabel(surface);
+        if (this.arrow || this.label) {
+            this.posDrawDecoration(surface)
         }
     }
 

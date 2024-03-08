@@ -14,7 +14,7 @@ import SVGPulse from "../../../pulses/image/svgPulse";
 
 
 
-export const defs = {
+export const svgPulses = {
     "aquire": Aquire,
     "halfsine": HalfSine,
     "amp": AmpSeries,

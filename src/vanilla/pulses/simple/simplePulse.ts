@@ -3,7 +3,7 @@ import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
 import Label, { Position, labelInterface } from "../../label";
 import {UpdateObj} from "../../util";
-import {defs} from "../../default/data/simplePulse"
+import {simplePulses} from "../../default/data/simplePulse"
 import '@svgdotjs/svg.draggable.js';
 import { Rect } from "@svgdotjs/svg.js";
 
@@ -22,7 +22,7 @@ export interface simplePulseStyle {
 
 export default class SimplePulse extends Temporal  {
     // Default is currently 180 Pulse
-    static defaults: {[key: string]: simplePulseInterface} = {...<any>defs}
+    static defaults: {[key: string]: simplePulseInterface} = {...<any>simplePulses}
     
     // A pulse that is an svg rect
     style: simplePulseStyle;
@@ -34,7 +34,9 @@ export default class SimplePulse extends Temporal  {
                                 {config: options.config,
                                  padding: options.padding,
                                  style: options.style,
+                                 labelOn: options.labelOn,
                                  label: options.label,
+                                 arrowOn: options.arrowOn,
                                  arrow: options.arrow})
 
         return el;
@@ -48,7 +50,6 @@ export default class SimplePulse extends Temporal  {
               params,
               offset);
         
-        console.log("ARROW:" , params.arrow)
         this.style = params.style;
 
         this.bounds = {width: this.style.width, height: this.style.height};
@@ -59,8 +60,6 @@ export default class SimplePulse extends Temporal  {
     }
 
     draw(surface: SVG.Svg) {
-        
-
         var rect = surface.rect(this.width, this.height)
         .attr({fill: this.style.fill,
                 stroke: this.style.stroke})
@@ -72,14 +71,9 @@ export default class SimplePulse extends Temporal  {
 
         rect.draggable();
 
-        if (this.arrow) {
-            this.draw
+        if (this.arrow || this.label) {
+            this.posDrawDecoration(surface)
         }
-
-        if (this.label) {
-            this.drawLabel(surface);
-        }
-
     }
 
     goToStart(el: Rect) {

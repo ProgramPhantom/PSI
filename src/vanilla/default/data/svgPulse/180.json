@@ -14,16 +14,18 @@
         "height": 50
     },
 
+    "labelOn": false,
     "label": {
         "text": "\\tau",
         "padding": [0, 0, 10, 0],
         "position": "top",
         "style": {
-            "size": 30,
+            "size": 10,
             "colour": "black"
         }
     },
 
+    "arrowOn": false,
     "arrow": {
         "padding": [0, 0, 0, 0],
         "position": "inline",

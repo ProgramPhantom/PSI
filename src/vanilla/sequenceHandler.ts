@@ -263,22 +263,16 @@ export default class SequenceHandler {
 
     
     sequence: Sequence;
-    surface: Svg;
 
-    constructor(initialCode: string, surface: Svg) {
-        this.sequence = new Sequence(surface, Sequence.defaults["empty"])
-        this.surface = surface;
-
-        try {
-            this.parseScript(initialCode);
-        } catch (e){
-            console.log(e)
-        }
+    constructor(initialCode: string) {
+        
+        this.sequence = new Sequence(Sequence.defaults["empty"])
+        this.script = initialCode;
     }
 
     parseScript(text: string) {
         this.script = text;
-
+        this.sequence = new Sequence(Sequence.defaults["empty"])  // TEMPORARY
         // 1 ----- Tokenise script:
         this.tokenise();
 
@@ -482,7 +476,7 @@ export default class SequenceHandler {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${command.content}'`, command.columns, [command.line, command.line]);
         }
 
-        console.log("runing command:", command, channel, props)
+        
         
         var argObj: any = {};
 
@@ -596,6 +590,7 @@ export default class SequenceHandler {
         switch (command.content) {
             case "~":
                 this.sequence.defineChannel(channel.content, <channelInterface>args);
+                
                 break;
             case "|":
                 this.sequence.addVLine(channel.content, <Line>args)
@@ -615,7 +610,7 @@ export default class SequenceHandler {
         }
     }
 
-    draw() {
-        this.sequence.draw();
+    draw(surface: Svg) {
+        this.sequence.draw(surface);
     }
 }

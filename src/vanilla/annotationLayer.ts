@@ -65,7 +65,7 @@ export default class AnnotationLayer extends Drawable {
         })
 
         var maxYLong = this.drawLongs(surface, this.y);
-        var maxYLabel = this.drawLabels(surface, maxYLong);
+        var maxYLabel = this.positionLabels(surface, maxYLong);
 
         var maxY = maxYLabel > maxYLong ? maxYLabel : maxYLong;
 
@@ -80,7 +80,7 @@ export default class AnnotationLayer extends Drawable {
         }
     }
 
-    drawLabels(surface: Svg, startY: number): number {
+    positionLabels(surface: Svg, startY: number): number {
         var ys = new Array<number>(this.timestampX.length);
         ys.fill(startY);
         

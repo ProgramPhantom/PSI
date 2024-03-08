@@ -25,9 +25,9 @@ export enum HeadStyle {
 }
 
 export enum ArrowPosition {
-  under="under",
+  bottom="bottom",
   inline="inline",
-  above="above"
+  top="top"
 }
 
 export interface arrowInterface {

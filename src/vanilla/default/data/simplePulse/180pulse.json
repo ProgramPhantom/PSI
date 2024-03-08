@@ -1,5 +1,6 @@
 {
-    
+
+
     "padding": [0, 2, 0, 2],
     "config": {
         "orientation": "top",
@@ -17,13 +18,26 @@
         "strokeWidth": 1
     },
 
+    "labelOn": false,
     "label": {
-        "text": "",
-        "padding": [0, 0, 13, 0],
+        "text": "\\mathrm{180}",
+        "padding": [0, 0, 3, 0],
         "position": "top",
         "style": {
-            "size": 20,
+            "size": 10,
             "colour": "black"
         }
+    },
+
+    "arrowOn": false,
+    "arrow": {
+        "padding": [0, 0, 10, 0],
+        "position": "inline",
+        "style": {
+            "thickness": 2, 
+            "headStyle": "default", 
+            "stroke": "black"
+        }
     }
+    
 }

@@ -30,12 +30,14 @@ export default class Abstract extends Temporal {
     
     public static anyArgConstruct(defaultArgs: abstractInterface, args: any): Abstract {
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-        console.log(options.padding)
+        
         var absInt: abstractInterface = {config: options.config,
                                          padding: options.padding,
                                          text: options.text,
                                          style: options.style,
+                                         labelOn: options.labelOn,
                                          label: options.label,
+                                         arrowOn: options.arrowOn,
                                          arrow: options.arrow};
 
         var el = new Abstract(options.timestamp, absInt)
@@ -62,8 +64,6 @@ export default class Abstract extends Temporal {
     }
 
     draw(surface: SVG.Svg) {
-        console.log("ABS WIDTH: ", this.width)
-        
         surface.rect(this.width, this.height)
         .attr({fill: this.style.fill,
                stroke: this.style.stroke})
@@ -72,11 +72,11 @@ export default class Abstract extends Temporal {
         .attr({"stroke-width": this.style.strokeWidth,
                "shape-rendering": "crispEdges"});
 
-        console.log(this.textLabel.text)
+        
         this.drawText(surface);
 
-        if (this.label) {
-            this.drawLabel(surface);
+        if (this.arrow || this.label) {
+            this.posDrawDecoration(surface)
         }
     }
 
