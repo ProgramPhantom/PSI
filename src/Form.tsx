@@ -14,7 +14,17 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                     <select onChange={(e) => {setSelectedEl(e.target.value); console.log("selected ", e.target.value)}}>
                         <option value={"pulse90"} key={1}>Pulse90</option>
                         <option value={"pulse180"} key={2}>Pulse180</option>
+
                         <option value={"180"} key={3}>180</option>
+                        <option value={"amp"} key={4}>Amp Series</option>
+                        <option value={"aquire"} key={5}>Aquire</option>
+                        <option value={"chirphilo"} key={6}>ChirpHiLo</option>
+                        <option value={"chirplohi"} key={7}>ChirpHiLo</option>
+                        <option value={"halfsine"} key={8}>Halfsine</option>
+                        <option value={"saltirehilo"} key={9}>SaltireHiLo</option>
+                        <option value={"saltirelohi"} key={10}>SaltireLoHi</option>
+                        <option value={"talltrap"} key={11}>Tall Trapezium</option>
+                        <option value={"trap"} key={12}>Trapezium</option>
                     </select>
                 </label>
 
