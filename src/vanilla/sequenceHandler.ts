@@ -195,7 +195,7 @@ export default class SequenceHandler {
     }
 
     static specialCharacters: string[] = ["-", "#", "~", "`", ">", "=", "[(]", "[)]", "[+]", "[.]", "[*]", "[/]", "[}]", "[{]",
-                                          ";", "[\\^]"]
+                                          ";", "[\\^]", "[,]", "[\\[]", "[\\]]"]
 
     static specialCharacterRegex: string = SequenceHandler.specialCharacters.join("|");
     static util: string = "[" + Object.keys(SequenceHandler.ChannelUtil).join("]|[\\") + "]";
@@ -271,11 +271,14 @@ export default class SequenceHandler {
     }
 
     parseScript(text: string) {
+        console.log("HEHREHREHRHEHERHE")
+
         this.script = text;
         this.sequence = new Sequence(Sequence.defaults["empty"])  // TEMPORARY
         // 1 ----- Tokenise script:
+        console.log("syntax:", this.validSyntax)
         this.tokenise();
-
+        
         /*
         if (!this.validSyntax) {
             
@@ -314,7 +317,7 @@ export default class SequenceHandler {
         }
 
         for (const tok of this.tokenStream) {
-            
+            console.log(tok)
 
             if (tok.type === TokenType.NewLine) {
                 continue;
@@ -454,6 +457,7 @@ export default class SequenceHandler {
 
         }
 
+        console.log(stateSystem.currState)
         if (stateSystem.currState === ParseState.Start) {
             this.validSyntax = true;
         } else {
@@ -477,7 +481,7 @@ export default class SequenceHandler {
         }
 
         
-        
+        console.log("Running commoand:", command, channel, props)
         var argObj: any = {};
 
         function setChild(val: ScriptToken, props: ScriptToken[], defs: any, exsisting: any): any {  // Created javascript obj from 
@@ -502,6 +506,7 @@ export default class SequenceHandler {
             } else if (props.length === 1) {  // At the end of the prop chain
                 
                 try {
+                    console.log("parsing: ", val.content)
                     inner[thisProp.content] = JSON.parse(val.content);
                 } catch {
                     //if (val.content.match(SequenceHandler.alphaNumericRegex)) {

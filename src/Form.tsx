@@ -14,6 +14,7 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                     <select onChange={(e) => {setSelectedEl(e.target.value); console.log("selected ", e.target.value)}}>
                         <option value={"pulse90"} key={1}>Pulse90</option>
                         <option value={"pulse180"} key={2}>Pulse180</option>
+                        <option value={"180"} key={3}>180</option>
                     </select>
                 </label>
 
@@ -29,12 +30,13 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                 </label>
             </form>
             
-            <DynamicForm AddCommand={props.AddCommand} temporalName={selectedEl} channelName={selectedChannel}></DynamicForm>
+             
+            <DynamicForm AddCommand={props.AddCommand} temporalName={selectedEl} channelName={selectedChannel} key={selectedEl}></DynamicForm>
             
            
         </div>
         </>
-    )
+    ) // Use key in Dynamic form so it forces a remount, triggering the inital values in the form
 }
 
 export default Form

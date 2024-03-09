@@ -1,16 +1,16 @@
 import { Schema } from "@data-driven-forms/react-form-renderer";
-import { simplePulseInterface } from "../../pulses/simple/simplePulse";
+import { svgPulseInterface } from "../../pulses/image/svgPulse";
 
-export function simplePulseSchema(def: simplePulseInterface): Schema {
+export function svgPulseSchema(def: svgPulseInterface): Schema {
   return {"fields": [
-    { // Padding
+    {  // Padding
       "component": "text-field",
       "name": "padding",
       "label": "Padding",
-      "helperText": "[top, right, bottom, left]",
+      "helperText": "[[top, right, bottom, left]]",
       "isRequired": true,
-      "initializeOnMount": true,
       initialValue: `[${def.padding}]`,
+      "initializeOnMount": true,
       // resolveProps: (props, {meta, input}, formOptions) => {
       //   return {
       //     value: "[" + input.value + "]"
@@ -24,6 +24,58 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
         }
       ]
     },
+    { // Path
+      "component": "select",
+      "name": "path",
+      "label": "Figure",
+      "dataType": "string",
+      initialValue: def.path,
+      "initializeOnMount": true,
+      "options": [
+        {
+          "value": '\\src\\assets\\aquire2.svg',
+          "label": "Aquire"
+        },
+        {
+          "value": '\\src\\assets\\saltirelohi.svg',
+          "label": "SaltireLoHi"
+        },
+        {
+          "value": '\\src\\assets\\saltirehilo.svg',
+          "label": "SaltireHiLo"
+        },
+        {
+          "value": '\\src\\assets\\halfsine.svg',
+          "label": "Halfsine"
+        },
+        {
+          "value": '\\src\\assets\\chirplohi.svg',
+          "label": "ChirpLoHi"
+        },
+        {
+          "value": '\\src\\assets\\chirphilo.svg',
+          "label": "ChirpHiLo"
+        },
+        {
+          "value": '\\src\\assets\\ampseries.svg',
+          "label": "Amp Series"
+        },
+        {
+          "value": "\\src\\assets\\180.svg",
+          "label": "180"
+        },
+        {
+          "value": "\\src\\assets\\trapezium.svg",
+          "label": "Trapezium"
+        },
+        {
+          "value": "\\src\\assets\\talltrapezium.svg",
+          "label": "Tall Trapezium"
+        }
+      ],
+      "helperText": "select svg file",
+      "isRequired": true
+    },
     {  // Config
       "component": "sub-form",
       "name": "config",
@@ -34,9 +86,8 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
         "component": "select",
         "name": "config.orientation",
         "label": "Orientation",
-        "isRequired": true,
         "initializeOnMount": true,
-        initialValue: def.config.orientation,
+        "initialValue": "top",
         "options": [
           {
             "value": "top",
@@ -52,6 +103,7 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
           }
         ],
         "helperText": "vertical positioning",
+        "isRequired": true
       },
       {
         "component": "select",
@@ -59,8 +111,8 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
         "label": "Alignment",
         "helperText": "horizontal positioning",
         "isRequired": true,
-        "initializeOnMount": true,
         initialValue: `${def.config.alignment}`,
+        "initializeOnMount": true,
         "options": [
           {
             "value": "left",
@@ -81,8 +133,8 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
         "name": "config.overridePad",
         "label": "Override Pad?",
         "isRequired": true,
-        "initializeOnMount": true,
         "initialValue": def.config.overridePad,
+        "initializeOnMount": true,
         "helperText": "remove padding if aligning to left or right?"
       },
       {
@@ -90,8 +142,8 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
         "name": "config.inheritWidth",
         "label": "Inherit Width",
         "isRequired": true,
-        "initializeOnMount": true,
         "initialValue": def.config.inheritWidth,
+        "initializeOnMount": true,
         "helperText": "inherit width from widest vertically corresponding element",
       },
       {
@@ -99,9 +151,9 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
         "name": "config.noSections",
         "label": "Num Sections",
         "required": true,
-        "initializeOnMount": true,
         "helperText": "element spans this number of vertically corresponding elements",
         "initialValue": def.config.noSections,
+        "initializeOnMount": true,
         "validate": [
           {
             "type": "pattern",
@@ -115,14 +167,15 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
       "component": "sub-form",
       "name": "style",
       "title": "Style",
+      "initializeOnMount": true,
       "fields": [
       {  // Width
         "component": "text-field",
         "name": "style.width",
         "label": "Width",
         "required": true,
-        "initializeOnMount": true,
         "initialValue": def.style.width,
+        "initializeOnMount": true,
         "validate": [
           {
             "type": "pattern",
@@ -146,75 +199,22 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
           }
         ]
       },
-      {  // Fill
-        "component": "text-field",
-        "name": "style.fill",
-        "label": "Fill",
-        "required": true,
-        "helperText": "(html color eg 'black' or '#000000')",
-        "initialValue": def.style.fill,
-        "initializeOnMount": true,
-      },
-      {
-        "component": "text-field",
-        "name": "style.stroke",
-        "label": "Stroke",
-        "initializeOnMount": true,
-        type: "string",
-        "helperText": "stroke colour (html color eg 'black' or '#000000')",
-        "initialValue": `${def.style.stroke}`,
-      },
-      {
-        "component": "text-field",
-        "name": "style.strokeWidth",
-        "label": "Stroke Width",
-        "required": true,
-        "initializeOnMount": true,
-        "initialValue": def.style.strokeWidth,
-        "validate": [
-          {
-            "type": "pattern",
-            "pattern": "^[0-9_]+$",
-            "message": "incorrect format"
-          }
-        ]
-      },
-      {
-        "component": "select",
-        "name": "config.orientation",
-        "label": "Orientation",
-        "isRequired": true,
-        "initializeOnMount": true,
-        initialValue: `${def.config.orientation}`,
-        "options": [
-          {
-            "value": "top",
-            "label": "top"
-          },
-          {
-            "value": "bottom",
-            "label": "bottom"
-          },
-          {
-            "value": "both",
-            "label": "both"
-          }
-        ],
-        "helperText": "vertical positioning",
-      }]
+      ]
     },
-    {
+    {  // Arrow on
       "component": "switch",
       "name": "arrowOn",
       "label": "Arrow",
       "isRequired": true,
       "initializeOnMount": true,
-      "initialValue": def.arrowOn,
+      "clearOnUnmount": true,
+      "initialValue": def.arrowOn
     },
-    {
+    {  // Arrow form
       "component": "sub-form",
       "name": "arrowForm",
       "title": "Arrow",
+      "initializeOnMount": true,
       "fields": [
         {
           "component": "text-field",
@@ -259,6 +259,7 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
           "component": "sub-form",
           "name": "arrow.style",
           "title": "Style",
+          "initializeOnMount": true,
           "fields": [
                 {
                 "component": "text-field",
@@ -293,8 +294,8 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
                 "component": "text-field",
                 "name": "arrow.stroke",
                 "isRequired": true,
-                "initialValue": def.arrow.style.stroke,
                 "initializeOnMount": true,
+                "initialValue": def.arrow.style.stroke,
                 "label": "Stroke",
                 "helperText": "colour of arrow (html color eg 'black' or '#000000')",
               }
@@ -308,18 +309,20 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
         "else": {visible: false}
       }
     },
-    {
+    {  // Label on
       "component": "switch",
       "name": "labelOn",
       "label": "Label",
       "isRequired": true,
       "initializeOnMount": true,
-      "initialValue": def.labelOn,
+      "clearOnUnmount": true,
+      "initialValue": def.labelOn
     },
-    {
+    {  // Label form
       "component": "sub-form",
       "name": "labelForm",
       "title": "Label",
+      "initializeOnMount": true,
       "fields": [
         {
           "component": "text-field",
@@ -332,10 +335,10 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
           "component": "text-field",
           "name": "label.padding",
           "label": "Padding",
-          "helperText": "[top, right, bottom, left]",
+          "helperText": "[[top, right, bottom, left]]",
           "isRequired": true,
-          "initialValue": `[${def.label.padding}]`,
           "initializeOnMount": true,
+          "initialValue": `[${def.label.padding}]`,
           "validate": [
             {
               "type": "pattern",
@@ -349,8 +352,8 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
           "name": "label.position",
           "label": "Position",
           "isRequired": true,
-          "initialValue": def.label.position,
           "initializeOnMount": true,
+          "initialValue": def.label.position,
           "options": [
             {
               "value": "top",
@@ -370,14 +373,15 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
           "component": "sub-form",
           "name": "label.style",
           "title": "Style",
+          "initializeOnMount": true,
           "fields": [
                 {
                 "component": "text-field",
                 "name": "label.size",
                 "label": "Size",
                 "isRequired": true,
-                "initialValue": def.label.style.size,
                 "initializeOnMount": true,
+                "initialValue": def.label.style.size,
                 "validate": [
                   {
                     "type": "pattern",
@@ -391,8 +395,8 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
                   "name": "label.colour",
                   "label": "Colour",
                   "isRequired": true,
-                  "initialValue": def.label.style.colour,
                   "initializeOnMount": true,
+                  "initialValue": def.label.style.colour,
                   "helperText": "(html color eg 'black' or '#000000')"
                 }
           ]
