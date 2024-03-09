@@ -3,11 +3,12 @@ import validatorTypes from '@data-driven-forms/react-form-renderer/validator-typ
 
 import * as p90 from "../data/simplePulse/90pulse.json";
 import { arrowInterface } from "../../arrow";
+import { simplePulseInterface } from "../../pulses/simple/simplePulse";
 
 
 export var def = p90;
-export const schema: Schema = {
-  "fields": [
+export function simplePulseSchema(def: simplePulseInterface): Schema {
+  return {"fields": [
     {
       "component": "text-field",
       "name": "padding",
@@ -363,5 +364,5 @@ export const schema: Schema = {
         "else": {visible: false}
       }
     }
-  ]
+  ]}
 }

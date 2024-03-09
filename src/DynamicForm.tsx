@@ -7,22 +7,22 @@ import componentTypes from '@data-driven-forms/react-form-renderer/component-typ
 import componentMapper from '@data-driven-forms/mui-component-mapper/component-mapper';
 import FormTemplate from '@data-driven-forms/pf4-component-mapper/form-template';
 
-import useFormApi from '@data-driven-forms/react-form-renderer/use-form-api';
-
 
 //import * as schema from "./vanilla/default/types/testSchema.json"
-import {schema} from "./vanilla/default/types/simplePulseSchema"
+import {simplePulseSchema} from "./vanilla/default/types/simplePulseSchema";
+import { simplePulses } from './vanilla/default/data/simplePulse';
 
 
 function DynamicForm(props: {AddCommand: (line: string) => void, temporalName: string, channelName: string,}) {
-    const [element, setElement] = useState<string>("pulse90");
-    const formOptions = useFormApi();
-    const [values, setValues] = useState({});
+
+    var currSchema = simplePulseSchema({...(simplePulses[props.temporalName as keyof typeof simplePulses] as any)});
+    console.log("element: ", props.temporalName)
+    console.log("channel: ", props.channelName)
 
     function CreateCommand(v: any, f: any) {
         
-        console.log(f)
-        var command = props.channelName + "." + element + "(";
+        console.log(props.temporalName)
+        var command = props.channelName + "." + props.temporalName + "(";
         var toInclude: string[] = [];
 
         for (const kv of Object.entries(f.dirtyFields)) {
@@ -42,14 +42,12 @@ function DynamicForm(props: {AddCommand: (line: string) => void, temporalName: s
 
     return (
         <>
-        <div>
-            <FormRenderer schema={schema}
-                componentMapper={componentMapper}
-                FormTemplate={FormTemplate}
-                onSubmit={(values, form) => CreateCommand(values, form.getState())}></FormRenderer>
-        </div>
-          
-                
+            <div>
+                <FormRenderer schema={currSchema}
+                    componentMapper={componentMapper}
+                    FormTemplate={FormTemplate}
+                    onSubmit={(values, form) => CreateCommand(values, form.getState())}></FormRenderer>
+            </div>
         </>
     )
 }
