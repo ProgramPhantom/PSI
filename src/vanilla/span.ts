@@ -6,9 +6,8 @@ import * as defaultSpan from "./default/data/span.json"
 import { UpdateObj } from "./util";
 
 
-interface spanInterface extends temporalInterface {
+export interface spanInterface extends temporalInterface {
     width: number,
-    arrow: arrowInterface
 }   
 
 export default class Span extends Temporal implements labelable {

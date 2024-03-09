@@ -1,6 +1,4 @@
 import React, { ChangeEvent, useState } from 'react'
-import { allTemporal } from './vanilla/default/data';
-
 import FormRenderer from '@data-driven-forms/react-form-renderer/form-renderer';
 import componentTypes from '@data-driven-forms/react-form-renderer/component-types';
 import componentMapper from '@data-driven-forms/mui-component-mapper/component-mapper';
@@ -10,9 +8,12 @@ import FormTemplate from '@data-driven-forms/pf4-component-mapper/form-template'
 //import * as schema from "./vanilla/default/types/testSchema.json"
 import {simplePulseSchema} from "./vanilla/default/types/simplePulseSchema";
 import {svgPulseSchema} from "./vanilla/default/types/svgPulseSchema";
+import {spanSchema} from "./vanilla/default/types/spanSchema";
 
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import { svgPulses } from './vanilla/default/data/svgPulse';
+import { allTemporal } from './vanilla/default/data';
+
 import { Schema } from '@data-driven-forms/react-form-renderer';
 
 
@@ -22,8 +23,10 @@ function DynamicForm(props: {AddCommand: (line: string) => void, temporalName: s
     var currSchema: Schema = {"fields": []};
     if (Object.keys(simplePulses).includes(props.temporalName)) {
         var currSchema = simplePulseSchema({...(simplePulses[props.temporalName as keyof typeof simplePulses] as any)});
-    } else {
+    } else if (Object.keys(svgPulses).includes(props.temporalName)) {
         var currSchema = svgPulseSchema({...(svgPulses[props.temporalName as keyof typeof svgPulses] as any)});
+    } else if (props.temporalName === "span") {
+        var currSchema = spanSchema({...(allTemporal[props.temporalName as keyof typeof allTemporal] as any)});
     }
     
 
