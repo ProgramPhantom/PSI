@@ -24,8 +24,7 @@ function App() {
   }
 
   function GetChannels(c: string[]) {
-    // setChannels(c)
-    
+    setChannelNames(c);
   }
   
 

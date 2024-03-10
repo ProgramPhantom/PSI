@@ -35,11 +35,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         } 
     }, [svgObj])
 
-    useEffect(() => {
-        
-
-        
-    })
+    
 
     
     if (svgObj.current) {
@@ -58,25 +54,24 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         
         try {
             props.handler.parseScript(props.handler.script);
-            
         } catch (e){
             
         }
-        
+    
         try {
-            
             props.handler.draw(svgObj.current!);
-            
         } catch (e) {
             
         }
 
-        var newChannels = Object.keys(props.handler.sequence.channels);
-        if (intialChannels !== newChannels.toString()) {
-            props.updateChannels(Object.keys(props.handler.sequence.channels))
-            
-            // Does extra render but idk how to make this work
-        }
+        console.log(Object.keys(props.handler.sequence.channels).join())
+
+        // var newChannels = Object.keys(props.handler.sequence.channels);
+        // if (intialChannels !== newChannels.toString()) {
+        //     props.updateChannels(Object.keys(props.handler.sequence.channels))
+        //     
+        //     // Does extra render but idk how to make this work
+        // }
         
         for (const c of Object.values(props.handler.sequence.channels)) {
             ys.push(c.barY)
@@ -97,6 +92,12 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         setButtonX(dim.x * props.zoom + BUTTON_PAD[0]);
         setButtonYs(dim.ys.map((n) => n * props.zoom + BUTTON_PAD[1]));
     }
+
+    // APPARENTLY the 
+    useEffect(() => {
+        props.updateChannels(Object.keys(props.handler.sequence.channels))
+        console.log(Object.keys(props.handler.sequence.channels))
+    }, [Object.keys(props.handler.sequence.channels).join()])
 
 
     return (

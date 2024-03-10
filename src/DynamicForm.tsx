@@ -56,16 +56,16 @@ function DynamicForm(props: {AddCommand: (line: string) => void, temporalName: s
     }
 
     return (
-        <>
-            <div>
-                <FormRenderer schema={currSchema}
-                              componentMapper={componentMapper}
-                              FormTemplate={FormTemplate}
-                              onSubmit={(values, form) => CreateCommand(form.getState())}
-                              clearOnUnmount={true}
-                              ></FormRenderer>
-            </div>
-        </>
+        
+            
+        <FormRenderer schema={currSchema}
+                        componentMapper={componentMapper}
+                        FormTemplate={FormTemplate}
+                        onSubmit={(values, form) => CreateCommand(form.getState())}
+                        
+                        ></FormRenderer>
+            
+        
     )
 }
 
