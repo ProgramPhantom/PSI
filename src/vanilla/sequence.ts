@@ -142,7 +142,7 @@ export default class Sequence {
             yCurs = channel.bounds.bottom;
             
             this.height += channel.actualHeight;
-            this.channelWidths.push(channel.width);
+            this.channelWidths.push(channel.actualWidth);
         })
         
         this.freeLabels.forEach((label) => {

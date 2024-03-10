@@ -77,8 +77,8 @@ export default class Channel extends Drawable implements labelable {
     constructor(params: channelInterface,
                 offset: number[]=[0, 0]) {
                 
-        super(0, 0, offset);
-        this.barX = 0;
+        super(params.padding[3], 0, offset);
+        this.barX = params.padding[3];
         this.barY = 0;
 
         this.style = params.style;
@@ -102,8 +102,6 @@ export default class Channel extends Drawable implements labelable {
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
         this.y = yCursor + this.padding[0];
 
-        var labelOffsetX = this.label ? this.label.actualBounds.width : 0;
-
         // Compute x values of start of each timespan
         this.timespanX.push(this.barX);
         timestampWidths.forEach((w, i) => {
@@ -122,12 +120,13 @@ export default class Channel extends Drawable implements labelable {
         
         this.posDrawDecoration(surface);
         
-        this.bounds = {width: this.width + labelOffsetX,
+        this.bounds = {width: this.timespanX[this.timespanX.length-1] - this.padding[3],
             height: this.height + annotationHeight}
-        this.actualBounds = {width: this.width + labelOffsetX + this.padding[1] + this.padding[3], 
+        this.actualBounds = {width: this.width + this.padding[1] + this.padding[3], 
             height: this.height + this.padding[0] + this.padding[2] + annotationHeight}
         
-
+            console.log("width:", this.actualWidth)
+            console.log("width:", this.actualHeight)
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
 
         this.positionElements(timestampWidths);
@@ -136,8 +135,6 @@ export default class Channel extends Drawable implements labelable {
             element.draw(surface);
         });
         this.drawRect(surface);
-
-        
     }
 
     computeBarY(yCursor: number=0) {
