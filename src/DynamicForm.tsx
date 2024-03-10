@@ -36,7 +36,7 @@ function DynamicForm(props: {AddCommand: (line: string) => void, temporalName: s
 
     function CreateCommand(f: any) {
         
-        console.log(f)
+        
         var command = props.channelName + "." + props.temporalName + "(";
         var toInclude: string[] = [];
 

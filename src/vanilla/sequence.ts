@@ -141,7 +141,7 @@ export default class Sequence {
             channel.draw(surface, this.maxTimespans, yCurs);
             yCurs = channel.bounds.bottom;
             
-            this.height += channel.height;
+            this.height += channel.actualHeight;
             this.channelWidths.push(channel.width);
         })
         
@@ -264,8 +264,9 @@ export default class Sequence {
         bracket.x1 = x;
         bracket.x2 = x;
 
-        bracket.y1 = channel.y + bracket.style.strokeWidth - bracket.adjustment[0];
-        bracket.y2 = channel.y + channel.height + bracket.adjustment[1];
+        bracket.y1 = channel.y + bracket.style.strokeWidth;
+        bracket.y2 = channel.barY + channel.style.thickness;
+        console.log(channel.barY, channel.y)
     }
 
     addBracket(channelName: string, bracket: Bracket, direction: Direction) {

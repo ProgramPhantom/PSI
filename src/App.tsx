@@ -27,7 +27,7 @@ function App() {
     // setChannels(c)
     
   }
-  console.log("channel names:", channelNames)
+  
 
   useEffect(() => {
     

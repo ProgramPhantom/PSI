@@ -11,7 +11,7 @@
 
     "bracket": {
         "protrusion": 2,
-        "adjustment": [0, 2],
+        "adjustment": [0, 3],
 
         "style": {
             "strokeWidth": 1,

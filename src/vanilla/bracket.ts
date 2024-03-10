@@ -108,9 +108,9 @@ export default class Bracket extends Drawable implements labelable {
     }
 
     public draw(surface: Svg): void {
+        
         // Position the bracket and the label:
-
-
+        this.adjust();
         switch (this.direction) {
             case Direction.down:
                 var width = this.x2 - this.x1;
@@ -303,5 +303,20 @@ export default class Bracket extends Drawable implements labelable {
         }
         
         this.totalProtrusion = totalProtrusion;
+    }
+
+    adjust() {
+        switch (this.direction) {
+            case Direction.left:
+            case Direction.right:
+                this.y1 -= this.adjustment[0];
+                this.y2 += this.adjustment[1];
+                break;
+            case Direction.down:
+            case Direction.up:
+                this.x1 -= this.adjustment[0];
+                this.x2 += this.adjustment[1];
+                break;
+        }
     }
 }

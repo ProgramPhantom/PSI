@@ -174,7 +174,9 @@ export default class Channel extends Drawable implements labelable {
         var height = this.maxBottomProtrusion + 
                       this.maxTopProtrusion + this.style.thickness;
         
-        this.bounds = {width: this.width, height}
+
+        this.bounds = {width: this.width, height: height}
+        this.actualBounds = {width: this.width, height: this.height + this.padding[0] + this.padding[2]}
     }
 
     positionElements(timestampWidths: number[]) {
