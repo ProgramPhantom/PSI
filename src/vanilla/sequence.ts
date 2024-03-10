@@ -103,7 +103,7 @@ export default class Sequence {
     channels: {[name: string]: Channel;} = {};
 
     freeLabels: Label[] = [];
-    brackets: Bracket[] = [];
+    brackets: {bracketObj: Bracket, startChannel: string, timestamp: number, endChannel?: string}[] = [];
 
     width: number;
     height: number;  // Excludes padding
@@ -144,17 +144,18 @@ export default class Sequence {
             this.height += channel.height;
             this.channelWidths.push(channel.width);
         })
+        
         this.freeLabels.forEach((label) => {
             label.draw(surface);
         })
-        this.brackets.forEach((bracket) => {
-            bracket.draw(surface);
+        this.brackets.forEach((brackSpec) => {
+            this.positionBracket(brackSpec.startChannel, brackSpec.bracketObj, brackSpec.timestamp)
+            brackSpec.bracketObj.draw(surface);
         })
 
         this.width = Math.max(...this.channelWidths);
 
         if (this.grid.gridOn) {
-            
             this.grid.draw(surface, this.timestampX, this.height);
         }
 
@@ -252,25 +253,27 @@ export default class Sequence {
         this.grid.vLines[channel.elementCursor+1] = obj;
     }
 
-    addBracket(channelName: string, bracket: Bracket, direction: Direction) {
-        // Put this here to expand later for multi channel bracket
-        var channel = this.channels[channelName]
+    positionBracket(channelRef: string, bracket: Bracket, timestamp: number) {
+        var channel = this.channels[channelRef]
         
-        var x: number = this.timestampX[channel.elementCursor+1];
-        
+        var x: number = this.timestampX[timestamp];
         
         bracket.x = x;
         bracket.y = channel.y;
 
         bracket.x1 = x;
         bracket.x2 = x;
-        bracket.direction = direction;
 
         bracket.y1 = channel.y + bracket.style.strokeWidth - bracket.adjustment[0];
         bracket.y2 = channel.y + channel.height + bracket.adjustment[1];
+    }
 
-        
-        this.brackets.push(bracket);
+    addBracket(channelName: string, bracket: Bracket, direction: Direction) {
+        // Put this here to expand later for multi channel bracket
+        var channel = this.channels[channelName];
+        bracket.direction = direction;
+
+        this.brackets.push({bracketObj: bracket, startChannel: channelName, timestamp: channel.elementCursor+1});
     }
 }
 

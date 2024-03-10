@@ -5,7 +5,8 @@
         "orientation": "top",
         "alignment": "centre",
         "overridePad": false,
-        "inheritWidth": false
+        "inheritWidth": false,
+        "noSections": 1
     },
     
     "style": {
@@ -13,8 +14,7 @@
         "height": 30,
         "fill": "black",
         "stroke": null,
-        "strokeWidth": null,
-        "noSections": 1
+        "strokeWidth": 0
     },
 
     "labelOn": false,

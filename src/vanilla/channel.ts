@@ -11,6 +11,21 @@ import Abstract from "./abstract";
 import AnnotationLayer from "./annotationLayer";
 import Bracket, { bracketInterface } from "./bracket";
  
+interface Dim {
+    width: number,
+    height: number
+}
+
+interface Bounds {
+    top: number,
+    bottom: number,
+    left: number,
+    right: number
+
+    width: number,
+    height: number,
+}
+
 
 export interface channelInterface {
     temporalElements: Temporal[],
@@ -40,6 +55,7 @@ export default class Channel extends Drawable implements labelable {
 
     style: channelStyle;
     padding: number[];
+    private _actualBounds?: Bounds;
 
     maxTopProtrusion: number;
     maxBottomProtrusion: number;
@@ -72,6 +88,7 @@ export default class Channel extends Drawable implements labelable {
         this.maxBottomProtrusion = this.style.thickness;
 
         this.bounds = {width: 0, height: this.style.thickness};
+        this.actualBounds = {width: 0, height: this.padding[0] + this.style.thickness + this.padding[1]}
         this.barWidth = 0;
 
         this.temporalElements = [...params.temporalElements];  // please please PLEASE do this (list is ref type)
@@ -81,13 +98,13 @@ export default class Channel extends Drawable implements labelable {
             this.barX = this.padding[3] + this.label.actualWidth;
         }
     }
-    
 
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
-        this.y = yCursor;
+        this.y = yCursor + this.padding[0];
 
         var labelOffsetX = this.label ? this.label.actualBounds.width : 0;
 
+        // Compute x values of start of each timespan
         this.timespanX.push(this.barX);
         timestampWidths.forEach((w, i) => {
             this.timespanX.push(w + this.timespanX[i]);
@@ -103,15 +120,16 @@ export default class Channel extends Drawable implements labelable {
 
         this.computeBarY(yCursor);
         
-        this.positionLabel(surface);
+        this.posDrawDecoration(surface);
         
-        this.bounds = {width: this.width + labelOffsetX + this.padding[1] + this.padding[3], 
+        this.bounds = {width: this.width + labelOffsetX,
+            height: this.height + annotationHeight}
+        this.actualBounds = {width: this.width + labelOffsetX + this.padding[1] + this.padding[3], 
             height: this.height + this.padding[0] + this.padding[2] + annotationHeight}
         
 
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
 
-        
         this.positionElements(timestampWidths);
 
         this.temporalElements.forEach(element => {
@@ -158,7 +176,6 @@ export default class Channel extends Drawable implements labelable {
         
         this.bounds = {width: this.width, height}
     }
-
 
     positionElements(timestampWidths: number[]) {
         // Current alignment style: centre
@@ -298,7 +315,7 @@ export default class Channel extends Drawable implements labelable {
 
     // Draws the channel label
     // It is required that computeY has been ran for this to work
-    positionLabel(surface: Svg) : number[] {
+    posDrawDecoration(surface: Svg) : number[] {
         /*  Draw label with no temp elements?
         if (this.temporalElements.length === 0) {
             return [0, 0];
@@ -321,4 +338,32 @@ export default class Channel extends Drawable implements labelable {
     }
 
 
+    get actualBounds(): Bounds {
+        if (this._actualBounds) {
+            return this._actualBounds;
+        }
+        throw new Error("Element has no dimensions");
+    }
+    set actualBounds(b: Dim)  {
+        var top = this.y;
+        var left = this.x;
+
+        var bottom = this.y + b.height;
+        var right = this.x + b.width;
+
+
+        this._actualBounds = {top: top, right: right, bottom: bottom, left: left, width: b.width, height: b.height};
+    }
+    get actualWidth(): number {
+        if (this._actualBounds) {
+            return this._actualBounds.width;
+        }
+        throw new Error("Dimensions undefined")
+    }
+    get actualHeight(): number {
+        if (this._actualBounds) {
+            return this._actualBounds.height;
+        }
+        throw new Error("Dimensions undefined")
+    }
 }

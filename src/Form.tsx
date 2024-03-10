@@ -27,6 +27,7 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                         <option value={"trap"} key={12}>Trapezium</option>
 
                         <option value={"span"} key={13}>Span</option>
+                        <option value={"abstract"} key={14}>Abstract</option>
                     </select>
                 </label>
 

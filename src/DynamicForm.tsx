@@ -9,6 +9,7 @@ import FormTemplate from '@data-driven-forms/pf4-component-mapper/form-template'
 import {simplePulseSchema} from "./vanilla/default/types/simplePulseSchema";
 import {svgPulseSchema} from "./vanilla/default/types/svgPulseSchema";
 import {spanSchema} from "./vanilla/default/types/spanSchema";
+import {abstractSchema} from "./vanilla/default/types/abstractSchema";
 
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import { svgPulses } from './vanilla/default/data/svgPulse';
@@ -22,11 +23,13 @@ function DynamicForm(props: {AddCommand: (line: string) => void, temporalName: s
 
     var currSchema: Schema = {"fields": []};
     if (Object.keys(simplePulses).includes(props.temporalName)) {
-        var currSchema = simplePulseSchema({...(simplePulses[props.temporalName as keyof typeof simplePulses] as any)});
+        currSchema = simplePulseSchema({...(simplePulses[props.temporalName as keyof typeof simplePulses] as any)});
     } else if (Object.keys(svgPulses).includes(props.temporalName)) {
-        var currSchema = svgPulseSchema({...(svgPulses[props.temporalName as keyof typeof svgPulses] as any)});
+        currSchema = svgPulseSchema({...(svgPulses[props.temporalName as keyof typeof svgPulses] as any)});
     } else if (props.temporalName === "span") {
-        var currSchema = spanSchema({...(allTemporal[props.temporalName as keyof typeof allTemporal] as any)});
+        currSchema = spanSchema({...(allTemporal[props.temporalName as keyof typeof allTemporal] as any)});
+    } else if (props.temporalName === "abstract") {
+         currSchema = abstractSchema({...(allTemporal[props.temporalName as keyof typeof allTemporal] as any)});
     }
     
 

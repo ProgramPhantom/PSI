@@ -85,9 +85,9 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         var canvasWidth = props.handler.sequence.width;
         var canvasHeight = props.handler.sequence.height;
 
-        svgObj.current!.size(`${canvasWidth*props.zoom}px`, `${canvasHeight*props.zoom}px`)
+        svgObj.current!.size(`${canvasWidth*props.zoom + 50}px`, `${canvasHeight*props.zoom + 50}px`)
         svgObj.current!.rect().attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%"})
-        svgObj.current!.viewbox(0, 0, canvasWidth, canvasHeight)
+        svgObj.current!.viewbox(0, 0, canvasWidth+100, canvasHeight+100)
 
         return {x: props.handler.sequence.width, ys: ys};
     }

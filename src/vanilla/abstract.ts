@@ -3,18 +3,11 @@ import * as defaultAbstract from "./default/data/abstract.json"
 import * as SVG from '@svgdotjs/svg.js'
 import Label, { Position, labelInterface} from "./label";
 import { UpdateObj } from "./util";
+import { simplePulseStyle } from "./pulses/simple/simplePulse";
 
 export interface abstractInterface extends temporalInterface {
     text: string,
-    style: abstractStyle,
-}
-
-export interface abstractStyle {
-    width: number,
-    height: number,
-    fill: string,
-    stroke?: string | null,  // Optional
-    strokeWidth?: number | null
+    style: simplePulseStyle,
 }
 
 
@@ -25,7 +18,7 @@ export default class Abstract extends Temporal {
     static defaults: {[key: string]: abstractInterface} = {"abstract": {...<any>defaultAbstract }}
     
     // A pulse that is an svg rect
-    style: abstractStyle;
+    style: simplePulseStyle;
     textLabel: Label;
     
     public static anyArgConstruct(defaultArgs: abstractInterface, args: any): Abstract {
@@ -68,7 +61,6 @@ export default class Abstract extends Temporal {
         .attr({fill: this.style.fill,
                stroke: this.style.stroke})
         .move(this.x, this.y)
-        // BAD FIX
         .attr({"stroke-width": this.style.strokeWidth,
                "shape-rendering": "crispEdges"});
 
