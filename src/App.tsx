@@ -7,10 +7,13 @@ import { channelInterface, channelStyle } from './vanilla/channel';
 import { temporalInterface } from './vanilla/temporal';
 import Form from './Form';
 import SequenceHandler from './vanilla/sequenceHandler';
+import Errors from './Errors';
 
 function App() {
   const [textboxValue, setTextboxValue] = useState<string>("");
   const [channelNames, setChannelNames] = useState<string[]>([]);
+  const [errors, setErrors] = useState<{parseError: string, drawError: string}>({parseError: "", drawError: ""});
+
   const handle = useRef<SequenceHandler>(new SequenceHandler(""));
 
   function TypeEvent(script: string) {
@@ -20,13 +23,11 @@ function App() {
 
   function AddCommand(line: string) {
     setTextboxValue(textboxValue + "\n" + line);
-    
   }
 
-  function GetChannels(c: string[]) {
-    setChannelNames(c);
+  function UpdateErrors(parse: string, draw: string) {
+    setErrors({parseError: parse, drawError: draw});
   }
-  
 
   useEffect(() => {
     
@@ -43,11 +44,15 @@ function App() {
       <div style={{display: "flex", }}>
         <div style={{display: "flex", flexDirection: "column", width: "80%"}}>
           <div style={{width: "100%", minHeight: 500}}>
-            <Canvas script={textboxValue} zoom={2} handler={handle.current} updateChannels={setChannelNames}></Canvas>
+            <Canvas script={textboxValue} zoom={2} handler={handle.current} 
+              updateChannels={setChannelNames}
+              provideErrors={UpdateErrors}></Canvas>
           </div>
           
           <Editor Parse={TypeEvent} editorText={textboxValue}></Editor>
+          <Errors parseError={errors.parseError} drawError={errors.drawError}></Errors>
         </div>
+
         <div style={{minWidth: "300px", width: "20%"}}>
           <Form AddCommand={AddCommand} channelOptions={channelNames}></Form>
         </div>
@@ -59,3 +64,4 @@ function App() {
 }
 
 export default App
+//           

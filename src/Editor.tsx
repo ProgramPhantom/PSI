@@ -21,13 +21,8 @@ const style: any = {width: "100%",
 
 function Editor(props: {editorText: string, Parse: (text: string) => void}) {
     const [internalState, setInternalState] = useState(props.editorText);
-    useEffect(() => {
 
-    }) 
     
-
-
-
     return (
         <div>
             <h2 style={{margin: "0 0 8px 7px", textDecoration: "bottomline", fontFamily: "lucidabright", fontSize: "20px"}}>Script</h2>

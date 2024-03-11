@@ -1,12 +1,4 @@
 import Abstract from "./abstract";
-// import Aquire from "./default/classes/aquire";
-// import ChirpHiLo from "./default/classes/chirpHiLo";
-// import ChirpLoHi from "./default/classes/chirpLoHi";
-// import HalfSine from "./default/classes/halfsine";
-// import Pulse180 from "./default/classes/pulse180";
-// import Pulse90 from "./default/classes/pulse90";
-// import SaltireHiLo from "./default/classes/saltireHiLo";
-// import SaltireLoHi from "./default/classes/saltireLoHi";
 import ImagePulse from "./pulses/image/imagePulse";
 import SimplePulse from "./pulses/simple/simplePulse";
 import Sequence, { Line } from "./sequence";
@@ -29,7 +21,7 @@ enum SyntaxError {
     MISSING_BRACKETS = "MISSING_BRACKETS",
 }
 enum ArgumentError {
-    UNKNOWN_ARGUMENT = "UNKNOWN_ARGUMENT",
+    INVALID_ARGUMENT = "INVALID_ARGUMENT",
     ARGUMENT_NOT_PROVIDED = "ARGUMENT_NOT_PROVIDED",
     ARGUMENT_INVALID_PARSE = "ARGUMNET_INVALID_TYPE"
 }
@@ -38,7 +30,9 @@ enum CommandError {
     INVALID_CHANNEL_IDENTIFIER = "INVALID_COMMAND_CHARACTER",
     INVALID_CHANNEL_COMMAND = "INVALID_CHANNEL_COMMAND",
     CHANNEL_IDENTIFIER_UNDEFINED = "CHANNEL_IDENTIFIER_UNDEFINED",
-    INVALID_SPECIAL_COMMAND="INVALID_SPECIAL_COMMAND"
+    INVALID_SPECIAL_COMMAND="INVALID_SPECIAL_COMMAND",
+    INVALID_SUBJECT_OR_SYMBOL="INVALID_COMMAND_SUBJECT",
+    INVALID_PARAMETER="INVALID_PARAMETER"
 }
 enum Warnings {
     EXPRESSION_NO_EFFECT = "EXPRESSION_NO_EFFECT",
@@ -47,9 +41,8 @@ enum Warnings {
 
 type ErrorTypes = SyntaxError | ArgumentError | CommandError
 
-export class ScriptIssue extends Error {
+export class ScriptError extends Error {
     errType: ErrorTypes;
-    cause: any;
     lines: number[];
     columns: number[];
 
@@ -70,7 +63,9 @@ enum TokenType {
     SpecialCommandSpecifier="specialcommandspecifier",
     NewLine="newline",
     BinThis="binthis",
-    RunCommand="runcommand"
+    RunCommand="runcommand",
+    Unresolved="unresolved",
+    End="end"
 }
 interface ScriptToken {
     type: TokenType,
@@ -142,7 +137,6 @@ class StateDiagram {
                         continue;
                     }
 
-                    
                     token = {
                         type: rule.tokenType,
                         content: this.selection,
@@ -228,6 +222,7 @@ export default class SequenceHandler {
         ],
         "parameter": [{input: "[=]", newState: ParseState.Argument, tokenType: TokenType.Property, ignore: true},
                       {input: "[.]", newState: ParseState.SubParam, tokenType: TokenType.Property, ignore: true},
+                      {input: "[)]", newState: ParseState.Start, tokenType: TokenType.Property, extraBehaviour: {type: TokenType.RunCommand, content: ")"}},
                       SequenceHandler.characterError,
                       {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Paremeter},
         ],
@@ -256,13 +251,12 @@ export default class SequenceHandler {
         
     }
 
-    scriptFlags: ScriptIssue[] = [];
+    scriptFlags: ScriptError[] = [];
     script: string = "";
 
     tokenStream: ScriptToken[] = [];
-    validSyntax: boolean=false;
+    syntaxError: ScriptError | null = null;
 
-    
     sequence: Sequence;
 
     constructor(initialCode: string) {
@@ -276,21 +270,20 @@ export default class SequenceHandler {
 
         this.script = text;
         this.sequence = new Sequence(Sequence.defaults["empty"])  // TEMPORARY
-        // 1 ----- Tokenise script:
         
-        this.tokenise();
+        // Split induvidua characters into tokens containing information at a higher level of abstraction
+        this.syntaxError = null;
+        this.tokenStream = this.tokenise();
+        this.tokenStream.push({type: TokenType.End, content: "end", line: 10, columns: [0, 0]})
         
-        /*
-        if (!this.validSyntax) {
-            
-        }*/
+        // if (!this.syntaxError) {
+        //     throw new ScriptError(SyntaxError.SYNTAX_ERROR, "Syntax Error", [2, 3], [2, 3])
+        // }
 
         
         if (this.tokenStream.length === 0) {
             return;
         }
-
-        
         
         enum State {
             Start,
@@ -308,6 +301,7 @@ export default class SequenceHandler {
         currState = State.Start;
 
         var propList: {propTree: ScriptToken[], arg?: ScriptToken}[] = []; 
+        
         var workingChannel: ScriptToken = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1};
         var command: ScriptToken = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1};
 
@@ -317,12 +311,13 @@ export default class SequenceHandler {
             command = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1};
         }
 
+        // Manual state machine to allow for exceptions
         for (const tok of this.tokenStream) {
-            
-
             if (tok.type === TokenType.NewLine) {
                 continue;
             }
+
+            console.log(tok.type)
 
             switch (currState) {
                 case State.Start: 
@@ -336,8 +331,12 @@ export default class SequenceHandler {
                             
                             currState = State.SpecialCommand;
                             break;
+                        case TokenType.End:
+                            break;
                         default:
-                            throw new Error("Invalid token order");
+                            throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
+                                `Expected token 'Channel' or 'SpecialCommandSpecifier' here, not token '${tok.type}' with content '${tok.content}'`, 
+                                tok.columns, [tok.line])
                     }
                     break;
                 case State.Channel:
@@ -347,7 +346,9 @@ export default class SequenceHandler {
                             command = tok;
                             break;
                         default:
-                            throw new Error("Invalid token order");
+                            throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
+                                `Expected token 'ChannelCommand' here, not token '${tok.type}' with content '${tok.content}'`, 
+                                tok.columns, [tok.line])
                     }
                     break;
                 case State.SpecialCommand:
@@ -357,7 +358,9 @@ export default class SequenceHandler {
                             currState = State.NextParam;
                             break;
                         default:
-                            throw new Error("Invalid token order");
+                            throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
+                                `Expected token 'ChannelIdentifer' here, not token '${tok.type}' with content '${tok.content}'`, 
+                                tok.columns, [tok.line])
                     }
                     break;
                 case State.NextParam:
@@ -372,7 +375,9 @@ export default class SequenceHandler {
                             reset()
                             break;
                         default:
-                            throw new Error("Invalid token order");
+                            throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
+                                `Expected token 'Property' or 'RunCommand' here, not token '${tok.type}' with content '${tok.content}'`, 
+                                tok.columns, [tok.line])
                     }
                     break;
                 case State.ReadParam:
@@ -385,7 +390,9 @@ export default class SequenceHandler {
                             propList[propList.length-1].arg = tok;
                             break;
                         default:
-                            throw new Error("Invalid token order");
+                            throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
+                                `Expected token 'Property' or 'Argument' here, not token '${tok.type}' with content '${tok.content}'`, 
+                                tok.columns, [tok.line])
                     }
                     break;
                 case State.Argument:
@@ -400,12 +407,16 @@ export default class SequenceHandler {
                             reset();
                             break;
                         default:
-                            throw new Error("Invalid token order");
+                            throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
+                                `Expected token 'Property' or 'RunCommand' here, not token '${tok.type}' with content '${tok.content}'`, 
+                                tok.columns, [tok.line])
                     }
                     break;
-                default:
-                    
             }
+        }
+
+        if (this.syntaxError) {
+            throw this.syntaxError;
         }
 
         if (this.tokenStream[this.tokenStream.length-1].type === TokenType.Argument) {
@@ -413,10 +424,12 @@ export default class SequenceHandler {
         }
         
         
+        
+        
         // this.runCommand(command, workingChannel, propList);
     }
 
-    tokenise() {
+    tokenise(): ScriptToken[] {
         var charArray: string[] = this.script.split("");
         var tokens: ScriptToken[] = [];
   
@@ -438,18 +451,17 @@ export default class SequenceHandler {
 
             var result = stateSystem.input(c, columnNow, lineNow);
 
-            
-
             if (result.newState === ParseState.Error) {
-                throw new ScriptIssue(SyntaxError.SYNTAX_ERROR, "Syntax Error", [columnStart, columnNow], [lineStart, lineNow])
+                this.syntaxError = new ScriptError(SyntaxError.SYNTAX_ERROR, `Syntax Error: Unexpected symbol '${c}'`, [columnStart, columnNow], [lineStart, lineNow])
+                stateSystem.currState = ParseState.Start;
             }
+
             
             if (result.token) {
                 columnStart = columnNow;
                 lineStart = lineNow;
 
                 tokens.push(result.token);
-                
             }
 
             if (result.extraToken) {
@@ -459,17 +471,22 @@ export default class SequenceHandler {
         }
 
         
-        if (stateSystem.currState === ParseState.Start) {
-            this.validSyntax = true;
-        } else {
-            this.validSyntax = false;
+        // if (stateSystem.currState === ParseState.Start) {
+        //     this.syntaxError = null;
+        // } else {
+        //     this.syntaxError = new ScriptError();
+        // }
+
+        // if (this.syntaxError) {
+        //     throw this.syntaxError;
+        // }
+
+        if (stateSystem.currState !== ParseState.Start) {
+            tokens.push({content: stateSystem.selection, type: TokenType.Unresolved, line: lineNow, columns: [columnStart, columnNow]})
         }
 
 
-       
-        this.tokenStream = tokens;
-        
-        
+        return tokens;
     }
 
     runCommand(command: ScriptToken, channel: ScriptToken, props: {propTree: ScriptToken[], arg?: ScriptToken}[]) {
@@ -478,7 +495,7 @@ export default class SequenceHandler {
         } else if (Object.keys(SequenceHandler.ContentCommands).includes(command.content)) {  // Its a content command
             var argTemplate: any = SequenceHandler.ContentCommands[command.content];  
         } else {
-            throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${command.content}'`, command.columns, [command.line, command.line]);
+            throw new ScriptError(CommandError.INVALID_COMMAND, `Undefined command: '${command.content}'`, command.columns, [command.line, command.line]);
         }
 
         
@@ -492,7 +509,7 @@ export default class SequenceHandler {
             try {
                 var defaultHere = defs[thisProp.content]; 
             } catch {
-                throw new ScriptIssue(ArgumentError.UNKNOWN_ARGUMENT, `Unknown argument '${thisProp}'`, thisProp.columns, [thisProp.line, thisProp.line])
+                throw new ScriptError(ArgumentError.INVALID_ARGUMENT, `Unknown argument '${thisProp}'`, thisProp.columns, [thisProp.line, thisProp.line])
             }
             
             if (props.length > 1) {
@@ -528,7 +545,7 @@ export default class SequenceHandler {
 
         for (const p of props) {
             if (p.arg === undefined) {
-                throw new ScriptIssue(ArgumentError.ARGUMENT_NOT_PROVIDED, "Argument not provided", p.propTree[p.propTree.length-1].columns, 
+                throw new ScriptError(ArgumentError.ARGUMENT_NOT_PROVIDED, "Argument not provided", p.propTree[p.propTree.length-1].columns, 
                                                                 [p.propTree[p.propTree.length-1].line, p.propTree[p.propTree.length-1].line])
             }
             
@@ -558,7 +575,7 @@ export default class SequenceHandler {
          //   throw new ScriptIssue(CommandError.INVALID_COMMAND, `Invalid command '${commandName}'`, command.columns, [command.line, command.line]);
         //}
         if (Object.keys(this.sequence.channels).indexOf(channelName) === -1) {
-            throw new ScriptIssue(CommandError.CHANNEL_IDENTIFIER_UNDEFINED, `Undefined channel: '${channelName}'`, channel.columns, [channel.line, channel.line])
+            throw new ScriptError(CommandError.CHANNEL_IDENTIFIER_UNDEFINED, `Undefined channel: '${channelName}'`, channel.columns, [channel.line, channel.line])
         }
 
         
@@ -586,7 +603,7 @@ export default class SequenceHandler {
             this.sequence.addAnnotationLong(channelName, Section.anyArgConstruct(secDef, args))
         }
         else {
-            throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])
+            throw new ScriptError(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])
         }
 
         

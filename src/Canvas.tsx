@@ -3,7 +3,7 @@ import { SVG, extend as SVGextend, Element as SVGElement, Svg } from '@svgdotjs/
 import Channel from './vanilla/channel';
 import { channelInterface, channelStyle } from './vanilla/channel';
 import Sequence from "./vanilla/sequence";
-import SequenceHandler from './vanilla/sequenceHandler';
+import SequenceHandler, { ScriptError } from './vanilla/sequenceHandler';
 import TokenType from "./vanilla/sequenceHandler"
 // import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { MapInteractionCSS } from 'react-map-interaction';
@@ -22,9 +22,15 @@ const DEFAULT_HEIGHT = 200;
 
 const BUTTON_PAD = [15, 0];
 
-export default function Canvas(props:  {script: string, zoom: number, handler: SequenceHandler, updateChannels: (c: string[]) => void}) {
+export default function Canvas(props:  {script: string, zoom: number, handler: SequenceHandler, 
+    updateChannels: (c: string[]) => void,
+    provideErrors: (parseError: string, drawError: string) => void}) {
+
     const svgDrawObj = useRef<Svg>();
     const svgDestinationObj = useRef<Svg>();
+
+    const parseErr = useRef<string>("");
+    const drawErr = useRef<string>("");
 
 
     var [buttonX, setButtonX] = useState<number>(0);
@@ -53,8 +59,6 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
 
     
     if (svgDrawObj.current) {
-
-
         var dim = ConstructSequence();
     }
 
@@ -69,20 +73,23 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
 
         var intialChannels = Object.keys(props.handler.sequence.channels).toString();
 
-        console.log(svgDrawObj.current);
-        console.log(svgDestinationObj.current);
-        
         try {
             props.handler.parseScript(props.handler.script);
+            parseErr.current = "none";
         } catch (e){
-            console.log(e)
+            if (e instanceof ScriptError) {
+                parseErr.current = e.stack!;
+                console.log(e.message)
+            }
         }
     
         try {
             props.handler.draw(svgDrawObj.current!);
         } catch (e) {
-            console.log(e)
+            drawErr.current = e as string;
         }
+
+       
         
         for (const c of Object.values(props.handler.sequence.channels)) {
             ys.push(c.barY)
@@ -97,7 +104,6 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         // svgObj.current!.viewbox(0, 0, canvasWidth, canvasHeight)
 
         svgDrawObj.current!.children().forEach((c) => {
-            console.log(c);
             c.addTo(svgDestinationObj.current!)
         }
         );
@@ -116,7 +122,11 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         console.log(Object.keys(props.handler.sequence.channels))
     }, [Object.keys(props.handler.sequence.channels).join()])
 
-    const [mapState, setMapState] = useState<MapState>({scale: 1, translation: {x: 0, y: 0}});
+    useEffect(() => {
+        console.log(parseErr)
+        props.provideErrors(parseErr.current, drawErr.current);
+    }, [parseErr.current, drawErr.current])
+
 
     return (
         <>
