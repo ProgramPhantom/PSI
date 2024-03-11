@@ -20,6 +20,7 @@ import { Drawable } from "./drawable";
 import SVGPulse, {  } from "./pulses/image/svgPulse";
 import Channel, { channelInterface } from "./channel";
 import { UpdateObj } from "./util";
+import Section from "./section";
 
 // ----- ERROR STUFF -----
 enum SyntaxError {
@@ -182,7 +183,7 @@ export default class SequenceHandler {
         ...Abstract.defaults,
         ...Span.defaults,
         ...Label.defaults,
-        ...Bracket.defaults,
+        ...Section.defaults,
     }
 
     static ChannelUtil: {[character: string]: any} = {
@@ -579,10 +580,10 @@ export default class SequenceHandler {
         } else if (Object.keys(Label.defaults).includes(commandName)) {
             var labelDef = Label.defaults[commandName];
             this.sequence.addLabel(channelName, Label.anyArgConstruct(labelDef, args))
-        } else if (Object.keys(Bracket.defaults).includes(commandName)) {
+        } else if (Object.keys(Section.defaults).includes(commandName)) {
             
-            var brackDef = Bracket.defaults[commandName];
-            this.sequence.addAnnotationLong(channelName, Bracket.anyArgConstruct(brackDef, args))
+            var secDef = Section.defaults[commandName];
+            this.sequence.addAnnotationLong(channelName, Section.anyArgConstruct(secDef, args))
         }
         else {
             throw new ScriptIssue(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])

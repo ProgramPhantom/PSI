@@ -14,7 +14,7 @@
         "height": 40
     },
 
-    "labelOn": false,
+    "labelOn": true,
     "label": {
         "text": "\\tau",
         "padding": [0, 0, 10, 0],

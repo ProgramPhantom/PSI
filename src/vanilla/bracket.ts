@@ -23,7 +23,6 @@ export interface bracketInterface {
     style: bracketStyle,
     label: labelInterface,
     adjustment: number[],
-    timespan?: number[],
 }
 
 export interface bracketStyle {
@@ -45,8 +44,7 @@ export default class Bracket extends Drawable implements labelable {
             {protrusion: options.protrusion,
              adjustment: options.adjustment,
              style: options.style,
-             label: options.label,
-             timespan: options.timespan}
+             label: options.label,}
         )
     }
 
@@ -66,7 +64,6 @@ export default class Bracket extends Drawable implements labelable {
     adjustment: number[];
 
     label?: Label;
-    timespan?: number[];
 
     constructor(params: bracketInterface,
                 offset: number[]=[-1, 0]) {
@@ -102,7 +99,6 @@ export default class Bracket extends Drawable implements labelable {
         if (params.label) {
             this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
         }
-        this.timespan = params.timespan;
         
         this.computeTotalProtrusion();
     }

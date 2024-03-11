@@ -14,7 +14,7 @@
         "height": 10
     },
 
-    "labelOn": false,
+    "labelOn": true,
     "label": {
         "text": "\\tau",
         "padding": [0, 0, 10, 0],
@@ -24,6 +24,7 @@
             "colour": "black"
         }
     },
+
     "arrowOn": false,
     "arrow": {
         "padding": [0, 0, 0, 0],

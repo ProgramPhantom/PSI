@@ -10,6 +10,7 @@ import Span from "./span";
 import Abstract from "./abstract";
 import AnnotationLayer from "./annotationLayer";
 import Bracket, { bracketInterface } from "./bracket";
+import Section from "./section";
  
 interface Dim {
     width: number,
@@ -277,7 +278,7 @@ export default class Channel extends Drawable implements labelable {
         this.annotationLayer.annotateLabel(lab, timestamp);
     }
 
-    addAnnotationLong(brack: Bracket) {
+    addAnnotationLong(section: Section) {
         if (!this.annotationLayer) {
             this.annotationLayer = new AnnotationLayer(Channel.default.annotationStyle.padding)
         }
@@ -285,24 +286,24 @@ export default class Channel extends Drawable implements labelable {
         var timestampStart: number;
         var timestampEnd: number;
         
-        if (brack.timespan === undefined) {
+        if (section.timespan === undefined) {
             timestampStart = 0;
             timestampEnd = 1;
-        } else if(brack.timespan.length == 1) {
-            timestampStart = brack.timespan[0];
+        } else if(section.timespan.length == 1) {
+            timestampStart = section.timespan[0];
             timestampEnd = timestampStart + 1;
-        } else if (brack.timespan.length >= 2) {
-            timestampStart = brack.timespan[0];
-            timestampEnd = brack.timespan[1];
+        } else if (section.timespan.length >= 2) {
+            timestampStart = section.timespan[0];
+            timestampEnd = section.timespan[1];
         } else {
-            timestampStart = brack.timespan[0];
-            timestampEnd = brack.timespan[1];
+            timestampStart = section.timespan[0];
+            timestampEnd = section.timespan[1];
         }
 
 
-        var range = brack.timespan ? brack.timespan : [timestampStart, timestampEnd];
+        var range = section.timespan ? section.timespan : [timestampStart, timestampEnd];
         
-        this.annotationLayer.annotateLong(brack, range[0], range[1]);
+        this.annotationLayer.annotateLong(section, range[0], range[1]);
     }
 
     jumpTimespan(newCurs: number) {

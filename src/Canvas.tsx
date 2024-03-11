@@ -8,6 +8,7 @@ import TokenType from "./vanilla/sequenceHandler"
 // import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { MapInteractionCSS } from 'react-map-interaction';
 
+type MapState = {scale: Number, translation: {x: number, y: number}}
 
 const DRAWCANVASID = "drawDiv";
 const DESTINATIONVCANVASID = "destinationDiv";
@@ -115,12 +116,16 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         console.log(Object.keys(props.handler.sequence.channels))
     }, [Object.keys(props.handler.sequence.channels).join()])
 
+    const [mapState, setMapState] = useState<MapState>({scale: 1, translation: {x: 0, y: 0}});
 
     return (
         <>
         <div id={DRAWCANVASID} style={{width: "0", height: "0", visibility: "hidden"}}></div>
         
         <MapInteractionCSS
+            
+            
+
             showControls
             defaultValue={{
                 scale: 1,
@@ -129,11 +134,11 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             minScale={0.5}
             maxScale={3}
             translationBounds={{
-                yMin: 0,
-                xMin: -props.handler.sequence.width * 3 + 50,
+                yMin: -props.handler.sequence.height * 3,
+                xMin: -props.handler.sequence.width * 3,
 
-                xMax: props.handler.sequence.width,
-                yMax: props.handler.sequence.height
+                xMax: props.handler.sequence.width * 4,
+                yMax: props.handler.sequence.height * 4
             }}
             >
             <div id={DESTINATIONVCANVASID} style={{objectFit: "contain"}}>
@@ -148,6 +153,8 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
 
 
 /*
+value={mapState}
+onChange={(value) => setMapState(value as MapState)}
 <TransformWrapper>
             <TransformComponent>
                 <div id={DESTINATIONVCANVASID} style={{objectFit: "contain", width: "100%", height: "100%", minHeight: "600px"}}>
