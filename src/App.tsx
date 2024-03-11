@@ -39,9 +39,13 @@ function App() {
 
   return (
       <>
+
       <div style={{display: "flex", }}>
-        <div style={{display: "flex", justifyContent: "center", flexDirection: "column", width: "80%"}}>
-          <Canvas script={textboxValue} zoom={2} handler={handle.current} updateChannels={setChannelNames}></Canvas>
+        <div style={{display: "flex", flexDirection: "column", width: "80%"}}>
+          <div style={{width: "100%", minHeight: 500}}>
+            <Canvas script={textboxValue} zoom={2} handler={handle.current} updateChannels={setChannelNames}></Canvas>
+          </div>
+          
           <Editor Parse={TypeEvent} editorText={textboxValue}></Editor>
         </div>
         <div style={{minWidth: "300px", width: "20%"}}>

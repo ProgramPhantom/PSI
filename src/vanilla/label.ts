@@ -105,7 +105,7 @@ export default class Label extends Drawable {
     computeDimensions() {
         const SVGEquation = TeXToSVG(this.text); 
 
-        var temp = SVG().addTo('#canvasDiv').size(300, 300)
+        var temp = SVG().addTo('#drawDiv').size(300, 300)  // TERRIBLE CODE HERE.
 
         var SVGobj = SVG(SVGEquation);
         

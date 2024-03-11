@@ -6,8 +6,8 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
     const [selectedChannel, setSelectedChannel] = useState<string>(props.channelOptions[0])
 
     useEffect(() => {
-        setSelectedChannel(props.channelOptions[0]);
-    }, [props.channelOptions[0]])
+        setSelectedChannel(props.channelOptions[props.channelOptions.length-1]);
+    }, [props.channelOptions])
     
     return (
         <>
@@ -36,7 +36,7 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
 
                 <label> Select channel:
                     <select onChange={(e) => {setSelectedChannel(e.target.value), console.log(e.target.value)}} 
-                        value={props.channelOptions[0]}>
+                        value={selectedChannel}>
                         <option style={{display: "none"}} value={"DEFAULT"}>Select a channel</option>
                         {props.channelOptions.map((name, index) => {
   
