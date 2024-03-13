@@ -78,7 +78,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             parseErr.current = "none";
         } catch (e){
             if (e instanceof ScriptError) {
-                parseErr.current = e.stack!;
+                parseErr.current = e.message;
                 console.log(e.message)
             }
         }
@@ -86,7 +86,10 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         try {
             props.handler.draw(svgDrawObj.current!);
         } catch (e) {
-            drawErr.current = e as string;
+            if (e instanceof ScriptError) {
+                drawErr.current = e.message;
+                console.log(e.message)
+            }
         }
 
        
@@ -141,7 +144,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
                 scale: 1,
                 translation: { x: 0, y: 0 }
             }}
-            minScale={0.5}
+            minScale={1}
             maxScale={3}
             translationBounds={{
                 yMin: -props.handler.sequence.height * 3,

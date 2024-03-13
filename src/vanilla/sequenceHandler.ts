@@ -72,6 +72,7 @@ interface ScriptToken {
     content: string,
     columns: number[],
     line: number,
+    index: number[]
 }
 
 interface TrainsitionRule {input: string, newState: ParseState, tokenType?: TokenType, 
@@ -98,9 +99,15 @@ class StateDiagram {
     currState: ParseState;
     transitionRules: {[id: string]: TrainsitionRule[]};
 
+    syntaxError: ScriptError | null = null;
+
     selection: string;
     currCol: number;
     startCol: number;
+    line: number;
+
+    endIndex: number = 0;
+    startIndex: number = 1;
 
     constructor(startType: ParseState, rules: {[id: string]: TrainsitionRule[]}) {
         this.start = startType;
@@ -108,43 +115,59 @@ class StateDiagram {
         this.transitionRules = rules;
 
         this.selection = "";
-        this.currCol = 1;
+
+        this.currCol =  0;
         this.startCol = 1;
+        this.line = 1;
     }
 
-    input(c: string, thiscol: number, line: number): {newState: ParseState, token: ScriptToken | undefined, extraToken?: ScriptToken} {
-        this.currCol = thiscol;
+    input(c: string): {newState: ParseState, token?: ScriptToken, extraToken?: ScriptToken} {
         var currRules = this.transitionRules[this.currState];
         var newState = this.currState;
         var token: ScriptToken | undefined;
         var extraToken: ScriptToken | undefined = undefined;
-
+        
         
 
-        for (const rule of currRules) {
-            
+        if (c === "\n") { this.line += 1; this.currCol = 0, this.startCol = 1;
+                          return {token: {type: TokenType.NewLine, content: "\n", columns: [this.currCol+1, this.currCol+1], line: this.line, 
+                                  index: [this.startIndex, this.endIndex]},
+                                  newState: this.currState}; }
+        
+        this.currCol += 1;
+        this.endIndex += 1;
+        if (c === " ") { return {newState: this.currState}; }
 
+        var ignored = false;
+        for (const rule of currRules) {
             if (c.match(rule.input)) { 
                 newState = rule.newState;
 
+                
+
                 if (rule.ignore === undefined) {
                     this.selection += c;
-                    
+                } else {
+                    ignored = true;
                 }
 
+               
                 if (rule.tokenType !== undefined) {
                     if (rule.tokenType === TokenType.BinThis) {
                         continue;
                     }
 
+
                     token = {
                         type: rule.tokenType,
                         content: this.selection,
-                        columns: [this.startCol, this.currCol],
-                        line: line,
+                        columns: [this.startCol, ignored ? this.currCol - 1 : this.currCol],
+                        line: this.line,
+                        index: [this.startIndex, ignored ? this.endIndex - 1 : this.endIndex,]
                     }
 
-                    this.startCol = this.currCol+1;
+                    this.startCol = this.currCol + 1;
+                    this.startIndex = this.endIndex + 1;
                     this.selection = "";
                 } 
 
@@ -153,18 +176,65 @@ class StateDiagram {
                         type: rule.extraBehaviour.type,
                         content: rule.extraBehaviour.content,
                         columns: [this.startCol, this.currCol],
-                        line: line
+                        line: this.line,
+                        index: [this.startIndex, this.endIndex]
                     }
 
                     this.startCol = this.currCol+1;
                     this.selection = "";
                 }
+
                 break;  // Do first rule
             }
         }
         this.currState = newState;
         
+
+        if (this.currState === ParseState.Error) {
+            this.syntaxError = new ScriptError(SyntaxError.SYNTAX_ERROR, `Syntax Error: Unexpected symbol '${c}'`, [this.startCol, this.currCol], [this.line, this.line])
+            this.currState = ParseState.Start;
+        }
+        
         return {newState: newState, token: token, extraToken: extraToken};
+    }
+}
+
+type PropTree = {props: ScriptToken[], arg?: ScriptToken}
+type CommandType = {operation: ScriptToken, workingChannel: ScriptToken, propList: PropTree[]}
+class Command {
+
+    operation: ScriptToken;
+    workingChannel: ScriptToken;
+    propList: PropTree[];
+
+    runCommandTrigger: ScriptToken;
+
+    tokens: ScriptToken[];
+
+    executed: boolean=false;
+
+    startChar: number;
+    endChar: number;
+
+    constructor(command: CommandType, runCommand: ScriptToken, executed: boolean) {
+        this.operation = command.operation;
+        this.workingChannel = command.workingChannel;
+        this.propList = command.propList;
+        this.runCommandTrigger = runCommand;
+
+        this.tokens = command.operation.type === TokenType.SpecialCommandSpecifier ? [command.operation, command.workingChannel] : [command.workingChannel, command.operation]
+        command.propList.forEach((pt) => {
+            pt.props.forEach((prop) => {
+                this.tokens.push(prop)
+            })
+            pt.arg ? this.tokens.push(pt.arg) : null;
+        })
+        this.tokens.push(runCommand)
+
+        this.executed = executed;
+
+        this.startChar = this.tokens[0].index[0];
+        this.endChar = this.tokens[this.tokens.length-1].index[1];
     }
 }
 
@@ -190,7 +260,7 @@ export default class SequenceHandler {
     }
 
     static specialCharacters: string[] = ["-", "#", "~", "`", ">", "=", "[(]", "[)]", "[+]", "[.]", "[*]", "[/]", "[}]", "[{]",
-                                          ";", "[\\^]", "[,]", "[\\[]", "[\\]]"]
+                                          ";", "[\\^]", "[,]", "[\\[]", "[\\]]", "[\\\\]", "[?]"]
 
     static specialCharacterRegex: string = SequenceHandler.specialCharacters.join("|");
     static util: string = "[" + Object.keys(SequenceHandler.ChannelUtil).join("]|[\\") + "]";
@@ -216,7 +286,7 @@ export default class SequenceHandler {
                     {input: "[(]", newState: ParseState.NextParam, tokenType: TokenType.ChannelCommand, ignore: true},
                     SequenceHandler.characterError,
         ],
-        "nextparam": [{input: "[)]", newState: ParseState.Start, extraBehaviour: {type: TokenType.RunCommand, content: ")"}, ignore: true},
+        "nextparam": [{input: "[)]", newState: ParseState.Start, tokenType: TokenType.RunCommand},
                       SequenceHandler.characterError, // Next Param
                       {input: SequenceHandler.alphaNumericRegex, newState: ParseState.Paremeter}
         ],
@@ -255,26 +325,28 @@ export default class SequenceHandler {
     script: string = "";
 
     tokenStream: ScriptToken[] = [];
-    syntaxError: ScriptError | null = null;
+    commands: Command[] = [];
 
     sequence: Sequence;
+    stateSystem: StateDiagram;
 
     constructor(initialCode: string) {
         
         this.sequence = new Sequence(Sequence.defaults["empty"])
         this.script = initialCode;
+
+        this.stateSystem = new StateDiagram(ParseState.Start, SequenceHandler.Transitions);
     }
 
     parseScript(text: string) {
-        
+        this.commands = [];
 
         this.script = text;
         this.sequence = new Sequence(Sequence.defaults["empty"])  // TEMPORARY
         
         // Split induvidua characters into tokens containing information at a higher level of abstraction
-        this.syntaxError = null;
         this.tokenStream = this.tokenise();
-        this.tokenStream.push({type: TokenType.End, content: "end", line: 10, columns: [0, 0]})
+        this.tokenStream.push({type: TokenType.End, content: "end", line: 10, columns: [0, 0], index: [0, 0]})
         
         // if (!this.syntaxError) {
         //     throw new ScriptError(SyntaxError.SYNTAX_ERROR, "Syntax Error", [2, 3], [2, 3])
@@ -300,16 +372,18 @@ export default class SequenceHandler {
         var currState: State;
         currState = State.Start;
 
-        var propList: {propTree: ScriptToken[], arg?: ScriptToken}[] = []; 
+        var propList: PropTree[] = []; 
         
-        var workingChannel: ScriptToken = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1};
-        var command: ScriptToken = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1};
+        var workingChannel: ScriptToken = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1, index: [0, 0]};
+        var command: ScriptToken = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1, index: [0, 0]};
 
         function reset() {
             propList = []; 
-            workingChannel = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1};
-            command = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1};
+            workingChannel = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1, index: [0, 0]};
+            command = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1, index: [0, 0]};
         }
+
+
 
         // Manual state machine to allow for exceptions
         for (const tok of this.tokenStream) {
@@ -317,7 +391,6 @@ export default class SequenceHandler {
                 continue;
             }
 
-            console.log(tok.type)
 
             switch (currState) {
                 case State.Start: 
@@ -367,11 +440,11 @@ export default class SequenceHandler {
                     switch (tok.type) {
                         case TokenType.Property:
                             currState = State.ReadParam;
-                            propList.push({propTree: [tok]})
+                            propList.push({props: [tok]})
                             break;
                         case TokenType.RunCommand:
                             currState = State.Start;
-                            this.runCommand(command, workingChannel, propList);
+                            this.commands.push(new Command({operation: command, workingChannel: workingChannel, propList: propList}, tok, false))
                             reset()
                             break;
                         default:
@@ -383,7 +456,7 @@ export default class SequenceHandler {
                 case State.ReadParam:
                     switch (tok.type) {
                         case TokenType.Property:
-                            propList[propList.length-1].propTree.push(tok);
+                            propList[propList.length-1].props.push(tok);
                             break;
                         case TokenType.Argument:
                             currState = State.Argument;
@@ -399,12 +472,16 @@ export default class SequenceHandler {
                     switch (tok.type) {
                         case TokenType.Property:
                             currState = State.ReadParam;
-                            propList.push({propTree: [tok]})
+                            propList.push({props: [tok]})
                             break;
                         case TokenType.RunCommand:
                             currState = State.Start;
-                            this.runCommand(command, workingChannel, propList);
+                            this.commands.push(new Command({operation: command, workingChannel: workingChannel, propList: propList}, 
+                                                            tok, false))
                             reset();
+                            break;
+                        case TokenType.End:
+                            console.log("do this")
                             break;
                         default:
                             throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
@@ -415,15 +492,20 @@ export default class SequenceHandler {
             }
         }
 
-        if (this.syntaxError) {
-            throw this.syntaxError;
+        if (this.stateSystem.syntaxError) {
+            throw this.stateSystem.syntaxError;
         }
 
-        if (this.tokenStream[this.tokenStream.length-1].type === TokenType.Argument) {
-            this.runCommand(command, workingChannel, propList);
-        }
+        //if (this.tokenStream[this.tokenStream.length-1].type === TokenType.Argument) {
+        //    this.commands.push(new Command({operation: command, workingChannel: workingChannel, propList: propList}, 
+        //                        {content: "", f}, false))
+        //    console.log("----------- DOING THIS THING -----------")
+        //}
         
-        
+        this.commands.forEach((command, i) => {
+            console.log(i ,command)
+            this.runCommand(command.operation, command.workingChannel, command.propList)
+        })
         
         
         // this.runCommand(command, workingChannel, propList);
@@ -433,63 +515,36 @@ export default class SequenceHandler {
         var charArray: string[] = this.script.split("");
         var tokens: ScriptToken[] = [];
   
-        var stateSystem = new StateDiagram(ParseState.Start, SequenceHandler.Transitions);
+        this.stateSystem = new StateDiagram(ParseState.Start, SequenceHandler.Transitions);
 
         var c;
-        var nextC;
 
-        var columnStart = 1
-        var columnNow = 1;
-        var lineStart = 1;
-        var lineNow = 1;
         for (let i = 0; i < charArray.length; i++) {
-            c = charArray[i];
-            columnNow+=1;
+            c = charArray[i]
 
-            if (c === " ") { lineNow += 1; continue; }
-            if (c === "\n") { tokens.push({type: TokenType.NewLine, content: "\n", columns: [columnNow, columnNow], line: lineNow}); lineNow += 1; columnNow = 1;  }
+            var result = this.stateSystem.input(c);
 
-            var result = stateSystem.input(c, columnNow, lineNow);
-
-            if (result.newState === ParseState.Error) {
-                this.syntaxError = new ScriptError(SyntaxError.SYNTAX_ERROR, `Syntax Error: Unexpected symbol '${c}'`, [columnStart, columnNow], [lineStart, lineNow])
-                stateSystem.currState = ParseState.Start;
-            }
-
-            
             if (result.token) {
-                columnStart = columnNow;
-                lineStart = lineNow;
-
                 tokens.push(result.token);
             }
 
             if (result.extraToken) {
                 tokens.push(result.extraToken);
             }
-
         }
 
-        
-        // if (stateSystem.currState === ParseState.Start) {
-        //     this.syntaxError = null;
-        // } else {
-        //     this.syntaxError = new ScriptError();
-        // }
 
-        // if (this.syntaxError) {
-        //     throw this.syntaxError;
-        // }
-
-        if (stateSystem.currState !== ParseState.Start) {
-            tokens.push({content: stateSystem.selection, type: TokenType.Unresolved, line: lineNow, columns: [columnStart, columnNow]})
+        if (this.stateSystem.currState !== ParseState.Start) {
+            tokens.push({content: this.stateSystem.selection, type: TokenType.Unresolved, line: this.stateSystem.line, 
+                         columns: [this.stateSystem.startCol, this.stateSystem.currCol], 
+                         index: [this.stateSystem.startIndex, this.stateSystem.endIndex]})
         }
 
 
         return tokens;
     }
 
-    runCommand(command: ScriptToken, channel: ScriptToken, props: {propTree: ScriptToken[], arg?: ScriptToken}[]) {
+    runCommand(command: ScriptToken, channel: ScriptToken, props: PropTree[]) {
         if (Object.keys(SequenceHandler.ChannelUtil).includes(command.content) ) {  // Its a util command
             var argTemplate: any = SequenceHandler.ChannelUtil[command.content];  
         } else if (Object.keys(SequenceHandler.ContentCommands).includes(command.content)) {  // Its a content command
@@ -545,11 +600,11 @@ export default class SequenceHandler {
 
         for (const p of props) {
             if (p.arg === undefined) {
-                throw new ScriptError(ArgumentError.ARGUMENT_NOT_PROVIDED, "Argument not provided", p.propTree[p.propTree.length-1].columns, 
-                                                                [p.propTree[p.propTree.length-1].line, p.propTree[p.propTree.length-1].line])
+                throw new ScriptError(ArgumentError.ARGUMENT_NOT_PROVIDED, "Argument not provided", p.props[p.props.length-1].columns, 
+                                                                [p.props[p.props.length-1].line, p.props[p.props.length-1].line])
             }
             
-            Object.assign(argObj, setChild(p.arg, p.propTree, argTemplate, argObj)) ;
+            Object.assign(argObj, setChild(p.arg, p.props, argTemplate, argObj)) ;
         }
 
         const fullArgs = argObj ? UpdateObj(argTemplate, argObj) : argTemplate;
