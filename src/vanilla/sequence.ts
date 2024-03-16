@@ -128,7 +128,13 @@ export default class Sequence {
 
         this.channels = {};  // Wierdest bug ever happening here
     }
-    
+
+    reset() {
+        Object.values(this.channels).forEach((channel) => {
+            channel.temporalElements = []
+        })
+        
+    }
 
     draw(surface: Svg): {width: number, height: number} {
         var yCurs = 0;

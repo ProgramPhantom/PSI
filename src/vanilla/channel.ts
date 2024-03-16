@@ -65,7 +65,7 @@ export default class Channel extends Drawable implements labelable {
     barX: number;
     barY: number;
     
-    private temporalElements: Temporal[];
+    temporalElements: Temporal[];
     annotationLayer?: AnnotationLayer;
 
     hSections: number[] = [];
@@ -125,9 +125,7 @@ export default class Channel extends Drawable implements labelable {
             height: this.height + annotationHeight}
         this.actualBounds = {width: this.width + this.padding[1] + this.padding[3], 
             height: this.height + this.padding[0] + this.padding[2] + annotationHeight}
-        
-            console.log("width:", this.actualWidth)
-            console.log("width:", this.actualHeight)
+
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
 
         this.positionElements(timestampWidths);

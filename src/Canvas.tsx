@@ -69,17 +69,16 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         svgDestinationObj.current!.clear()
 
         var toParse = props.script + extraScript;
-        props.handler.script = toParse;
 
         var intialChannels = Object.keys(props.handler.sequence.channels).toString();
 
         try {
-            props.handler.parseScript(props.handler.script);
+            props.handler.parseScript(toParse);
             parseErr.current = "none";
         } catch (e){
             if (e instanceof ScriptError) {
                 parseErr.current = e.message;
-                console.log(e.message)
+                console.log(e)
             }
         }
     

@@ -13,6 +13,7 @@ import SVGPulse, {  } from "./pulses/image/svgPulse";
 import Channel, { channelInterface } from "./channel";
 import { UpdateObj } from "./util";
 import Section from "./section";
+import { Script } from "vm";
 
 // ----- ERROR STUFF -----
 enum SyntaxError {
@@ -99,8 +100,6 @@ class StateDiagram {
     currState: ParseState;
     transitionRules: {[id: string]: TrainsitionRule[]};
 
-    syntaxError: ScriptError | null = null;
-
     selection: string;
     currCol: number;
     startCol: number;
@@ -128,7 +127,6 @@ class StateDiagram {
         var extraToken: ScriptToken | undefined = undefined;
         
         
-
         if (c === "\n") { this.line += 1; this.currCol = 0, this.startCol = 1;
                           return {token: {type: TokenType.NewLine, content: "\n", columns: [this.currCol+1, this.currCol+1], line: this.line, 
                                   index: [this.startIndex, this.endIndex]},
@@ -143,15 +141,12 @@ class StateDiagram {
             if (c.match(rule.input)) { 
                 newState = rule.newState;
 
-                
-
                 if (rule.ignore === undefined) {
                     this.selection += c;
                 } else {
                     ignored = true;
                 }
-
-               
+ 
                 if (rule.tokenType !== undefined) {
                     if (rule.tokenType === TokenType.BinThis) {
                         continue;
@@ -191,8 +186,8 @@ class StateDiagram {
         
 
         if (this.currState === ParseState.Error) {
-            this.syntaxError = new ScriptError(SyntaxError.SYNTAX_ERROR, `Syntax Error: Unexpected symbol '${c}'`, [this.startCol, this.currCol], [this.line, this.line])
             this.currState = ParseState.Start;
+            throw new ScriptError(SyntaxError.SYNTAX_ERROR, `Syntax Error: Unexpected symbol '${c}'`, [this.startCol, this.currCol], [this.line, this.line])
         }
         
         return {newState: newState, token: token, extraToken: extraToken};
@@ -213,8 +208,8 @@ class Command {
 
     executed: boolean=false;
 
-    startChar: number;
-    endChar: number;
+    startIndex: number;
+    endIndex: number;
 
     constructor(command: CommandType, runCommand: ScriptToken, executed: boolean) {
         this.operation = command.operation;
@@ -233,8 +228,8 @@ class Command {
 
         this.executed = executed;
 
-        this.startChar = this.tokens[0].index[0];
-        this.endChar = this.tokens[this.tokens.length-1].index[1];
+        this.startIndex = this.tokens[0].index[0];
+        this.endIndex = this.tokens[this.tokens.length-1].index[1];
     }
 }
 
@@ -325,7 +320,12 @@ export default class SequenceHandler {
     script: string = "";
 
     tokenStream: ScriptToken[] = [];
-    commands: Command[] = [];
+
+    commands: {[line: number]: Command[]} = {};
+    parseErrors: number[] = []; // Stores line number of lines with errors
+    runErrors: number[] = []; // Stores line number of lines with errors
+
+    commandSegments: number[][] = [];
 
     sequence: Sequence;
     stateSystem: StateDiagram;
@@ -339,22 +339,79 @@ export default class SequenceHandler {
     }
 
     parseScript(text: string) {
-        this.commands = [];
+        var newLines: string[] = text.split("\n");
+        var changeOrInvalid = this.findDelta(text);
+
+        this.parseErrors.forEach((err) => {
+            changeOrInvalid[err] = true;
+        })
+        this.runErrors.forEach((err) => {
+            changeOrInvalid[err] = true;
+        })
 
         this.script = text;
-        this.sequence = new Sequence(Sequence.defaults["empty"])  // TEMPORARY
-        
-        // Split induvidua characters into tokens containing information at a higher level of abstraction
-        this.tokenStream = this.tokenise();
-        this.tokenStream.push({type: TokenType.End, content: "end", line: 10, columns: [0, 0], index: [0, 0]})
-        
-        // if (!this.syntaxError) {
-        //     throw new ScriptError(SyntaxError.SYNTAX_ERROR, "Syntax Error", [2, 3], [2, 3])
-        // }
+        changeOrInvalid.forEach((change, i) => {
+            if (change) {
+                try {
+                    var tokens = this.tokenise(newLines[i])
+                } catch (e) {
+                    if (this.parseErrors.indexOf(i) === -1) {this.parseErrors.push(i)}
+                    throw e;
+                }
+                
+                try {
+                    var commands = this.createCommands(tokens);
+                } catch (e) {
+                    if (this.parseErrors.indexOf(i) === -1) {this.parseErrors.push(i);}
+                    throw e
+                }
+                
+                if (this.parseErrors.indexOf(i) === -1) {
+                    this.parseErrors.splice(this.parseErrors.indexOf(i), 1)
+                }
+                    
+                this.commands[i + 1] = commands;
+            }
+        })
 
-        
-        if (this.tokenStream.length === 0) {
-            return;
+        // !changeOrInvalid.every(c => c === false)
+        if (true) {  // Some change
+            // READDING ELEMENTS
+            // this.sequence.reset();
+            this.sequence = new Sequence(Sequence.defaults["empty"]);
+
+            console.log("commands: ", this.commands)
+
+            Object.values(this.commands).forEach((commands, i) => {
+                commands.forEach((command) => {
+                    try {
+                        this.runCommand(command.operation, command.workingChannel, command.propList);
+
+                        if (this.runErrors.indexOf(i) !== -1) {
+                            this.runErrors.splice(this.runErrors.indexOf(i), 1)
+                        }
+                        
+                    } catch (e) {
+    
+                        if (this.runErrors.indexOf(i) === -1) {
+                            this.runErrors.push(i);
+                        }
+                        throw e;
+                    }
+                    
+                })
+            })
+        }
+
+        // Split induvidua characters into tokens containing information at a higher level of abstraction
+    
+    }
+
+    createCommands(tokens: ScriptToken[]): Command[] {
+        var commands: Command[] = [];
+
+        if (tokens.length === 0) {
+            return [];
         }
         
         enum State {
@@ -375,18 +432,16 @@ export default class SequenceHandler {
         var propList: PropTree[] = []; 
         
         var workingChannel: ScriptToken = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1, index: [0, 0]};
-        var command: ScriptToken = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1, index: [0, 0]};
+        var operation: ScriptToken = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1, index: [0, 0]};
 
         function reset() {
             propList = []; 
             workingChannel = {type: TokenType.Channel, content: "1h", columns: [1, 1], line: 1, index: [0, 0]};
-            command = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1, index: [0, 0]};
+            operation = {type: TokenType.ChannelCommand, content: "pulse90", columns: [2, 2], line: 1, index: [0, 0]};
         }
 
-
-
         // Manual state machine to allow for exceptions
-        for (const tok of this.tokenStream) {
+        for (const tok of tokens) {
             if (tok.type === TokenType.NewLine) {
                 continue;
             }
@@ -400,7 +455,7 @@ export default class SequenceHandler {
                             currState = State.Channel;
                             break;
                         case TokenType.SpecialCommandSpecifier:
-                            command = tok;
+                            operation = tok;
                             
                             currState = State.SpecialCommand;
                             break;
@@ -416,7 +471,7 @@ export default class SequenceHandler {
                     switch (tok.type) {
                         case TokenType.ChannelCommand:
                             currState = State.NextParam;
-                            command = tok;
+                            operation = tok;
                             break;
                         default:
                             throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
@@ -444,7 +499,7 @@ export default class SequenceHandler {
                             break;
                         case TokenType.RunCommand:
                             currState = State.Start;
-                            this.commands.push(new Command({operation: command, workingChannel: workingChannel, propList: propList}, tok, false))
+                            commands.push(new Command({operation: operation, workingChannel: workingChannel, propList: propList}, tok, false))
                             reset()
                             break;
                         default:
@@ -476,7 +531,7 @@ export default class SequenceHandler {
                             break;
                         case TokenType.RunCommand:
                             currState = State.Start;
-                            this.commands.push(new Command({operation: command, workingChannel: workingChannel, propList: propList}, 
+                            commands.push(new Command({operation: operation, workingChannel: workingChannel, propList: propList}, 
                                                             tok, false))
                             reset();
                             break;
@@ -492,27 +547,16 @@ export default class SequenceHandler {
             }
         }
 
-        if (this.stateSystem.syntaxError) {
-            throw this.stateSystem.syntaxError;
-        }
-
-        //if (this.tokenStream[this.tokenStream.length-1].type === TokenType.Argument) {
-        //    this.commands.push(new Command({operation: command, workingChannel: workingChannel, propList: propList}, 
-        //                        {content: "", f}, false))
-        //    console.log("----------- DOING THIS THING -----------")
-        //}
         
-        this.commands.forEach((command, i) => {
-            console.log(i ,command)
-            this.runCommand(command.operation, command.workingChannel, command.propList)
-        })
-        
-        
-        // this.runCommand(command, workingChannel, propList);
+        return commands;
     }
 
-    tokenise(): ScriptToken[] {
-        var charArray: string[] = this.script.split("");
+    tokenise(text: string): ScriptToken[] {
+        if (!text) {
+            return [];
+        }
+
+        var charArray: string[] = text.split("");
         var tokens: ScriptToken[] = [];
   
         this.stateSystem = new StateDiagram(ParseState.Start, SequenceHandler.Transitions);
@@ -533,24 +577,26 @@ export default class SequenceHandler {
             }
         }
 
-
         if (this.stateSystem.currState !== ParseState.Start) {
             tokens.push({content: this.stateSystem.selection, type: TokenType.Unresolved, line: this.stateSystem.line, 
                          columns: [this.stateSystem.startCol, this.stateSystem.currCol], 
                          index: [this.stateSystem.startIndex, this.stateSystem.endIndex]})
+
+            throw new ScriptError(SyntaxError.MISSING_BRACKETS, "Expected close bracket", [this.stateSystem.startCol, this.stateSystem.currCol], 
+                                    [this.stateSystem.line])
         }
 
 
         return tokens;
     }
 
-    runCommand(command: ScriptToken, channel: ScriptToken, props: PropTree[]) {
-        if (Object.keys(SequenceHandler.ChannelUtil).includes(command.content) ) {  // Its a util command
-            var argTemplate: any = SequenceHandler.ChannelUtil[command.content];  
-        } else if (Object.keys(SequenceHandler.ContentCommands).includes(command.content)) {  // Its a content command
-            var argTemplate: any = SequenceHandler.ContentCommands[command.content];  
+    runCommand(operation: ScriptToken, channel: ScriptToken, props: PropTree[]) {
+        if (Object.keys(SequenceHandler.ChannelUtil).includes(operation.content) ) {  // Its a util command
+            var argTemplate: any = SequenceHandler.ChannelUtil[operation.content];  
+        } else if (Object.keys(SequenceHandler.ContentCommands).includes(operation.content)) {  // Its a content command
+            var argTemplate: any = SequenceHandler.ContentCommands[operation.content];  
         } else {
-            throw new ScriptError(CommandError.INVALID_COMMAND, `Undefined command: '${command.content}'`, command.columns, [command.line, command.line]);
+            throw new ScriptError(CommandError.INVALID_COMMAND, `Undefined command: '${operation.content}'`, operation.columns, [operation.line, operation.line]);
         }
 
         
@@ -609,12 +655,12 @@ export default class SequenceHandler {
 
         const fullArgs = argObj ? UpdateObj(argTemplate, argObj) : argTemplate;
 
-        switch (command.type) {
+        switch (operation.type) {
             case TokenType.ChannelCommand:
-                this.channelCommand(command, channel, argObj);
+                this.channelCommand(operation, channel, argObj);
                 break;
             case TokenType.SpecialCommandSpecifier:
-                this.utilCommand(command, channel, fullArgs);
+                this.utilCommand(operation, channel, fullArgs);
                 
                 break;
             default:
@@ -668,7 +714,6 @@ export default class SequenceHandler {
         switch (command.content) {
             case "~":
                 this.sequence.defineChannel(channel.content, <channelInterface>args);
-                
                 break;
             case "|":
                 this.sequence.addVLine(channel.content, <Line>args)
@@ -686,6 +731,38 @@ export default class SequenceHandler {
                 this.sequence.addBracket(channel.content, Bracket.anyArgConstruct(Sequence.defaults["empty"].bracket, <bracketInterface>args), Direction.left)
                 break;
         }
+    }
+
+    findDelta(text: string): boolean[] {
+        var newLines: string[] = text.split("\n");
+        var oldLines: string[] = this.script.split("\n"); // .filter(s => {return s !== ""})
+
+        if (newLines.length > oldLines.length) {
+            oldLines = oldLines.concat(Array<string>(newLines.length - oldLines.length).fill(""));
+        } else {
+            newLines = newLines.concat(Array<string>(oldLines.length - newLines.length).fill(""));
+        }
+
+        var lineChanges = Array<boolean>(oldLines.length).fill(false);
+
+        // if (newLines.length > oldLines.length) {
+        //     newLines = Array<string>(oldLines.length)
+        // }
+        
+        var existingLine;
+        newLines.forEach((newLine, i) => {
+            existingLine = oldLines[i];
+            console.log(`Old line: ${existingLine}\nNew line: ${newLine}`)
+
+            
+            if (newLine != existingLine) {
+                lineChanges[i] = true;
+            }
+            
+            
+        })
+
+        return lineChanges;
     }
 
     draw(surface: Svg) {

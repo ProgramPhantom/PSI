@@ -88,7 +88,7 @@ export default abstract class Temporal extends Drawable implements labelable {
         if (params.arrowOn) {
             this.arrow = Arrow.anyArgConstruct(Arrow.defaults["arrow"], params.arrow)
         }
-        
+        console.log("orientation: ", this.config.orientation)
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
