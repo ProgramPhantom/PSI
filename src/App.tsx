@@ -8,6 +8,10 @@ import { temporalInterface } from './vanilla/temporal';
 import Form from './Form';
 import SequenceHandler from './vanilla/sequenceHandler';
 import Errors from './Errors';
+import Banner from './Banner';
+import FileSaver, { saveAs } from 'file-saver';
+
+const DESTINATIONSVGID = "moveSVGHere";
 
 function App() {
   const [textboxValue, setTextboxValue] = useState<string>("");
@@ -29,6 +33,13 @@ function App() {
     setErrors({parseError: parse, drawError: draw});
   }
 
+  function SaveSVG() {
+    var destinationSurface = document.getElementById(DESTINATIONSVGID);
+
+    var blob = new Blob([destinationSurface?.outerHTML!], {type: "text/plain;charset=utf-8"});
+    FileSaver.saveAs(blob, "sequence.svg");
+  }
+
   useEffect(() => {
     
     if (Object.keys(handle.current.sequence.channels).toString() !== channelNames.toString()) {
@@ -41,21 +52,27 @@ function App() {
   return (
       <>
 
-      <div style={{display: "flex", }}>
-        <div style={{display: "flex", flexDirection: "column", width: "80%"}}>
-          <div style={{width: "100%", minHeight: 500}}>
-            <Canvas script={textboxValue} zoom={2} handler={handle.current} 
-              updateChannels={setChannelNames}
-              provideErrors={UpdateErrors}></Canvas>
+      <div style={{display: "flex", flexDirection: "column"}}>
+
+        <Banner saveSVG={SaveSVG}></Banner>
+
+        <div style={{display: "flex", flexDirection: "row"}}>
+          <div style={{display: "flex", flexDirection: "column", width: "80%"}}>
+            <div style={{width: "100%", minHeight: 500}}>
+              <Canvas script={textboxValue} zoom={2} handler={handle.current} 
+                updateChannels={setChannelNames}
+                provideErrors={UpdateErrors}></Canvas>
+            </div>
+            
+            <Editor Parse={TypeEvent} editorText={textboxValue}></Editor>
+            <Errors parseError={errors.parseError} drawError={errors.drawError}></Errors>
           </div>
-          
-          <Editor Parse={TypeEvent} editorText={textboxValue}></Editor>
-          <Errors parseError={errors.parseError} drawError={errors.drawError}></Errors>
+
+          <div style={{minWidth: "300px", width: "20%"}}>
+            <Form AddCommand={AddCommand} channelOptions={channelNames}></Form>
+          </div>
         </div>
 
-        <div style={{minWidth: "300px", width: "20%"}}>
-          <Form AddCommand={AddCommand} channelOptions={channelNames}></Form>
-        </div>
         
       </div>
         

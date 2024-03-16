@@ -39,7 +39,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
 
     useLayoutEffect(() => {
         var drawSurface = document.getElementById(DRAWSVGID);
-        var destinationSurface = document.getElementById(DRAWSVGID);
+        var destinationSurface = document.getElementById(DESTINATIONSVGID);
         var div = document.getElementById(DRAWCANVASID);
         if (svgDrawObj.current === undefined || svgDestinationObj.current === undefined) {
             if (drawSurface !== null || destinationSurface !== null) {

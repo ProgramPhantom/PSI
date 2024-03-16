@@ -25,6 +25,7 @@
     "better-react-mathjax": "^2.0.3",
     "carbon-components": "^10.58.12",
     "carbon-components-react": "^8.52.0",
+    "file-saver": "^2.0.5",
     "fs": "^0.0.1-security",
     "i": "^0.3.7",
     "mathjax": "^3.2.2",
@@ -40,6 +41,7 @@
     "use-image": "^1.1.1"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
