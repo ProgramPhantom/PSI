@@ -40,6 +40,13 @@ function App() {
     FileSaver.saveAs(blob, "sequence.svg");
   }
 
+  function SaveScript() {
+    var script = handle.current.script;
+
+    var blob = new Blob([script], {type: "text/plain;charset=utf-8"});
+    FileSaver.saveAs(blob, "sequence.nmpd");
+  }
+
   useEffect(() => {
     
     if (Object.keys(handle.current.sequence.channels).toString() !== channelNames.toString()) {
@@ -54,9 +61,12 @@ function App() {
 
       <div style={{display: "flex", flexDirection: "column"}}>
 
-        <Banner saveSVG={SaveSVG}></Banner>
+        <div style={{height: "5vh"}}>
+          <Banner saveSVG={SaveSVG} saveScript={SaveScript}></Banner>
+        </div>
+        
 
-        <div style={{display: "flex", flexDirection: "row"}}>
+        <div style={{display: "flex", flexDirection: "row", height: "90vh"}}>
           <div style={{display: "flex", flexDirection: "column", width: "80%"}}>
             <div style={{width: "100%", minHeight: 500}}>
               <Canvas script={textboxValue} zoom={2} handler={handle.current} 
@@ -68,7 +78,7 @@ function App() {
             <Errors parseError={errors.parseError} drawError={errors.drawError}></Errors>
           </div>
 
-          <div style={{minWidth: "300px", width: "20%"}}>
+          <div style={{minWidth: "300px", width: "20%", height: "100%", overflow: "scroll", scroll}}>
             <Form AddCommand={AddCommand} channelOptions={channelNames}></Form>
           </div>
         </div>

@@ -9,14 +9,15 @@ interface EditorProps {
 
 const style: any = {width: "100%",
                     height: "150px",
-                    padding: "12px 20px",
+                    padding: "12px 20px 20px 20px",
                     boxSizing: "border-box",
                     border: "2px dotted #aaa",
                     borderRadius: "4px",
                     backgroundColor: "#f8f8f8",
                     fontSize: "16px",
-                    resize: "none",
+                    resize: "vertical",
                     fontFamily: "Lucida Sans Typewriter",
+                    
                 }
 
 function Editor(props: {editorText: string, Parse: (text: string) => void}) {

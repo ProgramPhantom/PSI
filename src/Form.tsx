@@ -20,6 +20,8 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                         <option value={"pulse90"} key={1}>Pulse90</option>
                         <option value={"pulse180"} key={2}>Pulse180</option>
 
+                        <hr style={{padding: "3px 3px", margin: "3px 3px"}}></hr>
+
                         <option value={"180"} key={3}>180</option>
                         <option value={"amp"} key={4}>Amp Series</option>
                         <option value={"aquire"} key={5}>Aquire</option>
@@ -48,8 +50,9 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
 
             </form>
             
-             
-            <DynamicForm AddCommand={props.AddCommand} temporalName={selectedEl} channelName={selectedChannel} key={selectedEl}></DynamicForm>
+             <div>
+                <DynamicForm AddCommand={props.AddCommand} temporalName={selectedEl} channelName={selectedChannel} key={selectedEl}></DynamicForm>
+             </div>
             
            
         </div>
