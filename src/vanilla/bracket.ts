@@ -273,13 +273,7 @@ export default class Bracket extends Drawable implements labelable {
         }
 
         this.label?.draw(surface);
-
-        this.label.actualBounds = {
-            width: this.label.width + this.label.padding[3] + this.label.padding[1],
-            height: this.label.height + this.label.padding[0] + this.label.padding[2] 
-        }
-
-        return [this.label.actualWidth, this.label.actualHeight];
+        return [this.label.pwidth, this.label.pheight];
     }
 
     computeTotalProtrusion() {

@@ -74,11 +74,7 @@ export default class SVGPulse extends Temporal {
 
         this.svgContent = this.getSVG();
 
-        this.bounds = {width: this.style.width, height: this.style.height};
-        this.actualBounds = {
-            width: this.bounds.width + this.padding[1] + this.padding[3],
-            height: this.bounds.height + this.padding[0] + this.padding[2]
-        }
+        this.dim = {width: this.style.width, height: this.style.height};
     }
         
     getSVG(): string {

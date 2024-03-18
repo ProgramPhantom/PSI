@@ -57,8 +57,6 @@ export default class Label extends Drawable {
         )
     }
 
-    private _actualBounds?: Bounds;
-
     text: string;
     style: labelStyle;
 
@@ -128,46 +126,12 @@ export default class Label extends Drawable {
         SVGobj.remove();
         temp.remove();
 
-        this.bounds = {width: width, height: height};
-        this.actualBounds = {
-            width: width + this.padding[1] + this.padding[3],
-            height: height + this.padding[0] + this.padding[2]
-        }
+        this.dim = {width: width, height: height};
     }
 
     // Sets x and y at the same time
     move(x?: number, y?: number) {
         this.x = x ?? this.x;
         this.y = y ?? this.y;
-    }
-
-    get actualBounds(): Bounds {
-        if (this._actualBounds) {
-            return this._actualBounds;
-        }
-        throw new Error("Element has no dimensions");
-    }
-    set actualBounds(b: Dim)  {
-        var top = this.y;
-        var left = this.x;
-
-        var bottom = this.y + b.height;
-        var right = this.x + b.width;
-
-
-        this._actualBounds = {top: top, right: right, bottom: bottom, left: left, width: b.width, height: b.height};
-    }
-
-    get actualWidth(): number {
-        if (this._actualBounds) {
-            return this._actualBounds.width;
-        }
-        throw new Error("Dimensions undefined")
-    }
-    get actualHeight(): number {
-        if (this._actualBounds) {
-            return this._actualBounds.height;
-        }
-        throw new Error("Dimensions undefined")
     }
 }

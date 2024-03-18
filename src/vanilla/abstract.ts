@@ -49,11 +49,7 @@ export default class Abstract extends Temporal {
         this.style = params.style;
         this.textLabel = Label.anyArgConstruct(Label.defaults["label"], {text: params.text, position: Position.centre, style: {size: 60, colour: "white"}})
 
-        this.bounds = {width: this.style.width, height: this.style.height};
-        this.actualBounds = {
-            width: this.bounds.width + this.padding[1] + this.padding[3],
-            height: this.bounds.height + this.padding[0] + this.padding[2]
-        }
+        this.dim = {width: this.style.width, height: this.style.height};
     }
 
     draw(surface: SVG.Svg) {

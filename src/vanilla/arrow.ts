@@ -53,7 +53,6 @@ export default class Arrow extends Drawable {
                         position: options.position,
                         style: options.style})
   }
-  private _actualBounds?: Bounds;
 
   x2: number;
   y2: number;
@@ -81,8 +80,7 @@ export default class Arrow extends Drawable {
     this.x2 = x2;
     this.y2 = y2;
 
-    this.bounds = {height: this.style.thickness, width: x2 - x1}
-    this.actualBounds = {width: x2 - x1, height: this.style.thickness + this.padding[0] + this.padding[2]}
+    this.dim = {height: this.style.thickness, width: x2 - x1}
   }
 
   public draw(surface: Svg): void {
@@ -122,35 +120,5 @@ export default class Arrow extends Drawable {
 
       var svgObj = SVG(arrowSVG);
       surface.add(svgObj);
-  }
-
-
-  get actualBounds(): Bounds {
-  if (this._actualBounds) {
-      return this._actualBounds;
-  }
-  throw new Error("Element has no dimensions");
-  }
-  set actualBounds(b: Dim)  {
-      var top = this.y;
-      var left = this.x;
-
-      var bottom = this.y + b.height;
-      var right = this.x + b.width;
-
-
-      this._actualBounds = {top: top, right: right, bottom: bottom, left: left, width: b.width, height: b.height};
-  }
-  get actualWidth(): number {
-      if (this._actualBounds) {
-          return this._actualBounds.width;
-      }
-      throw new Error("Dimensions undefined")
-  }
-  get actualHeight(): number {
-      if (this._actualBounds) {
-          return this._actualBounds.height;
-      }
-      throw new Error("Dimensions undefined")
   }
 }

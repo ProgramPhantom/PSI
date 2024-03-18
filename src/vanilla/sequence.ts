@@ -138,17 +138,20 @@ export default class Sequence {
 
     draw(surface: Svg): {width: number, height: number} {
         var yCurs = 0;
-        var dim = {width: 0, height: 0}
         this.width = 0;
         this.height = 0;
         
 
         Object.values(this.channels).forEach((channel) => {
             channel.draw(surface, this.maxTimespans, yCurs);
-            yCurs = channel.bounds.bottom;
+            yCurs = channel.pbounds.bottom;
             
-            this.height += channel.actualHeight;
-            this.channelWidths.push(channel.actualWidth);
+            this.height += channel.pheight;
+            this.channelWidths.push(channel.pwidth);
+
+            
+            console.log("padded width: ", channel.pwidth)
+            console.log("width: ", channel.width)
         })
         
         this.freeLabels.forEach((label) => {

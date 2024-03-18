@@ -33,8 +33,6 @@ interface timespanBracket {
 }
 
 export default class AnnotationLayer extends Drawable {
-    private _actualBounds?: Bounds;
-
     labels: {[timestamp: number]: Label[]} = [];
     longs: timespanBracket[] = [];
 
@@ -73,11 +71,7 @@ export default class AnnotationLayer extends Drawable {
         
         var width = this.timestampX[this.timestampX.length-1] - this.timestampX[0];
 
-        this.bounds = {width: width, height: height};
-        this.actualBounds = {
-            width: width,
-            height: height + this.padding[2]  // Includes top pad
-        }
+        this.dim = {width: width, height: height};
     }
 
     positionLabels(surface: Svg, startY: number): number {
@@ -196,33 +190,4 @@ export default class AnnotationLayer extends Drawable {
         this.longs.push({timespanRange: [timespanStart, timespanEnd], bracket: bracket})
     }
 
-    get actualBounds(): Bounds {
-        if (this._actualBounds) {
-            return this._actualBounds;
-        }
-        throw new Error("Element has no dimensions");
-    }
-    set actualBounds(b: Dim)  {
-        var top = this.y;
-        var left = this.x;
-
-        var bottom = this.y + b.height;
-        var right = this.x + b.width;
-
-
-        this._actualBounds = {top: top, right: right, bottom: bottom, left: left, width: b.width, height: b.height};
-    }
-
-    get actualWidth(): number {
-        if (this._actualBounds) {
-            return this._actualBounds.width;
-        }
-        throw new Error("Dimensions undefined")
-    }
-    get actualHeight(): number {
-        if (this._actualBounds) {
-            return this._actualBounds.height;
-        }
-        throw new Error("Dimensions undefined")
-    }
 }

@@ -55,8 +55,6 @@ export default class Channel extends Drawable implements labelable {
     static default: channelInterface = {...<any>defaultChannel}
 
     style: channelStyle;
-    padding: number[];
-    private _actualBounds?: Bounds;
 
     maxTopProtrusion: number;
     maxBottomProtrusion: number;
@@ -88,15 +86,14 @@ export default class Channel extends Drawable implements labelable {
         this.maxTopProtrusion = 0;  // Move this to element
         this.maxBottomProtrusion = this.style.thickness;
 
-        this.bounds = {width: 0, height: this.style.thickness};
-        this.actualBounds = {width: 0, height: this.padding[0] + this.style.thickness + this.padding[1]}
+        this.dim = {width: 0, height: this.style.thickness};
         this.barWidth = 0;
 
         this.temporalElements = [...params.temporalElements];  // please please PLEASE do this (list is ref type)
         
         if (params.label) {
             this.label = Label.anyArgConstruct(Channel.default.label!, params.label);
-            this.barX = this.padding[3] + this.label.actualWidth;
+            this.barX = this.padding[3] + this.label.pwidth;
         }
 
     }
@@ -114,18 +111,18 @@ export default class Channel extends Drawable implements labelable {
         var annotationHeight  = 0;
         if (this.annotationLayer) {
             this.annotationLayer.draw(surface, timestampWidths, this.barX, this.y);
-            yCursor += this.annotationLayer.actualHeight;
-            annotationHeight = this.annotationLayer.actualHeight;
+            yCursor += this.annotationLayer.pheight;
+            annotationHeight = this.annotationLayer.pheight;
         }
 
         this.computeBarY(yCursor);
         
         this.posDrawDecoration(surface);
         
-        this.bounds = {width: this.timespanX[this.timespanX.length-1] - this.padding[3],
-            height: this.height + annotationHeight}
-        this.actualBounds = {width: this.width + this.padding[1] + this.padding[3], 
-            height: this.height + this.padding[0] + this.padding[2] + annotationHeight}
+        
+        this.dim = {width: this.timespanX[this.timespanX.length-1],
+                    height: this.height + annotationHeight}
+        console.log("first ", this.width)
 
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
 
@@ -135,6 +132,8 @@ export default class Channel extends Drawable implements labelable {
             element.draw(surface);
         });
         this.drawRect(surface);
+
+        console.log(this.width)
     }
 
     computeBarY(yCursor: number=0) {
@@ -172,8 +171,7 @@ export default class Channel extends Drawable implements labelable {
                       this.maxTopProtrusion + this.style.thickness;
         
 
-        this.bounds = {width: this.width, height: height}
-        this.actualBounds = {width: this.width, height: this.height + this.padding[0] + this.padding[2]}
+        this.dim = {width: this.width, height: height}
     }
 
     positionElements(timestampWidths: number[]) {
@@ -197,8 +195,7 @@ export default class Channel extends Drawable implements labelable {
             }
             
             if (temporalEl.config.inheritWidth) {
-                temporalEl.bounds = {width: timespanWidth, height: temporalEl.height};
-                
+                temporalEl.dim = {width: timespanWidth, height: temporalEl.height};
             }
 
             switch (temporalEl.config.alignment) {
@@ -231,9 +228,6 @@ export default class Channel extends Drawable implements labelable {
 
         
         this.barWidth = this.timespanX[this.timespanX.length-1] - this.barX;
-        
-        
-        this.bounds = {width: this.width + this.barWidth, height: this.height}
     }
 
     addTemporal(obj: Temporal): number[] {
@@ -249,7 +243,7 @@ export default class Channel extends Drawable implements labelable {
         }
 
         var sections = new Array<number>(obj.config.noSections);
-        sections.fill(obj.actualWidth / obj.config.noSections);
+        sections.fill(obj.pwidth / obj.config.noSections);
 
         this.temporalElements.push(obj);
         this.hSections.push(...sections);
@@ -336,33 +330,4 @@ export default class Channel extends Drawable implements labelable {
         return [0, 0];
     }
 
-
-    get actualBounds(): Bounds {
-        if (this._actualBounds) {
-            return this._actualBounds;
-        }
-        throw new Error("Element has no dimensions");
-    }
-    set actualBounds(b: Dim)  {
-        var top = this.y;
-        var left = this.x;
-
-        var bottom = this.y + b.height;
-        var right = this.x + b.width;
-
-
-        this._actualBounds = {top: top, right: right, bottom: bottom, left: left, width: b.width, height: b.height};
-    }
-    get actualWidth(): number {
-        if (this._actualBounds) {
-            return this._actualBounds.width;
-        }
-        throw new Error("Dimensions undefined")
-    }
-    get actualHeight(): number {
-        if (this._actualBounds) {
-            return this._actualBounds.height;
-        }
-        throw new Error("Dimensions undefined")
-    }
 }

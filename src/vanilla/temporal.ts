@@ -58,7 +58,6 @@ export default abstract class Temporal extends Drawable implements labelable {
     timestamp: number | number[];
     config: temporalConfig;
 
-    padding: number[];
     barThickness: number = 3;
 
     labelOn: boolean;
@@ -66,18 +65,15 @@ export default abstract class Temporal extends Drawable implements labelable {
     arrowOn: boolean;
     arrow?: Arrow;
 
-    private _actualBounds?: Bounds;
-
     constructor(timestamp: number,
                 params: temporalInterface,
                 offset: number[]=[0, 0]) {
 
-        super(0, 0, offset);
+        super(0, 0, offset, params.padding);
 
         this.timestamp = timestamp;
 
         this.config = params.config;
-        this.padding = params.padding;
 
         this.labelOn = params.labelOn;
         this.arrowOn = params.arrowOn;
@@ -128,25 +124,27 @@ export default abstract class Temporal extends Drawable implements labelable {
         if (this.label) {
             switch (this.label.position) {
                 case Position.top:
-                    dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
+                    dimensions[0] += this.label.pheight;
                     break;
                 case Position.bottom:
-                    dimensions[1] += this.label.height + this.label.padding[0] + this.label.padding[2];
+                    dimensions[1] += this.label.pheight;
                     break;
                 case Position.centre:
                     // No protrusion
                     break;
                 default:
-                    dimensions[0] += this.label.height + this.label.padding[0] + this.label.padding[2];
+                    dimensions[0] += this.label.pheight;
 
             }
         }
 
         if (this.arrow) {
             if (this.arrow.position === ArrowPosition.top) {
-                dimensions[0] += this.arrow.style.thickness + this.arrow.padding[0] + this.arrow.padding[2];
+                dimensions[0] += this.arrow.pheight;
+                console.warn("this might not work")
             } else if (this.arrow.position === ArrowPosition.bottom) {
-                dimensions[1] += this.arrow.style.thickness + this.arrow.padding[0] + this.arrow.padding[2];
+                dimensions[1] += this.arrow.pheight;
+                console.warn("this might not work")
             }
         }
 
@@ -158,13 +156,11 @@ export default abstract class Temporal extends Drawable implements labelable {
         
         switch (this.config.orientation) {
             case Orientation.top:
-                
                 this.y = y - this.height;
                 break;
 
             case Orientation.bottom:
                 this.y = y + channelThickness;
-
                 break;
 
             case Orientation.both:
@@ -217,10 +213,10 @@ export default abstract class Temporal extends Drawable implements labelable {
                 case ArrowPosition.top:
                     level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
                     this.arrow.set(this.x, level, this.x + this.width, level);
-                    height += this.arrow.actualBounds.height;
+                    height += this.arrow.pheight;
 
                     if ((this.label !== undefined) && this.label.position === Position.top) {
-                        labelY -= this.arrow.actualHeight;
+                        labelY -= this.arrow.pheight;
                     }
                     break;
                 case ArrowPosition.inline:
@@ -238,7 +234,7 @@ export default abstract class Temporal extends Drawable implements labelable {
                     this.arrow.set(this.x, level, this.x + this.width, level);
 
                     if ((this.label !== undefined) && this.label.position === Position.bottom) {
-                        labelY += this.arrow.actualHeight;
+                        labelY += this.arrow.pheight;
                     }
 
                     break;
@@ -264,33 +260,4 @@ export default abstract class Temporal extends Drawable implements labelable {
         this.x = x - this.width/2;
     }
 
-    get actualBounds(): Bounds {
-        if (this._actualBounds) {
-            return this._actualBounds;
-        }
-        throw new Error("Element has no dimensions");
-    }
-    set actualBounds(b: Dim)  {
-        var top = this.y;
-        var left = this.x;
-
-        var bottom = this.y + b.height;
-        var right = this.x + b.width;
-
-
-        this._actualBounds = {top: top, right: right, bottom: bottom, left: left, width: b.width, height: b.height};
-    }
-
-    get actualWidth(): number {
-        if (this._actualBounds) {
-            return this._actualBounds.width;
-        }
-        throw new Error("Dimensions undefined")
-    }
-    get actualHeight(): number {
-        if (this._actualBounds) {
-            return this._actualBounds.height;
-        }
-        throw new Error("Dimensions undefined")
-    }
 }
