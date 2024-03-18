@@ -55,7 +55,7 @@ export function abstractSchema(def: abstractInterface): Schema {
           "initialValue": def.style.fill,
           "initializeOnMount": true,
         },
-        {
+        {  // Stroke
           "component": "text-field",
           "name": "style.stroke",
           "label": "Stroke",
@@ -64,7 +64,7 @@ export function abstractSchema(def: abstractInterface): Schema {
           "helperText": "stroke colour (html color eg 'black' or '#000000')",
           "initialValue": `${def.style.stroke}`,
         },
-        {
+        {  // Stroke width
           "component": "text-field",
           "name": "style.strokeWidth",
           "label": "Stroke Width",
@@ -78,29 +78,6 @@ export function abstractSchema(def: abstractInterface): Schema {
               "message": "incorrect format"
             }
           ]
-        },
-        {
-          "component": "select",
-          "name": "config.orientation",
-          "label": "Orientation",
-          "isRequired": true,
-          "initializeOnMount": true,
-          initialValue: `${def.config.orientation}`,
-          "options": [
-            {
-              "value": "top",
-              "label": "top"
-            },
-            {
-              "value": "bottom",
-              "label": "bottom"
-            },
-            {
-              "value": "both",
-              "label": "both"
-            }
-          ],
-          "helperText": "vertical positioning",
         }]
     },
     // Temporal:

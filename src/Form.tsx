@@ -38,7 +38,7 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                     </select>
 
                     <label style={{paddingBottom: 2, paddingRight: 10}}> Select channel:</label>
-                    <select style={{marginBottom: 10}} onChange={(e) => {setSelectedChannel(e.target.value), console.log(e.target.value)}} 
+                    <select style={{marginBottom: 10}} onChange={(e) => {setSelectedChannel(e.target.value)}}
                             value={selectedChannel}>
                             <option style={{display: "none"}} value={"DEFAULT"}>Select a channel</option>
                             {props.channelOptions.map((name, index) => {

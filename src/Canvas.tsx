@@ -78,7 +78,9 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         } catch (e){
             if (e instanceof ScriptError) {
                 parseErr.current = e.message;
-                console.log(e)
+                
+            } else {
+                throw e;
             }
         }
     
@@ -87,12 +89,11 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         } catch (e) {
             if (e instanceof ScriptError) {
                 drawErr.current = e.message;
-                console.log(e.message)
+                
             }
         }
 
-       
-        
+
         for (const c of Object.values(props.handler.sequence.channels)) {
             ys.push(c.barY)
         }
@@ -102,18 +103,14 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
 
         svgDrawObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
         svgDestinationObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
-        svgDrawObj.current!.rect().attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%"})
-        // svgObj.current!.viewbox(0, 0, canvasWidth, canvasHeight)
+        svgDrawObj.current!.rect()
+        .attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%"})
+        .id("BOARDER");
 
         svgDrawObj.current!.children().forEach((c) => {
             c.addTo(svgDestinationObj.current!)
         }
         );
-
-
-
-        // svgDestinationObj.current!.replace(svgDrawObj.current!);
-        // svgDrawObj.current!.clear();
 
         return {x: props.handler.sequence.width, ys: ys};
     }
@@ -121,11 +118,11 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
     // APPARENTLY the order of these functions changes the order in which the dependancy comparison is done!???!
     useEffect(() => {
         props.updateChannels(Object.keys(props.handler.sequence.channels))
-        console.log(Object.keys(props.handler.sequence.channels))
+        
     }, [Object.keys(props.handler.sequence.channels).join()])
 
     useEffect(() => {
-        console.log(parseErr)
+        
         props.provideErrors(parseErr.current, drawErr.current);
     }, [parseErr.current, drawErr.current])
 

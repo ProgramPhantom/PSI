@@ -98,6 +98,7 @@ export default class Channel extends Drawable implements labelable {
             this.label = Label.anyArgConstruct(Channel.default.label!, params.label);
             this.barX = this.padding[3] + this.label.actualWidth;
         }
+
     }
 
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {

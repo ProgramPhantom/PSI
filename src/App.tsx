@@ -35,6 +35,8 @@ function App() {
 
   function SaveSVG() {
     var destinationSurface = document.getElementById(DESTINATIONSVGID);
+    var boarder = document.getElementById("BOARDER");
+    destinationSurface?.removeChild(boarder!)
 
     var blob = new Blob([destinationSurface?.outerHTML!], {type: "text/plain;charset=utf-8"});
     FileSaver.saveAs(blob, "sequence.svg");
@@ -78,7 +80,7 @@ function App() {
             <Errors parseError={errors.parseError} drawError={errors.drawError}></Errors>
           </div>
 
-          <div style={{minWidth: "300px", width: "20%", height: "100%", overflow: "scroll", scroll}}>
+          <div style={{minWidth: "300px", width: "20%", height: "100%", overflow: "scroll"}}>
             <Form AddCommand={AddCommand} channelOptions={channelNames}></Form>
           </div>
         </div>

@@ -272,7 +272,7 @@ export default class Sequence {
 
         bracket.y1 = channel.y + bracket.style.strokeWidth;
         bracket.y2 = channel.barY + channel.style.thickness;
-        console.log(channel.barY, channel.y)
+        
     }
 
     addBracket(channelName: string, bracket: Bracket, direction: Direction) {

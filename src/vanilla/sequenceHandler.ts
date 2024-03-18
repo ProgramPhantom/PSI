@@ -380,7 +380,7 @@ export default class SequenceHandler {
             // this.sequence.reset();
             this.sequence = new Sequence(Sequence.defaults["empty"]);
 
-            console.log("commands: ", this.commands)
+            
 
             Object.values(this.commands).forEach((commands, i) => {
                 commands.forEach((command) => {
@@ -403,6 +403,7 @@ export default class SequenceHandler {
             })
         }
 
+        console.log(this.commands)
         // Split induvidua characters into tokens containing information at a higher level of abstraction
     
     }
@@ -536,7 +537,7 @@ export default class SequenceHandler {
                             reset();
                             break;
                         case TokenType.End:
-                            console.log("do this")
+                            
                             break;
                         default:
                             throw new ScriptError(SyntaxError.SYNTAX_ERROR, 
@@ -586,11 +587,12 @@ export default class SequenceHandler {
                                     [this.stateSystem.line])
         }
 
-
+        
         return tokens;
     }
 
     runCommand(operation: ScriptToken, channel: ScriptToken, props: PropTree[]) {
+
         if (Object.keys(SequenceHandler.ChannelUtil).includes(operation.content) ) {  // Its a util command
             var argTemplate: any = SequenceHandler.ChannelUtil[operation.content];  
         } else if (Object.keys(SequenceHandler.ContentCommands).includes(operation.content)) {  // Its a content command
@@ -613,10 +615,11 @@ export default class SequenceHandler {
                 throw new ScriptError(ArgumentError.INVALID_ARGUMENT, `Unknown argument '${thisProp}'`, thisProp.columns, [thisProp.line, thisProp.line])
             }
             
-            if (props.length > 1) {
+            if (props.length > 1) {  // Not reached the end yet
                 var tokenVal = thisProp.content;
                 var furtherIn: {[name: string]: any} = {};
-                
+
+                                                    // REFERENCE TYPE FUCKING EVERYTHING AGAIN
                 furtherIn[tokenVal] = setChild(val, props.splice(1, props.length-1), defaultHere, 
                                                inner[thisProp.content] ?? {});
                 
@@ -629,9 +632,9 @@ export default class SequenceHandler {
                     inner[thisProp.content] = JSON.parse(val.content);
                 } catch {
                     //if (val.content.match(SequenceHandler.alphaNumericRegex)) {
-                        var temp = inner[thisProp.content]
-                        Object.assign(inner, inner[thisProp.content]);
-                        inner[thisProp.content] = val.content;
+                    var temp = inner[thisProp.content]
+                    Object.assign(inner, inner[thisProp.content]);
+                    inner[thisProp.content] = val.content;
                     //} else {
                     //    throw new ScriptIssue(ArgumentError.ARGUMENT_INVALID_PARSE, `Cannot parse argument line: ${val.line}, column: ${val.columns[0]}`, 
                     //    val.columns, [val.line, val.line])
@@ -644,13 +647,16 @@ export default class SequenceHandler {
             return inner;
         }
 
+
         for (const p of props) {
             if (p.arg === undefined) {
                 throw new ScriptError(ArgumentError.ARGUMENT_NOT_PROVIDED, "Argument not provided", p.props[p.props.length-1].columns, 
                                                                 [p.props[p.props.length-1].line, p.props[p.props.length-1].line])
             }
+            // Argument to be set, list of props, 
             
-            Object.assign(argObj, setChild(p.arg, p.props, argTemplate, argObj)) ;
+            Object.assign(argObj, setChild(p.arg, [...p.props], argTemplate, argObj)) ;
+            
         }
 
         const fullArgs = argObj ? UpdateObj(argTemplate, argObj) : argTemplate;
@@ -745,6 +751,13 @@ export default class SequenceHandler {
 
         var lineChanges = Array<boolean>(oldLines.length).fill(false);
 
+                // Any change:
+        var noWhiteText = text.replace("\n", "").replace(" ", "");
+        var noWhiteScript = this.script.replace("\n", "").replace(" ", "");
+        if (noWhiteScript === noWhiteText) {
+            return lineChanges;
+        }
+
         // if (newLines.length > oldLines.length) {
         //     newLines = Array<string>(oldLines.length)
         // }
@@ -752,7 +765,7 @@ export default class SequenceHandler {
         var existingLine;
         newLines.forEach((newLine, i) => {
             existingLine = oldLines[i];
-            console.log(`Old line: ${existingLine}\nNew line: ${newLine}`)
+            
 
             
             if (newLine != existingLine) {
