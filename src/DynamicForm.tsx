@@ -10,34 +10,44 @@ import {simplePulseSchema} from "./vanilla/default/types/simplePulseSchema";
 import {svgPulseSchema} from "./vanilla/default/types/svgPulseSchema";
 import {spanSchema} from "./vanilla/default/types/spanSchema";
 import {abstractSchema} from "./vanilla/default/types/abstractSchema";
+import { bracketSchema } from './vanilla/default/types/bracketSchema';
 
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import { svgPulses } from './vanilla/default/data/svgPulse';
 import { allTemporal } from './vanilla/default/data';
 
 import { Schema } from '@data-driven-forms/react-form-renderer';
+import SequenceHandler from './vanilla/sequenceHandler';
 
 
 
-function DynamicForm(props: {AddCommand: (line: string) => void, temporalName: string, channelName: string,}) {
+function DynamicForm(props: {AddCommand: (line: string) => void, commandName: string, channelName: string,}) {
 
     var currSchema: Schema = {"fields": []};
-    if (Object.keys(simplePulses).includes(props.temporalName)) {
-        currSchema = simplePulseSchema({...(simplePulses[props.temporalName as keyof typeof simplePulses] as any)});
-    } else if (Object.keys(svgPulses).includes(props.temporalName)) {
-        currSchema = svgPulseSchema({...(svgPulses[props.temporalName as keyof typeof svgPulses] as any)});
-    } else if (props.temporalName === "span") {
-        currSchema = spanSchema({...(allTemporal[props.temporalName as keyof typeof allTemporal] as any)});
-    } else if (props.temporalName === "abstract") {
-         currSchema = abstractSchema({...(allTemporal[props.temporalName as keyof typeof allTemporal] as any)});
+    if (Object.keys(simplePulses).includes(props.commandName)) {
+        currSchema = simplePulseSchema({...(simplePulses[props.commandName as keyof typeof simplePulses] as any)});
+    } else if (Object.keys(svgPulses).includes(props.commandName)) {
+        currSchema = svgPulseSchema({...(svgPulses[props.commandName as keyof typeof svgPulses] as any)});
+    } else if (props.commandName === "span") {
+        currSchema = spanSchema({...(allTemporal[props.commandName as keyof typeof allTemporal] as any)});
+    } else if (props.commandName === "abstract") {
+         currSchema = abstractSchema({...(allTemporal[props.commandName as keyof typeof allTemporal] as any)});
+    } else if (props.commandName === "[" || props.commandName === "]") {
+        console.log(SequenceHandler.ChannelUtil[props.commandName])
+        currSchema = bracketSchema({...(SequenceHandler.ChannelUtil[props.commandName as keyof typeof SequenceHandler.ChannelUtil] as any)})
     }
-    
+     
 
 
     function CreateCommand(f: any) {
+        if (Object.keys(SequenceHandler.ChannelUtil).includes(props.commandName)) {
+            // Special command!
+            var command = props.commandName + props.channelName + "(";
+        } else {
+            var command = props.channelName + "." + props.commandName + "(";
+        }
+
         
-        
-        var command = props.channelName + "." + props.temporalName + "(";
         var toInclude: string[] = [];
 
         for (const kv of Object.entries(f.dirtyFields)) {

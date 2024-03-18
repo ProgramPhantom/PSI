@@ -33,8 +33,15 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                         <option value={"talltrap"} key={11}>Tall Trapezium</option>
                         <option value={"trap"} key={12}>Trapezium</option>
 
+                        <hr style={{padding: "3px 3px", margin: "3px 3px"}}></hr>
+
                         <option value={"span"} key={13}>Span</option>
                         <option value={"abstract"} key={14}>Abstract</option>
+
+                        <hr style={{padding: "3px 3px", margin: "3px 3px"}}></hr>
+
+                        <option value={"["} key={15}>Open Bracket</option>
+                        <option value={"]"} key={16}>Close Bracket</option>
                     </select>
 
                     <label style={{paddingBottom: 2, paddingRight: 10}}> Select channel:</label>
@@ -51,7 +58,7 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
             </form>
             
              <div>
-                <DynamicForm AddCommand={props.AddCommand} temporalName={selectedEl} channelName={selectedChannel} key={selectedEl}></DynamicForm>
+                <DynamicForm AddCommand={props.AddCommand} commandName={selectedEl} channelName={selectedChannel} key={selectedEl}></DynamicForm>
              </div>
             
            

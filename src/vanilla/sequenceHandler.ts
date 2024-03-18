@@ -717,6 +717,12 @@ export default class SequenceHandler {
     }
 
     utilCommand(command: ScriptToken, channel: ScriptToken, args: any) {
+        if (command.content !== "~") {  // This is really tricky
+            if (Object.keys(this.sequence.channels).indexOf(channel.content) === -1) {
+                throw new ScriptError(CommandError.CHANNEL_IDENTIFIER_UNDEFINED, `Undefined channel: '${channel.content}'`, channel.columns, [channel.line, channel.line])
+            }
+        }
+
         switch (command.content) {
             case "~":
                 this.sequence.defineChannel(channel.content, <channelInterface>args);

@@ -21,6 +21,7 @@ export enum Direction {
 export interface bracketInterface {
     protrusion: number,
     style: bracketStyle,
+    labelOn: boolean,
     label: labelInterface,
     adjustment: number[],
 }
@@ -44,6 +45,7 @@ export default class Bracket extends Drawable implements labelable {
             {protrusion: options.protrusion,
              adjustment: options.adjustment,
              style: options.style,
+             labelOn: options.labelOn,
              label: options.label,}
         )
     }
@@ -92,7 +94,9 @@ export default class Bracket extends Drawable implements labelable {
                 break;
         }
 
-        if (params.label) {
+
+
+        if (params.labelOn) {
             this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
         }
         
