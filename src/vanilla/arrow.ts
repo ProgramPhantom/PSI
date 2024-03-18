@@ -65,12 +65,14 @@ export default class Arrow extends Drawable {
               offset: number[]=[0, 0]) {
       super(0, 0, offset)
 
-      this.x2 = Math.random()*5;
-      this.y2 = Math.random()*5;
+      this.x2 = 0;
+      this.y2 = 0;
 
       this.style = params.style;
       this.padding = params.padding;
       this.position = params.position;
+
+      this.dim = {height: 0, width: 0}
   }
 
   public set(x1: number, y1: number, x2: number, y2: number) {

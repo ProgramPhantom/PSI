@@ -39,8 +39,10 @@ export default class Span extends Temporal implements labelable {
         super(timestamp, params, offset)
 
         this.arrow = Arrow.anyArgConstruct(Arrow.defaults["arrow"], params.arrow);
+        
 
         this.dim = {width: params.width, height: params.arrow.style.thickness}
+        this.arrow.set(0, 0, this.width, 0)
     }
 
     public draw(surface: Svg): void {

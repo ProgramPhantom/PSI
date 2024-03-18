@@ -83,14 +83,10 @@ export default class Bracket extends Drawable implements labelable {
         
         switch (this.direction) {
             case Direction.down:
-                this.protrusion = -params.protrusion;
-                break;
             case Direction.right:
                 this.protrusion = -params.protrusion;
                 break;
             case Direction.left:
-                this.protrusion = params.protrusion;
-                break;
             case Direction.up:
                 this.protrusion = params.protrusion;
                 break;
@@ -194,7 +190,6 @@ export default class Bracket extends Drawable implements labelable {
                 break;
         }
         
-
         var svgObj = SVG(svgString);
 
         svgObj.attr({
