@@ -31,9 +31,12 @@ interface Bounds {
 export interface channelInterface {
     temporalElements: Temporal[],
     padding: number[],
+    identifier: string,
 
     style: channelStyle,
-    label?: labelInterface
+
+    labelOn: boolean
+    label: labelInterface
     
     annotationStyle: channelAnnotation,
 }
@@ -56,6 +59,8 @@ export default class Channel extends Drawable implements labelable {
 
     style: channelStyle;
 
+    identifier: string;
+
     maxTopProtrusion: number;
     maxBottomProtrusion: number;
 
@@ -70,6 +75,7 @@ export default class Channel extends Drawable implements labelable {
     timespanX: number[] = [];
     elementCursor: number = -1;
 
+    labelOn: boolean;
     label?: Label;
     position: Position=Position.left;
 
@@ -83,6 +89,8 @@ export default class Channel extends Drawable implements labelable {
         this.style = params.style;
         this.padding = params.padding;
 
+        this.identifier = params.identifier;
+
         this.maxTopProtrusion = 0;  // Move this to element
         this.maxBottomProtrusion = this.style.thickness;
 
@@ -91,6 +99,7 @@ export default class Channel extends Drawable implements labelable {
 
         this.temporalElements = [...params.temporalElements];  // please please PLEASE do this (list is ref type)
         
+        this.labelOn = params.labelOn;
         if (params.label) {
             this.label = Label.anyArgConstruct(Channel.default.label!, params.label);
             this.barX = this.padding[3] + this.label.pwidth;
@@ -293,11 +302,13 @@ export default class Channel extends Drawable implements labelable {
             timestampEnd = section.timespan[1];
         }
 
+
         var range = section.timespan ? section.timespan : [timestampStart, timestampEnd];
 
-        if (range[0] < 0 || range[0] > this.elementCursor || range[1] < 0 || range[1] > this.elementCursor) {
-            throw new Error("Timespan out of range");
-        }
+        if (range[0] < 0) {range[0] = 0;}
+        if (range[1] > this.hSections.length+1) {range[1] = this.hSections.length+1}
+        if (range[0] > range[1]) {range = [0, 1]}
+
 
         section.timespan = range;
         this.annotationLayer.annotateLong(section);

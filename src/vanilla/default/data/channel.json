@@ -1,6 +1,7 @@
 {
     "temporalElements": [],
     "padding": [10, 5, 8, 10],
+    "identifier": "h",
 
     "style": {
         "thickness": 3,
@@ -9,6 +10,7 @@
         "strokeWidth": null
     },
 
+    "labelOn": true,
     "label": {
         "text": "^{1}\\textrm{H}",
         "padding": [0, 0, 0, 0],

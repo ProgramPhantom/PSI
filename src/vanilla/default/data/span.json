@@ -13,7 +13,7 @@
     "labelOn": true,
     "label": {
         "text": "\\lambda",
-        "padding": [0, 0, 5, 0],
+        "padding": [5, 0, 5, 0],
         "position": "top",
         "style": {
             "size": 7,
@@ -23,7 +23,7 @@
 
     "arrowOn": true,
     "arrow": {
-        "padding": [0, 0, 4, 0],
+        "padding": [5, 0, 4, 0],
         "position": "inline",
         "style": {
             "thickness": 2, 

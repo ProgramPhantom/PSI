@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useState } from 'react'
 import DynamicForm from './DynamicForm';
 
 function Form(props: {AddCommand: (line: string) => void, channelOptions: string[]}) {
-    const [selectedEl, setSelectedEl] = useState<string>("pulse90");
+    const [selectedEl, setSelectedEl] = useState<string>("~");
     const [selectedChannel, setSelectedChannel] = useState<string>(props.channelOptions[0])
 
     useEffect(() => {
@@ -17,6 +17,10 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                     <label style={{paddingBottom: 2, paddingRight: 10}}> Select element:
                     </label>
                     <select onChange={(e) => setSelectedEl(e.target.value)} defaultValue={selectedEl} style={{marginBottom: 10}}>
+                        <option value={"~"} key={0}>Channel</option>
+
+                        <hr style={{padding: "3px 3px", margin: "3px 3px"}}></hr>
+
                         <option value={"pulse90"} key={1}>Pulse90</option>
                         <option value={"pulse180"} key={2}>Pulse180</option>
 

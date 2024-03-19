@@ -723,7 +723,7 @@ export default class SequenceHandler {
 
         switch (command.content) {
             case "~":
-                this.sequence.defineChannel(channel.content, <channelInterface>args);
+                this.sequence.defineChannel(channel.content, <channelInterface>{...args, identifier: channel.content});
                 break;
             case "|":
                 this.sequence.addVLine(channel.content, <Line>args)
