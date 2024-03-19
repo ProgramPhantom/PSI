@@ -4,8 +4,6 @@ import componentTypes from '@data-driven-forms/react-form-renderer/component-typ
 import componentMapper from '@data-driven-forms/mui-component-mapper/component-mapper';
 import FormTemplate from '@data-driven-forms/pf4-component-mapper/form-template';
 
-
-//import * as schema from "./vanilla/default/types/testSchema.json"
 import {simplePulseSchema} from "./vanilla/default/types/simplePulseSchema";
 import {svgPulseSchema} from "./vanilla/default/types/svgPulseSchema";
 import {spanSchema} from "./vanilla/default/types/spanSchema";
@@ -20,6 +18,7 @@ import { allTemporal } from './vanilla/default/data';
 import { Schema } from '@data-driven-forms/react-form-renderer';
 import SequenceHandler from './vanilla/sequenceHandler';
 import { sectionSchema } from './vanilla/default/types/sectionSchema';
+import { lineSchema } from './vanilla/default/types/lineSchema';
 
 
 
@@ -40,7 +39,10 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
         currSchema = sectionSchema({...(SequenceHandler.ContentCommands[props.commandName] as any)})
     } else if (props.commandName === "~") {
         currSchema = channelSchema({...(SequenceHandler.ChannelUtil[props.commandName] as any)})
+    } else if (props.commandName === "|") {
+        currSchema = lineSchema({...(SequenceHandler.ChannelUtil[props.commandName] as any)})
     }
+    
      
 
 

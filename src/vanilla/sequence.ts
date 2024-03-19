@@ -27,11 +27,11 @@ export enum GridPositioning {start="start", centre="centre"}
 interface gridInterface {
     gridOn: boolean,
     gridPositioning: GridPositioning,
-    lineStyle: Line,
+    lineStyle: lineInterface,
     
 }
 
-export interface Line {
+export interface lineInterface {
     stroke: string,
     strokeWidth: number,
     dashing: number[]
@@ -39,8 +39,8 @@ export interface Line {
 
 export class Grid {
     gridOn: boolean;
-    vLines: {[timestamp: number]: Line} = {};
-    style: Line;
+    vLines: {[timestamp: number]: lineInterface} = {};
+    style: lineInterface;
     gridPositioning: GridPositioning;
 
     constructor(params: gridInterface) {
@@ -258,7 +258,7 @@ export default class Sequence {
         this.channels[channelName].addAnnotationLong(obj);
     }
 
-    addVLine(channelName: string, obj: Line) {
+    addVLine(channelName: string, obj: lineInterface) {
         var channel: Channel = this.channels[channelName];
         this.grid.vLines[channel.elementCursor+1] = obj;
     }

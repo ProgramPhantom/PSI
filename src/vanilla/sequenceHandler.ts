@@ -1,7 +1,7 @@
 import Abstract from "./abstract";
 import ImagePulse from "./pulses/image/imagePulse";
 import SimplePulse from "./pulses/simple/simplePulse";
-import Sequence, { Line } from "./sequence";
+import Sequence, { lineInterface } from "./sequence";
 import Span from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
@@ -726,7 +726,7 @@ export default class SequenceHandler {
                 this.sequence.defineChannel(channel.content, <channelInterface>{...args, identifier: channel.content});
                 break;
             case "|":
-                this.sequence.addVLine(channel.content, <Line>args)
+                this.sequence.addVLine(channel.content, <lineInterface>args)
                 break;
             case "@":
                 this.sequence.syncOn(channel.content, undefined);
