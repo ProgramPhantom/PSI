@@ -80,7 +80,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
                 parseErr.current = e.message;
                 
             } else {
-                throw e;
+                parseErr.current = e as string;
             }
         }
     

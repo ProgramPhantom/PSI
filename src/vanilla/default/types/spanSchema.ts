@@ -26,7 +26,7 @@ export function spanSchema(def: spanInterface): Schema {
     },
     {  // Width
         "component": "text-field",
-        "name": "label.size",
+        "name": "width",
         "label": "Width",
         "isRequired": true,
         "initialValue": def.width,

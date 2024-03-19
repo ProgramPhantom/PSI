@@ -81,7 +81,9 @@ export default class Label extends Drawable {
     }
 
     draw(surface: Svg) {
-        const SVGEquation = TeXToSVG(this.text); 
+        
+        const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
+        
         
         var SVGobj = SVG(SVGEquation);
         SVGobj.move(this.x, this.y);
@@ -101,7 +103,10 @@ export default class Label extends Drawable {
     // Sets this.width and this.height
     // Currently needs to add and remove the svg to find these dimensions, not ideal
     computeDimensions() {
-        const SVGEquation = TeXToSVG(this.text); 
+        console.log(this.text)
+        var SVGEquation = TeXToSVG(`${this.text}`); 
+        console.log(TeXToSVG("32"))
+        console.log(SVGEquation)
 
         var temp = SVG().addTo('#drawDiv').size(300, 300)  // TERRIBLE CODE HERE.
 

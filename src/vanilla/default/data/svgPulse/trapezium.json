@@ -16,11 +16,11 @@
 
     "labelOn": true,
     "label": {
-        "text": "\\tau",
-        "padding": [0, 0, 10, 0],
-        "position": "top",
+        "text": "\\mathrm{G}_1",
+        "padding": [3, 0, 10, 0],
+        "position": "bottom",
         "style": {
-            "size": 10,
+            "size": 15,
             "colour": "black"
         }
     },

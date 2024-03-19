@@ -1,0 +1,16 @@
+~H()
+~F(label.text="^{19}\mathrm{F}")
+~G(label.text="\mathrm{G}_z")
+
+
+F.pulse90(labelOn=true,label.text="\mathrm{90}",)
+F.span(width=40,label.text="\Delta_1", label.style.size=14, config.inheritWidth=false)@F()
+G.trap(style.width=14, config.alignment=right)
+
+
+F.180(labelOn=true, label.text=3)@F()
+H.180(labelOn=true,label.text=180,)
+F.span(width=40,label.text="\Delta_1", label.style.size=14, config.inheritWidth=false, config.noSections="2")@F()
+
+G.trap(style.width=14)
+G.trap(style.width=14, config.alignment=right)

@@ -5,6 +5,7 @@ import { labelable } from "./temporal";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";
 import Bracket, { Direction, bracketType } from "./bracket";
+import Section from "./section";
 
 interface Dim {
     width: number,
@@ -27,14 +28,10 @@ export interface bigSpanInterface {
     label?: labelInterface | null
 }
 
-interface timespanBracket {
-    timespanRange: number[],
-    bracket: Bracket,
-}
 
 export default class AnnotationLayer extends Drawable {
     labels: {[timestamp: number]: Label[]} = [];
-    longs: timespanBracket[] = [];
+    longs: Section[] = [];
 
     padding: number[];
 
@@ -132,15 +129,14 @@ export default class AnnotationLayer extends Drawable {
 
         // Draw Longs
         for (const timeLong of this.longs) {
-            var timespanRange = timeLong["timespanRange"];
-            var long = timeLong["bracket"];
+            var timespanRange = timeLong.timespan;
 
             var x1 = this.timestampX[timespanRange[0]];
             var x2 = this.timestampX[timespanRange[1]+1]  // To the other side of last
 
 
             // Find y
-            var longHeight = Math.abs(long.protrusion);
+            var longHeight = Math.abs(timeLong.protrusion);
 
             var relaventYs = [...ys].splice(timespanRange[0], timespanRange[1] - timespanRange[0])
             var thisStartY = Math.max(...relaventYs);
@@ -148,19 +144,19 @@ export default class AnnotationLayer extends Drawable {
             var y = thisStartY;
             
 
-            long.x1 = x1;
-            long.x2 = x2;
+            timeLong.x1 = x1;
+            timeLong.x2 = x2;
 
-            long.y1 = y;
-            long.y2 = y;
+            timeLong.y1 = y;
+            timeLong.y2 = y;
 
-            long.y = y;
-            long.x = x1;
+            timeLong.y = y;
+            timeLong.x = x1;
 
-            long.draw(surface);
+            timeLong.draw(surface);
 
             for (var i = timespanRange[0]; i < timespanRange[1]+1; i++) {  // Apply height
-                ys[i] += long.totalProtrusion;
+                ys[i] += timeLong.totalProtrusion;
             }
         }
 
@@ -186,8 +182,8 @@ export default class AnnotationLayer extends Drawable {
         
     }
 
-    annotateLong(bracket: Bracket, timespanStart: number, timespanEnd: number) {
-        this.longs.push({timespanRange: [timespanStart, timespanEnd], bracket: bracket})
+    annotateLong(section: Section) {
+        this.longs.push(section)
     }
 
 }

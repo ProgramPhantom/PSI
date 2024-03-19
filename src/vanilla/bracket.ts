@@ -65,6 +65,7 @@ export default class Bracket extends Drawable implements labelable {
     direction: Direction = Direction.down;
     adjustment: number[];
 
+    labelOn: boolean;
     label?: Label;
 
     constructor(params: bracketInterface,
@@ -95,7 +96,7 @@ export default class Bracket extends Drawable implements labelable {
         }
 
 
-
+        this.labelOn = params.labelOn;
         if (params.labelOn) {
             this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
         }

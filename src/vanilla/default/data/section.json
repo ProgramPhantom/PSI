@@ -10,7 +10,7 @@
         "stroke": "black"
     },
 
-
+    "labelOn": true,
     "label": {
         "text": "\\tau",
         "padding": [0, 0, 3, 0],

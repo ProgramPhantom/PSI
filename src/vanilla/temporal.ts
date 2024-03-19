@@ -246,6 +246,7 @@ export default abstract class Temporal extends Drawable implements labelable {
         }
 
         if (this.label) {
+            console.log("DRAWWING")
             this.label.move(labelX, labelY);
             this.label.draw(surface);
         }

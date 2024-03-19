@@ -40,8 +40,12 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
 
                         <hr style={{padding: "3px 3px", margin: "3px 3px"}}></hr>
 
-                        <option value={"["} key={15}>Open Bracket</option>
-                        <option value={"]"} key={16}>Close Bracket</option>
+                        <option value={"section"} key={15}>Section</option>
+
+                        <hr style={{padding: "3px 3px", margin: "3px 3px"}}></hr>
+
+                        <option value={"["} key={16}>Open Bracket</option>
+                        <option value={"]"} key={17}>Close Bracket</option>
                     </select>
 
                     <label style={{paddingBottom: 2, paddingRight: 10}}> Select channel:</label>

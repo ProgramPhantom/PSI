@@ -18,6 +18,7 @@ import { allTemporal } from './vanilla/default/data';
 
 import { Schema } from '@data-driven-forms/react-form-renderer';
 import SequenceHandler from './vanilla/sequenceHandler';
+import { sectionSchema } from './vanilla/default/types/sectionSchema';
 
 
 
@@ -33,8 +34,10 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
     } else if (props.commandName === "abstract") {
          currSchema = abstractSchema({...(allTemporal[props.commandName as keyof typeof allTemporal] as any)});
     } else if (props.commandName === "[" || props.commandName === "]") {
-        console.log(SequenceHandler.ChannelUtil[props.commandName])
-        currSchema = bracketSchema({...(SequenceHandler.ChannelUtil[props.commandName as keyof typeof SequenceHandler.ChannelUtil] as any)})
+        
+        currSchema = bracketSchema({...(SequenceHandler.ChannelUtil[props.commandName] as any)})
+    } else if (props.commandName === "section") {
+        currSchema = sectionSchema({...(SequenceHandler.ContentCommands[props.commandName] as any)})
     }
      
 

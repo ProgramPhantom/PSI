@@ -403,7 +403,7 @@ export default class SequenceHandler {
             })
         }
 
-        console.log(this.commands)
+        
         // Split induvidua characters into tokens containing information at a higher level of abstraction
     
     }
@@ -691,7 +691,6 @@ export default class SequenceHandler {
         if (Object.keys(SVGPulse.defaults).includes(commandName)) {
             var svgDef = SVGPulse.defaults[commandName]; 
             this.sequence.addTemporal(channelName, SVGPulse.anyArgConstruct(svgDef, args))
-            
         } else if (Object.keys(SimplePulse.defaults).includes(commandName)) {
             var simpDef = SimplePulse.defaults[commandName]; 
             this.sequence.addTemporal(channelName, SimplePulse.anyArgConstruct(simpDef, args))
@@ -705,7 +704,6 @@ export default class SequenceHandler {
             var labelDef = Label.defaults[commandName];
             this.sequence.addLabel(channelName, Label.anyArgConstruct(labelDef, args))
         } else if (Object.keys(Section.defaults).includes(commandName)) {
-            
             var secDef = Section.defaults[commandName];
             this.sequence.addAnnotationLong(channelName, Section.anyArgConstruct(secDef, args))
         }

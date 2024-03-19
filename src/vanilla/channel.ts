@@ -122,7 +122,7 @@ export default class Channel extends Drawable implements labelable {
         
         this.dim = {width: this.timespanX[this.timespanX.length-1],
                     height: this.height + annotationHeight}
-        console.log("first ", this.width)
+        
 
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
 
@@ -133,7 +133,7 @@ export default class Channel extends Drawable implements labelable {
         });
         this.drawRect(surface);
 
-        console.log(this.width)
+        
     }
 
     computeBarY(yCursor: number=0) {
@@ -293,10 +293,14 @@ export default class Channel extends Drawable implements labelable {
             timestampEnd = section.timespan[1];
         }
 
-
         var range = section.timespan ? section.timespan : [timestampStart, timestampEnd];
-        
-        this.annotationLayer.annotateLong(section, range[0], range[1]);
+
+        if (range[0] < 0 || range[0] > this.elementCursor || range[1] < 0 || range[1] > this.elementCursor) {
+            throw new Error("Timespan out of range");
+        }
+
+        section.timespan = range;
+        this.annotationLayer.annotateLong(section);
     }
 
     jumpTimespan(newCurs: number) {

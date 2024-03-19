@@ -14,6 +14,7 @@ import * as defaultSequence from "./default/data/sequence.json"
 import SequenceHandler from "./sequenceHandler";
 import Bracket, { Direction, bracketInterface } from "./bracket";
 import { NumberAlias } from "svg.js";
+import Section from "./section";
 
 
 interface sequenceInterface {
@@ -150,8 +151,8 @@ export default class Sequence {
             this.channelWidths.push(channel.pwidth);
 
             
-            console.log("padded width: ", channel.pwidth)
-            console.log("width: ", channel.width)
+            
+            
         })
         
         this.freeLabels.forEach((label) => {
@@ -252,7 +253,7 @@ export default class Sequence {
         this.channels[channelName].addAnnotationLabel(obj);
     }
 
-    addAnnotationLong(channelName: string, obj: Bracket) {
+    addAnnotationLong(channelName: string, obj: Section) {
         
         this.channels[channelName].addAnnotationLong(obj);
     }
