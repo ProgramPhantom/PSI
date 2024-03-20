@@ -25,8 +25,6 @@ export interface labelInterface {
     text: string,
     position: Position,
     style: labelStyle,
-
-    timestamp?: number,
 }
 
 export interface labelStyle {
@@ -52,8 +50,7 @@ export default class Label extends Drawable {
             {text: options.text,
             padding: options.padding,
             position: options.position,
-            style: options.style,
-            timestamp: options.timestamp}
+            style: options.style}
         )
     }
 
@@ -62,8 +59,6 @@ export default class Label extends Drawable {
 
     padding: number[];
     position: Position;
-
-    timestamp?: number;
     
     constructor(params: labelInterface,
                 offset: number[]=[0, 0]) {
@@ -74,8 +69,6 @@ export default class Label extends Drawable {
         this.style = params.style;
         this.padding = params.padding;
         this.position = params.position;
-
-        this.timestamp = params.timestamp;
 
         this.computeDimensions();
     }
@@ -103,10 +96,10 @@ export default class Label extends Drawable {
     // Sets this.width and this.height
     // Currently needs to add and remove the svg to find these dimensions, not ideal
     computeDimensions() {
-        console.log(this.text)
+        
         var SVGEquation = TeXToSVG(`${this.text}`); 
-        console.log(TeXToSVG("32"))
-        console.log(SVGEquation)
+        
+        
 
         var temp = SVG().addTo('#drawDiv').size(300, 300)  // TERRIBLE CODE HERE.
 

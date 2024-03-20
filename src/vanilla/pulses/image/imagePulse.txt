@@ -35,12 +35,10 @@ export default class ImagePulse extends Temporal {
     style: imagePulseStyle;
     path: string;
 
-    constructor(timestamp: number, 
-                params: imagePulseInterface,
+    constructor(params: imagePulseInterface,
                 offset: number[]=[0, 0]) {
 
-        super(timestamp, 
-              params,
+        super(params,
               offset);
 
         this.style = params.style;

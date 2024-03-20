@@ -4,6 +4,7 @@ import Label, { labelInterface, Position } from "./label";
 import { UpdateObj } from "./util";
 import Arrow, { ArrowPosition, arrowInterface } from "./arrow";
 import { H } from "mathjax-full/js/output/common/FontData";
+import SpanningLabel, { spanningLabelInterface } from "./spanningLabel";
 
 interface Dim {
     width: number,
@@ -33,6 +34,8 @@ export interface labelable {
 }
 
 export interface temporalConfig {
+    timestamp?: number | number[],
+
     orientation: Orientation,
     alignment: Alignment,
     overridePad: boolean
@@ -40,50 +43,39 @@ export interface temporalConfig {
     noSections: number,
 }
 
-export interface temporalInterface {
+export interface temporalInterface extends spanningLabelInterface{
     padding: number[],
     config: temporalConfig,
-    labelOn: boolean,
-    arrowOn: boolean,
 
-    label: labelInterface,
-    arrow: arrowInterface,
 }
 
 
 
-export default abstract class Temporal extends Drawable implements labelable {
+export default abstract class Temporal extends Drawable {
     // An element that relates to a point in time
   
-    timestamp: number | number[];
+    private _timestamp?: number | number[];
+
     config: temporalConfig;
 
     barThickness: number = 3;
 
-    labelOn: boolean;
-    label?: Label;
-    arrowOn: boolean;
-    arrow?: Arrow;
+    decoration: SpanningLabel;
 
-    constructor(timestamp: number,
-                params: temporalInterface,
+    constructor(params: temporalInterface,
                 offset: number[]=[0, 0]) {
 
         super(0, 0, offset, params.padding);
 
-        this.timestamp = timestamp;
 
         this.config = params.config;
 
-        this.labelOn = params.labelOn;
-        this.arrowOn = params.arrowOn;
+        if (this.config.timestamp) {
+            this.timestamp = this.config.timestamp;
+        }
 
-        if (params.labelOn) {
-            this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
-        }
-        if (params.arrowOn) {
-            this.arrow = Arrow.anyArgConstruct(Arrow.defaults["arrow"], params.arrow)
-        }
+        this.decoration = SpanningLabel.anyArgConstruct(SpanningLabel.defaults["spanlabel"], 
+                          {labelOn: params.labelOn, label: params.label, arrowOn: params.arrowOn, arrow: params.arrow})
         
     }
 
@@ -121,29 +113,29 @@ export default abstract class Temporal extends Drawable implements labelable {
         var dimensions: number[] = [0, 0];
         channelThickness
 
-        if (this.label) {
-            switch (this.label.position) {
+        if (this.decoration.label) {
+            switch (this.decoration.label.position) {
                 case Position.top:
-                    dimensions[0] += this.label.pheight;
+                    dimensions[0] += this.decoration.label.pheight;
                     break;
                 case Position.bottom:
-                    dimensions[1] += this.label.pheight;
+                    dimensions[1] += this.decoration.label.pheight;
                     break;
                 case Position.centre:
                     // No protrusion
                     break;
                 default:
-                    dimensions[0] += this.label.pheight;
+                    dimensions[0] += this.decoration.label.pheight;
 
             }
         }
 
-        if (this.arrow) {
-            if (this.arrow.position === ArrowPosition.top) {
-                dimensions[0] += this.arrow.pheight;
+        if (this.decoration.arrow) {
+            if (this.decoration.arrow.position === ArrowPosition.top) {
+                dimensions[0] += this.decoration.arrow.pheight;
                 console.warn("this might not work")
-            } else if (this.arrow.position === ArrowPosition.bottom) {
-                dimensions[1] += this.arrow.pheight;
+            } else if (this.decoration.arrow.position === ArrowPosition.bottom) {
+                dimensions[1] += this.decoration.arrow.pheight;
                 console.warn("this might not work")
             }
         }
@@ -172,10 +164,6 @@ export default abstract class Temporal extends Drawable implements labelable {
        return protrusion;
     }
 
-    addLabel(args: labelInterface) {
-        this.label = Label.anyArgConstruct(Label.defaults["label"], args);
-    }
-
     posDrawDecoration(surface: Svg, ): number[] {
         var width = 0;
         var height = 0;
@@ -183,20 +171,20 @@ export default abstract class Temporal extends Drawable implements labelable {
         var level;
         
 
-        if (this.label) {
-            switch (this.label.position) {
+        if (this.decoration.label) {
+            switch (this.decoration.label.position) {
                 case Position.top:
-                    labelX = this.x + this.width/2 - this.label.width/2;
-                    labelY = this.y - this.label.height - this.label.padding[2];
+                    labelX = this.x + this.width/2 - this.decoration.label.width/2;
+                    labelY = this.y - this.decoration.label.height - this.decoration.label.padding[2];
                     break;
                 case Position.bottom:
-                    labelX = this.x + this.width/2 - this.label.width/2;
-                    labelY = this.y + this.height + this.label.padding[0] + this.barThickness;
+                    labelX = this.x + this.width/2 - this.decoration.label.width/2;
+                    labelY = this.y + this.height + this.decoration.label.padding[0] + this.barThickness;
                     break;
 
                 case Position.centre:
-                    labelX = this.x + this.width/2 - this.label.width/2;
-                    labelY = this.y + this.height /2 - this.label.height/2 + this.label.padding[0];
+                    labelX = this.x + this.width/2 - this.decoration.label.width/2;
+                    labelY = this.y + this.height /2 - this.decoration.label.height/2 + this.decoration.label.padding[0];
 
                     break;
                 default:
@@ -204,61 +192,70 @@ export default abstract class Temporal extends Drawable implements labelable {
                     labelY = 0;
             }
 
-            width += this.label.width
-            height += this.label.height;
+            width += this.decoration.label.width
+            height += this.decoration.label.height;
         }
 
-        if (this.arrow) {
-            switch (this.arrow.position) {
+        if (this.decoration.arrow) {
+            switch (this.decoration.arrow.position) {
                 case ArrowPosition.top:
-                    level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
-                    this.arrow.set(this.x, level, this.x + this.width, level);
-                    height += this.arrow.pheight;
+                    level = this.y - this.decoration.arrow.padding[2] - this.decoration.arrow.style.thickness;
+                    this.decoration.arrow.set(this.x, level, this.x + this.width, level);
+                    height += this.decoration.arrow.pheight;
 
-                    if ((this.label !== undefined) && this.label.position === Position.top) {
-                        labelY -= this.arrow.pheight;
+                    if ((this.decoration.label !== undefined) && this.decoration.label.position === Position.top) {
+                        labelY -= this.decoration.arrow.pheight;
                     }
                     break;
                 case ArrowPosition.inline:
-                    if (this.label) {
-                        this.label.style.background = "white";
-                        level = labelY + this.label.height/2;
+                    if (this.decoration.label) {
+                        this.decoration.label.style.background = "white";
+                        level = labelY + this.decoration.label.height/2;
                     } else {
-                        level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
+                        level = this.y - this.decoration.arrow.padding[2] - this.decoration.arrow.style.thickness;
                     }
                     
-                    this.arrow.set(this.x, level, this.x + this.width, level);
+                    this.decoration.arrow.set(this.x, level, this.x + this.width, level);
                     break;
                 case ArrowPosition.bottom:
-                    level = this.y + this.height + this.arrow.padding[0] + this.barThickness + this.arrow.style.thickness;
-                    this.arrow.set(this.x, level, this.x + this.width, level);
+                    level = this.y + this.height + this.decoration.arrow.padding[0] + this.barThickness + this.decoration.arrow.style.thickness;
+                    this.decoration.arrow.set(this.x, level, this.x + this.width, level);
 
-                    if ((this.label !== undefined) && this.label.position === Position.bottom) {
-                        labelY += this.arrow.pheight;
+                    if ((this.decoration.label !== undefined) && this.decoration.label.position === Position.bottom) {
+                        labelY += this.decoration.arrow.pheight;
                     }
 
                     break;
                 default:
-                    throw new Error(`Unknown arrow position '${this.arrow.position}'`)
+                    throw new Error(`Unknown arrow position '${this.decoration.arrow.position}'`)
             }
 
-            this.arrow.draw(surface);
+            if (this.decoration.arrowOn){
+                this.decoration.arrow.draw(surface);
+            }
+            
         }
 
-        if (this.label) {
-            console.log("DRAWWING")
-            this.label.move(labelX, labelY);
-            this.label.draw(surface);
+        if (this.decoration.label && this.decoration.labelOn) {
+            this.decoration.label.move(labelX, labelY);
+            this.decoration.label.draw(surface);
         }
 
 
         return [width, height];
     }
 
-
-
     centreXPos(x: number) {
         this.x = x - this.width/2;
     }
 
+    get timestamp(): number | number[] {
+        if (this._timestamp !== undefined) {
+            return this._timestamp;
+        }
+        throw new Error("Timestamp not initialised")
+    }
+    set timestamp(t: number | number[]) {
+        this._timestamp = t;
+    }
 }

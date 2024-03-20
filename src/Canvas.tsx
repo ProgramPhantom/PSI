@@ -76,21 +76,22 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             props.handler.parseScript(toParse);
             parseErr.current = "none";
         } catch (e){
-            if (e instanceof ScriptError) {
-                parseErr.current = e.message;
-                
-            } else {
-                parseErr.current = e as string;
-            }
+            //if (e instanceof ScriptError) {
+            //    parseErr.current = e.message;
+            //    
+            //} else {
+            //    parseErr.current = e as string;
+            //}
+            throw e
         }
     
         try {
             props.handler.draw(svgDrawObj.current!);
         } catch (e) {
-            if (e instanceof ScriptError) {
-                drawErr.current = e.message;
-                
-            }
+            
+            drawErr.current = e as string;
+            console.error(e)
+
         }
 
 
@@ -122,9 +123,8 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
     }, [Object.keys(props.handler.sequence.channels).join()])
 
     useEffect(() => {
-        
         props.provideErrors(parseErr.current, drawErr.current);
-    }, [parseErr.current, drawErr.current])
+    }, [parseErr.current as string, drawErr.current as string])
 
 
     return (

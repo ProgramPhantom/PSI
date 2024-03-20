@@ -28,10 +28,10 @@ export default class SimplePulse extends Temporal  {
     style: simplePulseStyle;
     
     static anyArgConstruct(defaultArgs: simplePulseInterface, args: simplePulseInterface): SimplePulse {
+        console.log(args)
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-
-        var el = new SimplePulse(options.timestamp,
-                                {config: options.config,
+        console.log(options)
+        var el = new SimplePulse({config: options.config,
                                  padding: options.padding,
                                  style: options.style,
                                  labelOn: options.labelOn,
@@ -42,12 +42,9 @@ export default class SimplePulse extends Temporal  {
         return el;
     }
 
-    constructor(timestamp: number, 
-                params: simplePulseInterface,
+    constructor(params: simplePulseInterface,
                 offset: number[]=[0, 0]) {
-
-        super(timestamp, 
-              params,
+        super(params,
               offset);
         
         this.style = params.style;

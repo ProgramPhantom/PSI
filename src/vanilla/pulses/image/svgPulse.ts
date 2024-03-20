@@ -1,6 +1,5 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig} from "../../temporal";
-import ImagePulse, { imagePulseStyle } from "./imagePulse";
 import {Position, labelInterface } from "../../label";
 import { UpdateObj } from "../../util";
 import {svgPulses} from "../../default/data/svgPulse"
@@ -44,29 +43,26 @@ export default class SVGPulse extends Temporal {
     static anyArgConstruct(defaultArgs: svgPulseInterface, args: svgPulseInterface): SVGPulse {
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
 
-        var el = new SVGPulse(options.timestamp,
-                                {path: options.path,
-                                 config: options.config,
-                                 padding: options.padding,
-                                 style: options.style,
-                                 labelOn: options.labelOn,
-                                 label: options.label,
-                                 arrowOn: options.arrowOn,
-                                 arrow: options.arrow})
+        var el = new SVGPulse({path: options.path,
+                               config: options.config,
+                               padding: options.padding,
+                               style: options.style,
+                               labelOn: options.labelOn,
+                               label: options.label,
+                               arrowOn: options.arrowOn,
+                               arrow: options.arrow})
 
         return el;
     }
 
     svgContent: string;
-    style: imagePulseStyle;
+    style: svgPulseStyle;
     path: string;
 
-    constructor(timestamp: number,
-                params: svgPulseInterface,
+    constructor(params: svgPulseInterface,
                 offset: number[]=[0, 1]) {
 
-        super(timestamp,  
-              params,
+        super(params,
               offset);
 
         this.style = params.style;
@@ -113,7 +109,7 @@ export default class SVGPulse extends Temporal {
         obj.size(this.width, this.height);
         surface.add(obj);
 
-        if (this.arrow || this.label) {
+        if (this.decoration.arrow || this.decoration.label) {
             this.posDrawDecoration(surface)
         }
     }

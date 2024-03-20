@@ -1,5 +1,4 @@
 import Abstract from "./abstract";
-import ImagePulse from "./pulses/image/imagePulse";
 import SimplePulse from "./pulses/simple/simplePulse";
 import Sequence, { lineInterface } from "./sequence";
 import Span from "./span";

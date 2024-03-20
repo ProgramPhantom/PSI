@@ -33,17 +33,15 @@ export default class Abstract extends Temporal {
                                          arrowOn: options.arrowOn,
                                          arrow: options.arrow};
 
-        var el = new Abstract(options.timestamp, absInt)
+        var el = new Abstract(absInt)
 
         return el;
     }
 
-    constructor(timestamp: number,
-                params: abstractInterface,
+    constructor(params: abstractInterface,
                 offset: number[]=[0, 0]) {
 
-        super(timestamp, 
-              params,
+        super(params,
               offset);
 
         this.style = params.style;
@@ -63,7 +61,7 @@ export default class Abstract extends Temporal {
         
         this.drawText(surface);
 
-        if (this.arrow || this.label) {
+        if (this.decoration.arrow || this.decoration.label) {
             this.posDrawDecoration(surface)
         }
     }

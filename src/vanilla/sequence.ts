@@ -4,7 +4,6 @@ import Temporal, { Orientation } from "./temporal";
 import { Position, labelInterface } from "./label";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import Channel, { channelInterface } from "./channel"
-import ImagePulse from "./pulses/image/imagePulse";
 import Label from "./label";
 import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
@@ -242,6 +241,7 @@ export default class Sequence {
     }
 
     addTemporal(channelName: string, obj: Temporal) {
+        console.log("ADDING TEMPORAL")
         var widths = this.channels[channelName].addTemporal(obj);
         this.temporalSections[channelName] = widths;
 

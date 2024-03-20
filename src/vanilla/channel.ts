@@ -4,7 +4,6 @@ import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Alignment, Orientation, labelable } from "./temporal";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
-import ImagePulse from "./pulses/image/imagePulse";
 import Label, { labelInterface, Position } from "./label";
 import Span from "./span";
 import Abstract from "./abstract";
@@ -240,22 +239,31 @@ export default class Channel extends Drawable implements labelable {
     }
 
     addTemporal(obj: Temporal): number[] {
+        console.log("HELLO?????")
         this.elementCursor += 1;
         obj.barThickness = this.style.thickness;
 
         if (obj.config.noSections > 1) {
             obj.timestamp = [this.elementCursor, this.elementCursor+obj.config.noSections-1];
-            
+
             this.elementCursor += obj.config.noSections - 1;
         } else {
-            obj.timestamp = this.elementCursor;
+            if (obj.config.timestamp) {
+                obj.timestamp = obj.config.timestamp;
+            } else {
+                obj.timestamp = this.elementCursor;
+            }
+            
         }
+        console.log("TIMESTAMP@ ", obj.timestamp)
 
         var sections = new Array<number>(obj.config.noSections);
         sections.fill(obj.pwidth / obj.config.noSections);
 
         this.temporalElements.push(obj);
         this.hSections.push(...sections);
+
+        console.log("HEREAFADS")
 
         this.computeVerticalBounds();
         return this.hSections;

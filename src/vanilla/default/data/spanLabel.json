@@ -1,0 +1,24 @@
+{
+    "labelOn": true,
+    "label": {
+        "text": "\\textrm{H}",
+        "padding": [0, 0, 0, 0],
+        "position": "top",
+        "style": {
+            "size": 15,
+            "colour": "black"
+        }
+    },
+
+    
+    "arrowOn": true,
+    "arrow": {
+        "padding": [0, 0, 10, 0],
+        "position": "top",
+        "style": {
+            "thickness": 2, 
+            "headStyle": "default", 
+            "stroke": "black"
+        }
+    }
+}
