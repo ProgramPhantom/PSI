@@ -167,21 +167,31 @@ export default abstract class Temporal extends Drawable {
     }
 
     positionDecoration() {
+    
         
-        this.decoration.px = this.px + this.pwidth/2 - this.decoration.width/2;
         
-        if (this.decoration.arrow) {
+        if (this.decoration.arrowOn && this.decoration.arrow) {
+            this.decoration.arrow.set(0, 0, this.width, 0);
+            this.decoration.computeDimensions();
+            this.decoration.px = this.px + this.pwidth/2 - this.decoration.width/2;
+
             switch (this.decoration.arrow.position) {
                 case ArrowPosition.top:
-                    this.decoration.py = this.py - this.pheight;
+                    this.decoration.py = this.py - this.decoration.pheight;
                     break;
                 case ArrowPosition.bottom:
-                    this.decoration.py = this.py + this.pheight;
+                    this.decoration.py = this.py + this.height + this.barThickness;
+                    break;
+                default:
+                    console.warn("Inline not allowed when no label")
+                    this.decoration.py = this.py - this.decoration.pheight;
                     break;
             }
         }
 
-        if (this.decoration.label) {
+        if (this.decoration.labelOn && this.decoration.label) {
+            this.decoration.px = this.px + this.pwidth/2 - this.decoration.width/2;
+            
             switch (this.decoration.label.position) {
                 case Position.top:
                     this.decoration.py = this.py - this.decoration.pheight;

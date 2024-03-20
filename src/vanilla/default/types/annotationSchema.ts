@@ -209,7 +209,7 @@ export function spanSchema(def: spanInterface): Schema {
           "fields": [
                 {  // Label size
                 "component": "text-field",
-                "name": "label.size",
+                "name": "label.style.size",
                 "label": "Size",
                 "isRequired": true,
                 "initialValue": def.label.style.size,
@@ -224,7 +224,7 @@ export function spanSchema(def: spanInterface): Schema {
                 },
                 {  // Label colour
                   "component": "text-field",
-                  "name": "label.colour",
+                  "name": "label.style.colour",
                   "label": "Colour",
                   "isRequired": true,
                   "initialValue": def.label.style.colour,

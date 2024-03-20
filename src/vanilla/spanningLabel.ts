@@ -58,19 +58,21 @@ export default class SpanningLabel extends Drawable {
         var width = 0;
         var height = 0;
         
-        if (this.arrow) {
-            width = this.arrow.pwidth;
 
+        if (this.label) {
+            height = this.label.pheight;
+            width = this.label.pwidth;
+          
+        }
+        if (this.arrow) {
             if (this.arrow.position !== ArrowPosition.inline) {
+                height += this.arrow.pheight;
+            }
+            if (this.arrow.pheight >= height) {
                 height = this.arrow.pheight;
             }
-        }
-        if (this.label) {
-            height += this.label.pheight;
 
-            if (this.label.pwidth > width) {
-                width = this.label.pwidth;
-            }
+            width = this.arrow.pwidth;
         }
 
         this.dim = {width: width, height: height}

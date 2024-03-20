@@ -1,0 +1,26 @@
+~H(label.text="^{1}\textrm{H}",)
+~G(label.text="\textrm{G}",label.style.size=20,)
+
+H.pulse180(style.width=5,style.height=30,labelOn=true,label.text="\mathrm{90}",label.style.size=8,)
+|H()
+H.chirplohi(labelOn=true, label.text="\tau_p")@H()
+G.pulse90(config.inheritWidth=true,style.width=6,style.height=4,labelOn=true,label.text="\mathrm{G}_1",)
+G.pulse180(style.width=3,style.height=15,style.fill="#aaaaaa",labelOn=true,label.text="\mathrm{G}_2",)>G()
+H.180(padding=[0,5,0,5],labelOn=true,label.text="\mathrm{180}",label.padding=[0,0,5,0],label.style.size=15,)>H()
+G.pulse180(style.width=3,style.height=15,style.fill="#aaaaaa",labelOn=true,label.text="\mathrm{G}_2",)>G()
+
+H.chirphilo(labelOn=true, label.text="\tau_p")
+G.pulse90(config.inheritWidth=true,style.width=6,style.height=4,labelOn=true,label.text="\mathrm{-G}_1", config.orientation=bottom, label.style.size=15, label.padding=[0, 0, 5, 0])|H()
+H.pulse180(style.width=5,style.height=30,labelOn=true,label.text="\mathrm{90}",label.style.size=8, padding=[0, 20, 0, 0], config.alignment=left)
+
+H.chirplohi(style.width=15,config.alignment=left, padding=[0, 70, 0, 0])
+H.chirplohi(style.width=60,config.alignment=left,)@H()
+G.pulse90(config.inheritWidth=true,style.width=6,style.height=4,labelOn=true,label.text="\mathrm{G}_3",)
+H.pulse180(style.width=5,style.height=30,labelOn=true,label.text="\mathrm{90}",label.style.size=8,)|H()
+
+H.aquire(style.width=75,style.height=37,labelOn=true,label.text="\mathrm{acq.}",)
+
+
+G.section(timespan=[6, 9],label.text="\tau_{\mathrm{mix}}",label.style.size=15,)
+H.section(timespan=[1, 5],label.text="\mathrm{GEMSTONE}",label.style.size=45,)
+H.section(timespan=[6, 9],label.text="\mathrm{NOE}",label.style.size=17,)

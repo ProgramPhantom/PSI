@@ -373,7 +373,7 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
           "fields": [
                 {
                 "component": "text-field",
-                "name": "label.size",
+                "name": "label.style.size",
                 "label": "Size",
                 "isRequired": true,
                 "initialValue": def.label.style.size,
@@ -388,7 +388,7 @@ export function simplePulseSchema(def: simplePulseInterface): Schema {
                 },
                 {
                   "component": "text-field",
-                  "name": "label.colour",
+                  "name": "label.style.colour",
                   "label": "Colour",
                   "isRequired": true,
                   "initialValue": def.label.style.colour,

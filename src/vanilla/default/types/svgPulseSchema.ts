@@ -377,7 +377,7 @@ export function svgPulseSchema(def: svgPulseInterface): Schema {
           "fields": [
                 {
                 "component": "text-field",
-                "name": "label.size",
+                "name": "label.style.size",
                 "label": "Size",
                 "isRequired": true,
                 "initializeOnMount": true,
@@ -392,7 +392,7 @@ export function svgPulseSchema(def: svgPulseInterface): Schema {
                 },
                 {
                   "component": "text-field",
-                  "name": "label.colour",
+                  "name": "label.style.colour",
                   "label": "Colour",
                   "isRequired": true,
                   "initializeOnMount": true,

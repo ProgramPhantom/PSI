@@ -7,7 +7,7 @@
         "noSections": 1
     },
 
-    "padding": [0, 10, 0, 10],
+    "padding": [0, 2, 0, 2],
     "path": "\\src\\assets\\chirphilo.svg",
     "style": {
         "width": 50,
