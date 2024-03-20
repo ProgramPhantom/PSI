@@ -34,7 +34,7 @@ export interface labelable {
 }
 
 export interface temporalConfig {
-    timestamp?: number | number[],
+    timestamp?: number[],
 
     orientation: Orientation,
     alignment: Alignment,
@@ -54,7 +54,7 @@ export interface temporalInterface extends spanningLabelInterface{
 export default abstract class Temporal extends Drawable {
     // An element that relates to a point in time
   
-    private _timestamp?: number | number[];
+    private _timestamp?: number[];
 
     config: temporalConfig;
 
@@ -84,16 +84,16 @@ export default abstract class Temporal extends Drawable {
 
         switch (this.config.orientation) {
             case Orientation.top:
-                dimensions = [this.height, 0];
+                dimensions = [this.pheight, 0];
                 break;
 
             case Orientation.bottom:
-                dimensions = [0, this.height];
+                dimensions = [0, this.pheight];
                 break;
 
             case Orientation.both:
-                dimensions = [this.height/2 - channelThickness/2, 
-                this.height/2 - channelThickness/2];    
+                dimensions = [this.pheight/2 - channelThickness/2, 
+                this.pheight/2 - channelThickness/2];    
                 break;
 
             default:
@@ -144,15 +144,17 @@ export default abstract class Temporal extends Drawable {
     }
 
     positionVertically(y: number, channelThickness: number) : number[] {
+        // CALCULATES Y OF TEMPORAL
+
         var protrusion = this.verticalProtrusion(channelThickness); 
         
         switch (this.config.orientation) {
             case Orientation.top:
-                this.y = y - this.height;
+                this.py = y - this.pheight;
                 break;
 
             case Orientation.bottom:
-                this.y = y + channelThickness;
+                this.py = y + channelThickness;
                 break;
 
             case Orientation.both:
@@ -164,98 +166,47 @@ export default abstract class Temporal extends Drawable {
        return protrusion;
     }
 
-    posDrawDecoration(surface: Svg, ): number[] {
-        var width = 0;
-        var height = 0;
-        var labelX, labelY = 0;
-        var level;
+    positionDecoration() {
         
+        this.decoration.px = this.px + this.pwidth/2 - this.decoration.width/2;
+        
+        if (this.decoration.arrow) {
+            switch (this.decoration.arrow.position) {
+                case ArrowPosition.top:
+                    this.decoration.py = this.py - this.pheight;
+                    break;
+                case ArrowPosition.bottom:
+                    this.decoration.py = this.py + this.pheight;
+                    break;
+            }
+        }
 
         if (this.decoration.label) {
             switch (this.decoration.label.position) {
                 case Position.top:
-                    labelX = this.x + this.width/2 - this.decoration.label.width/2;
-                    labelY = this.y - this.decoration.label.height - this.decoration.label.padding[2];
+                    this.decoration.py = this.py - this.decoration.pheight;
                     break;
                 case Position.bottom:
-                    labelX = this.x + this.width/2 - this.decoration.label.width/2;
-                    labelY = this.y + this.height + this.decoration.label.padding[0] + this.barThickness;
+                    this.decoration.py = this.y + this.height + this.barThickness;
                     break;
-
                 case Position.centre:
-                    labelX = this.x + this.width/2 - this.decoration.label.width/2;
-                    labelY = this.y + this.height /2 - this.decoration.label.height/2 + this.decoration.label.padding[0];
-
+                    this.decoration.y = this.y + this.height/2 - this.decoration.height/2;
                     break;
-                default:
-                    labelX = 0;
-                    labelY = 0;
             }
-
-            width += this.decoration.label.width
-            height += this.decoration.label.height;
         }
-
-        if (this.decoration.arrow) {
-            switch (this.decoration.arrow.position) {
-                case ArrowPosition.top:
-                    level = this.y - this.decoration.arrow.padding[2] - this.decoration.arrow.style.thickness;
-                    this.decoration.arrow.set(this.x, level, this.x + this.width, level);
-                    height += this.decoration.arrow.pheight;
-
-                    if ((this.decoration.label !== undefined) && this.decoration.label.position === Position.top) {
-                        labelY -= this.decoration.arrow.pheight;
-                    }
-                    break;
-                case ArrowPosition.inline:
-                    if (this.decoration.label) {
-                        this.decoration.label.style.background = "white";
-                        level = labelY + this.decoration.label.height/2;
-                    } else {
-                        level = this.y - this.decoration.arrow.padding[2] - this.decoration.arrow.style.thickness;
-                    }
-                    
-                    this.decoration.arrow.set(this.x, level, this.x + this.width, level);
-                    break;
-                case ArrowPosition.bottom:
-                    level = this.y + this.height + this.decoration.arrow.padding[0] + this.barThickness + this.decoration.arrow.style.thickness;
-                    this.decoration.arrow.set(this.x, level, this.x + this.width, level);
-
-                    if ((this.decoration.label !== undefined) && this.decoration.label.position === Position.bottom) {
-                        labelY += this.decoration.arrow.pheight;
-                    }
-
-                    break;
-                default:
-                    throw new Error(`Unknown arrow position '${this.decoration.arrow.position}'`)
-            }
-
-            if (this.decoration.arrowOn){
-                this.decoration.arrow.draw(surface);
-            }
-            
-        }
-
-        if (this.decoration.label && this.decoration.labelOn) {
-            this.decoration.label.move(labelX, labelY);
-            this.decoration.label.draw(surface);
-        }
-
-
-        return [width, height];
     }
 
     centreXPos(x: number) {
         this.x = x - this.width/2;
     }
 
-    get timestamp(): number | number[] {
+    get timestamp(): number[] {
         if (this._timestamp !== undefined) {
             return this._timestamp;
         }
         throw new Error("Timestamp not initialised")
     }
-    set timestamp(t: number | number[]) {
+    set timestamp(t: number[]) {
         this._timestamp = t;
     }
 }

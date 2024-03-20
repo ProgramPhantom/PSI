@@ -17,7 +17,7 @@
     "labelOn": true,
     "label": {
         "text": "\\mathrm{G}_1",
-        "padding": [3, 0, 10, 0],
+        "padding": [3, 0, 3, 0],
         "position": "bottom",
         "style": {
             "size": 15,

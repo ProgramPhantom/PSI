@@ -17,7 +17,7 @@
     "labelOn": true,
     "label": {
         "text": "\\tau",
-        "padding": [0, 0, 10, 0],
+        "padding": [3, 0, 7, 0],
         "position": "top",
         "style": {
             "size": 10,

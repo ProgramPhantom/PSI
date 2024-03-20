@@ -240,7 +240,6 @@ export default class SequenceHandler {
         ...SimplePulse.defaults,
         ...Abstract.defaults,
         ...Span.defaults,
-        ...Label.defaults,
         ...Section.defaults,
     }
 
@@ -698,10 +697,13 @@ export default class SequenceHandler {
             this.sequence.addTemporal(channelName, Abstract.anyArgConstruct(absDef, args))
         } else if (Object.keys(Span.defaults).includes(commandName)) {
             var spanDef = Span.defaults[commandName];
-            this.sequence.addTemporal(channelName, Span.anyArgConstruct(spanDef, args))
-        } else if (Object.keys(Label.defaults).includes(commandName)) {
-            var labelDef = Label.defaults[commandName];
-            this.sequence.addLabel(channelName, Label.anyArgConstruct(labelDef, args))
+
+            if (commandName === "span") {
+                this.sequence.addTemporal(channelName, Span.anyArgConstruct(spanDef, args))
+            } else if (commandName === "annotationSpan") {
+                this.sequence.addLabel(channelName, Span.anyArgConstruct(spanDef, args))
+            }
+    
         } else if (Object.keys(Section.defaults).includes(commandName)) {
             var secDef = Section.defaults[commandName];
             this.sequence.addAnnotationLong(channelName, Section.anyArgConstruct(secDef, args))

@@ -10,6 +10,7 @@ import Abstract from "./abstract";
 import AnnotationLayer from "./annotationLayer";
 import Bracket, { bracketInterface } from "./bracket";
 import Section from "./section";
+import SpanningLabel from "./spanningLabel";
  
 interface Dim {
     width: number,
@@ -108,7 +109,7 @@ export default class Channel extends Drawable implements labelable {
 
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
         this.y = yCursor + this.padding[0];
-
+        
         // Compute x values of start of each timespan
         this.timespanX.push(this.barX);
         timestampWidths.forEach((w, i) => {
@@ -135,7 +136,7 @@ export default class Channel extends Drawable implements labelable {
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
 
         this.positionElements(timestampWidths);
-
+        console.log("bar y", this.barY)
         this.temporalElements.forEach(element => {
             element.draw(surface);
         });
@@ -190,16 +191,15 @@ export default class Channel extends Drawable implements labelable {
 
             temporalEl.positionVertically(this.barY, this.style.thickness);
 
-            if (Array.isArray(temporalEl.timestamp)) {
+            if (temporalEl.timestamp.length > 1) {
                 tempX = this.timespanX[temporalEl.timestamp[0]]
 
                 for (var i = temporalEl.timestamp[0]; i <= temporalEl.timestamp[1]; i++) {
                     timespanWidth += timestampWidths[i];
                 }
-                
             } else {
-                tempX = this.timespanX[temporalEl.timestamp]
-                timespanWidth = timestampWidths[temporalEl.timestamp]
+                tempX = this.timespanX[temporalEl.timestamp[0]]
+                timespanWidth = timestampWidths[temporalEl.timestamp[0]]
             }
             
             if (temporalEl.config.inheritWidth) {
@@ -239,7 +239,7 @@ export default class Channel extends Drawable implements labelable {
     }
 
     addTemporal(obj: Temporal): number[] {
-        console.log("HELLO?????")
+        
         this.elementCursor += 1;
         obj.barThickness = this.style.thickness;
 
@@ -251,11 +251,11 @@ export default class Channel extends Drawable implements labelable {
             if (obj.config.timestamp) {
                 obj.timestamp = obj.config.timestamp;
             } else {
-                obj.timestamp = this.elementCursor;
+                obj.timestamp = [this.elementCursor];
             }
             
         }
-        console.log("TIMESTAMP@ ", obj.timestamp)
+        
 
         var sections = new Array<number>(obj.config.noSections);
         sections.fill(obj.pwidth / obj.config.noSections);
@@ -263,13 +263,11 @@ export default class Channel extends Drawable implements labelable {
         this.temporalElements.push(obj);
         this.hSections.push(...sections);
 
-        console.log("HEREAFADS")
-
         this.computeVerticalBounds();
         return this.hSections;
     }
 
-    addAnnotationLabel(lab: Label) {
+    addAnnotationLabel(lab: Span) {
         if (!this.annotationLayer) {
             this.annotationLayer = new AnnotationLayer(Channel.default.annotationStyle.padding)
         }
@@ -285,7 +283,7 @@ export default class Channel extends Drawable implements labelable {
             return;
         }
 
-        this.annotationLayer.annotateLabel(lab, timestamp);
+        this.annotationLayer.annotateLabel(lab);
     }
 
     addAnnotationLong(section: Section) {

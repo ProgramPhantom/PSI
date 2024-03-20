@@ -6,6 +6,7 @@ import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";
 import Bracket, { Direction, bracketType } from "./bracket";
 import Section from "./section";
+import SpanningLabel from "./spanningLabel";
 
 interface Dim {
     width: number,
@@ -30,7 +31,7 @@ export interface bigSpanInterface {
 
 
 export default class AnnotationLayer extends Drawable {
-    labels: {[timestamp: number]: Label[]} = [];
+    labels: {[timestamp: number]: Span[]} = [];
     longs: Section[] = [];
 
     padding: number[];
@@ -95,18 +96,9 @@ export default class AnnotationLayer extends Drawable {
                     timeWidth = 0;
                 }
 
-                switch (l.position) {
-                    case Position.centre:
-                        l.x = x + timeWidth/2 - l.width/2;
-                        l.y = ys[timestamp];
-                        break;
-                    default:
-                        l.x = x;
-                        l.y = ys[timestamp];
-                        break;
-                        
-                }
-
+                l.x = x + timeWidth/2 - l.width/2;
+                l.y = ys[timestamp];
+             
                 ys[timestamp] += l.height;
 
                 
@@ -170,14 +162,13 @@ export default class AnnotationLayer extends Drawable {
         }
     }
 
-    annotateLabel(label: Label, timestamp: number) {
+    annotateLabel(label: Span) {
         var newLabel = label;
         
-
-        if (this.labels[timestamp] === undefined) {
-            this.labels[timestamp] = [newLabel];
+        if (this.labels[label.timestamp[0]] === undefined) {
+            this.labels[label.timestamp[0]] = [newLabel];
         } else {
-            this.labels[timestamp].push(newLabel);
+            this.labels[label.timestamp[0]].push(newLabel);
         }
         
     }

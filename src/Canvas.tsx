@@ -76,13 +76,13 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             props.handler.parseScript(toParse);
             parseErr.current = "none";
         } catch (e){
-            //if (e instanceof ScriptError) {
-            //    parseErr.current = e.message;
-            //    
-            //} else {
-            //    parseErr.current = e as string;
-            //}
-            throw e
+            if (e instanceof ScriptError) {
+                parseErr.current = e.message;
+                
+            } else {
+                parseErr.current = e as string;
+            }
+           
         }
     
         try {

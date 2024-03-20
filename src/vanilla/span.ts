@@ -11,7 +11,8 @@ export interface spanInterface extends temporalInterface {
 }   
 
 export default class Span extends Temporal {
-    static defaults: {[name: string]: spanInterface} = {"span": {...<any>defaultSpan }}
+    static defaults: {[name: string]: spanInterface} = {"span": {...<any>defaultSpan },
+                                                        "annotationSpan": {...<any>defaultSpan }}
 
     static anyArgConstruct(defaultArgs: temporalInterface, args: any): Span {
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
@@ -33,20 +34,19 @@ export default class Span extends Temporal {
             
         super(params, offset)
 
-
-        
-
-        this.dim = {width: params.width, height: params.arrow.style.thickness}
+        this.dim = {width: params.width, height: 0}
 
         if (this.decoration.arrow) {
             this.decoration.arrow.set(0, 0, this.width, 0)
         }
-        
+
+        this.decoration.computeDimensions();
     }
 
     public draw(surface: Svg): void {
-        if (this.decoration.label) {
-            this.posDrawDecoration(surface);
+        if (this.decoration.label || this.decoration.arrow) {
+            this.positionDecoration();
+            this.decoration.draw(surface);
         }
     }
 

@@ -28,9 +28,9 @@ export default class SimplePulse extends Temporal  {
     style: simplePulseStyle;
     
     static anyArgConstruct(defaultArgs: simplePulseInterface, args: simplePulseInterface): SimplePulse {
-        console.log(args)
+        
         const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-        console.log(options)
+        
         var el = new SimplePulse({config: options.config,
                                  padding: options.padding,
                                  style: options.style,
@@ -64,8 +64,9 @@ export default class SimplePulse extends Temporal  {
 
         rect.draggable();
 
-        if (this.arrow || this.label) {
-            this.posDrawDecoration(surface)
+        if (this.decoration.arrow || this.decoration.label) {
+            this.positionDecoration()
+            this.decoration.draw(surface)
         }
     }
 

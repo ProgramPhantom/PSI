@@ -72,7 +72,7 @@ export default class Arrow extends Drawable {
       this.padding = params.padding;
       this.position = params.position;
 
-      this.dim = {height: 0, width: 0}
+      this.dim = {height: this.style.thickness, width: 0}
   }
 
   public set(x1: number, y1: number, x2: number, y2: number) {

@@ -110,7 +110,8 @@ export default class SVGPulse extends Temporal {
         surface.add(obj);
 
         if (this.decoration.arrow || this.decoration.label) {
-            this.posDrawDecoration(surface)
+            this.positionDecoration();
+            this.decoration.draw(surface);
         }
     }
 

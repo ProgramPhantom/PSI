@@ -50,78 +50,88 @@ export default class SpanningLabel extends Drawable {
         if (params.arrowOn) {
             this.arrow = Arrow.anyArgConstruct(Arrow.defaults["arrow"], params.arrow);
         }
+
+        this.computeDimensions();
     }
 
-    draw(surface: Svg) {
+    computeDimensions() {
         var width = 0;
         var height = 0;
-        var labelX, labelY = 0;
-        var level;
         
-        if (this.label) {
-            switch (this.label.position) {
-                case Position.top:
-                    labelX = this.x + this.width/2 - this.label.width/2;
-                    labelY = this.y - this.label.height - this.label.padding[2];
-                    break;
-                case Position.bottom:
-                    labelX = this.x + this.width/2 - this.label.width/2;
-                    labelY = this.y + this.height + this.label.padding[0];
-                    break;
+        if (this.arrow) {
+            width = this.arrow.pwidth;
 
-                case Position.centre:
-                    labelX = this.x + this.width/2 - this.label.width/2;
-                    labelY = this.y + this.height /2 - this.label.height/2 + this.label.padding[0];
-
-                    break;
-                default:
-                    labelX = 0;
-                    labelY = 0;
+            if (this.arrow.position !== ArrowPosition.inline) {
+                height = this.arrow.pheight;
             }
+        }
+        if (this.label) {
+            height += this.label.pheight;
 
-            width += this.label.width
-            height += this.label.height;
+            if (this.label.pwidth > width) {
+                width = this.label.pwidth;
+            }
         }
 
-        if (this.arrow) {
+        this.dim = {width: width, height: height}
+    }
+
+    arrange() {
+        var labelX, labelY = 0;
+        var level;
+
+        if (this.label) {
+            this.label.px = this.x + this.pwidth/2 - this.label.width/2;;
+            this.label.py = this.y;
+        }
+
+        if (this.arrowOn && this.arrow) {
             switch (this.arrow.position) {
-                case ArrowPosition.top:
+                case ArrowPosition.top:  // Arrow is on top of the label
                     level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
                     this.arrow.set(this.x, level, this.x + this.width, level);
-                    height += this.arrow.pheight;
 
-                    if ((this.label !== undefined) && this.label.position === Position.top) {
-                        labelY -= this.arrow.pheight;
+                    if ((this.label !== undefined)) {
+                        this.label.py += this.arrow.pheight;
                     }
                     break;
-                case ArrowPosition.inline:
+                case ArrowPosition.inline:  // Arrow inline
                     if (this.label) {
                         this.label.style.background = "white";
-                        level = labelY + this.label.height/2;
+                        this.label.y = this.y;
+
+                        level = this.label.y + this.label.height/2 ;
                     } else {
                         level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
                     }
                     
                     this.arrow.set(this.x, level, this.x + this.width, level);
                     break;
-                case ArrowPosition.bottom:
-                    level = this.y + this.height + this.arrow.padding[0] + this.arrow.style.thickness;
-                    this.arrow.set(this.x, level, this.x + this.width, level);
-
-                    if ((this.label !== undefined) && this.label.position === Position.bottom) {
-                        labelY += this.arrow.pheight;
+                case ArrowPosition.bottom:  // Arrow underneath
+                    if (this.label) {
+                        this.label.py = this.y;
+                        console.log(this.py)
+                        level = this.y + this.label.pheight + this.arrow.padding[0];
+                    } else {
+                        level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
                     }
 
+                    this.arrow.set(this.x, level, this.x + this.width, level);
                     break;
                 default:
                     throw new Error(`Unknown arrow position '${this.arrow.position}'`)
             }
+        }
+    }
 
+    draw(surface: Svg) {
+        this.arrange();
+
+        if (this.arrow) {
             this.arrow.draw(surface);
         }
 
         if (this.label) {
-            this.label.move(labelX, labelY);
             this.label.draw(surface);
         }
     }

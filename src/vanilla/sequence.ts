@@ -241,7 +241,7 @@ export default class Sequence {
     }
 
     addTemporal(channelName: string, obj: Temporal) {
-        console.log("ADDING TEMPORAL")
+        
         var widths = this.channels[channelName].addTemporal(obj);
         this.temporalSections[channelName] = widths;
 
@@ -249,7 +249,7 @@ export default class Sequence {
         
     }
 
-    addLabel(channelName: string, obj: Label) {
+    addLabel(channelName: string, obj: Span) {
         this.channels[channelName].addAnnotationLabel(obj);
     }
 

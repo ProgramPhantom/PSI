@@ -62,7 +62,8 @@ export default class Abstract extends Temporal {
         this.drawText(surface);
 
         if (this.decoration.arrow || this.decoration.label) {
-            this.posDrawDecoration(surface)
+            this.positionDecoration()
+            this.decoration.draw(surface);
         }
     }
 
