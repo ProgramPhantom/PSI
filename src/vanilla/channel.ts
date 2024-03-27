@@ -1,5 +1,5 @@
 import * as defaultChannel from "./default/data/channel.json"
-import { Drawable } from "./drawable";
+import { Element } from "./drawable";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Alignment, Orientation, labelable } from "./temporal";
 import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
@@ -11,6 +11,7 @@ import AnnotationLayer from "./annotationLayer";
 import Bracket, { bracketInterface } from "./bracket";
 import Section from "./section";
 import SpanningLabel from "./spanningLabel";
+import { PartialConstruct } from "./util";
  
 interface Dim {
     width: number,
@@ -54,7 +55,7 @@ export interface channelAnnotation {
 }
 
 
-export default class Channel extends Drawable implements labelable {
+export default class Channel extends Element implements labelable {
     static default: channelInterface = {...<any>defaultChannel}
 
     style: channelStyle;
@@ -101,8 +102,8 @@ export default class Channel extends Drawable implements labelable {
         
         this.labelOn = params.labelOn;
         if (params.label) {
-            this.label = Label.anyArgConstruct(Channel.default.label!, params.label);
-            this.barX = this.padding[3] + this.label.pwidth;
+            this.label = PartialConstruct(Label, params.label, Channel.default.label!);
+            this.barX = this.padding[3] + this.label!.pwidth;
         }
 
     }

@@ -1,5 +1,5 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { Drawable } from "./drawable";
+import { Element } from "./drawable";
 import { labelable } from "./temporal";
 import * as defaultArrow from "./default/data/arrow.json"
 import { UpdateObj } from "./util";
@@ -43,16 +43,8 @@ export interface arrowStyle {
 }
 
 
-export default class Arrow extends Drawable {
+export default class Arrow extends Element {
   static defaults: {[key: string]: arrowInterface} = {"arrow": {...<any>defaultArrow}}
-
-  public static anyArgConstruct(defaultArgs: arrowInterface, args: arrowInterface): Arrow {
-      const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-
-      return new Arrow({padding: options.padding,
-                        position: options.position,
-                        style: options.style})
-  }
 
   x2: number;
   y2: number;

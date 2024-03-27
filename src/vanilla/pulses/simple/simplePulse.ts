@@ -6,6 +6,7 @@ import {UpdateObj} from "../../util";
 import {simplePulses} from "../../default/data/simplePulse"
 import '@svgdotjs/svg.draggable.js';
 import { Rect } from "@svgdotjs/svg.js";
+import { IDraw } from "../../drawable";
 
 export interface simplePulseInterface extends temporalInterface {
     style: simplePulseStyle,
@@ -20,28 +21,12 @@ export interface simplePulseStyle {
 
 
 
-export default class SimplePulse extends Temporal  {
+export default class SimplePulse extends Temporal implements IDraw {
     // Default is currently 180 Pulse
     static defaults: {[key: string]: simplePulseInterface} = {...<any>simplePulses}
     
     // A pulse that is an svg rect
     style: simplePulseStyle;
-    
-    static anyArgConstruct(defaultArgs: simplePulseInterface, args: simplePulseInterface): SimplePulse {
-        
-        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-        
-        var el = new SimplePulse({config: options.config,
-                                 padding: options.padding,
-                                 offset: options.offset,
-                                 style: options.style,
-                                 labelOn: options.labelOn,
-                                 label: options.label,
-                                 arrowOn: options.arrowOn,
-                                 arrow: options.arrow})
-
-        return el;
-    }
 
     constructor(params: simplePulseInterface) {
         super(params);

@@ -1,4 +1,4 @@
-import { Drawable } from "./drawable";
+import { Element } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Temporal, { Orientation } from "./temporal";
 import { Position, labelInterface } from "./label";
@@ -14,6 +14,7 @@ import SequenceHandler from "./sequenceHandler";
 import Bracket, { Direction, bracketInterface } from "./bracket";
 import { NumberAlias } from "svg.js";
 import Section from "./section";
+import { PartialConstruct } from "./util";
 
 
 interface sequenceInterface {
@@ -177,7 +178,7 @@ export default class Sequence {
     defineChannel(name: string, args: any) {
         var newChannel = new Channel(args, [0, 0]);
 
-        newChannel.label = Label.anyArgConstruct(Label.defaults["label"], args.label);
+        newChannel.label = PartialConstruct(Label, args.label, Label.defaults["label"]);
 
         this.channels[name] = newChannel;
     }

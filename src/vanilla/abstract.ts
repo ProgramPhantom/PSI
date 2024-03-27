@@ -2,8 +2,9 @@ import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Ali
 import * as defaultAbstract from "./default/data/abstract.json"
 import * as SVG from '@svgdotjs/svg.js'
 import Label, { Position, labelInterface} from "./label";
-import { UpdateObj } from "./util";
+import { PartialConstruct, UpdateObj } from "./util";
 import { simplePulseStyle } from "./pulses/simple/simplePulse";
+import { IDraw } from "./drawable";
 
 export interface abstractInterface extends temporalInterface {
     text: string,
@@ -12,7 +13,7 @@ export interface abstractInterface extends temporalInterface {
 
 
 
-export default class Abstract extends Temporal {
+export default class Abstract extends Temporal implements IDraw {
     // Default is currently 180 Pulse 
     
     static defaults: {[key: string]: abstractInterface} = {"abstract": {...<any>defaultAbstract }}
@@ -20,31 +21,13 @@ export default class Abstract extends Temporal {
     // A pulse that is an svg rect
     style: simplePulseStyle;
     textLabel: Label;
-    
-    public static anyArgConstruct(defaultArgs: abstractInterface, args: any): Abstract {
-        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-        
-        var absInt: abstractInterface = {config: options.config,
-                                         padding: options.padding,
-                                         offset: options.offset,
-                                         text: options.text,
-                                         style: options.style,
-                                         labelOn: options.labelOn,
-                                         label: options.label,
-                                         arrowOn: options.arrowOn,
-                                         arrow: options.arrow};
-
-        var el = new Abstract(absInt)
-
-        return el;
-    }
 
     constructor(params: abstractInterface) {
 
         super(params);
 
         this.style = params.style;
-        this.textLabel = Label.anyArgConstruct(Label.defaults["label"], {text: params.text, position: Position.centre, style: {size: 60, colour: "white"}})
+        this.textLabel = PartialConstruct(Label, {text: params.text, position: Position.centre, style: {size: 60, colour: "white"}}, Label.defaults["label"]) 
 
         this.dim = {width: this.style.width, height: this.style.height};
     }

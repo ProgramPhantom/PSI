@@ -1,7 +1,7 @@
-import { Drawable } from "./drawable";
+import { Element, IDraw } from "./drawable";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Label, { labelInterface, Position } from "./label";
-import { UpdateObj } from "./util";
+import { PartialConstruct, UpdateObj } from "./util";
 import Arrow, { ArrowPosition, arrowInterface } from "./arrow";
 import { H } from "mathjax-full/js/output/common/FontData";
 import SpanningLabel, { spanningLabelInterface } from "./spanningLabel";
@@ -25,9 +25,6 @@ export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both"
 
 export enum Alignment {Left=<any>"left", Centre=<any>"centre", Right=<any>"right"}
 
-export interface IHasAssembler {
-    anyArgConstruct(defaultArgs: temporalInterface, args: any): object;
-}
 export interface labelable {
     label?: Label,
     posDrawDecoration(surface: Svg): number[],
@@ -43,18 +40,18 @@ export interface temporalConfig {
     noSections: number,
 }
 
-export interface temporalInterface extends spanningLabelInterface{
+export interface temporalInterface extends spanningLabelInterface {
     padding: number[],
     offset: number[],
     config: temporalConfig,
 
 }
 
+export interface IDefaultConstruct<I> {
+}
 
-
-export default abstract class Temporal extends Drawable {
+export default class Temporal extends Element implements IDraw {
     // An element that relates to a point in time
-  
     private _timestamp?: number[];
 
     config: temporalConfig;
@@ -66,7 +63,7 @@ export default abstract class Temporal extends Drawable {
     constructor(params: temporalInterface) {
 
         super(0, 0, params.offset, params.padding);
-
+        // PartialConstruct<typeof Temporal>(Temporal, {padding: [1, 2,3 ,4]});
 
         this.config = params.config;
 
@@ -74,9 +71,7 @@ export default abstract class Temporal extends Drawable {
             this.timestamp = this.config.timestamp;
         }
 
-        this.decoration = SpanningLabel.anyArgConstruct(SpanningLabel.defaults["spanlabel"], 
-                          {labelOn: params.labelOn, label: params.label, arrowOn: params.arrowOn, arrow: params.arrow})
-        
+        this.decoration = PartialConstruct(SpanningLabel, {labelOn: params.labelOn, label: params.label, arrowOn: params.arrowOn, arrow: params.arrow}, SpanningLabel.defaults["spanlabel"])
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
@@ -208,6 +203,10 @@ export default abstract class Temporal extends Drawable {
 
     centreXPos(x: number) {
         this.x = x - this.width/2;
+    }
+
+    draw(surface: Svg) {
+        throw new Error("Can't draw this!");
     }
 
     get timestamp(): number[] {

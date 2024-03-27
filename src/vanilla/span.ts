@@ -4,30 +4,16 @@ import { Position, labelInterface } from "./label";
 import Temporal, { Alignment, Orientation, labelable, temporalInterface, temporalConfig } from "./temporal";
 import * as defaultSpan from "./default/data/span.json"
 import { UpdateObj } from "./util";
+import { IDraw } from "./drawable";
 
 
 export interface spanInterface extends temporalInterface {
     width: number,
 }   
 
-export default class Span extends Temporal {
+export default class Span extends Temporal implements IDraw {
     static defaults: {[name: string]: spanInterface} = {"span": {...<any>defaultSpan },
                                                         "annotationSpan": {...<any>defaultSpan }}
-
-    static anyArgConstruct(defaultArgs: temporalInterface, args: any): Span {
-        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-
-        var el = new Span({width: options.width,
-                          config: options.config,
-                          padding: options.padding,
-                          offset: options.offset,
-                          labelOn: options.labelOn,
-                          label: options.label,
-                          arrowOn: options.arrowOn,
-                          arrow: options.arrow})
-
-        return el;
-    }
 
     constructor(params: spanInterface) {
             

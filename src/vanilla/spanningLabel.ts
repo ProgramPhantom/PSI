@@ -1,8 +1,8 @@
-import { Drawable } from "./drawable";
+import { Element } from "./drawable";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import * as defaultSpanLabel from "./default/data/spanLabel.json";
-import { UpdateObj } from "./util";
+import { PartialConstruct, UpdateObj } from "./util";
 import Label, { Position as Position, labelInterface } from "./label";
 import Arrow, { ArrowPosition, arrowInterface } from "./arrow";
 
@@ -16,19 +16,9 @@ export interface spanningLabelInterface{
 }
 
 
-export default class SpanningLabel extends Drawable {
+export default class SpanningLabel extends Element {
     static defaults: {[key: string]: spanningLabelInterface} = {"spanlabel": {...<any>defaultSpanLabel}}
 
-    public static anyArgConstruct(defaultArgs: spanningLabelInterface, args: spanningLabelInterface): SpanningLabel {
-        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-
-        return new SpanningLabel(
-            {labelOn: options.labelOn,
-             label: options.label,
-             arrowOn: options.arrowOn,
-             arrow: options.arrow}
-        )
-    }
 
     labelOn: boolean;
     label?: Label;
@@ -43,12 +33,12 @@ export default class SpanningLabel extends Drawable {
 
         this.labelOn = params.labelOn;
         if (params.labelOn) {
-            this.label = Label.anyArgConstruct(Label.defaults["label"], params.label)
+            this.label = PartialConstruct(Label, params.label, Label.defaults["label"])
         }
         
         this.arrowOn = params.arrowOn;
         if (params.arrowOn) {
-            this.arrow = Arrow.anyArgConstruct(Arrow.defaults["arrow"], params.arrow);
+            this.arrow = PartialConstruct(Arrow, params.arrow, Arrow.defaults["arrow"])
         }
 
         this.computeDimensions();

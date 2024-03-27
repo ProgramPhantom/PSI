@@ -1,5 +1,5 @@
 import { arrowStyle } from "./arrow";
-import { Drawable } from "./drawable";
+import { Element } from "./drawable";
 import Label, { Position, labelInterface } from "./label";
 import { labelable } from "./temporal";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
@@ -30,7 +30,7 @@ export interface bigSpanInterface {
 }
 
 
-export default class AnnotationLayer extends Drawable {
+export default class AnnotationLayer extends Element {
     labels: {[timestamp: number]: Span[]} = [];
     longs: Section[] = [];
 

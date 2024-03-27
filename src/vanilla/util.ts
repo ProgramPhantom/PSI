@@ -1,3 +1,5 @@
+import { IDraw } from "./drawable";
+import Temporal, { IDefaultConstruct } from "./temporal";
 
 export function UpdateObj(obj: any, newVals: any) {
     var newkeyval = Object.entries(newVals);
@@ -14,4 +16,11 @@ export function UpdateObj(obj: any, newVals: any) {
       }
     })
     return newObj;
+}
+
+
+export function PartialConstruct (element: {new (...args: any[]): any},
+                                                      partialArgs: any,
+                                                      defaultArgs: any) : any  {
+  return new element(partialArgs ? UpdateObj(defaultArgs, partialArgs) : defaultArgs)
 }

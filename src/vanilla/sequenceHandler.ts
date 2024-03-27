@@ -7,10 +7,10 @@ import { Svg } from "@svgdotjs/svg.js";
 import Bracket, { Direction, bracketInterface } from "./bracket";
 import Label from "./label";
 import Temporal, { temporalInterface } from "./temporal";
-import { Drawable } from "./drawable";
+import { Element } from "./drawable";
 import SVGPulse, {  } from "./pulses/image/svgPulse";
 import Channel, { channelInterface } from "./channel";
-import { UpdateObj } from "./util";
+import { PartialConstruct, UpdateObj } from "./util";
 import Section from "./section";
 import { Script } from "vm";
 
@@ -687,26 +687,23 @@ export default class SequenceHandler {
 
         // I am not yet experienced enough in Typescript to find a better solution to this
         if (Object.keys(SVGPulse.defaults).includes(commandName)) {
-            var svgDef = SVGPulse.defaults[commandName]; 
-            this.sequence.addTemporal(channelName, SVGPulse.anyArgConstruct(svgDef, args))
+            this.sequence.addTemporal(channelName, PartialConstruct(SVGPulse, args, SVGPulse.defaults[commandName]))
         } else if (Object.keys(SimplePulse.defaults).includes(commandName)) {
-            var simpDef = SimplePulse.defaults[commandName]; 
-            this.sequence.addTemporal(channelName, SimplePulse.anyArgConstruct(simpDef, args))
+            this.sequence.addTemporal(channelName, PartialConstruct(SimplePulse, args, SimplePulse.defaults[commandName]))
         } else if (Object.keys(Abstract.defaults).includes(commandName)) {
-            var absDef = Abstract.defaults[commandName];
-            this.sequence.addTemporal(channelName, Abstract.anyArgConstruct(absDef, args))
+            this.sequence.addTemporal(channelName, PartialConstruct(Abstract, args, Abstract.defaults[commandName]))
         } else if (Object.keys(Span.defaults).includes(commandName)) {
             var spanDef = Span.defaults[commandName];
 
             if (commandName === "span") {
-                this.sequence.addTemporal(channelName, Span.anyArgConstruct(spanDef, args))
+                this.sequence.addTemporal(channelName, PartialConstruct(Span, args, Span.defaults[commandName]))
             } else if (commandName === "annotationSpan") {
-                this.sequence.addLabel(channelName, Span.anyArgConstruct(spanDef, args))
+                this.sequence.addLabel(channelName, PartialConstruct(Span, args, Span.defaults[commandName]))
             }
     
         } else if (Object.keys(Section.defaults).includes(commandName)) {
             var secDef = Section.defaults[commandName];
-            this.sequence.addAnnotationLong(channelName, Section.anyArgConstruct(secDef, args))
+            this.sequence.addAnnotationLong(channelName, PartialConstruct(Section, args, Section.defaults[commandName]))
         }
         else {
             throw new ScriptError(CommandError.INVALID_COMMAND, `Undefined command: '${commandName}'`, command.columns, [command.line, command.line])
@@ -736,10 +733,10 @@ export default class SequenceHandler {
                 this.sequence.syncNext(channel.content, undefined);
                 break;
             case "[":
-                this.sequence.addBracket(channel.content, Bracket.anyArgConstruct(Sequence.defaults["empty"].bracket, <bracketInterface>args), Direction.right)
+                this.sequence.addBracket(channel.content, PartialConstruct(Sequence, args, Sequence.defaults["empty"].bracket), Direction.right)
                 break;
             case "]":
-                this.sequence.addBracket(channel.content, Bracket.anyArgConstruct(Sequence.defaults["empty"].bracket, <bracketInterface>args), Direction.left)
+                this.sequence.addBracket(channel.content, PartialConstruct(Sequence, args, Sequence.defaults["empty"].bracket), Direction.left)
                 break;
         }
     }

@@ -1,4 +1,5 @@
 import { SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
+import SVGPulse from './pulses/image/svgPulse'
 
 interface Dim {
     width: number,
@@ -12,9 +13,14 @@ interface Bounds {
     right: number
 }
 
+export interface IDraw {
+    draw(surface: Svg): void
+}
 
 
-export abstract class Drawable {
+
+
+export abstract class Element {
     private _x: number;
     private _y: number;
     private _dim?: Dim;
@@ -47,8 +53,6 @@ export abstract class Drawable {
             }
         }
     }
-
-    public abstract draw(surface: Svg): void;
 
     get x(): number {
         return this._x;

@@ -1,4 +1,4 @@
-import { Drawable } from "./drawable";
+import { Element } from "./drawable";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import * as defaultLabel from "./default/data/label.json";
@@ -40,19 +40,8 @@ export enum Position {top="top",
                       centre="centre"}
 
 
-export default class Label extends Drawable {
+export default class Label extends Element {
     static defaults: {[key: string]: labelInterface} = {"label": {...<any>defaultLabel}}
-
-    public static anyArgConstruct(defaultArgs: labelInterface, args: any): Label {
-        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-
-        return new Label(
-            {text: options.text,
-            padding: options.padding,
-            position: options.position,
-            style: options.style}
-        )
-    }
 
     text: string;
     style: labelStyle;

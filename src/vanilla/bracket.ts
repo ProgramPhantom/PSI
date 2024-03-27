@@ -1,9 +1,9 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { Drawable } from "./drawable";
+import { Element } from "./drawable";
 import { labelable } from "./temporal";
 import * as defaultBracket from "./default/data/bracket.json"
 import Label, { labelInterface, Position } from "./label";
-import { UpdateObj } from "./util";
+import { PartialConstruct, UpdateObj } from "./util";
 
 
 export enum bracketType {
@@ -35,20 +35,8 @@ export interface bracketStyle {
 
 
 
-export default class Bracket extends Drawable implements labelable {
+export default class Bracket extends Element implements labelable {
     static defaults: {[key: string]: bracketInterface} = {"horizontal": {...<any>defaultBracket}}
-
-    public static anyArgConstruct(defaultArgs: bracketInterface, args: bracketInterface): Bracket {
-        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-
-        return new Bracket(
-            {protrusion: options.protrusion,
-             adjustment: options.adjustment,
-             style: options.style,
-             labelOn: options.labelOn,
-             label: options.label,}
-        )
-    }
 
 
     x1: number;
@@ -98,7 +86,7 @@ export default class Bracket extends Drawable implements labelable {
 
         this.labelOn = params.labelOn;
         if (params.labelOn) {
-            this.label = Label.anyArgConstruct(Label.defaults["label"], params.label);
+            this.label = PartialConstruct(Label, params.label, Label.defaults["label"]);
         }
         
         this.computeTotalProtrusion();

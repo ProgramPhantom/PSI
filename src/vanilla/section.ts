@@ -13,20 +13,6 @@ export interface sectionInterface extends bracketInterface {
 export default class Section extends Bracket implements labelable {
     static defaults: {[key: string]: sectionInterface} = {"section": {...<any>defaultSection}}
 
-    public static anyArgConstruct(defaultArgs: sectionInterface, args: sectionInterface): Section {
-        const options = args ? UpdateObj(defaultArgs, args) : defaultArgs;
-
-        return new Section(
-            {protrusion: options.protrusion,
-             adjustment: options.adjustment,
-             style: options.style,
-             label: options.label,
-             labelOn: options.labelOn,
-             timespan: options.timespan}
-        )
-    }
-
-
     timespan: number[];
 
     constructor(params: sectionInterface,
