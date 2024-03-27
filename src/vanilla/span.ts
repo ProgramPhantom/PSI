@@ -20,19 +20,18 @@ export default class Span extends Temporal {
         var el = new Span({width: options.width,
                           config: options.config,
                           padding: options.padding,
+                          offset: options.offset,
                           labelOn: options.labelOn,
                           label: options.label,
                           arrowOn: options.arrowOn,
-                          arrow: options.arrow,},
-                          options.offset)
+                          arrow: options.arrow})
 
         return el;
     }
 
-    constructor(params: spanInterface,
-                offset: number[]=[0,0]) {
+    constructor(params: spanInterface) {
             
-        super(params, offset)
+        super(params)
 
         this.dim = {width: params.width, height: 0}
 

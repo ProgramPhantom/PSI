@@ -26,6 +26,7 @@ export default class Abstract extends Temporal {
         
         var absInt: abstractInterface = {config: options.config,
                                          padding: options.padding,
+                                         offset: options.offset,
                                          text: options.text,
                                          style: options.style,
                                          labelOn: options.labelOn,
@@ -38,11 +39,9 @@ export default class Abstract extends Temporal {
         return el;
     }
 
-    constructor(params: abstractInterface,
-                offset: number[]=[0, 0]) {
+    constructor(params: abstractInterface) {
 
-        super(params,
-              offset);
+        super(params);
 
         this.style = params.style;
         this.textLabel = Label.anyArgConstruct(Label.defaults["label"], {text: params.text, position: Position.centre, style: {size: 60, colour: "white"}})

@@ -45,6 +45,7 @@ export interface temporalConfig {
 
 export interface temporalInterface extends spanningLabelInterface{
     padding: number[],
+    offset: number[],
     config: temporalConfig,
 
 }
@@ -62,10 +63,9 @@ export default abstract class Temporal extends Drawable {
 
     decoration: SpanningLabel;
 
-    constructor(params: temporalInterface,
-                offset: number[]=[0, 0]) {
+    constructor(params: temporalInterface) {
 
-        super(0, 0, offset, params.padding);
+        super(0, 0, params.offset, params.padding);
 
 
         this.config = params.config;

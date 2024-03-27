@@ -26,7 +26,7 @@ export abstract class Drawable {
         this._x = x;
         this._y = y;
 
-        this.offset = offset;
+        this.offset = [...offset];  // Fixed for some reason
         if (dim) {
             this.dim = dim;
         }

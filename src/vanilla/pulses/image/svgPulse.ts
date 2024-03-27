@@ -46,6 +46,7 @@ export default class SVGPulse extends Temporal {
         var el = new SVGPulse({path: options.path,
                                config: options.config,
                                padding: options.padding,
+                               offset: options.offset,
                                style: options.style,
                                labelOn: options.labelOn,
                                label: options.label,
@@ -59,11 +60,9 @@ export default class SVGPulse extends Temporal {
     style: svgPulseStyle;
     path: string;
 
-    constructor(params: svgPulseInterface,
-                offset: number[]=[0, 1]) {
+    constructor(params: svgPulseInterface) {
 
-        super(params,
-              offset);
+        super(params);
 
         this.style = params.style;
         this.path = params.path;
@@ -89,22 +88,19 @@ export default class SVGPulse extends Temporal {
             c.attr({"vector-effect": "non-scaling-stroke"})
         })
 
-        // obj.transform({flip: "y", originX: 0, originY: 175})
+        
         if (this.config.orientation === Orientation.bottom) {
-            this.offset[1] = - this.offset[1];
-
+            this.offset[1] = - Math.abs(this.offset[1]);
+            console.log("FLIPPED")
             
             obj.children().forEach((c) => {
-                // 
-                // c.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: <number>c.height()})
+
                 c.transform({flip: "y", origin: "bottom left"})
                 c.translate(0, -<number>obj.height())
-                //c.transform({origin: "top"});
-                //c.scale(1, -1);
-                
             })
         }
 
+        console.log(this.offset[1])
         obj.move(this.x + this.offset[0], this.y + this.offset[1]);
         obj.size(this.width, this.height);
         surface.add(obj);

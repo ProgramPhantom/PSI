@@ -8,6 +8,7 @@
     },
 
     "padding": [0, 1, 0, 1],
+    "offset": [0, 1],
     "path": "\\src\\assets\\chirplohi.svg",
     "style": {
         "width": 50,

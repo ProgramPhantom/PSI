@@ -2,6 +2,7 @@
 
 
     "padding": [0, 2, 0, 2],
+    "offset": [0, 0],
     "config": {
         "orientation": "top",
         "alignment": "centre",

@@ -8,6 +8,7 @@
     },
 
     "padding": [0, 10, 0, 10],
+    "offset": [0, 1],
     "path": "\\src\\assets\\180.svg",
     "style": {
         "width": 50,

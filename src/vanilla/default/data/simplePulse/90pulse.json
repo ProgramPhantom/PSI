@@ -1,6 +1,7 @@
 {
 
     "padding": [0, 1, 0, 1],
+    "offset": [0, 0],
 
     "config": {
         "orientation": "top",

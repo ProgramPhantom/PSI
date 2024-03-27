@@ -33,6 +33,7 @@ export default class SimplePulse extends Temporal  {
         
         var el = new SimplePulse({config: options.config,
                                  padding: options.padding,
+                                 offset: options.offset,
                                  style: options.style,
                                  labelOn: options.labelOn,
                                  label: options.label,
@@ -42,10 +43,8 @@ export default class SimplePulse extends Temporal  {
         return el;
     }
 
-    constructor(params: simplePulseInterface,
-                offset: number[]=[0, 0]) {
-        super(params,
-              offset);
+    constructor(params: simplePulseInterface) {
+        super(params);
         
         this.style = params.style;
 
@@ -56,7 +55,7 @@ export default class SimplePulse extends Temporal  {
         var rect = surface.rect(this.width, this.height)
         .attr({fill: this.style.fill,
                 stroke: this.style.stroke})
-        .move(this.x, this.y)
+        .move(this.x + this.offset[0], this.y + this.offset[1])
         // BAD FIX
         .attr({"stroke-width": this.style.strokeWidth,
                "shape-rendering": "crispEdges"
