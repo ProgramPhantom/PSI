@@ -2,11 +2,12 @@ import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
 import * as ReactDOM from 'react-dom';
 import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 'react-hook-form';
 import { labelInterface } from '../vanilla/label';
+import { arrowInterface } from '../vanilla/arrow';
 
-import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
+import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
 
 
-function LabelForm(props: {control: Control<any>, change: () => void}) {
+function ArrowForm(props: {control: Control<any>, change: () => void}) {
 
   
 
@@ -14,53 +15,38 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
   // onSubmit={handleSubmit(onSubmit)}x
 
   return (
-    <form onChange={() => {console.log("CHANGE")}} onSubmit={() => props.change()}>
+    <form onChange={() => {console.log("CHANGE")}}>
       <FormGroup
           fill={false}
           inline={true}
-          label="Label On"
+          label="Arrow On"
           labelFor="text-input">
           
-          <Controller control={props.control} name="labelOn" render={({field}) => (
+          <Controller control={props.control} name="arrowOn" render={({field}) => (
               <Switch {...field}></Switch>
               )}>
           </Controller>
       </FormGroup>
-      
+
       <ControlGroup vertical={true}>
         <FormGroup
-          fill={false}
-          inline={true}
-          label="Text"
-          helperText="LaTeX input"
-          labelFor="text-input">
-          
-          <Controller control={props.control} name="label.text" render={({field}) => (
-            <InputGroup {...field} id="text" placeholder="\textrm{H}" small={true} />
-            )}>
-          </Controller>
-          
-        </FormGroup>
-
-        <FormGroup 
           fill={false}
           inline={true}
           label="Position"
           labelFor="text-input">
           
-          <Controller control={props.control} name="label.position" render={({field}) => (
-              <HTMLSelect {...field} iconName='caret-down'>
-                <option value="top">Top</option>
-                <option value="right">Right</option>
-                <option value="bottom">Bottom</option>
-                <option value="left">Left</option>
-                <option value="centre">Centre</option>
+          <Controller control={props.control} name="arrow.position" render={({field}) => (
+              <HTMLSelect {...field} iconName='caret-down' >
+                <option value={"top"}>Top</option>
+                <option value={"inline"}>Inline</option>
+                <option value={"bottom"}>Bottom</option>
               </HTMLSelect>
             )}>
           </Controller>
           
         </FormGroup>
 
+        {/* PADDING */}
         <Section
           compact={true}
           title={"Padding"}
@@ -74,7 +60,7 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
               inline={true}
               label="Padding top"
               labelFor="text-input">
-              <Controller control={props.control} name="label.padding.0" render={({field: { onChange, onBlur, value, name, ref },}) => (
+              <Controller control={props.control} name="arrow.padding.0" render={({field: { onChange, onBlur, value, name, ref },}) => (
                 <Slider value={value} onChange={onChange} max={30} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
@@ -84,7 +70,7 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
               inline={true}
               label="Padding right"
               labelFor="text-input">
-              <Controller control={props.control} name="label.padding.1" render={({field}) => (
+              <Controller control={props.control} name="arrow.padding.1" render={({field}) => (
                 <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
@@ -94,7 +80,7 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
               inline={true}
               label="Padding bottom"
               labelFor="text-input">
-              <Controller control={props.control} name="label.padding.2" render={({field}) => (
+              <Controller control={props.control} name="arrow.padding.2" render={({field}) => (
                 <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
@@ -104,12 +90,10 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
               inline={true}
               label="Padding left"
               labelFor="text-input">
-              <Controller control={props.control} name="label.padding.3" render={({field}) => (
+              <Controller control={props.control} name="arrow.padding.3" render={({field}) => (
                 <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
-
-
           </ControlGroup>
         </Section>
 
@@ -119,32 +103,34 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
           collapsible={true}>
           <FormGroup
               inline={true}
-              label="Size"
+              label="Thickness"
               labelFor="text-input">
-              <Controller control={props.control} name="label.style.size" render={({field}) => (
-                <Slider {...field} max={60} min={0} labelStepSize={10}></Slider>)}>
+              <Controller control={props.control} name="arrow.style.thickness" render={({field}) => (
+                <NumericInput {...field} onValueChange={field.onChange} min={0} small={true}></NumericInput>)}>
               </Controller>
           </FormGroup>
 
           <FormGroup
               inline={true}
-              label="Size"
-              labelFor="text-input">
-              <Controller control={props.control} name="label.style.colour" render={({field}) => (
-                <input type={"color"} {...field}></input>)}>
-              </Controller>
-          </FormGroup>
-
-          <FormGroup
-              inline={true}
-              label="Background"
+              label="Head Style"
               labelFor="text-input">
 
-              <Controller control={props.control} name="label.style.background" render={({ field: { onChange, onBlur, value, ref } }) => (
-                
-                <input type={"color"} value={value} ></input>
-                
+              <Controller control={props.control} name="arrow.style.headStyle" render={({field}) => (
+                <HTMLSelect {...field} iconName='caret-down'>
+                  <option value={"default"}>Default</option>
+                  <option value={"thin"}>Thin</option>
+                </HTMLSelect>
                 )}>
+              </Controller>
+          </FormGroup>
+
+          <FormGroup
+              inline={true}
+              label="Stroke"
+              labelFor="text-input">
+
+              <Controller control={props.control} name="arrow.style.stroke" render={({field}) => (
+                <input type={"color"} {...field}></input>)}>
               </Controller>
           </FormGroup>
         </Section>
@@ -154,4 +140,4 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
   );
 }
     
-export default LabelForm
+export default ArrowForm

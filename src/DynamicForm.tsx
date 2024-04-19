@@ -21,6 +21,9 @@ import { sectionSchema } from './vanilla/default/types/sectionSchema';
 import { lineSchema } from './vanilla/default/types/lineSchema';
 import LabelForm from './form/LabelForm';
 import { Tab, Tabs, TabsExpander } from '@blueprintjs/core';
+import { FieldValues, useForm, useWatch } from 'react-hook-form';
+import ArrowForm from './form/ArrowForm';
+import SimpleForm from './form/SimpleForm';
 
 interface template {
     schema: Schema,
@@ -48,14 +51,71 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
     } else if (props.commandName === "|") {
         currSchema = lineSchema({...(SequenceHandler.ChannelUtil[props.commandName] as any)})
     }
-    
 
-    function CreateCommand(f: any) {
+
+    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm({
+        defaultValues: {
+            padding: [0, 1, 0, 1],
+            offset: [0, 0],
+        
+            config: {
+                orientation: "top",
+                alignment: "centre",
+                overridePad: false,
+                inheritWidth: false,
+                noSections: 1
+            },
+        
+            style: {
+                width: 7,
+                height: 50,
+                fill: "#000000",
+                stroke: "black",
+                strokeWidth: 0
+            },
+        
+            labelOn: false,
+            label: {
+                text: "\\mathrm{90}",
+                padding: [0, 0, 3, 0], 
+                position: "top",
+                style: {
+                    size: 10,
+                    colour: "black"
+                }
+            },
+        
+            arrowOn: false,
+            arrow: {
+                padding: [0, 0, 10, 0],
+                position: "top",
+                style: {
+                    thickness: 2, 
+                    headStyle: "default", 
+                    stroke: "black"
+                }
+            }
+        },
+        mode: "onChange"
+    });
+
+    // const data = useWatch();
+
+    function changedForm() {
+        console.log("changed");
+    }
+    
+    const onSubmit = (data: FieldValues) => {
+        
+        CreateCommand(data)
+    };
+
+    function CreateCommand(values: any) {
         if (Object.keys(SequenceHandler.ChannelUtil).includes(props.commandName)) {
             // Special command!
             if (props.commandName === "~") {
-                var command = props.commandName + f.values.identifier + "(";
-                delete f.dirtyFields.identifier;
+                var command = props.commandName + dirty.values.identifier + "(";
+                delete dirty.dirtyFields.identifier;
             } else {
                 var command = props.commandName + props.channelName + "(";
             }
@@ -64,20 +124,56 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
             var command = props.channelName + "." + props.commandName + "(";
         }
 
-        
+
         var toInclude: string[] = [];
 
-        for (const kv of Object.entries(f.dirtyFields)) {
-            toInclude.push(kv[0]);
-        }  // Collect changed fields
+       //for (const kv of Object.entries(dirty.dirtyFields)) {
+       //    toInclude.push(kv[0]);
+       //}  // Collect changed fields
 
+
+        /*
         toInclude.forEach((prop) => {
             var subProps = prop.split(".");
             var obj = {...f.values};
             while(subProps.length) { obj = obj[subProps.shift()!]; }  // Access argument from prop names
             command += prop + "=" + obj + ",";
-        })
+        })*/
+
+        
+        var prefix = "";
+        var tempVal = {}
+        function buildCommand(dirties: any, values: any, currPrefix: string) {
+            Object.entries(dirties).forEach(([k, v]) => {
+                
+                console.log(values);
+                console.log(dirties);
+
+                ;
+                if (typeof v === "object" && 
+                    !Array.isArray(v) &&
+                    v !== null) { // If object but not array
+                    
+                    buildCommand(v, values[k], currPrefix + k + ".");
+                } else {
+                    
+
+                    
+                    if (Array.isArray(values[k])) {
+                        command += currPrefix + k + "=[" + values[k] as string + "],";
+                    } else if (parseInt(values[k] as string)) {
+                        command += currPrefix  + k + "=" + values[k] as string + ",";
+                    } else {
+                        command += currPrefix + k + '="' + values[k] as string + '",';
+                    }
+                    
+                    
+                }}
+            )
+        }
+        buildCommand(dirtyFields, values, "")
         command += ")";
+        
 
         props.AddCommand(command);
     }
@@ -92,13 +188,18 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
                         onSubmit={(values, form) => CreateCommand(form.getState())}
                         
         ></FormRenderer>*/}
-        <Tabs defaultSelectedTabId={"core"}>
-            <Tab id="core" title="Core" panel={<LabelForm></LabelForm>}/>
-            <Tab id="label" title="Label" panel={<LabelForm></LabelForm>}/>
-            <Tab id="arrow" title="Arrow" panel={<LabelForm></LabelForm>}/>
+        <form onSubmit={control.handleSubmit(onSubmit)}>
+            <Tabs defaultSelectedTabId={"core"}>
+                <Tab id="core" title="Core" panel={<SimpleForm control={control} change={changedForm}></SimpleForm>} />
+                <Tab id="label" title="Label" panel={<LabelForm control={control} change={changedForm}></LabelForm>}/>
+                <Tab id="arrow" title="Arrow" panel={<ArrowForm control={control} change={changedForm}></ArrowForm>} />
 
-            <TabsExpander />
-        </Tabs>
+                <TabsExpander />
+            </Tabs>
+
+            <input type={"submit"}></input>
+        </form>
+        
         
         </>
     )
