@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react'
+import React, { ChangeEvent, ReactNode, useState } from 'react'
 import FormRenderer from '@data-driven-forms/react-form-renderer/form-renderer';
 import componentTypes from '@data-driven-forms/react-form-renderer/component-types';
 import componentMapper from '@data-driven-forms/mui-component-mapper/component-mapper';
@@ -15,11 +15,17 @@ import { simplePulses } from './vanilla/default/data/simplePulse';
 import { svgPulses } from './vanilla/default/data/svgPulse';
 import { allTemporal } from './vanilla/default/data';
 
-import { Schema } from '@data-driven-forms/react-form-renderer';
+import { Field, FormTemplateRenderProps, Schema, useFormApi } from '@data-driven-forms/react-form-renderer';
 import SequenceHandler from './vanilla/sequenceHandler';
 import { sectionSchema } from './vanilla/default/types/sectionSchema';
 import { lineSchema } from './vanilla/default/types/lineSchema';
+import LabelForm from './form/LabelForm';
+import { Tab, Tabs, TabsExpander } from '@blueprintjs/core';
 
+interface template {
+    schema: Schema,
+    formFields: any
+}
 
 
 function DynamicForm(props: {AddCommand: (line: string) => void, commandName: string, channelName: string,}) {
@@ -43,8 +49,6 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
         currSchema = lineSchema({...(SequenceHandler.ChannelUtil[props.commandName] as any)})
     }
     
-     
-
 
     function CreateCommand(f: any) {
         if (Object.keys(SequenceHandler.ChannelUtil).includes(props.commandName)) {
@@ -80,15 +84,23 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
 
     return (
         
-            
+        <>
+        {/*
         <FormRenderer schema={currSchema}
                         componentMapper={componentMapper}
                         FormTemplate={FormTemplate}
                         onSubmit={(values, form) => CreateCommand(form.getState())}
                         
-                        ></FormRenderer>
-            
+        ></FormRenderer>*/}
+        <Tabs defaultSelectedTabId={"core"}>
+            <Tab id="core" title="Core" panel={<LabelForm></LabelForm>}/>
+            <Tab id="label" title="Label" panel={<LabelForm></LabelForm>}/>
+            <Tab id="arrow" title="Arrow" panel={<LabelForm></LabelForm>}/>
+
+            <TabsExpander />
+        </Tabs>
         
+        </>
     )
 }
 

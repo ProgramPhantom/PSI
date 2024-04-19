@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@blueprintjs/core": "^5.10.1",
+    "@blueprintjs/icons": "^5.9.0",
     "@carbon/react": "^1.52.0",
     "@carbon/web-components": "^2.4.0",
     "@data-driven-forms/ant-component-mapper": "^3.22.3",
@@ -26,6 +28,7 @@
     "carbon-components": "^10.58.12",
     "carbon-components-react": "^8.52.0",
     "file-saver": "^2.0.5",
+    "formik": "^2.4.5",
     "fs": "^0.0.1-security",
     "i": "^0.3.7",
     "mathjax": "^3.2.2",
@@ -34,6 +37,7 @@
     "npm": "^10.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.51.3",
     "react-map-interaction": "^2.1.0",
     "react-zoom-pan-pinch": "^3.4.3",
     "svg.js": "^2.7.1",
