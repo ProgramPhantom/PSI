@@ -28,6 +28,7 @@ import { allTemporal } from './vanilla/default/data';
 import { simplePulseInterface } from './vanilla/pulses/simple/simplePulse';
 import { svgPulseInterface } from './vanilla/pulses/image/svgPulse';
 import { channelInterface } from './vanilla/channel';
+import SVGForm from './form/SVGForm';
 
 
 type ElementType = simplePulseInterface | svgPulseInterface | channelInterface;
@@ -35,11 +36,19 @@ type ElementType = simplePulseInterface | svgPulseInterface | channelInterface;
 
 function DynamicForm(props: {AddCommand: (line: string) => void, commandName: string, channelName: string,}) {
 
-    var currSchema: Schema = {"fields": []};  // Make this into a dictionary please!!
+    var defaultValues = allTemporal[props.commandName as keyof typeof allTemporal];
+    
+    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<ElementType>({
+        defaultValues: {...(defaultValues as any)},
+        mode: "onChange"
+    });
+    
+    var currSchema;
+    var relevantForm = <h1>BROKEN</h1>;
     if (Object.keys(simplePulses).includes(props.commandName)) {
-        currSchema = simplePulseSchema({...(simplePulses[props.commandName as keyof typeof simplePulses] as any)});
+        relevantForm = <SimpleForm control={control} change={changedForm}></SimpleForm>
     } else if (Object.keys(svgPulses).includes(props.commandName)) {
-        currSchema = svgPulseSchema({...(svgPulses[props.commandName as keyof typeof svgPulses] as any)});
+        relevantForm = <SVGForm control={control} change={changedForm}></SVGForm>
     } else if (props.commandName === "span") {
         currSchema = spanSchema({...(allTemporal[props.commandName as keyof typeof allTemporal] as any)});
     } else if (props.commandName === "abstract") {
@@ -54,13 +63,7 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
         currSchema = lineSchema({...(SequenceHandler.ChannelUtil[props.commandName] as any)})
     }
 
-    var defaultValues = allTemporal[props.commandName as keyof typeof allTemporal];
-    
 
-    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<ElementType>({
-        defaultValues: {...(defaultValues as any)},
-        mode: "onChange"
-    });
 
     console.log(control._defaultValues)
 
@@ -152,13 +155,7 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
                         
         ></FormRenderer>*/}
         <form onSubmit={control.handleSubmit(onSubmit)}>
-            <Tabs defaultSelectedTabId={"core"}>
-                <Tab id="core" title="Core" panel={<SimpleForm control={control} change={changedForm}></SimpleForm>} />
-                <Tab id="label" title="Label" panel={<LabelForm control={control} change={changedForm}></LabelForm>}/>
-                <Tab id="arrow" title="Arrow" panel={<ArrowForm control={control} change={changedForm}></ArrowForm>} />
-
-                <TabsExpander />
-            </Tabs>
+            {relevantForm}
 
             <input type={"submit"}></input>
         </form>
