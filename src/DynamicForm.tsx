@@ -13,7 +13,6 @@ import { channelSchema } from './vanilla/default/types/channelSchema';
 
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import { svgPulses } from './vanilla/default/data/svgPulse';
-import { allTemporal } from './vanilla/default/data';
 
 import { Field, FormTemplateRenderProps, Schema, useFormApi } from '@data-driven-forms/react-form-renderer';
 import SequenceHandler from './vanilla/sequenceHandler';
@@ -25,10 +24,13 @@ import { FieldValues, useForm, useWatch } from 'react-hook-form';
 import ArrowForm from './form/ArrowForm';
 import SimpleForm from './form/SimpleForm';
 
-interface template {
-    schema: Schema,
-    formFields: any
-}
+import { allTemporal } from './vanilla/default/data';
+import { simplePulseInterface } from './vanilla/pulses/simple/simplePulse';
+import { svgPulseInterface } from './vanilla/pulses/image/svgPulse';
+import { channelInterface } from './vanilla/channel';
+
+
+type ElementType = simplePulseInterface | svgPulseInterface | channelInterface;
 
 
 function DynamicForm(props: {AddCommand: (line: string) => void, commandName: string, channelName: string,}) {
@@ -52,54 +54,15 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
         currSchema = lineSchema({...(SequenceHandler.ChannelUtil[props.commandName] as any)})
     }
 
+    var defaultValues = allTemporal[props.commandName as keyof typeof allTemporal];
+    
 
-    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm({
-        defaultValues: {
-            padding: [0, 1, 0, 1],
-            offset: [0, 0],
-        
-            config: {
-                orientation: "top",
-                alignment: "centre",
-                overridePad: false,
-                inheritWidth: false,
-                noSections: 1
-            },
-        
-            style: {
-                width: 7,
-                height: 50,
-                fill: "#000000",
-                stroke: "black",
-                strokeWidth: 0
-            },
-        
-            labelOn: false,
-            label: {
-                text: "\\mathrm{90}",
-                padding: [0, 0, 3, 0], 
-                position: "top",
-                style: {
-                    size: 10,
-                    colour: "black"
-                }
-            },
-        
-            arrowOn: false,
-            arrow: {
-                padding: [0, 0, 10, 0],
-                position: "top",
-                style: {
-                    thickness: 2, 
-                    headStyle: "default", 
-                    stroke: "black"
-                }
-            }
-        },
+    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<ElementType>({
+        defaultValues: {...(defaultValues as any)},
         mode: "onChange"
     });
 
-    // const data = useWatch();
+    console.log(control._defaultValues)
 
     function changedForm() {
         console.log("changed");
