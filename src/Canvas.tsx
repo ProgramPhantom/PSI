@@ -132,9 +132,6 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         <div id={DRAWCANVASID} style={{width: "0", height: "0", visibility: "hidden"}}></div>
         
         <MapInteractionCSS
-            
-            
-
             showControls
             defaultValue={{
                 scale: 1,
@@ -150,7 +147,8 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
                 yMax: props.handler.sequence.height * 4
             }}
             >
-            <div id={DESTINATIONVCANVASID} style={{objectFit: "contain"}}>
+                
+            <div id={DESTINATIONVCANVASID}>
                 
             </div>
         </MapInteractionCSS>

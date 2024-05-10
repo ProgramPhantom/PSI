@@ -62,6 +62,7 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
         </FormGroup>
 
         <Section
+          collapseProps={{defaultIsOpen: false}}
           compact={true}
           title={"Padding"}
           collapsible={true}
@@ -114,6 +115,7 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
         </Section>
 
         <Section
+          collapseProps={{defaultIsOpen: false}}
           compact={true}
           title={"Style"}
           collapsible={true}>

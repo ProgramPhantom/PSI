@@ -1,4 +1,6 @@
+import { Section, SectionCard, Text, TextArea } from '@blueprintjs/core';
 import React, { ChangeEvent, useEffect, useState } from 'react'
+import Errors, { errorState } from './Errors';
 
 type InputEvent = ChangeEvent<HTMLTextAreaElement>;
 
@@ -20,19 +22,26 @@ const style: any = {width: "100%",
                     
                 }
 
-function Editor(props: {editorText: string, Parse: (text: string) => void}) {
+function Editor(props: {editorText: string, Parse: (text: string) => void, errorStatus: errorState}) {
     const [internalState, setInternalState] = useState(props.editorText);
-
     
     return (
-        <div>
-            <h2 style={{margin: "0 0 8px 7px", textDecoration: "bottomline", fontFamily: "lucidabright", fontSize: "20px"}}>Script</h2>
-            <textarea rows={10} cols={100} color='grey' 
-                  onChange={(e: InputEvent) => {props.Parse(e.target.value)}}
-                  spellCheck="false"
-                  style={style}
-                  value={props.editorText}
-                  ></textarea >
+        <div style={{padding: 10}}>
+            <Section collapsible={true} title={"Script"} icon={"code"} collapseProps={{defaultIsOpen: false}} compact={true}>
+                <SectionCard>
+                    <TextArea
+                        onChange={(e: InputEvent) => {props.Parse(e.target.value)}}
+                        
+                        style={{width: "100%", resize: "vertical", minHeight: 300}}
+                        value={props.editorText}
+                    ></TextArea >
+                </SectionCard>
+
+                <SectionCard>
+                    <Errors parseError={props.errorStatus.parseError} drawError={props.errorStatus.drawError}></Errors>
+                </SectionCard>
+            </Section>
+            
         </div>
     )
 }

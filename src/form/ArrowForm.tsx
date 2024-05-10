@@ -48,6 +48,7 @@ function ArrowForm(props: {control: Control<any>, change: () => void}) {
 
         {/* PADDING */}
         <Section
+          collapseProps={{defaultIsOpen: false}}
           compact={true}
           title={"Padding"}
           collapsible={true}
@@ -98,6 +99,7 @@ function ArrowForm(props: {control: Control<any>, change: () => void}) {
         </Section>
 
         <Section
+          collapseProps={{defaultIsOpen: false}}
           compact={true}
           title={"Style"}
           collapsible={true}>

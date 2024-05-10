@@ -7,7 +7,7 @@ import { channelInterface, channelStyle } from './vanilla/channel';
 import { temporalInterface } from './vanilla/temporal';
 import Form from './Form';
 import SequenceHandler from './vanilla/sequenceHandler';
-import Errors from './Errors';
+import Errors, { errorState } from './Errors';
 import Banner from './Banner';
 import FileSaver, { saveAs } from 'file-saver';
 
@@ -16,7 +16,7 @@ const DESTINATIONSVGID = "moveSVGHere";
 function App() {
   const [textboxValue, setTextboxValue] = useState<string>("");
   const [channelNames, setChannelNames] = useState<string[]>([]);
-  const [errors, setErrors] = useState<{parseError: string, drawError: string}>({parseError: "", drawError: ""});
+  const [errors, setErrors] = useState<errorState>({parseError: "", drawError: ""});
 
   const handle = useRef<SequenceHandler>(new SequenceHandler(""));
 
@@ -61,30 +61,28 @@ function App() {
   return (
       <>
 
-      <div style={{display: "flex", flexDirection: "column"}}>
+      <div style={{display: "grid", width: "100%", gridTemplateColumns: "auto 400px", gridTemplateRows: "50px auto", minHeight: "100vh", rowGap: "0", columnGap: "0"}}>
 
-        <div style={{height: "5vh"}}>
+        <div style={{gridColumnStart: 1, gridColumnEnd: 3, width: "100%"}}>
           <Banner saveSVG={SaveSVG} saveScript={SaveScript}></Banner>
         </div>
         
 
-        <div style={{display: "flex", flexDirection: "row", height: "90vh"}}>
-          <div style={{display: "flex", flexDirection: "column", width: "80%"}}>
-            <div style={{width: "100%", minHeight: 500}}>
-              <Canvas script={textboxValue} zoom={2} handler={handle.current} 
-                updateChannels={setChannelNames}
-                provideErrors={UpdateErrors}></Canvas>
-            </div>
-            
-            <Editor Parse={TypeEvent} editorText={textboxValue}></Editor>
-            <Errors parseError={errors.parseError} drawError={errors.drawError}></Errors>
+        <div style={{gridColumnStart: 1, gridColumnEnd: 2, gridRowStart: 2, gridRowEnd: 3, height: "100%", display: "flex", flexDirection: "column"}}>
+          <div style={{height: "100%"}} >
+            <Canvas script={textboxValue} zoom={2} handler={handle.current} 
+              updateChannels={setChannelNames}
+              provideErrors={UpdateErrors}></Canvas>
           </div>
-
-          <div style={{minWidth: "300px", width: "20%", height: "100%", overflow: "scroll"}}>
-            <Form AddCommand={AddCommand} channelOptions={channelNames}></Form>
+          
+          <div style={{position: "relative", width: "100%", bottom: "0px"}}>
+            <Editor Parse={TypeEvent} editorText={textboxValue} errorStatus={errors} ></Editor>
           </div>
         </div>
 
+        <div style={{gridColumnStart: 2, gridColumnEnd: 3}}>
+          <Form AddCommand={AddCommand} channelOptions={channelNames}></Form>
+        </div>
         
       </div>
         

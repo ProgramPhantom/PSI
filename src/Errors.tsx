@@ -1,5 +1,10 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
 
+export interface errorState {
+    parseError: string,
+    drawError: string
+}
+
 function Errors(props: {parseError: string, drawError: string}) {
     return (
         <>

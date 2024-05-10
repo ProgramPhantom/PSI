@@ -11,9 +11,9 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
     
     return (
         <>
-        <div style={{minWidth: "200px"}}>
-            <form style={{}}>
-                <div style={{display: "flex", flexDirection: "column", paddingTop: 10, paddingBottom: 20}}>
+        <div style={{padding: 20}}>
+            <form>
+                <div style={{display: "flex", flexDirection: "column"}}>
                     <label style={{paddingBottom: 2, paddingRight: 10}}> Select element:
                     </label>
                     <select onChange={(e) => setSelectedEl(e.target.value)} defaultValue={selectedEl} style={{marginBottom: 10}}>

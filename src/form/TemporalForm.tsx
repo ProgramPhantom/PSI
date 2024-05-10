@@ -14,13 +14,15 @@ function TemporalForm(props: {control: Control<any>, change: () => void}) {
     <form onChange={() => {console.log("CHANGE")}} onSubmit={() => props.change()}>
       <ControlGroup vertical={true}>
         {/* Padding */}
-        <Section
+        <Section style={{borderRadius: 0}}
+          collapseProps={{defaultIsOpen: false}}
           compact={true}
           title={"Padding"}
           collapsible={true}
           >
           <ControlGroup
             vertical={true}
+            style={{gap: 10}}
             >
             <FormGroup
               fill={false}
@@ -65,7 +67,8 @@ function TemporalForm(props: {control: Control<any>, change: () => void}) {
         </Section>
 
         {/* Offset */}
-        <Section
+        <Section style={{borderRadius: 0}}
+          collapseProps={{defaultIsOpen: false}}
           compact={true}
           title={"Offset"}
           collapsible={true}
@@ -96,7 +99,8 @@ function TemporalForm(props: {control: Control<any>, change: () => void}) {
         </Section>
 
         {/* Config */}
-        <Section
+        <Section style={{borderRadius: 0}}
+          collapseProps={{defaultIsOpen: false}}
           compact={true}
           title={"Config"}
           collapsible={true}
