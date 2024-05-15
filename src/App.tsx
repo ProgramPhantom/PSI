@@ -10,6 +10,7 @@ import SequenceHandler from './vanilla/sequenceHandler';
 import Errors, { errorState } from './Errors';
 import Banner from './Banner';
 import FileSaver, { saveAs } from 'file-saver';
+import DraggableElement from './dnd/DraggableElement';
 
 const DESTINATIONSVGID = "moveSVGHere";
 

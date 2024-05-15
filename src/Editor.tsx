@@ -1,6 +1,7 @@
 import { Section, SectionCard, Text, TextArea } from '@blueprintjs/core';
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import Errors, { errorState } from './Errors';
+import DraggableElement from './dnd/DraggableElement';
 
 type InputEvent = ChangeEvent<HTMLTextAreaElement>;
 
@@ -27,6 +28,14 @@ function Editor(props: {editorText: string, Parse: (text: string) => void, error
     
     return (
         <div style={{padding: 10}}>
+
+            <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true}>
+                <SectionCard>
+                    <DraggableElement name={"TEST"}></DraggableElement>
+                </SectionCard>
+                
+            </Section>
+ 
             <Section collapsible={true} title={"Script"} icon={"code"} collapseProps={{defaultIsOpen: false}} compact={true}>
                 <SectionCard>
                     <TextArea

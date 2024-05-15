@@ -7,6 +7,8 @@ import SequenceHandler, { ScriptError } from './vanilla/sequenceHandler';
 import TokenType from "./vanilla/sequenceHandler"
 // import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { MapInteractionCSS } from 'react-map-interaction';
+import DropArea from './dnd/DropArea';
+import DraggableElement from './dnd/DraggableElement';
 
 type MapState = {scale: Number, translation: {x: number, y: number}}
 
@@ -129,8 +131,9 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
 
     return (
         <>
-        <div id={DRAWCANVASID} style={{width: "0", height: "0", visibility: "hidden"}}></div>
         
+        <div id={DRAWCANVASID} style={{width: "0", height: "0", visibility: "hidden"}}></div>
+
         <MapInteractionCSS
             showControls
             defaultValue={{
@@ -147,11 +150,21 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
                 yMax: props.handler.sequence.height * 4
             }}
             >
-                
-            <div id={DESTINATIONVCANVASID}>
+            
+            <DropArea>
+        
+            </DropArea>
+
+            <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}}>
                 
             </div>
+
+            
         </MapInteractionCSS>
+        
+        
+
+        
         
         </>
     )

@@ -1,5 +1,6 @@
 import { Alignment, Button, ButtonGroup, Navbar } from '@blueprintjs/core'
 import React, { useEffect, useRef, useState } from 'react'
+import DraggableElement from './dnd/DraggableElement'
 
 
 export default function Banner(props: {saveSVG: () => void, saveScript: () => void}) {

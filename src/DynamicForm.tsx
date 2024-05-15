@@ -76,6 +76,7 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
         CreateCommand(data)
     };
 
+    
     function CreateCommand(values: any) {
         if (Object.keys(SequenceHandler.ChannelUtil).includes(props.commandName)) {
             // Special command!
@@ -98,13 +99,13 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
        //}  // Collect changed fields
 
 
-        /*
+        
         toInclude.forEach((prop) => {
             var subProps = prop.split(".");
             var obj = {...f.values};
             while(subProps.length) { obj = obj[subProps.shift()!]; }  // Access argument from prop names
             command += prop + "=" + obj + ",";
-        })*/
+        })
 
         
         var prefix = "";
@@ -143,6 +144,7 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
 
         props.AddCommand(command);
     }
+    
 
     return (
         
