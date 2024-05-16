@@ -72,8 +72,8 @@ export default class Channel extends Element implements labelable {
     temporalElements: Temporal[];
     annotationLayer?: AnnotationLayer;
 
-    hSections: number[] = [];
-    timespanX: number[] = [];
+    sectionWidths: number[] = [];  // List of widths of each section along the sequence
+    sectionXs: number[] = [];  // X coords of the leftmost of each section (including end) taken from sequence
     elementCursor: number = -1;
 
     labelOn: boolean;
@@ -112,9 +112,9 @@ export default class Channel extends Element implements labelable {
         this.y = yCursor + this.padding[0];
         
         // Compute x values of start of each timespan
-        this.timespanX.push(this.barX);
+        this.sectionXs.push(this.barX);
         timestampWidths.forEach((w, i) => {
-            this.timespanX.push(w + this.timespanX[i]);
+            this.sectionXs.push(w + this.sectionXs[i]);
         })
         
         // Add annotation
@@ -130,7 +130,7 @@ export default class Channel extends Element implements labelable {
         this.posDrawDecoration(surface);
         
         
-        this.dim = {width: this.timespanX[this.timespanX.length-1],
+        this.dim = {width: this.sectionXs[this.sectionXs.length-1],
                     height: this.height + annotationHeight}
         
 
@@ -193,13 +193,13 @@ export default class Channel extends Element implements labelable {
             temporalEl.positionVertically(this.barY, this.style.thickness);
 
             if (temporalEl.timestamp.length > 1) {
-                tempX = this.timespanX[temporalEl.timestamp[0]]
+                tempX = this.sectionXs[temporalEl.timestamp[0]]
 
                 for (var i = temporalEl.timestamp[0]; i <= temporalEl.timestamp[1]; i++) {
                     timespanWidth += timestampWidths[i];
                 }
             } else {
-                tempX = this.timespanX[temporalEl.timestamp[0]]
+                tempX = this.sectionXs[temporalEl.timestamp[0]]
                 timespanWidth = timestampWidths[temporalEl.timestamp[0]]
             }
             
@@ -236,7 +236,7 @@ export default class Channel extends Element implements labelable {
         })
 
         
-        this.barWidth = this.timespanX[this.timespanX.length-1] - this.barX;
+        this.barWidth = this.sectionXs[this.sectionXs.length-1] - this.barX;
     }
 
     addTemporal(obj: Temporal): number[] {
@@ -262,10 +262,10 @@ export default class Channel extends Element implements labelable {
         sections.fill(obj.pwidth / obj.config.noSections);
 
         this.temporalElements.push(obj);
-        this.hSections.push(...sections);
+        this.sectionWidths.push(...sections);
 
         this.computeVerticalBounds();
-        return this.hSections;
+        return this.sectionWidths;
     }
 
     addAnnotationLabel(lab: Span) {
@@ -313,7 +313,7 @@ export default class Channel extends Element implements labelable {
         var range = section.timespan ? section.timespan : [timestampStart, timestampEnd];
 
         if (range[0] < 0) {range[0] = 0;}
-        if (range[1] > this.hSections.length+1) {range[1] = this.hSections.length+1}
+        if (range[1] > this.sectionWidths.length+1) {range[1] = this.sectionWidths.length+1}
         if (range[0] > range[1]) {range = [0, 1]}
 
 
@@ -323,7 +323,7 @@ export default class Channel extends Element implements labelable {
 
     jumpTimespan(newCurs: number) {
         for (var empty = this.elementCursor; empty < newCurs; empty++) {
-            this.hSections.push(0);
+            this.sectionWidths.push(0);
         }
         this.elementCursor = newCurs
     }

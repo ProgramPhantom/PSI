@@ -41,7 +41,7 @@ export const ElementTypes = {
 }
 
 interface DropResult {
-  name: string
+  index: number
 }
 
 function DraggableElement(props: {name: string}) {
@@ -51,7 +51,7 @@ function DraggableElement(props: {name: string}) {
     end: (item, monitor) => {
       const dropResult = monitor.getDropResult<DropResult>()
       if (item && dropResult) {
-        alert(`You dropped ${item.name} into ${dropResult.name}!`)
+        alert(`You dropped ${item.name} into ${dropResult.index}!`)
       }
     },
     collect: (monitor) => ({

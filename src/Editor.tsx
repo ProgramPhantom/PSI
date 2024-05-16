@@ -41,7 +41,7 @@ function Editor(props: {editorText: string, Parse: (text: string) => void, error
                     <TextArea
                         onChange={(e: InputEvent) => {props.Parse(e.target.value)}}
                         
-                        style={{width: "100%", resize: "vertical", minHeight: 300}}
+                        style={{width: "100%", resize: "vertical", minHeight: 100}}
                         value={props.editorText}
                     ></TextArea >
                 </SectionCard>

@@ -7,8 +7,9 @@ import SequenceHandler, { ScriptError } from './vanilla/sequenceHandler';
 import TokenType from "./vanilla/sequenceHandler"
 // import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { MapInteractionCSS } from 'react-map-interaction';
-import DropArea from './dnd/DropArea';
+import DropArea from './dnd/InsertArea';
 import DraggableElement from './dnd/DraggableElement';
+import DropField from './dnd/DropField';
 
 type MapState = {scale: Number, translation: {x: number, y: number}}
 
@@ -151,9 +152,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             }}
             >
             
-            <DropArea>
-        
-            </DropArea>
+            <DropField sequence={props.handler}></DropField>
 
             <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}}>
                 
