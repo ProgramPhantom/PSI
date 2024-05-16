@@ -35,7 +35,7 @@ function InsertArea(props: {areaSpec: AddSpec}) {
             position: "absolute",
             top: `${props.areaSpec.area.y}px`,
             left: `${props.areaSpec.area.x}px`,
-            borderRadius: "2px",
+            borderRadius: "1px",
             opacity: 0.4,
             
           }
@@ -51,7 +51,7 @@ function InsertArea(props: {areaSpec: AddSpec}) {
         }
 
         return (
-            <div ref={drop} style={{ ...style, backgroundColor, border}} data-testid="dustbin">
+            <div ref={drop} style={{ ...style, backgroundColor}} data-testid="dustbin">
                 
             </div>
         )

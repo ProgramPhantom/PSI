@@ -109,9 +109,9 @@ export default class Channel extends Element implements labelable {
 
     }
 
-    draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
+    draw(surface: Svg, initialX: number, timestampWidths: number[]=[], yCursor: number=0,) {
         this.y = yCursor + this.padding[0];
-        
+        this.barX = initialX;
         this.occupancy = new Array<boolean>(timestampWidths.length).fill(false);  // Initialise occupancy
 
         // Compute x values of start of each timespan

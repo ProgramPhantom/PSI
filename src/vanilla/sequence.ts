@@ -53,8 +53,6 @@ export class Grid {
     draw(surface: Svg, timestampX: number[], height: number) {
         var attr: any;
 
-       
-
         switch (this.gridPositioning) {
             case GridPositioning.start:
                 var cursX = timestampX[0];
@@ -118,6 +116,7 @@ export default class Sequence {
     temporalSections: {[channelName: string]: number[]} = {};
     globalSectionWidths: number[] = [];  // Section widths
     timestampX: number[] = [];
+    globalChannelX: number = 0;
 
     constructor(params: sequenceInterface) {
         this.width = 0;
@@ -141,10 +140,11 @@ export default class Sequence {
         var yCurs = 0;
         this.width = 0;
         this.height = 0;
-        
+
+        this.globalChannelX = Math.max(...Object.values(this.channels).map((c) => c.barX))  // The x where all the channels will start
 
         Object.values(this.channels).forEach((channel) => {
-            channel.draw(surface, this.globalSectionWidths, yCurs);
+            channel.draw(surface, this.globalChannelX, this.globalSectionWidths, yCurs);
             yCurs = channel.pbounds.bottom;
             
             this.height += channel.pheight;
@@ -160,6 +160,7 @@ export default class Sequence {
         })
 
         this.width = Math.max(...this.channelWidths);
+        
 
         if (this.grid.gridOn) {
             this.grid.draw(surface, this.timestampX, this.height);

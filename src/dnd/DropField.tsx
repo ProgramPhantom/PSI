@@ -8,7 +8,7 @@ import { Orientation } from "../vanilla/temporal";
 class SequenceDropInterpreter {
     public handler: SequenceHandler;
     public insertAreas: AddSpec[] = [];
-    public slitherWidth: number = 2;
+    private slitherWidth: number = 1;
 
     constructor (handler: SequenceHandler) {
         this.handler = handler;
@@ -32,7 +32,7 @@ class SequenceDropInterpreter {
                 let newSlither: AddSpec = {
                     area: {x: x - this.slitherWidth/2, 
                            y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
-                           width: this.slitherWidth, 
+                           width: 1, 
                            height: channel.maxTopProtrusion + channel.padding[0]},
                     index: i, orientation: Orientation.top, channelName: name
                 };
@@ -41,9 +41,9 @@ class SequenceDropInterpreter {
                 // bottom slither
                 newSlither = {
                     area: {x: x - this.slitherWidth/2, 
-                        y: channel.barY + channel.style.thickness, 
-                        width: this.slitherWidth, 
-                        height: channel.maxBottomProtrusion + channel.padding[2]},
+                        y: channel.barY + channel.style.thickness + 1, 
+                        width: 1, 
+                        height: channel.maxBottomProtrusion + channel.padding[2] - 3},
                     index: i, orientation: Orientation.bottom, channelName: name
                 };
                 this.insertAreas.push(newSlither)

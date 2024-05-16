@@ -142,7 +142,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
                 translation: { x: 0, y: 0 }
             }}
             minScale={1}
-            maxScale={3}
+            maxScale={7}
             translationBounds={{
                 yMin: -props.handler.sequence.height * 3,
                 xMin: -props.handler.sequence.width * 3,
