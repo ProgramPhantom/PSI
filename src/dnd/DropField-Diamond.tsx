@@ -20,35 +20,23 @@ class SequenceDropInterpreter {
          var sequence = this.handler.sequence;
 
         Object.entries(sequence.channels).forEach(([name, channel]) => {
-
+            var x = channel.barX;
 
             channel.sectionXs.forEach((x, i) => {
-                console.log("SECTION WIDTHS: ", sequence)
-                let correspondingWidth = sequence.globalSectionWidths[i];
-                
+                let correspondingWidth = channel.sectionWidths[i];
                 let occupied = channel.occupancy[i];
 
-                // Left slither top
-                let newSlither: AddSpec = {
-                    area: {x: x - this.slitherWidth/2, 
-                        y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
-                        width: this.slitherWidth, 
+                if (occupied) {  // Slither
+                    // Left slither top
+                    let newSlither: AddSpec = {area: {x: x, y: channel.py, width: this.slitherWidth, 
                         height: channel.maxTopProtrusion + channel.padding[0]},
-                    index: i, orientation: Orientation.top, channelName: name
-                };
+                        index: i, orientation: Orientation.top, channelName: name};
 
-                this.insertAreas.push(newSlither)
+                        this.insertAreas.push(newSlither)
+                } else { // Block
 
-                if (!occupied) {  // Slither
-                    let newBlock: AddSpec = {
-                        area: {x: x + this.slitherWidth / 2, 
-                               y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
-                               width: correspondingWidth - this.slitherWidth, 
-                               height: channel.maxTopProtrusion + channel.padding[0]}, 
-                        index: i, orientation: Orientation.top, channelName: name}
-
-                    this.insertAreas.push(newBlock);
-                } 
+                }
+                
                 
 
                 

@@ -64,7 +64,7 @@ export class Grid {
                             "stroke-dasharray": line.dashing,
                             "stroke": line.stroke}
 
-                    cursX = timestampX[parseInt(timestamp)];
+                    cursX = timestampX[parseInt(timestamp)] ;
                         
                     surface.line(cursX, 0, cursX, height)
                     .attr(attr);
@@ -116,7 +116,7 @@ export default class Sequence {
 
 
     temporalSections: {[channelName: string]: number[]} = {};
-    maxTimespans: number[] = [];
+    globalSectionWidths: number[] = [];  // Section widths
     timestampX: number[] = [];
 
     constructor(params: sequenceInterface) {
@@ -144,15 +144,11 @@ export default class Sequence {
         
 
         Object.values(this.channels).forEach((channel) => {
-            channel.draw(surface, this.maxTimespans, yCurs);
+            channel.draw(surface, this.globalSectionWidths, yCurs);
             yCurs = channel.pbounds.bottom;
             
             this.height += channel.pheight;
             this.channelWidths.push(channel.pwidth);
-
-            
-            
-            
         })
         
         this.freeLabels.forEach((label) => {
@@ -232,11 +228,11 @@ export default class Sequence {
             }
         }
 
-        this.maxTimespans = max;
+        this.globalSectionWidths = max;
 
         
         this.timestampX = [xBar];
-        this.maxTimespans.forEach((w, i) => {
+        this.globalSectionWidths.forEach((w, i) => {
             this.timestampX.push(w + this.timestampX[i]);
         })
     }

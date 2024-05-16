@@ -73,6 +73,7 @@ export default class Channel extends Element implements labelable {
     annotationLayer?: AnnotationLayer;
 
     sectionWidths: number[] = [];  // List of widths of each section along the sequence
+    occupancy: boolean[] = []
     sectionXs: number[] = [];  // X coords of the leftmost of each section (including end) taken from sequence
     elementCursor: number = -1;
 
@@ -111,6 +112,8 @@ export default class Channel extends Element implements labelable {
     draw(surface: Svg, timestampWidths: number[]=[], yCursor: number=0) {
         this.y = yCursor + this.padding[0];
         
+        this.occupancy = new Array<boolean>(timestampWidths.length).fill(false);  // Initialise occupancy
+
         // Compute x values of start of each timespan
         this.sectionXs.push(this.barX);
         timestampWidths.forEach((w, i) => {
@@ -188,28 +191,31 @@ export default class Channel extends Element implements labelable {
         // Current alignment style: centre
         this.temporalElements.forEach((temporalEl) => {
             var tempX = 0;
-            var timespanWidth = 0;
+            var sectionWidth = 0;
 
+            // Vertical Positioning
             temporalEl.positionVertically(this.barY, this.style.thickness);
 
-            if (temporalEl.timestamp.length > 1) {
-                tempX = this.sectionXs[temporalEl.timestamp[0]]
+            if (temporalEl.timestamp.length > 1) {  // Multi timestamp element eg [1, 4]
+                tempX = this.sectionXs[temporalEl.timestamp[0]] // Set x as start section
 
                 for (var i = temporalEl.timestamp[0]; i <= temporalEl.timestamp[1]; i++) {
-                    timespanWidth += timestampWidths[i];
+                    sectionWidth += timestampWidths[i];  // Compute width of entire element slot
+                    this.occupancy[i] = true;
                 }
             } else {
-                tempX = this.sectionXs[temporalEl.timestamp[0]]
-                timespanWidth = timestampWidths[temporalEl.timestamp[0]]
+                tempX = this.sectionXs[temporalEl.timestamp[0]]  // Simply set x and 
+                sectionWidth = timestampWidths[temporalEl.timestamp[0]] // Width as the x section and section width
+                this.occupancy[temporalEl.timestamp[0]] = true;
             }
             
-            if (temporalEl.config.inheritWidth) {
-                temporalEl.dim = {width: timespanWidth, height: temporalEl.height};
+            if (temporalEl.config.inheritWidth) {  // Transform
+                temporalEl.dim = {width: sectionWidth, height: temporalEl.height};
             }
 
             switch (temporalEl.config.alignment) {
                 case Alignment.Centre:
-                    temporalEl.centreXPos(tempX + timespanWidth/2);
+                    temporalEl.centreXPos(tempX + sectionWidth/2);
                     break;
                 case Alignment.Left:
                     if (temporalEl.config.overridePad) {
@@ -221,15 +227,15 @@ export default class Channel extends Element implements labelable {
                 case Alignment.Right:
                     
                     if (temporalEl.config.overridePad) {
-                        temporalEl.x = tempX + timespanWidth - temporalEl.width;
+                        temporalEl.x = tempX + sectionWidth - temporalEl.width;
                     } else {
-                        temporalEl.x = tempX + timespanWidth - temporalEl.width - temporalEl.padding[1];
+                        temporalEl.x = tempX + sectionWidth - temporalEl.width - temporalEl.padding[1];
                     }
 
                     break;
                 default: 
                     // Centre
-                    temporalEl.centreXPos(tempX + timespanWidth/2);
+                    temporalEl.centreXPos(tempX + sectionWidth/2);
                     break;
 
             }
