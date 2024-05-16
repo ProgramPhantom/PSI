@@ -42,12 +42,12 @@ function InsertArea(props: {areaSpec: AddSpec}) {
 
         const isActive = canDrop && isOver
         let backgroundColor = 'transparent'
-        let border = "1px solid rgba(0, 0, 0, 0)";
+        let border = "2px solid rgba(0, 0, 0, 0)";
         if (isActive) {
             backgroundColor = 'darkgreen'
         } else if (canDrop) {
             backgroundColor = 'lightgrey'
-            border = "1px solid rgba(80, 80, 80, .5)"
+            border = "2px solid rgba(80, 80, 80, 0)"
         }
 
         return (

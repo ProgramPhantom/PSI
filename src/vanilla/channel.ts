@@ -65,7 +65,7 @@ export default class Channel extends Element implements labelable {
     maxTopProtrusion: number;
     maxBottomProtrusion: number;
 
-    barWidth: number;
+    barWidth: number;  // Actually the width left to right
     barX: number;
     barY: number;
     

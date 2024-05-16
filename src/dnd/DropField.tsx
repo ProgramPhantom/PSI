@@ -28,18 +28,27 @@ class SequenceDropInterpreter {
                 
                 let occupied = channel.occupancy[i];
 
-                // Left slither top
+                // slither top
                 let newSlither: AddSpec = {
                     area: {x: x - this.slitherWidth/2, 
-                        y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
-                        width: this.slitherWidth, 
-                        height: channel.maxTopProtrusion + channel.padding[0]},
+                           y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
+                           width: this.slitherWidth, 
+                           height: channel.maxTopProtrusion + channel.padding[0]},
                     index: i, orientation: Orientation.top, channelName: name
                 };
-
                 this.insertAreas.push(newSlither)
 
-                if (!occupied) {  // Slither
+                // bottom slither
+                newSlither = {
+                    area: {x: x - this.slitherWidth/2, 
+                        y: channel.barY + channel.style.thickness, 
+                        width: this.slitherWidth, 
+                        height: channel.maxBottomProtrusion + channel.padding[2]},
+                    index: i, orientation: Orientation.bottom, channelName: name
+                };
+                this.insertAreas.push(newSlither)
+
+                if (!occupied) {  // 
                     let newBlock: AddSpec = {
                         area: {x: x + this.slitherWidth / 2, 
                                y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
