@@ -21,6 +21,7 @@ import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import SortableItem from './SortableItem';
 import { Item } from './Item';
 import { useDrag } from 'react-dnd';
+import SequenceHandler from '../vanilla/sequenceHandler';
 
 const style: CSSProperties = {
   border: '1px dashed gray',
@@ -40,18 +41,21 @@ export const ElementTypes = {
     PULSE: "pulse"
 }
 
-interface DropResult {
-  index: number
+export interface DropResult {
+  index: number,
+  channelName: string,
 }
 
-function DraggableElement(props: {name: string}) {
+function DraggableElement(props: {name: string, handler: SequenceHandler}) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ElementTypes.PULSE,
     item: { name: props.name },
     end: (item, monitor) => {
       const dropResult = monitor.getDropResult<DropResult>()
       if (item && dropResult) {
-        alert(`You dropped ${item.name} into ${dropResult.index}!`)
+        console.log(dropResult)
+        alert(`Running ${dropResult.channelName}.pulse90()`)
+        props.handler.runNewLine(`${dropResult.channelName}.pulse90()`)
       }
     },
     collect: (monitor) => ({
@@ -66,7 +70,6 @@ function DraggableElement(props: {name: string}) {
       {props.name}
     </div>
   )
-
 }
 
 export default DraggableElement

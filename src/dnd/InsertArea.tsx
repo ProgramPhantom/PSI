@@ -1,5 +1,5 @@
 import { useDrop } from "react-dnd";
-import { ElementTypes } from "./DraggableElement";
+import { ElementTypes, DropResult } from "./DraggableElement";
 import { CSSProperties } from "react";
 import { Orientation } from "../vanilla/temporal";
 
@@ -20,7 +20,9 @@ export interface AddSpec {
 function InsertArea(props: {areaSpec: AddSpec}) {
     const [{ canDrop, isOver }, drop] = useDrop(() => ({
         accept: ElementTypes.PULSE,
-        drop: () => ({ index: props.areaSpec.index }),
+        drop: () => ({ 
+            index: props.areaSpec.index, 
+            channelName: props.areaSpec.channelName }),
         collect: (monitor) => ({
             isOver: monitor.isOver(),
             canDrop: monitor.canDrop(),

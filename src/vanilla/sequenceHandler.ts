@@ -336,8 +336,12 @@ export default class SequenceHandler {
         this.stateSystem = new StateDiagram(ParseState.Start, SequenceHandler.Transitions);
     }
 
+    runNewLine(deltaT: string) {
+        this.parseScript(this.script + "\n" + deltaT)
+    }
+
     parseScript(text: string) {
-        var newLines: string[] = text.split("\n");
+        var lines: string[] = text.split("\n");
         var changeOrInvalid = this.findDelta(text);
 
         this.parseErrors.forEach((err) => {
@@ -351,7 +355,7 @@ export default class SequenceHandler {
         changeOrInvalid.forEach((change, i) => {
             if (change) {
                 try {
-                    var tokens = this.tokenise(newLines[i])
+                    var tokens = this.tokenise(lines[i])
                 } catch (e) {
                     if (this.parseErrors.indexOf(i) === -1) {this.parseErrors.push(i)}
                     throw e;

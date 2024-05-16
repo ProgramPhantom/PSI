@@ -23,7 +23,7 @@ class SequenceDropInterpreter {
 
 
             channel.sectionXs.forEach((x, i) => {
-                console.log("SECTION WIDTHS: ", sequence)
+                console.log("NAME ", name)
                 let correspondingWidth = sequence.globalSectionWidths[i];
                 
                 let occupied = channel.occupancy[i];
@@ -90,7 +90,6 @@ const style: CSSProperties = {
 
 function DropField(props: {sequence: SequenceHandler}) {
     const [sequence] = useState<SequenceHandler>(props.sequence);
-    // const [insertAreas, setInsertAreas] = useState<AddSpec[]>()
 
     let areaGenerator: SequenceDropInterpreter = new SequenceDropInterpreter(props.sequence);
 

@@ -2,6 +2,7 @@ import { Section, SectionCard, Text, TextArea } from '@blueprintjs/core';
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import Errors, { errorState } from './Errors';
 import DraggableElement from './dnd/DraggableElement';
+import SequenceHandler from './vanilla/sequenceHandler';
 
 type InputEvent = ChangeEvent<HTMLTextAreaElement>;
 
@@ -23,7 +24,7 @@ const style: any = {width: "100%",
                     
                 }
 
-function Editor(props: {editorText: string, Parse: (text: string) => void, errorStatus: errorState}) {
+function Editor(props: {handler: SequenceHandler, editorText: string, Parse: (text: string) => void, errorStatus: errorState}) {
     const [internalState, setInternalState] = useState(props.editorText);
     
     return (
@@ -31,7 +32,7 @@ function Editor(props: {editorText: string, Parse: (text: string) => void, error
 
             <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true}>
                 <SectionCard>
-                    <DraggableElement name={"TEST"}></DraggableElement>
+                    <DraggableElement name={"TEST"} handler={props.handler}></DraggableElement>
                 </SectionCard>
                 
             </Section>

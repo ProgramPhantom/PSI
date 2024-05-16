@@ -77,7 +77,7 @@ function App() {
           </div>
           
           <div style={{position: "relative", width: "100%", bottom: "0px"}}>
-            <Editor Parse={TypeEvent} editorText={textboxValue} errorStatus={errors} ></Editor>
+            <Editor handler={handle.current} Parse={TypeEvent} editorText={textboxValue} errorStatus={errors} ></Editor>
           </div>
         </div>
 
