@@ -35,7 +35,6 @@ function InsertArea(props: {areaSpec: AddSpec}) {
             position: "absolute",
             top: `${props.areaSpec.area.y}px`,
             left: `${props.areaSpec.area.x}px`,
-            borderRadius: "1px",
             opacity: 0.4,
             
           }

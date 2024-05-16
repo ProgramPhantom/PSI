@@ -62,7 +62,7 @@ export class Grid {
                             "stroke-dasharray": line.dashing,
                             "stroke": line.stroke}
 
-                    cursX = timestampX[parseInt(timestamp)] ;
+                    cursX = timestampX[parseInt(timestamp)] - line.strokeWidth/2;
                         
                     surface.line(cursX, 0, cursX, height)
                     .attr(attr);

@@ -8,7 +8,7 @@ import { Orientation } from "../vanilla/temporal";
 class SequenceDropInterpreter {
     public handler: SequenceHandler;
     public insertAreas: AddSpec[] = [];
-    private slitherWidth: number = 1;
+    private slitherWidth: number = 2;
 
     constructor (handler: SequenceHandler) {
         this.handler = handler;
@@ -32,8 +32,8 @@ class SequenceDropInterpreter {
                 let newSlither: AddSpec = {
                     area: {x: x - this.slitherWidth/2, 
                            y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
-                           width: 1, 
-                           height: channel.maxTopProtrusion + channel.padding[0]},
+                           width: this.slitherWidth, 
+                           height: channel.maxTopProtrusion + channel.padding[0] - 1},
                     index: i, orientation: Orientation.top, channelName: name
                 };
                 this.insertAreas.push(newSlither)
@@ -42,20 +42,28 @@ class SequenceDropInterpreter {
                 newSlither = {
                     area: {x: x - this.slitherWidth/2, 
                         y: channel.barY + channel.style.thickness + 1, 
-                        width: 1, 
+                        width: this.slitherWidth, 
                         height: channel.maxBottomProtrusion + channel.padding[2] - 3},
                     index: i, orientation: Orientation.bottom, channelName: name
                 };
                 this.insertAreas.push(newSlither)
 
-                if (!occupied) {  // 
+                if (!occupied) {  // Top block
                     let newBlock: AddSpec = {
                         area: {x: x + this.slitherWidth / 2, 
                                y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
                                width: correspondingWidth - this.slitherWidth, 
-                               height: channel.maxTopProtrusion + channel.padding[0]}, 
+                               height: channel.maxTopProtrusion + channel.padding[0] - 1}, 
                         index: i, orientation: Orientation.top, channelName: name}
+                    this.insertAreas.push(newBlock);
 
+                    // Bottom block
+                    newBlock = {
+                        area: {x: x + this.slitherWidth / 2, 
+                               y: channel.barY + channel.style.thickness + 1, 
+                               width: correspondingWidth - this.slitherWidth, 
+                               height: channel.maxBottomProtrusion + channel.padding[2] - 3}, 
+                        index: i, orientation: Orientation.bottom, channelName: name}
                     this.insertAreas.push(newBlock);
                 } 
                 
