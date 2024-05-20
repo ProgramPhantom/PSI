@@ -1,10 +1,10 @@
-import { Element, IDraw } from "./drawable";
+import { Element, IDraw, IElement } from "./element";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Label, { labelInterface, Position } from "./label";
+import Label, { ILabel, Position } from "./label";
 import { PartialConstruct, UpdateObj } from "./util";
-import Arrow, { ArrowPosition, arrowInterface } from "./arrow";
+import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import { H } from "mathjax-full/js/output/common/FontData";
-import SpanningLabel, { spanningLabelInterface } from "./spanningLabel";
+import SpanningLabel, { IAnnotation } from "./spanningLabel";
 
 interface Dim {
     width: number,
@@ -30,7 +30,7 @@ export interface labelable {
     posDrawDecoration(surface: Svg): number[],
 }
 
-export interface temporalConfig {
+export interface positionalConfig {
     timestamp?: number[],
 
     orientation: Orientation,
@@ -40,30 +40,26 @@ export interface temporalConfig {
     noSections: number,
 }
 
-export interface temporalInterface extends spanningLabelInterface {
-    padding: number[],
-    offset: number[],
-    config: temporalConfig,
-
+export interface IPositional extends IAnnotation, IElement {
+    config: positionalConfig,
 }
 
 export interface IDefaultConstruct<I> {
 }
 
-export default class Temporal extends Element implements IDraw {
+export default class Positional extends Element implements IDraw {
     // An element that relates to a point in time
     private _timestamp?: number[];
 
-    config: temporalConfig;
+    config: positionalConfig;
 
     barThickness: number = 3;
 
     decoration: SpanningLabel;
 
-    constructor(params: temporalInterface) {
-
+    constructor(params: IPositional) {
         super(0, 0, params.offset, params.padding);
-        // PartialConstruct<typeof Temporal>(Temporal, {padding: [1, 2,3 ,4]});
+        // PartialConstruct<typeof Positional>(Positional, {padding: [1, 2,3 ,4]});
 
         this.config = params.config;
 
@@ -139,7 +135,7 @@ export default class Temporal extends Element implements IDraw {
     }
 
     positionVertically(y: number, channelThickness: number) : number[] {
-        // CALCULATES Y OF TEMPORAL
+        // CALCULATES Y OF POSITIONAL
 
         var protrusion = this.verticalProtrusion(channelThickness); 
         

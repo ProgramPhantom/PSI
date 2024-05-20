@@ -1,11 +1,11 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
-import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig} from "../../temporal";
+import Positional, {Alignment, Orientation, IPositional, positionalConfig} from "../../positional";
 import * as defaultPulse from "../../default/data/imagePulse.json"
-import Label, {Position, labelInterface } from "../../label";
+import Label, {Position, ILabel } from "../../label";
 import { UpdateObj } from "../../util";
 
 
-export interface imagePulseInterface extends temporalInterface {
+export interface imagePulseInterface extends IPositional {
     path: string,
     style: imagePulseStyle,
 }
@@ -15,7 +15,7 @@ export interface imagePulseStyle {
     height: number
 }
 
-export default class ImagePulse extends Temporal {
+export default class ImagePulse extends Positional {
     // png or jpeg
     static defaults: imagePulseInterface = {...<any>defaultPulse}
 

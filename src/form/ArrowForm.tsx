@@ -1,8 +1,8 @@
 import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
 import * as ReactDOM from 'react-dom';
 import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 'react-hook-form';
-import { labelInterface } from '../vanilla/label';
-import { arrowInterface } from '../vanilla/arrow';
+import { ILabel } from '../vanilla/label';
+import { IArrow } from '../vanilla/arrow';
 
 import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
 

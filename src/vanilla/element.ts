@@ -17,7 +17,10 @@ export interface IDraw {
     draw(surface: Svg): void
 }
 
-
+export interface IElement {
+    padding: [number, number, number, number],
+    offset: [number, number],
+}
 
 
 export abstract class Element {
@@ -28,7 +31,7 @@ export abstract class Element {
     offset: number[];
     padding: number[]=[0, 0, 0, 0];
 
-    constructor(x: number, y: number, offset: number[]=[0, 0], padding: number | number[]=[0], dim?: Dim) {
+    constructor(x: number, y: number, offset: [number, number]=[0, 0], padding: number | [number, number] | [number, number, number, number]=0, dim?: Dim) {
         this._x = x;
         this._y = y;
 
@@ -37,21 +40,16 @@ export abstract class Element {
             this.dim = dim;
         }
 
-        if (padding) {
-            if (!Array.isArray(padding)) {
-                this.padding = [padding, padding, padding, padding]
+        if (typeof padding === "number") {
+            this.padding = [padding, padding, padding, padding]
+        } else if (typeof this.padding === "object") {
+            if (padding.length === 2) {
+                this.padding = [padding[0], padding[1], padding[0], padding[1]]
             } else {
-                if (padding.length === 1) {
-                    this.padding = [padding[0], padding[0], padding[0], padding[0]]
-                } else if (padding.length === 2){
-                    this.padding = [padding[0], padding[1], padding[0], padding[1]]
-                } else if (padding.length === 3) {
-                    this.padding = [padding[0], padding[2], padding[1], padding[2]]
-                } else {
-                    this.padding = padding;
-                }
+                this.padding = padding;
             }
         }
+                
     }
 
     get x(): number {

@@ -53,9 +53,9 @@ function DraggableElement(props: {name: string, handler: SequenceHandler}) {
     end: (item, monitor) => {
       const dropResult = monitor.getDropResult<DropResult>()
       if (item && dropResult) {
-        console.log(dropResult)
+        
         alert(`Running ${dropResult.channelName}.pulse90()`)
-        props.handler.runNewLine(`${dropResult.channelName}.pulse90()`)
+        // props.handler.runNewLine(`${dropResult.channelName}.pulse90()`)
       }
     },
     collect: (monitor) => ({

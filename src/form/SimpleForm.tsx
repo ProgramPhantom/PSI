@@ -1,10 +1,10 @@
 import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
 import * as ReactDOM from 'react-dom';
 import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 'react-hook-form';
-import { labelInterface } from '../vanilla/label';
+import { ILabel } from '../vanilla/label';
 
 import { Button, ControlGroup, Divider, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
-import TemporalForm from './TemporalForm';
+import PositionalForm from './PositionalForm';
 import LabelForm from './LabelForm';
 import ArrowForm from './ArrowForm';
 import { Divide } from '@blueprintjs/icons';
@@ -83,7 +83,7 @@ function SimpleForm(props: {control: Control<any>, change: () => void}) {
                 </Section>
     
     
-                <TemporalForm control={props.control} change={props.change}></TemporalForm>
+                <PositionalForm control={props.control} change={props.change}></PositionalForm>
                 </>
                 
             } />

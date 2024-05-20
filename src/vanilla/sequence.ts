@@ -1,9 +1,9 @@
-import { Element } from "./drawable";
+import { Element, IElement } from "./element";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Temporal, { Orientation } from "./temporal";
-import { Position, labelInterface } from "./label";
-import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
-import Channel, { channelInterface } from "./channel"
+import Positional, { Orientation } from "./positional";
+import { Position, ILabel } from "./label";
+import SimplePulse, { ISimplePulse } from "./pulses/simple/simplePulse";
+import Channel, { IChannel } from "./channel"
 import Label from "./label";
 import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
@@ -11,43 +11,64 @@ import Span from "./span";
 import Abstract from "./abstract";
 import * as defaultSequence from "./default/data/sequence.json"
 import SequenceHandler from "./sequenceHandler";
-import Bracket, { Direction, bracketInterface } from "./bracket";
+import Bracket, { Direction, IBracket } from "./bracket";
 import { NumberAlias } from "svg.js";
 import Section from "./section";
-import { PartialConstruct } from "./util";
+import { FillObject, PartialConstruct } from "./util";
+import * as defaultLine from "./default/data/line.json";
 
 
 interface sequenceInterface {
     padding: number[],
     grid: gridInterface,
-    bracket: bracketInterface
+    bracket: IBracket
 }
 export enum GridPositioning {start="start", centre="centre"}
 
 interface gridInterface {
     gridOn: boolean,
     gridPositioning: GridPositioning,
-    lineStyle: lineInterface,
+    lineStyle: ILine,
     
 }
 
-export interface lineInterface {
+export interface ILine extends IElement {
     stroke: string,
     strokeWidth: number,
-    dashing: number[]
+    dashing: [number, number]
+}
+
+export class Line extends Element {
+    static defaults: {[name: string]: ILine} = {"default": <ILine>defaultLine}
+
+    stroke: string;
+    strokeWidth: number;
+    dashing: [number, number];
+
+    constructor(params: Partial<ILine>, templateName: string="default") {
+        var fullParams: ILine = FillObject(params, Line.defaults[templateName]);
+        super(0, 0, fullParams.offset, fullParams.padding)
+
+        this.stroke = fullParams.stroke;
+        this.strokeWidth = fullParams.strokeWidth;
+        this.dashing = fullParams.dashing;
+    }
 }
 
 export class Grid {
     gridOn: boolean;
-    vLines: {[timestamp: number]: lineInterface} = {};
-    style: lineInterface;
+    vLines: {[timestamp: number]: Line} = {};
+    style: ILine;
     gridPositioning: GridPositioning;
 
     constructor(params: gridInterface) {
         this.gridOn = params.gridOn;
         this.style = params.lineStyle;
         this.gridPositioning = params.gridPositioning;
-        
+    }
+
+    addLine(line: Line, index: number) {
+        this.vLines[index] = line;
     }
 
     draw(surface: Svg, timestampX: number[], height: number) {
@@ -99,7 +120,9 @@ export class Grid {
 export default class Sequence {
     static defaults: {[key: string]: sequenceInterface} = {"empty": {...<any>defaultSequence}}
 
-    channels: {[name: string]: Channel;} = {};
+    channelsDic: {[name: string]: Channel;} = {};
+    get channels(): Channel[] {return Object.values(this.channelsDic)}
+    get channelNames(): string[] {return Object.keys(this.channelsDic)}
 
     freeLabels: Label[] = [];
     brackets: {bracketObj: Bracket, startChannel: string, timestamp: number, endChannel?: string}[] = [];
@@ -112,11 +135,17 @@ export default class Sequence {
     padding: number[];
     grid: Grid;
 
-
-    temporalSections: {[channelName: string]: number[]} = {};
-    globalSectionWidths: number[] = [];  // Section widths
-    timestampX: number[] = [];
-    globalChannelX: number = 0;
+    get sectionWidths(): {[channelName: string]: number[]} {
+        var result: {[channelName: string]: number[]} = {};
+        var widths: number[][] = Object.values(this.channelsDic).map((c) => c.sectionWidths);
+        this.channelNames.forEach((name, i) => {
+            result[name] = widths[i];
+        })
+        return result;
+    }  // channelName: sectionWidths
+    maxSectionWidths: number[] = [];  // Section widths
+    maxTimestampX: number[] = [];
+    maxChannelX: number = 0;
 
     constructor(params: sequenceInterface) {
         this.width = 0;
@@ -126,12 +155,12 @@ export default class Sequence {
         
         this.grid = new Grid(params.grid);
 
-        this.channels = {};  // Wierdest bug ever happening here
+        this.channelsDic = {};  // Wierdest bug ever happening here
     }
 
     reset() {
-        Object.values(this.channels).forEach((channel) => {
-            channel.temporalElements = []
+        Object.values(this.channelsDic).forEach((channel) => {
+            channel.positionalElements = []
         })
         
     }
@@ -141,10 +170,10 @@ export default class Sequence {
         this.width = 0;
         this.height = 0;
 
-        this.globalChannelX = Math.max(...Object.values(this.channels).map((c) => c.barX))  // The x where all the channels will start
+        this.maxChannelX = Math.max(...Object.values(this.channelsDic).map((c) => c.barX))  // The x where all the channels will start
 
-        Object.values(this.channels).forEach((channel) => {
-            channel.draw(surface, this.globalChannelX, this.globalSectionWidths, yCurs);
+        this.channels.forEach((channel) => {
+            channel.draw(surface, this.maxChannelX, this.maxSectionWidths, yCurs);
             yCurs = channel.pbounds.bottom;
             
             this.height += channel.pheight;
@@ -163,7 +192,7 @@ export default class Sequence {
         
 
         if (this.grid.gridOn) {
-            this.grid.draw(surface, this.timestampX, this.height);
+            this.grid.draw(surface, this.maxTimestampX, this.height);
         }
 
         
@@ -172,52 +201,19 @@ export default class Sequence {
         return {width: 0, height: 0}
     } 
 
-    defineChannel(name: string, args: any) {
-        var newChannel = new Channel(args, [0, 0]);
+    addChannel(name: string, channel: Channel) {
+        this.channelsDic[name] = channel;
 
-        newChannel.label = PartialConstruct(Label, args.label, Label.defaults["label"]);
-
-        this.channels[name] = newChannel;
+        this.maxChannelX = Math.max(...Object.values(this.channelsDic).map((c) => c.barX))
     }
 
-    syncOn(reference: string, targets: any) {
-        var referenceChan = this.channels[reference];
-        var referenceCurs = referenceChan.elementCursor;
-
-        
-
-        if (!targets) {
-            // Sync all
-            Object.keys(this.channels).forEach((val) => {
-                if (val !== reference) {
-                    this.channels[val].jumpTimespan(referenceCurs-1);
-                }
-            })
-        }
-    }
-
-    syncNext(reference: string, targets: any) {
-        var referenceChan = this.channels[reference];
-        var referenceCurs = referenceChan.elementCursor;
-
-        
-
-        if (!targets) {
-            // Sync all
-            Object.keys(this.channels).forEach((val) => {
-                if (val !== reference) {
-                    this.channels[val].jumpTimespan(referenceCurs);
-                }
-            })
-        }
-    }
-
-    computeTimespans() {
+    // Find the maxSectionWidths and maxTimestampX by comparing maxSections of all channels
+    computeSectionDimensions() {
         var max: number[] = [];
-        var xBar = Object.values(this.channels)[0] === undefined ? 10 : Object.values(this.channels)[0].barX;
+        var xBar = this.maxChannelX;
+        
 
-        for (const currChannel of Object.values(this.temporalSections)) {
-            
+        for (const currChannel of Object.values(this.sectionWidths)) {
             for (var i = 0; i < currChannel.length; i++) {
                 if (i < max.length) { // If this isn't new territory
                     if (currChannel[i] > max[i]) {
@@ -229,42 +225,43 @@ export default class Sequence {
             }
         }
 
-        this.globalSectionWidths = max;
+        this.maxSectionWidths = max;
 
-        
-        this.timestampX = [xBar];
-        this.globalSectionWidths.forEach((w, i) => {
-            this.timestampX.push(w + this.timestampX[i]);
+        this.maxTimestampX = [xBar];
+        this.maxSectionWidths.forEach((w, i) => {
+            this.maxTimestampX.push(w + this.maxTimestampX[i]);
         })
+
+        // 
     }
 
-    addTemporal(channelName: string, obj: Temporal) {
-        
-        var widths = this.channels[channelName].addTemporal(obj);
-        this.temporalSections[channelName] = widths;
+    addPositional(channelName: string, obj: Positional, index?: number) {
+        this.channelsDic[channelName].addPositional(obj, index);
 
-        this.computeTimespans()
-        
+        this.computeSectionDimensions()
     }
 
     addLabel(channelName: string, obj: Span) {
-        this.channels[channelName].addAnnotationLabel(obj);
+        this.channelsDic[channelName].addAnnotationLabel(obj);
     }
 
-    addAnnotationLong(channelName: string, obj: Section) {
-        
-        this.channels[channelName].addAnnotationLong(obj);
+    addSection(channelName: string, obj: Section, indexRange?: [number, number]) {
+        if (indexRange) {obj.indexRange = indexRange};  // Could I not apply this for positionals?
+
+        this.channelsDic[channelName].addSection(obj);
     }
 
-    addVLine(channelName: string, obj: lineInterface) {
-        var channel: Channel = this.channels[channelName];
-        this.grid.vLines[channel.elementCursor+1] = obj;
+    addVLine(channelName: string, obj: Line, index?: number) {
+        var channel: Channel = this.channelsDic[channelName];
+        var pos = index ? index : channel.elementCursor + 1;
+
+        this.grid.addLine(obj, pos);
     }
 
     positionBracket(channelRef: string, bracket: Bracket, timestamp: number) {
-        var channel = this.channels[channelRef]
+        var channel = this.channelsDic[channelRef]
         
-        var x: number = this.timestampX[timestamp];
+        var x: number = this.maxTimestampX[timestamp];
         
         bracket.x = x;
         bracket.y = channel.y;
@@ -277,12 +274,13 @@ export default class Sequence {
         
     }
 
-    addBracket(channelName: string, bracket: Bracket, direction: Direction) {
+    addBracket(channelName: string, bracket: Bracket, index?: number) {
         // Put this here to expand later for multi channel bracket
-        var channel = this.channels[channelName];
-        bracket.direction = direction;
+        var channel = this.channelsDic[channelName];
+        var pos = index ? index : channel.elementCursor+1;
+        
 
-        this.brackets.push({bracketObj: bracket, startChannel: channelName, timestamp: channel.elementCursor+1});
+        this.brackets.push({bracketObj: bracket, startChannel: channelName, timestamp: pos});
     }
 }
 

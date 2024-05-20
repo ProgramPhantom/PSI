@@ -1,9 +1,9 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
-import Temporal, {Alignment, Orientation, temporalInterface, temporalConfig, IDefaultConstruct} from "../../temporal";
-import {Position, labelInterface } from "../../label";
-import { PartialConstruct, UpdateObj } from "../../util";
+import Positional, {Alignment, Orientation, IPositional, positionalConfig, IDefaultConstruct} from "../../positional";
+import {Position, ILabel } from "../../label";
+import { FillObject, PartialConstruct, UpdateObj } from "../../util";
 import {svgPulses} from "../../default/data/svgPulse"
-import { IDraw } from "../../drawable";
+import { IDraw } from "../../element";
 
 const svgContent: {[path: string]: string} = {}
 const svgPaths = ["\\src\\assets\\aquire2.svg",
@@ -27,7 +27,7 @@ for (const p of svgPaths) {
 	svgContent[p] = svg;
 }
 
-export interface svgPulseInterface extends temporalInterface {
+export interface ISvgPulse extends IPositional {
 	path: string,
 	style: svgPulseStyle,
 }
@@ -37,20 +37,20 @@ export interface svgPulseStyle {
 	height: number
 }
 
-export default class SVGPulse extends Temporal implements IDraw, IDefaultConstruct<svgPulseInterface> {
+export default class SVGPulse extends Positional implements IDraw, IDefaultConstruct<ISvgPulse> {
 	// svg
-	static defaults: {[key: string]: svgPulseInterface} = {...<any>svgPulses};
+	static defaults: {[key: string]: ISvgPulse} = {...<any>svgPulses};
 
 	svgContent: string;
 	style: svgPulseStyle;
 	path: string;
 
-	constructor(params: svgPulseInterface) {
-		super(params);
+	constructor(params: Partial<ISvgPulse>, templateName: string="chirphilo") {
+		var fullParams: ISvgPulse = FillObject(params, SVGPulse.defaults[templateName])
+		super(fullParams);
 
-
-		this.style = params.style;
-		this.path = params.path;
+		this.style = fullParams.style;
+		this.path = fullParams.path;
 
 		this.svgContent = this.getSVG();
 
@@ -76,7 +76,7 @@ export default class SVGPulse extends Temporal implements IDraw, IDefaultConstru
 		
 		if (this.config.orientation === Orientation.bottom) {
 			this.offset[1] = - Math.abs(this.offset[1]);
-			console.log("FLIPPED")
+			
 			
 			obj.children().forEach((c) => {
 
@@ -85,7 +85,7 @@ export default class SVGPulse extends Temporal implements IDraw, IDefaultConstru
 			})
 		}
 
-		console.log(this.offset[1])
+		
 		obj.move(this.x + this.offset[0], this.y + this.offset[1]);
 		obj.size(this.width, this.height);
 		surface.add(obj);

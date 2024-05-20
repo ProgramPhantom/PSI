@@ -1,23 +1,23 @@
-import { Element } from "./drawable";
+import { Element, IElement } from "./element";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import * as defaultSpanLabel from "./default/data/spanLabel.json";
-import { PartialConstruct, UpdateObj } from "./util";
-import Label, { Position as Position, labelInterface } from "./label";
-import Arrow, { ArrowPosition, arrowInterface } from "./arrow";
+import { FillObject, PartialConstruct, UpdateObj } from "./util";
+import Label, { Position as Position, ILabel } from "./label";
+import Arrow, { ArrowPosition, IArrow } from "./arrow";
 
 
-export interface spanningLabelInterface{
+export interface IAnnotation extends IElement {
     labelOn: boolean;
-    label: labelInterface;
+    label: ILabel;
 
     arrowOn: boolean;
-    arrow: arrowInterface;
+    arrow: IArrow;
 }
 
 
 export default class SpanningLabel extends Element {
-    static defaults: {[key: string]: spanningLabelInterface} = {"spanlabel": {...<any>defaultSpanLabel}}
+    static defaults: {[key: string]: IAnnotation} = {"spanlabel": {...<any>defaultSpanLabel}}
 
 
     labelOn: boolean;
@@ -26,19 +26,18 @@ export default class SpanningLabel extends Element {
     arrowOn: boolean;
     arrow?: Arrow;
 
-    constructor(params: spanningLabelInterface,
-                offset: number[]=[0, 0]) {
+    constructor(params: Partial<IAnnotation>, templateName: string="spanlabel") {
+        var fullParams: IAnnotation = FillObject(params, SpanningLabel.defaults[templateName]);
+        super(0, 0, fullParams.offset, fullParams.padding);
 
-        super(0, 0, offset);
-
-        this.labelOn = params.labelOn;
+        this.labelOn = fullParams.labelOn;
         if (params.labelOn) {
-            this.label = PartialConstruct(Label, params.label, Label.defaults["label"])
+            this.label = PartialConstruct(Label, fullParams.label, Label.defaults["label"])
         }
         
-        this.arrowOn = params.arrowOn;
+        this.arrowOn = fullParams.arrowOn;
         if (params.arrowOn) {
-            this.arrow = PartialConstruct(Arrow, params.arrow, Arrow.defaults["arrow"])
+            this.arrow = PartialConstruct(Arrow, fullParams.arrow, Arrow.defaults["arrow"])
         }
 
         this.computeDimensions();
@@ -102,7 +101,7 @@ export default class SpanningLabel extends Element {
                 case ArrowPosition.bottom:  // Arrow underneath
                     if (this.label) {
                         this.label.py = this.y;
-                        console.log(this.py)
+                        
                         level = this.y + this.label.pheight + this.arrow.padding[0];
                     } else {
                         level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;

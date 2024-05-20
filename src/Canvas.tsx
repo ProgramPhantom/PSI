@@ -1,9 +1,10 @@
 import React, {useEffect, useState, useRef, useLayoutEffect} from 'react'
 import { SVG, extend as SVGextend, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Channel from './vanilla/channel';
-import { channelInterface, channelStyle } from './vanilla/channel';
+import { IChannel, channelStyle } from './vanilla/channel';
 import Sequence from "./vanilla/sequence";
-import SequenceHandler, { ScriptError } from './vanilla/sequenceHandler';
+import { ScriptError } from './vanilla/parser';
+import SequenceHandler from './vanilla/sequenceHandler';
 import TokenType from "./vanilla/sequenceHandler"
 // import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { MapInteractionCSS } from 'react-map-interaction';
@@ -59,8 +60,6 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
     }, [svgDrawObj, svgDestinationObj])
 
     
-
-    
     if (svgDrawObj.current) {
         var dim = ConstructSequence();
     }
@@ -73,10 +72,10 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
 
         var toParse = props.script + extraScript;
 
-        var intialChannels = Object.keys(props.handler.sequence.channels).toString();
+        var intialChannels = Object.keys(props.handler.sequence.channelsDic).toString();
 
         try {
-            props.handler.parseScript(toParse);
+            props.handler.parser.parseScript(toParse);
             parseErr.current = "none";
         } catch (e){
             if (e instanceof ScriptError) {
@@ -85,7 +84,8 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             } else {
                 parseErr.current = e as string;
             }
-           
+            throw e
+            
         }
     
         try {
@@ -98,7 +98,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
         }
 
 
-        for (const c of Object.values(props.handler.sequence.channels)) {
+        for (const c of Object.values(props.handler.sequence.channelsDic)) {
             ys.push(c.barY)
         }
 
@@ -121,9 +121,9 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
 
     // APPARENTLY the order of these functions changes the order in which the dependancy comparison is done!???!
     useEffect(() => {
-        props.updateChannels(Object.keys(props.handler.sequence.channels))
+        props.updateChannels(Object.keys(props.handler.sequence.channelsDic))
         
-    }, [Object.keys(props.handler.sequence.channels).join()])
+    }, [Object.keys(props.handler.sequence.channelsDic).join()])
 
     useEffect(() => {
         props.provideErrors(parseErr.current, drawErr.current);

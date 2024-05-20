@@ -152,7 +152,7 @@ parseCommand(line: string, lineNum: number): {commandBody: string, arguments: an
 
     channelCommand(channelName: string, commandName: string, args: any) {
         var channel: Channel = this.channels[channelName];
-        var currTimestamp = channel.temporalElements.length;
+        var currTimestamp = channel.positionalElements.length;
 
         var sections: number[] = [];
 
@@ -182,7 +182,7 @@ parseCommand(line: string, lineNum: number): {commandBody: string, arguments: an
             }
         }
 
-        this.temporalSections.push(sections);
+        this.positionalSections.push(sections);
         
         this.computeTimespans();
         
@@ -193,7 +193,7 @@ parseCommand(line: string, lineNum: number): {commandBody: string, arguments: an
         this.elementCursor += 1;
 
         var pulse = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor});
-        this.temporalElements.push(pulse);
+        this.positionalElements.push(pulse);
 
 
         this.hSections.push(pulse.actualWidth);
@@ -204,7 +204,7 @@ parseCommand(line: string, lineNum: number): {commandBody: string, arguments: an
         this.elementCursor += 1;
 
         var pulse = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor});
-        this.temporalElements.push(pulse);
+        this.positionalElements.push(pulse);
         
         this.hSections.push(pulse.actualWidth);
         return this.hSections;
@@ -215,7 +215,7 @@ parseCommand(line: string, lineNum: number): {commandBody: string, arguments: an
 
         var span = elementType.anyArgConstruct(elementType, {...args, timestamp: this.elementCursor})
 
-        this.temporalElements.push(span);
+        this.positionalElements.push(span);
         this.hSections.push(span.actualWidth);
         
         return this.hSections;

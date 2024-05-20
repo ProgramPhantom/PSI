@@ -1,7 +1,7 @@
 import { arrowStyle } from "./arrow";
-import { Element } from "./drawable";
-import Label, { Position, labelInterface } from "./label";
-import { labelable } from "./temporal";
+import { Element } from "./element";
+import Label, { Position, ILabel } from "./label";
+import { labelable } from "./positional";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";
 import Bracket, { Direction, bracketType } from "./bracket";
@@ -23,24 +23,24 @@ interface Bounds {
     height: number,
 }
 
-export interface bigSpanInterface {
+export interface bigISpan {
 
     padding: number[],
-    label?: labelInterface | null
+    label?: ILabel | null
 }
 
 
 export default class AnnotationLayer extends Element {
     labels: {[timestamp: number]: Span[]} = [];
-    longs: Section[] = [];
+    sections: Section[] = [];
 
     padding: number[];
 
     timestampWidths: number[];
     timestampX: number[] = [];
 
-    constructor(padding: number[], 
-                offset: number[]=[0, 0]) {
+    constructor(padding: [number, number, number, number], 
+                offset: [number, number]=[0, 0]) {
         
         super(0, 0, offset);
         
@@ -120,40 +120,41 @@ export default class AnnotationLayer extends Element {
         
 
         // Draw Longs
-        for (const timeLong of this.longs) {
-            var timespanRange = timeLong.timespan;
+        for (const section of this.sections) {
+            var timespanRange: [number, number] = section.indexRange;
 
             var x1 = this.timestampX[timespanRange[0]];
             var x2 = this.timestampX[timespanRange[1]+1]  // To the other side of last
 
 
             // Find y
-            var longHeight = Math.abs(timeLong.protrusion);
+            var longHeight = Math.abs(section.protrusion);
 
-            var relaventYs = [...ys].splice(timespanRange[0], timespanRange[1] - timespanRange[0])
+            var relaventYs = [...ys].splice(timespanRange[0], timespanRange[1] - timespanRange[0])  
+            // Array of y levels over where this section is going
             var thisStartY = Math.max(...relaventYs);
             
             var y = thisStartY;
             
 
-            timeLong.x1 = x1;
-            timeLong.x2 = x2;
+            section.x1 = x1;
+            section.x2 = x2;
 
-            timeLong.y1 = y;
-            timeLong.y2 = y;
+            section.y1 = y;
+            section.y2 = y;
 
-            timeLong.y = y;
-            timeLong.x = x1;
+            section.y = y;
+            section.x = x1;
 
-            timeLong.draw(surface);
+            section.draw(surface);
 
             for (var i = timespanRange[0]; i < timespanRange[1]+1; i++) {  // Apply height
-                ys[i] += timeLong.totalProtrusion;
+                ys[i] += section.totalProtrusion;
             }
         }
 
         
-        var longHeight = Math.max(...ys);
+        var longHeight = Math.max(...ys);  // Overall height of sections
 
         if (longHeight !== Infinity) {
             return longHeight;
@@ -174,7 +175,7 @@ export default class AnnotationLayer extends Element {
     }
 
     annotateLong(section: Section) {
-        this.longs.push(section)
+        this.sections.push(section)
     }
 
 }

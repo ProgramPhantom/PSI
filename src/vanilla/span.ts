@@ -1,25 +1,25 @@
 import { Svg } from "@svgdotjs/svg.js";
-import Arrow, { arrowInterface, arrowStyle } from "./arrow";
-import { Position, labelInterface } from "./label";
-import Temporal, { Alignment, Orientation, labelable, temporalInterface, temporalConfig } from "./temporal";
+import Arrow, { IArrow, arrowStyle } from "./arrow";
+import { Position, ILabel } from "./label";
+import Positional, { Alignment, Orientation, labelable, IPositional, positionalConfig } from "./positional";
 import * as defaultSpan from "./default/data/span.json"
-import { UpdateObj } from "./util";
-import { IDraw } from "./drawable";
+import { FillObject, UpdateObj } from "./util";
+import { IDraw } from "./element";
 
 
-export interface spanInterface extends temporalInterface {
+export interface ISpan extends IPositional {
     width: number,
 }   
 
-export default class Span extends Temporal implements IDraw {
-    static defaults: {[name: string]: spanInterface} = {"span": {...<any>defaultSpan },
-                                                        "annotationSpan": {...<any>defaultSpan }}
+export default class Span extends Positional implements IDraw {
+    static defaults: {[name: string]: ISpan} = {"span": {...<any>defaultSpan },
+                                                "annotationSpan": {...<any>defaultSpan }}
 
-    constructor(params: spanInterface) {
-            
-        super(params)
+    constructor(params: Partial<ISpan>, templateName: string="span") {
+        var fullParams: ISpan = FillObject(params, Span.defaults[templateName])
+        super(fullParams)
 
-        this.dim = {width: params.width, height: 0}
+        this.dim = {width: fullParams.width, height: 0}
 
         if (this.decoration.arrow) {
             this.decoration.arrow.set(0, 0, this.width, 0)

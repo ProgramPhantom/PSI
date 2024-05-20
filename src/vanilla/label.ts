@@ -1,8 +1,8 @@
-import { Element } from "./drawable";
+import { Element, IElement } from "./element";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import * as defaultLabel from "./default/data/label.json";
-import { UpdateObj } from "./util";
+import { FillObject, UpdateObj } from "./util";
 
 
 interface Dim {
@@ -20,8 +20,9 @@ interface Bounds {
     height: number,
 }
 
-export interface labelInterface {
-    padding: number[],
+export interface ILabel extends IElement {
+    padding: [number, number, number, number],
+    offset: [number, number],
     text: string,
     position: Position,
     style: labelStyle,
@@ -41,23 +42,23 @@ export enum Position {top="top",
 
 
 export default class Label extends Element {
-    static defaults: {[key: string]: labelInterface} = {"label": {...<any>defaultLabel}}
+    static defaults: {[key: string]: ILabel} = {"label": {...<ILabel>defaultLabel}}
 
     text: string;
     style: labelStyle;
 
-    padding: number[];
+    padding: [number, number, number, number];
     position: Position;
     
-    constructor(params: labelInterface,
-                offset: number[]=[0, 0]) {
+    constructor(params: Partial<ILabel>, templateName: string="label") {
+        var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
+        super(0, 0, fullParams.offset, fullParams.padding);
+        
 
-        super(0, 0, offset);
-
-        this.text = params.text;
-        this.style = params.style;
-        this.padding = params.padding;
-        this.position = params.position;
+        this.text = fullParams.text;
+        this.style = fullParams.style;
+        this.padding = fullParams.padding;
+        this.position = fullParams.position;
 
         this.computeDimensions();
     }

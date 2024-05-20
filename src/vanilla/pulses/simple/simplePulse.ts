@@ -1,14 +1,14 @@
-import Temporal, {Orientation, temporalInterface, labelable, temporalConfig, Alignment} from "../../temporal";
+import Positional, {Orientation, IPositional, labelable, positionalConfig, Alignment} from "../../positional";
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
-import Label, { Position, labelInterface } from "../../label";
-import {UpdateObj} from "../../util";
+import Label, { Position, ILabel } from "../../label";
+import {FillObject, UpdateObj} from "../../util";
 import {simplePulses} from "../../default/data/simplePulse"
 import '@svgdotjs/svg.draggable.js';
 import { Rect } from "@svgdotjs/svg.js";
-import { IDraw } from "../../drawable";
+import { IDraw } from "../../element";
 
-export interface simplePulseInterface extends temporalInterface {
+export interface ISimplePulse extends IPositional {
     style: simplePulseStyle,
 }
 export interface simplePulseStyle {
@@ -21,18 +21,18 @@ export interface simplePulseStyle {
 
 
 
-export default class SimplePulse extends Temporal implements IDraw {
+export default class SimplePulse extends Positional implements IDraw {
     // Default is currently 180 Pulse
-    static defaults: {[key: string]: simplePulseInterface} = {...<any>simplePulses}
+    static defaults: {[key: string]: ISimplePulse} = {...<any>simplePulses}
     
     // A pulse that is an svg rect
     style: simplePulseStyle;
 
-    constructor(params: simplePulseInterface) {
-        super(params);
+    constructor(params: Partial<ISimplePulse>, templateName: string="pulse90") {
+        var fullParams: ISimplePulse = FillObject(params, SimplePulse.defaults[templateName])
+        super(fullParams);
         
-        this.style = params.style;
-
+        this.style = fullParams.style;
         this.dim = {width: this.style.width, height: this.style.height};
     }
 
@@ -59,7 +59,7 @@ export default class SimplePulse extends Temporal implements IDraw {
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
-        // Differs to Temporal due to the stroke width interferring.
+        // Differs to Positional due to the stroke width interferring.
         var dimensions: number[] = [];
 
         switch (this.config.orientation) {

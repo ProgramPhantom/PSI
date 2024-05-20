@@ -1,12 +1,12 @@
 import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
 import * as ReactDOM from 'react-dom';
 import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 'react-hook-form';
-import { labelInterface } from '../vanilla/label';
+import { ILabel } from '../vanilla/label';
 
 import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
 
 
-function TemporalForm(props: {control: Control<any>, change: () => void}) {
+function PositionalForm(props: {control: Control<any>, change: () => void}) {
   const onSubmit = (data: FieldValues) => console.log(data);
   // onSubmit={handleSubmit(onSubmit)}x
 
@@ -187,4 +187,4 @@ function TemporalForm(props: {control: Control<any>, change: () => void}) {
   );
 }
     
-export default TemporalForm
+export default PositionalForm

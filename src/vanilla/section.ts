@@ -1,27 +1,24 @@
 
-import { labelable } from "./temporal";
+import { labelable } from "./positional";
 import * as defaultSection from "./default/data/section.json"
-import Label, { labelInterface, Position } from "./label";
-import { UpdateObj } from "./util";
-import Bracket, { bracketInterface } from "./bracket";
+import Label, { ILabel, Position } from "./label";
+import { FillObject, UpdateObj } from "./util";
+import Bracket, { IBracket } from "./bracket";
 
 
-export interface sectionInterface extends bracketInterface {
-    timespan: number[],
+export interface ISection extends IBracket {
+    indexRange: [number, number],
 }
 
 export default class Section extends Bracket implements labelable {
-    static defaults: {[key: string]: sectionInterface} = {"section": {...<any>defaultSection}}
+    static defaults: {[key: string]: ISection} = {"section": {...<ISection>defaultSection}}
 
-    timespan: number[];
+    indexRange: [number, number];
 
-    constructor(params: sectionInterface,
-                offset: number[]=[-1, 0]) {
-
-        super(params, offset)
+    constructor(params: Partial<ISection>, templateName: string="section") {
+        var fullParams: ISection = FillObject(params, Section.defaults[templateName]);
+        super(fullParams)
             
-        this.timespan = params.timespan;
+        this.indexRange = fullParams.indexRange;
     }
-
-
 }

@@ -1,6 +1,7 @@
 {
     "protrusion": 6,
     "adjustment": [0, 0],
+    "direction": "right",
 
     "style": {
         "strokeWidth": 1,

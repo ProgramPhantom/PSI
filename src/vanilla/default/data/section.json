@@ -1,7 +1,8 @@
 {
-    "timespan": [0, 1],
+    "indexRange": [0, 1],
     "protrusion": 6,
     "adjustment": [0, 0],
+    "direction": "down",
 
     "style": {
         "strokeWidth": 1,

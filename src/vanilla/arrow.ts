@@ -1,8 +1,8 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { Element } from "./drawable";
-import { labelable } from "./temporal";
+import { Element, IElement } from "./element";
+import { labelable } from "./positional";
 import * as defaultArrow from "./default/data/arrow.json"
-import { UpdateObj } from "./util";
+import { FillObject, UpdateObj } from "./util";
 
 interface Dim {
   width: number,
@@ -30,8 +30,7 @@ export enum ArrowPosition {
   top="top"
 }
 
-export interface arrowInterface {
-    padding: number[],
+export interface IArrow extends IElement {
     position: ArrowPosition,
     style: arrowStyle,
 }
@@ -44,7 +43,7 @@ export interface arrowStyle {
 
 
 export default class Arrow extends Element {
-  static defaults: {[key: string]: arrowInterface} = {"arrow": {...<any>defaultArrow}}
+  static defaults: {[key: string]: IArrow} = {"arrow": {...<any>defaultArrow}}
 
   x2: number;
   y2: number;
@@ -53,18 +52,18 @@ export default class Arrow extends Element {
   padding: number[];
   position: ArrowPosition;
 
-  constructor(params: arrowInterface=Arrow.defaults["arrow"], 
-              offset: number[]=[0, 0]) {
-      super(0, 0, offset)
+  constructor(params: Partial<IArrow>, templateName: string="arrow") {
+    var fullParams: IArrow = FillObject(params, Arrow.defaults[templateName])
+    super(0, 0, fullParams.offset, fullParams.padding)
 
-      this.x2 = 0;
-      this.y2 = 0;
+    this.x2 = 0;
+    this.y2 = 0;
+    
+    this.style = fullParams.style;
+    this.padding = fullParams.padding;
+    this.position = fullParams.position;
 
-      this.style = params.style;
-      this.padding = params.padding;
-      this.position = params.position;
-
-      this.dim = {height: this.style.thickness, width: 0}
+    this.dim = {height: this.style.thickness, width: 0}
   }
 
   public set(x1: number, y1: number, x2: number, y2: number) {

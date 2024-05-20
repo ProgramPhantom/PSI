@@ -1,7 +1,7 @@
 import { useDrop } from "react-dnd";
 import { ElementTypes, DropResult } from "./DraggableElement";
 import { CSSProperties } from "react";
-import { Orientation } from "../vanilla/temporal";
+import { Orientation } from "../vanilla/positional";
 
 interface Rect {
     x: number,

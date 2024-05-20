@@ -3,8 +3,8 @@ import Canvas from './Canvas'
 import Editor from './Editor'
 import Channel from './vanilla/channel';
 import { SVG, extend as SVGextend, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import { channelInterface, channelStyle } from './vanilla/channel';
-import { temporalInterface } from './vanilla/temporal';
+import { IChannel, channelStyle } from './vanilla/channel';
+import { IPositional } from './vanilla/positional';
 import Form from './Form';
 import SequenceHandler from './vanilla/sequenceHandler';
 import Errors, { errorState } from './Errors';
@@ -19,11 +19,10 @@ function App() {
   const [channelNames, setChannelNames] = useState<string[]>([]);
   const [errors, setErrors] = useState<errorState>({parseError: "", drawError: ""});
 
-  const handle = useRef<SequenceHandler>(new SequenceHandler(""));
+  const handle = useRef<SequenceHandler>(new SequenceHandler());
 
   function TypeEvent(script: string) {
     setTextboxValue(script);
-    
   }
 
   function AddCommand(line: string) {
@@ -52,8 +51,8 @@ function App() {
 
   useEffect(() => {
     
-    if (Object.keys(handle.current.sequence.channels).toString() !== channelNames.toString()) {
-      setChannelNames(Object.keys(handle.current.sequence.channels))
+    if (Object.keys(handle.current.sequence.channelsDic).toString() !== channelNames.toString()) {
+      setChannelNames(Object.keys(handle.current.sequence.channelsDic))
     }
     
   }, [channelNames])
@@ -68,7 +67,6 @@ function App() {
           <Banner saveSVG={SaveSVG} saveScript={SaveScript}></Banner>
         </div>
         
-
         <div style={{gridColumnStart: 1, gridColumnEnd: 2, gridRowStart: 2, gridRowEnd: 3, height: "100%", display: "flex", flexDirection: "column"}}>
           <div style={{height: "100%"}} >
             <Canvas script={textboxValue} zoom={2} handler={handle.current} 

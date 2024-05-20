@@ -1,17 +1,17 @@
 import * as defaultChannel from "./default/data/channel.json"
-import { Element } from "./drawable";
+import { Element, IElement } from "./element";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Temporal, { Alignment, Orientation, labelable } from "./temporal";
-import SimplePulse, { simplePulseInterface } from "./pulses/simple/simplePulse";
+import Positional, { Alignment, Orientation, labelable } from "./positional";
+import SimplePulse, { ISimplePulse } from "./pulses/simple/simplePulse";
 import SVGPulse from "./pulses/image/svgPulse";
-import Label, { labelInterface, Position } from "./label";
+import Label, { ILabel, Position } from "./label";
 import Span from "./span";
 import Abstract from "./abstract";
 import AnnotationLayer from "./annotationLayer";
-import Bracket, { bracketInterface } from "./bracket";
+import Bracket, { IBracket } from "./bracket";
 import Section from "./section";
 import SpanningLabel from "./spanningLabel";
-import { PartialConstruct } from "./util";
+import { PartialConstruct, UpdateObj } from "./util";
  
 interface Dim {
     width: number,
@@ -29,15 +29,14 @@ interface Bounds {
 }
 
 
-export interface channelInterface {
-    temporalElements: Temporal[],
-    padding: number[],
-    identifier: string,
+export interface IChannel extends IElement {
+    positionalElements: Positional[],
+    identifier: string;
 
-    style: channelStyle,
+    style: channelStyle;
 
-    labelOn: boolean
-    label: labelInterface
+    labelOn: boolean;
+    label: ILabel;
     
     annotationStyle: channelAnnotation,
 }
@@ -51,12 +50,12 @@ export interface channelStyle {
 }
 
 export interface channelAnnotation {
-    padding: number[]
+    padding: [number, number, number, number]
 }
 
 
 export default class Channel extends Element implements labelable {
-    static default: channelInterface = {...<any>defaultChannel}
+    static defaults: {[name: string]: IChannel} = {"blankH1": <any>defaultChannel}
 
     style: channelStyle;
 
@@ -69,7 +68,7 @@ export default class Channel extends Element implements labelable {
     barX: number;
     barY: number;
     
-    temporalElements: Temporal[];
+    positionalElements: Positional[];
     annotationLayer?: AnnotationLayer;
 
     sectionWidths: number[] = [];  // List of widths of each section along the sequence
@@ -81,17 +80,19 @@ export default class Channel extends Element implements labelable {
     label?: Label;
     position: Position=Position.left;
 
-    constructor(params: channelInterface,
-                offset: number[]=[0, 0]) {
-                
-        super(params.padding[3], 0, offset);
-        this.barX = params.padding[3];
+    constructor(params: Partial<IChannel>, templateName: string="blankH1") {
+        var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
+        super(0, 0, fullParams.offset);
+        
+        
+        
+        this.barX = fullParams.padding[3];
         this.barY = 0;
 
-        this.style = params.style;
-        this.padding = params.padding;
+        this.style = fullParams.style;
+        this.padding = fullParams.padding;
 
-        this.identifier = params.identifier;
+        this.identifier = fullParams.identifier;
 
         this.maxTopProtrusion = 0;  // Move this to element
         this.maxBottomProtrusion = this.style.thickness;
@@ -99,11 +100,11 @@ export default class Channel extends Element implements labelable {
         this.dim = {width: 0, height: this.style.thickness};
         this.barWidth = 0;
 
-        this.temporalElements = [...params.temporalElements];  // please please PLEASE do this (list is ref type)
+        this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
-        this.labelOn = params.labelOn;
-        if (params.label) {
-            this.label = PartialConstruct(Label, params.label, Channel.default.label!);
+        this.labelOn = fullParams.labelOn;
+        if (fullParams.label) {
+            this.label = new Label(fullParams.label);
             this.barX = this.padding[3] + this.label!.pwidth;
         }
 
@@ -121,7 +122,7 @@ export default class Channel extends Element implements labelable {
         })
         
         // Add annotation
-        var annotationHeight  = 0;
+        var annotationHeight = 0;
         if (this.annotationLayer) {
             this.annotationLayer.draw(surface, timestampWidths, this.barX, this.y);
             yCursor += this.annotationLayer.pheight;
@@ -140,13 +141,11 @@ export default class Channel extends Element implements labelable {
         // CURRENTLY IGNORING VERTICAL LABEL IMPACT
 
         this.positionElements(timestampWidths);
-        console.log("bar y", this.barY)
-        this.temporalElements.forEach(element => {
+
+        this.positionalElements.forEach(element => {
             element.draw(surface);
         });
         this.drawRect(surface);
-
-        
     }
 
     computeBarY(yCursor: number=0) {
@@ -170,7 +169,7 @@ export default class Channel extends Element implements labelable {
         var topProtrusion: number[] = [0];
         var bottomProtrusion: number[] = [0];
 
-        this.temporalElements.forEach((element) => {
+        this.positionalElements.forEach((element) => {
             var protrusion = element.verticalProtrusion(this.style.thickness);
             topProtrusion.push(protrusion[0]);
             bottomProtrusion.push(protrusion[1]);
@@ -187,55 +186,56 @@ export default class Channel extends Element implements labelable {
         this.dim = {width: this.width, height: height}
     }
 
+    // Position positional elements on the bar
     positionElements(timestampWidths: number[]) {
         // Current alignment style: centre
-        this.temporalElements.forEach((temporalEl) => {
+        this.positionalElements.forEach((positionalEl) => {
             var tempX = 0;
-            var sectionWidth = 0;
+            var sectionWidth: number = 0;
 
             // Vertical Positioning
-            temporalEl.positionVertically(this.barY, this.style.thickness);
+            positionalEl.positionVertically(this.barY, this.style.thickness);
 
-            if (temporalEl.timestamp.length > 1) {  // Multi timestamp element eg [1, 4]
-                tempX = this.sectionXs[temporalEl.timestamp[0]] // Set x as start section
+            if (positionalEl.timestamp.length > 1) {  // Multi timestamp element eg [1, 4]
+                tempX = this.sectionXs[positionalEl.timestamp[0]] // Set x as start section
 
-                for (var i = temporalEl.timestamp[0]; i <= temporalEl.timestamp[1]; i++) {
+                for (var i = positionalEl.timestamp[0]; i <= positionalEl.timestamp[1]; i++) {
                     sectionWidth += timestampWidths[i];  // Compute width of entire element slot
                     this.occupancy[i] = true;
                 }
             } else {
-                tempX = this.sectionXs[temporalEl.timestamp[0]]  // Simply set x and 
-                sectionWidth = timestampWidths[temporalEl.timestamp[0]] // Width as the x section and section width
-                this.occupancy[temporalEl.timestamp[0]] = true;
+                tempX = this.sectionXs[positionalEl.timestamp[0]]  // Simply set x and 
+                sectionWidth = timestampWidths[positionalEl.timestamp[0]] // Width as the x section and section width
+                this.occupancy[positionalEl.timestamp[0]] = true;
             }
             
-            if (temporalEl.config.inheritWidth) {  // Transform
-                temporalEl.dim = {width: sectionWidth, height: temporalEl.height};
+            if (positionalEl.config.inheritWidth) {  // Transform
+                positionalEl.dim = {width: sectionWidth, height: positionalEl.height};
             }
 
-            switch (temporalEl.config.alignment) {
+            switch (positionalEl.config.alignment) {
                 case Alignment.Centre:
-                    temporalEl.centreXPos(tempX + sectionWidth/2);
+                    positionalEl.centreXPos(tempX + sectionWidth/2);
                     break;
                 case Alignment.Left:
-                    if (temporalEl.config.overridePad) {
-                        temporalEl.x = tempX;
+                    if (positionalEl.config.overridePad) {
+                        positionalEl.x = tempX;
                     } else {
-                        temporalEl.x = tempX + temporalEl.padding[3];
+                        positionalEl.x = tempX + positionalEl.padding[3];
                     }
                     break;
                 case Alignment.Right:
                     
-                    if (temporalEl.config.overridePad) {
-                        temporalEl.x = tempX + sectionWidth - temporalEl.width;
+                    if (positionalEl.config.overridePad) {
+                        positionalEl.x = tempX + sectionWidth - positionalEl.width;
                     } else {
-                        temporalEl.x = tempX + sectionWidth - temporalEl.width - temporalEl.padding[1];
+                        positionalEl.x = tempX + sectionWidth - positionalEl.width - positionalEl.padding[1];
                     }
 
                     break;
                 default: 
                     // Centre
-                    temporalEl.centreXPos(tempX + sectionWidth/2);
+                    positionalEl.centreXPos(tempX + sectionWidth/2);
                     break;
 
             }
@@ -245,29 +245,32 @@ export default class Channel extends Element implements labelable {
         this.barWidth = this.sectionXs[this.sectionXs.length-1] - this.barX;
     }
 
-    addTemporal(obj: Temporal): number[] {
-        
-        this.elementCursor += 1;
+    addPositional(obj: Positional, index?: number): number[] {
+        this.elementCursor += 1;  // Keep this here.
+        var position: number = index ? index : this.elementCursor;
+
         obj.barThickness = this.style.thickness;
 
-        if (obj.config.noSections > 1) {
-            obj.timestamp = [this.elementCursor, this.elementCursor+obj.config.noSections-1];
+        if (obj.config.noSections > 1) {  // If this element is a multi - section 
+            obj.timestamp = [position, position + obj.config.noSections-1];
 
-            this.elementCursor += obj.config.noSections - 1;
+            this.elementCursor += obj.config.noSections;
         } else {
-            if (obj.config.timestamp) {
+            
+
+            if (obj.config.timestamp) {  // timestamp overriden by property?
                 obj.timestamp = obj.config.timestamp;
             } else {
-                obj.timestamp = [this.elementCursor];
+                obj.timestamp = [position];
             }
-            
         }
+
         
 
         var sections = new Array<number>(obj.config.noSections);
         sections.fill(obj.pwidth / obj.config.noSections);
 
-        this.temporalElements.push(obj);
+        this.positionalElements.push(obj);
         this.sectionWidths.push(...sections);
 
         this.computeVerticalBounds();
@@ -276,7 +279,7 @@ export default class Channel extends Element implements labelable {
 
     addAnnotationLabel(lab: Span) {
         if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer(Channel.default.annotationStyle.padding)
+            this.annotationLayer = new AnnotationLayer(Channel.defaults["blankH1"].annotationStyle.padding)
         }
         var timestamp;
         
@@ -293,37 +296,31 @@ export default class Channel extends Element implements labelable {
         this.annotationLayer.annotateLabel(lab);
     }
 
-    addAnnotationLong(section: Section) {
+    addSection(section: Section) {
         if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer(Channel.default.annotationStyle.padding)
+            this.annotationLayer = new AnnotationLayer(Channel.defaults["blankH1"].annotationStyle.padding);
         }
 
         var timestampStart: number;
         var timestampEnd: number;
         
-        if (section.timespan === undefined) {
+        if (section.indexRange === undefined) {
             timestampStart = 0;
             timestampEnd = 1;
-        } else if(section.timespan.length == 1) {
-            timestampStart = section.timespan[0];
-            timestampEnd = timestampStart + 1;
-        } else if (section.timespan.length >= 2) {
-            timestampStart = section.timespan[0];
-            timestampEnd = section.timespan[1];
         } else {
-            timestampStart = section.timespan[0];
-            timestampEnd = section.timespan[1];
+            timestampStart = section.indexRange[0];
+            timestampEnd = section.indexRange[1];
         }
 
 
-        var range = section.timespan ? section.timespan : [timestampStart, timestampEnd];
+        var range: [number, number] = section.indexRange ? section.indexRange : [timestampStart, timestampEnd];
 
         if (range[0] < 0) {range[0] = 0;}
         if (range[1] > this.sectionWidths.length+1) {range[1] = this.sectionWidths.length+1}
         if (range[0] > range[1]) {range = [0, 1]}
 
 
-        section.timespan = range;
+        section.indexRange = range;
         this.annotationLayer.annotateLong(section);
     }
 
@@ -338,7 +335,7 @@ export default class Channel extends Element implements labelable {
     // It is required that computeY has been ran for this to work
     posDrawDecoration(surface: Svg) : number[] {
         /*  Draw label with no temp elements?
-        if (this.temporalElements.length === 0) {
+        if (this.positionalElements.length === 0) {
             return [0, 0];
         }*/
 

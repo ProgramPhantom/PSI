@@ -8,7 +8,7 @@ import { simplePulses } from "./simplePulse"
 import * as Abstract from "./abstract.json"
 import * as Span from "./span.json"
 
-export const allTemporal = {
+export const positionalElements: {[name: string]: any} = {
     ...svgPulses,
     ...simplePulses,
     "abstract": Abstract,

@@ -1,8 +1,8 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { Element } from "./drawable";
-import { labelable } from "./temporal";
+import { Element, IElement } from "./element";
+import { labelable } from "./positional";
 import * as defaultBracket from "./default/data/bracket.json"
-import Label, { labelInterface, Position } from "./label";
+import Label, { ILabel, Position } from "./label";
 import { PartialConstruct, UpdateObj } from "./util";
 
 
@@ -18,11 +18,12 @@ export enum Direction {
     right="right",
 }
 
-export interface bracketInterface {
+export interface IBracket extends IElement {
     protrusion: number,
+    direction: Direction,
     style: bracketStyle,
     labelOn: boolean,
-    label: labelInterface,
+    label: ILabel,
     adjustment: number[],
 }
 
@@ -34,10 +35,8 @@ export interface bracketStyle {
 }
 
 
-
 export default class Bracket extends Element implements labelable {
-    static defaults: {[key: string]: bracketInterface} = {"horizontal": {...<any>defaultBracket}}
-
+    static defaults: {[key: string]: IBracket} = {"horizontal": {...<any>defaultBracket}}
 
     x1: number;
     y1: number;
@@ -56,35 +55,35 @@ export default class Bracket extends Element implements labelable {
     labelOn: boolean;
     label?: Label;
 
-    constructor(params: bracketInterface,
-                offset: number[]=[-1, 0]) {
-
-        super(0, 0, offset)
+    constructor(params: Partial<IBracket>, templateName: string="horizontal") {
+        var fullParams: IBracket = params ? UpdateObj(Bracket.defaults[templateName], params) : Bracket.defaults[templateName];
+        super(0, 0, fullParams.offset)
 
         this.x1 = 0;
         this.y1 = 40;
         this.x2 = 50;
         this.y2 = 40;
 
-        this.style = params.style;
-        this.adjustment = params.adjustment;
+        this.style = fullParams.style;
+        this.adjustment = fullParams.adjustment;
+
+        this.direction = fullParams.direction;
         
-        this.bracketProtrusion = Math.abs(params.protrusion);
+        this.bracketProtrusion = Math.abs(fullParams.protrusion);
         this.totalProtrusion = 0;
         
         switch (this.direction) {
             case Direction.down:
             case Direction.right:
-                this.protrusion = -params.protrusion;
+                this.protrusion = -fullParams.protrusion;
                 break;
             case Direction.left:
             case Direction.up:
-                this.protrusion = params.protrusion;
+                this.protrusion = fullParams.protrusion;
                 break;
         }
 
-
-        this.labelOn = params.labelOn;
+        this.labelOn = fullParams.labelOn;
         if (params.labelOn) {
             this.label = PartialConstruct(Label, params.label, Label.defaults["label"]);
         }

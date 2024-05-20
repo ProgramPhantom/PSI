@@ -3,7 +3,7 @@ import { ElementTypes } from "./DraggableElement";
 import { CSSProperties, useEffect, useState } from "react";
 import SequenceHandler from "../vanilla/sequenceHandler";
 import InsertArea, { AddSpec } from "./InsertArea";
-import { Orientation } from "../vanilla/temporal";
+import { Orientation } from "../vanilla/positional";
 
 class SequenceDropInterpreter {
     public handler: SequenceHandler;
@@ -19,12 +19,12 @@ class SequenceDropInterpreter {
     computeAreas() {
          var sequence = this.handler.sequence;
 
-        Object.entries(sequence.channels).forEach(([name, channel]) => {
+        Object.entries(sequence.channelsDic).forEach(([name, channel]) => {
 
 
             channel.sectionXs.forEach((x, i) => {
-                console.log("NAME ", name)
-                let correspondingWidth = sequence.globalSectionWidths[i];
+                
+                let correspondingWidth = sequence.maxSectionWidths[i];
                 
                 let occupied = channel.occupancy[i];
 
