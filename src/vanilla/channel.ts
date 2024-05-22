@@ -190,7 +190,6 @@ export default class Channel extends PaddedBox implements labelable {
     }
 
 
-
     // Position positional elements on the bar
     positionElements(indexWidths: number[]) {
         // Current alignment style: centre

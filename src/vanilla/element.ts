@@ -50,7 +50,7 @@ enum BindingLocation {
     InnerBottomRight="inner-bottom-right",
 }
 
-enum TestBindingLocation {
+export enum BindSide {
     Near="near",
     Centre="centre",
     Far="far"
@@ -62,12 +62,12 @@ export enum Dimension {
 }
 
 interface BindingRules {
-    anchorHorizontal?: TestBindingLocation,
-    targetHorizontal?: TestBindingLocation,
+    anchorHorizontal?: BindSide,
+    targetHorizontal?: BindSide,
 
 
-    anchorVertical?: TestBindingLocation,
-    targetVertical?: TestBindingLocation
+    anchorVertical?: BindSide,
+    targetVertical?: BindSide
 }
 
 type Padding = number | [number, number] | [number, number, number, number]
@@ -140,7 +140,7 @@ export abstract class Element {
         this.enforceBinding();
     }
 
-    bind(el: Element, coordinate: Dimension, anchorBindLocation: TestBindingLocation, targetBindLocation: TestBindingLocation) {
+    bind(el: Element, coordinate: Dimension, anchorBindLocation: BindSide, targetBindLocation: BindSide) {
         var found = false;
         this.bindings.forEach((b) => {
             if (b.targetElement === el) {

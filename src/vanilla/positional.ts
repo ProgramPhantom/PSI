@@ -1,11 +1,12 @@
 import { Element, IDraw, IElement } from "./element";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Label, { ILabel, Position } from "./label";
-import { PartialConstruct, UpdateObj } from "./util";
+import { FillObject, PartialConstruct, UpdateObj } from "./util";
 import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import { H } from "mathjax-full/js/output/common/FontData";
 import Annotation, { IAnnotation } from "./annotation";
 import PaddedBox from "./paddedBox";
+import * as defaultPositional from "./default/data/positional.json";
 
 interface Dim {
     width: number,
@@ -55,6 +56,8 @@ export interface IDefaultConstruct<I> {
 }
 
 export default abstract class Positional extends PaddedBox implements IDraw {
+    static defaults: {[name: string]: IPositional} = {"default": <any>defaultPositional}
+
     // An element that relates to a point in time
     private _index?: Index;
 
@@ -63,15 +66,16 @@ export default abstract class Positional extends PaddedBox implements IDraw {
     decoration: Annotation;
 
     
-    constructor(params: IPositional) {
-        super(params.offset, params.padding);
-        // PartialConstruct<typeof Positional>(Positional, {padding: [1, 2,3 ,4]});
+    constructor(params: Partial<IPositional>, templateName: string="default") {
+        var fullParams: IPositional = FillObject(params, Positional.defaults[templateName])
+        super(fullParams.offset, fullParams.padding);
 
-        this.config = params.config;
+        
+        this.config = fullParams.config;
 
         if (this.config.index) { this.index = this.config.index; }
 
-        this.decoration = PartialConstruct(Annotation, {labelOn: params.labelOn, label: params.label, arrowOn: params.arrowOn, arrow: params.arrow}, Annotation.defaults["spanlabel"])
+        this.decoration = PartialConstruct(Annotation, {labelOn: fullParams.labelOn, label: fullParams.label, arrowOn: fullParams.arrowOn, arrow: fullParams.arrow}, Annotation.defaults["spanlabel"])
 
     }
 

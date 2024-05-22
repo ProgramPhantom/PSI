@@ -1,6 +1,6 @@
 import Abstract from "./abstract";
 import SimplePulse from "./pulses/simple/simplePulse";
-import Sequence, { ILine } from "./sequence";
+import Sequence, from "./sequence";
 import Span from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";

@@ -1,5 +1,5 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { Element, IElement } from "./element";
+import { BindSide, Dimension, Element, IElement } from "./element";
 import { labelable } from "./positional";
 import * as defaultBracket from "./default/data/bracket.json"
 import Label, { ILabel, Position } from "./label";
@@ -91,12 +91,15 @@ export default class Bracket extends LineLike implements labelable {
                 // Label on top
                 if (this.label) {
                     // If centre:
-                    this.label.x = this.x + width/2 - this.label.contentWidth/2;
-                    this.label.y = this.y + this.label.padding[0];
+                    this.bind(this.label, Dimension.X, BindSide.Centre, BindSide.Centre);
+                    this.bind(this.label, Dimension.Y, BindSide.Near, BindSide.Far);
+
                     var pro = this.posDrawDecoration(surface);
                 } else {
                     var pro = [0, 0];
                 }
+
+                // this.place()
                 this.y = this.y + this.bracketProtrusion + pro[1];
                 this.y2 = this.y + this.bracketProtrusion + pro[1];
                 break;
