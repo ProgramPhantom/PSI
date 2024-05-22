@@ -51,13 +51,32 @@ export default class SequenceHandler {
     sequence: Sequence;
     parser: Parser;
 
+    surface?: Svg;
+    dirty: boolean = false;
+    get id(): string {
+        
+        var id: string = "";
+        this.sequence.channels.forEach((c) => {
+            c.positionalElements.forEach((p) => {
+                id += p.id;
+            })
+        })
+        return id;
+    }
+    // id: string;
+    refresh: (uid: string) => void;
+    
+
     get channels(): Channel[] {return this.sequence.channels}
     hasChannel(name: string): boolean {return this.sequence.channelNames.includes(name)}
 
-    constructor() {
+    constructor(surface: Svg, refresh: (uid: string) => void) {
+        // this.id = "";
+        this.surface = surface;
         this.sequence = new Sequence(Sequence.defaults["empty"])
 
         this.parser = new Parser(this, "");
+        this.refresh = refresh;
     }
 
     // ELEMENT ADDIION COMMANDS: 
@@ -65,6 +84,8 @@ export default class SequenceHandler {
     // Add a positional ement by providing elementName, channel name, and partial positional interface.
     // Function uses element name to lookup default parameters and replaces with those provided 
     positional(elementName: string, channelName: string, pParameters: Partial<IPositionalType>, index?: number) {
+        
+
         // var positionalType: typeof Positional = SequenceHandler.positionalTypes[elementName];
         var positionalType = SequenceHandler.positionalTypes[elementName];
 
@@ -92,6 +113,7 @@ export default class SequenceHandler {
         }
 
         this.sequence.addPositional(channelName, newElement, index);
+
     }
 
     // TODO: forced index for channel addition
@@ -145,5 +167,11 @@ export default class SequenceHandler {
         })
     }
 
-    draw(surface: Svg) {this.sequence.draw(surface);}
+    draw() {
+        if (!this.surface) {
+            throw new Error("Svg surface not attatched!")
+        }
+        this.sequence.draw(this.surface);
+        this.refresh(this.id);
+    }
 }

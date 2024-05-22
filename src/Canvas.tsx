@@ -26,48 +26,89 @@ const DEFAULT_HEIGHT = 200;
 
 const BUTTON_PAD = [15, 0];
 
-export default function Canvas(props:  {script: string, zoom: number, handler: SequenceHandler, 
+export default function Canvas(props:  {script: string, zoom: number, 
+    handler: SequenceHandler,
+    sequenceId: string,
     updateChannels: (c: string[]) => void,
-    provideErrors: (parseError: string, drawError: string) => void}) {
+    provideErrors: (parseError: string, drawError: string) => void,
+    drawSurface: React.MutableRefObject<Svg | undefined>}) {
 
-    const svgDrawObj = useRef<Svg>();
     const svgDestinationObj = useRef<Svg>();
 
     const parseErr = useRef<string>("");
     const drawErr = useRef<string>("");
-
-
+    
     var [buttonX, setButtonX] = useState<number>(0);
     var [buttonYs, setButtonYs] = useState<number[]>([]);
-
-
+    
     useLayoutEffect(() => {
         var drawSurface = document.getElementById(DRAWSVGID);
         var destinationSurface = document.getElementById(DESTINATIONSVGID);
         var div = document.getElementById(DRAWCANVASID);
-        if (svgDrawObj.current === undefined || svgDestinationObj.current === undefined) {
+
+        if (props.drawSurface.current === undefined || svgDestinationObj.current === undefined) {
             if (drawSurface !== null || destinationSurface !== null) {
-                svgDrawObj.current = new Svg(drawSurface!.outerHTML);
+                props.drawSurface.current = new Svg(drawSurface!.outerHTML);
                 svgDestinationObj.current = new Svg(destinationSurface!.outerHTML);
             } else {
                 var drawSvg = SVG().addTo("#" + DRAWCANVASID).size("800px", "400px").attr({id: DRAWSVGID});
-                svgDrawObj.current = drawSvg;
+                props.drawSurface.current = drawSvg;
+                props.handler.surface = props.drawSurface.current;
 
                 var destinationSvg = SVG().addTo("#" + DESTINATIONVCANVASID).size("800px", "400px").attr({id: DESTINATIONSVGID});
                 svgDestinationObj.current = destinationSvg;
             }
         } 
-    }, [svgDrawObj, svgDestinationObj])
+    }, [props.drawSurface, svgDestinationObj])
 
     
-    if (svgDrawObj.current) {
-        var dim = ConstructSequence();
+    if (props.drawSurface.current) {
+        
     }
+
+    
+    function MountSequence() {
+        var canvasWidth = props.handler.sequence.width;
+        var canvasHeight = props.handler.sequence.height;
+
+        props.drawSurface.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
+        svgDestinationObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
+        props.drawSurface.current!.rect()
+        .attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%"})
+        .id("BORDER");
+
+        // When drawing straight to the MapInteractionCSS div it breaks, so]
+        // I am adding elements to a different div first and then moving it onto the canvas
+
+        console.log("removing: ", props.drawSurface.current?.children())
+        // svgDestinationObj.current!.children().forEach((c) => {
+        //     c.remove();
+        // })
+
+        console.log(props.drawSurface.current?.children());
+        props.drawSurface.current!.children().forEach((c) => {
+            c.clone().addTo(svgDestinationObj.current!)
+            c.remove(); 
+        });
+    }
+
+    useEffect(() => {
+        if (props.drawSurface.current) {
+            var dim = ConstructSequence();
+        }
+    }, [props.script])
+
+    useEffect(() => {
+        if (props.drawSurface.current) {
+            console.log(props.sequenceId)
+            MountSequence()
+        }
+    }, [props.sequenceId])
 
     function ConstructSequence(extraScript: string=""): {x: number, ys: number[]} {
         var ys: number[] = [];
         
-        svgDrawObj.current!.clear();
+        props.drawSurface.current!.clear();
         svgDestinationObj.current!.clear()
 
         var toParse = props.script + extraScript;
@@ -84,12 +125,12 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             } else {
                 parseErr.current = e as string;
             }
-            throw e
+          
             
         }
     
         try {
-            props.handler.draw(svgDrawObj.current!);
+            props.handler.draw();
         } catch (e) {
             
             drawErr.current = e as string;
@@ -102,20 +143,6 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             ys.push(c.barY)
         }
 
-        var canvasWidth = props.handler.sequence.width;
-        var canvasHeight = props.handler.sequence.height;
-
-        svgDrawObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
-        svgDestinationObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
-        svgDrawObj.current!.rect()
-        .attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%"})
-        .id("BOARDER");
-
-        svgDrawObj.current!.children().forEach((c) => {
-            c.addTo(svgDestinationObj.current!)
-        }
-        );
-
         return {x: props.handler.sequence.width, ys: ys};
     }
 
@@ -126,6 +153,10 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
     }, [Object.keys(props.handler.sequence.channelsDic).join()])
 
     useEffect(() => {
+        MountSequence();
+    }, [props.sequenceId])
+
+    useEffect(() => {
         props.provideErrors(parseErr.current, drawErr.current);
     }, [parseErr.current as string, drawErr.current as string])
 
@@ -133,7 +164,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
     return (
         <>
         
-        <div id={DRAWCANVASID} style={{width: "0", height: "0", visibility: "hidden"}}></div>
+        <div id={DRAWCANVASID} style={{}}></div>
 
         <MapInteractionCSS
             showControls
@@ -153,6 +184,7 @@ export default function Canvas(props:  {script: string, zoom: number, handler: S
             >
             
             <DropField sequence={props.handler}></DropField>
+
 
             <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}}>
                 

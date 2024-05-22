@@ -2,8 +2,18 @@ import { SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
 import SVGPulse from './pulses/image/svgPulse'
 
 interface Dim {
-    width: number,
-    height: number
+    width?: number,
+    height?: number
+}
+
+interface Shift {
+    dx?: number,
+    dy?: number,
+}
+
+interface Place {
+    x?: number,
+    y?: number
 }
 
 interface Bounds {
@@ -12,6 +22,56 @@ interface Bounds {
     left: number,
     right: number
 }
+
+enum BindingLocation {
+    // Outer
+    OuterTopLeft="outer-top-left",
+    OuterTopCentre="outer-top-centre",
+    OuterTopRight="outer-top-right",
+
+    OuterCentreLeft="outer-centre-left",
+    OuterCentreRight="outer-centre-right",
+
+    OuterBottomLeft="outer-bottom-left",
+    OuterBottomCentre="outer-bottom-centre",
+    OuterBottomRight="outer-bottom-right",
+
+    // Inner
+    InnerTopLeft="inner-top-left",
+    InnerTopCentre="inner-top-centre",
+    InnerTopRight="inner-top-right",
+
+    InnerCentreLeft="inner-centre-left",
+    Centre="centre",
+    InnerCentreRight="inner-centre-right",
+
+    InnerBottomLeft="inner-bottom-left",
+    InnerBottomCentre="inner-bottom-centre",
+    InnerBottomRight="inner-bottom-right",
+}
+
+enum TestBindingLocation {
+    Near="near",
+    Centre="centre",
+    Far="far"
+}
+
+export enum Dimension {
+    X="x",
+    Y="y"
+}
+
+interface BindingRules {
+    anchorHorizontal?: TestBindingLocation,
+    targetHorizontal?: TestBindingLocation,
+
+
+    anchorVertical?: TestBindingLocation,
+    targetVertical?: TestBindingLocation
+}
+
+type Padding = number | [number, number] | [number, number, number, number]
+type Offset = [number, number]
 
 export interface IDraw {
     draw(surface: Svg): void
@@ -22,126 +82,357 @@ export interface IElement {
     offset: [number, number],
 }
 
+interface Binding {
+    bindingRules: BindingRules,
+    targetElement: Element,
+}
+
 
 export abstract class Element {
-    private _x: number;
-    private _y: number;
-    private _dim?: Dim;
+    public AnchorSetters: {[name: string]: (dimension: Dimension, v : number) => void} = {
+        "near": this.setNear,
+        "centre": this.setCentre,
+        "far": this.setFar
+    }
+    public AnchorPointGetters: {[name: string]: (dimension: Dimension) => number} = {
+        "near": this.getNear,
+        "centre": this.getCentre,
+        "far": this.getCentre
+    }
+
+    private _x?: number;
+    private _y?: number;
+    protected _contentDim: Dim = {};
 
     offset: number[];
-    padding: number[]=[0, 0, 0, 0];
 
-    constructor(x: number, y: number, offset: [number, number]=[0, 0], padding: number | [number, number] | [number, number, number, number]=0, dim?: Dim) {
+    bindings: Binding[] = [];
+
+    id: string;
+    dirty: boolean = true;
+
+    constructor(offset: Offset=[0, 0], x?: number, y?: number, dim?: Dim) {
         this._x = x;
-        this._y = y;
+        this._y = y;  // Will make dirty??
 
         this.offset = [...offset];  // Fixed for some reason
         if (dim) {
-            this.dim = dim;
+            this.contentDim = dim;
         }
 
-        if (typeof padding === "number") {
-            this.padding = [padding, padding, padding, padding]
-        } else if (typeof this.padding === "object") {
-            if (padding.length === 2) {
-                this.padding = [padding[0], padding[1], padding[0], padding[1]]
-            } else {
-                this.padding = padding;
-            }
-        }
-                
+        this.id = Math.random().toString(16).slice(2);
     }
+
+    abstract resolveDimensions(): void
+    abstract draw(surface: Svg, ...args: any[]): void
+
+    move({dx, dy}: Shift) {
+        this.x += dx ? dx : 0;
+        this.y += dy ? dy : 0;
+
+        this.enforceBinding();
+    }
+
+    place({x, y}: Place) {
+        this.x = x ? x : this.x;
+        this.y = y ? y : this.y;
+
+        this.enforceBinding();
+    }
+
+    bind(el: Element, coordinate: Dimension, anchorBindLocation: TestBindingLocation, targetBindLocation: TestBindingLocation) {
+        var found = false;
+        this.bindings.forEach((b) => {
+            if (b.targetElement === el) {
+                found = true;
+
+                switch (coordinate) {
+                    case Dimension.X:
+                        b.bindingRules.anchorHorizontal = anchorBindLocation;
+                        b.bindingRules.targetHorizontal = targetBindLocation;
+                        break;
+                    case Dimension.Y:
+                        b.bindingRules.anchorVertical = anchorBindLocation;
+                        b.bindingRules.targetVertical = targetBindLocation;
+                        break;
+                }
+            }
+        })
+
+        if (!found) {
+            var newBindingRules: BindingRules = {};
+
+            switch (coordinate) {
+                case Dimension.X:
+                    newBindingRules.anchorHorizontal = anchorBindLocation;
+                    newBindingRules.targetHorizontal = targetBindLocation;
+                    break;
+                case Dimension.Y:
+                    newBindingRules.anchorVertical = anchorBindLocation;
+                    newBindingRules.targetVertical = targetBindLocation;
+                    break;
+            }
+
+            this.bindings.push({targetElement: el, bindingRules: newBindingRules})
+        }
+    }
+
+    // TODO: implement targetAnchor
+    private enforceBinding() {
+        this.bindings.forEach((binding) => {
+                binding.targetElement.dirty = true;
+                var rules: BindingRules = binding.bindingRules;
+                var target: Element = binding.targetElement;
+
+                if (rules.anchorHorizontal && rules.targetHorizontal) {  // We have a horizontal binding
+                    // get the X coord of the location on the anchor
+                    var anchorBindLocation: number = this.AnchorPointGetters[rules.anchorHorizontal](Dimension.X);
+
+                    // Use the correct setter on the target with this value
+                    target.AnchorSetters[rules.targetHorizontal](Dimension.X, anchorBindLocation)
+                }
+
+                if (rules.anchorVertical && rules.targetVertical) {  // We have a horizontal binding
+                    // get the Y coord of the location on the anchor
+                    var anchorBindLocation: number = this.AnchorPointGetters[rules.anchorVertical](Dimension.Y);
+
+                    // Use the correct setter on the target with this value
+                    target.AnchorSetters[rules.targetVertical](Dimension.Y, anchorBindLocation)
+                }
+            }
+        )
+    }
+    
 
     get x(): number {
-        return this._x;
+        if (this._x) {
+            return this._x;
+        }
+        throw new Error("x unset");
     }
     get y(): number {
-        return this._y;
+        if (this._y) {
+            return this._y;
+        }
+        throw new Error("y unset");
     }
-    set x(val: number) {
+    private set x(val: number) {
+        this.dirty = true;
         this._x = val;
     }
-    set y(val: number) {
+    private set y(val: number) {
+        this.dirty = true;
         this._y = val;
     }
 
-    get bounds(): Bounds {
-        var top = this._y;
-        var left = this._x;
 
-        var bottom = this._y + this.height;
-        var right = this._x + this.width;
+    get contentBounds(): Bounds {
+        var top = this.y;
+        var left = this.x;
+
+        var bottom = this.y + this.contentHeight;
+        var right = this.x + this.contentWidth;
 
         return {top: top, right: right, bottom: bottom, left: left}
     }
 
-    set dim(b: Dim)  {
-        this._dim = {width: b.width, height: b.height};
+    set contentDim(b: Dim)  {
+        this._contentDim = {width: b.width, height: b.height};
     }
+    get contentDim(): Dim {
+        if (this._contentDim) {
+            return this._contentDim;
+        }
+
+        throw new Error("dimensions unset");
+    }
+
+
 
     get width(): number {
-        if (this._dim) {
-            return this._dim.width;
+        if (this.contentDim.width) {
+            return this.contentWidth;
         }
-        throw new Error("Dimensions undefined")
-    }
-    set width(width: number) {
-        if (this._dim) {
-            this._dim.width = width;
-        }
-        throw new Error("Dimensions undefined")
+        throw new Error("Width unset")
     }
     get height(): number {
-        if (this._dim) {
-            return this._dim.height;
-        }
-        throw new Error("Dimensions undefined")
-    }
-    set height(height: number) {
-        if (this._dim) {
-            this._dim.height = height;
+        if (this.contentDim.height) {
+            return this.contentHeight;
         }
         throw new Error("Dimensions undefined")
     }
 
+    get contentWidth(): number {
+        if (this._contentDim.width) {
+            return this._contentDim.width;
+        }
+        throw new Error("Width unset")
+    }
+    set contentWidth(width: number) {
+        this._contentDim.width = width;
+    }
+    get contentHeight(): number {
+        if (this._contentDim.height) {
+            return this._contentDim.height;
+        }
+        throw new Error("Height unset")
+    }
+    set contentHeight(height: number) {
+        this._contentDim.height = height;
+    }
 
-    get px(): number {
-        return this._x - this.padding[3];
+
+    // Helpers
+    get hasDimensions(): boolean {
+        if (!this.contentDim.height || !this.contentDim.height) {
+            return false;
+        } else {
+            return true;
+        }
     }
-    get py(): number {
-        return this._y - this.padding[0];
-    }
-    set px(val: number) {
-        this._x = val + this.padding[3];
-    }
-    set py(val: number) {
-        this._y = val + this.padding[0];
+    get hasPosition(): boolean {
+        if (!this._x || !this._y) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
-    get pbounds(): Bounds {
-        if (this._dim) {
-            var top = this.py;
-            var left = this.px;
+    // Anchors:
+
+    // Top (y)
+    public get tL() : [number, number] {
+        return [this.x, this.y];
+    }
+    public set tL(xy : [number, number]) {
+        this.x = xy[0];
+        this.y = xy[1];
+    }
+
+    public get tC() : [number, number] {
+        return [this.x + this.width/2, this.y];
+    }
+    public set tC(xy : [number, number]) {
+        this.x = xy[0] - this.width/2;
+        this.y = xy[1];
+    }
+
+    public get tR() : [number, number] {
+        return [this.x + this.width, this.y];
+    }
+    public set tR(xy : [number, number]) {
+        this.x = xy[0] - this.width;
+        this.y = xy[1];
+    }
+
+    // Centre (y)
+    public get cL() : [number, number] {
+        return [this.x, this.y + this.height/2];
+    }
+    public set cL(xy : [number, number]) {
+        this.x = xy[0];
+        this.y = xy[1] - this.height/2;
+    }
+
+    public get centre() : [number, number] {
+        return [this.x + this.width/2, this.y + this.height/2];
+    }
+    public set centre(xy : [number, number]) {
+        this.x = xy[0] - this.width/2;
+        this.y = xy[1] - this.height/2;
+    }
+
+    public get cR() : [number, number] {
+        return [this.x + this.width, this.y + this.height/2];
+    }
+    public set cR(xy : [number, number]) {
+        this.x = xy[0] - this.width;
+        this.y = xy[1] - this.height/2;
+    }
+
+    // Bottom (y)
+    public get bL() : [number, number] {
+        return [this.x, this.y + this.height];
+    }
+    public set bL(xy : [number, number]) {
+        this.x = xy[0];
+        this.y = xy[1] - this.height;
+    }
+
+    public get bC() : [number, number] {
+        return [this.x + this.width/2, this.y + this.height];
+    }
+    public set bC(xy : [number, number]) {
+        this.x = xy[0] - this.width/2;
+        this.y = xy[1] - this.height;
+    }
+
+    public get bR() : [number, number] {
+        return [this.x + this.width, this.y + this.height];
+    }
+    public set bR(xy : [number, number]) {
+        this.x = xy[0] - this.width;
+        this.y = xy[1] - this.height;
+    }
+
+
     
-            var bottom = this.py + this.pheight;
-            var right = this.px + this.pwidth;
-
-            return {top: top, right: right, bottom: bottom, left: left};
+    public getNear(dimension: Dimension): number {
+        switch (dimension) {
+            case Dimension.X:
+                return this.x;
+            case Dimension.Y:
+                return this.y;
         }
-        throw new Error("Element has no dimensions");
+    }
+    public setNear(dimension: Dimension, v : number) {
+        switch (dimension) {
+            case Dimension.X:
+                this.x = v;
+                break;
+            case Dimension.Y:
+                this.y = v;
+                break;
+        }
     }
 
-    get pwidth(): number {
-        if (this._dim) {
-            return this.padding[3] + this._dim.width + this.padding[1];
+    public getCentre(dimension: Dimension): number {
+        switch (dimension) {
+            case Dimension.X:
+                return this.x + this.width/2;
+                break;
+            case Dimension.Y:
+                return this.y + this.height/2;
         }
-        throw new Error("Dimensions undefined")
     }
-    get pheight(): number {
-        if (this._dim) {
-            return this.padding[0] + this._dim.height + this.padding[2];
+    public setCentre(dimension: Dimension, v : number) {
+        switch (dimension) {
+            case Dimension.X:
+                this.x = v - this.width/2;
+                break;
+            case Dimension.Y:
+                this.y = v - this.height/2;
+                break;
         }
-        throw new Error("Dimensions undefined")
     }
 
+    public getFar(dimension: Dimension): number {
+        switch (dimension) {
+            case Dimension.X:
+                return this.x + this.width;
+            case Dimension.Y:
+                return this.y + this.height;
+        }
+    }
+    public setFar(dimension: Dimension, v : number) {
+        switch (dimension) {
+            case Dimension.X:
+                this.x = v - this.width;
+                break;
+            case Dimension.Y:
+                this.y = v - this.height;
+                break;
+        }
+    }
+    
 }

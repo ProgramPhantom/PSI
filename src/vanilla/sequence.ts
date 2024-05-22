@@ -15,7 +15,7 @@ import Bracket, { Direction, IBracket } from "./bracket";
 import { NumberAlias } from "svg.js";
 import Section from "./section";
 import { FillObject, PartialConstruct } from "./util";
-import * as defaultLine from "./default/data/line.json";
+import { ILine } from "./line";
 
 
 interface sequenceInterface {
@@ -23,99 +23,7 @@ interface sequenceInterface {
     grid: gridInterface,
     bracket: IBracket
 }
-export enum GridPositioning {start="start", centre="centre"}
 
-interface gridInterface {
-    gridOn: boolean,
-    gridPositioning: GridPositioning,
-    lineStyle: ILine,
-    
-}
-
-export interface ILine extends IElement {
-    stroke: string,
-    strokeWidth: number,
-    dashing: [number, number]
-}
-
-export class Line extends Element {
-    static defaults: {[name: string]: ILine} = {"default": <ILine>defaultLine}
-
-    stroke: string;
-    strokeWidth: number;
-    dashing: [number, number];
-
-    constructor(params: Partial<ILine>, templateName: string="default") {
-        var fullParams: ILine = FillObject(params, Line.defaults[templateName]);
-        super(0, 0, fullParams.offset, fullParams.padding)
-
-        this.stroke = fullParams.stroke;
-        this.strokeWidth = fullParams.strokeWidth;
-        this.dashing = fullParams.dashing;
-    }
-}
-
-export class Grid {
-    gridOn: boolean;
-    vLines: {[timestamp: number]: Line} = {};
-    style: ILine;
-    gridPositioning: GridPositioning;
-
-    constructor(params: gridInterface) {
-        this.gridOn = params.gridOn;
-        this.style = params.lineStyle;
-        this.gridPositioning = params.gridPositioning;
-    }
-
-    addLine(line: Line, index: number) {
-        this.vLines[index] = line;
-    }
-
-    draw(surface: Svg, timestampX: number[], height: number) {
-        var attr: any;
-
-        switch (this.gridPositioning) {
-            case GridPositioning.start:
-                var cursX = timestampX[0];
-                
-                for (const [timestamp, line] of Object.entries(this.vLines)) {
-                    attr = {"stroke-width": line.strokeWidth,
-                            "stroke-dasharray": line.dashing,
-                            "stroke": line.stroke}
-
-                    cursX = timestampX[parseInt(timestamp)] ;
-                        
-                    surface.line(cursX, 0, cursX, height)
-                    .attr(attr);
-                    
-                    
-                }
-                
-                break;
-            case GridPositioning.centre:
-                var cursX = timestampX[0];
-
-                for (const [timestamp, line] of Object.entries(this.vLines)) {
-                    attr = {"stroke-width": line.strokeWidth,
-                            "stroke-dasharray": line.dashing,
-                            "stroke": line.stroke}
-
-                    cursX = timestampX[parseInt(timestamp)];
-                    var width = timestampX[parseInt(timestamp)+1] - timestampX[parseInt(timestamp)];
-                        
-                    cursX += width/2;
-                    surface.line(cursX, 0, cursX, height)
-                    .attr({...line});
-                   
-                }
-
-                break;
-            default: 
-                
-                throw Error;
-            }
-    }
-}
 
 export default class Sequence {
     static defaults: {[key: string]: sequenceInterface} = {"empty": {...<any>defaultSequence}}
@@ -176,8 +84,8 @@ export default class Sequence {
             channel.draw(surface, this.maxChannelX, this.maxSectionWidths, yCurs);
             yCurs = channel.pbounds.bottom;
             
-            this.height += channel.pheight;
-            this.channelWidths.push(channel.pwidth);
+            this.height += channel.height;
+            this.channelWidths.push(channel.width);
         })
         
         this.freeLabels.forEach((label) => {
@@ -262,16 +170,11 @@ export default class Sequence {
         var channel = this.channelsDic[channelRef]
         
         var x: number = this.maxTimestampX[timestamp];
-        
-        bracket.x = x;
-        bracket.y = channel.y;
 
-        bracket.x1 = x;
-        bracket.x2 = x;
-
-        bracket.y1 = channel.y + bracket.style.strokeWidth;
-        bracket.y2 = channel.barY + channel.style.thickness;
+        var y = channel.y + bracket.style.strokeWidth;
+        var y2 = channel.barY + channel.style.thickness;
         
+        bracket.set(x, y, x, y2);
     }
 
     addBracket(channelName: string, bracket: Bracket, index?: number) {

@@ -31,7 +31,7 @@ class SequenceDropInterpreter {
                 // slither top
                 let newSlither: AddSpec = {
                     area: {x: x - this.slitherWidth/2, 
-                           y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
+                           y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                            width: this.slitherWidth, 
                            height: channel.maxTopProtrusion + channel.padding[0] - 1},
                     index: i, orientation: Orientation.top, channelName: name
@@ -51,7 +51,7 @@ class SequenceDropInterpreter {
                 if (!occupied) {  // Top block
                     let newBlock: AddSpec = {
                         area: {x: x + this.slitherWidth / 2, 
-                               y: channel.py + (channel.annotationLayer ? channel.annotationLayer?.pheight : 0), 
+                               y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                                width: correspondingWidth - this.slitherWidth, 
                                height: channel.maxTopProtrusion + channel.padding[0] - 1}, 
                         index: i, orientation: Orientation.top, channelName: name}

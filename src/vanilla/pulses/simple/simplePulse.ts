@@ -33,11 +33,14 @@ export default class SimplePulse extends Positional implements IDraw {
         super(fullParams);
         
         this.style = fullParams.style;
-        this.dim = {width: this.style.width, height: this.style.height};
+    }
+
+    resolveDimensions(): void {
+        this.contentDim = {width: this.style.width, height: this.style.height};
     }
 
     draw(surface: SVG.Svg) {
-        var rect = surface.rect(this.width, this.height)
+        var rect = surface.rect(this.contentWidth, this.contentHeight)
         .attr({fill: this.style.fill,
                 stroke: this.style.stroke})
         .move(this.x + this.offset[0], this.y + this.offset[1])
@@ -46,7 +49,7 @@ export default class SimplePulse extends Positional implements IDraw {
                "shape-rendering": "crispEdges"
         });
 
-        rect.draggable();
+        // rect.draggable();
 
         if (this.decoration.arrow || this.decoration.label) {
             this.positionDecoration()
@@ -64,7 +67,7 @@ export default class SimplePulse extends Positional implements IDraw {
 
         switch (this.config.orientation) {
             case Orientation.top:
-                var actualHeight = this.height;
+                var actualHeight = this.contentHeight;
                 if (this.style.strokeWidth) {
                     actualHeight -= this.style.strokeWidth!/2;
                 }
@@ -73,7 +76,7 @@ export default class SimplePulse extends Positional implements IDraw {
                 break;
 
             case Orientation.bottom:
-                var actualHeight = this.height;
+                var actualHeight = this.contentHeight;
                 if (this.style.strokeWidth) {
                     actualHeight += this.style.strokeWidth!/2;
                 }
@@ -82,7 +85,7 @@ export default class SimplePulse extends Positional implements IDraw {
                 break;
 
             case Orientation.both: // LOOK AT THIS
-                var actualHeight = this.height/2 - channelThickness/2;
+                var actualHeight = this.contentHeight/2 - channelThickness/2;
                 if (this.style.strokeWidth) {
                     actualHeight += this.style.strokeWidth!/2;
                 }
@@ -106,7 +109,7 @@ export default class SimplePulse extends Positional implements IDraw {
 
         switch (this.config.orientation) {
             case Orientation.top:
-                this.y = y - this.height;
+                this.y = y - this.contentHeight;
                 if (this.style.strokeWidth) {
                     this.y += this.style.strokeWidth!/2;
                 }
@@ -121,7 +124,7 @@ export default class SimplePulse extends Positional implements IDraw {
                 break;
 
             case Orientation.both:
-                this.y = y + channelThickness/2 - this.height/2
+                this.y = y + channelThickness/2 - this.contentHeight/2
 
                 if (this.style.strokeWidth) {
                     this.y = this.y;

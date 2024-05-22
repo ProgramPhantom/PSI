@@ -4,7 +4,8 @@ import Label, { ILabel, Position } from "./label";
 import { PartialConstruct, UpdateObj } from "./util";
 import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import { H } from "mathjax-full/js/output/common/FontData";
-import SpanningLabel, { IAnnotation } from "./spanningLabel";
+import Annotation, { IAnnotation } from "./annotation";
+import PaddedBox from "./paddedBox";
 
 interface Dim {
     width: number,
@@ -21,6 +22,8 @@ interface Bounds {
     height: number,
 }
 
+type Index = [number, number]
+
 export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both" }
 
 export enum Alignment {Left=<any>"left", Centre=<any>"centre", Right=<any>"right"}
@@ -30,8 +33,12 @@ export interface labelable {
     posDrawDecoration(surface: Svg): number[],
 }
 
+export interface IHostLabel {
+    label?: Label,
+}
+
 export interface positionalConfig {
-    timestamp?: number[],
+    index?: number,
 
     orientation: Orientation,
     alignment: Alignment,
@@ -47,27 +54,25 @@ export interface IPositional extends IAnnotation, IElement {
 export interface IDefaultConstruct<I> {
 }
 
-export default class Positional extends Element implements IDraw {
+export default abstract class Positional extends PaddedBox implements IDraw {
     // An element that relates to a point in time
-    private _timestamp?: number[];
+    private _index?: Index;
 
     config: positionalConfig;
-
     barThickness: number = 3;
+    decoration: Annotation;
 
-    decoration: SpanningLabel;
-
+    
     constructor(params: IPositional) {
-        super(0, 0, params.offset, params.padding);
+        super(params.offset, params.padding);
         // PartialConstruct<typeof Positional>(Positional, {padding: [1, 2,3 ,4]});
 
         this.config = params.config;
 
-        if (this.config.timestamp) {
-            this.timestamp = this.config.timestamp;
-        }
+        if (this.config.index) { this.index = this.config.index; }
 
-        this.decoration = PartialConstruct(SpanningLabel, {labelOn: params.labelOn, label: params.label, arrowOn: params.arrowOn, arrow: params.arrow}, SpanningLabel.defaults["spanlabel"])
+        this.decoration = PartialConstruct(Annotation, {labelOn: params.labelOn, label: params.label, arrowOn: params.arrowOn, arrow: params.arrow}, Annotation.defaults["spanlabel"])
+
     }
 
     verticalProtrusion(channelThickness: number) : number[] {
@@ -75,16 +80,16 @@ export default class Positional extends Element implements IDraw {
 
         switch (this.config.orientation) {
             case Orientation.top:
-                dimensions = [this.pheight, 0];
+                dimensions = [this.height, 0];
                 break;
 
             case Orientation.bottom:
-                dimensions = [0, this.pheight];
+                dimensions = [0, this.height];
                 break;
 
             case Orientation.both:
-                dimensions = [this.pheight/2 - channelThickness/2, 
-                this.pheight/2 - channelThickness/2];    
+                dimensions = [this.height/2 - channelThickness/2, 
+                this.height/2 - channelThickness/2];    
                 break;
 
             default:
@@ -107,26 +112,26 @@ export default class Positional extends Element implements IDraw {
         if (this.decoration.label) {
             switch (this.decoration.label.position) {
                 case Position.top:
-                    dimensions[0] += this.decoration.label.pheight;
+                    dimensions[0] += this.decoration.label.height;
                     break;
                 case Position.bottom:
-                    dimensions[1] += this.decoration.label.pheight;
+                    dimensions[1] += this.decoration.label.height;
                     break;
                 case Position.centre:
                     // No protrusion
                     break;
                 default:
-                    dimensions[0] += this.decoration.label.pheight;
+                    dimensions[0] += this.decoration.label.height;
 
             }
         }
 
         if (this.decoration.arrow) {
             if (this.decoration.arrow.position === ArrowPosition.top) {
-                dimensions[0] += this.decoration.arrow.pheight;
+                dimensions[0] += this.decoration.arrow.height;
                 console.warn("this might not work")
             } else if (this.decoration.arrow.position === ArrowPosition.bottom) {
-                dimensions[1] += this.decoration.arrow.pheight;
+                dimensions[1] += this.decoration.arrow.height;
                 console.warn("this might not work")
             }
         }
@@ -141,15 +146,15 @@ export default class Positional extends Element implements IDraw {
         
         switch (this.config.orientation) {
             case Orientation.top:
-                this.py = y - this.pheight;
+                this.y = y - this.height;
                 break;
 
             case Orientation.bottom:
-                this.py = y + channelThickness;
+                this.y = y + channelThickness;
                 break;
 
             case Orientation.both:
-                this.y = y + channelThickness/2 - this.height/2;
+                this.y = y + channelThickness/2 - this.contentHeight/2;
                 
                 break;
         }
@@ -158,60 +163,56 @@ export default class Positional extends Element implements IDraw {
     }
 
     positionDecoration() {
-    
-        
-        
         if (this.decoration.arrowOn && this.decoration.arrow) {
-            this.decoration.arrow.set(0, 0, this.width, 0);
-            this.decoration.computeDimensions();
-            this.decoration.px = this.px + this.pwidth/2 - this.decoration.width/2;
+            this.decoration.arrow.set(0, 0, this.contentWidth, 0);  // Position arrow
+
+            // Centers the arrow horizontally on the positional
+            this.decoration.x = this.x + this.width/2 - this.decoration.contentWidth/2;
 
             switch (this.decoration.arrow.position) {
                 case ArrowPosition.top:
-                    this.decoration.py = this.py - this.decoration.pheight;
+                    this.decoration.y = this.y - this.decoration.height;
                     break;
                 case ArrowPosition.bottom:
-                    this.decoration.py = this.py + this.height + this.barThickness;
+                    this.decoration.y = this.y + this.contentHeight + this.barThickness;
                     break;
                 default:
-                    console.warn("Inline not allowed when no label")
-                    this.decoration.py = this.py - this.decoration.pheight;
+                    console.warn("Inline not allowed when no label"); // TODO: Just allow it bro
+                    this.decoration.y = this.y - this.decoration.height;
                     break;
             }
         }
 
         if (this.decoration.labelOn && this.decoration.label) {
-            this.decoration.px = this.px + this.pwidth/2 - this.decoration.width/2;
+            this.decoration.x = this.x + this.width/2 - this.decoration.contentWidth/2;
             
             switch (this.decoration.label.position) {
                 case Position.top:
-                    this.decoration.py = this.py - this.decoration.pheight;
+                    this.decoration.y = this.y - this.decoration.height;
                     break;
                 case Position.bottom:
-                    this.decoration.py = this.y + this.height + this.barThickness;
+                    this.decoration.y = this.y + this.contentHeight + this.barThickness;
                     break;
                 case Position.centre:
-                    this.decoration.y = this.y + this.height/2 - this.decoration.height/2;
+                    this.decoration.y = this.y + this.contentHeight/2 - this.decoration.contentHeight/2;
                     break;
             }
         }
     }
 
     centreXPos(x: number) {
-        this.x = x - this.width/2;
+        this.x = x - this.contentWidth/2;
     }
 
-    draw(surface: Svg) {
-        throw new Error("Can't draw this!");
-    }
+    abstract draw(surface: Svg): void
 
-    get timestamp(): number[] {
-        if (this._timestamp !== undefined) {
-            return this._timestamp;
+    get index(): Index {
+        if (this._index !== undefined) {
+            return this._index;
         }
         throw new Error("Timestamp not initialised")
     }
-    set timestamp(t: number[]) {
-        this._timestamp = t;
+    set index(t: number) {
+        this._index = [t, t + this.config.noSections - 1];
     }
 }

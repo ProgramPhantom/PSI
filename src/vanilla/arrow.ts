@@ -3,6 +3,7 @@ import { Element, IElement } from "./element";
 import { labelable } from "./positional";
 import * as defaultArrow from "./default/data/arrow.json"
 import { FillObject, UpdateObj } from "./util";
+import LineLike, { ILineLike } from "./lineLike";
 
 interface Dim {
   width: number,
@@ -30,7 +31,7 @@ export enum ArrowPosition {
   top="top"
 }
 
-export interface IArrow extends IElement {
+export interface IArrow extends ILineLike {
     position: ArrowPosition,
     style: arrowStyle,
 }
@@ -42,41 +43,28 @@ export interface arrowStyle {
 }
 
 
-export default class Arrow extends Element {
+export default class Arrow extends LineLike {
   static defaults: {[key: string]: IArrow} = {"arrow": {...<any>defaultArrow}}
 
-  x2: number;
-  y2: number;
-
   style: arrowStyle;
-  padding: number[];
   position: ArrowPosition;
-
+ 
   constructor(params: Partial<IArrow>, templateName: string="arrow") {
     var fullParams: IArrow = FillObject(params, Arrow.defaults[templateName])
-    super(0, 0, fullParams.offset, fullParams.padding)
+    super(fullParams);
 
-    this.x2 = 0;
-    this.y2 = 0;
-    
     this.style = fullParams.style;
     this.padding = fullParams.padding;
     this.position = fullParams.position;
-
-    this.dim = {height: this.style.thickness, width: 0}
   }
 
-  public set(x1: number, y1: number, x2: number, y2: number) {
-    this.x = x1;
-    this.y = y1;
-
-    this.x2 = x2;
-    this.y2 = y2;
-
-    this.dim = {height: this.style.thickness, width: x2 - x1}
-  }
 
   public draw(surface: Svg): void {
+    if (!this.dirty) {
+      return
+    }
+    this.dirty = false;
+
     const def = `
     <defs>
         <marker 

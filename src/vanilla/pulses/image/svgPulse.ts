@@ -53,17 +53,17 @@ export default class SVGPulse extends Positional implements IDraw, IDefaultConst
 		this.path = fullParams.path;
 
 		this.svgContent = this.getSVG();
-
-		this.dim = {width: this.style.width, height: this.style.height};
 	}
+
+	resolveDimensions(): void {
+        this.contentDim = {width: this.style.width, height: this.style.height};
+    }
 		
 	getSVG(): string {
 		return svgContent[this.path]
 	}
 
-
 	draw(surface: Svg) {
-		
 		var obj = SVG(this.svgContent);
 		obj.move(0, 0);
 		obj.attr({"preserveAspectRatio": "none"})
@@ -87,7 +87,7 @@ export default class SVGPulse extends Positional implements IDraw, IDefaultConst
 
 		
 		obj.move(this.x + this.offset[0], this.y + this.offset[1]);
-		obj.size(this.width, this.height);
+		obj.size(this.contentWidth, this.contentHeight);
 		surface.add(obj);
 
 		if (this.decoration.arrow || this.decoration.label) {
@@ -101,7 +101,7 @@ export default class SVGPulse extends Positional implements IDraw, IDefaultConst
 		
 		switch (this.config.orientation) {
 			case Orientation.top:
-				this.y = y - this.height;
+				this.y = y - this.contentHeight;
 				break;
 
 			case Orientation.bottom:
@@ -110,7 +110,7 @@ export default class SVGPulse extends Positional implements IDraw, IDefaultConst
 				break;
 
 			case Orientation.both:
-				this.y = y + channelThickness/2 - this.height/2;
+				this.y = y + channelThickness/2 - this.contentHeight/2;
 				
 				break;
 		}

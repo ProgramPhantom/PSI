@@ -29,12 +29,14 @@ export default class Abstract extends Positional implements IDraw {
 
         this.style = fullParams.style;
         this.textLabel = PartialConstruct(Label, {text: fullParams.text, position: Position.centre, style: {size: 60, colour: "white"}}, Label.defaults["label"]) 
+    }
 
-        this.dim = {width: this.style.width, height: this.style.height};
+    resolveDimensions(): void {
+        this.contentDim = {width: this.style.width, height: this.style.height};
     }
 
     draw(surface: SVG.Svg) {
-        surface.rect(this.width, this.height)
+        surface.rect(this.contentWidth, this.contentHeight)
         .attr({fill: this.style.fill,
                stroke: this.style.stroke})
         .move(this.x, this.y)
@@ -51,10 +53,10 @@ export default class Abstract extends Positional implements IDraw {
     }
 
     drawText(surface: SVG.Svg) {
-        var textX = this.x + this.width/2 - this.textLabel.width/2;
-        var textY = this.y + this.height /2 - this.textLabel.height/2 + this.textLabel.padding[0];
+        var textX = this.x + this.contentWidth/2 - this.textLabel.contentWidth/2;
+        var textY = this.y + this.contentHeight /2 - this.textLabel.contentHeight/2 + this.textLabel.padding[0];
      
-        this.textLabel.move(textX, textY);
+        this.textLabel.move({dx: textX, dy: textY});
         this.textLabel.draw(surface);
     }
 

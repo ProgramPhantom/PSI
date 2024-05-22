@@ -3,6 +3,7 @@ import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import * as defaultLabel from "./default/data/label.json";
 import { FillObject, UpdateObj } from "./util";
+import PaddedBox from "./paddedBox";
 
 
 interface Dim {
@@ -41,7 +42,7 @@ export enum Position {top="top",
                       centre="centre"}
 
 
-export default class Label extends Element {
+export default class Label extends PaddedBox {
     static defaults: {[key: string]: ILabel} = {"label": {...<ILabel>defaultLabel}}
 
     text: string;
@@ -52,45 +53,19 @@ export default class Label extends Element {
     
     constructor(params: Partial<ILabel>, templateName: string="label") {
         var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
-        super(0, 0, fullParams.offset, fullParams.padding);
+        super(fullParams.offset, fullParams.padding);
         
-
         this.text = fullParams.text;
         this.style = fullParams.style;
         this.padding = fullParams.padding;
         this.position = fullParams.position;
-
-        this.computeDimensions();
     }
-
-    draw(surface: Svg) {
-        
-        const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
-        
-        
-        var SVGobj = SVG(SVGEquation);
-        SVGobj.move(this.x, this.y);
-        SVGobj.attr({preserveAspectRatio: "xMinYMin"})
-        SVGobj.width(this.style.size);
-        
-        SVGobj.attr({"height": null, "style": `color:${this.style.colour}`});
-        var group = SVGobj.children()[1];
-
-        if (this.style.background) {
-            group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
-        }
-        
-        surface.add(SVGobj);
-    }
-
+    
     // Sets this.width and this.height
     // Currently needs to add and remove the svg to find these dimensions, not ideal
-    computeDimensions() {
-        
+    resolveDimensions(): void {
         var SVGEquation = TeXToSVG(`${this.text}`); 
         
-        
-
         var temp = SVG().addTo('#drawDiv').size(300, 300)  // TERRIBLE CODE HERE.
 
         var SVGobj = SVG(SVGEquation);
@@ -114,12 +89,26 @@ export default class Label extends Element {
         SVGobj.remove();
         temp.remove();
 
-        this.dim = {width: width, height: height};
+        this.contentDim = {width: width, height: height};
     }
 
-    // Sets x and y at the same time
-    move(x?: number, y?: number) {
-        this.x = x ?? this.x;
-        this.y = y ?? this.y;
+    draw(surface: Svg) {
+        
+        const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
+        
+        
+        var SVGobj = SVG(SVGEquation);
+        SVGobj.move(this.x, this.y);
+        SVGobj.attr({preserveAspectRatio: "xMinYMin"})
+        SVGobj.width(this.style.size);
+        
+        SVGobj.attr({"height": null, "style": `color:${this.style.colour}`});
+        var group = SVGobj.children()[1];
+
+        if (this.style.background) {
+            group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
+        }
+        
+        surface.add(SVGobj);
     }
 }

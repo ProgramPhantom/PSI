@@ -19,13 +19,17 @@ export default class Span extends Positional implements IDraw {
         var fullParams: ISpan = FillObject(params, Span.defaults[templateName])
         super(fullParams)
 
-        this.dim = {width: fullParams.width, height: 0}
-
         if (this.decoration.arrow) {
-            this.decoration.arrow.set(0, 0, this.width, 0)
+            this.decoration.arrow.set(0, 0, this.contentWidth, 0)
         }
 
-        this.decoration.computeDimensions();
+        this.resolveDimensions();
+    }
+
+    resolveDimensions(): void {
+        this.decoration.resolveDimensions();
+
+        this.contentDim = this.decoration.contentDim;
     }
 
     public draw(surface: Svg): void {
@@ -34,6 +38,4 @@ export default class Span extends Positional implements IDraw {
             this.decoration.draw(surface);
         }
     }
-
-    
 }

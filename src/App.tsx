@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Canvas from './Canvas'
 import Editor from './Editor'
 import Channel from './vanilla/channel';
@@ -18,8 +18,22 @@ function App() {
   const [textboxValue, setTextboxValue] = useState<string>("");
   const [channelNames, setChannelNames] = useState<string[]>([]);
   const [errors, setErrors] = useState<errorState>({parseError: "", drawError: ""});
+  const svgDrawObj = useRef<Svg>();
 
-  const handle = useRef<SequenceHandler>(new SequenceHandler());
+  const handle = useRef<SequenceHandler>(new SequenceHandler(svgDrawObj.current!, Refresh));
+  
+  const [id, setId] = useState<string>(handle.current.id);
+
+
+
+  const canvas: ReactNode = <Canvas script={textboxValue} zoom={2} handler={handle.current} 
+                                    updateChannels={setChannelNames}
+                                    provideErrors={UpdateErrors}
+                                    drawSurface={svgDrawObj} sequenceId={id}></Canvas>
+
+  function Refresh(uid: string) {
+    setId(uid);
+  }
 
   function TypeEvent(script: string) {
     setTextboxValue(script);
@@ -43,7 +57,7 @@ function App() {
   }
 
   function SaveScript() {
-    var script = handle.current.script;
+    var script = handle.current.parser.script;
 
     var blob = new Blob([script], {type: "text/plain;charset=utf-8"});
     FileSaver.saveAs(blob, "sequence.nmpd");
@@ -69,9 +83,7 @@ function App() {
         
         <div style={{gridColumnStart: 1, gridColumnEnd: 2, gridRowStart: 2, gridRowEnd: 3, height: "100%", display: "flex", flexDirection: "column"}}>
           <div style={{height: "100%"}} >
-            <Canvas script={textboxValue} zoom={2} handler={handle.current} 
-              updateChannels={setChannelNames}
-              provideErrors={UpdateErrors}></Canvas>
+            {canvas}
           </div>
           
           <div style={{position: "relative", width: "100%", bottom: "0px"}}>

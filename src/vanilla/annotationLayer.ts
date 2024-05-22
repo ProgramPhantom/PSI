@@ -1,63 +1,69 @@
 import { arrowStyle } from "./arrow";
-import { Element } from "./element";
+import { Element, IElement } from "./element";
 import Label, { Position, ILabel } from "./label";
 import { labelable } from "./positional";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";
 import Bracket, { Direction, bracketType } from "./bracket";
 import Section from "./section";
-import SpanningLabel from "./spanningLabel";
-
-interface Dim {
-    width: number,
-    height: number
-}
-
-interface Bounds {
-    top: number,
-    bottom: number,
-    left: number,
-    right: number
-
-    width: number,
-    height: number,
-}
+import Annotation from "./annotation";
+import * as defaultAnnotationLayer from "./default/data/annotationLayer.json";
+import { FillObject } from "./util";
+import p from "@blueprintjs/icons/lib/esm/generated/16px/paths/blank";
+import PaddedBox from "./paddedBox";
 
 export interface bigISpan {
-
     padding: number[],
     label?: ILabel | null
 }
 
+export interface IAnnotationLayer extends IElement {
 
-export default class AnnotationLayer extends Element {
-    labels: {[timestamp: number]: Span[]} = [];
+}
+
+
+export default class AnnotationLayer extends PaddedBox {
+    static defaults: {[name: string]: IAnnotationLayer} = {"default": {...<any>defaultAnnotationLayer}}
+
+    labels: {[index: number]: Span[]} = [];
     sections: Section[] = [];
 
-    padding: number[];
+    indexWidths: number[];
+    indexX: number[] = [];
 
-    timestampWidths: number[];
-    timestampX: number[] = [];
+    constructor(params: Partial<IAnnotationLayer>, templateName: string="default") {
+        var fullParams: IAnnotationLayer = FillObject(params, AnnotationLayer.defaults[templateName]);
+        super();
 
-    constructor(padding: [number, number, number, number], 
-                offset: [number, number]=[0, 0]) {
-        
-        super(0, 0, offset);
-        
-        this.padding = padding;
-        this.timestampWidths = [];
+        this.indexWidths = [];
     }
 
-    draw(surface: Svg, timestampWidths: number[]=[], startX: number=0, startY: number=0) {
+    resolveDimensions(): void {
+        var height = 0;
+        var width = 0;
 
-        this.timestampWidths = timestampWidths;
+        this.sections.forEach((s) => {
+            if (!s.hasDimensions) {
+                s.resolveDimensions();
+            } 
+            height += s.contentHeight;
+
+            width = Math.max(width, s.contentWidth); // TODO: This isn't how it works mate.
+        })
+
+        this.contentDim = {width: width, height: height}
+    }
+
+    draw(surface: Svg, indexWidths: number[]=[], startX: number=0, startY: number=0) {
+
+        this.indexWidths = indexWidths;
         this.x = startX;
         this.y = startY + this.padding[0];
         
 
-        this.timestampX.push(this.x);
-        this.timestampWidths.forEach((w, i) => {
-            this.timestampX.push(w + this.timestampX[i]);
+        this.indexX.push(this.x);
+        this.indexWidths.forEach((w, i) => {
+            this.indexX.push(w + this.indexX[i]);
         })
 
         var maxYLong = this.drawLongs(surface, this.y);
@@ -67,39 +73,39 @@ export default class AnnotationLayer extends Element {
 
         var height = maxY - this.y;
         
-        var width = this.timestampX[this.timestampX.length-1] - this.timestampX[0];
+        var width = this.indexX[this.indexX.length-1] - this.indexX[0];
 
-        this.dim = {width: width, height: height};
+        this.contentDim = {width: width, height: height};
     }
 
     positionLabels(surface: Svg, startY: number): number {
-        var ys = new Array<number>(this.timestampX.length);
+        var ys = new Array<number>(this.indexX.length);
         ys.fill(startY);
         
 
         // Draw labels
         for (const [key, value] of Object.entries(this.labels)) {
-            var timestamp = parseInt(key);  // really?...
+            var index = parseInt(key);  // really?...
 
             value.forEach((l) => {
-                var yCurs = ys[timestamp];
+                var yCurs = ys[index];
 
                 var x;
                 var timeWidth;
 
 
-                if (timestamp < this.timestampWidths.length) {
-                    x = this.timestampX[timestamp];
-                    timeWidth = this.timestampWidths[parseInt(key)];
+                if (index < this.indexWidths.length) {
+                    x = this.indexX[index];
+                    timeWidth = this.indexWidths[parseInt(key)];
                 } else {
                     x = 0;
                     timeWidth = 0;
                 }
 
-                l.x = x + timeWidth/2 - l.width/2;
-                l.y = ys[timestamp];
+                l.x = x + timeWidth/2 - l.contentWidth/2;
+                l.y = ys[index];
              
-                ys[timestamp] += l.height;
+                ys[index] += l.contentHeight;
 
                 
                 l.draw(surface);
@@ -115,7 +121,7 @@ export default class AnnotationLayer extends Element {
 
     drawLongs(surface: Svg, startY: number): number {
 
-        var ys = new Array<number>(this.timestampX.length-1);
+        var ys = new Array<number>(this.indexX.length-1);
         ys.fill(startY);
         
 
@@ -123,9 +129,8 @@ export default class AnnotationLayer extends Element {
         for (const section of this.sections) {
             var timespanRange: [number, number] = section.indexRange;
 
-            var x1 = this.timestampX[timespanRange[0]];
-            var x2 = this.timestampX[timespanRange[1]+1]  // To the other side of last
-
+            var x1 = this.indexX[timespanRange[0]];
+            var x2 = this.indexX[timespanRange[1]+1]  // To the other side of last
 
             // Find y
             var longHeight = Math.abs(section.protrusion);
@@ -136,16 +141,7 @@ export default class AnnotationLayer extends Element {
             
             var y = thisStartY;
             
-
-            section.x1 = x1;
-            section.x2 = x2;
-
-            section.y1 = y;
-            section.y2 = y;
-
-            section.y = y;
-            section.x = x1;
-
+            section.set(x1, y, x2, y);
             section.draw(surface);
 
             for (var i = timespanRange[0]; i < timespanRange[1]+1; i++) {  // Apply height
@@ -166,10 +162,10 @@ export default class AnnotationLayer extends Element {
     annotateLabel(label: Span) {
         var newLabel = label;
         
-        if (this.labels[label.timestamp[0]] === undefined) {
-            this.labels[label.timestamp[0]] = [newLabel];
+        if (this.labels[label.index[0]] === undefined) {
+            this.labels[label.index[0]] = [newLabel];
         } else {
-            this.labels[label.timestamp[0]].push(newLabel);
+            this.labels[label.index[0]].push(newLabel);
         }
         
     }
