@@ -1,10 +1,10 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { BindSide, Dimension, Element, IElement } from "./element";
+import { ElementBindOptions, Dimension, Element, IElement } from "./element";
 import { labelable } from "./positional";
 import * as defaultBracket from "./default/data/bracket.json"
 import Label, { ILabel, Position } from "./label";
 import { PartialConstruct, UpdateObj } from "./util";
-import LineLike, { ILineLike } from "./lineLike";
+import LineElement, { ILineLike } from "./lineElement";
 
 
 export enum bracketType {
@@ -35,7 +35,7 @@ export interface bracketStyle {
 }
 
 
-export default class Bracket extends LineLike implements labelable {
+export default class Bracket extends LineElement implements labelable {
     static defaults: {[key: string]: IBracket} = {"horizontal": {...<any>defaultBracket}}
 
     style: bracketStyle;
@@ -91,8 +91,8 @@ export default class Bracket extends LineLike implements labelable {
                 // Label on top
                 if (this.label) {
                     // If centre:
-                    this.bind(this.label, Dimension.X, BindSide.Centre, BindSide.Centre);
-                    this.bind(this.label, Dimension.Y, BindSide.Near, BindSide.Far);
+                    this.bind(this.label, Dimension.X, ElementBindOptions.Centre, ElementBindOptions.Centre);
+                    this.bind(this.label, Dimension.Y, ElementBindOptions.Near, ElementBindOptions.Far);
 
                     var pro = this.posDrawDecoration(surface);
                 } else {

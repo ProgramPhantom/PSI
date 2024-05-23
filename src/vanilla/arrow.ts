@@ -3,7 +3,7 @@ import { Element, IElement } from "./element";
 import { labelable } from "./positional";
 import * as defaultArrow from "./default/data/arrow.json"
 import { FillObject, UpdateObj } from "./util";
-import LineLike, { ILineLike } from "./lineLike";
+import LineElement, { ILineLike } from "./lineElement";
 
 interface Dim {
   width: number,
@@ -43,7 +43,7 @@ export interface arrowStyle {
 }
 
 
-export default class Arrow extends LineLike {
+export default class Arrow extends LineElement {
   static defaults: {[key: string]: IArrow} = {"arrow": {...<any>defaultArrow}}
 
   style: arrowStyle;

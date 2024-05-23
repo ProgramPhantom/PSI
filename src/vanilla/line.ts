@@ -1,7 +1,7 @@
 import { Element, IElement } from "./element";
 import * as defaultLine from "./default/data/line.json";
 import { FillObject } from "./util";
-import LineLike, { ILineLike } from "./lineLike";
+import LineElement, { ILineLike } from "./lineElement";
 import { Svg } from "@svgdotjs/svg.js";
 
 
@@ -16,7 +16,7 @@ interface lineStyle {
 }
 
 
-export class Line extends LineLike {
+export class Line extends LineElement {
     static defaults: {[name: string]: ILine} = {"default": <ILine>defaultLine}
 
     style: lineStyle;
