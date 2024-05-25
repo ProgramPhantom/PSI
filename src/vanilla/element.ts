@@ -1,6 +1,6 @@
 import { SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
 import SVGPulse from './pulses/image/svgPulse'
-import Point, { PointBindSites, PointBindingRule } from './point'
+import Point, { BinderSetFunction, } from './point'
 
 interface Dim {
     width?: number,
@@ -29,21 +29,8 @@ interface Bounds {
     right: number
 }
 
-export enum ElementBindOptions {
-    Here="here",
-    Centre="centre",
-    Far="far"
-}
-
-interface ElementBindingRule extends PointBindingRule {
-    anchorSite: ElementBindOptions,
-    targetSite: ElementBindOptions,
-
-    dimension: Dimension,
-}
-
 type Padding = number | [number, number] | [number, number, number, number]
-type Offset = [number, number]
+export type Offset = [number, number]
 
 export interface IDraw {
     draw(surface: Svg): void
@@ -54,30 +41,29 @@ export interface IElement {
     offset: [number, number],
 }
 
-interface Binding {
-    bindingRule: ElementBindingRule,
-    targetElement: Element,
-}
+
 
 
 export abstract class Element extends Point {
-    public AnchorSetters: {[name: string]: (dimension: Dimension, v : number) => void} = {
-        "near": this.setNear,
-        "centre": this.setCentre,
-        "far": this.setFar
-    }
-    public AnchorPointGetters: {[name: string]: (dimension: Dimension) => number} = {
-        "near": this.getNear,
-        "centre": this.getCentre,
-        "far": this.getCentre
+    AnchorFunctions = {
+        "here": {
+            // Anchors:
+            get: this.getNear,
+            set: this.setNear
+        },
+        "centre": {
+            get: this.getCentre,
+            set: this.setCentre,
+        },
+        "far": {
+            get: this.getFar,
+            set: this.setFar
+        }
     }
 
     protected _contentDim: Dim = {};
 
     offset: number[];
-
-
-    bindings: Binding[] = [];
 
     id: string;
     dirty: boolean = true;
@@ -110,58 +96,12 @@ export abstract class Element extends Point {
         this.enforceBinding();
     }
 
-    bind(el: Point, dimension: Dimension, anchorBindSide: ElementBindOptions, targetBindSide: ElementBindOptions) {
-        var found = false;
 
-        this.bindings.forEach((b) => {
-            if (b.targetElement === el) {
-                found = true;
-                
-                console.warn("Warning: overriding binding");
-                
-                b.bindingRule.anchorSite = anchorBindSide;
-                b.bindingRule.targetSite = targetBindSide;
-                b.bindingRule.dimension = dimension;
-        }})
-
-
-        if (!found) {
-            var newBindingRule: ElementBindingRule = {
-                targetSite: targetBindSide,
-                anchorSite: anchorBindSide,
-                dimension: dimension,
-            };
-
-        
-            this.bindings.push({targetElement: el, bindingRule: newBindingRule})
-        }
-    }
-
-    private enforceBinding() {
-        this.bindings.forEach((binding) => {
-                binding.targetElement.dirty = true;
-                var anchorSide: ElementBindOptions = binding.bindingRule.anchorSite;
-                var targetSide: ElementBindOptions = binding.bindingRule.targetSite;
-                var dimension: Dimension = binding.bindingRule.dimension;
-
-                var targetElement: Element = binding.targetElement;
-
-                // get the X coord of the location on the anchor
-                var anchorBindCoord: number = this.AnchorPointGetters[anchorSide](dimension);
-
-                // Use the correct setter on the target with this value
-                targetElement.AnchorSetters[targetSide](dimension, anchorBindCoord);
-            }
-        )
-    }
-    
-
-
-    private set x(val: number) {
+    set x(val: number) {
         this.dirty = true;
         this._x = val;
     }
-    private set y(val: number) {
+    set y(val: number) {
         this.dirty = true;
         this._y = val;
     }
