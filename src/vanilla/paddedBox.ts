@@ -1,4 +1,6 @@
-import { Element } from "./element";
+import { Element, IElement } from "./element";
+import { IRect } from "./rectElement";
+import Spacial, { ISpacial } from "./spacial";
 
 type Padding = number | [number, number] | [number, number, number, number]
 type Offset = [number, number]
@@ -15,14 +17,21 @@ interface Bounds {
     right: number
 }
 
+export interface IHaveDefault<T> {
+    new(params: Partial<any>, templateName?: string): T;
+}
+
+export interface IPaddedBox extends ISpacial {
+    padding: [number, number, number, number]
+}
 
 // After inheriting from this class, x and y are now located away from the actual content, defined by this.padding.
-export default abstract class PaddedBox extends Element {
+export default abstract class PaddedBox extends Spacial {
 
     padding: [number, number, number, number] = [0, 0, 0, 0];
     
-    constructor(offset: Offset=[0, 0], padding: Padding=0, x?: number, y?: number, dim?: Dim) {
-        super(offset, x, y, dim);
+    constructor(offset: Offset=[0, 0], padding: Padding=0, x?: number, y?: number, width?: number, height?: number, refName: string="paddedBox") {
+        super(x, y, width, height, refName);
 
         if (typeof padding === "number") {
             this.padding = [padding, padding, padding, padding]
@@ -54,10 +63,6 @@ export default abstract class PaddedBox extends Element {
     get dim() : Dim {
         return {width: this.width, height: this.height};
     }
-    private set dim(v : Dim) {
-        throw new Error("Set dimensions by setting contentDim");
-    }
-    
 
     get bounds(): Bounds {
         if (this.hasPosition && this.hasDimensions) {
@@ -72,30 +77,18 @@ export default abstract class PaddedBox extends Element {
         throw new Error("Dimensions are unset");
     }
 
-    get width(): number {
-        if (this.contentDim.width) {
+
+    override get width(): number {
+        if (this.contentWidth !== undefined) {
             return this.padding[3] + this.contentWidth + this.padding[1];
         }
         throw new Error("Width unset")
     }
-    get height(): number {
-        if (this.contentDim.height) {
+    override get height(): number {
+        if (this.contentHeight !== undefined) {
             return this.padding[0] + this.contentHeight + this.padding[2];
         }
         throw new Error("Dimensions undefined")
     }
-
-    // We still want dimensions to be set by only the content dim, so add padding here
-    get contentBounds(): Bounds {
-        var top = this.y;
-        var left = this.x;
-
-        var bottom = this.y + this.contentHeight;
-        var right = this.x + this.contentWidth;
-
-        return {top: top, right: right, bottom: bottom, left: left}
-    }
-
-    
     
 }

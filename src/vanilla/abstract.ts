@@ -1,10 +1,9 @@
-import Positional, {Orientation, IPositional, labelable, positionalConfig, Alignment} from "./positional";
+import Positional, {Orientation, IPositional, labelable, Alignment} from "./positional";
 import * as defaultAbstract from "./default/data/abstract.json"
 import * as SVG from '@svgdotjs/svg.js'
 import Label, { Position, ILabel} from "./label";
 import { FillObject, PartialConstruct, UpdateObj } from "./util";
 import { simplePulseStyle } from "./pulses/simple/simplePulse";
-import { IDraw } from "./element";
 import { Section } from "@blueprintjs/core";
 
 export interface IAbstract extends IPositional {
@@ -14,7 +13,7 @@ export interface IAbstract extends IPositional {
 
 
 
-export default class Abstract extends Positional implements IDraw {
+export default class Abstract extends Positional {
     // Default is currently 180 Pulse 
     
     static defaults: {[key: string]: IAbstract} = {"abstract": {...<any>defaultAbstract }}
@@ -31,8 +30,8 @@ export default class Abstract extends Positional implements IDraw {
         this.textLabel = PartialConstruct(Label, {text: fullParams.text, position: Position.centre, style: {size: 60, colour: "white"}}, Label.defaults["label"]) 
     }
 
-    resolveDimensions(): void {
-        this.contentDim = {width: this.style.width, height: this.style.height};
+    resolveDimensions(): {width: number, height: number} {
+        return {width: this.style.width, height: this.style.height};
     }
 
     draw(surface: SVG.Svg) {
@@ -53,8 +52,8 @@ export default class Abstract extends Positional implements IDraw {
     }
 
     drawText(surface: SVG.Svg) {
-        var textX = this.x + this.contentWidth/2 - this.textLabel.contentWidth/2;
-        var textY = this.y + this.contentHeight /2 - this.textLabel.contentHeight/2 + this.textLabel.padding[0];
+        var textX = this.x + this.contentWidth / 2 - this.textLabel.contentWidth/2;
+        var textY = this.y + this.contentHeight / 2 - this.textLabel.contentHeight/2 + this.textLabel.padding[0];
      
         this.textLabel.move({dx: textX, dy: textY});
         this.textLabel.draw(surface);

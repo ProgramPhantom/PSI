@@ -1,6 +1,5 @@
 import Abstract, { IAbstract } from "./abstract";
-import SimplePulse, { ISimplePulse } from "./pulses/simple/simplePulse";
-import Sequence, { ILine, Line } from "./sequence";
+import Sequence from "./sequence";
 import Span, { ISpan } from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
@@ -8,7 +7,6 @@ import Bracket, { Direction, IBracket } from "./bracket";
 import Label from "./label";
 import Positional, { IPositional } from "./positional";
 import { Element } from "./element";
-import SVGPulse, { ISvgPulse } from "./pulses/image/svgPulse";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, UpdateObj } from "./util";
 import Section, { ISection } from "./section";
@@ -16,28 +14,31 @@ import { Script } from "vm";
 import Parser from "./parser";
 import { positionalElements } from "./default/data";
 import { Position } from "@blueprintjs/core";
+import { ILine, Line } from "./line";
+import RectElement, { IRect, PositionalRect } from "./rectElement";
+import SVGElement, { ISVG } from "./svgElement";
 
 
-type IPositionalType = ISimplePulse | ISvgPulse | IAbstract | ISpan
+type IPositionalType = (ISVG | IRect) & IPositional
 
 export default class SequenceHandler {
-    static positionalTypes: {[name: string]: typeof Positional} = {
-        "aquire": SVGPulse,
-        "halfsine": SVGPulse,
-        "amp": SVGPulse,
-        "180": SVGPulse,
-        "trap": SVGPulse,
-        "talltrap": SVGPulse,
-        "saltirehilo": SVGPulse,
-        "saltirelohi": SVGPulse,
-        "chirphilo": SVGPulse,
-        "chirplohi": SVGPulse,
+    static positionalTypes: {[name: string]: typeof Element} = {
+        "aquire": SVGElement,
+        "halfsine": SVGElement,
+        "amp": SVGElement,
+        "180": SVGElement,
+        "trap": SVGElement,
+        "talltrap": SVGElement,
+        "saltirehilo": SVGElement,
+        "saltirelohi": SVGElement,
+        "chirphilo": SVGElement,
+        "chirplohi": SVGElement,
 
-        "pulse90": SimplePulse,
-        "pulse180": SimplePulse,
+        "pulse90": RectElement,
+        "pulse180": RectElement,
 
-        "abstract": Abstract,
-        "span": Span
+        // "abstract": Abstract,
+        // "span": Span
     }
     isPositional(elementName: string): boolean {return Object.keys(SequenceHandler.positionalTypes).includes(elementName)}
 
@@ -54,11 +55,10 @@ export default class SequenceHandler {
     surface?: Svg;
     dirty: boolean = false;
     get id(): string {
-        
         var id: string = "";
         this.sequence.channels.forEach((c) => {
             c.positionalElements.forEach((p) => {
-                id += p.id;
+                id += p.element.id;
             })
         })
         return id;
@@ -75,8 +75,8 @@ export default class SequenceHandler {
         this.surface = surface;
         this.sequence = new Sequence(Sequence.defaults["empty"])
 
-        this.parser = new Parser(this, "");
         this.refresh = refresh;
+        this.parser = new Parser(this, "");
     }
 
     // ELEMENT ADDIION COMMANDS: 
@@ -93,26 +93,36 @@ export default class SequenceHandler {
             console.log(elementName)
         } 
 
-        var newElement: Positional;
+        var element;
+        index
+        
+        // Fix for now.
+        var defaults: PositionalRect = RectElement.defaults[elementName];
+        element = new RectElement(pParameters as Partial<IRect>, elementName)
+        var newPositional: Positional<Element> = new Positional<RectElement>(element, pParameters, defaults);;
         
         switch (positionalType.name) {
-            case (SVGPulse.name):
-                newElement = new SVGPulse(pParameters, elementName);
-                break;
-            case (SimplePulse.name):
-                newElement = new SimplePulse(pParameters as Partial<ISimplePulse>, elementName);
+            // case (SVGPulse.name):
+            //     element = new SVGPulse(pParameters as Partial<ISvgPulse>, elementName);
+            //     break;
+            case (RectElement.name):
+                var defaults: PositionalRect = RectElement.defaults[elementName];
+                element = new RectElement(pParameters as Partial<IRect>, elementName)
+
+                newPositional = new Positional<RectElement>(element, pParameters, defaults);
                 break;
             case (Span.name):
-                newElement = new Span(pParameters, elementName);
+                element = new Span(pParameters, elementName);
                 break;
             case (Abstract.name):
-                newElement = new Abstract(pParameters as Partial<IAbstract>, elementName);
+                element = new Abstract(pParameters as Partial<IAbstract>, elementName);
                 break;
             default:
                 throw new Error("error 1")
         }
 
-        this.sequence.addPositional(channelName, newElement, index);
+        console.log(index)
+        this.sequence.addPositional(channelName, newPositional, index, false);
 
     }
 
@@ -168,9 +178,11 @@ export default class SequenceHandler {
     }
 
     draw() {
+       
         if (!this.surface) {
             throw new Error("Svg surface not attatched!")
         }
+        this.surface.size("1000px", "1000px")
         this.sequence.draw(this.surface);
         this.refresh(this.id);
     }

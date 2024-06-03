@@ -1,10 +1,11 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { ElementBindOptions, Dimension, Element, IElement } from "./element";
+import { Element, IElement } from "./element";
 import { labelable } from "./positional";
 import * as defaultBracket from "./default/data/bracket.json"
 import Label, { ILabel, Position } from "./label";
 import { PartialConstruct, UpdateObj } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
+import { Dimensions } from "./spacial";
 
 
 export enum bracketType {
@@ -91,8 +92,8 @@ export default class Bracket extends LineElement implements labelable {
                 // Label on top
                 if (this.label) {
                     // If centre:
-                    this.bind(this.label, Dimension.X, ElementBindOptions.Centre, ElementBindOptions.Centre);
-                    this.bind(this.label, Dimension.Y, ElementBindOptions.Near, ElementBindOptions.Far);
+                    // this.bind(this.label, Dimensions.X, ElementBindOptions.Centre, ElementBindOptions.Centre);
+                    // this.bind(this.label, Dimensions.Y, ElementBindOptions.Near, ElementBindOptions.Far);
 
                     var pro = this.posDrawDecoration(surface);
                 } else {

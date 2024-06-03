@@ -1,6 +1,5 @@
 import Abstract from "./abstract";
-import SimplePulse from "./pulses/simple/simplePulse";
-import Sequence, from "./sequence";
+import Sequence from "./sequence";
 import Span from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
@@ -8,13 +7,15 @@ import Bracket, { Direction, IBracket } from "./bracket";
 import Label from "./label";
 import Positional, { IPositional } from "./positional";
 import { Element } from "./element";
-import SVGPulse, {  } from "./pulses/image/svgPulse";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, UpdateObj } from "./util";
 import Section from "./section";
 import { Script } from "vm";
 import { positionalElements } from "./default/data";
 import SequenceHandler from "./sequenceHandler";
+import { ILine } from "./line";
+import SVGElement from "./svgElement";
+import RectElement from "./rectElement";
 
 // ----- ERROR STUFF -----
 enum SyntaxError {
@@ -238,10 +239,10 @@ class Command {
 
 class Parser {
     // TODO: change this and make something for special commands
-   
+ 
     static ContentCommands: {[name: string]: any} = {
-        ...SVGPulse.defaults,
-        ...SimplePulse.defaults,
+        ...SVGElement.defaults,
+        ...RectElement.defaults,
         ...Abstract.defaults,
         ...Span.defaults,
         ...Section.defaults,
@@ -346,6 +347,11 @@ class Parser {
     }
 
     parseScript(text: string) {
+        if (text === "") {
+            this.handler.sequence.reset();
+            return;
+        }
+
         var lines: string[] = text.split("\n");
         var changeOrInvalid = this.findDelta(text);
 

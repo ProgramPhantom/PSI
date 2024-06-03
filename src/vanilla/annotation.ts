@@ -8,7 +8,7 @@ import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import PaddedBox from "./paddedBox";
 
 
-export interface IAnnotation extends IElement {
+export interface IAnnotation {
     labelOn: boolean;
     label: ILabel;
 
@@ -44,7 +44,7 @@ export default class Annotation extends PaddedBox {
         this.resolveDimensions();
     }
 
-    resolveDimensions(): void {
+    resolveDimensions(): {width: number, height: number} {
         var width = 0;
         var height = 0;
         
@@ -63,7 +63,7 @@ export default class Annotation extends PaddedBox {
             width = this.arrow.width;
         }
 
-        this.contentDim = {width: width, height: height}
+        return {width: width, height: height}
     }
 
     arrange() {

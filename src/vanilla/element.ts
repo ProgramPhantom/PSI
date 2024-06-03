@@ -1,11 +1,10 @@
 import { SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
-import SVGPulse from './pulses/image/svgPulse'
 import Point, { BinderSetFunction, } from './point'
+import Spacial from './spacial'
+import PaddedBox, { IPaddedBox } from './paddedBox'
+import { IAnnotation } from './annotation'
 
-interface Dim {
-    width?: number,
-    height?: number
-}
+
 
 interface Shift {
     dx?: number,
@@ -17,224 +16,87 @@ interface Place {
     y?: number
 }
 
-export enum Dimension {
-    X="x",
-    Y="y"
-}
 
-interface Bounds {
-    top: number,
-    bottom: number,
-    left: number,
-    right: number
-}
+
+
 
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
 
-export interface IDraw {
-    draw(surface: Svg): void
-}
 
-export interface IElement {
-    padding: [number, number, number, number],
+
+export interface IElement extends IPaddedBox {
+    width: number,
+    height: number,
     offset: [number, number],
 }
 
 
-
-
-export abstract class Element extends Point {
-    AnchorFunctions = {
-        "here": {
-            // Anchors:
-            get: this.getNear,
-            set: this.setNear
-        },
-        "centre": {
-            get: this.getCentre,
-            set: this.setCentre,
-        },
-        "far": {
-            get: this.getFar,
-            set: this.setFar
-        }
-    }
-
-    protected _contentDim: Dim = {};
+export abstract class Element extends PaddedBox {
 
     offset: number[];
 
     id: string;
     dirty: boolean = true;
 
-    constructor(offset: Offset=[0, 0], x?: number, y?: number, dim?: Dim) {
-        super(x, y);  // Will make dirty??
+    protected override _contentWidth: number;
+    protected override _contentHeight: number;
 
-        this.offset = [...offset];  // Fixed for some reason
-        if (dim) {
-            this.contentDim = dim;
-        }
+    constructor(params: IElement, refName: string="element") {
+        super(params.offset, params.padding, undefined, undefined, undefined, undefined, refName);  // Will make dirty??
+
+        this.offset = params.offset;  // Fixed for some reason
 
         this.id = Math.random().toString(16).slice(2);
+        
+        // var dim = this.resolveDimensions();
+        this._contentWidth = params.width;
+        this._contentHeight = params.height;
     }
 
-    abstract resolveDimensions(): void
+
     abstract draw(surface: Svg, ...args: any[]): void
 
-    move({dx, dy}: Shift) {
-        this.x += dx ? dx : 0;
-        this.y += dy ? dy : 0;
-
-        this.enforceBinding();
-    }
-
-    place({x, y}: Place) {
-        this.x = x ? x : this.x;
-        this.y = y ? y : this.y;
-
-        this.enforceBinding();
-    }
-
-
-    set x(val: number) {
+    override set x(val: number) {
         this.dirty = true;
         this._x = val;
+        this.enforceBinding();
+    }  // OVERRIDING SETTER REQUIRES GETTER TO BE REDEFINED???
+    override get x(): number {
+        if (this._x !== undefined) {
+            return this._x;
+        }
+        throw new Error(`x unset in ${this.refName}`);
     }
-    set y(val: number) {
+    override set y(val: number) {
         this.dirty = true;
         this._y = val;
+        this.enforceBinding()
     }
-
-
-    get contentBounds(): Bounds {
-        var top = this.y;
-        var left = this.x;
-
-        var bottom = this.y + this.contentHeight;
-        var right = this.x + this.contentWidth;
-
-        return {top: top, right: right, bottom: bottom, left: left}
-    }
-
-    set contentDim(b: Dim)  {
-        this._contentDim = {width: b.width, height: b.height};
-    }
-    get contentDim(): Dim {
-        if (this._contentDim) {
-            return this._contentDim;
+    override get y(): number {
+        if (this._y !== undefined) {
+            return this._y;
         }
-
-        throw new Error("dimensions unset");
+        throw new Error(`y unset in ${this.refName}` );
     }
 
-
-    get width(): number {
-        if (this.contentDim.width) {
-            return this.contentWidth;
-        }
-        throw new Error("Width unset")
+    override get contentWidth() : number {
+        return this._contentWidth;
     }
-    get height(): number {
-        if (this.contentDim.height) {
-            return this.contentHeight;
-        }
-        throw new Error("Dimensions undefined")
+    override set contentWidth(v : number) {
+        this.dirty = true;
+        this._contentWidth = v;
+        this.enforceBinding();
     }
 
-    get contentWidth(): number {
-        if (this._contentDim.width) {
-            return this._contentDim.width;
-        }
-        throw new Error("Width unset")
+    override get contentHeight() : number {
+        return this._contentHeight;
+        
     }
-    set contentWidth(width: number) {
-        this._contentDim.width = width;
-    }
-    get contentHeight(): number {
-        if (this._contentDim.height) {
-            return this._contentDim.height;
-        }
-        throw new Error("Height unset")
-    }
-    set contentHeight(height: number) {
-        this._contentDim.height = height;
+    override set contentHeight(v : number) {
+        this.dirty = true;
+        this._contentHeight = v;
+        this.enforceBinding();
     }
 
-
-    // Helpers
-    get hasDimensions(): boolean {
-        if (!this.contentDim.height || !this.contentDim.height) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    get hasPosition(): boolean {
-        if (!this._x || !this._y) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    // Anchors:
-    public getNear(dimension: Dimension): number {
-        switch (dimension) {
-            case Dimension.X:
-                return this.x;
-            case Dimension.Y:
-                return this.y;
-        }
-    }
-    public setNear(dimension: Dimension, v : number) {
-        switch (dimension) {
-            case Dimension.X:
-                this.x = v;
-                break;
-            case Dimension.Y:
-                this.y = v;
-                break;
-        }
-    }
-
-    public getCentre(dimension: Dimension): number {
-        switch (dimension) {
-            case Dimension.X:
-                return this.x + this.width/2;
-                break;
-            case Dimension.Y:
-                return this.y + this.height/2;
-        }
-    }
-    public setCentre(dimension: Dimension, v : number) {
-        switch (dimension) {
-            case Dimension.X:
-                this.x = v - this.width/2;
-                break;
-            case Dimension.Y:
-                this.y = v - this.height/2;
-                break;
-        }
-    }
-
-    public getFar(dimension: Dimension): number {
-        switch (dimension) {
-            case Dimension.X:
-                return this.x + this.width;
-            case Dimension.Y:
-                return this.y + this.height;
-        }
-    }
-    public setFar(dimension: Dimension, v : number) {
-        switch (dimension) {
-            case Dimension.X:
-                this.x = v - this.width;
-                break;
-            case Dimension.Y:
-                this.y = v - this.height;
-                break;
-        }
-    }
-    
 }

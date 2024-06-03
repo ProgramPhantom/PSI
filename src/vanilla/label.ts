@@ -45,6 +45,8 @@ export enum Position {top="top",
 export default class Label extends PaddedBox {
     static defaults: {[key: string]: ILabel} = {"label": {...<ILabel>defaultLabel}}
 
+
+
     text: string;
     style: labelStyle;
 
@@ -53,17 +55,21 @@ export default class Label extends PaddedBox {
     
     constructor(params: Partial<ILabel>, templateName: string="label") {
         var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
-        super(fullParams.offset, fullParams.padding);
+        super(fullParams.offset, fullParams.padding, undefined, undefined, fullParams.height, fullParams.width);
         
         this.text = fullParams.text;
         this.style = fullParams.style;
         this.padding = fullParams.padding;
         this.position = fullParams.position;
+
+        var dim = this.resolveDimensions()
+        this.contentHeight = dim.height;
+        this.contentWidth = dim.width;
     }
     
     // Sets this.width and this.height
     // Currently needs to add and remove the svg to find these dimensions, not ideal
-    resolveDimensions(): void {
+    resolveDimensions(): {width: number, height: number} {
         var SVGEquation = TeXToSVG(`${this.text}`); 
         
         var temp = SVG().addTo('#drawDiv').size(300, 300)  // TERRIBLE CODE HERE.
@@ -89,7 +95,7 @@ export default class Label extends PaddedBox {
         SVGobj.remove();
         temp.remove();
 
-        this.contentDim = {width: width, height: height};
+        return {width: width, height: height}
     }
 
     draw(surface: Svg) {

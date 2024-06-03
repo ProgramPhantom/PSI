@@ -2,8 +2,6 @@ import * as defaultChannel from "./default/data/channel.json"
 import { Element, IElement } from "./element";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Positional, { Alignment, Orientation, labelable } from "./positional";
-import SimplePulse, { ISimplePulse } from "./pulses/simple/simplePulse";
-import SVGPulse from "./pulses/image/svgPulse";
 import Label, { ILabel, Position } from "./label";
 import Span from "./span";
 import Abstract from "./abstract";
@@ -13,6 +11,10 @@ import Section from "./section";
 import Annotation from "./annotation";
 import { PartialConstruct, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
+import Collection from "./collection";
+import Point from "./point";
+import Spacial, { Dimensions } from "./spacial";
+import RectElement from "./rectElement";
  
 interface Dim {
     width: number,
@@ -54,24 +56,56 @@ export interface channelAnnotation {
     padding: [number, number, number, number]
 }
 
+interface Column {
+    bindPoints: Collection<Point>[],
+    
+    width: number,
+    x: number,
+    height: [number, number]
+}
 
-export default class Channel extends PaddedBox implements labelable {
+
+export default class Channel extends PaddedBox {
     static defaults: {[name: string]: IChannel} = {"blankH1": <any>defaultChannel}
 
     style: channelStyle;
 
     identifier: string;
 
-    maxTopProtrusion: number;
-    maxBottomProtrusion: number;
+    private _maxTopProtrusion : number = 0;
+    private _maxBottomProtrusion : number = 0;
 
-    barWidth: number;  // Actually the width left to right
-    barX: number;
-    barY: number;
-    
-    positionalElements: Positional[];
+    bar: RectElement = new RectElement({}, "bar");
+    get barWidth() {
+        var width = 0;
+        this.columnRef.forEach((c) => width += c.width);
+        return width;
+    }
+
+    positionalElements: Positional<Element>[] = [];
     annotationLayer?: AnnotationLayer;
 
+    private _columnRef: Spacial[] = [];
+    public get columnRef(): Spacial[] {
+        return this._columnRef;
+    }
+    public set columnRef(value: Spacial[]) {
+        this._columnRef = value;
+        this._columnRef[0].bind(this.bar, Dimensions.X, "here", "here");
+    }
+
+    private _labelColumn: Spacial = new Spacial(0, undefined, undefined, undefined);
+    set labelColumn(v: Spacial) {  // When the label column is set, apply binding to the label.
+        this._labelColumn = v;
+        if (this.label) {
+            this.labelColumn.bind(this.label, Dimensions.X, "centre", "centre");
+        }
+    }
+    get labelColumn(): Spacial {
+        return this._labelColumn;
+    }
+
+    intrinsicWidths: number[] = []; // Widths of positional elements
     sectionWidths: number[] = [];  // List of widths of each section along the sequence
     occupancy: boolean[] = [];  // 
     sectionXs: number[] = [];  // X coords of the leftmost of each section (including end) taken from sequence
@@ -84,196 +118,141 @@ export default class Channel extends PaddedBox implements labelable {
     constructor(params: Partial<IChannel>, templateName: string="blankH1") {
         var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
         super(fullParams.offset, fullParams.padding);
-        
-        this.barX = fullParams.padding[3];
-        this.barY = 0;
 
         this.style = fullParams.style;
         this.padding = fullParams.padding;
 
         this.identifier = fullParams.identifier;
 
-        this.maxTopProtrusion = 0;  // Move this to element
-        this.maxBottomProtrusion = this.style.thickness;
-
-        this.barWidth = 0;
+        this.bar.contentHeight = this.style.thickness;
+        this.bar.y = 0;
 
         this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
         this.labelOn = fullParams.labelOn;
+
         if (fullParams.label) {
             this.label = new Label(fullParams.label);
-            this.barX = this.padding[3] + this.label!.width;
+
+            this.labelColumn.bind(this.label, Dimensions.X, "centre", "centre");
+            this.bar.bind(this.label, Dimensions.Y, "centre", "centre");
         }
     }
 
-    resolveDimensions(): void {
-        this.computeVerticalBounds;
-
-    }
-
-    // Computes maxTopProtrusion, maxBottomProtrusion, height
-    computeVerticalBounds() {
-        var topProtrusion: number[] = [0];
-        var bottomProtrusion: number[] = [0];
-
-        this.positionalElements.forEach((element) => {
-            var protrusion = element.verticalProtrusion(this.style.thickness);
-            topProtrusion.push(protrusion[0]);
-            bottomProtrusion.push(protrusion[1]);
-        })
-
-        this.maxTopProtrusion = Math.max(...topProtrusion);
-        this.maxBottomProtrusion = Math.max(...bottomProtrusion);
-
-
-        var height = this.maxBottomProtrusion + 
-                      this.maxTopProtrusion + this.style.thickness;
-        
-
-        this.contentDim = {height: height}
-    }
-
-    draw(surface: Svg, initialX: number, indexWidths: number[]=[], yCursor: number=0,) {
-        this.y = yCursor + this.padding[0];
-        this.barX = initialX;
-        this.occupancy = new Array<boolean>(indexWidths.length).fill(false);  // Initialise occupancy
-
-        // Compute x values of start of each timespan
-        this.sectionXs.push(this.barX);
-        indexWidths.forEach((w, i) => {
-            this.sectionXs.push(w + this.sectionXs[i]);
-        })
-        
+    draw(surface: Svg) {
         // Add annotation
-        var annotationHeight = 0;
-        if (this.annotationLayer) {
-            this.annotationLayer.draw(surface, indexWidths, this.barX, this.y);
-            yCursor += this.annotationLayer.height;
-            annotationHeight = this.annotationLayer.height;
+       //  var annotationHeight = 0;
+       //  if (this.annotationLayer) {
+       //      this.annotationLayer.draw(surface, indexWidths, this.barX, this.y);
+       //      yCursor += this.annotationLayer.height;
+       //      annotationHeight = this.annotationLayer.height;
+       //  }
+
+        this.label?.draw(surface);
+        
+        this.positionalElements.forEach(p => {
+            p.element.draw(surface);
+        });
+        this.bar.draw(surface);
+    }
+
+    resolveDimensions(): {width: number, height: number} {
+        var cHeight = this.maxTopProtrusion + this.bar.height + this.maxBottomProtrusion;
+        var length = this.barLength + (this.label ? this.label.width : 0);
+
+        return {width: length, height: cHeight}
+    }
+
+    
+    checkHeight(obj: Positional<Element>) {
+        switch (obj.config.orientation) {
+            case Orientation.top:
+                if (obj.element.height > this.maxTopProtrusion) {
+                    this.maxTopProtrusion = obj.element.height;
+                }
+                break;
+            case Orientation.bottom:
+                if (obj.element.height > this.maxBottomProtrusion) {
+                    this.maxBottomProtrusion = obj.element.height;
+                }
+                break;
+            case Orientation.both:
+                if (obj.element.height/2 - this.bar.height/2 > this.maxBottomProtrusion) {
+                    this.maxBottomProtrusion = obj.element.height/2 - this.bar.height/2;
+                }
+                if (obj.element.height/2 - this.bar.height/2 > this.maxTopProtrusion) {
+                    this.maxTopProtrusion = obj.element.height/2 - this.bar.height/2;
+                }
         }
-
-        this.computeBarY(yCursor);
-        
-        this.posDrawDecoration(surface);
-        
-        
-        this.contentDim = {width: this.sectionXs[this.sectionXs.length-1],
-                    height: this.contentHeight + annotationHeight}
-        
-
-        // CURRENTLY IGNORING VERTICAL LABEL IMPACT
-
-        this.positionElements(indexWidths);
-
-        this.positionalElements.forEach(element => {
-            element.draw(surface);
-        });
-        this.drawRect(surface);
     }
 
-    computeBarY(yCursor: number=0) {
-        this.computeVerticalBounds();
+    // addPositional -> checkHeight -> set maxTopProtrusion ->
+    positionBar() {
+        this.bar.contentWidth = this.barWidth;  // Inefficient
 
-        var rectPosY = yCursor + this.padding[0] + this.maxTopProtrusion;
+        this.bind(this.bar, Dimensions.Y, "here", "here", this.maxTopProtrusion);
         
-        this.barY = rectPosY;
+        this.enforceBinding();
     }
-
-    drawRect(surface: Svg) {
-        // Draws bar
-        surface.rect(this.barWidth, this.style.thickness)
-        .attr(this.style).move(this.barX, this.barY).attr({
-            "shape-rendering": "crispEdges"
-        });
-
-    }
-
 
     // Position positional elements on the bar
-    positionElements(indexWidths: number[]) {
-        // Current alignment style: centre
-        this.positionalElements.forEach((positionalEl) => {
-            var tempX = 0;
-            var sectionWidth: number = 0;
-
-            // Vertical Positioning
-            positionalEl.positionVertically(this.barY, this.style.thickness);
-
-            if (positionalEl.index.length > 1) {  // Multi index element eg [1, 4]
-                tempX = this.sectionXs[positionalEl.index[0]] // Set x as start section
-
-                for (var i = positionalEl.index[0]; i <= positionalEl.index[1]; i++) {
-                    sectionWidth += indexWidths[i];  // Compute width of entire element slot
-                    this.occupancy[i] = true;
-                }
-            } else {
-                tempX = this.sectionXs[positionalEl.index[0]]  // Simply set x and 
-                sectionWidth = indexWidths[positionalEl.index[0]] // Width as the x section and section width
-                this.occupancy[positionalEl.index[0]] = true;
-            }
-            
-            if (positionalEl.config.inheritWidth) {  // Transform
-                positionalEl.contentDim = {width: sectionWidth, height: positionalEl.contentHeight};
-            }
-
-            switch (positionalEl.config.alignment) {
-                case Alignment.Centre:
-                    positionalEl.centreXPos(tempX + sectionWidth/2);
-                    break;
-                case Alignment.Left:
-                    if (positionalEl.config.overridePad) {
-                        positionalEl.x = tempX;
-                    } else {
-                        positionalEl.x = tempX + positionalEl.padding[3];
-                    }
-                    break;
-                case Alignment.Right:
-                    
-                    if (positionalEl.config.overridePad) {
-                        positionalEl.x = tempX + sectionWidth - positionalEl.contentWidth;
-                    } else {
-                        positionalEl.x = tempX + sectionWidth - positionalEl.contentWidth - positionalEl.padding[1];
-                    }
-
-                    break;
-                default: 
-                    // Centre
-                    positionalEl.centreXPos(tempX + sectionWidth/2);
-                    break;
-
-            }
-        })
-
-        
-        this.barWidth = this.sectionXs[this.sectionXs.length-1] - this.barX;
-    }
-
-    addPositional(obj: Positional, index?: number): number[] {
+    addPositional(positional: Positional<Element>, index?: number | undefined): void {
         this.elementCursor += 1;  // Keep this here.
-        var position: number = index ? index : this.elementCursor;
 
-        obj.barThickness = this.style.thickness;
+        var Index: number = index ? index : this.elementCursor;
 
-        if (!obj.index) {
-            obj.index = position;
+        var element: Element = positional.element;
 
-            this.elementCursor += obj.config.noSections;
+        if (!positional.config.index) {
+            positional.config.index = Index;
+            this.elementCursor += positional.config.noSections;  // Multi column element
         }
 
-        var sections = new Array<number>(obj.config.noSections);
-        sections.fill(obj.width / obj.config.noSections);
+        //var sections = new Array<number>(positional.config.noSections);
+        //sections.fill(positional.element.width / positional.config.noSections);
+//
+        //this.positionalElements.push(positional);
+        //this.sectionWidths.push(...sections);
 
-        this.positionalElements.push(obj);
-        this.sectionWidths.push(...sections);
+        this.intrinsicWidths[Index] = element.width;
 
-        this.computeVerticalBounds();
-        return this.sectionWidths;
+        var column: Spacial = this.columnRef[Index]
+
+        // TODO: figure out inherit width and multi section element
+
+        // Bind X
+        switch (positional.config.alignment) {
+            case Alignment.Left:
+                column.bind(element, Dimensions.X, "here", "here");
+                break;
+            case Alignment.Centre:
+                column.bind(element, Dimensions.X, "centre", "centre");
+                break;
+            case Alignment.Right:
+                column.bind(element, Dimensions.X, "far", "far");
+                break;
+        }
+
+        // Bind Y
+        switch (positional.config.orientation) {
+            case Orientation.top:
+                this.bar.bind(element, Dimensions.Y, "here", "far");
+                break;
+            case Orientation.both:
+                this.bar.bind(element, Dimensions.Y, "centre", "centre");
+                break;
+            case Orientation.bottom:
+                this.bar.bind(element, Dimensions.Y, "far", "here");
+                break;
+        }
+
+        this.checkHeight(positional);
+        this.positionalElements.push(positional)
     }
 
     addAnnotationLabel(lab: Span) {
         if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer(Channel.defaults["blankH1"].annotationStyle.padding)
+            this.annotationLayer = new AnnotationLayer({}, )
         }
         var index;
         
@@ -292,7 +271,7 @@ export default class Channel extends PaddedBox implements labelable {
 
     addSection(section: Section) {
         if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer(Channel.defaults["blankH1"].annotationStyle.padding);
+            this.annotationLayer = new AnnotationLayer({}, );
         }
 
         var indexStart: number;
@@ -318,6 +297,9 @@ export default class Channel extends PaddedBox implements labelable {
         this.annotationLayer.annotateLong(section);
     }
 
+    
+    // Index related
+
     jumpTimespan(newCurs: number) {
         for (var empty = this.elementCursor; empty < newCurs; empty++) {
             this.sectionWidths.push(0);
@@ -325,28 +307,29 @@ export default class Channel extends PaddedBox implements labelable {
         this.elementCursor = newCurs
     }
 
-    // Draws the channel label
-    // It is required that computeY has been ran for this to work
-    posDrawDecoration(surface: Svg) : number[] {
-        /*  Draw label with no temp elements?
-        if (this.positionalElements.length === 0) {
-            return [0, 0];
-        }*/
 
-        if (this.label) {
+    public get maxTopProtrusion() : number {
+        return this._maxTopProtrusion;
+    }
+    public set maxTopProtrusion(v : number) {
+        this._maxTopProtrusion = v;
+        this.positionBar();
+    }
 
-            var y = this.barY + this.style.thickness/2 - this.label.contentHeight/2;
-            var x = this.label.padding[3];
+    public get maxBottomProtrusion() : number {
+        return this._maxBottomProtrusion;
+    }
+    public set maxBottomProtrusion(v : number) {
+        this._maxBottomProtrusion = v;
+        this.positionBar();
+    }
 
-            var hOffset: number = x + this.label.contentWidth + this.label.padding[1];
-
-            this.label.move(x, y);
-            this.label.draw(surface);
-            
-            return [hOffset, this.label.contentHeight];
-        }
-
-        return [0, 0];
+    get barLength() {
+        var length = 0;
+        this.positionalElements.forEach((p) => {
+            length + p.element.width;
+        })
+        return length;
     }
 
 }

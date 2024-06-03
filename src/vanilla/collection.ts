@@ -1,5 +1,6 @@
 import { Offset } from "./element";
-import Point, { Dimension, Place } from "./point";
+import Point, { Place } from "./point";
+import { Dimensions } from "./spacial";
 
 
 
@@ -19,8 +20,8 @@ export default class Collection<T extends Point> extends Point {
         if (!this.home) {
             this.objects.push(object)
         } else {
-            this.home.bind(object, Dimension.X, "here", object.AnchorFunctions.here.get, offset[0]);
-            this.home.bind(object, Dimension.Y, "here", object.AnchorFunctions.here.get, offset[1]);
+            this.home.bind(object, Dimensions.X, "here", object.AnchorFunctions.here.get, offset[0]);
+            this.home.bind(object, Dimensions.Y, "here", object.AnchorFunctions.here.get, offset[1]);
         }
     }
 
@@ -31,8 +32,8 @@ export default class Collection<T extends Point> extends Point {
             var xOffset = this.home.x - (x ? x : 0);
             var yOffset = this.home.y - (y ? y : 0);
 
-            this.home.bind(object, Dimension.X, "here", object.AnchorFunctions.here.get, xOffset);
-            this.home.bind(object, Dimension.Y, "here", object.AnchorFunctions.here.get, yOffset);
+            this.home.bind(object, Dimensions.X, "here", object.AnchorFunctions.here.get, xOffset);
+            this.home.bind(object, Dimensions.Y, "here", object.AnchorFunctions.here.get, yOffset);
         }
     }
 

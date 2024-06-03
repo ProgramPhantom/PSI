@@ -3,6 +3,9 @@
     "padding": [0, 1, 0, 1],
     "offset": [0, 0],
 
+    "width": 7,
+    "height": 50,
+
     "config": {
         "orientation": "top",
         "alignment": "centre",
@@ -12,8 +15,6 @@
     },
 
     "style": {
-        "width": 7,
-        "height": 50,
         "fill": "#000000",
         "stroke": "black",
         "strokeWidth": 0

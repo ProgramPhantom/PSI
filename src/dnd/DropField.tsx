@@ -24,7 +24,7 @@ class SequenceDropInterpreter {
 
             channel.sectionXs.forEach((x, i) => {
                 
-                let correspondingWidth = sequence.maxSectionWidths[i];
+                let correspondingWidth = sequence.maxColumnWidths[i];
                 
                 let occupied = channel.occupancy[i];
 

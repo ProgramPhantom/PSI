@@ -66,10 +66,12 @@ export default function Canvas(props:  {script: string, zoom: number,
         
     }
 
-    
+    // When drawing straight to the MapInteractionCSS div it breaks, so]
+    // I am adding elements to a different div first and then moving it onto the canvas
+    // Mounts the image from the drawSVG
     function MountSequence() {
-        var canvasWidth = props.handler.sequence.width;
-        var canvasHeight = props.handler.sequence.height;
+        var canvasWidth = props.handler.sequence.width + 500;
+        var canvasHeight = props.handler.sequence.height + 500;
 
         props.drawSurface.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
         svgDestinationObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
@@ -77,20 +79,60 @@ export default function Canvas(props:  {script: string, zoom: number,
         .attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%"})
         .id("BORDER");
 
-        // When drawing straight to the MapInteractionCSS div it breaks, so]
-        // I am adding elements to a different div first and then moving it onto the canvas
-
+        
         console.log("removing: ", props.drawSurface.current?.children())
-        // svgDestinationObj.current!.children().forEach((c) => {
-        //     c.remove();
-        // })
-
+        svgDestinationObj.current!.children().forEach((c) => {
+            c.remove();
+        })
         console.log(props.drawSurface.current?.children());
+
         props.drawSurface.current!.children().forEach((c) => {
-            c.clone().addTo(svgDestinationObj.current!)
-            c.remove(); 
+            var clone = c.clone();
+            console.log("drawing", c.svg())
+            c.addTo(svgDestinationObj.current!)
+            props.drawSurface.current!.add(SVG(c.svg()))  // Add it back (clone does not work!)
+            // clone is breaking the ids in the latex svgs, so nothing appears
         });
     }
+    
+    // Construct and draw the sequence from the script
+    function ConstructSequence(extraScript: string=""): {x: number, ys: number[]} {
+        var ys: number[] = [];
+        
+        props.drawSurface.current!.clear();
+        svgDestinationObj.current!.clear();
+
+        var toParse = props.script + extraScript;
+
+
+        try {
+            props.handler.parser.parseScript(toParse);
+            parseErr.current = "none";
+        } catch (e){
+            if (e instanceof ScriptError) {
+                parseErr.current = e.message;
+                
+            } else {
+                parseErr.current = e as string;
+            }
+          
+            throw e;
+        }
+    
+        try {
+            props.handler.draw();
+        } catch (e) {
+            
+            drawErr.current = e as string;
+            console.error(e)
+            throw e;
+        }
+
+        ys = [10]
+
+        return {x: props.handler.sequence.width, ys: ys};
+    }
+
 
     useEffect(() => {
         if (props.drawSurface.current) {
@@ -105,46 +147,7 @@ export default function Canvas(props:  {script: string, zoom: number,
         }
     }, [props.sequenceId])
 
-    function ConstructSequence(extraScript: string=""): {x: number, ys: number[]} {
-        var ys: number[] = [];
-        
-        props.drawSurface.current!.clear();
-        svgDestinationObj.current!.clear()
 
-        var toParse = props.script + extraScript;
-
-        var intialChannels = Object.keys(props.handler.sequence.channelsDic).toString();
-
-        try {
-            props.handler.parser.parseScript(toParse);
-            parseErr.current = "none";
-        } catch (e){
-            if (e instanceof ScriptError) {
-                parseErr.current = e.message;
-                
-            } else {
-                parseErr.current = e as string;
-            }
-          
-            
-        }
-    
-        try {
-            props.handler.draw();
-        } catch (e) {
-            
-            drawErr.current = e as string;
-            console.error(e)
-
-        }
-
-
-        for (const c of Object.values(props.handler.sequence.channelsDic)) {
-            ys.push(c.barY)
-        }
-
-        return {x: props.handler.sequence.width, ys: ys};
-    }
 
     // APPARENTLY the order of these functions changes the order in which the dependancy comparison is done!???!
     useEffect(() => {
@@ -164,7 +167,7 @@ export default function Canvas(props:  {script: string, zoom: number,
     return (
         <>
         
-        <div id={DRAWCANVASID} style={{}}></div>
+        <div id={DRAWCANVASID} style={{width: "100px", height: "100px"}}></div>
 
         <MapInteractionCSS
             showControls

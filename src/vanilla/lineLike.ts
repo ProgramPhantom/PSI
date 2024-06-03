@@ -16,7 +16,7 @@ export interface ILineLike extends IElement {
     orientation: Orientation
 }
 
-export default abstract class LineElement extends PaddedBox {
+export default abstract class LineLike extends PaddedBox {
     static defaults: {[key: string]: ILineLike} = {"default": <any>defaultLineLike}
 
     adjustment: [number, number];
@@ -27,18 +27,18 @@ export default abstract class LineElement extends PaddedBox {
     
     
     constructor(params: Partial<ILineLike>, templateName: string="default") {
-        var fullParams: ILineLike = FillObject(params, LineElement.defaults[templateName]);
+        var fullParams: ILineLike = FillObject(params, LineLike.defaults[templateName]);
         super(fullParams.offset, fullParams.padding);
 
         this.adjustment = fullParams.adjustment;
         this.orientation = fullParams.orientation;
     }
 
-    resolveDimensions(): {width: number, height: number} {
+    resolveDimensions(): void {
         var width = this.x2 - this.x;
         var height = this.y2 - this.y;
     
-        return {height: height, width: width}
+        this.contentDim = {height: height, width: width}
     }
 
     public set(x1: number, y1: number, x2: number, y2: number) {
@@ -69,6 +69,7 @@ export default abstract class LineElement extends PaddedBox {
     }
 
     abstract draw(surface: Svg): void;
+
 
     public get x2() : number {
         if (this._x2) {

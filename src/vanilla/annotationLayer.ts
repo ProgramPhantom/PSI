@@ -38,7 +38,7 @@ export default class AnnotationLayer extends PaddedBox {
         this.indexWidths = [];
     }
 
-    resolveDimensions(): void {
+    resolveDimensions(): {width: number, height: number} {
         var height = 0;
         var width = 0;
 
@@ -51,7 +51,7 @@ export default class AnnotationLayer extends PaddedBox {
             width = Math.max(width, s.contentWidth); // TODO: This isn't how it works mate.
         })
 
-        this.contentDim = {width: width, height: height}
+        return {width: width, height: height}
     }
 
     draw(surface: Svg, indexWidths: number[]=[], startX: number=0, startY: number=0) {

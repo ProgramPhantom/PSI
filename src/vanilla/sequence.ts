@@ -2,7 +2,6 @@ import { Element, IElement } from "./element";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Positional, { Orientation } from "./positional";
 import { Position, ILabel } from "./label";
-import SimplePulse, { ISimplePulse } from "./pulses/simple/simplePulse";
 import Channel, { IChannel } from "./channel"
 import Label from "./label";
 import { json } from "stream/consumers";
@@ -15,17 +14,21 @@ import Bracket, { Direction, IBracket } from "./bracket";
 import { NumberAlias } from "svg.js";
 import Section from "./section";
 import { FillObject, PartialConstruct } from "./util";
-import { ILine } from "./line";
+import { ILine, Line } from "./line";
+import { Grid, IGrid } from "./grid";
+import Spacial, { Dimensions } from "./spacial";
+import Collection from "./collection";
+import PaddedBox from "./paddedBox";
 
 
 interface sequenceInterface {
     padding: number[],
-    grid: gridInterface,
+    grid: IGrid,
     bracket: IBracket
 }
 
 
-export default class Sequence {
+export default class Sequence extends PaddedBox {
     static defaults: {[key: string]: sequenceInterface} = {"empty": {...<any>defaultSequence}}
 
     channelsDic: {[name: string]: Channel;} = {};
@@ -35,12 +38,8 @@ export default class Sequence {
     freeLabels: Label[] = [];
     brackets: {bracketObj: Bracket, startChannel: string, timestamp: number, endChannel?: string}[] = [];
 
-    width: number;
-    height: number;  // Excludes padding
-
     channelWidths: number[]=[];
 
-    padding: number[];
     grid: Grid;
 
     get sectionWidths(): {[channelName: string]: number[]} {
@@ -51,102 +50,167 @@ export default class Sequence {
         })
         return result;
     }  // channelName: sectionWidths
-    maxSectionWidths: number[] = [];  // Section widths
-    maxTimestampX: number[] = [];
+    maxColumnX: number[] = [];
     maxChannelX: number = 0;
 
-    constructor(params: sequenceInterface) {
-        this.width = 0;
-        this.height = 0;
+    private _maxSectionWidths: number[] = [];  // Section widths
+    get maxColumnWidths() { return this._maxSectionWidths }
+    set maxColumnWidths(w: number[]) {
+        this._maxSectionWidths = w;
+    }
 
-        this.padding = params.padding;
-        
+    positionalColumns: Spacial[];
+    channelLabelColumn: Spacial;
+
+    constructor(params: sequenceInterface) {
+        super([0, 0], 0, 0, 0);
         this.grid = new Grid(params.grid);
 
+        this.contentWidth = 0;
+        this.contentHeight = 0;
+
         this.channelsDic = {};  // Wierdest bug ever happening here
+
+        
+
+        this.channelLabelColumn = new Spacial(0, undefined, 0, undefined, "channelLabelColumn");
+        this.bind(this.channelLabelColumn, Dimensions.X, "here", "here");
+
+        this.positionalColumns = [new Spacial(0, undefined, 0, undefined, "initial positional column")];
+        this.channelLabelColumn.bind(this.positionalColumns[0], Dimensions.X, "far", "here");
     }
 
     reset() {
-        Object.values(this.channelsDic).forEach((channel) => {
-            channel.positionalElements = []
-        })
+        this.channelsDic = {};
         
     }
 
+    resolveDimensions(): {width: number, height: number} {
+        var height = 0;
+        this.channels.forEach((c) => {
+            height += c.height;
+        })
+
+        var width = Math.max(...this.channelWidths);
+        var h1 = height;
+
+        return {width: width, height: h1}
+    }
+
     draw(surface: Svg): {width: number, height: number} {
-        var yCurs = 0;
-        this.width = 0;
-        this.height = 0;
-
-        this.maxChannelX = Math.max(...Object.values(this.channelsDic).map((c) => c.barX))  // The x where all the channels will start
-
         this.channels.forEach((channel) => {
-            channel.draw(surface, this.maxChannelX, this.maxSectionWidths, yCurs);
-            yCurs = channel.pbounds.bottom;
-            
-            this.height += channel.height;
-            this.channelWidths.push(channel.width);
+            channel.draw(surface);
         })
         
         this.freeLabels.forEach((label) => {
             label.draw(surface);
         })
+
         this.brackets.forEach((brackSpec) => {
             this.positionBracket(brackSpec.startChannel, brackSpec.bracketObj, brackSpec.timestamp)
             brackSpec.bracketObj.draw(surface);
         })
 
-        this.width = Math.max(...this.channelWidths);
-        
-
         if (this.grid.gridOn) {
-            this.grid.draw(surface, this.maxTimestampX, this.height);
+            this.grid.draw(surface, this.maxColumnX, this.height);
         }
 
         
-
         // what?
         return {width: 0, height: 0}
     } 
 
-    addChannel(name: string, channel: Channel) {
-        this.channelsDic[name] = channel;
-
-        this.maxChannelX = Math.max(...Object.values(this.channelsDic).map((c) => c.barX))
+    // ------ MOVE STACK ------
+    challengeWidth(width: number, index: number) {
+        var existingWidth = this.positionalColumns[index].contentWidth;
+        if (width > (existingWidth !== undefined ? existingWidth : 0)) {
+            this.positionalColumns[index].contentWidth = width;
+        }
     }
 
-    // Find the maxSectionWidths and maxTimestampX by comparing maxSections of all channels
-    computeSectionDimensions() {
-        var max: number[] = [];
-        var xBar = this.maxChannelX;
+    challengeLabelWidth(width: number) {
+        if (width > this.channelLabelColumn.width) {
+            this.channelLabelColumn.contentWidth = width;
+        }
+    }
+
+    insertColumn(index: number, width: number) {
+        var newColumn: Spacial;
+        if (this.positionalColumns.length === 1) {
+            newColumn = this.positionalColumns.pop()!;
+        } else {
+            newColumn = new Spacial(x, undefined, width, undefined);
+        }
+        
+        var preColumn: Spacial | undefined = this.positionalColumns[index - 1];
+        var postColumn: Spacial | undefined = this.positionalColumns[index];
+
+        var x;
+
+        if (!preColumn) { // insert at start, bind to channelLabelColumn
+            this.channelLabelColumn.bind(newColumn, Dimensions.X, "far", "here");
+        } else {
+            preColumn.bind(newColumn, Dimensions.X, "far", "here");
+        }
+
+        if (postColumn) {
+            newColumn.bind(postColumn, Dimensions.X, "far", "far");
+        }
+
+        this.enforceBinding();
+
+        this.positionalColumns.splice(index, 0, newColumn);
+    }
+    // ------------
+
+    // Content Commands
+    addChannel(name: string, channel: Channel) {
+        if (this.channels.length > 0) {  // If second channel or more, bind to channel abve.
+            var channelAbove = this.channels[this.channels.length-1];
+
+            // BIND Y
+            channelAbove.bind(channel, Dimensions.Y, "far", "here");
+        } else {
+            console.log("bound to the sequence")
+            this.bind(channel, Dimensions.Y, "here", "here");
+        }  // Or bind to top (PADDING DOES NOT WORK HERE, need to bind to content height...)
+        this.bind(channel, Dimensions.X, "here", "here");  // Or bind to channelLabelColumn?
         
 
-        for (const currChannel of Object.values(this.sectionWidths)) {
-            for (var i = 0; i < currChannel.length; i++) {
-                if (i < max.length) { // If this isn't new territory
-                    if (currChannel[i] > max[i]) {
-                        max[i] = currChannel[i];
-                    }
-                } else {
-                    max.push(currChannel[i]);
+        this.channelsDic[name] = channel;  // Set
+        channel.columnRef = this.positionalColumns;  // And apply the column ref
+        channel.labelColumn = this.channelLabelColumn;
+
+        this.challengeLabelWidth(channel.label ? channel.label.width : 0);
+        this.enforceBinding();
+    }
+
+    addPositional(channelName: string, obj: Positional<Element>, index?: number | undefined, insert: boolean=false) {
+        
+        console.log(index)  // Work needs doing here.
+        if (index !== undefined) {
+            if (insert) {
+                this.insertColumn(index, obj.element.width);
+            } 
+        } else {  // Auto index
+            index = this.channelsDic[channelName].elementCursor + 1;
+
+            if (insert) {
+                this.insertColumn(index, obj.element.width);
+            }  else {  
+                if (index >= this.positionalColumns.length) {  // Add to end
+                    this.insertColumn(index, obj.element.width);
                 }
             }
         }
 
-        this.maxSectionWidths = max;
+        console.log(index)
 
-        this.maxTimestampX = [xBar];
-        this.maxSectionWidths.forEach((w, i) => {
-            this.maxTimestampX.push(w + this.maxTimestampX[i]);
-        })
-
-        // 
-    }
-
-    addPositional(channelName: string, obj: Positional, index?: number) {
+        
+        // Bind first
         this.channelsDic[channelName].addPositional(obj, index);
 
-        this.computeSectionDimensions()
+        this.challengeWidth(obj.element.width, index);
     }
 
     addLabel(channelName: string, obj: Span) {
@@ -169,7 +233,7 @@ export default class Sequence {
     positionBracket(channelRef: string, bracket: Bracket, timestamp: number) {
         var channel = this.channelsDic[channelRef]
         
-        var x: number = this.maxTimestampX[timestamp];
+        var x: number = this.maxColumnX[timestamp];
 
         var y = channel.y + bracket.style.strokeWidth;
         var y2 = channel.barY + channel.style.thickness;

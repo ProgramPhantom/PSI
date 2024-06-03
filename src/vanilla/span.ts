@@ -4,14 +4,13 @@ import { Position, ILabel } from "./label";
 import Positional, { Alignment, Orientation, labelable, IPositional, positionalConfig } from "./positional";
 import * as defaultSpan from "./default/data/span.json"
 import { FillObject, UpdateObj } from "./util";
-import { IDraw } from "./element";
 
 
 export interface ISpan extends IPositional {
     width: number,
 }   
 
-export default class Span extends Positional implements IDraw {
+export default class Span extends Positional {
     static defaults: {[name: string]: ISpan} = {"span": {...<any>defaultSpan },
                                                 "annotationSpan": {...<any>defaultSpan }}
 
@@ -26,10 +25,10 @@ export default class Span extends Positional implements IDraw {
         this.resolveDimensions();
     }
 
-    resolveDimensions(): void {
-        this.decoration.resolveDimensions();
+    resolveDimensions(): {width: number, height: number} {
+        var dim = this.decoration.resolveDimensions();
 
-        this.contentDim = this.decoration.contentDim;
+        return dim;
     }
 
     public draw(surface: Svg): void {

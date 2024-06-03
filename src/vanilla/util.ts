@@ -1,5 +1,4 @@
-import { IDraw } from "./element";
-import Positional, { IDefaultConstruct } from "./positional";
+
 
 export function UpdateObj(template: any, partial: any) {
     var newkeyval = Object.entries(partial);

@@ -5,7 +5,7 @@ import { Svg } from "@svgdotjs/svg.js";
 
 export enum GridPositioning {start="start", centre="centre"}
 
-interface IGrid {
+export interface IGrid {
     gridOn: boolean,
     gridPositioning: GridPositioning,
     lineStyle: ILine,

@@ -3,5 +3,6 @@ import * as Pulse180 from "./180pulse.json"
 
 export const simplePulses = {
     "pulse90": Pulse90,
+    "bar": Pulse90,
     "pulse180": Pulse180
 };
