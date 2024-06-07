@@ -89,7 +89,7 @@ export default class Channel extends Collection {
     set labelColumn(v: Spacial) {  // When the label column is set, apply binding to the label.
         this._labelColumn = v;
         if (this.label) {
-            this.labelColumn.bind(this.label, Dimensions.X, "centre", "centre");
+            this.labelColumn.bind(this.label, Dimensions.X, "here", "here", this.label.padding[3]);
         }
     }
     get labelColumn(): Spacial {
@@ -129,7 +129,6 @@ export default class Channel extends Collection {
         if (fullParams.label) {
             this.label = new Label(fullParams.label);
 
-            this.labelColumn.bind(this.label, Dimensions.X, "centre", "centre");
             this.bar.bind(this.label, Dimensions.Y, "centre", "centre");
 
             this.add(this.label);
@@ -231,7 +230,7 @@ export default class Channel extends Collection {
                 column.bind(element, Dimensions.X, "far", "far");
                 break;
             case Alignment.Padded:
-                column.bind(element, Dimensions.X, "here", "here", element.padding[3]);
+                column.bind(element, Dimensions.X, "here", "here");
                 break;
         }
 
