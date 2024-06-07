@@ -203,7 +203,7 @@ export default class Channel extends Collection {
 
         if (!positional.config.index) {
             positional.config.index = Index;
-            this.elementCursor += positional.config.noSections;  // Multi column element
+            this.elementCursor += positional.config.noSections - 1;  // Multi column element
         }
 
         //var sections = new Array<number>(positional.config.noSections);
@@ -248,6 +248,7 @@ export default class Channel extends Collection {
         }
 
         this.checkHeight(positional);
+        this.positionBar()
 
         this.add(positional.element);
         this.positionalElements.push(positional);

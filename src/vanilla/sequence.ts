@@ -134,6 +134,9 @@ export default class Sequence extends Collection {
     }
 
     insertColumn(index: number, width: number) {
+        if (index === 1) {
+            console.log("Stop")
+        }
         var newColumn: Spacial;
         if (this.positionalColumns.length === 1 && index === 0) {  // Inserting at 0
             newColumn = this.positionalColumns.pop()!;
