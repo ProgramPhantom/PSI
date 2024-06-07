@@ -26,8 +26,8 @@ export type Offset = [number, number]
 
 
 export interface IElement extends IPaddedBox {
-    width: number,
-    height: number,
+    width?: number,
+    height?: number,
     offset: [number, number],
 }
 
@@ -36,22 +36,21 @@ export abstract class Element extends PaddedBox {
 
     offset: number[];
 
-    id: string;
-    dirty: boolean = true;
 
-    protected override _contentWidth: number;
-    protected override _contentHeight: number;
+
+    private _dirty: boolean = true
+    public get dirty(): boolean {
+        return this._dirty
+    }
+    public set dirty(value: boolean) {
+        this._dirty = value
+    }
 
     constructor(params: IElement, refName: string="element") {
-        super(params.offset, params.padding, undefined, undefined, undefined, undefined, refName);  // Will make dirty??
+        super(params.padding, params.x, params.y, params.width, params.height, refName);  // Will make dirty??
 
         this.offset = params.offset;  // Fixed for some reason
-
-        this.id = Math.random().toString(16).slice(2);
         
-        // var dim = this.resolveDimensions();
-        this._contentWidth = params.width;
-        this._contentHeight = params.height;
     }
 
 
@@ -80,7 +79,7 @@ export abstract class Element extends PaddedBox {
         throw new Error(`y unset in ${this.refName}` );
     }
 
-    override get contentWidth() : number {
+    override get contentWidth() : number | undefined {
         return this._contentWidth;
     }
     override set contentWidth(v : number) {
@@ -89,7 +88,7 @@ export abstract class Element extends PaddedBox {
         this.enforceBinding();
     }
 
-    override get contentHeight() : number {
+    override get contentHeight() : number | undefined {
         return this._contentHeight;
         
     }

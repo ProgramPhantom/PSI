@@ -1,5 +1,5 @@
 import Positional, {Orientation, IPositional, labelable, Alignment} from "./positional";
-import * as defaultAbstract from "./default/data/abstract.json"
+import defaultAbstract from "./default/data/abstract.json"
 import * as SVG from '@svgdotjs/svg.js'
 import Label, { Position, ILabel} from "./label";
 import { FillObject, PartialConstruct, UpdateObj } from "./util";

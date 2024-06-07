@@ -1,6 +1,6 @@
 import { Element, IElement } from "./element";
 import { FillObject, UpdateObj } from "./util";
-import * as defaultLineLike from "./default/data/lineLike.json";
+import defaultLineLike from "./default/data/lineLike.json";
 import { Svg } from "@svgdotjs/svg.js";
 import Label from "./label";
 import PaddedBox from "./paddedBox";

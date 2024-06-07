@@ -70,8 +70,8 @@ export default function Canvas(props:  {script: string, zoom: number,
     // I am adding elements to a different div first and then moving it onto the canvas
     // Mounts the image from the drawSVG
     function MountSequence() {
-        var canvasWidth = props.handler.sequence.width + 500;
-        var canvasHeight = props.handler.sequence.height + 500;
+        var canvasWidth = props.handler.sequence.width ;
+        var canvasHeight = props.handler.sequence.height ;
 
         props.drawSurface.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
         svgDestinationObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)

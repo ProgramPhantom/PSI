@@ -8,7 +8,7 @@ import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
 import Span from "./span";
 import Abstract from "./abstract";
-import * as defaultSequence from "./default/data/sequence.json"
+import defaultSequence from "./default/data/sequence.json"
 import SequenceHandler from "./sequenceHandler";
 import Bracket, { Direction, IBracket } from "./bracket";
 import { NumberAlias } from "svg.js";
@@ -17,19 +17,18 @@ import { FillObject, PartialConstruct } from "./util";
 import { ILine, Line } from "./line";
 import { Grid, IGrid } from "./grid";
 import Spacial, { Dimensions } from "./spacial";
-import Collection from "./collection";
+import Collection, { ICollection } from "./collection";
 import PaddedBox from "./paddedBox";
 
 
-interface sequenceInterface {
-    padding: number[],
+interface ISequence extends ICollection {
     grid: IGrid,
     bracket: IBracket
 }
 
 
-export default class Sequence extends PaddedBox {
-    static defaults: {[key: string]: sequenceInterface} = {"empty": {...<any>defaultSequence}}
+export default class Sequence extends Collection {
+    static defaults: {[key: string]: ISequence} = {"default": {...<any>defaultSequence}}
 
     channelsDic: {[name: string]: Channel;} = {};
     get channels(): Channel[] {return Object.values(this.channelsDic)}
@@ -62,17 +61,17 @@ export default class Sequence extends PaddedBox {
     positionalColumns: Spacial[];
     channelLabelColumn: Spacial;
 
-    constructor(params: sequenceInterface) {
-        super([0, 0], 0, 0, 0);
-        this.grid = new Grid(params.grid);
+    constructor(params: Partial<ISequence>, templateName: string="default", refName: string="sequence") {
+        console.log(Sequence.defaults["default"]);
+        var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
+        super(fullParams, templateName, refName);
 
-        this.contentWidth = 0;
-        this.contentHeight = 0;
+        this.grid = new Grid(fullParams.grid);
+
 
         this.channelsDic = {};  // Wierdest bug ever happening here
 
-        
-
+    
         this.channelLabelColumn = new Spacial(0, undefined, 0, undefined, "channelLabelColumn");
         this.bind(this.channelLabelColumn, Dimensions.X, "here", "here");
 
@@ -136,7 +135,7 @@ export default class Sequence extends PaddedBox {
 
     insertColumn(index: number, width: number) {
         var newColumn: Spacial;
-        if (this.positionalColumns.length === 1) {
+        if (this.positionalColumns.length === 1 && index === 0) {  // Inserting at 0
             newColumn = this.positionalColumns.pop()!;
         } else {
             newColumn = new Spacial(x, undefined, width, undefined);
@@ -154,14 +153,14 @@ export default class Sequence extends PaddedBox {
         }
 
         if (postColumn) {
-            newColumn.bind(postColumn, Dimensions.X, "far", "far");
+            newColumn.bind(postColumn, Dimensions.X, "far", "here");
         }
 
         this.enforceBinding();
 
         this.positionalColumns.splice(index, 0, newColumn);
     }
-    // ------------
+    // ------------------------
 
     // Content Commands
     addChannel(name: string, channel: Channel) {
@@ -183,6 +182,8 @@ export default class Sequence extends PaddedBox {
 
         this.challengeLabelWidth(channel.label ? channel.label.width : 0);
         this.enforceBinding();
+
+        this.add(channel);
     }
 
     addPositional(channelName: string, obj: Positional<Element>, index?: number | undefined, insert: boolean=false) {
@@ -198,7 +199,7 @@ export default class Sequence extends PaddedBox {
             if (insert) {
                 this.insertColumn(index, obj.element.width);
             }  else {  
-                if (index >= this.positionalColumns.length) {  // Add to end
+                if (index >= this.positionalColumns.length-1) {  // Add to end
                     this.insertColumn(index, obj.element.width);
                 }
             }
@@ -206,11 +207,12 @@ export default class Sequence extends PaddedBox {
 
         console.log(index)
 
+        this.challengeWidth(obj.element.width, index);
         
         // Bind first
         this.channelsDic[channelName].addPositional(obj, index);
 
-        this.challengeWidth(obj.element.width, index);
+        this.positionalColumns[0].enforceBinding();
     }
 
     addLabel(channelName: string, obj: Span) {

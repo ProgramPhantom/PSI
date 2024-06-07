@@ -1,6 +1,6 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import Positional, {Alignment, Orientation, IPositional, positionalConfig} from "../../positional";
-import * as defaultPulse from "../../default/data/imagePulse.json"
+import defaultPulse from "../../default/data/imagePulse.json"
 import Label, {Position, ILabel } from "../../label";
 import { UpdateObj } from "../../util";
 

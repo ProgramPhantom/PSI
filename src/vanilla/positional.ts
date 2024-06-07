@@ -6,7 +6,7 @@ import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import { H } from "mathjax-full/js/output/common/FontData";
 import Annotation, { IAnnotation } from "./annotation";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
-import * as defaultPositional from "./default/data/positional.json";
+import defaultPositional from "./default/data/positional.json";
 import RectElement, { IRect } from "./rectElement";
 
 interface Dim {
@@ -28,7 +28,7 @@ type Index = [number, number]
 
 export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both" }
 
-export enum Alignment {Left=<any>"left", Centre=<any>"centre", Right=<any>"right"}
+export enum Alignment {Left=<any>"left", Centre=<any>"centre", Right=<any>"right", Padded=<any>"padded"}
 
 export interface labelable {
     label?: Label,

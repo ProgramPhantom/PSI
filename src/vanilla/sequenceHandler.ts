@@ -57,8 +57,8 @@ export default class SequenceHandler {
     get id(): string {
         var id: string = "";
         this.sequence.channels.forEach((c) => {
-            c.positionalElements.forEach((p) => {
-                id += p.element.id;
+            c.children.forEach((p) => {
+                id += p.id;
             })
         })
         return id;
@@ -73,7 +73,7 @@ export default class SequenceHandler {
     constructor(surface: Svg, refresh: (uid: string) => void) {
         // this.id = "";
         this.surface = surface;
-        this.sequence = new Sequence(Sequence.defaults["empty"])
+        this.sequence = new Sequence({});
 
         this.refresh = refresh;
         this.parser = new Parser(this, "");

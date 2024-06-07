@@ -250,12 +250,12 @@ class Parser {
     isContentCommand(arg: string): boolean {return Object.keys(Parser.ContentCommands).includes(arg)}
 
     static ChannelUtil: {[character: string]: any} = {
-        "@": Channel.defaults["blankH1"],
-        ">": Channel.defaults["blankH1"],  // FIX ME!!
-        "~": Channel.defaults["blankH1"],
-        "|": Sequence.defaults["empty"].grid.lineStyle,
-        "[": Sequence.defaults["empty"].bracket,
-        "]": Sequence.defaults["empty"].bracket,
+        "@": Channel.defaults["default"],
+        ">": Channel.defaults["default"],  // FIX ME!!
+        "~": Channel.defaults["default"],
+        "|": Sequence.defaults["default"].grid.line.style,
+        "[": Sequence.defaults["default"].bracket,
+        "]": Sequence.defaults["default"].bracket,
     }
     isUtilCommand(arg: string): boolean {return Object.keys(Parser.ChannelUtil).includes(arg)}
 

@@ -8,7 +8,7 @@ export enum GridPositioning {start="start", centre="centre"}
 export interface IGrid {
     gridOn: boolean,
     gridPositioning: GridPositioning,
-    lineStyle: ILine,
+    line: ILine,
 }
 
 
@@ -16,12 +16,12 @@ export interface IGrid {
 export class Grid {
     gridOn: boolean;
     vLines: {[timestamp: number]: Line} = {};
-    style: ILine;
+    line: ILine;
     gridPositioning: GridPositioning;
 
     constructor(params: IGrid) {
         this.gridOn = params.gridOn;
-        this.style = params.lineStyle;
+        this.line = params.line;
         this.gridPositioning = params.gridPositioning;
     }
 

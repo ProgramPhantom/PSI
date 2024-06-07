@@ -1,7 +1,7 @@
 import { Element, IElement } from "./element";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
-import * as defaultAnnotation from "./default/data/annotation.json";
+import defaultAnnotation from "./default/data/annotation.json";
 import { FillObject, PartialConstruct, UpdateObj } from "./util";
 import Label, { Position as Position, ILabel } from "./label";
 import Arrow, { ArrowPosition, IArrow } from "./arrow";

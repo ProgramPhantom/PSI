@@ -1,6 +1,6 @@
 
 import { labelable } from "./positional";
-import * as defaultSection from "./default/data/section.json"
+import defaultSection from "./default/data/section.json"
 import Label, { ILabel, Position } from "./label";
 import { FillObject, UpdateObj } from "./util";
 import Bracket, { IBracket } from "./bracket";

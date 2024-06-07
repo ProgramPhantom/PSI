@@ -1,5 +1,5 @@
 import { Element, IElement } from "./element";
-import * as defaultLine from "./default/data/line.json";
+import defaultLine from "./default/data/line.json";
 import { FillObject } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
 import { Svg } from "@svgdotjs/svg.js";

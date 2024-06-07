@@ -12,7 +12,9 @@ interface IRectStyle {
 }
 
 export interface IRect extends IElement {
-	style: IRectStyle
+	style: IRectStyle,
+    width: number,
+    height: number
 }
 
 export type PositionalRect = IRect & IPositional

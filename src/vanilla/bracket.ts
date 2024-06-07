@@ -1,7 +1,7 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Element, IElement } from "./element";
 import { labelable } from "./positional";
-import * as defaultBracket from "./default/data/bracket.json"
+import defaultBracket from "./default/data/bracket.json"
 import Label, { ILabel, Position } from "./label";
 import { PartialConstruct, UpdateObj } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
@@ -22,8 +22,10 @@ export enum Direction {
 
 export interface IBracket extends ILineLike {
     protrusion: number,
+    
     direction: Direction,
     style: bracketStyle,
+
     labelOn: boolean,
     label: ILabel,
 }

@@ -1,7 +1,7 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Element, IElement } from "./element";
 import { labelable } from "./positional";
-import * as defaultArrow from "./default/data/arrow.json"
+import defaultArrow from "./default/data/arrow.json"
 import { FillObject, UpdateObj } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
 

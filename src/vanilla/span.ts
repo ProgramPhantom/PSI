@@ -2,7 +2,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import Arrow, { IArrow, arrowStyle } from "./arrow";
 import { Position, ILabel } from "./label";
 import Positional, { Alignment, Orientation, labelable, IPositional, positionalConfig } from "./positional";
-import * as defaultSpan from "./default/data/span.json"
+import defaultSpan from "./default/data/span.json"
 import { FillObject, UpdateObj } from "./util";
 
 

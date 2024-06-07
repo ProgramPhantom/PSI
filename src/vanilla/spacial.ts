@@ -1,4 +1,4 @@
-import Point, { BinderGetFunction, BinderSetFunction, BindingRule } from "./point";
+import Point, { BinderGetFunction, BinderSetFunction, BindingRule, IPoint } from "./point";
 
 export interface Bounds {
     top: number,
@@ -14,8 +14,9 @@ export interface Size {
 
 export enum Dimensions {X="x", Y="y"}
 
-export interface ISpacial {
-    
+export interface ISpacial extends IPoint {
+    width?: number,
+    height?: number,
 }
 
 export default class Spacial extends Point {
@@ -45,8 +46,8 @@ export default class Spacial extends Point {
 
         this.refName = refName;
         
-        this.contentWidth = width;
-        this.contentHeight = height;
+        width !== undefined ? this._contentWidth = width : null;
+        height !== undefined ? this._contentHeight = height : null;
     }
 
     get contentWidth() : number | undefined {
@@ -81,7 +82,7 @@ export default class Spacial extends Point {
         this._contentHeight = b.height;
     }
     get contentDim(): Size {
-        return {width: this._contentWidth, height: this._contentWidth};
+        return {width: this.contentWidth, height: this.contentWidth};
 
         throw new Error("dimensions unset");
     }
@@ -162,7 +163,7 @@ export default class Spacial extends Point {
     public setCentre(dimension: Dimensions, v : number) {
         switch (dimension) {
             case Dimensions.X:
-                this.x = v - this.width/2;
+                this.x = v - this.contentWidth!/2;
                 break;
             case Dimensions.Y:
                 this.y = v - this.height/2;
@@ -191,7 +192,7 @@ export default class Spacial extends Point {
 
     // Helpers:
     get hasDimensions(): boolean {
-        if (!this.contentDim.height || !this.contentDim.height) {
+        if (this.contentDim.height === undefined || !this.contentDim.height === undefined) {
             return false;
         } else {
             return true;

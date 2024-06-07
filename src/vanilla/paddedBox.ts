@@ -30,7 +30,7 @@ export default abstract class PaddedBox extends Spacial {
 
     padding: [number, number, number, number] = [0, 0, 0, 0];
     
-    constructor(offset: Offset=[0, 0], padding: Padding=0, x?: number, y?: number, width?: number, height?: number, refName: string="paddedBox") {
+    constructor(padding: Padding=0, x?: number, y?: number, width?: number, height?: number, refName: string="paddedBox") {
         super(x, y, width, height, refName);
 
         if (typeof padding === "number") {
@@ -45,7 +45,7 @@ export default abstract class PaddedBox extends Spacial {
     }
     
     public get contentX() : number {
-        return this.x + this.padding[0];
+        return this.x + this.padding[3];
     }
     public set contentX(v : number) {
         throw new Error("not implemented")

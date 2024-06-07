@@ -7,7 +7,7 @@ import Span from "./span";
 import Bracket, { Direction, bracketType } from "./bracket";
 import Section from "./section";
 import Annotation from "./annotation";
-import * as defaultAnnotationLayer from "./default/data/annotationLayer.json";
+import defaultAnnotationLayer from "./default/data/annotationLayer.json";
 import { FillObject } from "./util";
 import p from "@blueprintjs/icons/lib/esm/generated/16px/paths/blank";
 import PaddedBox from "./paddedBox";

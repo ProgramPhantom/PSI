@@ -1,7 +1,7 @@
 import { Element, IElement } from "./element";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
-import * as defaultLabel from "./default/data/label.json";
+import defaultLabel from "./default/data/label.json";
 import { FillObject, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 
@@ -42,7 +42,7 @@ export enum Position {top="top",
                       centre="centre"}
 
 
-export default class Label extends PaddedBox {
+export default class Label extends Element {
     static defaults: {[key: string]: ILabel} = {"label": {...<ILabel>defaultLabel}}
 
 
@@ -55,7 +55,7 @@ export default class Label extends PaddedBox {
     
     constructor(params: Partial<ILabel>, templateName: string="label") {
         var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
-        super(fullParams.offset, fullParams.padding, undefined, undefined, fullParams.height, fullParams.width);
+        super(fullParams, templateName);
         
         this.text = fullParams.text;
         this.style = fullParams.style;

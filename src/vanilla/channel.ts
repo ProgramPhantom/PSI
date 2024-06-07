@@ -1,4 +1,4 @@
-import * as defaultChannel from "./default/data/channel.json"
+import defaultChannel from "./default/data/channel.json"
 import { Element, IElement } from "./element";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Positional, { Alignment, Orientation, labelable } from "./positional";
@@ -11,7 +11,7 @@ import Section from "./section";
 import Annotation from "./annotation";
 import { PartialConstruct, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
-import Collection from "./collection";
+import Collection, { ICollection } from "./collection";
 import Point from "./point";
 import Spacial, { Dimensions } from "./spacial";
 import RectElement from "./rectElement";
@@ -32,7 +32,7 @@ interface Bounds {
 }
 
 
-export interface IChannel extends IElement {
+export interface IChannel extends ICollection {
     positionalElements: Positional[],
     identifier: string;
 
@@ -56,17 +56,9 @@ export interface channelAnnotation {
     padding: [number, number, number, number]
 }
 
-interface Column {
-    bindPoints: Collection<Point>[],
-    
-    width: number,
-    x: number,
-    height: [number, number]
-}
 
-
-export default class Channel extends PaddedBox {
-    static defaults: {[name: string]: IChannel} = {"blankH1": <any>defaultChannel}
+export default class Channel extends Collection {
+    static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
 
     style: channelStyle;
 
@@ -75,14 +67,13 @@ export default class Channel extends PaddedBox {
     private _maxTopProtrusion : number = 0;
     private _maxBottomProtrusion : number = 0;
 
-    bar: RectElement = new RectElement({}, "bar");
+    bar: RectElement;
     get barWidth() {
         var width = 0;
         this.columnRef.forEach((c) => width += c.width);
         return width;
     }
 
-    positionalElements: Positional<Element>[] = [];
     annotationLayer?: AnnotationLayer;
 
     private _columnRef: Spacial[] = [];
@@ -115,19 +106,23 @@ export default class Channel extends PaddedBox {
     label?: Label;
     position: Position=Position.left;
 
-    constructor(params: Partial<IChannel>, templateName: string="blankH1") {
+    positionalElements: Positional<Element>[] = [];
+
+    constructor(params: Partial<IChannel>, templateName: string="default", refName: string="channel") {
         var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
-        super(fullParams.offset, fullParams.padding);
+        super(fullParams, templateName, refName);
 
         this.style = fullParams.style;
         this.padding = fullParams.padding;
 
         this.identifier = fullParams.identifier;
 
-        this.bar.contentHeight = this.style.thickness;
+        this.bar = new RectElement({height: this.style.thickness}, "bar");
         this.bar.y = 0;
+        
+        this.add(this.bar);
 
-        this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
+        // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
         this.labelOn = fullParams.labelOn;
 
@@ -136,6 +131,8 @@ export default class Channel extends PaddedBox {
 
             this.labelColumn.bind(this.label, Dimensions.X, "centre", "centre");
             this.bar.bind(this.label, Dimensions.Y, "centre", "centre");
+
+            this.add(this.label);
         }
     }
 
@@ -151,7 +148,9 @@ export default class Channel extends PaddedBox {
         this.label?.draw(surface);
         
         this.positionalElements.forEach(p => {
+           
             p.element.draw(surface);
+            
         });
         this.bar.draw(surface);
     }
@@ -231,6 +230,9 @@ export default class Channel extends PaddedBox {
             case Alignment.Right:
                 column.bind(element, Dimensions.X, "far", "far");
                 break;
+            case Alignment.Padded:
+                column.bind(element, Dimensions.X, "here", "here", element.padding[3]);
+                break;
         }
 
         // Bind Y
@@ -247,7 +249,9 @@ export default class Channel extends PaddedBox {
         }
 
         this.checkHeight(positional);
-        this.positionalElements.push(positional)
+
+        this.add(positional.element);
+        this.positionalElements.push(positional);
     }
 
     addAnnotationLabel(lab: Span) {

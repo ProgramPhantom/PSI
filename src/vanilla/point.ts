@@ -29,12 +29,25 @@ export interface Binding {
     offset?: number
 }
 
+export interface IPoint {
+    x?: number,
+    y?: number
+}
+
 
 export default class Point {
-    AnchorFunctions;
+    AnchorFunctions = {
+        "here": {
+            // Anchors:
+            get: this.getNear.bind(this),
+            set: this.setNear.bind(this)
+        }
+    };
 
     protected _x?: number;
     protected _y?: number;
+
+    id: string;
 
     bindings: Binding[] = [];
 
@@ -42,13 +55,7 @@ export default class Point {
         this.x = x;
         this.y = y;
 
-        this.AnchorFunctions = {
-            "here": {
-                // Anchors:
-                get: this.getNear.bind(this),
-                set: this.setNear.bind(this)
-            }
-        }
+        this.id = Math.random().toString(16).slice(2);
     }
 
     get x(): number {
@@ -164,7 +171,7 @@ export default class Point {
 
     // Helpers:
     get hasPosition(): boolean {
-        if (!this._x || !this._y) {
+        if (this._x === undefined || !this._y === undefined) {
             return false;
         } else {
             return true;
