@@ -43,7 +43,7 @@ export default class Collection extends Element {
         this.children.push(object);
     }
 
-    computeSize(): {width: number, height: number} {
+    computeSize(): void {
         var top = Infinity;
         var left = Infinity;
         var bottom = -Infinity;
@@ -63,26 +63,23 @@ export default class Collection extends Element {
         var width = right - left;
         var height = bottom - top;
 
-        return {width: width, height: height}
+        this._contentWidth = width;
+        this._contentHeight = height;
     }
 
-    get contentWidth(): number {
-        
-        return this.computeSize().width;
-    }  // TODO: implement memorisation system;
-    get contentHeight(): number {
-        this.computeSize();
-        return this.computeSize().height;
+    get contentWidth(): number | undefined {
+        this.computeSize(); // TODO: remove this
+        return this._contentWidth;
     }
-    protected set contentWidth(v: number) {
-        if (v !== undefined) {
-            throw new Error("Cannot set content width of collection");
-        }
+    get contentHeight(): number | undefined {
+        this.computeSize(); // TODO: remove this
+        return this._contentHeight;
     }
-    protected set contentHeight(v: number) {
-        if (v !== undefined) {
-            throw new Error("Cannot set content width of collection");
-        }
+    private set contentWidth(v: number) {
+        this._contentWidth = v;
+    }
+    private set contentHeight(v: number) {
+        this._contentHeight = v;
     }
 
     get dirty(): boolean {

@@ -57,9 +57,11 @@ export abstract class Element extends PaddedBox {
     abstract draw(surface: Svg, ...args: any[]): void
 
     override set x(val: number) {
-        this.dirty = true;
-        this._x = val;
-        this.enforceBinding();
+        if (val !== this._x) {
+            this.dirty = true;
+            this._x = val;
+            this.enforceBinding();
+        }
     }  // OVERRIDING SETTER REQUIRES GETTER TO BE REDEFINED???
     override get x(): number {
         if (this._x !== undefined) {
@@ -68,9 +70,11 @@ export abstract class Element extends PaddedBox {
         throw new Error(`x unset in ${this.refName}`);
     }
     override set y(val: number) {
-        this.dirty = true;
-        this._y = val;
-        this.enforceBinding()
+        if (val !== this._y) {
+            this.dirty = true;
+            this._y = val;
+            this.enforceBinding()
+        }
     }
     override get y(): number {
         if (this._y !== undefined) {
@@ -83,9 +87,11 @@ export abstract class Element extends PaddedBox {
         return this._contentWidth;
     }
     override set contentWidth(v : number) {
-        this.dirty = true;
-        this._contentWidth = v;
-        this.enforceBinding();
+        if (v !== this._contentWidth) {
+            this.dirty = true;
+            this._contentWidth = v;
+            this.enforceBinding();
+        }
     }
 
     override get contentHeight() : number | undefined {
@@ -93,9 +99,11 @@ export abstract class Element extends PaddedBox {
         
     }
     override set contentHeight(v : number) {
-        this.dirty = true;
-        this._contentHeight = v;
-        this.enforceBinding();
+        if (v !== this._contentHeight) {
+            this.dirty = true;
+            this._contentHeight = v;
+            this.enforceBinding();
+        }
     }
 
 }

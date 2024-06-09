@@ -115,8 +115,7 @@ export default function Canvas(props:  {script: string, zoom: number,
             } else {
                 parseErr.current = e as string;
             }
-          
-            throw e;
+      
         }
     
         try {
@@ -125,7 +124,6 @@ export default function Canvas(props:  {script: string, zoom: number,
             
             drawErr.current = e as string;
             console.error(e)
-            throw e;
         }
 
         ys = [10]
@@ -167,7 +165,7 @@ export default function Canvas(props:  {script: string, zoom: number,
     return (
         <>
         
-        <div id={DRAWCANVASID} style={{width: "100px", height: "100px"}}></div>
+        <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
 
         <MapInteractionCSS
             showControls

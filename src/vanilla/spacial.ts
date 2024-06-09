@@ -36,6 +36,8 @@ export default class Spacial extends Point {
         }
     }
 
+
+
     protected _contentWidth?: number;
     protected _contentHeight?: number;
 
@@ -54,17 +56,20 @@ export default class Spacial extends Point {
         return this._contentWidth;
     }
     set contentWidth(v : number | undefined) {
-        this._contentWidth = v;
-        this.enforceBinding();
+        if (v !== this._contentWidth) {
+            this._contentWidth = v;
+            this.enforceBinding();
+        }
     }
 
     get contentHeight() : number | undefined {
         return this._contentHeight;
-        
     }
     set contentHeight(v : number | undefined) {
-        this._contentHeight = v;
-        this.enforceBinding();
+        if (v !== this.contentHeight) {
+            this._contentHeight = v;
+            this.enforceBinding();
+        }
     }
 
     get contentBounds(): Bounds {

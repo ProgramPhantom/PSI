@@ -71,12 +71,16 @@ export default class Point {
         throw new Error("y unset");
     }
     protected set x(val: number | undefined) {
-        this._x = val;
-        this.enforceBinding();
+        if (val !== this._x) {
+            this._x = val;
+            this.enforceBinding();
+        }
     }
     protected set y(val: number | undefined) {
-        this._y = val;
-        this.enforceBinding();
+        if (val !== this._y) {
+            this._y = val;
+            this.enforceBinding();
+        }
     }
 
 
