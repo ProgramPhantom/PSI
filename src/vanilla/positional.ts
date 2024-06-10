@@ -1,7 +1,7 @@
 import { Element, IElement } from "./element";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Label, { ILabel, Position } from "./label";
-import { FillObject, PartialConstruct, UpdateObj } from "./util";
+import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import { H } from "mathjax-full/js/output/common/FontData";
 import Annotation, { IAnnotation } from "./annotation";
@@ -61,7 +61,7 @@ export default class Positional<T extends Element> {
     config: IConfig;
     element: T;
 
-    constructor(object: T, params: Partial<IPositional>, defaults: IPositional) {
+    constructor(object: T, params: RecursivePartial<IPositional>, defaults: IPositional) {
         var fullParams: IPositional = FillObject(params, defaults);
         
         this.element = object;

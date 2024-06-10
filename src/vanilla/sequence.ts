@@ -13,7 +13,7 @@ import SequenceHandler from "./sequenceHandler";
 import Bracket, { Direction, IBracket } from "./bracket";
 import { NumberAlias } from "svg.js";
 import Section from "./section";
-import { FillObject, PartialConstruct } from "./util";
+import { FillObject, PartialConstruct, RecursivePartial } from "./util";
 import { ILine, Line } from "./line";
 import { Grid, IGrid } from "./grid";
 import Spacial, { Dimensions } from "./spacial";
@@ -61,7 +61,7 @@ export default class Sequence extends Collection {
     positionalColumns: Spacial[];
     channelLabelColumn: Spacial;
 
-    constructor(params: Partial<ISequence>, templateName: string="default", refName: string="sequence") {
+    constructor(params: RecursivePartial<ISequence>, templateName: string="default", refName: string="sequence") {
         console.log(Sequence.defaults["default"]);
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
         super(fullParams, templateName, refName);
@@ -213,7 +213,7 @@ export default class Sequence extends Collection {
         this.challengeWidth(obj.element.width, index);
         
         // Bind first
-        this.channelsDic[channelName].addPositional(obj, index);
+        this.channelsDic[channelName].addPositional(obj, index, insert);
 
         // new column already has x set from this.insert column, meaning using this.positionalColumns[0]
         // Does not update position of new positional because of the change guards

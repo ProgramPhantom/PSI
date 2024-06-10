@@ -3,7 +3,7 @@ import { Element, IElement } from "./element";
 import { labelable } from "./positional";
 import defaultBracket from "./default/data/bracket.json"
 import Label, { ILabel, Position } from "./label";
-import { PartialConstruct, UpdateObj } from "./util";
+import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
 import { Dimensions } from "./spacial";
 
@@ -52,7 +52,7 @@ export default class Bracket extends LineElement implements labelable {
     labelOn: boolean;
     label?: Label;
 
-    constructor(params: Partial<IBracket>, templateName: string="horizontal") {
+    constructor(params: RecursivePartial<IBracket>, templateName: string="horizontal") {
         var fullParams: IBracket = params ? UpdateObj(Bracket.defaults[templateName], params) : Bracket.defaults[templateName];
         super(fullParams)
 

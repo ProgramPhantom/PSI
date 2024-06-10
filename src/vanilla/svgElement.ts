@@ -1,7 +1,7 @@
 import { Element, IElement } from "./element";
 import { svgPulses } from "./default/data/svgPulse";
 import { IPositional } from "./positional";
-import { FillObject } from "./util";
+import { FillObject, RecursivePartial } from "./util";
 import { Svg } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 
@@ -46,7 +46,7 @@ export default class SVGElement extends Element {
     path: string;
     svgContent: string;
 
-    constructor(params: Partial<ISVG>, templateName: string="default") {
+    constructor(params: RecursivePartial<ISVG>, templateName: string="default") {
 		var fullParams: ISVG = FillObject(params, SVGElement.defaults[templateName])
 		super(fullParams);
 

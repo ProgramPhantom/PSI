@@ -1,5 +1,5 @@
 import { Element, IElement } from "./element";
-import { FillObject, UpdateObj } from "./util";
+import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import defaultLineLike from "./default/data/lineLike.json";
 import { Svg } from "@svgdotjs/svg.js";
 import Label from "./label";
@@ -26,7 +26,7 @@ export default abstract class LineLike extends PaddedBox {
     private _y2?: number;
     
     
-    constructor(params: Partial<ILineLike>, templateName: string="default") {
+    constructor(params: RecursivePartial<ILineLike>, templateName: string="default") {
         var fullParams: ILineLike = FillObject(params, LineLike.defaults[templateName]);
         super(fullParams.offset, fullParams.padding);
 

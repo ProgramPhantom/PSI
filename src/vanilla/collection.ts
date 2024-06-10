@@ -3,7 +3,7 @@ import { Element, IElement, Offset } from "./element";
 import PaddedBox from "./paddedBox";
 import Point, { Place } from "./point";
 import Spacial, { Dimensions } from "./spacial";
-import { FillObject } from "./util";
+import { FillObject, RecursivePartial } from "./util";
 import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS } from "react";
 
 
@@ -25,7 +25,7 @@ export default class Collection extends Element {
 
     children: Spacial[] = [];
 
-    constructor(params: Partial<ICollection>, templateName: string="default", refName: string="collection") {
+    constructor(params: RecursivePartial<ICollection>, templateName: string="default", refName: string="collection") {
         // var test = Collection.defaults[templateName];
         var fullParams: ICollection = FillObject<ICollection>(params, Collection.defaults[templateName]);
         super(fullParams, refName);

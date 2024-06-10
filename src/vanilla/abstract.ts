@@ -2,7 +2,7 @@ import Positional, {Orientation, IPositional, labelable, Alignment} from "./posi
 import defaultAbstract from "./default/data/abstract.json"
 import * as SVG from '@svgdotjs/svg.js'
 import Label, { Position, ILabel} from "./label";
-import { FillObject, PartialConstruct, UpdateObj } from "./util";
+import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import { simplePulseStyle } from "./pulses/simple/simplePulse";
 import { Section } from "@blueprintjs/core";
 
@@ -22,7 +22,7 @@ export default class Abstract extends Positional {
     style: simplePulseStyle;
     textLabel: Label;
 
-    constructor(params: Partial<IAbstract>, templateName: string="abstract") {
+    constructor(params: RecursivePartial<IAbstract>, templateName: string="abstract") {
         var fullParams: IAbstract = FillObject(params, Abstract.defaults[templateName])
         super(fullParams);
 

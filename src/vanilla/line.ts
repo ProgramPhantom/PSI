@@ -1,6 +1,6 @@
 import { Element, IElement } from "./element";
 import defaultLine from "./default/data/line.json";
-import { FillObject } from "./util";
+import { FillObject, RecursivePartial } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
 import { Svg } from "@svgdotjs/svg.js";
 
@@ -21,7 +21,7 @@ export class Line extends LineElement {
 
     style: lineStyle;
 
-    constructor(params: Partial<ILine>, templateName: string="default") {
+    constructor(params: RecursivePartial<ILine>, templateName: string="default") {
         var fullParams: ILine = FillObject(params, Line.defaults[templateName]);
         super(fullParams)
 

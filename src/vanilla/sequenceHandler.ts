@@ -8,7 +8,7 @@ import Label from "./label";
 import Positional, { IPositional } from "./positional";
 import { Element } from "./element";
 import Channel, { IChannel } from "./channel";
-import { PartialConstruct, UpdateObj } from "./util";
+import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import Section, { ISection } from "./section";
 import { Script } from "vm";
 import Parser from "./parser";
@@ -87,9 +87,7 @@ export default class SequenceHandler {
 
     // Add a positional ement by providing elementName, channel name, and partial positional interface.
     // Function uses element name to lookup default parameters and replaces with those provided 
-    positional(elementName: string, channelName: string, pParameters: Partial<IPositionalType>, index?: number) {
-        
-
+    positional(elementName: string, channelName: string, pParameters: RecursivePartial<IPositionalType>, index?: number, insert: boolean=false) {
         // var positionalType: typeof Positional = SequenceHandler.positionalTypes[elementName];
         var positionalType = SequenceHandler.positionalTypes[elementName];
 
@@ -102,16 +100,16 @@ export default class SequenceHandler {
         
         // Fix for now.
         var defaults: PositionalRect = RectElement.defaults[elementName];
-        element = new RectElement(pParameters as Partial<IRect>, elementName)
+        element = new RectElement(pParameters as RecursivePartial<IRect>, elementName)
         var newPositional: Positional<Element> = new Positional<RectElement>(element, pParameters, defaults);;
         
         switch (positionalType.name) {
             // case (SVGPulse.name):
-            //     element = new SVGPulse(pParameters as Partial<ISvgPulse>, elementName);
+            //     element = new SVGPulse(pParameters as RecursivePartial<ISvgPulse>, elementName);
             //     break;
             case (RectElement.name):
                 var defaults: PositionalRect = RectElement.defaults[elementName];
-                element = new RectElement(pParameters as Partial<IRect>, elementName)
+                element = new RectElement(pParameters as RecursivePartial<IRect>, elementName)
 
                 newPositional = new Positional<RectElement>(element, pParameters, defaults);
                 break;
@@ -119,39 +117,39 @@ export default class SequenceHandler {
                 element = new Span(pParameters, elementName);
                 break;
             case (Abstract.name):
-                element = new Abstract(pParameters as Partial<IAbstract>, elementName);
+                element = new Abstract(pParameters as RecursivePartial<IAbstract>, elementName);
                 break;
             default:
                 throw new Error("error 1")
         }
 
         console.log(index)
-        this.sequence.addPositional(channelName, newPositional, index, false);
+        this.sequence.addPositional(channelName, newPositional, index, insert);
 
     }
 
     // TODO: forced index for channel addition
-    channel(name: string, pParameters: Partial<IChannel>, index?: number) {
+    channel(name: string, pParameters: RecursivePartial<IChannel>, index?: number) {
         var newChannel = new Channel(pParameters);
 
         this.sequence.addChannel(name, newChannel);
     }
 
     // ADD TEMPLATE NAMES
-    vLine(channelName: string, pParameters: Partial<ILine>, index?: number) {
+    vLine(channelName: string, pParameters: RecursivePartial<ILine>, index?: number) {
         var newLine = new Line(pParameters, )
 
         this.sequence.addVLine(channelName, newLine, index)
     }
 
     // TODO: add template name
-    bracket(channelName: string, pParameters: Partial<IBracket>, index?: number) {
+    bracket(channelName: string, pParameters: RecursivePartial<IBracket>, index?: number) {
         var newBracket = new Bracket(pParameters);
 
         this.sequence.addBracket(channelName, newBracket, index)
     }
 
-    section(channelName: string, pParameters: Partial<ISection>, templateName?: string, indexRange?: [number, number]) {
+    section(channelName: string, pParameters: RecursivePartial<ISection>, templateName?: string, indexRange?: [number, number]) {
         var newSection = new Section(pParameters, templateName);
 
         this.sequence.addSection(channelName, newSection, indexRange);

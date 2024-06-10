@@ -22,6 +22,7 @@ import SortableItem from './SortableItem';
 import { Item } from './Item';
 import { useDrag } from 'react-dnd';
 import SequenceHandler from '../vanilla/sequenceHandler';
+import { Orientation } from '../vanilla/positional';
 
 const style: CSSProperties = {
   border: '1px dashed gray',
@@ -44,6 +45,8 @@ export const ElementTypes = {
 export interface DropResult {
   index: number,
   channelName: string,
+  orientation: Orientation,
+  insert: boolean,
 }
 
 function DraggableElement(props: {name: string, handler: SequenceHandler}) {
@@ -53,7 +56,8 @@ function DraggableElement(props: {name: string, handler: SequenceHandler}) {
     end: (item, monitor) => {
       const dropResult = monitor.getDropResult<DropResult>()
       if (item && dropResult) {
-        props.handler.positional("pulse90", dropResult.channelName, {}, dropResult.index)
+        alert("pulse90")
+        props.handler.positional("pulse90", dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
         props.handler.draw();
       }
     },

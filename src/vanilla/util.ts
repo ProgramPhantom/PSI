@@ -33,7 +33,7 @@ export function UpdateObj(template: any, partial: any) {
 // Currently this removes fields not found in the default interface.
 // For example "grid" data is lost when run with collection interface 
 
-export function FillObject<T>(pParams: Partial<T>, defaults: T): T {
+export function FillObject<T>(pParams: RecursivePartial<T>, defaults: T): T {
   return !isEmpty(pParams) ? UpdateObj(defaults, pParams) : defaults;
 }
 
@@ -42,3 +42,10 @@ export function PartialConstruct(element: {new (...args: any[]): any},
                                                       defaultArgs: any) : any  {
   return new element(partialArgs ? UpdateObj(defaultArgs, partialArgs) : defaultArgs)
 }
+
+export type RecursivePartial<T> = {
+  [P in keyof T]?:
+    T[P] extends (infer U)[] ? RecursivePartial<U>[] :
+    T[P] extends object | undefined ? RecursivePartial<T[P]> :
+    T[P];
+};

@@ -2,7 +2,7 @@
 import { labelable } from "./positional";
 import defaultSection from "./default/data/section.json"
 import Label, { ILabel, Position } from "./label";
-import { FillObject, UpdateObj } from "./util";
+import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import Bracket, { IBracket } from "./bracket";
 
 
@@ -15,7 +15,7 @@ export default class Section extends Bracket implements labelable {
 
     indexRange: [number, number];
 
-    constructor(params: Partial<ISection>, templateName: string="section") {
+    constructor(params: RecursivePartial<ISection>, templateName: string="section") {
         var fullParams: ISection = FillObject(params, Section.defaults[templateName]);
         super(fullParams)
             

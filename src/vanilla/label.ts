@@ -2,7 +2,7 @@ import { Element, IElement } from "./element";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultLabel from "./default/data/label.json";
-import { FillObject, UpdateObj } from "./util";
+import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 
 
@@ -53,7 +53,7 @@ export default class Label extends Element {
     padding: [number, number, number, number];
     position: Position;
     
-    constructor(params: Partial<ILabel>, templateName: string="label") {
+    constructor(params: RecursivePartial<ILabel>, templateName: string="label") {
         var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
         super(fullParams, templateName);
         

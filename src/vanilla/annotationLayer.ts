@@ -8,7 +8,7 @@ import Bracket, { Direction, bracketType } from "./bracket";
 import Section from "./section";
 import Annotation from "./annotation";
 import defaultAnnotationLayer from "./default/data/annotationLayer.json";
-import { FillObject } from "./util";
+import { FillObject, RecursivePartial } from "./util";
 import p from "@blueprintjs/icons/lib/esm/generated/16px/paths/blank";
 import PaddedBox from "./paddedBox";
 
@@ -31,7 +31,7 @@ export default class AnnotationLayer extends PaddedBox {
     indexWidths: number[];
     indexX: number[] = [];
 
-    constructor(params: Partial<IAnnotationLayer>, templateName: string="default") {
+    constructor(params: RecursivePartial<IAnnotationLayer>, templateName: string="default") {
         var fullParams: IAnnotationLayer = FillObject(params, AnnotationLayer.defaults[templateName]);
         super();
 

@@ -7,69 +7,69 @@ import { Orientation } from "../vanilla/positional";
 
 class SequenceDropInterpreter {
     public handler: SequenceHandler;
-    public insertAreas: AddSpec[] = [];
+    public insertAreas: AddSpec[];
     private slitherWidth: number = 2;
 
     constructor (handler: SequenceHandler) {
         this.handler = handler;
 
+        this.insertAreas = [];
         this.computeAreas();
     }
 
     computeAreas() {
-         var sequence = this.handler.sequence;
+        this.insertAreas = [];
+        var sequence = this.handler.sequence;
 
-        Object.entries(sequence.channelsDic).forEach(([name, channel]) => {
+        sequence.positionalColumns.forEach((column, i) => {
+            var heightTop;
+            var heightBottom;
 
 
-            channel.sectionXs.forEach((x, i) => {
-                
-                let correspondingWidth = sequence.maxColumnWidths[i];
-                
-                let occupied = channel.occupancy[i];
+            Object.entries(sequence.channelsDic).forEach(([name, channel]) => { 
+                // Insert start
 
-                // slither top
+                // Top slither
                 let newSlither: AddSpec = {
-                    area: {x: x - this.slitherWidth/2, 
+                    area: {x: column.x - this.slitherWidth/2, 
                            y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                            width: this.slitherWidth, 
-                           height: channel.maxTopProtrusion + channel.padding[0] - 1},
-                    index: i, orientation: Orientation.top, channelName: name
+                           height: channel.maxTopProtrusion},
+                    index: i, orientation: Orientation.top, channelName: name, insert: true,
                 };
                 this.insertAreas.push(newSlither)
 
                 // bottom slither
                 newSlither = {
-                    area: {x: x - this.slitherWidth/2, 
-                        y: channel.barY + channel.style.thickness + 1, 
+                    area: {x: column.x - this.slitherWidth/2, 
+                        y: channel.bar.y + channel.style.thickness + 1, 
                         width: this.slitherWidth, 
                         height: channel.maxBottomProtrusion + channel.padding[2] - 3},
-                    index: i, orientation: Orientation.bottom, channelName: name
+                    index: i, orientation: Orientation.bottom, channelName: name, insert: true
                 };
                 this.insertAreas.push(newSlither)
 
+                let occupied = channel.occupancy[i];
                 if (!occupied) {  // Top block
                     let newBlock: AddSpec = {
-                        area: {x: x + this.slitherWidth / 2, 
+                        area: {x: column.x + this.slitherWidth / 2, 
                                y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
-                               width: correspondingWidth - this.slitherWidth, 
+                               width: column.width - this.slitherWidth, 
                                height: channel.maxTopProtrusion + channel.padding[0] - 1}, 
-                        index: i, orientation: Orientation.top, channelName: name}
+                        index: i, orientation: Orientation.top, channelName: name, insert: false}
                     this.insertAreas.push(newBlock);
 
                     // Bottom block
                     newBlock = {
-                        area: {x: x + this.slitherWidth / 2, 
-                               y: channel.barY + channel.style.thickness + 1, 
-                               width: correspondingWidth - this.slitherWidth, 
+                        area: {x: column.x + this.slitherWidth / 2, 
+                               y: channel.bar.y + channel.style.thickness + 1, 
+                               width: column.width - this.slitherWidth, 
                                height: channel.maxBottomProtrusion + channel.padding[2] - 3}, 
-                        index: i, orientation: Orientation.bottom, channelName: name}
+                        index: i, orientation: Orientation.bottom, channelName: name, insert: false}
                     this.insertAreas.push(newBlock);
                 } 
-                
-
-                
             })
+
         })
     }
 }

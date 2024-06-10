@@ -1,6 +1,6 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { Element, IElement } from "./element";
-import { FillObject } from "./util";
+import { FillObject, RecursivePartial } from "./util";
 import PaddedBox, { IHaveDefault, IPaddedBox } from "./paddedBox";
 import { simplePulses } from "./default/data/simplePulse";
 import defaultBar from "./default/data/bar.json";
@@ -26,7 +26,7 @@ export default class RectElement extends Element {
 
 	style: IRectStyle;	
 
-    constructor(params: Partial<IRect>, templateName: string="pulse90") {
+    constructor(params: RecursivePartial<IRect>, templateName: string="pulse90") {
 		var fullParams: IRect = FillObject(params, RectElement.defaults[templateName])
 		super(fullParams, templateName);
 

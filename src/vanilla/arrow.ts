@@ -2,7 +2,7 @@ import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Element, IElement } from "./element";
 import { labelable } from "./positional";
 import defaultArrow from "./default/data/arrow.json"
-import { FillObject, UpdateObj } from "./util";
+import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
 
 interface Dim {
@@ -49,7 +49,7 @@ export default class Arrow extends LineElement {
   style: arrowStyle;
   position: ArrowPosition;
  
-  constructor(params: Partial<IArrow>, templateName: string="arrow") {
+  constructor(params: RecursivePartial<IArrow>, templateName: string="arrow") {
     var fullParams: IArrow = FillObject(params, Arrow.defaults[templateName])
     super(fullParams);
 

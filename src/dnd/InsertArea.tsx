@@ -14,7 +14,8 @@ export interface AddSpec {
     area: Rect,
     channelName: string,
     index: number,
-    orientation: Orientation
+    orientation: Orientation,
+    insert: boolean,
 }
 
 function InsertArea(props: {areaSpec: AddSpec}) {
@@ -22,7 +23,9 @@ function InsertArea(props: {areaSpec: AddSpec}) {
         accept: ElementTypes.PULSE,
         drop: () => ({ 
             index: props.areaSpec.index, 
-            channelName: props.areaSpec.channelName }),
+            channelName: props.areaSpec.channelName,
+            insert: props.areaSpec.insert,
+            orientation: props.areaSpec.orientation}),
         collect: (monitor) => ({
             isOver: monitor.isOver(),
             canDrop: monitor.canDrop(),

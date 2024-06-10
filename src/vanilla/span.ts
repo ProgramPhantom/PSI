@@ -3,7 +3,7 @@ import Arrow, { IArrow, arrowStyle } from "./arrow";
 import { Position, ILabel } from "./label";
 import Positional, { Alignment, Orientation, labelable, IPositional, positionalConfig } from "./positional";
 import defaultSpan from "./default/data/span.json"
-import { FillObject, UpdateObj } from "./util";
+import { FillObject, RecursivePartial, UpdateObj } from "./util";
 
 
 export interface ISpan extends IPositional {
@@ -14,7 +14,7 @@ export default class Span extends Positional {
     static defaults: {[name: string]: ISpan} = {"span": {...<any>defaultSpan },
                                                 "annotationSpan": {...<any>defaultSpan }}
 
-    constructor(params: Partial<ISpan>, templateName: string="span") {
+    constructor(params: RecursivePartial<ISpan>, templateName: string="span") {
         var fullParams: ISpan = FillObject(params, Span.defaults[templateName])
         super(fullParams)
 

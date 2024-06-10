@@ -9,7 +9,7 @@ import AnnotationLayer from "./annotationLayer";
 import Bracket, { IBracket } from "./bracket";
 import Section from "./section";
 import Annotation from "./annotation";
-import { PartialConstruct, UpdateObj } from "./util";
+import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 import Collection, { ICollection } from "./collection";
 import Point from "./point";
@@ -33,7 +33,7 @@ interface Bounds {
 
 
 export interface IChannel extends ICollection {
-    positionalElements: Positional[],
+    positionalElements: Positional<Element>[],
     identifier: string;
 
     style: channelStyle;
@@ -108,7 +108,7 @@ export default class Channel extends Collection {
 
     positionalElements: Positional<Element>[] = [];
 
-    constructor(params: Partial<IChannel>, templateName: string="default", refName: string="channel") {
+    constructor(params: RecursivePartial<IChannel>, templateName: string="default", refName: string="channel") {
         var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
         super(fullParams, templateName, refName);
 
@@ -194,7 +194,7 @@ export default class Channel extends Collection {
     }
 
     // Position positional elements on the bar
-    addPositional(positional: Positional<Element>, index?: number | undefined): void {
+    addPositional(positional: Positional<Element>, index?: number | undefined, insert: boolean=false): void {
         this.elementCursor += 1;  // Keep this here.
 
         var Index: number = index ? index : this.elementCursor;
@@ -254,6 +254,17 @@ export default class Channel extends Collection {
 
         this.add(positional.element);
         this.positionalElements.push(positional);
+
+        
+        if (Index > this.occupancy.length-1) {
+            for (var i = 1; i <= this.occupancy.length-1-Index; i++ ) {
+                this.occupancy.push(false);
+            }
+
+            this.occupancy[Index] = true;
+        } else if (insert) {
+            this.occupancy.splice(Index, 0, true);
+        }
     }
 
     addAnnotationLabel(lab: Span) {

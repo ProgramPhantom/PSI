@@ -2,7 +2,7 @@ import { Element, IElement } from "./element";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultAnnotation from "./default/data/annotation.json";
-import { FillObject, PartialConstruct, UpdateObj } from "./util";
+import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import Label, { Position as Position, ILabel } from "./label";
 import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import PaddedBox from "./paddedBox";
@@ -27,7 +27,7 @@ export default class Annotation extends PaddedBox {
     arrowOn: boolean;
     arrow?: Arrow;
 
-    constructor(params: Partial<IAnnotation>, templateName: string="default") {
+    constructor(params: RecursivePartial<IAnnotation>, templateName: string="default") {
         var fullParams: IAnnotation = FillObject(params, Annotation.defaults[templateName]);
         super(fullParams.offset, fullParams.padding);
 
