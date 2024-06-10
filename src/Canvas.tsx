@@ -124,6 +124,7 @@ export default function Canvas(props:  {script: string, zoom: number,
             
             drawErr.current = e as string;
             console.error(e)
+            throw e
         }
 
         ys = [10]

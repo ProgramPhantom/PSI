@@ -3,6 +3,7 @@ import Point, { BinderSetFunction, } from './point'
 import Spacial from './spacial'
 import PaddedBox, { IPaddedBox } from './paddedBox'
 import { IAnnotation } from './annotation'
+import Positional from './positional'
 
 
 

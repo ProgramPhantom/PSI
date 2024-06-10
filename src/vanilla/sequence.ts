@@ -81,7 +81,6 @@ export default class Sequence extends Collection {
 
     reset() {
         this.channelsDic = {};
-        
     }
 
     resolveDimensions(): {width: number, height: number} {
@@ -151,15 +150,16 @@ export default class Sequence extends Collection {
 
         if (!preColumn) { // insert at start, bind to channelLabelColumn
             this.channelLabelColumn.bind(newColumn, Dimensions.X, "far", "here");
-        } else {
+        } else {  // There is a column infront of this column (to the right)
             preColumn.bind(newColumn, Dimensions.X, "far", "here");
+            preColumn.enforceBinding();
         }
 
         if (postColumn) {
             newColumn.bind(postColumn, Dimensions.X, "far", "here");
+            newColumn.enforceBinding();
         }
 
-        this.enforceBinding();
 
         this.positionalColumns.splice(index, 0, newColumn);
     }
@@ -203,7 +203,7 @@ export default class Sequence extends Collection {
                 this.insertColumn(index, obj.element.width);
             }  else {  
                 if (index >= this.positionalColumns.length-1) {  // Add to end
-                    this.insertColumn(index, obj.element.width);
+                    this.insertColumn(index, obj.element.width);  // Not needed if index already has columns set up for it.
                 }
             }
         }
@@ -215,7 +215,9 @@ export default class Sequence extends Collection {
         // Bind first
         this.channelsDic[channelName].addPositional(obj, index);
 
-        this.positionalColumns[0].enforceBinding();
+        // new column already has x set from this.insert column, meaning using this.positionalColumns[0]
+        // Does not update position of new positional because of the change guards
+        this.positionalColumns[index].enforceBinding();
     }
 
     addLabel(channelName: string, obj: Span) {

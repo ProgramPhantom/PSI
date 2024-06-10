@@ -55,7 +55,7 @@ export interface IPositional {
 
 
                                     // Has default construct
-export default class Positional<T = Element> {
+export default class Positional<T extends Element> {
     static defaults: {[name: string]: IPositional} = {"default": <any>defaultPositional}
     
     config: IConfig;
@@ -66,5 +66,33 @@ export default class Positional<T = Element> {
         
         this.element = object;
         this.config = {...fullParams.config};
+    }
+
+
+    set x(val: number) {
+        if (val !== this.element.x) {
+            this.element.dirty = true;
+            this.element.x = val;
+            this.element.enforceBinding();
+        }
+    }  // OVERRIDING SETTER REQUIRES GETTER TO BE REDEFINED???
+    get x(): number {
+        if (this.element.x !== undefined) {
+            return this.x;
+        }
+        throw new Error(`x unset in ${this.element.refName, this.config.index}`);
+    }
+    set y(val: number) {
+        if (val !== this.element.y) {
+            this.element.dirty = true;
+            this.element.y = val;
+            this.element.enforceBinding()
+        }
+    }
+    get y(): number {
+        if (this.element.y !== undefined) {
+            return this.element.y;
+        }
+        throw new Error(`y unset in ${this.element.refName, this.config.index}` );
     }
 }

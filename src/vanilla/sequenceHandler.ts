@@ -79,6 +79,10 @@ export default class SequenceHandler {
         this.parser = new Parser(this, "");
     }
 
+    clear() {
+        this.sequence = new Sequence({});
+    }
+
     // ELEMENT ADDIION COMMANDS: 
 
     // Add a positional ement by providing elementName, channel name, and partial positional interface.

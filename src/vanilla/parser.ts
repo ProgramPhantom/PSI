@@ -390,8 +390,9 @@ class Parser {
         // !changeOrInvalid.every(c => c === false)
         if (true) {  // Some change
             // READDING ELEMENTS
-            // this.sequence.reset();
+            // this.handler.sequence?.reset();
             // this.sequence = new Sequence(Sequence.defaults["empty"]);
+            this.handler.clear();  // TODO: Optimise parser
 
             Object.values(this.commands).forEach((commands, i) => {
                 commands.forEach((command) => {
@@ -413,9 +414,6 @@ class Parser {
                 })
             })
         }
-
-        
-        // Split induvidua characters into tokens containing information at a higher level of abstraction
     
     }
 

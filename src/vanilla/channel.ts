@@ -214,7 +214,7 @@ export default class Channel extends Collection {
 
         this.intrinsicWidths[Index] = element.width;
 
-        var column: Spacial = this.columnRef[Index]
+        var column: Spacial = this.columnRef[Index];
 
         // TODO: figure out inherit width and multi section element
 
@@ -247,8 +247,10 @@ export default class Channel extends Collection {
                 break;
         }
 
+        positional.config.index = Index;
+
         this.checkHeight(positional);
-        this.positionBar()
+        this.positionBar();
 
         this.add(positional.element);
         this.positionalElements.push(positional);
