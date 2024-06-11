@@ -32,7 +32,8 @@ function Editor(props: {handler: SequenceHandler, editorText: string, Parse: (te
 
             <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true}>
                 <SectionCard>
-                    <DraggableElement name={"TEST"} handler={props.handler}></DraggableElement>
+                    <DraggableElement name={"pulse90"} handler={props.handler}></DraggableElement>
+                    <DraggableElement name={"pulse180"} handler={props.handler}></DraggableElement>
                 </SectionCard>
                 
             </Section>
