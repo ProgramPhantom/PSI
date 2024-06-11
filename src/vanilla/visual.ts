@@ -1,4 +1,4 @@
-import { SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
+import { Element, SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
 import Point, { BinderSetFunction, } from './point'
 import Spacial from './spacial'
 import PaddedBox, { IPaddedBox } from './paddedBox'
@@ -33,11 +33,11 @@ export interface IElement extends IPaddedBox {
 }
 
 
-export abstract class Element extends PaddedBox {
+export abstract class Visual extends PaddedBox {
 
     offset: number[];
 
-
+    svg?: Element;
 
     private _dirty: boolean = true
     public get dirty(): boolean {

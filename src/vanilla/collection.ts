@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { Element, IElement, Offset } from "./element";
+import { Visual, IElement, Offset } from "./visual";
 import PaddedBox from "./paddedBox";
 import Point, { Place } from "./point";
 import Spacial, { Dimensions } from "./spacial";
@@ -11,7 +11,7 @@ export interface ICollection extends IElement {
 
 }
 
-export default class Collection extends Element {
+export default class Collection extends Visual {
     static defaults: {[name: string]: ICollection} = {
         "default": {
             width: 0,
@@ -33,8 +33,8 @@ export default class Collection extends Element {
 
     draw(surface: Svg) {
         this.children.forEach((c) => {
-            if (typeof c === typeof Element) {
-                (c as Element).draw(surface);
+            if (typeof c === typeof Visual) {
+                (c as Visual).draw(surface);
             }
         })
     }
@@ -50,7 +50,7 @@ export default class Collection extends Element {
         var right = -Infinity;
 
         this.children.forEach((c) => {
-            console.log("bruh")
+            
             if (c.hasDimensions && c.hasPosition) {
                 top = c.y < top ? c.y : top;
                 left = c.x < left ? c.x : left;
@@ -85,7 +85,7 @@ export default class Collection extends Element {
     get dirty(): boolean {
         var isDirty = false;
         this.children.forEach((c) => {
-            if (typeof c === typeof Element && (c as Element).dirty) {
+            if (typeof c === typeof Visual && (c as Visual).dirty) {
                 isDirty = true;
             }
         })
@@ -94,8 +94,8 @@ export default class Collection extends Element {
     }
     set dirty(v: boolean) {
         this.children?.forEach((c) => {
-            if (typeof c === typeof Element) {
-                (c as Element).dirty = v;
+            if (typeof c === typeof Visual) {
+                (c as Visual).dirty = v;
             }
         })
     }

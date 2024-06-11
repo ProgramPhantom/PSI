@@ -1,5 +1,5 @@
 import { arrowStyle } from "./arrow";
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import Label, { Position, ILabel } from "./label";
 import { labelable } from "./positional";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'

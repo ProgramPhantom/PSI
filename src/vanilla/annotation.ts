@@ -1,4 +1,4 @@
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultAnnotation from "./default/data/annotation.json";

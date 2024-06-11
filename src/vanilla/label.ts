@@ -1,4 +1,4 @@
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultLabel from "./default/data/label.json";
@@ -42,7 +42,7 @@ export enum Position {top="top",
                       centre="centre"}
 
 
-export default class Label extends Element {
+export default class Label extends Visual {
     static defaults: {[key: string]: ILabel} = {"label": {...<ILabel>defaultLabel}}
 
 

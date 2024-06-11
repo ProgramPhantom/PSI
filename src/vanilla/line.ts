@@ -1,4 +1,4 @@
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import defaultLine from "./default/data/line.json";
 import { FillObject, RecursivePartial } from "./util";
 import LineElement, { ILineLike } from "./lineElement";

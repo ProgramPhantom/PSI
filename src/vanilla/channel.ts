@@ -1,5 +1,5 @@
 import defaultChannel from "./default/data/channel.json"
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Positional, { Alignment, Orientation, labelable } from "./positional";
 import Label, { ILabel, Position } from "./label";
@@ -33,7 +33,7 @@ interface Bounds {
 
 
 export interface IChannel extends ICollection {
-    positionalElements: Positional<Element>[],
+    positionalElements: Positional<Visual>[],
     identifier: string;
 
     style: channelStyle;
@@ -106,7 +106,7 @@ export default class Channel extends Collection {
     label?: Label;
     position: Position=Position.left;
 
-    positionalElements: Positional<Element>[] = [];
+    positionalElements: Positional<Visual>[] = [];
 
     constructor(params: RecursivePartial<IChannel>, templateName: string="default", refName: string="channel") {
         var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
@@ -162,7 +162,7 @@ export default class Channel extends Collection {
     }
 
     
-    checkHeight(obj: Positional<Element>) {
+    checkHeight(obj: Positional<Visual>) {
         switch (obj.config.orientation) {
             case Orientation.top:
                 if (obj.element.height > this.maxTopProtrusion) {
@@ -194,12 +194,12 @@ export default class Channel extends Collection {
     }
 
     // Position positional elements on the bar
-    addPositional(positional: Positional<Element>, index?: number | undefined, insert: boolean=false): void {
+    addPositional(positional: Positional<Visual>, index?: number | undefined, insert: boolean=false): void {
         this.elementCursor += 1;  // Keep this here.
 
         var Index: number = index ? index : this.elementCursor;
 
-        var element: Element = positional.element;
+        var element: Visual = positional.element;
 
         if (!positional.config.index) {
             positional.config.index = Index;

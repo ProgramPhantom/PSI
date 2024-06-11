@@ -80,17 +80,18 @@ export default function Canvas(props:  {script: string, zoom: number,
         .id("BORDER");
 
         
-        console.log("removing: ", props.drawSurface.current?.children())
         svgDestinationObj.current!.children().forEach((c) => {
             c.remove();
         })
-        console.log(props.drawSurface.current?.children());
 
         props.drawSurface.current!.children().forEach((c) => {
-            var clone = c.clone();
-            console.log("drawing", c.svg())
-            c.addTo(svgDestinationObj.current!)
-            props.drawSurface.current!.add(SVG(c.svg()))  // Add it back (clone does not work!)
+            // var newSvg: SVGElement = Object.assign(Object.create(Object.getPrototypeOf(c)), c)
+            var newSvg: SVGElement = c.clone();
+            newSvg.addTo(svgDestinationObj.current!);
+
+            // Following did not work because this broke the connection between the svg inside the rect class and the parent,
+            // drawSvg element destruction is now handled by element class.
+            // props.drawSurface.current!.add(SVG(c.svg()))  // Add it back (clone does not work!)
             // clone is breaking the ids in the latex svgs, so nothing appears
         });
     }
@@ -123,7 +124,6 @@ export default function Canvas(props:  {script: string, zoom: number,
         } catch (e) {
             
             drawErr.current = e as string;
-            console.error(e)
             throw e
         }
 
@@ -141,17 +141,12 @@ export default function Canvas(props:  {script: string, zoom: number,
 
     useEffect(() => {
         if (props.drawSurface.current) {
-            console.log(props.sequenceId)
             MountSequence()
         }
     }, [props.sequenceId])
 
-
-
-    // APPARENTLY the order of these functions changes the order in which the dependancy comparison is done!???!
     useEffect(() => {
         props.updateChannels(Object.keys(props.handler.sequence.channelsDic))
-        
     }, [Object.keys(props.handler.sequence.channelsDic).join()])
 
     useEffect(() => {
@@ -165,7 +160,7 @@ export default function Canvas(props:  {script: string, zoom: number,
 
     return (
         <>
-        
+        {/* */}
         <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
 
         <MapInteractionCSS

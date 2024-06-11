@@ -1,5 +1,5 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { labelable } from "./positional";
 import defaultArrow from "./default/data/arrow.json"
 import { FillObject, RecursivePartial, UpdateObj } from "./util";

@@ -37,7 +37,7 @@ export default class EventHandler<T extends EventMap> {
     }
 
     sayHi() {
-        console.log("say hi")
+        
     }
 }
 

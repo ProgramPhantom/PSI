@@ -1,4 +1,4 @@
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Label, { ILabel, Position } from "./label";
 import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
@@ -55,7 +55,7 @@ export interface IPositional {
 
 
                                     // Has default construct
-export default class Positional<T extends Element> {
+export default class Positional<T extends Visual> {
     static defaults: {[name: string]: IPositional} = {"default": <any>defaultPositional}
     
     config: IConfig;

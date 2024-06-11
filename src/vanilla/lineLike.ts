@@ -1,4 +1,4 @@
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import defaultLineLike from "./default/data/lineLike.json";
 import { Svg } from "@svgdotjs/svg.js";

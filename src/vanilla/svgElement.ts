@@ -1,4 +1,4 @@
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { svgPulses } from "./default/data/svgPulse";
 import { IPositional } from "./positional";
 import { FillObject, RecursivePartial } from "./util";
@@ -39,7 +39,7 @@ export interface ISVG extends IElement {
 
 
 type PositionalSVG = ISVG & IPositional;
-export default class SVGElement extends Element {
+export default class SVGElement extends Visual {
     static defaults: {[key: string]: PositionalSVG} = {...<any>svgPulses};
 
 	style: ISVGStyle;
@@ -55,10 +55,6 @@ export default class SVGElement extends Element {
 
         this.svgContent = this.getSVG();
 	}
-
-    resolveDimensions(): {width: number, height: number} {
-        return {width: this.contentWidth, height: this.contentHeight}
-    }
 
     draw(surface: Svg) {
         var obj = SVG(this.svgContent);

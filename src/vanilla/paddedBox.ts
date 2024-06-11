@@ -1,4 +1,4 @@
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { IRect } from "./rectElement";
 import Spacial, { ISpacial } from "./spacial";
 

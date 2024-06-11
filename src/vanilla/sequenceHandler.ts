@@ -6,7 +6,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import Bracket, { Direction, IBracket } from "./bracket";
 import Label from "./label";
 import Positional, { IPositional } from "./positional";
-import { Element } from "./element";
+import { Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import Section, { ISection } from "./section";
@@ -22,7 +22,7 @@ import SVGElement, { ISVG } from "./svgElement";
 type IPositionalType = (ISVG | IRect) & IPositional
 
 export default class SequenceHandler {
-    static positionalTypes: {[name: string]: typeof Element} = {
+    static positionalTypes: {[name: string]: typeof Visual} = {
         "aquire": SVGElement,
         "halfsine": SVGElement,
         "amp": SVGElement,
@@ -92,7 +92,7 @@ export default class SequenceHandler {
         var positionalType = SequenceHandler.positionalTypes[elementName];
 
         if (elementName === "section") {
-            console.log(elementName)
+            
         } 
 
         var element;
@@ -101,7 +101,7 @@ export default class SequenceHandler {
         // Fix for now.
         var defaults: PositionalRect = RectElement.defaults[elementName];
         element = new RectElement(pParameters as RecursivePartial<IRect>, elementName)
-        var newPositional: Positional<Element> = new Positional<RectElement>(element, pParameters, defaults);;
+        var newPositional: Positional<Visual> = new Positional<RectElement>(element, pParameters, defaults);;
         
         switch (positionalType.name) {
             // case (SVGPulse.name):
@@ -123,7 +123,7 @@ export default class SequenceHandler {
                 throw new Error("error 1")
         }
 
-        console.log(index)
+        
         this.sequence.addPositional(channelName, newPositional, index, insert);
 
     }

@@ -1,5 +1,5 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { labelable } from "./positional";
 import defaultBracket from "./default/data/bracket.json"
 import Label, { ILabel, Position } from "./label";

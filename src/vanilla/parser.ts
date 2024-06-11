@@ -6,7 +6,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import Bracket, { Direction, IBracket } from "./bracket";
 import Label from "./label";
 import Positional, { IPositional } from "./positional";
-import { Element } from "./element";
+import { Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, UpdateObj } from "./util";
 import Section from "./section";

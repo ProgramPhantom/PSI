@@ -1,4 +1,4 @@
-import { Element, IElement } from "./element";
+import { Visual, IElement } from "./visual";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Positional, { Orientation } from "./positional";
 import { Position, ILabel } from "./label";
@@ -62,7 +62,7 @@ export default class Sequence extends Collection {
     channelLabelColumn: Spacial;
 
     constructor(params: RecursivePartial<ISequence>, templateName: string="default", refName: string="sequence") {
-        console.log(Sequence.defaults["default"]);
+        
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
         super(fullParams, templateName, refName);
 
@@ -134,7 +134,7 @@ export default class Sequence extends Collection {
 
     insertColumn(index: number, width: number) {
         if (index === 1) {
-            console.log("Stop")
+            
         }
         var newColumn: Spacial;
         if (this.positionalColumns.length === 1 && index === 0) {  // Inserting at 0
@@ -173,7 +173,7 @@ export default class Sequence extends Collection {
             // BIND Y
             channelAbove.bind(channel, Dimensions.Y, "far", "here");
         } else {
-            console.log("bound to the sequence")
+            
             this.bind(channel, Dimensions.Y, "here", "here");
         }  // Or bind to top (PADDING DOES NOT WORK HERE, need to bind to content height...)
         this.bind(channel, Dimensions.X, "here", "here");  // Or bind to channelLabelColumn?
@@ -189,9 +189,9 @@ export default class Sequence extends Collection {
         this.add(channel);
     }
 
-    addPositional(channelName: string, obj: Positional<Element>, index?: number | undefined, insert: boolean=false) {
+    addPositional(channelName: string, obj: Positional<Visual>, index?: number | undefined, insert: boolean=false) {
         
-        console.log(index)  // Work needs doing here.
+        
         if (index !== undefined) {
             if (insert) {
                 this.insertColumn(index, obj.element.width);
@@ -208,7 +208,7 @@ export default class Sequence extends Collection {
             }
         }
 
-        console.log(index)
+        
 
         this.challengeWidth(obj.element.width, index);
         
