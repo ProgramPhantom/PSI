@@ -39,8 +39,9 @@ export default class Collection extends Visual {
         })
     }
 
-    add(object: Spacial) {
-        this.children.push(object);
+    add(object: Spacial, index?: number) {
+        this.children.splice(index !== undefined ? index : this.children.length-1, 0, object)
+        this.computeSize();
     }
 
     computeSize(): void {
@@ -50,11 +51,13 @@ export default class Collection extends Visual {
         var right = -Infinity;
 
         this.children.forEach((c) => {
-            
-            if (c.hasDimensions && c.hasPosition) {
+            if (c.definedVertically) {
                 top = c.y < top ? c.y : top;
-                left = c.x < left ? c.x : left;
                 bottom = c.getFar(Dimensions.Y) > bottom ? c.getFar(Dimensions.Y) : bottom;
+            }
+            
+            if (c.definedHorizontally) {
+                left = c.x < left ? c.x : left;
                 right = c.getFar(Dimensions.X) > right ? c.getFar(Dimensions.X) : right;
             }
         })
@@ -63,8 +66,13 @@ export default class Collection extends Visual {
         var width = right - left;
         var height = bottom - top;
 
-        this._contentWidth = width;
-        this._contentHeight = height;
+        if (width !== -Infinity) {
+            this.contentWidth = width;
+        }
+        if (height !== -Infinity) {
+            this.contentHeight = height;
+        }
+       
     }
 
     get contentWidth(): number | undefined {
@@ -76,10 +84,18 @@ export default class Collection extends Visual {
         return this._contentHeight;
     }
     private set contentWidth(v: number) {
-        this._contentWidth = v;
+        if (v !== this._contentWidth) {
+            this._contentWidth = v;
+            this.enforceBinding();
+            this.enforceSizeBinding();
+        }
     }
     private set contentHeight(v: number) {
-        this._contentHeight = v;
+        if (v !== this._contentHeight) {
+            this._contentHeight = v;
+            this.enforceBinding();
+            this.enforceSizeBinding();
+        }
     }
 
     get dirty(): boolean {

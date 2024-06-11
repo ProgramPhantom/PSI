@@ -8,7 +8,7 @@
 
     "config": {
         "orientation": "top",
-        "alignment": "padded",
+        "alignment": "centre",
         "overridePad": false,
         "inheritWidth": false,
         "noSections": 1

@@ -160,7 +160,7 @@ export default function Canvas(props:  {script: string, zoom: number,
 
     return (
         <>
-        {/* */}
+        {/* width: "0px", height: "0px", visibility: "hidden"*/}
         <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
 
         <MapInteractionCSS

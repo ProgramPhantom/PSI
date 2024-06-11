@@ -58,7 +58,8 @@ export default class Sequence extends Collection {
         this._maxSectionWidths = w;
     }
 
-    positionalColumns: Spacial[];
+    positionalColumnCollection: Collection = new Collection({}, "default", "pos col collection");
+
     channelLabelColumn: Spacial;
 
     constructor(params: RecursivePartial<ISequence>, templateName: string="default", refName: string="sequence") {
@@ -75,8 +76,8 @@ export default class Sequence extends Collection {
         this.channelLabelColumn = new Spacial(0, undefined, 0, undefined, "channelLabelColumn");
         this.bind(this.channelLabelColumn, Dimensions.X, "here", "here");
 
-        this.positionalColumns = [new Spacial(0, undefined, 0, undefined, "initial positional column")];
-        this.channelLabelColumn.bind(this.positionalColumns[0], Dimensions.X, "far", "here");
+        this.positionalColumnCollection.add(new Spacial(0, undefined, 0, undefined, "initial positional column"));
+        this.channelLabelColumn.bind(this.positionalColumnCollection.children[0], Dimensions.X, "far", "here");
     }
 
     reset() {
@@ -120,9 +121,9 @@ export default class Sequence extends Collection {
 
     // ------ MOVE STACK ------
     challengeWidth(width: number, index: number) {
-        var existingWidth = this.positionalColumns[index].contentWidth;
+        var existingWidth = this.positionalColumnCollection.children[index].contentWidth;
         if (width > (existingWidth !== undefined ? existingWidth : 0)) {
-            this.positionalColumns[index].contentWidth = width;
+            this.positionalColumnCollection.children[index].contentWidth = width;
         }
     }
 
@@ -135,14 +136,14 @@ export default class Sequence extends Collection {
     insertColumn(index: number, width: number) {
 
         var newColumn: Spacial;
-        if (this.positionalColumns.length === 1 && index === 0) {  // Inserting at 0
-            newColumn = this.positionalColumns.pop()!;
+        if (this.positionalColumnCollection.children.length === 1 && index === 0) {  // Inserting at 0
+            newColumn = this.positionalColumnCollection.children.pop()!;
         } else {
             newColumn = new Spacial(x, undefined, width, undefined);
         }
         
-        var preColumn: Spacial | undefined = this.positionalColumns[index - 1];
-        var postColumn: Spacial | undefined = this.positionalColumns[index];
+        var preColumn: Spacial | undefined = this.positionalColumnCollection.children[index - 1];
+        var postColumn: Spacial | undefined = this.positionalColumnCollection.children[index];
 
         var x;
 
@@ -160,7 +161,7 @@ export default class Sequence extends Collection {
         }
 
 
-        this.positionalColumns.splice(index, 0, newColumn);
+        this.positionalColumnCollection.add(newColumn, index);
     }
     // ------------------------
 
@@ -171,19 +172,21 @@ export default class Sequence extends Collection {
 
             // BIND Y
             channelAbove.bind(channel, Dimensions.Y, "far", "here");
+            channelAbove.enforceBinding();
         } else {
             
             this.bind(channel, Dimensions.Y, "here", "here");
         }  // Or bind to top (PADDING DOES NOT WORK HERE, need to bind to content height...)
         this.bind(channel, Dimensions.X, "here", "here");  // Or bind to channelLabelColumn?
+        this.enforceBinding();
         
 
         this.channelsDic[name] = channel;  // Set
-        channel.columnRef = this.positionalColumns;  // And apply the column ref
+        channel.posColumnCollection = this.positionalColumnCollection;  // And apply the column ref
         channel.labelColumn = this.channelLabelColumn;
 
         this.challengeLabelWidth(channel.label ? channel.label.width : 0);
-        this.enforceBinding();
+        
 
         this.add(channel);
     }
@@ -201,22 +204,21 @@ export default class Sequence extends Collection {
             if (insert) {
                 this.insertColumn(index, obj.element.width);
             }  else {  
-                if (index >= this.positionalColumns.length-1) {  // Add to end
+                if (index > this.positionalColumnCollection.children.length-1) {  // Add to end
                     this.insertColumn(index, obj.element.width);  // Not needed if index already has columns set up for it.
                 }
             }
         }
 
         
-
         this.challengeWidth(obj.element.width, index);
         
         // Bind first
         this.channelsDic[channelName].addPositional(obj, index, insert);
 
-        // new column already has x set from this.insert column, meaning using this.positionalColumns[0]
+        // new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
         // Does not update position of new positional because of the change guards
-        this.positionalColumns[index].enforceBinding();
+        this.positionalColumnCollection.children[index].enforceBinding();
     }
 
     addLabel(channelName: string, obj: Span) {

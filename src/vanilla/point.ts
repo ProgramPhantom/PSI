@@ -1,4 +1,4 @@
-import { Dimensions } from "./spacial";
+import Spacial, { Dimensions } from "./spacial";
 
 interface Shift {
     dx?: number,
@@ -28,6 +28,8 @@ export interface Binding {
     targetObject: Point,
     offset?: number
 }
+
+
 
 export interface IPoint {
     x?: number,
@@ -175,7 +177,7 @@ export default class Point {
 
     // Helpers:
     get hasPosition(): boolean {
-        if (this._x === undefined || !this._y === undefined) {
+        if (this._x === undefined || this._y === undefined) {
             return false;
         } else {
             return true;

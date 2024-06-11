@@ -70,18 +70,19 @@ export default class Channel extends Collection {
     bar: RectElement;
     get barWidth() {
         var width = 0;
-        this.columnRef.forEach((c) => width += c.width);
+        this.posColumnCollection.children.forEach((c) => width += c.width);
         return width;
     }
 
     annotationLayer?: AnnotationLayer;
 
-    private _columnRef: Spacial[] = [];
-    public get columnRef(): Spacial[] {
-        return this._columnRef;
+    private _posColumnCollection: Collection = new Collection({});
+    public get posColumnCollection(): Collection {
+        return this._posColumnCollection;
     }
-    public set columnRef(value: Spacial[]) {
-        this._columnRef = value;
+    public set posColumnCollection(value: Collection) {
+        this._posColumnCollection = value;
+        this._posColumnCollection.bindSize(this.bar, Dimensions.X);
     }
 
     private _labelColumn: Spacial = new Spacial(0, undefined, undefined, undefined);
@@ -90,6 +91,7 @@ export default class Channel extends Collection {
         this._labelColumn.bind(this.bar, Dimensions.X, "far", "here");
         if (this.label) {
             this._labelColumn.bind(this.label, Dimensions.X, "here", "here", this.label.padding[3]);
+            this._labelColumn.enforceBinding();
         }
     }
     get labelColumn(): Spacial {
@@ -191,6 +193,8 @@ export default class Channel extends Collection {
         this.bind(this.bar, Dimensions.Y, "here", "here", this.maxTopProtrusion);
         
         this.enforceBinding();
+        this.bar.enforceBinding();  // If bar hasn't moved then this above wont position y of elements
+        // TODO: force enforcement flag
     }
 
     // Position positional elements on the bar
@@ -214,7 +218,7 @@ export default class Channel extends Collection {
 
         this.intrinsicWidths[Index] = element.width;
 
-        var column: Spacial = this.columnRef[Index];
+        var column: Spacial = this.posColumnCollection.children[Index];
 
         // TODO: figure out inherit width and multi section element
 
@@ -323,7 +327,6 @@ export default class Channel extends Collection {
         }
         this.elementCursor = newCurs
     }
-
 
     public get maxTopProtrusion() : number {
         return this._maxTopProtrusion;

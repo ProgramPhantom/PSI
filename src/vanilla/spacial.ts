@@ -14,6 +14,12 @@ export interface Size {
 
 export enum Dimensions {X="x", Y="y"}
 
+
+export interface SizeBinding {
+    dimension: Dimensions,
+    target: Spacial
+}
+
 export interface ISpacial extends IPoint {
     width?: number,
     height?: number,
@@ -35,13 +41,11 @@ export default class Spacial extends Point {
             set: this.setFar.bind(this)
         }
     }
-
-
-
     protected _contentWidth?: number;
     protected _contentHeight?: number;
 
     refName: string;
+    sizeBindings: SizeBinding[] = [];
 
     constructor(x?: number, y?: number, width?: number, height?: number, refName: string="spacial") {
         super(x, y);
@@ -59,6 +63,7 @@ export default class Spacial extends Point {
         if (v !== this._contentWidth) {
             this._contentWidth = v;
             this.enforceBinding();
+            this.enforceSizeBinding();
         }
     }
 
@@ -69,6 +74,7 @@ export default class Spacial extends Point {
         if (v !== this.contentHeight) {
             this._contentHeight = v;
             this.enforceBinding();
+            this.enforceSizeBinding();
         }
     }
 
@@ -136,6 +142,31 @@ export default class Spacial extends Point {
         }
     }
 
+    bindSize(el: Spacial, dimension: Dimensions) {
+        var found = this.sizeBindings.map(b => b.target).indexOf(el)
+        if (found !== -1) {
+            console.warn("Warning: overriding binding");
+            var rule = this.sizeBindings[found]
+            
+            rule.dimension = dimension;
+            rule.target = el;
+        } else {
+            this.sizeBindings.push({target: el, dimension: dimension})
+        }
+    }
+
+    enforceSizeBinding() {
+        this.sizeBindings.forEach((b) => {
+            switch (b.dimension) {
+                case Dimensions.X:
+                    b.target.contentWidth = this.contentWidth;
+                    break;
+                case Dimensions.Y:
+                    b.target.contentHeight = this.contentHeight;
+                    break;
+            }
+        })
+    }
 
     // Anchors:
     public getNear(dimension: Dimensions): number {
@@ -202,5 +233,19 @@ export default class Spacial extends Point {
         } else {
             return true;
         }
+    }
+
+    get definedVertically(): boolean {
+        if (this._y !== undefined && this.contentHeight !== undefined) {
+            return true;
+        }
+        return false;
+    }
+
+    get definedHorizontally(): boolean {
+        if (this._x !== undefined && this.contentWidth !== undefined) {
+            return true;
+        }
+        return false;
     }
 }
