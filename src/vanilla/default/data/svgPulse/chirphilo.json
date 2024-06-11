@@ -10,10 +10,9 @@
     "padding": [0, 2, 0, 2],
     "offset": [0, 1],
     "path": "\\src\\assets\\chirphilo.svg",
-    "style": {
-        "width": 50,
-        "height": 20
-    },
+    "width": 50,
+    "height": 20,
+
     "labelOn": false,
     "label": {
         "text": "",

@@ -10,10 +10,8 @@
     "padding": [0, 0, 0, 0],
     "offset": [0, 0],
     "path": "\\src\\assets\\aquire2.svg",
-    "style": {
-        "width": 150,
-        "height": 75
-    },
+    "width": 150,
+    "height": 75,
 
     "labelOn": false,
     "label": {

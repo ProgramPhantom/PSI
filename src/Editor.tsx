@@ -34,7 +34,9 @@ function Editor(props: {handler: SequenceHandler, editorText: string, Parse: (te
                 <SectionCard>
                     <DraggableElement name={"pulse90"} handler={props.handler}></DraggableElement>
                     <DraggableElement name={"pulse180"} handler={props.handler}></DraggableElement>
+
                     <DraggableElement name={"180"} handler={props.handler}></DraggableElement>
+                    <DraggableElement name={"amp"} handler={props.handler}></DraggableElement>
                 </SectionCard>
                 
             </Section>

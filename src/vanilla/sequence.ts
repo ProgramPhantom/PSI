@@ -133,9 +133,7 @@ export default class Sequence extends Collection {
     }
 
     insertColumn(index: number, width: number) {
-        if (index === 1) {
-            
-        }
+
         var newColumn: Spacial;
         if (this.positionalColumns.length === 1 && index === 0) {  // Inserting at 0
             newColumn = this.positionalColumns.pop()!;
@@ -150,6 +148,7 @@ export default class Sequence extends Collection {
 
         if (!preColumn) { // insert at start, bind to channelLabelColumn
             this.channelLabelColumn.bind(newColumn, Dimensions.X, "far", "here");
+            this.channelLabelColumn.enforceBinding();
         } else {  // There is a column infront of this column (to the right)
             preColumn.bind(newColumn, Dimensions.X, "far", "here");
             preColumn.enforceBinding();

@@ -1,6 +1,6 @@
 import * as Aquire from "./aquire.json"
 import * as HalfSine from "./halfsine.json"
-import * as AmpSeries from "./ampseries.json"
+import * as AmpSeries from "./amp.json"
 import * as P180 from "./180.json"
 import * as Trapezium from "./trapezium.json"
 import * as TallTrapezium from "./talltrapezium.json"
@@ -10,7 +10,6 @@ import * as SaltireLoHi from "./saltirelohi.json";
 
 import * as ChirpHiLo from "./chirphilo.json";
 import * as ChirpLoHi from "./chirplohi.json";
-import SVGPulse from "../../../pulses/image/svgPulse";
 
 
 

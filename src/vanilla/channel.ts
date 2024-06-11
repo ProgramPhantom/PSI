@@ -82,14 +82,14 @@ export default class Channel extends Collection {
     }
     public set columnRef(value: Spacial[]) {
         this._columnRef = value;
-        this._columnRef[0].bind(this.bar, Dimensions.X, "here", "here");
     }
 
     private _labelColumn: Spacial = new Spacial(0, undefined, undefined, undefined);
     set labelColumn(v: Spacial) {  // When the label column is set, apply binding to the label.
         this._labelColumn = v;
+        this._labelColumn.bind(this.bar, Dimensions.X, "far", "here");
         if (this.label) {
-            this.labelColumn.bind(this.label, Dimensions.X, "here", "here", this.label.padding[3]);
+            this._labelColumn.bind(this.label, Dimensions.X, "here", "here", this.label.padding[3]);
         }
     }
     get labelColumn(): Spacial {
@@ -194,10 +194,10 @@ export default class Channel extends Collection {
     }
 
     // Position positional elements on the bar
-    addPositional(positional: Positional<Visual>, index?: number | undefined, insert: boolean=false): void {
+    addPositional(positional: Positional<Visual>, index?: number, insert: boolean=false): void {
         this.elementCursor += 1;  // Keep this here.
 
-        var Index: number = index ? index : this.elementCursor;
+        var Index: number = index !== undefined ? index : this.elementCursor;
 
         var element: Visual = positional.element;
 
