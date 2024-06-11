@@ -1,4 +1,4 @@
-import { Visual, IElement } from "./visual";
+import { Visual, IVisual } from "./visual";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Positional, { Orientation } from "./positional";
 import { Position, ILabel } from "./label";

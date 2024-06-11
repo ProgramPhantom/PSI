@@ -1,4 +1,4 @@
-import { Visual, IElement } from "./visual";
+import { Visual, IVisual } from "./visual";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Label, { ILabel, Position } from "./label";
 import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
@@ -66,8 +66,15 @@ export default class Positional<T extends Visual> {
         
         this.element = object;
         this.config = {...fullParams.config};
+
+        if (this.config.orientation === Orientation.bottom) {
+            this.element.verticalFlip();
+        }
     }
 
+    draw(surface: Svg) {
+        this.element.draw(surface);
+    }
 
     set x(val: number) {
         if (val !== this.element.x) {

@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { Visual, IElement, Offset } from "./visual";
+import { Visual, IVisual, Offset } from "./visual";
 import PaddedBox from "./paddedBox";
 import Point, { Place } from "./point";
 import Spacial, { Dimensions } from "./spacial";
@@ -7,7 +7,7 @@ import { FillObject, RecursivePartial } from "./util";
 import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS } from "react";
 
 
-export interface ICollection extends IElement {
+export interface ICollection extends IVisual {
 
 }
 

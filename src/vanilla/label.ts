@@ -1,4 +1,4 @@
-import { Visual, IElement as IVisual } from "./visual";
+import { Visual, IVisual as IVisual } from "./visual";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultLabel from "./default/data/label.json";

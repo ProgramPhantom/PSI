@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { Visual, IElement } from "./visual";
+import { Visual, IVisual } from "./visual";
 import { FillObject, RecursivePartial } from "./util";
 import PaddedBox, { IHaveDefault, IPaddedBox } from "./paddedBox";
 import { simplePulses } from "./default/data/simplePulse";
@@ -12,7 +12,7 @@ interface IRectStyle {
 	strokeWidth?: number
 }
 
-export interface IRect extends IElement {
+export interface IRect extends IVisual {
 	style: IRectStyle,
     width: number,
     height: number

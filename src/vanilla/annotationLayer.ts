@@ -1,5 +1,5 @@
 import { arrowStyle } from "./arrow";
-import { Visual, IElement } from "./visual";
+import { Visual, IVisual } from "./visual";
 import Label, { Position, ILabel } from "./label";
 import { labelable } from "./positional";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
@@ -17,7 +17,7 @@ export interface bigISpan {
     label?: ILabel | null
 }
 
-export interface IAnnotationLayer extends IElement {
+export interface IAnnotationLayer extends IVisual {
 
 }
 

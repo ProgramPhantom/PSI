@@ -1,4 +1,4 @@
-import { Visual, IElement } from "./visual";
+import { Visual, IVisual } from "./visual";
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import defaultLineLike from "./default/data/lineLike.json";
 import { Svg } from "@svgdotjs/svg.js";
@@ -11,7 +11,7 @@ enum Orientation {
     angled="angled"
 }
 
-export interface ILineLike extends IElement {
+export interface ILineLike extends IVisual {
     adjustment: [number, number],
     orientation: Orientation
 }

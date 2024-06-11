@@ -16,7 +16,7 @@ import { positionalElements } from "./default/data";
 import { Position } from "@blueprintjs/core";
 import { ILine, Line } from "./line";
 import RectElement, { IRect, PositionalRect } from "./rectElement";
-import SVGElement, { ISVG } from "./svgElement";
+import SVGElement, { ISVG, PositionalSVG } from "./svgElement";
 
 
 type IPositionalType = (ISVG | IRect) & IPositional
@@ -99,16 +99,18 @@ export default class SequenceHandler {
         index
         
         // Fix for now.
-        var defaults: PositionalRect = RectElement.defaults[elementName];
-        element = new RectElement(pParameters as RecursivePartial<IRect>, elementName)
-        var newPositional: Positional<Visual> = new Positional<RectElement>(element, pParameters, defaults);;
+        var defaults;
+        var newPositional: Positional<Visual>;
         
         switch (positionalType.name) {
-            // case (SVGPulse.name):
-            //     element = new SVGPulse(pParameters as RecursivePartial<ISvgPulse>, elementName);
-            //     break;
+            case (SVGElement.name):
+                defaults = SVGElement.defaults[elementName];
+                element = new SVGElement(pParameters as RecursivePartial<IRect>, elementName)
+
+                newPositional = new Positional<SVGElement>(element, pParameters, defaults);
+                break;
             case (RectElement.name):
-                var defaults: PositionalRect = RectElement.defaults[elementName];
+                defaults = RectElement.defaults[elementName];
                 element = new RectElement(pParameters as RecursivePartial<IRect>, elementName)
 
                 newPositional = new Positional<RectElement>(element, pParameters, defaults);

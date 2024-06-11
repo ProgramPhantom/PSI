@@ -1,19 +1,18 @@
 {
     "config": {
         "orientation": "top",
-        "alignment": "centre",
+        "alignment": "padded",
         "overridePad": false,
         "inheritWidth": false,
         "noSections": 1
     },
 
-    "padding": [0, 10, 0, 10],
-    "offset": [0, 1],
+    "padding": [3, 10, 0, 10],
+    "offset": [0, 0],
     "path": "\\src\\assets\\180.svg",
-    "style": {
-        "width": 50,
-        "height": 50
-    },
+    "width": 50,
+    "height": 50,
+
 
     "labelOn": false,
     "label": {

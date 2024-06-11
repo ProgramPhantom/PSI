@@ -26,7 +26,7 @@ export type Offset = [number, number]
 
 
 
-export interface IElement extends IPaddedBox {
+export interface IVisual extends IPaddedBox {
     width?: number,
     height?: number,
     offset: [number, number],
@@ -47,7 +47,7 @@ export abstract class Visual extends PaddedBox {
         this._dirty = value
     }
 
-    constructor(params: IElement, refName: string="element") {
+    constructor(params: IVisual, refName: string="element") {
         super(params.padding, params.x, params.y, params.width, params.height, refName);  // Will make dirty??
 
         this.offset = params.offset;  // Fixed for some reason
@@ -56,6 +56,16 @@ export abstract class Visual extends PaddedBox {
 
 
     abstract draw(surface: Svg, ...args: any[]): void
+
+    verticalFlip() {
+        // this.offset[1] = -Math.abs(this.offset[1]);
+			
+        this.svg?.children().forEach((c) => {
+
+            c.transform({flip: "y", origin: "bottom left"})
+            c.translate(0, -<number>this.svg?.height())
+        })
+    }
 
     override set x(val: number) {
         if (val !== this._x) {
@@ -106,5 +116,6 @@ export abstract class Visual extends PaddedBox {
             this.enforceBinding();
         }
     }
+
 
 }

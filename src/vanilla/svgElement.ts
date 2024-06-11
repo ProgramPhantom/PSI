@@ -1,8 +1,8 @@
-import { Visual, IElement } from "./visual";
+import { Visual, IVisual } from "./visual";
 import { svgPulses } from "./default/data/svgPulse";
 import { IPositional } from "./positional";
 import { FillObject, RecursivePartial } from "./util";
-import { Svg } from "@svgdotjs/svg.js";
+import { Element, Svg } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 
 const svgContent: {[path: string]: string} = {}
@@ -32,19 +32,19 @@ interface ISVGStyle {
 
 }
 
-export interface ISVG extends IElement {
+export interface ISVG extends IVisual {
     path: string,
     style: ISVGStyle
 }
 
 
-type PositionalSVG = ISVG & IPositional;
+export type PositionalSVG = ISVG & IPositional;
 export default class SVGElement extends Visual {
     static defaults: {[key: string]: PositionalSVG} = {...<any>svgPulses};
 
 	style: ISVGStyle;
     path: string;
-    svgContent: string;
+	override svg: Element;
 
     constructor(params: RecursivePartial<ISVG>, templateName: string="default") {
 		var fullParams: ISVG = FillObject(params, SVGElement.defaults[templateName])
@@ -53,24 +53,30 @@ export default class SVGElement extends Visual {
 		this.style = fullParams.style;
         this.path = fullParams.path;
 
-        this.svgContent = this.getSVG();
+		try {
+			this.svg = SVG(svgContent[this.path]);
+		} catch {
+			throw new Error(`Cannot find path ${this.path}`)
+		}
+        
+		
 	}
 
     draw(surface: Svg) {
-        var obj = SVG(this.svgContent);
-		obj.move(0, 0);
-		obj.attr({"preserveAspectRatio": "none"})
-		
-		obj.children().forEach((c) => {
-			c.attr({"vector-effect": "non-scaling-stroke"})
-		})
+		if (this.dirty) {
+			if (this.svg) {
+				this.svg.remove();
+			}
 
-		obj.move(this.x + this.offset[0], this.y + this.offset[1]);
-		obj.size(this.contentWidth, this.contentHeight);
-		surface.add(obj);
+			this.svg.attr({"preserveAspectRatio": "none"})
+			this.svg.children().forEach((c) => {
+				c.attr({"vector-effect": "non-scaling-stroke"})
+			})
+	
+			this.svg.move(this.contentX + this.offset[0], this.contentY + this.offset[1]);
+			this.svg.size(this.contentWidth, this.contentHeight);
+			surface.add(this.svg);
+		}
+        
     }
-
-    getSVG(): string {
-		return svgContent[this.path]
-	}
 }

@@ -1,5 +1,5 @@
 import defaultChannel from "./default/data/channel.json"
-import { Visual, IElement } from "./visual";
+import { Visual, IVisual } from "./visual";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Positional, { Alignment, Orientation, labelable } from "./positional";
 import Label, { ILabel, Position } from "./label";
@@ -148,7 +148,7 @@ export default class Channel extends Collection {
         
         this.positionalElements.forEach(p => {
            
-            p.element.draw(surface);
+            p.draw(surface);
             
         });
         this.bar.draw(surface);
