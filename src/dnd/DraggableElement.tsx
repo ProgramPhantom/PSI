@@ -56,7 +56,6 @@ function DraggableElement(props: {name: string, handler: SequenceHandler}) {
     end: (item, monitor) => {
       const dropResult = monitor.getDropResult<DropResult>()
       if (item && dropResult) {
-        alert("pulse90")
         props.handler.positional("pulse90", dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
         props.handler.draw();
       }

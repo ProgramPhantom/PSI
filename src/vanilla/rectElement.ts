@@ -35,28 +35,18 @@ export default class RectElement extends Visual {
 		// this.svgContent = this.getSVG();
 	}
 
-    surface?: Svg;
 
     draw(surface: Svg) {
 		// surface.clear();
-        if (this.surface === surface) {
-            console.log("the same")
-        } else {
-            console.log("not the same")
-            this.surface = surface;
-        }
 
-        console.log(surface.children());
-        console.log(this.svg?.parent());
+
 
         if (this.dirty) {
-            console.log(surface.children().length)
             if (this.svg) {
                 surface.removeElement(this.svg);
             }
             
-            console.log(surface.children().length)
-            console.log(this.svg?.parent());
+
 
             this.svg = surface.rect(this.contentWidth, this.contentHeight)
             .attr({fill: this.style.fill,
@@ -65,12 +55,6 @@ export default class RectElement extends Visual {
             .attr({"stroke-width": this.style.strokeWidth,
                    "shape-rendering": "crispEdges"
             });
-
-            this.svg.parent()
-            console.log("svg parent set to: ", this.svg.parent())
-            if (this.svg.parent() === surface) {
-                console.log("parent set correctly")
-            }
         }
     
     }

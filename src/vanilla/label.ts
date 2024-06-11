@@ -1,4 +1,4 @@
-import { Visual, IElement } from "./visual";
+import { Visual, IElement as IVisual } from "./visual";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultLabel from "./default/data/label.json";
@@ -6,24 +6,7 @@ import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 
 
-interface Dim {
-    width: number,
-    height: number
-}
-
-interface Bounds {
-    top: number,
-    bottom: number,
-    left: number,
-    right: number
-
-    width: number,
-    height: number,
-}
-
-export interface ILabel extends IElement {
-    padding: [number, number, number, number],
-    offset: [number, number],
+export interface ILabel extends IVisual {
     text: string,
     position: Position,
     style: labelStyle,
@@ -100,21 +83,28 @@ export default class Label extends Visual {
 
     draw(surface: Svg) {
         
-        const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
-        
-        
-        var SVGobj = SVG(SVGEquation);
-        SVGobj.move(this.x, this.y);
-        SVGobj.attr({preserveAspectRatio: "xMinYMin"})
-        SVGobj.width(this.style.size);
-        
-        SVGobj.attr({"height": null, "style": `color:${this.style.colour}`});
-        var group = SVGobj.children()[1];
+        if (this.dirty) {
+            if (this.svg) {
+                surface.removeElement(this.svg);
+            }
 
-        if (this.style.background) {
-            group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
+            const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
+        
+            var SVGobj = SVG(SVGEquation);
+            SVGobj.move(this.x, this.y);
+            SVGobj.attr({preserveAspectRatio: "xMinYMin"})
+            SVGobj.width(this.style.size);  // TODO: fix  this.
+            
+            SVGobj.attr({"height": null, "style": `color:${this.style.colour}`});
+            var group = SVGobj.children()[1];
+    
+            if (this.style.background) {
+                group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
+            }
+            
+            this.svg = SVGobj;
+            surface.add(SVGobj);
         }
         
-        surface.add(SVGobj);
     }
 }
