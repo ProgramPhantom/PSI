@@ -25,6 +25,9 @@ export interface ISpacial extends IPoint {
     height?: number,
 }
 
+export type UpdateNotification = (...args: any[]) => any
+
+
 export default class Spacial extends Point {
     AnchorFunctions = {
         "here": {
@@ -168,6 +171,18 @@ export default class Spacial extends Point {
         })
     }
 
+    subscribers: UpdateNotification[] = [];
+
+    subscribe(toRun: UpdateNotification) {
+        this.subscribers.push(toRun);
+    }
+
+    notifyChange() {
+        this.subscribers?.forEach((s) => {
+            s();
+        })
+    }
+
     // Anchors:
     public getNear(dimension: Dimensions): number {
         switch (dimension) {
@@ -199,7 +214,7 @@ export default class Spacial extends Point {
     public setCentre(dimension: Dimensions, v : number) {
         switch (dimension) {
             case Dimensions.X:
-                this.x = v - this.contentWidth!/2;
+                this.x = v - this.width/2;
                 break;
             case Dimensions.Y:
                 this.y = v - this.height/2;

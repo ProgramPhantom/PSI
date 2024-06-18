@@ -19,6 +19,8 @@ import { Grid, IGrid } from "./grid";
 import Spacial, { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
 import PaddedBox from "./paddedBox";
+import { Alignment } from "@blueprintjs/core";
+import Aligner from "./aligner";
 
 
 interface ISequence extends ICollection {
@@ -58,7 +60,7 @@ export default class Sequence extends Collection {
         this._maxSectionWidths = w;
     }
 
-    positionalColumnCollection: Collection = new Collection({}, "default", "pos col collection");
+    columnCollection: Aligner<Aligner<Visual>> = new Aligner({bindChildren: true, dimension: Dimensions.X}, "default", "pos col collection");
 
     channelLabelColumn: Spacial;
 
@@ -76,8 +78,8 @@ export default class Sequence extends Collection {
         this.channelLabelColumn = new Spacial(0, undefined, 0, undefined, "channelLabelColumn");
         this.bind(this.channelLabelColumn, Dimensions.X, "here", "here");
 
-        this.positionalColumnCollection.add(new Spacial(0, undefined, 0, undefined, "initial positional column"));
-        this.channelLabelColumn.bind(this.positionalColumnCollection.children[0], Dimensions.X, "far", "here");
+        this.columnCollection.add(new Aligner<Visual>({width: 0}, "default", "initial pos column"));   // Initial column
+        this.channelLabelColumn.bind(this.columnCollection.children[0], Dimensions.X, "far", "here");
     }
 
     reset() {
@@ -120,12 +122,12 @@ export default class Sequence extends Collection {
     } 
 
     // ------ MOVE STACK ------
-    challengeWidth(width: number, index: number) {
-        var existingWidth = this.positionalColumnCollection.children[index].contentWidth;
-        if (width > (existingWidth !== undefined ? existingWidth : 0)) {
-            this.positionalColumnCollection.children[index].contentWidth = width;
-        }
-    }
+    // challengeWidth(width: number, index: number) {
+    //     var existingWidth = this.columnCollection.children[index].contentWidth;
+    //     if (width > (existingWidth !== undefined ? existingWidth : 0)) {
+    //         this.columnCollection.children[index].contentWidth = width;
+    //     }
+    // }
 
     challengeLabelWidth(width: number) {
         if (width > this.channelLabelColumn.width) {
@@ -133,19 +135,18 @@ export default class Sequence extends Collection {
         }
     }
 
-    insertColumn(index: number, width: number) {
+    insertColumn(index: number) {
 
-        var newColumn: Spacial;
-        if (this.positionalColumnCollection.children.length === 1 && index === 0) {  // Inserting at 0
-            newColumn = this.positionalColumnCollection.children.pop()!;
+        var newColumn: Aligner<Visual>;
+        if (this.columnCollection.children.length === 1 && index === 0) {  // Inserting at 0
+            newColumn = this.columnCollection.children.pop()!;
         } else {
-            newColumn = new Spacial(x, undefined, width, undefined);
+            newColumn = new Aligner<Visual>({dimension: Dimensions.Y}, "default", `column at ${index}`);
         }
         
-        var preColumn: Spacial | undefined = this.positionalColumnCollection.children[index - 1];
-        var postColumn: Spacial | undefined = this.positionalColumnCollection.children[index];
+        var preColumn: Spacial | undefined = this.columnCollection.children[index - 1];
+        var postColumn: Spacial | undefined = this.columnCollection.children[index];
 
-        var x;
 
         if (!preColumn) { // insert at start, bind to channelLabelColumn
             this.channelLabelColumn.bind(newColumn, Dimensions.X, "far", "here");
@@ -161,12 +162,13 @@ export default class Sequence extends Collection {
         }
 
 
-        this.positionalColumnCollection.add(newColumn, index);
+        this.columnCollection.add(newColumn, index);
     }
     // ------------------------
 
     // Content Commands
     addChannel(name: string, channel: Channel) {
+        // Bindings for Y:
         if (this.channels.length > 0) {  // If second channel or more, bind to channel abve.
             var channelAbove = this.channels[this.channels.length-1];
 
@@ -177,12 +179,14 @@ export default class Sequence extends Collection {
             
             this.bind(channel, Dimensions.Y, "here", "here");
         }  // Or bind to top (PADDING DOES NOT WORK HERE, need to bind to content height...)
+
+        // Bind channel (is this needed?)
         this.bind(channel, Dimensions.X, "here", "here");  // Or bind to channelLabelColumn?
         this.enforceBinding();
         
-
-        this.channelsDic[name] = channel;  // Set
-        channel.posColumnCollection = this.positionalColumnCollection;  // And apply the column ref
+        // Set and initialise channel
+        this.channelsDic[name] = channel;  
+        channel.posColumnCollection = this.columnCollection;  // And apply the column ref
         channel.labelColumn = this.channelLabelColumn;
 
         this.challengeLabelWidth(channel.label ? channel.label.width : 0);
@@ -193,32 +197,32 @@ export default class Sequence extends Collection {
 
     addPositional(channelName: string, obj: Positional<Visual>, index?: number | undefined, insert: boolean=false) {
         
-        
         if (index !== undefined) {
             if (insert) {
-                this.insertColumn(index, obj.element.width);
+                this.insertColumn(index,);
             } 
         } else {  // Auto index
             index = this.channelsDic[channelName].elementCursor + 1;
 
             if (insert) {
-                this.insertColumn(index, obj.element.width);
+                this.insertColumn(index);
             }  else {  
-                if (index > this.positionalColumnCollection.children.length-1) {  // Add to end
-                    this.insertColumn(index, obj.element.width);  // Not needed if index already has columns set up for it.
+                if (index > this.columnCollection.children.length-1) {  // Add to end
+                    this.insertColumn(index);  // Not needed if index already has columns set up for it.
                 }
             }
         }
 
-        
-        this.challengeWidth(obj.element.width, index);
-        
-        // Bind first
+        // Add the element to the sequence's column collection, this should trigger resizing of bars
+        this.columnCollection.children[index].add(obj.element);
+
+        // Add element to channel
         this.channelsDic[channelName].addPositional(obj, index, insert);
 
-        // new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
-        // Does not update position of new positional because of the change guards
-        this.positionalColumnCollection.children[index].enforceBinding();
+        // SET X of element
+        this.columnCollection.children[index].enforceBinding();
+        // NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
+        // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
     }
 
     addLabel(channelName: string, obj: Span) {

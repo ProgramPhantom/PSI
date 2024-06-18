@@ -1,0 +1,30 @@
+{
+    "positionalElements": [],
+    "padding": [10, 5, 40, 10],
+    "offset": [0, 0],
+    "identifier": "h",
+
+    "style": {
+        "thickness": 3,
+        "fill": "#000000",
+        "stroke": null,
+        "strokeWidth": null
+    },
+
+    "labelOn": true,
+    "label": {
+        "text": "^{1}\\textrm{H}",
+        "padding": [0, 0, 0, 0],
+        "offset": [0, 0],
+        "position": "top",
+        "style": {
+            "size": 20,
+            "colour": "black"
+        }
+    },
+
+    "annotationStyle": {
+        "padding": [0, 0, 5, 0]
+    }
+    
+}

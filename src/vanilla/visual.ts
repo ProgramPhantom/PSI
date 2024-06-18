@@ -33,7 +33,9 @@ export interface IVisual extends IPaddedBox {
 }
 
 
+
 export abstract class Visual extends PaddedBox {
+    
 
     offset: number[];
 
@@ -72,6 +74,7 @@ export abstract class Visual extends PaddedBox {
             this.dirty = true;
             this._x = val;
             this.enforceBinding();
+            this.notifyChange();
         }
     }  // OVERRIDING SETTER REQUIRES GETTER TO BE REDEFINED???
     override get x(): number {
@@ -84,7 +87,8 @@ export abstract class Visual extends PaddedBox {
         if (val !== this._y) {
             this.dirty = true;
             this._y = val;
-            this.enforceBinding()
+            this.enforceBinding();
+            this.notifyChange();
         }
     }
     override get y(): number {
@@ -102,6 +106,7 @@ export abstract class Visual extends PaddedBox {
             this.dirty = true;
             this._contentWidth = v;
             this.enforceBinding();
+            this.notifyChange();
         }
     }
 
@@ -114,6 +119,7 @@ export abstract class Visual extends PaddedBox {
             this.dirty = true;
             this._contentHeight = v;
             this.enforceBinding();
+            this.notifyChange();
         }
     }
 

@@ -22,7 +22,7 @@ class SequenceDropInterpreter {
         this.insertAreas = [];
         var sequence = this.handler.sequence;
 
-        sequence.positionalColumnCollection.children.forEach((column, i) => {
+        sequence.columnCollection.children.forEach((column, i) => {
             var heightTop;
             var heightBottom;
 

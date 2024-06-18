@@ -15,6 +15,7 @@ import Collection, { ICollection } from "./collection";
 import Point from "./point";
 import Spacial, { Dimensions } from "./spacial";
 import RectElement from "./rectElement";
+import Aligner from "./aligner";
  
 interface Dim {
     width: number,
@@ -76,11 +77,11 @@ export default class Channel extends Collection {
 
     annotationLayer?: AnnotationLayer;
 
-    private _posColumnCollection: Collection = new Collection({});
-    public get posColumnCollection(): Collection {
+    private _posColumnCollection: Aligner = new Aligner({});
+    public get posColumnCollection(): Aligner {
         return this._posColumnCollection;
     }
-    public set posColumnCollection(value: Collection) {
+    public set posColumnCollection(value: Aligner) {
         this._posColumnCollection = value;
         this._posColumnCollection.bindSize(this.bar, Dimensions.X);
     }

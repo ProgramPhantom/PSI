@@ -11,7 +11,7 @@ export interface ICollection extends IVisual {
 
 }
 
-export default class Collection extends Visual {
+export default class Collection<T extends Spacial = Spacial> extends Visual {
     static defaults: {[name: string]: ICollection} = {
         "default": {
             width: 0,
@@ -23,7 +23,7 @@ export default class Collection extends Visual {
         }
     }
 
-    children: Spacial[] = [];
+    children: T[] = [];
 
     constructor(params: RecursivePartial<ICollection>, templateName: string="default", refName: string="collection") {
         // var test = Collection.defaults[templateName];
@@ -33,14 +33,16 @@ export default class Collection extends Visual {
 
     draw(surface: Svg) {
         this.children.forEach((c) => {
-            if (typeof c === typeof Visual) {
+            if (c instanceof Visual) {
                 (c as Visual).draw(surface);
             }
         })
     }
 
-    add(object: Spacial, index?: number) {
-        this.children.splice(index !== undefined ? index : this.children.length-1, 0, object)
+    add(child: T, index?: number) {
+        this.children.splice(index !== undefined ? index : this.children.length-1, 0, child);
+        
+        child.subscribe(this.computeSize.bind(this));
         this.computeSize();
     }
 
@@ -76,32 +78,34 @@ export default class Collection extends Visual {
     }
 
     get contentWidth(): number | undefined {
-        this.computeSize(); // TODO: remove this
+        // this.computeSize(); // TODO: remove this
         return this._contentWidth;
     }
     get contentHeight(): number | undefined {
-        this.computeSize(); // TODO: remove this
+        // this.computeSize(); // TODO: remove this
         return this._contentHeight;
     }
-    private set contentWidth(v: number) {
+    protected set contentWidth(v: number) {
         if (v !== this._contentWidth) {
             this._contentWidth = v;
             this.enforceBinding();
             this.enforceSizeBinding();
+            this.notifyChange();
         }
     }
-    private set contentHeight(v: number) {
+    protected set contentHeight(v: number) {
         if (v !== this._contentHeight) {
             this._contentHeight = v;
             this.enforceBinding();
             this.enforceSizeBinding();
+            this.notifyChange();
         }
     }
 
     get dirty(): boolean {
         var isDirty = false;
         this.children.forEach((c) => {
-            if (typeof c === typeof Visual && (c as Visual).dirty) {
+            if (c instanceof Visual && (c as Visual).dirty) {
                 isDirty = true;
             }
         })
@@ -110,7 +114,7 @@ export default class Collection extends Visual {
     }
     set dirty(v: boolean) {
         this.children?.forEach((c) => {
-            if (typeof c === typeof Visual) {
+            if (c instanceof Visual) {
                 (c as Visual).dirty = v;
             }
         })
