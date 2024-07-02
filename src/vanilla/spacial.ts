@@ -114,14 +114,14 @@ export default class Spacial extends Point {
         throw new Error("Dimensions undefined")
     }
 
-    bind(el: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number) {
+    bind(target: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number) {
         var found = false;
 
         // var anchorGetter: BinderGetFunction = this.AnchorFunctions[anchorBindSide].get;
         // var targetSetter: BinderSetFunction = el.AnchorFunctions[targetBindSide].set;
 
         this.bindings.forEach((b) => {
-            if (b.targetObject === el && b.bindingRule.dimension === dimension) {
+            if (b.targetObject === target && b.bindingRule.dimension === dimension) {
                 found = true;
                 
                 console.warn("Warning: overriding binding");
@@ -141,7 +141,7 @@ export default class Spacial extends Point {
             };
 
         
-            this.bindings.push({targetObject: el, bindingRule: newBindingRule, offset: offset})
+            this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset})
         }
     }
 

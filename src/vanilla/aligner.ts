@@ -35,20 +35,26 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
     }
 
     add(child: T, index?: number) {
+    
         if (index !== undefined) {
-            if (this.children[index] !== undefined) {
-                this.children[index].bind(child, Dimensions.X, "far", "here");
+            if (this.children[index] !== undefined) {  // Bind the after child
+                child.bind(this.children[index], this.dimension, "far", "here");
             }
 
-            if (this.children[index + 1] !== undefined) {
-                child.bind(this.children[index + 1], Dimensions.X, "far", "here");
+            if (this.children[index - 1] !== undefined) {  // Bind the before child
+                this.children[index - 1].bind(child, this.dimension, "far", "here");
             }
 
             this.children.splice(index !== undefined ? index : this.children.length, 0, child)
         } else {
+            if (this.children[this.children.length - 1] !== undefined) {  // Bind the before child
+                this.children[this.children.length - 1].bind(child, this.dimension, "far", "here");
+            }
+
             this.children.push(child);
         }
         
+        // Child will tell this to update size when it changes size or position
         child.subscribe(this.computeSize.bind(this));
         this.computeSize();
     }

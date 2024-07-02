@@ -138,11 +138,11 @@ export default class Sequence extends Collection {
     insertColumn(index: number) {
 
         var newColumn: Aligner<Visual>;
-        if (this.columnCollection.children.length === 1 && index === 0) {  // Inserting at 0
-            newColumn = this.columnCollection.children.pop()!;
-        } else {
+        //if (this.columnCollection.children.length === 1 && index === 0) {  // Inserting at 0
+        //    newColumn = this.columnCollection.children.pop()!;
+        //} else {
             newColumn = new Aligner<Visual>({dimension: Dimensions.Y}, "default", `column at ${index}`);
-        }
+        //}
         
         var preColumn: Spacial | undefined = this.columnCollection.children[index - 1];
         var postColumn: Spacial | undefined = this.columnCollection.children[index];
@@ -199,7 +199,7 @@ export default class Sequence extends Collection {
         
         if (index !== undefined) {
             if (insert) {
-                this.insertColumn(index,);
+                this.insertColumn(index);
             } 
         } else {  // Auto index
             index = this.channelsDic[channelName].elementCursor + 1;
