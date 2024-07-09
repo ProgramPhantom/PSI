@@ -55,7 +55,7 @@ function InsertArea(props: {areaSpec: AddSpec}) {
         }
 
         return (
-            <div ref={drop} style={{ ...style, backgroundColor}} data-testid="dustbin">
+            <div ref={drop} style={{ ...style, backgroundColor}} data-testid={props.areaSpec.channelName}>
                 
             </div>
         )

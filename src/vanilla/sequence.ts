@@ -136,7 +136,6 @@ export default class Sequence extends Collection {
     }
 
     insertColumn(index: number) {
-
         var newColumn: Aligner<Visual>;
         //if (this.columnCollection.children.length === 1 && index === 0) {  // Inserting at 0
         //    newColumn = this.columnCollection.children.pop()!;
@@ -156,13 +155,18 @@ export default class Sequence extends Collection {
             preColumn.enforceBinding();
         }
 
+        // bind next column
         if (postColumn) {
             newColumn.bind(postColumn, Dimensions.X, "far", "here");
             newColumn.enforceBinding();
         }
 
-
         this.columnCollection.add(newColumn, index);
+
+        // Shift occupancy
+        this.channels.forEach((c) => {
+            c.occupancy.splice(index, 0, false);
+        })
     }
     // ------------------------
 

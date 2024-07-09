@@ -20,18 +20,19 @@ class SequenceDropInterpreter {
 
     computeAreas() {
         this.insertAreas = [];
+        
         var sequence = this.handler.sequence;
+        var columns = sequence.columnCollection.children;
+        var newSlither: AddSpec;
 
-        sequence.columnCollection.children.forEach((column, i) => {
+        columns.forEach((column, i) => {
             var heightTop;
             var heightBottom;
 
-
             Object.entries(sequence.channelsDic).forEach(([name, channel]) => { 
                 // Insert start
-
                 // Top slither
-                let newSlither: AddSpec = {
+                newSlither = {
                     area: {x: column.x - this.slitherWidth/2, 
                            y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                            width: this.slitherWidth, 
@@ -56,7 +57,7 @@ class SequenceDropInterpreter {
                         area: {x: column.x + this.slitherWidth / 2, 
                                y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                                width: column.width - this.slitherWidth, 
-                               height: channel.maxTopProtrusion + channel.padding[0] - 1}, 
+                               height: channel.maxTopProtrusion - 1}, 
                         index: i, orientation: Orientation.top, channelName: name, insert: false}
                     this.insertAreas.push(newBlock);
 
@@ -69,9 +70,14 @@ class SequenceDropInterpreter {
                         index: i, orientation: Orientation.bottom, channelName: name, insert: false}
                     this.insertAreas.push(newBlock);
                 } 
+            })
+        })
 
-
-                // insert end slithers
+        var column = columns[columns.length - 1];
+        var i = columns.length - 1;
+        // insert end slithers:
+        Object.entries(sequence.channelsDic).forEach(([name, channel]) => {
+                            // insert end slithers
                 // Top slither
                 newSlither = {
                     area: {x: column.getFar(Dimensions.X) - this.slitherWidth/2, 
@@ -91,12 +97,9 @@ class SequenceDropInterpreter {
                     index: i+1, orientation: Orientation.bottom, channelName: name, insert: true
                 };
                 this.insertAreas.push(newSlither)
-            })
-
-            
-
         })
     }
+
 }
 
 const style: CSSProperties = {

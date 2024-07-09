@@ -261,15 +261,16 @@ export default class Channel extends Collection {
         this.positionalElements.push(positional);
 
         
-        if (Index > this.occupancy.length-1) {
-            for (var i = 1; i <= this.occupancy.length-1-Index; i++ ) {
-                this.occupancy.push(false);
-            }
-
-            this.occupancy[Index] = true;
-        } else if (insert) {
-            this.occupancy.splice(Index, 0, true);
-        }
+        //if (Index > this.occupancy.length-1) {
+        //    for (var i = 1; i <= this.occupancy.length-1-Index; i++ ) {
+        //        this.occupancy.push(false);
+        //    }
+//
+        //    this.occupancy[Index] = true;
+        //} else if (insert) {
+        //    this.occupancy.splice(Index, 0, true);
+        //}
+        this.occupancy[Index] = true;
     }
 
     addAnnotationLabel(lab: Span) {
