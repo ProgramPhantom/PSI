@@ -188,12 +188,7 @@ export default function Canvas(props:  {script: string, zoom: number,
 
             
         </MapInteractionCSS>
-        
-        
-
-
-        
-        
+    
         
         </>
     )

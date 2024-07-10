@@ -91,9 +91,6 @@ export default class SequenceHandler {
         // var positionalType: typeof Positional = SequenceHandler.positionalTypes[elementName];
         var positionalType = SequenceHandler.positionalTypes[elementName];
 
-        if (elementName === "section") {
-            
-        } 
 
         var element;
         index

@@ -56,7 +56,7 @@ function DraggableElement(props: {name: string, handler: SequenceHandler}) {
     end: (item, monitor) => {
       const dropResult = monitor.getDropResult<DropResult>();
       if (item && dropResult) {
-        alert(`index: ${dropResult.index}, channel: ${dropResult.channelName}, insert: ${dropResult.insert}, orientation: ${dropResult.orientation}`);
+        // alert(`index: ${dropResult.index}, channel: ${dropResult.channelName}, insert: ${dropResult.insert}, orientation: ${dropResult.orientation}`);
         props.handler.positional(props.name, dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
         props.handler.draw();
       }
