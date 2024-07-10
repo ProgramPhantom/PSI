@@ -54,7 +54,7 @@ function DraggableElement(props: {name: string, handler: SequenceHandler}) {
     type: ElementTypes.PULSE,
     item: { name: props.name },
     end: (item, monitor) => {
-      const dropResult = monitor.getDropResult<DropResult>()
+      const dropResult = monitor.getDropResult<DropResult>();
       if (item && dropResult) {
         alert(`index: ${dropResult.index}, channel: ${dropResult.channelName}, insert: ${dropResult.insert}, orientation: ${dropResult.orientation}`);
         props.handler.positional(props.name, dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
@@ -69,7 +69,7 @@ function DraggableElement(props: {name: string, handler: SequenceHandler}) {
 
   const opacity = isDragging ? 0.4 : 1
   return (
-    <div ref={drag} style={{ ...style, opacity }} data-testid={`box`} >
+    <div ref={drag} style={{ ...style, opacity }} data-testid={`pulse`} >
       {props.name}
     </div>
   )

@@ -18,47 +18,50 @@ export interface AddSpec {
     insert: boolean,
 }
 
-function InsertArea(props: {areaSpec: AddSpec}) {
+function InsertArea(props: {areaSpec: AddSpec, key: string}) {
     const [{ canDrop, isOver }, drop] = useDrop(() => ({
         accept: ElementTypes.PULSE,
         drop: () => ({ 
             index: props.areaSpec.index, 
             channelName: props.areaSpec.channelName,
             insert: props.areaSpec.insert,
-            orientation: props.areaSpec.orientation}),
+            orientation: props.areaSpec.orientation} as DropResult),
         collect: (monitor) => ({
             isOver: monitor.isOver(),
             canDrop: monitor.canDrop(),
         }),
         }))
 
-        let style: CSSProperties = {
-            height: `${props.areaSpec.area.height}px`,
-            width: `${props.areaSpec.area.width}px`,
+    let style: CSSProperties = {
+        height: `${props.areaSpec.area.height}px`,
+        width: `${props.areaSpec.area.width}px`,
 
-            backgroundColor: "transparent",
-            position: "absolute",
-            top: `${props.areaSpec.area.y}px`,
-            left: `${props.areaSpec.area.x}px`,
-            opacity: 0.4,
+        backgroundColor: "transparent",
+        position: "absolute",
+        top: `${props.areaSpec.area.y}px`,
+        left: `${props.areaSpec.area.x}px`,
+        opacity: 0.4,
+    }
+
+    const isActive = canDrop && isOver
+    let backgroundColor = 'transparent'
+    let border = "2px solid rgba(0, 0, 0, 0)";
+    if (isActive) {
+        backgroundColor = 'darkgreen'
+    } else if (canDrop) {
+        backgroundColor = 'lightgrey'
+        border = "2px solid rgba(80, 80, 80, 0)"
+    }
+
+    
+
+    return (
+        <div ref={drop} style={{ ...style, backgroundColor}} data-testid={props.areaSpec.channelName + props.areaSpec.index}
+                key={props.key}
+                >
             
-          }
-
-        const isActive = canDrop && isOver
-        let backgroundColor = 'transparent'
-        let border = "2px solid rgba(0, 0, 0, 0)";
-        if (isActive) {
-            backgroundColor = 'darkgreen'
-        } else if (canDrop) {
-            backgroundColor = 'lightgrey'
-            border = "2px solid rgba(80, 80, 80, 0)"
-        }
-
-        return (
-            <div ref={drop} style={{ ...style, backgroundColor}} data-testid={props.areaSpec.channelName}>
-                
-            </div>
-        )
+        </div>
+    )
 }
 
 export default InsertArea

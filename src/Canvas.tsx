@@ -181,18 +181,18 @@ export default function Canvas(props:  {script: string, zoom: number,
             }}
             >
             
-            <DropField sequence={props.handler}></DropField>
-
-
             <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}}>
                 
             </div>
+            <DropField sequence={props.handler}></DropField>
 
             
         </MapInteractionCSS>
         
         
 
+
+        
         
         
         </>

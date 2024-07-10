@@ -1,10 +1,11 @@
-import { useDrop } from "react-dnd";
+import { useDragDropManager, useDrop } from "react-dnd";
 import { ElementTypes } from "./DraggableElement";
 import { CSSProperties, useEffect, useState } from "react";
 import SequenceHandler from "../vanilla/sequenceHandler";
 import InsertArea, { AddSpec } from "./InsertArea";
 import { Orientation } from "../vanilla/positional";
 import { Dimensions } from "../vanilla/spacial";
+
 
 class SequenceDropInterpreter {
     public handler: SequenceHandler;
@@ -118,17 +119,22 @@ const style: CSSProperties = {
 
 function DropField(props: {sequence: SequenceHandler}) {
     const [sequence] = useState<SequenceHandler>(props.sequence);
+    const dragDropManager = useDragDropManager();
 
     let areaGenerator: SequenceDropInterpreter = new SequenceDropInterpreter(props.sequence);
+    const registry = dragDropManager.getRegistry();
+    
+    
+    console.log(registry)
 
 
     return (
     <div>
         {areaGenerator.insertAreas?.map((insertArea) => {
-            return (
-                <InsertArea areaSpec={insertArea}></InsertArea>
+            return (                               // This fixes an enormous, impossible to fix problem
+                <InsertArea areaSpec={insertArea} key={insertArea.channelName + insertArea.index + insertArea.insert + insertArea.orientation}></InsertArea>
             )
-        })
+            })
         }
     </div>
     )
