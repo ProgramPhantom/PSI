@@ -50,6 +50,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
             this.children.splice(index !== undefined ? index : this.children.length, 0, child)
         } else {
+            // Insert at end.
             if (this.children[this.children.length - 1] !== undefined) {  // Bind the before child
                 this.children[this.children.length - 1].bind(child, this.dimension, "far", "here");
             }

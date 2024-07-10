@@ -218,7 +218,7 @@ export default class Sequence extends Collection {
         }
 
         // Add the element to the sequence's column collection, this should trigger resizing of bars
-        this.columnCollection.children[index].add(obj.element);
+        this.columnCollection.children[index].add(obj.element, this.channelNames.indexOf(channelName));
 
         // Add element to channel
         this.channelsDic[channelName].addPositional(obj, index, insert);

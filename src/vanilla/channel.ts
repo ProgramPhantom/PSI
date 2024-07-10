@@ -221,8 +221,9 @@ export default class Channel extends Collection {
 
         var column: Spacial = this.posColumnCollection.children[Index];
 
-        // TODO: figure out inherit width and multi section element
+        // TODO: figure out inherit width and multi section element (hard)
 
+        // --- Bindings ---
         // Bind X
         switch (positional.config.alignment) {
             case Alignment.Left:
@@ -251,6 +252,7 @@ export default class Channel extends Collection {
                 this.bar.bind(element, Dimensions.Y, "far", "here");
                 break;
         }
+        // --- Bindings ---
 
         positional.config.index = Index;
 
