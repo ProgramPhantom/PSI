@@ -8,9 +8,13 @@ import { simplePulses } from "./simplePulse"
 import * as Abstract from "./abstract.json"
 import * as Span from "./span.json"
 
+import * as Channel from "./channel.json";
+
 export const positionalElements: {[name: string]: any} = {
     ...svgPulses,
     ...simplePulses,
     "abstract": Abstract,
     "span": Span,
 };
+
+export const defaultChannel = Channel;

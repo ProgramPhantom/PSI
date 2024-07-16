@@ -81,10 +81,7 @@ function SVGForm(props: {control: Control<any>, change: () => void}) {
             <Tab id="label" title="Label" panel={<LabelForm control={props.control} change={props.change}></LabelForm>}/>
             <Tab id="arrow" title="Arrow" panel={<ArrowForm control={props.control} change={props.change}></ArrowForm>} />
 
-        </Tabs>
-
-
-
+      </Tabs>
     </form>
   );
 }

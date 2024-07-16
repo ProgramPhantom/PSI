@@ -92,7 +92,7 @@ function App() {
         </div>
 
         <div style={{gridColumnStart: 2, gridColumnEnd: 3}}>
-          <Form AddCommand={AddCommand} channelOptions={channelNames}></Form>
+          <Form AddCommand={AddCommand} channelOptions={channelNames} sequence={handle.current}></Form>
         </div>
         
       </div>

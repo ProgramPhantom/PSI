@@ -1,10 +1,3 @@
-import React, { ChangeEvent, ReactNode, useState } from 'react'
-import FormRenderer from '@data-driven-forms/react-form-renderer/form-renderer';
-import componentTypes from '@data-driven-forms/react-form-renderer/component-types';
-import componentMapper from '@data-driven-forms/mui-component-mapper/component-mapper';
-import FormTemplate from '@data-driven-forms/pf4-component-mapper/form-template';
-
-
 
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import { svgPulses } from './vanilla/default/data/svgPulse';
@@ -28,7 +21,7 @@ import Parser from './vanilla/parser';
 type ElementType = ISimplePulse | ISvgPulse | IChannel;
 
 
-function DynamicForm(props: {AddCommand: (line: string) => void, commandName: string, channelName: string,}) {
+function ElementForm(props: {AddCommand: (line: string) => void, commandName: string, channelName: string}) {
 
     var defaultValues = positionalElements[props.commandName as keyof typeof positionalElements];
     
@@ -93,7 +86,6 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
             command += prop + "=" + obj + ",";
         })
 
-        
         var prefix = "";
         var tempVal = {}
         function buildCommand(dirties: any, values: any, currPrefix: string) {
@@ -133,15 +125,14 @@ function DynamicForm(props: {AddCommand: (line: string) => void, commandName: st
     
 
     return (
-        
         <>
-        <form onSubmit={control.handleSubmit(onSubmit)}>
-            {relevantForm}
+            <form onSubmit={control.handleSubmit(onSubmit)}>
+                {relevantForm}
 
-            <input type={"submit"}></input>
-        </form>
+                <input type={"submit"}></input>
+            </form>
         </>
     )
 }
 
-export default DynamicForm
+export default ElementForm

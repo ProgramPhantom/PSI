@@ -1,18 +1,37 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
-import DynamicForm from './DynamicForm';
+import ChannelForm from './form/ChannelForm';
+import { FieldValue, FieldValues, useForm } from 'react-hook-form';
+import { IChannel } from './vanilla/channel';
+import { PositionalSVG } from './vanilla/svgElement';
+import { PositionalRect } from './vanilla/rectElement';
+import { defaultChannel } from './vanilla/default/data';
+import SequenceHandler from './vanilla/sequenceHandler';
 
-function Form(props: {AddCommand: (line: string) => void, channelOptions: string[]}) {
+type FormStructures = IChannel | PositionalSVG | PositionalRect
+
+function Form(props: {AddCommand: (line: string) => void, channelOptions: string[], sequence: SequenceHandler}) {
     const [selectedEl, setSelectedEl] = useState<string>("~");
     const [selectedChannel, setSelectedChannel] = useState<string>(props.channelOptions[0])
 
     useEffect(() => {
         setSelectedChannel(props.channelOptions[props.channelOptions.length-1]);
     }, [props.channelOptions])
+
+
     
     return (
         <>
-        <div style={{padding: 20}}>
-            <form>
+            <div style={{padding: 20}}>
+                <ChannelForm sequence={props.sequence}></ChannelForm>
+            </div>
+        </>
+    ) // Use key in Dynamic form so it forces a remount, triggering the inital values in the form
+}
+
+export default Form
+
+{/* 
+<form>
                 <div style={{display: "flex", flexDirection: "column"}}>
                     <label style={{paddingBottom: 2, paddingRight: 10}}> Select element:
                     </label>
@@ -65,16 +84,10 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                     </select>
                 </div>
 
-            </form>
-            
-             <div>
-                <DynamicForm AddCommand={props.AddCommand} commandName={selectedEl} channelName={selectedChannel} key={selectedEl}></DynamicForm>
-             </div>
-            
-           
-        </div>
-        </>
-    ) // Use key in Dynamic form so it forces a remount, triggering the inital values in the form
-}
+            </form>    
 
-export default Form
+    <div>
+                <ElementForm AddCommand={props.AddCommand} commandName={selectedEl} channelName={selectedChannel} key={selectedEl}></ElementForm>
+             </div>        
+    
+*/}
