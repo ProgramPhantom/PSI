@@ -65,7 +65,6 @@ export default class Sequence extends Collection {
     channelLabelColumn: Spacial;
 
     constructor(params: RecursivePartial<ISequence>, templateName: string="default", refName: string="sequence") {
-        
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
         super(fullParams, templateName, refName);
 
@@ -76,9 +75,11 @@ export default class Sequence extends Collection {
 
     
         this.channelLabelColumn = new Spacial(0, undefined, 0, undefined, "channelLabelColumn");
-        this.bind(this.channelLabelColumn, Dimensions.X, "here", "here");
+        this.bind(this.channelLabelColumn, Dimensions.X, "here", "here", undefined, true);
 
         this.columnCollection.add(new Aligner<Visual>({width: 0}, "default", "initial pos column"));   // Initial column
+
+        // Bind the first column in PCC to the channel label column
         this.channelLabelColumn.bind(this.columnCollection.children[0], Dimensions.X, "far", "here");
     }
 

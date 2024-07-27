@@ -11,7 +11,7 @@ export interface Place {
 }
 
 export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
-export type BinderGetFunction = (dimension: Dimensions) => number;
+export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number;
 
 export interface BindingRule {
     anchorSiteGetter?: BinderGetFunction,
@@ -26,7 +26,8 @@ export interface BindingRule {
 export interface Binding {
     bindingRule: BindingRule,
     targetObject: Point,
-    offset?: number
+    offset?: number,
+    bindToContent: boolean
 }
 
 
@@ -126,7 +127,7 @@ export default class Point {
             };
 
         
-            this.bindings.push({targetObject: el, bindingRule: newBindingRule, offset: offset})
+            this.bindings.push({targetObject: el, bindingRule: newBindingRule, offset: offset, bindToContent: false})
         }
     }
 
@@ -139,7 +140,7 @@ export default class Point {
 
             
             // get the X coord of the location on the anchor
-            var anchorBindCoord: number = getter(dimension);
+            var anchorBindCoord: number = getter(dimension, binding.bindToContent);
 
             // Apply offset:
             anchorBindCoord = anchorBindCoord + (binding.offset ? binding.offset : 0);

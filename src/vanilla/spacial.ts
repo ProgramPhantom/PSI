@@ -31,9 +31,9 @@ export type UpdateNotification = (...args: any[]) => any
 export default class Spacial extends Point {
     AnchorFunctions = {
         "here": {
-            // Anchors:
             get: this.getNear.bind(this),
             set: this.setNear.bind(this)
+
         },
         "centre": {
             get: this.getCentre.bind(this),
@@ -57,6 +57,22 @@ export default class Spacial extends Point {
         
         width !== undefined ? this._contentWidth = width : null;
         height !== undefined ? this._contentHeight = height : null;
+    }
+
+    public get contentX() : number {
+        return this.x;
+    }
+    public set contentX(v : number) {
+        throw new Error("not implemented")
+        // this._contentX = v;
+    }
+
+    public get contentY() : number {
+        return this.y;
+    }
+    public set contentY(v : number) {
+        throw new Error("not implemented")
+        // this._contentY = v;
     }
 
     get contentWidth() : number | undefined {
@@ -114,7 +130,9 @@ export default class Spacial extends Point {
         throw new Error("Dimensions undefined")
     }
 
-    bind(target: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number) {
+    bind(target: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), 
+         targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number, bindToContent: boolean=false) {
+
         var found = false;
 
         // var anchorGetter: BinderGetFunction = this.AnchorFunctions[anchorBindSide].get;
@@ -129,6 +147,7 @@ export default class Spacial extends Point {
                 b.bindingRule.anchorSiteName = anchorBindSide;
                 b.bindingRule.targetSiteName = targetBindSide;
                 b.bindingRule.dimension = dimension;
+                b.bindToContent = bindToContent;
                 b.offset = offset;
         }})
 
@@ -141,7 +160,7 @@ export default class Spacial extends Point {
             };
 
         
-            this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset})
+            this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent})
         }
     }
 
@@ -184,11 +203,15 @@ export default class Spacial extends Point {
     }
 
     // Anchors:
-    public getNear(dimension: Dimensions): number {
+    public getNear(dimension: Dimensions, ofContent: boolean=false): number {
         switch (dimension) {
             case Dimensions.X:
+                if (ofContent) { 
+                    return this.contentX; 
+                }
                 return this.x;
             case Dimensions.Y:
+                if (ofContent) { return this.contentY; }
                 return this.y;
         }
     }
@@ -203,11 +226,13 @@ export default class Spacial extends Point {
         }
     }
 
-    public getCentre(dimension: Dimensions): number {
+    public getCentre(dimension: Dimensions, ofContent: boolean=false): number {
         switch (dimension) {
             case Dimensions.X:
+                if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth/2 : 0); }
                 return this.x + this.width/2;
             case Dimensions.Y:
+                if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight/2 : 0); }
                 return this.y + this.height/2;
         }
     }
@@ -222,11 +247,13 @@ export default class Spacial extends Point {
         }
     }
 
-    public getFar(dimension: Dimensions): number {
+    public getFar(dimension: Dimensions, ofContent: boolean=false): number {
         switch (dimension) {
             case Dimensions.X:
+                if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth : 0); }
                 return this.x + this.width;
             case Dimensions.Y:
+                if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight : 0); }
                 return this.y + this.height;
         }
     }

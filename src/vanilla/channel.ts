@@ -83,7 +83,7 @@ export default class Channel extends Collection {
 
         this._labelColumn.bind(this.bar, Dimensions.X, "far", "here");  // Bind X of bar
         if (this.label) {
-            this._labelColumn.bind(this.label, Dimensions.X, "here", "here", this.padding[3]);
+            this._labelColumn.bind(this.label, Dimensions.X, "here", "here");
             this._labelColumn.enforceBinding();
         }
     }
@@ -163,13 +163,6 @@ export default class Channel extends Collection {
             
         });
         this.bar.draw(surface);
-    }
-
-    resolveDimensions(): {width: number, height: number} {
-        var cHeight = this.maxTopProtrusion + this.bar.height + this.maxBottomProtrusion;
-        var length = this.barLength + (this.label ? this.label.width : 0);
-
-        return {width: length, height: cHeight}
     }
 
     checkHeight(obj: Positional<Visual>) {
@@ -348,14 +341,6 @@ export default class Channel extends Collection {
     public set maxBottomProtrusion(v : number) {
         this._maxBottomProtrusion = v;
         // this.positionBar();
-    }
-
-    get barLength() {
-        var length = 0;
-        this.positionalElements.forEach((p) => {
-            length + p.element.width;
-        })
-        return length;
     }
 
 }
