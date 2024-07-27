@@ -18,7 +18,7 @@ function ChannelForm(props: {sequence: SequenceHandler}) {
     });
   
     function onSubmit(data: IChannel) {
-        // alert(data.identifier);
+        
         props.sequence.channel(data.identifier, data);
 
         props.sequence.draw();

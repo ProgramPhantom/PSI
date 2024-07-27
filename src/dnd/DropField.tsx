@@ -37,7 +37,7 @@ class SequenceDropInterpreter {
                     area: {x: column.x - this.slitherWidth/2, 
                            y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                            width: this.slitherWidth, 
-                           height: channel.maxTopProtrusion},
+                           height: channel.maxTopProtrusion + channel.padding[0]},
                     index: i, orientation: Orientation.top, channelName: name, insert: true,
                 };
                 this.insertAreas.push(newSlither)

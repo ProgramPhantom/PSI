@@ -131,12 +131,6 @@ export default class Point {
     }
 
     public enforceBinding() {
-        function bar(callbackFn: (this: void) => any, thisArg?: undefined): any;
-        function bar<T>(callbackFn: (this: T) => any, thisArg: T): any;
-        function bar<T, TResult>(callbackFn: (this: T) => TResult, thisArg: T): TResult {
-            return callbackFn.call(thisArg);
-        }
-
         for (const binding of this.bindings) {
             var targetElement: Point = binding.targetObject;
             var getter: BinderGetFunction = this.AnchorFunctions[binding.bindingRule.anchorSiteName as keyof typeof this.AnchorFunctions].get;

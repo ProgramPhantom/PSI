@@ -35,7 +35,7 @@ export interface labelable {
     posDrawDecoration(surface: Svg): number[],
 }
 
-interface IConfig {
+export interface IConfig {
     index?: number, 
 
     orientation: Orientation,

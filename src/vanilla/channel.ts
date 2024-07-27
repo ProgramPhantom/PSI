@@ -1,7 +1,7 @@
 import defaultChannel from "./default/data/channel.json"
 import { Visual, IVisual } from "./visual";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Positional, { Alignment, Orientation, labelable } from "./positional";
+import Positional, { Alignment, IConfig, Orientation, labelable } from "./positional";
 import Label, { ILabel, Position } from "./label";
 import Span from "./span";
 import Abstract from "./abstract";
@@ -62,7 +62,6 @@ export default class Channel extends Collection {
     static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
 
     style: channelStyle;
-
     identifier: string;
 
     private _maxTopProtrusion : number = 0;
@@ -77,27 +76,37 @@ export default class Channel extends Collection {
 
     annotationLayer?: AnnotationLayer;
 
-    private _posColumnCollection: Aligner = new Aligner({});
-    public get posColumnCollection(): Aligner {
-        return this._posColumnCollection;
-    }
-    public set posColumnCollection(value: Aligner) {
-        this._posColumnCollection = value;
-        this._posColumnCollection.bindSize(this.bar, Dimensions.X);
-    }
-
-    private _labelColumn: Spacial = new Spacial(0, undefined, undefined, undefined);
+    // A column for containing the channel label and binding the bar and positional columns
+    private _labelColumn?: Spacial;
     set labelColumn(v: Spacial) {  // When the label column is set, apply binding to the label.
         this._labelColumn = v;
-        this._labelColumn.bind(this.bar, Dimensions.X, "far", "here");
+
+        this._labelColumn.bind(this.bar, Dimensions.X, "far", "here");  // Bind X of bar
         if (this.label) {
-            this._labelColumn.bind(this.label, Dimensions.X, "here", "here", this.label.padding[3]);
+            this._labelColumn.bind(this.label, Dimensions.X, "here", "here", this.padding[3]);
             this._labelColumn.enforceBinding();
         }
     }
     get labelColumn(): Spacial {
-        return this._labelColumn;
+        if (this._labelColumn !== undefined) {
+            return this._labelColumn;
+        }
+        throw new Error(`Label column has not been set for channel ${this.identifier}`)
     }
+
+    // A collection of columns to align this channel's positionals to
+    private _posColumnCollection?: Aligner<Aligner<Visual>>;
+    public get posColumnCollection(): Aligner<Aligner<Visual>> {
+        if (this._posColumnCollection !== undefined) {
+            return this._posColumnCollection;
+        }
+        throw new Error(`Positional Columns have not been set for channel: ${this.identifier}`)
+    }
+    public set posColumnCollection(value: Aligner<Aligner<Visual>>) {
+        this._posColumnCollection = value;
+        this._posColumnCollection.bindSize(this.bar, Dimensions.X);
+    }
+
 
     intrinsicWidths: number[] = []; // Widths of positional elements
     sectionWidths: number[] = [];  // List of widths of each section along the sequence
@@ -107,7 +116,6 @@ export default class Channel extends Collection {
 
     labelOn: boolean;
     label?: Label;
-    position: Position=Position.left;
 
     positionalElements: Positional<Visual>[] = [];
 
@@ -121,14 +129,14 @@ export default class Channel extends Collection {
         this.identifier = fullParams.identifier;
 
         this.bar = new RectElement({height: this.style.thickness}, "bar");
-        this.bar.y = 0;
+        this.bar.y = this.padding[0];
+        // this.maxTopProtrusion = 
         
         this.add(this.bar);
 
         // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
         this.labelOn = fullParams.labelOn;
-
         if (fullParams.label) {
             this.label = new Label(fullParams.label);
 
@@ -164,7 +172,6 @@ export default class Channel extends Collection {
         return {width: length, height: cHeight}
     }
 
-    
     checkHeight(obj: Positional<Visual>) {
         switch (obj.config.orientation) {
             case Orientation.top:
@@ -188,12 +195,12 @@ export default class Channel extends Collection {
     }
 
     // addPositional -> checkHeight -> set maxTopProtrusion ->
+    // Sets the Y position of the bar
     positionBar() {
-        this.bar.contentWidth = this.barWidth;  // Inefficient
+        this.bind(this.bar, Dimensions.Y, "here", "here", this.maxTopProtrusion + this.padding[0]);
+        this.enforceBinding();  // Enforces above.
 
-        this.bind(this.bar, Dimensions.Y, "here", "here", this.maxTopProtrusion);
-        
-        this.enforceBinding();
+        // Elements are bound to bar (y)
         this.bar.enforceBinding();  // If bar hasn't moved then this above wont position y of elements
         // TODO: force enforcement flag
     }
@@ -204,18 +211,13 @@ export default class Channel extends Collection {
 
         var Index: number = index !== undefined ? index : this.elementCursor;
 
-        var element: Visual = positional.element;
+        var element: Visual = positional.element;  // Extract element from positional framework
+        var config: IConfig = positional.config;
 
-        if (!positional.config.index) {
-            positional.config.index = Index;
-            this.elementCursor += positional.config.noSections - 1;  // Multi column element
+        if (!config.index) {
+            config.index = Index;
+            this.elementCursor += config.noSections - 1;  // Multi column element
         }
-
-        //var sections = new Array<number>(positional.config.noSections);
-        //sections.fill(positional.element.width / positional.config.noSections);
-//
-        //this.positionalElements.push(positional);
-        //this.sectionWidths.push(...sections);
 
         this.intrinsicWidths[Index] = element.width;
 
@@ -254,7 +256,7 @@ export default class Channel extends Collection {
         }
         // --- Bindings ---
 
-        positional.config.index = Index;
+        positional.config.index = Index;  // Update internal index property
 
         this.checkHeight(positional);
         this.positionBar();
@@ -345,7 +347,7 @@ export default class Channel extends Collection {
     }
     public set maxBottomProtrusion(v : number) {
         this._maxBottomProtrusion = v;
-        this.positionBar();
+        // this.positionBar();
     }
 
     get barLength() {
