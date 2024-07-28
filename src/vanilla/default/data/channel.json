@@ -1,6 +1,6 @@
 {
     "positionalElements": [],
-    "padding": [10, 0, 10, 0],
+    "padding": [5, 0, 5, 0],
     "offset": [0, 0],
     "identifier": "h",
 
@@ -14,7 +14,7 @@
     "labelOn": true,
     "label": {
         "text": "^{1}\\textrm{H}",
-        "padding": [0, 5, 0, 3],
+        "padding": [0, 0, 0, 0],
         "offset": [0, 0],
         "position": "top",
         "style": {

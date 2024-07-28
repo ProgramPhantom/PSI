@@ -59,6 +59,8 @@ export default class Sequence extends Collection {
         this._maxSectionWidths = w;
     }
 
+    channelColumn: Aligner<Channel>;
+
     positionalColumns: Aligner<Aligner<Visual>>;
     labelColumn: Aligner<Visual>;
 
@@ -71,11 +73,21 @@ export default class Sequence extends Collection {
         this.grid = new Grid(fullParams.grid);
         this.channelsDic = {};  // Wierdest bug ever happening here
 
+        // c
+        // c
+        // c
+        this.channelColumn = new Aligner<Channel>(
+            {bindMainAxis: true, axis: Dimensions.Y, alignment: Alignment.here}, "default", "channel column");
+        this.bind(this.channelColumn, Dimensions.Y, "here", "here", undefined, true);
+        this.bind(this.channelColumn, Dimensions.X, "here", "here", undefined, true);
+        this.add(this.channelColumn);
+
         // | h | |p|p|p|p|
         this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true}, "default", "label col | pos cols");
         this.bind(this.columns, Dimensions.X, "here", "here", undefined, true);
-        this.enforceBinding();
         this.add(this.columns);
+
+        this.enforceBinding();
 
         // | h |
         this.labelColumn = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, 
@@ -144,21 +156,8 @@ export default class Sequence extends Collection {
 
     // Content Commands
     addChannel(name: string, channel: Channel) {
-        // Bindings for Y:
-        if (this.channels.length > 0) {  // If second channel or more, bind to channel abve.
-            var channelAbove = this.channels[this.channels.length-1];
-
-            // BIND Y
-            channelAbove.bind(channel, Dimensions.Y, "far", "here");
-            channelAbove.enforceBinding();
-        } else {
-            
-            this.bind(channel, Dimensions.Y, "here", "here", undefined, true);
-        }  // Or bind to top 
-
-        // Bind channel (is this needed?)
-        this.bind(channel, Dimensions.X, "here", "here");  // Or bind to channelLabelColumn?
-        this.enforceBinding();
+        this.channelColumn.add(channel);
+        
         
         // Set and initialise channel
         this.channelsDic[name] = channel;  
