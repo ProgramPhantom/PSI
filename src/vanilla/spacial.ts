@@ -130,10 +130,18 @@ export default class Spacial extends Point {
         throw new Error("Dimensions undefined")
     }
 
+    public clearBindings(dimension: Dimensions) {
+        this.bindings = this.bindings.filter(b => b.bindingRule.dimension !== dimension);
+    }
+
     bind(target: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), 
          targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number, bindToContent: boolean=false) {
 
         var found = false;
+
+        if (this.refName === "pos col collection") {
+            console.log(".")
+        }
 
         // var anchorGetter: BinderGetFunction = this.AnchorFunctions[anchorBindSide].get;
         // var targetSetter: BinderSetFunction = el.AnchorFunctions[targetBindSide].set;
@@ -142,7 +150,7 @@ export default class Spacial extends Point {
             if (b.targetObject === target && b.bindingRule.dimension === dimension) {
                 found = true;
                 
-                console.warn("Warning: overriding binding");
+                console.warn(`Warning: overriding binding on dimension ${b.bindingRule.dimension} anchor ${this.refName}`);
                 
                 b.bindingRule.anchorSiteName = anchorBindSide;
                 b.bindingRule.targetSiteName = targetBindSide;

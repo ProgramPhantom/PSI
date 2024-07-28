@@ -64,8 +64,10 @@ export default class Channel extends Collection {
     style: channelStyle;
     identifier: string;
 
-    private _maxTopProtrusion : number = 0;
-    private _maxBottomProtrusion : number = 0;
+
+
+    public upperAligner: Aligner<Visual>;
+    public lowerAligner: Aligner<Visual>;
 
     bar: RectElement;
     get barWidth() {
@@ -128,8 +130,15 @@ export default class Channel extends Collection {
 
         this.identifier = fullParams.identifier;
 
+        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far}, "default", `top aligner`);
+        this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, true);
+
         this.bar = new RectElement({height: this.style.thickness}, "bar");
-        this.bar.y = this.padding[0];
+        this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here");
+
+        this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here}, "default", "bottom aligner");
+        this.bar.bind(this.lowerAligner, Dimensions.Y, "far", "here")
+
         // this.maxTopProtrusion = 
         
         this.add(this.bar);
@@ -144,6 +153,8 @@ export default class Channel extends Collection {
 
             this.add(this.label);
         }
+
+        
     }
 
     draw(surface: Svg) {
@@ -165,39 +176,6 @@ export default class Channel extends Collection {
         this.bar.draw(surface);
     }
 
-    checkHeight(obj: Positional<Visual>) {
-        switch (obj.config.orientation) {
-            case Orientation.top:
-                if (obj.element.height > this.maxTopProtrusion) {
-                    this.maxTopProtrusion = obj.element.height;
-                }
-                break;
-            case Orientation.bottom:
-                if (obj.element.height > this.maxBottomProtrusion) {
-                    this.maxBottomProtrusion = obj.element.height;
-                }
-                break;
-            case Orientation.both:
-                if (obj.element.height/2 - this.bar.height/2 > this.maxBottomProtrusion) {
-                    this.maxBottomProtrusion = obj.element.height/2 - this.bar.height/2;
-                }
-                if (obj.element.height/2 - this.bar.height/2 > this.maxTopProtrusion) {
-                    this.maxTopProtrusion = obj.element.height/2 - this.bar.height/2;
-                }
-        }
-    }
-
-    // addPositional -> checkHeight -> set maxTopProtrusion ->
-    // Sets the Y position of the bar
-    positionBar() {
-        this.bind(this.bar, Dimensions.Y, "here", "here", this.maxTopProtrusion + this.padding[0]);
-        this.enforceBinding();  // Enforces above.
-
-        // Elements are bound to bar (y)
-        this.bar.enforceBinding();  // If bar hasn't moved then this above wont position y of elements
-        // TODO: force enforcement flag
-    }
-
     // Position positional elements on the bar
     addPositional(positional: Positional<Visual>, index?: number, insert: boolean=false): void {
         this.elementCursor += 1;  // Keep this here.
@@ -213,60 +191,56 @@ export default class Channel extends Collection {
         }
 
         this.intrinsicWidths[Index] = element.width;
-
-        var column: Spacial = this.posColumnCollection.children[Index];
-
-        // TODO: figure out inherit width and multi section element (hard)
+        
 
         // --- Bindings ---
         // Bind X
-        switch (positional.config.alignment) {
-            case Alignment.Left:
-                column.bind(element, Dimensions.X, "here", "here");
-                break;
-            case Alignment.Centre:
-                column.bind(element, Dimensions.X, "centre", "centre");
-                break;
-            case Alignment.Right:
-                column.bind(element, Dimensions.X, "far", "far");
-                break;
-            case Alignment.Padded:
-                column.bind(element, Dimensions.X, "here", "here");
-                break;
-        }
+        // switch (positional.config.alignment) {
+        //     case Alignment.here:
+        //         column.bind(element, Dimensions.X, "here", "here");
+        //         break;
+        //     case Alignment.centre:
+        //         column.bind(element, Dimensions.X, "centre", "centre");
+        //         break;
+        //     case Alignment.far:
+        //         column.bind(element, Dimensions.X, "far", "far");
+        //         break;
+        //     case Alignment.none:
+        //         column.bind(element, Dimensions.X, "here", "here");
+        //         break;
+        // }
 
         // Bind Y
-        switch (positional.config.orientation) {
+        // switch (positional.config.orientation) {
+        //     case Orientation.top:
+        //         this.bar.bind(element, Dimensions.Y, "here", "far");
+        //         break;
+        //     case Orientation.both:
+        //         this.bar.bind(element, Dimensions.Y, "centre", "centre");
+        //         break;
+        //     case Orientation.bottom:
+        //         this.bar.bind(element, Dimensions.Y, "far", "here");
+        //         break;
+        // }
+        // --- Bindings ---
+
+        // ---- Bind to the upper and lower aligners for Y ONLY
+        switch (config.orientation) {
             case Orientation.top:
-                this.bar.bind(element, Dimensions.Y, "here", "far");
+                this.upperAligner.add(element);
                 break;
             case Orientation.both:
-                this.bar.bind(element, Dimensions.Y, "centre", "centre");
-                break;
+                throw new Error("Not implemented");
             case Orientation.bottom:
-                this.bar.bind(element, Dimensions.Y, "far", "here");
+                this.lowerAligner.add(element);
                 break;
         }
-        // --- Bindings ---
 
         positional.config.index = Index;  // Update internal index property
 
-        this.checkHeight(positional);
-        this.positionBar();
-
-        this.add(positional.element);
         this.positionalElements.push(positional);
+        this.add(positional.element);
 
-        
-        //if (Index > this.occupancy.length-1) {
-        //    for (var i = 1; i <= this.occupancy.length-1-Index; i++ ) {
-        //        this.occupancy.push(false);
-        //    }
-//
-        //    this.occupancy[Index] = true;
-        //} else if (insert) {
-        //    this.occupancy.splice(Index, 0, true);
-        //}
         this.occupancy[Index] = true;
     }
 
@@ -327,20 +301,6 @@ export default class Channel extends Collection {
         this.elementCursor = newCurs
     }
 
-    public get maxTopProtrusion() : number {
-        return this._maxTopProtrusion;
-    }
-    public set maxTopProtrusion(v : number) {
-        this._maxTopProtrusion = v;
-        this.positionBar();
-    }
 
-    public get maxBottomProtrusion() : number {
-        return this._maxBottomProtrusion;
-    }
-    public set maxBottomProtrusion(v : number) {
-        this._maxBottomProtrusion = v;
-        // this.positionBar();
-    }
 
 }

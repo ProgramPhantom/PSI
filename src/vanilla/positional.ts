@@ -28,7 +28,8 @@ type Index = [number, number]
 
 export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both" }
 
-export enum Alignment {Left=<any>"left", Centre=<any>"centre", Right=<any>"right", Padded=<any>"padded"}
+export enum Alignment { here=<any>"here", centre=<any>"centre", far=<any>"far", none=<any>"none" }
+
 
 export interface labelable {
     label?: Label,

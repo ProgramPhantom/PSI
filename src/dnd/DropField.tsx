@@ -5,6 +5,8 @@ import SequenceHandler from "../vanilla/sequenceHandler";
 import InsertArea, { AddSpec } from "./InsertArea";
 import { Orientation } from "../vanilla/positional";
 import { Dimensions } from "../vanilla/spacial";
+import { Visual } from "../vanilla/visual";
+import Aligner from "../vanilla/aligner";
 
 
 class SequenceDropInterpreter {
@@ -23,7 +25,7 @@ class SequenceDropInterpreter {
         this.insertAreas = [];
         
         var sequence = this.handler.sequence;
-        var columns = sequence.columnCollection.children;
+        var columns = sequence.positionalColumns.children;
         var newSlither: AddSpec;
 
         columns.forEach((column, i) => {
@@ -37,7 +39,7 @@ class SequenceDropInterpreter {
                     area: {x: column.x - this.slitherWidth/2, 
                            y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                            width: this.slitherWidth, 
-                           height: channel.maxTopProtrusion + channel.padding[0]},
+                           height: channel.upperAligner.height + channel.padding[0]},
                     index: i, orientation: Orientation.top, channelName: name, insert: true,
                 };
                 this.insertAreas.push(newSlither)
@@ -45,9 +47,9 @@ class SequenceDropInterpreter {
                 // bottom slither
                 newSlither = {
                     area: {x: column.x - this.slitherWidth/2, 
-                        y: channel.bar.y + channel.style.thickness + 1, 
+                        y: channel.lowerAligner.y, 
                         width: this.slitherWidth, 
-                        height: channel.maxBottomProtrusion + channel.padding[2] - 3},
+                        height: channel.lowerAligner.height + channel.padding[2]},
                     index: i, orientation: Orientation.bottom, channelName: name, insert: true
                 };
                 this.insertAreas.push(newSlither)
@@ -58,24 +60,28 @@ class SequenceDropInterpreter {
                         area: {x: column.x + this.slitherWidth / 2, 
                                y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                                width: column.width - this.slitherWidth, 
-                               height: channel.maxTopProtrusion - 1}, 
+                               height: channel.upperAligner.height + channel.padding[0]}, 
                         index: i, orientation: Orientation.top, channelName: name, insert: false}
                     this.insertAreas.push(newBlock);
 
                     // Bottom block
                     newBlock = {
                         area: {x: column.x + this.slitherWidth / 2, 
-                               y: channel.bar.y + channel.style.thickness + 1, 
+                               y: channel.lowerAligner.y, 
                                width: column.width - this.slitherWidth, 
-                               height: channel.maxBottomProtrusion + channel.padding[2] - 3}, 
+                               height: channel.lowerAligner.height + channel.padding[2]}, 
                         index: i, orientation: Orientation.bottom, channelName: name, insert: false}
                     this.insertAreas.push(newBlock);
                 } 
             })
         })
 
-        var column = columns[columns.length - 1];
+        var column: Aligner<Visual> = columns[columns.length - 1];
         var i = columns.length - 1;
+
+        if (column === undefined) {  // no positional columns yet
+            column = sequence.labelColumn;
+        }
         // insert end slithers:
         Object.entries(sequence.channelsDic).forEach(([name, channel]) => {
                             // insert end slithers
@@ -84,7 +90,7 @@ class SequenceDropInterpreter {
                     area: {x: column.getFar(Dimensions.X) - this.slitherWidth/2, 
                         y: channel.y + (channel.annotationLayer ? channel.annotationLayer?.height : 0), 
                         width: this.slitherWidth, 
-                        height: channel.maxTopProtrusion},
+                        height: channel.upperAligner.height + channel.padding[0]},
                     index: i+1, orientation: Orientation.top, channelName: name, insert: true,
                 };
                 this.insertAreas.push(newSlither)
@@ -92,9 +98,9 @@ class SequenceDropInterpreter {
                 // bottom slither
                 newSlither = {
                     area: {x: column.getFar(Dimensions.X) - this.slitherWidth/2, 
-                        y: channel.bar.y + channel.style.thickness + 1, 
+                        y: channel.lowerAligner.y, 
                         width: this.slitherWidth, 
-                        height: channel.maxBottomProtrusion + channel.padding[2] - 3},
+                        height: channel.lowerAligner.height + channel.padding[2]},
                     index: i+1, orientation: Orientation.bottom, channelName: name, insert: true
                 };
                 this.insertAreas.push(newSlither)
