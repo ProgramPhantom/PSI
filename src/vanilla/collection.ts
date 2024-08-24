@@ -2,7 +2,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import { Visual, IVisual, Offset } from "./visual";
 import PaddedBox from "./paddedBox";
 import Point, { Place } from "./point";
-import Spacial, { Dimensions } from "./spacial";
+import Spacial, { Bounds, Dimensions } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS } from "react";
 
@@ -24,6 +24,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     }
 
     children: T[] = [];
+    childBounds: Bounds = {top: 0, bottom: 0, left: 0, right: 0};
 
     constructor(params: RecursivePartial<ICollection>, templateName: string="default", refName: string="collection") {
         // var test = Collection.defaults[templateName];
@@ -32,21 +33,31 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     }
 
     draw(surface: Svg) {
+        // --- dev ---
+        
+
         this.children.forEach((c) => {
             if (c instanceof Visual) {
                 (c as Visual).draw(surface);
             }
         })
+
     }
 
     add(child: T, index?: number) {
         this.children.splice(index !== undefined ? index : this.children.length-1, 0, child);
         
-        child.subscribe(this.computeSize.bind(this));
-        this.computeSize();
+        child.subscribe(this.computeBoundry.bind(this));
+
+        if (this.isResolved) {
+            this.enforceBinding();
+        }
+        
+        this.computeBoundry();
     }
 
-    computeSize(): void {
+    computeBoundry(): void {
+
         var top = Infinity;
         var left = Infinity;
         var bottom = -Infinity;
@@ -74,8 +85,18 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         if (height !== -Infinity) {
             this.contentHeight = height;
         }
+
+        this.childBounds = {
+            top: top,
+            bottom: bottom,
+            left: left,
+            right: right
+        }
        
-    }
+        if (this.refName === "label column") {
+            console.log()
+        }
+}
 
     get contentWidth(): number | undefined {
         // this.computeSize(); // TODO: remove this

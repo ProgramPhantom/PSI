@@ -1,3 +1,4 @@
+import Aligner from "./aligner";
 import Spacial, { Dimensions } from "./spacial";
 
 interface Shift {
@@ -51,12 +52,15 @@ export default class Point {
     protected _y?: number;
 
     id: string;
+    refName: string;
 
     bindings: Binding[] = [];
 
-    constructor(x?: number, y?: number) {
+    constructor(x?: number, y?: number, refName: string = "point") {
         this.x = x;
         this.y = y;
+
+        this.refName = refName;
 
         this.id = Math.random().toString(16).slice(2);
     }
@@ -81,6 +85,13 @@ export default class Point {
     }
     protected set y(val: number | undefined) {
         if (val !== this._y) {
+            
+            if (this.refName === "label column") {
+                console.log()
+            }
+            
+            
+
             this._y = val;
             this.enforceBinding();
         }
@@ -132,6 +143,10 @@ export default class Point {
     }
 
     public enforceBinding() {
+        if (this.refName === "label") {
+            console.log()
+        }
+
         for (const binding of this.bindings) {
             var targetElement: Point = binding.targetObject;
             var getter: BinderGetFunction = this.AnchorFunctions[binding.bindingRule.anchorSiteName as keyof typeof this.AnchorFunctions].get;

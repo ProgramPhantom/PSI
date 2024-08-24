@@ -53,7 +53,6 @@ export abstract class Visual extends PaddedBox {
         super(params.padding, params.x, params.y, params.width, params.height, refName);  // Will make dirty??
 
         this.offset = params.offset;  // Fixed for some reason
-        
     }
 
 

@@ -84,22 +84,20 @@ export default class Sequence extends Collection {
 
         // | h | |p|p|p|p|
         this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true}, "default", "label col | pos cols");
+        this.bind(this.columns, Dimensions.Y, "here", "here", undefined, true);
         this.bind(this.columns, Dimensions.X, "here", "here", undefined, true);
         this.add(this.columns);
 
-        this.enforceBinding();
 
         // | h |
         this.labelColumn = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, 
-                                                        alignment: Alignment.centre, width: 20}, "default", "label column");
+                                                        alignment: Alignment.centre}, "default", "label column");
         this.columns.add(this.labelColumn);
 
 
         // |p|p|p|p|
-        this.positionalColumns = new Aligner({bindMainAxis: true, axis: Dimensions.X}, "default", "pos col collection");
+        this.positionalColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X}, "default", "pos col collection");
         this.columns.add(this.positionalColumns);
-        
-        this.enforceBinding();
     }
 
     reset() {
@@ -136,6 +134,19 @@ export default class Sequence extends Collection {
             this.grid.draw(surface, this.maxColumnX, this.height);
         }
 
+        if ("dev mode" === "dev mode" && this.channels.length >= 1) {
+            this.labelColumn.devDraw(surface);
+            // this.positionalColumns.devDraw(surface);
+
+            this.positionalColumns.children.forEach((c) => {
+                c.devDraw(surface, "green")
+            })
+
+            this.channels.forEach((c) => {
+                // c.upperAligner.devDraw(surface, "yellow");
+                // c.lowerAligner.devDraw(surface, "yellow");
+            })
+        }
         
         // what?
         return {width: 0, height: 0}
@@ -158,13 +169,10 @@ export default class Sequence extends Collection {
     addChannel(name: string, channel: Channel) {
         this.channelColumn.add(channel);
         
-        
         // Set and initialise channel
-        this.channelsDic[name] = channel;  
-        channel.posColumnCollection = this.positionalColumns;  // And apply the column ref
+        this.channelsDic[name] = channel; 
+        channel.positionalColumns = this.positionalColumns;  // And apply the column ref
         channel.labelColumn = this.labelColumn;
-
-        this.add(channel);
     }
 
     addPositional(channelName: string, obj: Positional<Visual>, index?: number | undefined, insert: boolean=false) {

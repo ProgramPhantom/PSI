@@ -1,8 +1,10 @@
+import { Svg } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 import { Alignment } from "./positional";
 import Spacial, { Dimensions } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
+import { SVG } from "@svgdotjs/svg.js";
 
 export interface IAligner extends ICollection {
     axis: Dimensions,
@@ -19,7 +21,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         "default": {
             axis: Dimensions.X,
             bindMainAxis: false,
-            alignment: Alignment.none,
+            alignment: Alignment.here,
             width: 0,
             height: 0,
             x: undefined,
@@ -46,22 +48,45 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         this.alignment = fullParams.alignment;
     }
 
-    add(child: T, index?: number, alignItem: Alignment=Alignment.none) {
+
+    devDraw(surface: Svg, colour: string="red", offset: number=0) {
+        if (!this.debugSvg) {
+            this.debugSvg = SVG()
+        }
+        
+        try {
+            surface.removeElement(this.debugSvg)
+        } catch {
+        
+        }
+        
+        if (this.mainAxis === Dimensions.X && this._y !== undefined) {
+            this.debugSvg = surface.rect(this.width, this.height)
+            .move(this.childBounds.left, this.childBounds.top).fill(colour).attr({"fill-opacity": 0.5});
+
+        } else if (this.x !== undefined ) {
+            this.debugSvg = surface.rect(this.width, this.height)
+            .move(this.childBounds.left, this.childBounds.top).fill(colour).attr({"fill-opacity": 0.5});
+        }
+    }
+
+    add(child: T, index?: number, alignItem: Alignment=Alignment.here) {
         // AlignItem takes precidence
-        var alignChild: Alignment = alignItem !== Alignment.none ? alignItem : this.alignment;
+        var alignChild: Alignment = alignItem !== Alignment.here ? alignItem : this.alignment;
         const INDEX = index !== undefined ? index : this.children.length;
 
         if (this.refName === "pos col collection") {
             console.log(".")
         }
 
+        // MAIN AXIS COMPUTE
         if (this.bindMainAxis) {
             var preChild: T | undefined = this.children[INDEX - 1];
             var postChild: T | undefined = this.children[INDEX];
 
             // child here bind
             if (preChild !== undefined) {  // Bind the before child to this child
-                preChild.bind(child, this.mainAxis, "far", "here");
+                preChild.bind(child, this.mainAxis, "far", "here", undefined, true);
                 preChild.enforceBinding();
 
             } else { // this is the first element, bind to this
@@ -73,12 +98,16 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
             // Child far bound
             if (postChild !== undefined) {
-                child.bind(this.children[INDEX], this.mainAxis, "far", "here");
+                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, true);
                 child.enforceBinding();
             }
         }
         this.children.splice(INDEX, 0, child);
         
+        // cross AXIS
+        if (alignChild !== Alignment.none) {  // Optimisation AND is required
+            this.setSizeByDimension(child.getSizeByDimension(this.crossAxis), this.crossAxis);
+        }
 
         switch (alignChild) {
             case Alignment.none:
@@ -96,47 +125,8 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         this.enforceBinding();
         
         // Child will tell this to update size when it changes size or position
-        child.subscribe(this.computeSize.bind(this));
-        this.computeSize();
-        
-        
+        child.subscribe(this.computeBoundry.bind(this));
+        this.computeBoundry();
     }
 
-    computeSize(): void {
-        var width = 0;
-        var height = 0;
-
-
-        this.children.forEach((c) => {
-            if (c.height !== undefined) {
-                if (this.bindMainAxis && this.mainAxis === Dimensions.Y) {
-                    height += c.height;
-                } else if ((this.alignment !== Alignment.none) && (this.crossAxis === Dimensions.Y)) {
-                    if (c.height > height) {
-                        height = c.height;
-                    }
-                }
-            }
-            
-            if (c.width !== undefined) {
-                if (this.bindMainAxis && (this.mainAxis === Dimensions.X)) {
-                    width += c.width;
-                } else if ((this.alignment !== Alignment.none) && (this.crossAxis === Dimensions.X)) {
-                    if (c.width > width) {
-                        width = c.width;
-                    }
-                }
-            }
-        })
-        // Simply get max width and height
-
-
-        if (width !== -Infinity) {
-            this.contentWidth = width;
-        }
-        if (height !== -Infinity) {
-            this.contentHeight = height;
-        }
-       
-    }
 }

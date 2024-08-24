@@ -48,7 +48,7 @@ export default abstract class PaddedBox extends Spacial {
         return this.x + this.padding[3];
     }
     public set contentX(v : number) {
-        throw new Error("not implemented")
+        this.x = v - this.padding[3];
         // this._contentX = v;
     }
 
@@ -56,7 +56,7 @@ export default abstract class PaddedBox extends Spacial {
         return this.y + this.padding[0];
     }
     public set contentY(v : number) {
-        throw new Error("not implemented")
+        this.y = v - this.padding[0];
         // this._contentY = v;
     }
 

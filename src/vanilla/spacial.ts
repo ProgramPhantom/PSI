@@ -1,3 +1,4 @@
+import { Svg, Element } from "@svgdotjs/svg.js";
 import Point, { BinderGetFunction, BinderSetFunction, BindingRule, IPoint } from "./point";
 
 export interface Bounds {
@@ -47,11 +48,13 @@ export default class Spacial extends Point {
     protected _contentWidth?: number;
     protected _contentHeight?: number;
 
-    refName: string;
+    debugSvg?: Element;
+
+    
     sizeBindings: SizeBinding[] = [];
 
     constructor(x?: number, y?: number, width?: number, height?: number, refName: string="spacial") {
-        super(x, y);
+        super(x, y, refName);
 
         this.refName = refName;
         
@@ -297,5 +300,29 @@ export default class Spacial extends Point {
             return true;
         }
         return false;
+    }
+
+    get isResolved(): boolean {
+        return this.definedHorizontally && this.definedVertically;
+    }
+
+    setSizeByDimension(v: number, dim: Dimensions) {
+        switch (dim) {
+            case Dimensions.X:
+                this.contentWidth = v;
+                break;
+            case Dimensions.Y:
+                this.contentHeight = v;
+                break;
+        }
+    }
+
+    getSizeByDimension(dim: Dimensions): number {
+        switch (dim) {
+            case Dimensions.X:
+                return this.width;
+            case Dimensions.Y:
+                return this.height;
+        }
     }
 }

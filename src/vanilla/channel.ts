@@ -64,49 +64,50 @@ export default class Channel extends Collection {
     style: channelStyle;
     identifier: string;
 
-
-
     public upperAligner: Aligner<Visual>;
     public lowerAligner: Aligner<Visual>;
 
     bar: RectElement;
     get barWidth() {
         var width = 0;
-        this.posColumnCollection.children.forEach((c) => width += c.width);
+        this.positionalColumns.children.forEach((c) => width += c.width);
         return width;
     }
 
     annotationLayer?: AnnotationLayer;
 
     // A column for containing the channel label and binding the bar and positional columns
-    private _labelColumn?: Spacial;
-    set labelColumn(v: Spacial) {  // When the label column is set, apply binding to the label.
+    private _labelColumn?: Aligner<Visual>;
+    set labelColumn(v: Aligner<Visual>) {  // When the label column is set, apply binding to the label.
         this._labelColumn = v;
 
         this._labelColumn.bind(this.bar, Dimensions.X, "far", "here");  // Bind X of bar
+
+        this.labelColumn.bind(this.upperAligner, Dimensions.X, "here", "here", undefined, true);
+        this.labelColumn.bind(this.lowerAligner, Dimensions.X, "here", "here", undefined, true);
+
         if (this.label) {
-            this._labelColumn.bind(this.label, Dimensions.X, "here", "here");
-            this._labelColumn.enforceBinding();
+            this._labelColumn.add(this.label)
         }
     }
-    get labelColumn(): Spacial {
+    get labelColumn(): Aligner<Visual> {
         if (this._labelColumn !== undefined) {
             return this._labelColumn;
         }
         throw new Error(`Label column has not been set for channel ${this.identifier}`)
     }
-
+    
     // A collection of columns to align this channel's positionals to
-    private _posColumnCollection?: Aligner<Aligner<Visual>>;
-    public get posColumnCollection(): Aligner<Aligner<Visual>> {
-        if (this._posColumnCollection !== undefined) {
-            return this._posColumnCollection;
+    private _positionalColumns?: Aligner<Aligner<Visual>>;
+    public get positionalColumns(): Aligner<Aligner<Visual>> {
+        if (this._positionalColumns !== undefined) {
+            return this._positionalColumns;
         }
         throw new Error(`Positional Columns have not been set for channel: ${this.identifier}`)
     }
-    public set posColumnCollection(value: Aligner<Aligner<Visual>>) {
-        this._posColumnCollection = value;
-        this._posColumnCollection.bindSize(this.bar, Dimensions.X);
+    public set positionalColumns(value: Aligner<Aligner<Visual>>) {
+        this._positionalColumns = value;
+        this._positionalColumns.bindSize(this.bar, Dimensions.X);
     }
 
 
@@ -130,16 +131,17 @@ export default class Channel extends Collection {
 
         this.identifier = fullParams.identifier;
 
-        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far}, "default", `top aligner`);
+        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, height: 20}, "default", `top aligner`);
         this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, true);
-
+        
+        
         this.bar = new RectElement({height: this.style.thickness}, "bar");
         this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here");
 
         this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here}, "default", "bottom aligner");
-        this.bar.bind(this.lowerAligner, Dimensions.Y, "far", "here")
-
-        // this.maxTopProtrusion = 
+        this.bar.bind(this.lowerAligner, Dimensions.Y, "far", "here");
+        
+        
         
         this.add(this.bar);
 
@@ -153,28 +155,8 @@ export default class Channel extends Collection {
 
             this.add(this.label);
         }
-
-        
     }
 
-    draw(surface: Svg) {
-        // Add annotation
-       //  var annotationHeight = 0;
-       //  if (this.annotationLayer) {
-       //      this.annotationLayer.draw(surface, indexWidths, this.barX, this.y);
-       //      yCursor += this.annotationLayer.height;
-       //      annotationHeight = this.annotationLayer.height;
-       //  }
-
-        this.label?.draw(surface);
-        
-        this.positionalElements.forEach(p => {
-           
-            p.draw(surface);
-            
-        });
-        this.bar.draw(surface);
-    }
 
     // Position positional elements on the bar
     addPositional(positional: Positional<Visual>, index?: number, insert: boolean=false): void {
