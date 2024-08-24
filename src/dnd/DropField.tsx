@@ -32,6 +32,7 @@ class SequenceDropInterpreter {
             var heightTop;
             var heightBottom;
 
+            
             Object.entries(sequence.channelsDic).forEach(([name, channel]) => { 
                 // Insert start
                 // Top slither

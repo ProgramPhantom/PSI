@@ -129,8 +129,12 @@ export default class SequenceHandler {
 
     // TODO: forced index for channel addition
     channel(name: string, pParameters: RecursivePartial<IChannel>, index?: number) {
-        var newChannel = new Channel(pParameters);
+        if (this.sequence.channelNames.includes(name)) {
+            alert(`Duplicate channel name: ${name}`)
+            return
+        }
 
+        var newChannel = new Channel(pParameters);
         this.sequence.addChannel(name, newChannel);
     }
 
