@@ -66,7 +66,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
             // child here bind
             if (preChild !== undefined) {  // Bind the before child to this child
-                preChild.bind(child, this.mainAxis, "far", "here", undefined, true);
+                preChild.bind(child, this.mainAxis, "far", "here", undefined, false);
                 preChild.enforceBinding();
 
             } else { // this is the first element, bind to this
@@ -78,7 +78,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
             // Child far bound
             if (postChild !== undefined) {
-                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, true);
+                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, false);
                 child.enforceBinding();
             }
         }

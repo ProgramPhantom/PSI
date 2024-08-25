@@ -87,6 +87,9 @@ export default function Canvas(props:  {script: string, zoom: number,
 
         props.drawSurface.current!.children().forEach((c) => {
             var newSvg: SVGElement = c.clone();
+            var originalId = c.id();
+            console.log(originalId, newSvg)
+            newSvg.id(originalId)
             newSvg.addTo(svgDestinationObj.current!);
 
             // Following did not work because this broke the connection between the svg inside the rect class and the parent,
@@ -162,7 +165,7 @@ export default function Canvas(props:  {script: string, zoom: number,
     return (
         <>
         {/* width: "0px", height: "0px", visibility: "hidden"*/}
-        <div id={DRAWCANVASID} style={{}}></div>
+        <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
 
         <MapInteractionCSS
             showControls

@@ -14,7 +14,7 @@
     "labelOn": true,
     "label": {
         "text": "^{1}\\textrm{H}",
-        "padding": [0, 0, 0, 0],
+        "padding": [0, 4, 0, 0],
         "offset": [0, 0],
         "position": "top",
         "style": {

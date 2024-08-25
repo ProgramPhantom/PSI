@@ -63,22 +63,26 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
 
         var debugElement: Element;
 
-        this.debugSvg.rect(this.width, this.height)
+        // Children bounds
+        this.debugSvg.rect(this.childBounds.right - this.childBounds.left, this.childBounds.bottom - this.childBounds.top)
         .move(this.childBounds.left, this.childBounds.top).fill(colour).attr({"fill-opacity": 0.5}).id("debugSvg");
 
+        // Content Boundary
         this.debugSvg.rect(this.contentWidth, this.contentHeight)
         .move(this.contentBounds.left, this.contentBounds.top).attr({"fill-opacity": 0, "stroke-width": 0.5, "stroke": "red"});
 
+        // Boundary
         this.debugSvg.rect(this.width, this.height)    
         .move(this.bounds.left, this.bounds.top).attr({"stroke-width": 0.3, "stroke": "black", "fill-opacity": 0});
 
-        this.debugSvg.text(this.refName).font({size: 2}).ay(`${this.y+2}`).ax(`${this.x}`)
+        this.debugSvg.text(this.refName).font({size: 2}).ay(`${this.y+2}`).ax(`${this.x+1}`)
 
         // ---- Padding hash ----
-        var hash = this.debugSvg.pattern(4, 4, function(add) {
+        var hash = surface.pattern(4, 4, function(add) {
             add.path("M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
             .attr({"stroke": "black", "stroke-width": 1, "stroke-opacity": 0.3}).attr({"patternUnits": "userSpaceonUse"})
-        })
+        }).attr({"id": "hash"})
+        surface.add(hash)
 
         // Top
         this.debugSvg.rect(this.width, this.padding[0])    
@@ -136,6 +140,15 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
                 right = c.getFar(Dimensions.X) > right ? c.getFar(Dimensions.X) : right;
             }
         })
+
+        if (this.hasPosition) {
+            if (top < this.y || left < this.x) {
+                throw new Error("Child has been placed outside of collection content boundary")
+            }
+            top = this.contentY;
+            left = this.contentX;
+        }
+        
 
         var bounds = {top: top, right: right, bottom: bottom, left: left}
         var width = right - left;

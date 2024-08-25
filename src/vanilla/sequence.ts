@@ -138,9 +138,9 @@ export default class Sequence extends Collection {
             // this.labelColumn.devDraw(surface);
             // // this.positionalColumns.devDraw(surface);
 // 
-            // this.positionalColumns.children.forEach((c) => {
-            //     c.devDraw(surface, "green")
-            // })
+            this.positionalColumns.children.forEach((c) => {
+                c.devDraw(surface, "green")
+            })
 
             // this.channels.forEach((c) => {
             //     c.upperAligner.devDraw(surface, "orange");
@@ -150,7 +150,7 @@ export default class Sequence extends Collection {
             this.devDraw(surface, "cyan");
 
             this.channels.forEach((c) => {
-                c.devDraw(surface, "white")
+                c.devDraw(surface, "amber")
             })
         }
         
@@ -159,6 +159,7 @@ export default class Sequence extends Collection {
     } 
 
     insertColumn(index: number) {
+        console.log(`column at ${index}`)
         var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, alignment: Alignment.centre}, 
                                                             "default", `column at ${index}`);
 
