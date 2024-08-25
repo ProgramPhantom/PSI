@@ -49,27 +49,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
     }
 
 
-    devDraw(surface: Svg, colour: string="red", offset: number=0) {
-        if (!this.debugSvg) {
-            this.debugSvg = SVG()
-        }
-        
-        try {
-            surface.removeElement(this.debugSvg)
-        } catch {
-        
-        }
-        
-        if (this.mainAxis === Dimensions.X && this._y !== undefined) {
-            this.debugSvg = surface.rect(this.width, this.height)
-            .move(this.childBounds.left, this.childBounds.top).fill(colour).attr({"fill-opacity": 0.5});
-
-        } else if (this.x !== undefined ) {
-            this.debugSvg = surface.rect(this.width, this.height)
-            .move(this.childBounds.left, this.childBounds.top).fill(colour).attr({"fill-opacity": 0.5});
-        }
-    }
-
+   
     add(child: T, index?: number, alignItem: Alignment=Alignment.here) {
         // AlignItem takes precidence
         var alignChild: Alignment = alignItem !== Alignment.here ? alignItem : this.alignment;

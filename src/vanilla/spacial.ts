@@ -1,5 +1,6 @@
 import { Svg, Element } from "@svgdotjs/svg.js";
 import Point, { BinderGetFunction, BinderSetFunction, BindingRule, IPoint } from "./point";
+import { SVG } from "@svgdotjs/svg.js";
 
 export interface Bounds {
     top: number,
@@ -48,7 +49,7 @@ export default class Spacial extends Point {
     protected _contentWidth?: number;
     protected _contentHeight?: number;
 
-    debugSvg?: Element;
+    debugSvg: Svg = SVG().id(`debugSvg${this.refName}`);
 
     
     sizeBindings: SizeBinding[] = [];
@@ -101,11 +102,11 @@ export default class Spacial extends Point {
     }
 
     get contentBounds(): Bounds {
-        var top = this.y;
-        var left = this.x;
+        var top = this.contentY;
+        var left = this.contentX;
 
-        var bottom = this.y + (this.contentHeight ? this.contentHeight : 0);
-        var right = this.x + (this.contentWidth ? this.contentWidth : 0);
+        var bottom = this.contentY + (this.contentHeight ? this.contentHeight : 0);
+        var right = this.contentX + (this.contentWidth ? this.contentWidth : 0);
 
         return {top: top, right: right, bottom: bottom, left: left}
     }

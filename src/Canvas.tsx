@@ -84,8 +84,8 @@ export default function Canvas(props:  {script: string, zoom: number,
             c.remove();
         })
 
+
         props.drawSurface.current!.children().forEach((c) => {
-            // var newSvg: SVGElement = Object.assign(Object.create(Object.getPrototypeOf(c)), c)
             var newSvg: SVGElement = c.clone();
             newSvg.addTo(svgDestinationObj.current!);
 
@@ -162,7 +162,7 @@ export default function Canvas(props:  {script: string, zoom: number,
     return (
         <>
         {/* width: "0px", height: "0px", visibility: "hidden"*/}
-        <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
+        <div id={DRAWCANVASID} style={{}}></div>
 
         <MapInteractionCSS
             showControls

@@ -135,16 +135,22 @@ export default class Sequence extends Collection {
         }
 
         if ("dev mode" === "dev mode" && this.channels.length >= 1) {
-            this.labelColumn.devDraw(surface);
-            // this.positionalColumns.devDraw(surface);
+            // this.labelColumn.devDraw(surface);
+            // // this.positionalColumns.devDraw(surface);
+// 
+            // this.positionalColumns.children.forEach((c) => {
+            //     c.devDraw(surface, "green")
+            // })
 
-            this.positionalColumns.children.forEach((c) => {
-                c.devDraw(surface, "green")
-            })
+            // this.channels.forEach((c) => {
+            //     c.upperAligner.devDraw(surface, "orange");
+            //     c.lowerAligner.devDraw(surface, "orange");
+            // })
+
+            this.devDraw(surface, "cyan");
 
             this.channels.forEach((c) => {
-                // c.upperAligner.devDraw(surface, "yellow");
-                // c.lowerAligner.devDraw(surface, "yellow");
+                c.devDraw(surface, "white")
             })
         }
         
