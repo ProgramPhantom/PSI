@@ -205,6 +205,9 @@ export default class Spacial extends Point {
     subscribers: UpdateNotification[] = [];
 
     subscribe(toRun: UpdateNotification) {
+        if (this.refName === "label") {
+            console.log()
+        }
         this.subscribers.push(toRun);
     }
 

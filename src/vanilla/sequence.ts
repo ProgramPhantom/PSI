@@ -138,17 +138,17 @@ export default class Sequence extends Collection {
             // this.labelColumn.devDraw(surface);
             // // this.positionalColumns.devDraw(surface);
 // 
-            this.positionalColumns.children.forEach((c) => {
-                c.devDraw(surface, "green")
-            })
-
-            // this.channels.forEach((c) => {
-            //     c.upperAligner.devDraw(surface, "orange");
-            //     c.lowerAligner.devDraw(surface, "orange");
+            // this.positionalColumns.children.forEach((c) => {
+            //     c.devDraw(surface, "green")
             // })
 
-            this.devDraw(surface, "cyan");
+            this.channels.forEach((c) => {
+                c.upperAligner.devDraw(surface, "orange");
+                c.lowerAligner.devDraw(surface, "orange");
+            })
 
+            // this.devDraw(surface, "cyan");
+// 
             this.channels.forEach((c) => {
                 c.devDraw(surface, "amber")
             })

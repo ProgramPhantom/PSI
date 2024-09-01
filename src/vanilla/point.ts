@@ -143,11 +143,18 @@ export default class Point {
     }
 
     public enforceBinding() {
-        if (this.refName === "label") {
+        if (this.refName === "channel") {
             console.log()
         }
 
+        
+
         for (const binding of this.bindings) {
+
+            if (this.refName === "top aligner") {
+                console.log()
+            }
+
             var targetElement: Point = binding.targetObject;
             var getter: BinderGetFunction = this.AnchorFunctions[binding.bindingRule.anchorSiteName as keyof typeof this.AnchorFunctions].get;
             var setter: BinderSetFunction = targetElement.AnchorFunctions[binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions].set;

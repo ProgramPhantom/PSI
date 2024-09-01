@@ -88,7 +88,7 @@ export default function Canvas(props:  {script: string, zoom: number,
         props.drawSurface.current!.children().forEach((c) => {
             var newSvg: SVGElement = c.clone();
             var originalId = c.id();
-            console.log(originalId, newSvg)
+
             newSvg.id(originalId)
             newSvg.addTo(svgDestinationObj.current!);
 

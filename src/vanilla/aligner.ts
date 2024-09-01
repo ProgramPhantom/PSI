@@ -55,7 +55,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         var alignChild: Alignment = alignItem !== Alignment.here ? alignItem : this.alignment;
         const INDEX = index !== undefined ? index : this.children.length;
 
-        if (this.refName === "pos col collection") {
+        if (this.refName === "top aligner") {
             console.log(".")
         }
 
@@ -86,7 +86,12 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         
         // cross AXIS
         if (alignChild !== Alignment.none) {  // Optimisation AND is required
-            this.setSizeByDimension(child.getSizeByDimension(this.crossAxis), this.crossAxis);
+            var crossAxisSizeChild = child.getSizeByDimension(this.crossAxis);
+            var crossAxisSize = this.getSizeByDimension(this.crossAxis);  
+
+            if (crossAxisSizeChild > crossAxisSize) {
+                this.setSizeByDimension(child.getSizeByDimension(this.crossAxis), this.crossAxis);
+            }
         }
 
         switch (alignChild) {

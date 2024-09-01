@@ -56,7 +56,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         try {
             // this.debugSvg.remove()
             surface.removeElement(this.debugSvg)
-            console.log(`"Removed debug svg", ${this.debugSvg.dom}`)
+            // console.log(`"Removed debug svg", ${this.debugSvg.dom}`)
         } catch {
             console.error(`"Cannot remove debug svg", ${this.debugSvg}`)
         }
@@ -120,6 +120,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         }
         
         this.computeBoundry();
+
+        // A final compute 
     }
 
     computeBoundry(): void {
@@ -128,6 +130,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         var left = Infinity;
         var bottom = -Infinity;
         var right = -Infinity;
+
+        
 
         this.children.forEach((c) => {
             if (c.definedVertically) {
@@ -143,7 +147,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
 
         if (this.hasPosition) {
             if (top < this.y || left < this.x) {
-                throw new Error("Child has been placed outside of collection content boundary")
+                // throw new Error("Child has been placed outside of collection content boundary")
+                console.warn("Child has been placed outside of collection content boundary")
             }
             top = this.contentY;
             left = this.contentX;
@@ -168,7 +173,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
             right: right
         }
        
-        if (this.refName === "label column") {
+        if (this.refName === "top aligner") {
             console.log()
         }
 }
