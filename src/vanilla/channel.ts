@@ -14,7 +14,7 @@ import PaddedBox from "./paddedBox";
 import Collection, { ICollection } from "./collection";
 import Point from "./point";
 import Spacial, { Dimensions } from "./spacial";
-import RectElement from "./rectElement";
+import RectElement, { IRectStyle } from "./rectElement";
 import Aligner from "./aligner";
  
 interface Dim {
@@ -37,7 +37,7 @@ export interface IChannel extends ICollection {
     positionalElements: Positional<Visual>[],
     identifier: string;
 
-    style: channelStyle;
+    style: IChannelStyle;
 
     labelOn: boolean;
     label: ILabel;
@@ -46,11 +46,9 @@ export interface IChannel extends ICollection {
 }
 
 
-export interface channelStyle {
+export interface IChannelStyle {
     thickness: number,
-    fill: string,
-    stroke?: string | null,  
-    strokeWidth?: number | null
+    barStyle: IRectStyle
 }
 
 export interface channelAnnotation {
@@ -61,7 +59,7 @@ export interface channelAnnotation {
 export default class Channel extends Collection {
     static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
 
-    style: channelStyle;
+    style: IChannelStyle;
     identifier: string;
 
     public upperAligner: Aligner<Visual>;
@@ -135,7 +133,7 @@ export default class Channel extends Collection {
         this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, true);
         
         
-        this.bar = new RectElement({height: this.style.thickness}, "bar");
+        this.bar = new RectElement({height: this.style.thickness, style: this.style.barStyle}, "bar");
         this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here");
 
         this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here}, "default", "bottom aligner");

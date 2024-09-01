@@ -6,9 +6,11 @@
 
     "style": {
         "thickness": 3,
-        "fill": "#000000",
-        "stroke": null,
-        "strokeWidth": null
+        "barStyle": {
+            "fill": "#000000",
+            "stroke": null,
+            "strokeWidth": null
+        }
     },
 
     "labelOn": true,

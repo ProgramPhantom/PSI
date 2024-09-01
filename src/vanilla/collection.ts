@@ -78,27 +78,27 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         this.debugSvg.text(this.refName).font({size: 2}).ay(`${this.y+2}`).ax(`${this.x+1}`)
 
         // ---- Padding hash ----
-        var hash = surface.pattern(4, 4, function(add) {
-            add.path("M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
-            .attr({"stroke": "black", "stroke-width": 1, "stroke-opacity": 0.3}).attr({"patternUnits": "userSpaceonUse"})
-        }).attr({"id": "hash"})
-        surface.add(hash)
+        // var hash = surface.pattern(4, 4, function(add) {
+        //     add.path("M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
+        //     .attr({"stroke": "black", "stroke-width": 1, "stroke-opacity": 0.3}).attr({"patternUnits": "userSpaceonUse"})
+        // }).attr({"id": "hash"})
+        // surface.add(hash)
 
         // Top
-        this.debugSvg.rect(this.width, this.padding[0])    
-            .move(this.bounds.left, this.bounds.top).attr({}).fill(hash);
-        // Bottom
-        this.debugSvg.rect(this.width, this.padding[2])    
-            .move(this.bounds.left, this.contentBounds.bottom).attr({}).fill(hash);
-
-        // Left
-        this.debugSvg.rect(this.padding[3], this.contentHeight)    
-            .move(this.bounds.left, this.contentBounds.top).attr({}).fill(hash);
-        // Right
-        this.debugSvg.rect(this.padding[1], this.contentHeight)    
-            .move(this.contentBounds.right, this.contentBounds.top).attr({}).fill(hash);
-
-        // this.debugSvg.add(childBounds);
+        // this.debugSvg.rect(this.width, this.padding[0])    
+        //     .move(this.bounds.left, this.bounds.top).attr({}).fill(hash);
+        // // Bottom
+        // this.debugSvg.rect(this.width, this.padding[2])    
+        //     .move(this.bounds.left, this.contentBounds.bottom).attr({}).fill(hash);
+// 
+        // // Left
+        // this.debugSvg.rect(this.padding[3], this.contentHeight)    
+        //     .move(this.bounds.left, this.contentBounds.top).attr({}).fill(hash);
+        // // Right
+        // this.debugSvg.rect(this.padding[1], this.contentHeight)    
+        //     .move(this.contentBounds.right, this.contentBounds.top).attr({}).fill(hash);
+// 
+        // // this.debugSvg.add(childBounds);
        
 
         // this.debugSvg.add(childBounds)

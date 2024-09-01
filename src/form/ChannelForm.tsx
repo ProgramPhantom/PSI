@@ -149,7 +149,7 @@ function ChannelForm(props: {sequence: SequenceHandler}) {
                                 label="Fill"
                                 labelFor="text-input">
             
-                                <Controller control={control} name="style.fill" render={({field}) => (
+                                <Controller control={control} name="style.barStyle.fill" render={({field}) => (
                                     <input type={"color"} {...field}></input>)}>
                                 </Controller>
                             </FormGroup>
@@ -159,7 +159,7 @@ function ChannelForm(props: {sequence: SequenceHandler}) {
                                 label="Stroke"
                                 labelFor="text-input">
             
-                                <Controller control={control} name="style.stroke" render={({field}) => (
+                                <Controller control={control} name="style.barStyle.stroke" render={({field}) => (
                                     <input type={"color"} {...field}></input>)}>
                                 </Controller>
                             </FormGroup>
@@ -168,7 +168,7 @@ function ChannelForm(props: {sequence: SequenceHandler}) {
                                 inline={true}
                                 label="Stroke Width"
                                 labelFor="text-input">
-                                <Controller control={control} name="style.strokeWidth" render={({field}) => (
+                                <Controller control={control} name="style.barStyle.strokeWidth" render={({field}) => (
                                     <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
                                 </Controller>
                             </FormGroup>

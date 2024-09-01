@@ -6,7 +6,7 @@ import { simplePulses } from "./default/data/simplePulse";
 import defaultBar from "./default/data/bar.json";
 import Positional, { IPositional } from "./positional";
 
-interface IRectStyle {
+export interface IRectStyle {
 	fill: string,
 	stroke?: string,
 	strokeWidth?: number

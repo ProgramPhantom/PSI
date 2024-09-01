@@ -3,7 +3,7 @@ import Canvas from './Canvas'
 import Editor from './Editor'
 import Channel from './vanilla/channel';
 import { SVG, extend as SVGextend, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import { IChannel, channelStyle } from './vanilla/channel';
+import { IChannel, IChannelStyle } from './vanilla/channel';
 import { IPositional } from './vanilla/positional';
 import Form from './Form';
 import SequenceHandler from './vanilla/sequenceHandler';

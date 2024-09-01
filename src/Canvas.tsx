@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef, useLayoutEffect} from 'react'
 import { SVG, extend as SVGextend, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Channel from './vanilla/channel';
-import { IChannel, channelStyle } from './vanilla/channel';
+import { IChannel, IChannelStyle } from './vanilla/channel';
 import Sequence from "./vanilla/sequence";
 import { ScriptError } from './vanilla/parser';
 import SequenceHandler from './vanilla/sequenceHandler';
