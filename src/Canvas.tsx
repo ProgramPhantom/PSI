@@ -11,6 +11,7 @@ import { MapInteractionCSS } from 'react-map-interaction';
 import DropArea from './dnd/InsertArea';
 import DraggableElement from './dnd/DraggableElement';
 import DropField from './dnd/DropField';
+import { Visual } from './vanilla/visual';
 
 type MapState = {scale: Number, translation: {x: number, y: number}}
 
@@ -89,8 +90,12 @@ export default function Canvas(props:  {script: string, zoom: number,
             var newSvg: SVGElement = c.clone();
             var originalId = c.id();
 
+            // RECURSION
+
             newSvg.id(originalId)
-            newSvg.addTo(svgDestinationObj.current!);
+            console.log(newSvg)
+            
+            svgDestinationObj.current!.add(newSvg).id(originalId);
 
             // Following did not work because this broke the connection between the svg inside the rect class and the parent,
             // drawSvg element destruction is now handled by element class.
@@ -162,6 +167,26 @@ export default function Canvas(props:  {script: string, zoom: number,
     }, [parseErr.current as string, drawErr.current as string])
 
 
+    function canvasClicked(click: React.MouseEvent<HTMLDivElement>) {
+        console.log(click)
+        
+        var targetId: string | undefined;
+        if ((click.target as HTMLDivElement).tagName === "path") {
+            console.log("Selected PATH")
+            targetId = (click.target as HTMLDivElement).parentElement?.id;
+        } else {
+            targetId = (click.target as HTMLDivElement).id;
+        }
+
+        if (targetId === undefined) { console.warn(`Cannot find id for ${click}`); return}
+        
+        console.log(`Selected "${targetId}"`)
+
+        var element: Visual | undefined = props.handler.selectElement(targetId);
+        console.log(element)
+    }
+
+
     return (
         <>
         {/* width: "0px", height: "0px", visibility: "hidden"*/}
@@ -184,7 +209,7 @@ export default function Canvas(props:  {script: string, zoom: number,
             }}
             >
             
-            <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}}>
+            <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}} onClick={(e) => canvasClicked(e)}>
                 
             </div>
             <DropField sequence={props.handler}></DropField>

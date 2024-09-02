@@ -74,8 +74,17 @@ export default class SVGElement extends Visual {
 			})
 	
 			this.svg.move(this.contentX + this.offset[0], this.contentY + this.offset[1]);
-			this.svg.size(this.contentWidth, this.contentHeight);
+			this.svg.size(this.contentWidth, this.contentHeight).fill("#fff");
+
+			this.id = this.svg.id();
+
+			// var clickArea = SVG(`<rect height="100%" width="100%" style="fill: #fff; fill-opacity: 0">`).id(this.id);
+			// this.svg.add(clickArea);
+			//clickArea.id(this.id)
+
 			surface.add(this.svg);
+
+			
 		}
         
     }

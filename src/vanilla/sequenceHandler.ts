@@ -191,4 +191,25 @@ export default class SequenceHandler {
         this.sequence.draw(this.surface);
         this.refresh(this.id);
     }
+
+    // UI Commands:
+    selectElement(id: string): Visual | undefined {
+        var element: Visual | undefined = undefined;
+
+        // Search for element:
+        this.channels.forEach((c) => {
+            c.positionalElements.forEach((p) => {
+                if (p.element.id === id) {
+                    element = p.element;
+                }
+            })
+        })
+
+        if (element === undefined) {
+            console.warn(`Cannot find element "${id}"`);
+            return undefined;
+        } else {
+            return element;
+        }
+    }
 }

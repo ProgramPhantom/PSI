@@ -45,8 +45,6 @@ export default class RectElement extends Visual {
             if (this.svg) {
                 surface.removeElement(this.svg);
             }
-            
-
 
             this.svg = surface.rect(this.contentWidth, this.contentHeight)
             .attr({fill: this.style.fill,
@@ -55,6 +53,8 @@ export default class RectElement extends Visual {
             .attr({"stroke-width": this.style.strokeWidth,
                    "shape-rendering": "crispEdges"
             });
+
+            this.id = this.svg.id();
         }
     
     }
