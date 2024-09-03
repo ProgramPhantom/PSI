@@ -37,7 +37,7 @@ export default function Canvas(props:  {script: string, zoom: number,
     updateChannels: (c: string[]) => void,
     provideErrors: (parseError: string, drawError: string) => void,
     drawSurface: React.MutableRefObject<Svg | undefined>
-    select: (element: Visual) => void}) {
+    select: (element: Visual | undefined) => void}) {
 
     const svgDestinationObj = useRef<Svg>();
 
@@ -180,12 +180,17 @@ export default function Canvas(props:  {script: string, zoom: number,
             targetId = (click.target as HTMLDivElement).id;
         }
 
-        if (targetId === undefined) { console.warn(`Cannot find id for ${click}`); return}
+        if (targetId === undefined) { 
+            console.warn(`Cannot find id for ${click}`);
+            return
+        }
         
         var element: Visual | undefined = props.handler.selectElement(targetId);
         
         if (element !== undefined) {
             props.select(element)
+        } else {
+            props.select(undefined)
         }
         
     }

@@ -35,7 +35,7 @@ function App() {
                                     provideErrors={UpdateErrors}
                                     drawSurface={svgDrawObj} sequenceId={id} select={SelectElement}></Canvas>
 
-  const [form, setForm] = useState<ReactNode | undefined>(undefined);
+  const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
 
   function Refresh(uid: string) {
@@ -70,17 +70,25 @@ function App() {
     FileSaver.saveAs(blob, "sequence.nmpd");
   }
 
-  function SelectElement(element: Visual) {
+  function SelectElement(element: Visual | undefined) {
     var newForm: ReactNode;
 
+    if (element === undefined) {
+      console.log("Resetting form")
+      setSelectedElement(null);
+      setForm(null);
+      return;
+    }
+
+    setSelectedElement(element);
     if (typeof Visual === typeof SVGElement) {
         // React Hook Forms breaks if the class object is used as the default vals.
         // Therefore, this keeps only the properties concerned for ISVG
         var elementSVGData = UpdateObj(svgPulses[180], element);  
         
         var newForm: ReactNode = <SVGForm sequence={handle.current} defaultVals={(elementSVGData as SVGElement)}></SVGForm>
+        
     }
-
 
     setForm(newForm)
   }

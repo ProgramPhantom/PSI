@@ -10,7 +10,7 @@ import SVGForm from './form/SVGForm';
 
 type FormStructures = IChannel | PositionalSVG | PositionalRect
 
-function Form(props: {AddCommand: (line: string) => void, channelOptions: string[], sequence: SequenceHandler, form?: ReactNode}) {
+function Form(props: {AddCommand: (line: string) => void, channelOptions: string[], sequence: SequenceHandler, form: ReactNode | null}) {
     const [selectedEl, setSelectedEl] = useState<string>("~");
     const [selectedChannel, setSelectedChannel] = useState<string>(props.channelOptions[0])
 
@@ -25,7 +25,7 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
         <>
             <div style={{padding: 20}}>
                 {
-                    props.form === undefined ? 
+                    props.form === null ? 
                         (<ChannelForm sequence={props.sequence} defaultVals={channelData}></ChannelForm>)
                      :  (props.form )
                 }
