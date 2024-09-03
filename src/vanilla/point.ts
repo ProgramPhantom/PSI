@@ -39,7 +39,7 @@ export interface IPoint {
 }
 
 
-export default class Point {
+export default class Point implements IPoint {
     AnchorFunctions = {
         "here": {
             // Anchors:

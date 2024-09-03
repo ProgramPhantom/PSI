@@ -8,9 +8,7 @@ import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, Section, Slide
 
 function LabelForm(props: {control: Control<any>, change: () => void}) {
 
-
   const onSubmit = (data: FieldValues) => console.log(data);
-  // onSubmit={handleSubmit(onSubmit)}x
 
   return (
     <form onChange={() => {console.log("CHANGE")}} onSubmit={() => props.change()}>

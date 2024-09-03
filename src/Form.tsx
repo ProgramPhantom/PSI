@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from 'react'
+import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react'
 import ChannelForm from './form/ChannelForm';
 import { FieldValue, FieldValues, useForm } from 'react-hook-form';
 import { IChannel } from './vanilla/channel';
@@ -6,10 +6,11 @@ import { PositionalSVG } from './vanilla/svgElement';
 import { PositionalRect } from './vanilla/rectElement';
 import { defaultChannel } from './vanilla/default/data';
 import SequenceHandler from './vanilla/sequenceHandler';
+import SVGForm from './form/SVGForm';
 
 type FormStructures = IChannel | PositionalSVG | PositionalRect
 
-function Form(props: {AddCommand: (line: string) => void, channelOptions: string[], sequence: SequenceHandler}) {
+function Form(props: {AddCommand: (line: string) => void, channelOptions: string[], sequence: SequenceHandler, form?: ReactNode}) {
     const [selectedEl, setSelectedEl] = useState<string>("~");
     const [selectedChannel, setSelectedChannel] = useState<string>(props.channelOptions[0])
 
@@ -17,12 +18,18 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
         setSelectedChannel(props.channelOptions[props.channelOptions.length-1]);
     }, [props.channelOptions])
 
+    var channelData: IChannel = (defaultChannel as any);
 
     
     return (
         <>
             <div style={{padding: 20}}>
-                <ChannelForm sequence={props.sequence}></ChannelForm>
+                {
+                    props.form === undefined ? 
+                        (<ChannelForm sequence={props.sequence} defaultVals={channelData}></ChannelForm>)
+                     :  (props.form )
+                }
+                
             </div>
         </>
     ) // Use key in Dynamic form so it forces a remount, triggering the inital values in the form

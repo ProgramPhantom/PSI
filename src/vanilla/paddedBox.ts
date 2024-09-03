@@ -26,7 +26,7 @@ export interface IPaddedBox extends ISpacial {
 }
 
 // After inheriting from this class, x and y are now located away from the actual content, defined by this.padding.
-export default abstract class PaddedBox extends Spacial {
+export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 
     padding: [number, number, number, number] = [0, 0, 0, 0];
     

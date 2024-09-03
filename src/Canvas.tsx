@@ -1,6 +1,7 @@
-import React, {useEffect, useState, useRef, useLayoutEffect} from 'react'
-import { SVG, extend as SVGextend, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
+import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement} from 'react'
+import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
 import Channel from './vanilla/channel';
+import SVGElement, { ISVG } from './vanilla/svgElement';
 import { IChannel, IChannelStyle } from './vanilla/channel';
 import Sequence from "./vanilla/sequence";
 import { ScriptError } from './vanilla/parser';
@@ -12,6 +13,9 @@ import DropArea from './dnd/InsertArea';
 import DraggableElement from './dnd/DraggableElement';
 import DropField from './dnd/DropField';
 import { Visual } from './vanilla/visual';
+import SVGForm from './form/SVGForm';
+import { svgPulses } from './vanilla/default/data/svgPulse';
+import { UpdateObj } from './vanilla/util';
 
 type MapState = {scale: Number, translation: {x: number, y: number}}
 
@@ -32,7 +36,8 @@ export default function Canvas(props:  {script: string, zoom: number,
     sequenceId: string,
     updateChannels: (c: string[]) => void,
     provideErrors: (parseError: string, drawError: string) => void,
-    drawSurface: React.MutableRefObject<Svg | undefined>}) {
+    drawSurface: React.MutableRefObject<Svg | undefined>
+    select: (element: Visual) => void}) {
 
     const svgDestinationObj = useRef<Svg>();
 
@@ -87,13 +92,12 @@ export default function Canvas(props:  {script: string, zoom: number,
 
 
         props.drawSurface.current!.children().forEach((c) => {
-            var newSvg: SVGElement = c.clone();
+            var newSvg: Element = c.clone();
             var originalId = c.id();
 
             // RECURSION
 
             newSvg.id(originalId)
-            console.log(newSvg)
             
             svgDestinationObj.current!.add(newSvg).id(originalId);
 
@@ -123,7 +127,6 @@ export default function Canvas(props:  {script: string, zoom: number,
                 
             } else {
                 parseErr.current = e as string;
-                throw e
             }
       
         }
@@ -133,7 +136,6 @@ export default function Canvas(props:  {script: string, zoom: number,
         } catch (e) {
             
             drawErr.current = e as string;
-            throw e
         }
 
         ys = [10]
@@ -172,7 +174,7 @@ export default function Canvas(props:  {script: string, zoom: number,
         
         var targetId: string | undefined;
         if ((click.target as HTMLDivElement).tagName === "path") {
-            console.log("Selected PATH")
+            
             targetId = (click.target as HTMLDivElement).parentElement?.id;
         } else {
             targetId = (click.target as HTMLDivElement).id;
@@ -180,10 +182,12 @@ export default function Canvas(props:  {script: string, zoom: number,
 
         if (targetId === undefined) { console.warn(`Cannot find id for ${click}`); return}
         
-        console.log(`Selected "${targetId}"`)
-
         var element: Visual | undefined = props.handler.selectElement(targetId);
-        console.log(element)
+        
+        if (element !== undefined) {
+            props.select(element)
+        }
+        
     }
 
 

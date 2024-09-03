@@ -30,7 +30,7 @@ export interface ISpacial extends IPoint {
 export type UpdateNotification = (...args: any[]) => any
 
 
-export default class Spacial extends Point {
+export default class Spacial extends Point implements ISpacial {
     AnchorFunctions = {
         "here": {
             get: this.getNear.bind(this),

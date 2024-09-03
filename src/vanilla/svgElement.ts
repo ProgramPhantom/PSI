@@ -39,7 +39,7 @@ export interface ISVG extends IVisual {
 
 
 export type PositionalSVG = ISVG & IPositional;
-export default class SVGElement extends Visual {
+export default class SVGElement extends Visual implements ISVG {
     static defaults: {[key: string]: PositionalSVG} = {...<any>svgPulses};
 
 	style: ISVGStyle;

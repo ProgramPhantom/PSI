@@ -34,10 +34,9 @@ export interface IVisual extends IPaddedBox {
 
 
 
-export abstract class Visual extends PaddedBox {
+export abstract class Visual extends PaddedBox implements IVisual {
     
-
-    offset: number[];
+    offset: [number, number];
 
     svg?: Element;
 

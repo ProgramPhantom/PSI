@@ -49,3 +49,7 @@ export type RecursivePartial<T> = {
     T[P] extends object | undefined ? RecursivePartial<T[P]> :
     T[P];
 };
+
+export type ClassProperties<C> = {  
+  [Key in keyof C as C[Key] extends Function ? never : Key]: C[Key]
+}

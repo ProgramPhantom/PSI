@@ -7,18 +7,36 @@ import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, 
 import PositionalForm from './PositionalForm';
 import LabelForm from './LabelForm';
 import ArrowForm from './ArrowForm';
+import SequenceHandler from '../vanilla/sequenceHandler';
+import SVGElement, { ISVG } from '../vanilla/svgElement';
+import { svgPulses } from '../vanilla/default/data/svgPulse';
+import { dataTypes } from '@data-driven-forms/react-form-renderer';
+import { ClassProperties } from '../vanilla/util';
 
+interface ISVGForm {
+    sequence: SequenceHandler, 
+    defaultVals: ISVG
+}
 
-
-function SVGForm(props: {control: Control<any>, change: () => void}) {
-
+const SVGForm: React.FC<ISVGForm> = (props) => {
+    try {
+        Object.setPrototypeOf(props.defaultVals, null)
+    } catch {}
+    
+    console.log(props.defaultVals)
+    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<ISVG>({
+        defaultValues: {...props.defaultVals},
+        mode: "onChange"
+    });
   
 
-  const onSubmit = (data: FieldValues) => console.log(data);
-  // onSubmit={handleSubmit(onSubmit)}x
+  const onSubmit = (data: ISVG) => {
+    console.log(`New data: ${data}`);
+  };
+  
 
   return (
-    <form onChange={() => {console.log("CHANGE")}} onSubmit={() => props.change()}>
+    <form onChange={() => {console.log("CHANGE")}} onSubmit={() => handleSubmit(onSubmit)}>
 
       <h3>SVG Pulse</h3>
 
@@ -30,7 +48,7 @@ function SVGForm(props: {control: Control<any>, change: () => void}) {
                     inline={true}
                     label="SVG"
                     labelFor="text-input">
-                <Controller control={props.control} name="path" render={({field}) => (
+                <Controller control={control} name="path" render={({field}) => (
                         <HTMLSelect {...field} iconName='caret-down'>
                             <option value={"\\src\\assets\\aquire2.svg"}>Aquire</option>
                             <option value={"\\src\\assets\\saltirelohi.svg"}>SaltireHiLo</option>
@@ -58,7 +76,7 @@ function SVGForm(props: {control: Control<any>, change: () => void}) {
                         inline={true}
                         label="Width"
                         labelFor="text-input">
-                            <Controller control={props.control} name="style.width" render={({field}) => (
+                            <Controller control={control} name="style.width" render={({field}) => (
                                 <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
                             </Controller>
                         </FormGroup>
@@ -67,19 +85,19 @@ function SVGForm(props: {control: Control<any>, change: () => void}) {
                             inline={true}
                             label="Height"
                             labelFor="text-input">
-                            <Controller control={props.control} name="style.height" render={({field}) => (
+                            <Controller control={control} name="style.height" render={({field}) => (
                                 <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
                             </Controller>
                         </FormGroup>
                     </ControlGroup>
                 </Section>
     
-                <PositionalForm control={props.control} change={props.change}></PositionalForm>
+                <PositionalForm control={control} change={() => {}}></PositionalForm>
                 </>
                 
             } />
-            <Tab id="label" title="Label" panel={<LabelForm control={props.control} change={props.change}></LabelForm>}/>
-            <Tab id="arrow" title="Arrow" panel={<ArrowForm control={props.control} change={props.change}></ArrowForm>} />
+            <Tab id="label" title="Label" panel={<LabelForm control={control} change={() => {}}></LabelForm>}/>
+            <Tab id="arrow" title="Arrow" panel={<ArrowForm control={control} change={() => {}}></ArrowForm>} />
 
       </Tabs>
     </form>

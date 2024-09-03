@@ -8,8 +8,8 @@ import Positional, { IPositional } from "./positional";
 
 export interface IRectStyle {
 	fill: string,
-	stroke?: string,
-	strokeWidth?: number
+	stroke: string | null,
+	strokeWidth: number | null
 }
 
 export interface IRect extends IVisual {
@@ -19,7 +19,7 @@ export interface IRect extends IVisual {
 }
 
 export type PositionalRect = IRect & IPositional
-export default class RectElement extends Visual {
+export default class RectElement extends Visual implements IRect {
 	static defaults: {[key: string]: PositionalRect } = {...<any>simplePulses,
         "bar": <any>defaultBar
     };
