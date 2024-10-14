@@ -14,8 +14,8 @@ export interface IRectStyle {
 
 export interface IRect extends IVisual {
 	style: IRectStyle,
-    width: number,
-    height: number
+    contentWidth: number,
+    contentHeight: number
 }
 
 export type PositionalRect = IRect & IPositional

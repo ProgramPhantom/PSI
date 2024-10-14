@@ -10,8 +10,8 @@
     "padding": [0, 1, 0, 1],
     "offset": [0, 1],
     "path": "\\src\\assets\\chirplohi.svg",
-    "width": 50,
-    "height": 20,
+    "contentWidth": 50,
+    "contentHeight": 20,
     
     "labelOn": false,
     "label": {

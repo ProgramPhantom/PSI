@@ -27,7 +27,7 @@ function Form(props: {AddCommand: (line: string) => void, channelOptions: string
                 {
                     props.form === null ? 
                         (<ChannelForm sequence={props.sequence} defaultVals={channelData}></ChannelForm>)
-                     :  (props.form )
+                     :  (props.form)
                 }
                 
             </div>

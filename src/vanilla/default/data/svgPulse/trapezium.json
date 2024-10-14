@@ -10,8 +10,8 @@
     "padding": [0, 0, 0, 0],
     "offset": [0, 1],
     "path": "\\src\\assets\\trapezium.svg",
-    "width": 60,
-    "height": 10,
+    "contentWidth": 60,
+    "contentHeight": 10,
     
 
     "labelOn": true,

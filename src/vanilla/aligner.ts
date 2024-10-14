@@ -22,8 +22,8 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             axis: Dimensions.X,
             bindMainAxis: false,
             alignment: Alignment.here,
-            width: 0,
-            height: 0,
+            contentWidth: 0,
+            contentHeight: 0,
             x: undefined,
             y: undefined,
             offset: [0, 0],
@@ -48,8 +48,6 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         this.alignment = fullParams.alignment;
     }
 
-
-   
     add(child: T, index?: number, alignItem: Alignment=Alignment.here) {
         // AlignItem takes precidence
         var alignChild: Alignment = alignItem !== Alignment.here ? alignItem : this.alignment;
@@ -113,5 +111,4 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         child.subscribe(this.computeBoundry.bind(this));
         this.computeBoundry();
     }
-
 }

@@ -50,17 +50,17 @@ export default class Annotation extends PaddedBox {
         
 
         if (this.label) {
-            height = this.label.height;
-            width = this.label.width;
+            height = this.label.contentHeight;
+            width = this.label.contentWidth;
         }
         if (this.arrow) {
             if (this.arrow.position !== ArrowPosition.inline) {
-                height += this.arrow.height;
-            } else if (this.arrow.height >= height) {  // Inline
-                height = this.arrow.height;
+                height += this.arrow.contentHeight;
+            } else if (this.arrow.contentHeight >= height) {  // Inline
+                height = this.arrow.contentHeight;
             }
 
-            width = this.arrow.width;
+            width = this.arrow.contentWidth;
         }
 
         return {width: width, height: height}
@@ -71,7 +71,7 @@ export default class Annotation extends PaddedBox {
         var level;
 
         if (this.label) {
-            this.label.place({x: this.x + this.width/2 - this.label.contentWidth/2, y: this.y})
+            this.label.place({x: this.x + this.contentWidth/2 - this.label.contentWidth/2, y: this.y})
         }
 
         if (this.arrowOn && this.arrow) {
@@ -81,7 +81,7 @@ export default class Annotation extends PaddedBox {
                     this.arrow.set(this.x, level, this.x + this.contentWidth, level);
 
                     if ((this.label !== undefined)) {
-                        this.label.move({dy: this.arrow.height})
+                        this.label.move({dy: this.arrow.contentHeight})
                     }
                     break;
                 case ArrowPosition.inline:  // Arrow inline
@@ -100,7 +100,7 @@ export default class Annotation extends PaddedBox {
                     if (this.label) {
                         this.label.y = this.y;
                         
-                        level = this.y + this.label.height + this.arrow.padding[0];
+                        level = this.y + this.label.contentHeight + this.arrow.padding[0];
                     } else {
                         level = this.y - this.arrow.padding[2] - this.arrow.style.thickness;
                     }

@@ -8,6 +8,7 @@ import Annotation, { IAnnotation } from "./annotation";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import defaultPositional from "./default/data/positional.json";
 import RectElement, { IRect } from "./rectElement";
+import Channel from "./channel";
 
 interface Dim {
     width: number,
@@ -48,7 +49,6 @@ export interface IConfig {
 
 export interface IPositional {
     config: IConfig
-    
 }
 
 
@@ -62,11 +62,16 @@ export default class Positional<T extends Visual> {
     config: IConfig;
     element: T;
 
-    constructor(object: T, params: RecursivePartial<IPositional>, defaults: IPositional) {
+    channel: Channel;
+    index: number | undefined;
+
+    constructor(object: T, channel: Channel, params: RecursivePartial<IPositional>, defaults: IPositional=Positional.defaults["default"]) {
         var fullParams: IPositional = FillObject(params, defaults);
         
         this.element = object;
         this.config = {...fullParams.config};
+
+        this.channel = channel;
 
         if (this.config.orientation === Orientation.bottom) {
             this.element.verticalFlip();

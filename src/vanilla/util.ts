@@ -11,7 +11,7 @@ function isEmpty(obj: any) {
 export function UpdateObj(template: any, partial: any) {
     var templateKeyval = Object.entries(template);
     let newObj = {...template}
-    let partialObj = {...partial}
+    let partialObj = partial;
   
     templateKeyval.forEach(([key, val]) => {
       if (typeof val === "object" && 

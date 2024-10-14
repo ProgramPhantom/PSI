@@ -16,6 +16,7 @@ import { Visual } from './vanilla/visual';
 import SVGForm from './form/SVGForm';
 import { svgPulses } from './vanilla/default/data/svgPulse';
 import { UpdateObj } from './vanilla/util';
+import Positional from './vanilla/positional';
 
 type MapState = {scale: Number, translation: {x: number, y: number}}
 
@@ -37,7 +38,7 @@ export default function Canvas(props:  {script: string, zoom: number,
     updateChannels: (c: string[]) => void,
     provideErrors: (parseError: string, drawError: string) => void,
     drawSurface: React.MutableRefObject<Svg | undefined>
-    select: (element: Visual | undefined) => void}) {
+    select: (element?: Positional<Visual>) => void}) {
 
     const svgDestinationObj = useRef<Svg>();
 
@@ -185,7 +186,8 @@ export default function Canvas(props:  {script: string, zoom: number,
             return
         }
         
-        var element: Visual | undefined = props.handler.selectElement(targetId);
+        var element: Positional<Visual> | undefined = props.handler.selectPositional(targetId);
+        
         
         if (element !== undefined) {
             props.select(element)
@@ -199,7 +201,7 @@ export default function Canvas(props:  {script: string, zoom: number,
     return (
         <>
         {/* width: "0px", height: "0px", visibility: "hidden"*/}
-        <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
+        <div id={DRAWCANVASID} style={{}}></div>
 
         <MapInteractionCSS
             showControls

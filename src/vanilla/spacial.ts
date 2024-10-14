@@ -23,8 +23,8 @@ export interface SizeBinding {
 }
 
 export interface ISpacial extends IPoint {
-    width?: number,
-    height?: number,
+    contentWidth?: number,
+    contentHeight?: number,
 }
 
 export type UpdateNotification = (...args: any[]) => any
@@ -324,9 +324,9 @@ export default class Spacial extends Point implements ISpacial {
     getSizeByDimension(dim: Dimensions): number {
         switch (dim) {
             case Dimensions.X:
-                return this.width;
+                return this.contentWidth;
             case Dimensions.Y:
-                return this.height;
+                return this.contentHeight;
         }
     }
 }

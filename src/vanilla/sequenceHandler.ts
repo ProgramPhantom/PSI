@@ -90,27 +90,27 @@ export default class SequenceHandler {
     positional(elementName: string, channelName: string, pParameters: RecursivePartial<IPositionalType>, index?: number, insert: boolean=false) {
         // var positionalType: typeof Positional = SequenceHandler.positionalTypes[elementName];
         var positionalType = SequenceHandler.positionalTypes[elementName];
-
+        var channel: Channel = this.sequence.channelsDic[channelName];
 
         var element;
         index
         
         // Fix for now.
         var defaults;
-        var newPositional: Positional<Visual>;
+        var newPositional: Positional<Visual> | undefined;
         
         switch (positionalType.name) {
             case (SVGElement.name):
                 defaults = SVGElement.defaults[elementName];
                 element = new SVGElement(pParameters as RecursivePartial<IRect>, elementName)
 
-                newPositional = new Positional<SVGElement>(element, pParameters, defaults);
+                newPositional = new Positional<SVGElement>(element, channel, pParameters, defaults);
                 break;
             case (RectElement.name):
                 defaults = RectElement.defaults[elementName];
                 element = new RectElement(pParameters as RecursivePartial<IRect>, elementName)
 
-                newPositional = new Positional<RectElement>(element, pParameters, defaults);
+                newPositional = new Positional<RectElement>(element, channel, pParameters, defaults);
                 break;
             case (Span.name):
                 element = new Span(pParameters, elementName);
@@ -120,6 +120,10 @@ export default class SequenceHandler {
                 break;
             default:
                 throw new Error("error 1")
+        }
+
+        if (newPositional === undefined) {
+            throw new Error("This error")
         }
 
         
@@ -193,14 +197,15 @@ export default class SequenceHandler {
     }
 
     // UI Commands:
-    selectElement(id: string): Visual | undefined {
-        var element: Visual | undefined = undefined;
+
+    selectPositional(id: string): Positional<Visual> | undefined {
+        var element: Positional<Visual> | undefined = undefined;
 
         // Search for element:
         this.channels.forEach((c) => {
             c.positionalElements.forEach((p) => {
                 if (p.element.id === id) {
-                    element = p.element;
+                    element = p;
                 }
             })
         })
@@ -212,4 +217,32 @@ export default class SequenceHandler {
             return element;
         }
     }
+
+    modifyPositional<T extends Visual=Visual>(target: Positional<T>, newElement: Positional<T>): true | undefined {
+        var channel: Channel = target.channel;
+
+        this.deletePositional(target);
+
+        this.sequence.addPositional(channel.identifier, newElement, target.index);
+
+        this.draw();
+
+        return true;
+    }
+
+    deletePositional<T extends Visual=Visual>(target: Positional<T>): true | undefined {
+        // Find which channel owns this element:
+        var channel: Channel | undefined = target.channel;
+
+        if (channel === undefined) {
+            console.warn("positinal not connected to channel")
+            return undefined
+        }
+
+        channel.removePositional(target);
+
+        this.draw();
+    }
+
+
 }

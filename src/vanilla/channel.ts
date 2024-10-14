@@ -66,11 +66,6 @@ export default class Channel extends Collection {
     public lowerAligner: Aligner<Visual>;
 
     bar: RectElement;
-    get barWidth() {
-        var width = 0;
-        this.positionalColumns.children.forEach((c) => width += c.width);
-        return width;
-    }
 
     annotationLayer?: AnnotationLayer;
 
@@ -111,9 +106,10 @@ export default class Channel extends Collection {
 
     intrinsicWidths: number[] = []; // Widths of positional elements
     sectionWidths: number[] = [];  // List of widths of each section along the sequence
-    occupancy: boolean[] = [];  // 
     sectionXs: number[] = [];  // X coords of the leftmost of each section (including end) taken from sequence
     elementCursor: number = -1;
+
+    occupancy: boolean[] = [];
 
     labelOn: boolean;
     label?: Label;
@@ -129,11 +125,11 @@ export default class Channel extends Collection {
 
         this.identifier = fullParams.identifier;
 
-        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, height: 20}, "default", `top aligner`);
+        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, contentHeight: 20}, "default", `top aligner`);
         this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, true);
         
         
-        this.bar = new RectElement({height: this.style.thickness, style: this.style.barStyle}, "bar");
+        this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle}, "bar");
         this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here");
 
         this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here}, "default", "bottom aligner");
@@ -161,6 +157,8 @@ export default class Channel extends Collection {
         this.elementCursor += 1;  // Keep this here.
 
         var Index: number = index !== undefined ? index : this.elementCursor;
+
+        positional.index = Index;
 
         var element: Visual = positional.element;  // Extract element from positional framework
         var config: IConfig = positional.config;
@@ -222,6 +220,37 @@ export default class Channel extends Collection {
         this.add(positional.element);
 
         this.occupancy[Index] = true;
+    }
+
+    removePositional(positional: Positional<Visual>) {
+        // Remove from positional elements
+        this.positionalElements.forEach((e, i) => {
+            if (e === positional) {
+                this.positionalElements.splice(i, 1);
+            }
+        })
+
+        // Remove from children of this channel (positional elements should be property taking positionals from children)
+        this.remove(positional.element);
+
+        // Remove from the column
+        if (positional.index === undefined) {
+            throw new Error(`Trying to remove positional with uninitialised index`)
+        }
+        this.positionalColumns.children[positional.index!].remove(positional.element);
+
+        // Remove from aligner (yes one of these is reduntant)
+        this.upperAligner.remove(positional.element);
+        this.lowerAligner.remove(positional.element);
+        
+        positional.element.erase();
+
+        // Check the column and delete it if it's empty
+        if (this.positionalColumns.children[positional.index].children.length === 0) {
+            this.positionalColumns.remove(this.positionalColumns.children[positional.index])
+        }
+
+        this.occupancy[positional.index] = false;
     }
 
     addAnnotationLabel(lab: Span) {

@@ -10,14 +10,14 @@ import { Rect } from "@svgdotjs/svg.js";
 
 
 export interface ICollection extends IVisual {
-
+    
 }
 
 export default class Collection<T extends Spacial = Spacial> extends Visual {
     static defaults: {[name: string]: ICollection} = {
         "default": {
-            width: 0,
-            height: 0,
+            contentWidth: 0,
+            contentHeight: 0,
             x: undefined,
             y: undefined,
             offset: [0, 0],
@@ -124,6 +124,17 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         // A final compute 
     }
 
+    remove(child: T) {
+        this.children.forEach((c, i) => {
+            if (c === child) {
+                this.children.splice(i, 1)
+            }
+        })
+
+        this.computeBoundry();
+        this.enforceBinding();
+    }
+
     computeBoundry(): void {
 
         var top = Infinity;
@@ -171,10 +182,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
             bottom: bottom,
             left: left,
             right: right
-        }
-       
-        if (this.refName === "top aligner") {
-            console.log()
         }
 }
 

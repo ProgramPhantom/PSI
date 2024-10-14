@@ -10,8 +10,8 @@
     "padding": [3, 10, 0, 10],
     "offset": [0, 0],
     "path": "\\src\\assets\\180.svg",
-    "width": 50,
-    "height": 50,
+    "contentWidth": 50,
+    "contentHeight": 50,
 
 
     "labelOn": false,

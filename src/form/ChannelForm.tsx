@@ -13,7 +13,7 @@ import { defaultChannel } from '../vanilla/default/data';
 
 function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) {  
     const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm({
-        defaultValues: {...(defaultChannel as any)},
+        defaultValues: {...(props.defaultVals as any)},
         mode: "onChange"
     });
   

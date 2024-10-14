@@ -11,8 +11,8 @@
     "offset": [0, 0],
     "path": "\\src\\assets\\halfsine.svg",
     
-    "width": 15,
-    "height": 20,
+    "contentWidth": 15,
+    "contentHeight": 20,
     
 
     "labelOn": false,

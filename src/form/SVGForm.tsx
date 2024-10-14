@@ -8,37 +8,69 @@ import PositionalForm from './PositionalForm';
 import LabelForm from './LabelForm';
 import ArrowForm from './ArrowForm';
 import SequenceHandler from '../vanilla/sequenceHandler';
-import SVGElement, { ISVG } from '../vanilla/svgElement';
+import SVGElement, { ISVG, PositionalSVG } from '../vanilla/svgElement';
 import { svgPulses } from '../vanilla/default/data/svgPulse';
 import { dataTypes } from '@data-driven-forms/react-form-renderer';
 import { ClassProperties } from '../vanilla/util';
+import Channel from '../vanilla/channel';
+import { Visual } from '../vanilla/visual';
+import Positional from '../vanilla/positional';
 
 interface ISVGForm {
-    sequence: SequenceHandler, 
-    defaultVals: ISVG
+    handler: SequenceHandler, 
+    defaultVals: PositionalSVG,
+    channel: Channel 
+    target?:  Positional<SVGElement>,
 }
 
 const SVGForm: React.FC<ISVGForm> = (props) => {
-    try {
-        Object.setPrototypeOf(props.defaultVals, null)
-    } catch {}
-    
-    console.log(props.defaultVals)
-    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<ISVG>({
+
+    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<PositionalSVG>({
         defaultValues: {...props.defaultVals},
         mode: "onChange"
     });
   
 
-  const onSubmit = (data: ISVG) => {
+  const onSubmit = (data: PositionalSVG) => {
     console.log(`New data: ${data}`);
+
+    var newSVG: SVGElement = new SVGElement(data);
+    var positionalSVG: Positional<SVGElement> = new Positional<SVGElement>(newSVG, props.channel, {config: data.config})
+    
+    if (props.target !== undefined) {
+        props.handler.modifyPositional(props.target, positionalSVG)
+    } else {
+        props.handler.positional("180", props.handler.channels[0].identifier, data)
+    }
+
+    props.target = positionalSVG;
   };
+
+  const deleteMe = () => {
+    if (props.target === undefined) {return} 
+
+    console.log("deleting positional!")
+    props.handler.deletePositional(props.target);
+  }
   
 
   return (
-    <form onChange={() => {console.log("CHANGE")}} onSubmit={() => handleSubmit(onSubmit)}>
+    <>
+    <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
+        <h3>SVG Pulse</h3>
+        {props.target !== undefined ? (
+        <button style={{width: "30", height: "30", justifySelf: "end"}} onClick={() => deleteMe()}>
+            delete
+        </button>) : <></>}
 
-      <h3>SVG Pulse</h3>
+
+      </div>
+
+    <form onChange={() => {console.log("CHANGE")}} onSubmit={handleSubmit(onSubmit)}>
+    
+      
+
+      
 
       <Tabs defaultSelectedTabId={"core"} animate={false}>
             <Tab id="core" title="Core" panel={
@@ -48,7 +80,7 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
                     inline={true}
                     label="SVG"
                     labelFor="text-input">
-                <Controller control={control} name="path" render={({field}) => (
+                    <Controller control={control} name="path" render={({field}) => (
                         <HTMLSelect {...field} iconName='caret-down'>
                             <option value={"\\src\\assets\\aquire2.svg"}>Aquire</option>
                             <option value={"\\src\\assets\\saltirelohi.svg"}>SaltireHiLo</option>
@@ -64,33 +96,23 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
                         )}>
                     </Controller>
                 </FormGroup>
-
-                <Section style={{borderRadius: 0}}
-                    collapseProps={{defaultIsOpen: false}}
-                    compact={true}
-                    title={"Style"}
-                    collapsible={true}
-                    >
-                    <ControlGroup vertical={true}>
-                        <FormGroup
+                <FormGroup
                         inline={true}
                         label="Width"
                         labelFor="text-input">
-                            <Controller control={control} name="style.width" render={({field}) => (
+                            <Controller control={control} name="contentWidth" render={({field}) => (
                                 <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
                             </Controller>
-                        </FormGroup>
+                </FormGroup>
 
-                        <FormGroup
-                            inline={true}
-                            label="Height"
-                            labelFor="text-input">
-                            <Controller control={control} name="style.height" render={({field}) => (
-                                <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
-                            </Controller>
-                        </FormGroup>
-                    </ControlGroup>
-                </Section>
+                <FormGroup
+                    inline={true}
+                    label="Height"
+                    labelFor="text-input">
+                    <Controller control={control} name="contentHeight" render={({field}) => (
+                        <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
+                    </Controller>
+                </FormGroup>
     
                 <PositionalForm control={control} change={() => {}}></PositionalForm>
                 </>
@@ -100,7 +122,11 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
             <Tab id="arrow" title="Arrow" panel={<ArrowForm control={control} change={() => {}}></ArrowForm>} />
 
       </Tabs>
+
+      <input style={{width: "100%", margin: "4px 2px 18px 2px", height: "30px"}} 
+             type={"submit"} value={props.target !== undefined ? "Modify" : "Add"}></input>
     </form>
+    </>
   );
 }
     

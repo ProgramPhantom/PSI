@@ -253,7 +253,7 @@ export default class Bracket extends LineElement implements labelable {
         }
 
         this.label?.draw(surface);
-        return [this.label.width, this.label.height];
+        return [this.label.contentWidth, this.label.contentHeight];
     }
 
     computeTotalProtrusion() {

@@ -27,8 +27,8 @@ export type Offset = [number, number]
 
 
 export interface IVisual extends IPaddedBox {
-    width?: number,
-    height?: number,
+    contentWidth?: number,
+    contentHeight?: number,
     offset: [number, number],
 }
 
@@ -49,13 +49,16 @@ export abstract class Visual extends PaddedBox implements IVisual {
     }
 
     constructor(params: IVisual, refName: string="element") {
-        super(params.padding, params.x, params.y, params.width, params.height, refName);  // Will make dirty??
+        super(params.padding, params.x, params.y, params.contentWidth, params.contentHeight, refName);  // Will make dirty??
 
         this.offset = params.offset;  // Fixed for some reason
     }
 
 
     abstract draw(surface: Svg, ...args: any[]): void
+    erase(): void {
+        this.svg?.remove();
+    }
 
     verticalFlip() {
         // this.offset[1] = -Math.abs(this.offset[1]);

@@ -10,8 +10,8 @@
     "padding": [0, 0, 0, 0],
     "offset": [0, 1],
     "path": "\\src\\assets\\talltrapezium.svg",
-    "width": 15,
-    "height": 25,
+    "contentWidth": 15,
+    "contentHeight": 25,
     
 
     "labelOn": true,
