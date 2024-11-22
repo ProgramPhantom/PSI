@@ -224,7 +224,7 @@ export default class SequenceHandler {
         this.deletePositional(target);
 
         this.sequence.addPositional(channel.identifier, newElement, target.index);
-
+//      
         this.draw();
 
         return true;

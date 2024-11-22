@@ -90,7 +90,7 @@ export default function Canvas(props:  {script: string, zoom: number,
         svgDestinationObj.current!.children().forEach((c) => {
             c.remove();
         })
-
+        console.log(svgDestinationObj.current!.children());
 
         props.drawSurface.current!.children().forEach((c) => {
             var newSvg: Element = c.clone();
@@ -212,11 +212,11 @@ export default function Canvas(props:  {script: string, zoom: number,
             minScale={1}
             maxScale={7}
             translationBounds={{
-                yMin: -props.handler.sequence.height * 3,
-                xMin: -props.handler.sequence.width * 3,
+                yMin: -props.handler.sequence.height * 10,
+                xMin: -props.handler.sequence.width * 30,
 
-                xMax: props.handler.sequence.width * 4,
-                yMax: props.handler.sequence.height * 4
+                xMax: props.handler.sequence.width * 40,
+                yMax: props.handler.sequence.height * 40
             }}
             >
             

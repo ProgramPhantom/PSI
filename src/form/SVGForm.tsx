@@ -11,22 +11,24 @@ import SequenceHandler from '../vanilla/sequenceHandler';
 import SVGElement, { ISVG, PositionalSVG } from '../vanilla/svgElement';
 import { svgPulses } from '../vanilla/default/data/svgPulse';
 import { dataTypes } from '@data-driven-forms/react-form-renderer';
-import { ClassProperties } from '../vanilla/util';
+import { ClassProperties, UpdateObj } from '../vanilla/util';
 import Channel from '../vanilla/channel';
 import { Visual } from '../vanilla/visual';
 import Positional from '../vanilla/positional';
 
 interface ISVGForm {
     handler: SequenceHandler, 
-    defaultVals: PositionalSVG,
+    values: PositionalSVG,
     channel: Channel 
     target?:  Positional<SVGElement>,
 }
 
 const SVGForm: React.FC<ISVGForm> = (props) => {
+    var targetMemory: Positional<SVGElement> | undefined= props.target;
+    var valuesData: PositionalSVG = props.values;
 
     const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<PositionalSVG>({
-        defaultValues: {...props.defaultVals},
+        defaultValues: {...props.values},
         mode: "onChange"
     });
   
@@ -37,20 +39,21 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
     var newSVG: SVGElement = new SVGElement(data);
     var positionalSVG: Positional<SVGElement> = new Positional<SVGElement>(newSVG, props.channel, {config: data.config})
     
-    if (props.target !== undefined) {
-        props.handler.modifyPositional(props.target, positionalSVG)
+    if (targetMemory !== undefined) {
+        props.handler.modifyPositional(targetMemory, positionalSVG)
     } else {
         props.handler.positional("180", props.handler.channels[0].identifier, data)
     }
 
-    props.target = positionalSVG;
+    targetMemory = positionalSVG;
+    valuesData = UpdateObj(valuesData, targetMemory);
   };
 
   const deleteMe = () => {
-    if (props.target === undefined) {return} 
+    if (targetMemory === undefined) {return} 
 
     console.log("deleting positional!")
-    props.handler.deletePositional(props.target);
+    props.handler.deletePositional(targetMemory);
   }
   
 
@@ -96,6 +99,7 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
                         )}>
                     </Controller>
                 </FormGroup>
+                
                 <FormGroup
                         inline={true}
                         label="Width"

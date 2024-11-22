@@ -111,4 +111,36 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         child.subscribe(this.computeBoundry.bind(this));
         this.computeBoundry();
     }
+
+    removeAt(index: number) {
+        var target: T = this.children[index];
+
+
+        if (this.bindMainAxis) {
+            var preChild: T | undefined = this.children[index - 1];
+            var postChild: T | undefined = this.children[index + 1];
+
+            if (preChild !== undefined) {
+                // Remove binding to target
+                preChild.removeBind(target);
+
+                if (postChild) {
+                    preChild.bind(postChild, this.mainAxis, "far", "here", undefined, false);
+                }
+            } else {
+                // This element is bound to the inside of the aligner object
+                // Remove this binding to target:
+                this.removeBind(target);
+
+                if (postChild) {  // Rebind next element to this
+                    this.bind(postChild, this.mainAxis, "here", "here", undefined, true);
+                }
+            }
+        }
+
+        this.children.splice(index, 1);
+
+        this.computeBoundry();
+        this.enforceBinding();
+    }
 }

@@ -109,12 +109,24 @@ export default class Channel extends Collection {
     sectionXs: number[] = [];  // X coords of the leftmost of each section (including end) taken from sequence
     elementCursor: number = -1;
 
-    occupancy: boolean[] = [];
+
 
     labelOn: boolean;
     label?: Label;
 
-    positionalElements: Positional<Visual>[] = [];
+    public get positionalElements(): Positional<Visual>[] { // All positional elements on this channel
+        return this.positionalMap.filter(p => p !== undefined);
+    };  
+    positionalMap: (Positional<Visual> | undefined)[] = [];  // Positional list
+
+    get occupancy(): boolean[] {
+        var occ: boolean[] = Array<boolean>(this.positionalMap.length);
+
+        this.positionalMap.forEach((p, i) => {
+            occ[i] = p !== undefined ? true : false
+        })
+        return occ;
+    }
 
     constructor(params: RecursivePartial<IChannel>, templateName: string="default", refName: string="channel") {
         var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
@@ -170,38 +182,6 @@ export default class Channel extends Collection {
 
         this.intrinsicWidths[Index] = element.width;
         
-
-        // --- Bindings ---
-        // Bind X
-        // switch (positional.config.alignment) {
-        //     case Alignment.here:
-        //         column.bind(element, Dimensions.X, "here", "here");
-        //         break;
-        //     case Alignment.centre:
-        //         column.bind(element, Dimensions.X, "centre", "centre");
-        //         break;
-        //     case Alignment.far:
-        //         column.bind(element, Dimensions.X, "far", "far");
-        //         break;
-        //     case Alignment.none:
-        //         column.bind(element, Dimensions.X, "here", "here");
-        //         break;
-        // }
-
-        // Bind Y
-        // switch (positional.config.orientation) {
-        //     case Orientation.top:
-        //         this.bar.bind(element, Dimensions.Y, "here", "far");
-        //         break;
-        //     case Orientation.both:
-        //         this.bar.bind(element, Dimensions.Y, "centre", "centre");
-        //         break;
-        //     case Orientation.bottom:
-        //         this.bar.bind(element, Dimensions.Y, "far", "here");
-        //         break;
-        // }
-        // --- Bindings ---
-
         // ---- Bind to the upper and lower aligners for Y ONLY
         switch (config.orientation) {
             case Orientation.top:
@@ -216,17 +196,24 @@ export default class Channel extends Collection {
 
         positional.config.index = Index;  // Update internal index property
 
-        this.positionalElements.push(positional);
-        this.add(positional.element);
+        if (Index >= this.positionalMap.length) {  // Padd out positional Map
+            var extra: number = Index - this.positionalMap.length;
 
-        this.occupancy[Index] = true;
+            for (var i = 0; i<extra; i++) {
+                this.positionalMap.push(undefined)
+            }
+        }
+        this.positionalMap.splice(Index, 0, positional);
+
+
+        this.add(positional.element);
     }
 
     removePositional(positional: Positional<Visual>) {
         // Remove from positional elements
-        this.positionalElements.forEach((e, i) => {
+        this.positionalMap.forEach((e, i) => {
             if (e === positional) {
-                this.positionalElements.splice(i, 1);
+                this.positionalMap.splice(i, 1);
             }
         })
 
@@ -247,10 +234,8 @@ export default class Channel extends Collection {
 
         // Check the column and delete it if it's empty
         if (this.positionalColumns.children[positional.index].children.length === 0) {
-            this.positionalColumns.remove(this.positionalColumns.children[positional.index])
+            this.positionalColumns.removeAt(positional.index);
         }
-
-        this.occupancy[positional.index] = false;
     }
 
     addAnnotationLabel(lab: Span) {

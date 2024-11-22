@@ -46,21 +46,15 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
 
     }
 
-    devDraw(surface: Svg, colour: string="red", offset: number=0) {
+    devDraw(surface: Svg, colour: string="red", offset: number=0, paddingHash: boolean=false) {
         if (!this.debugSvg) {
-          this.debugSvg = SVG().id(`debugSvg${this.refName}`)
+            this.debugSvg = SVG().id(`debugSvg${this.refName}`)  // Create
         } else {
-            this.debugSvg.clear()
+            
+            this.debugSvg.clear();
+            this.debugSvg.remove();
         }
         
-        try {
-            // this.debugSvg.remove()
-            surface.removeElement(this.debugSvg)
-            // console.log(`"Removed debug svg", ${this.debugSvg.dom}`)
-        } catch {
-            console.error(`"Cannot remove debug svg", ${this.debugSvg}`)
-        }
-
         var debugElement: Element;
 
         // Children bounds
@@ -77,36 +71,31 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
 
         this.debugSvg.text(this.refName).font({size: 2}).ay(`${this.y+2}`).ax(`${this.x+1}`)
 
-        // ---- Padding hash ----
-        // var hash = surface.pattern(4, 4, function(add) {
-        //     add.path("M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
-        //     .attr({"stroke": "black", "stroke-width": 1, "stroke-opacity": 0.3}).attr({"patternUnits": "userSpaceonUse"})
-        // }).attr({"id": "hash"})
-        // surface.add(hash)
+        if (paddingHash) {
+            // ---- Padding hash ----
+            var hash = surface.pattern(4, 4, function(add) {
+                add.path("M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
+                .attr({"stroke": "black", "stroke-width": 1, "stroke-opacity": 0.3}).attr({"patternUnits": "userSpaceonUse"})
+            }).attr({"id": "hash"})
+            surface.add(hash)
 
-        // Top
-        // this.debugSvg.rect(this.width, this.padding[0])    
-        //     .move(this.bounds.left, this.bounds.top).attr({}).fill(hash);
-        // // Bottom
-        // this.debugSvg.rect(this.width, this.padding[2])    
-        //     .move(this.bounds.left, this.contentBounds.bottom).attr({}).fill(hash);
-// 
-        // // Left
-        // this.debugSvg.rect(this.padding[3], this.contentHeight)    
-        //     .move(this.bounds.left, this.contentBounds.top).attr({}).fill(hash);
-        // // Right
-        // this.debugSvg.rect(this.padding[1], this.contentHeight)    
-        //     .move(this.contentBounds.right, this.contentBounds.top).attr({}).fill(hash);
-// 
-        // // this.debugSvg.add(childBounds);
-       
-
-        // this.debugSvg.add(childBounds)
-        // this.debugSvg.add(contentBounds)
+            // Top
+            this.debugSvg.rect(this.width, this.padding[0])    
+                .move(this.bounds.left, this.bounds.top).attr({}).fill(hash);
+            // Bottom
+            this.debugSvg.rect(this.width, this.padding[2])    
+                .move(this.bounds.left, this.contentBounds.bottom).attr({}).fill(hash);
+     
+            // Left
+            this.debugSvg.rect(this.padding[3], this.contentHeight)    
+                .move(this.bounds.left, this.contentBounds.top).attr({}).fill(hash);
+            // Right
+            this.debugSvg.rect(this.padding[1], this.contentHeight)    
+                .move(this.contentBounds.right, this.contentBounds.top).attr({}).fill(hash);
+        }
+        
         
         surface.add(this.debugSvg)
-        
-
     }
 
 
@@ -125,11 +114,25 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     }
 
     remove(child: T) {
+        
+
         this.children.forEach((c, i) => {
             if (c === child) {
-                this.children.splice(i, 1)
+                this.children.splice(i, 1);
+
+                if (c instanceof Visual) {
+                    c.erase();
+                }
+                
             }
         })
+
+        this.computeBoundry();
+        this.enforceBinding();
+    }
+
+    removeAt(index: number) {
+        this.children.splice(index, 1);
 
         this.computeBoundry();
         this.enforceBinding();

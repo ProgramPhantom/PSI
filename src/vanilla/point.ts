@@ -142,6 +142,16 @@ export default class Point implements IPoint {
         }
     }
 
+    removeBind(el: Point) {
+        // Remove all bindings associated with el
+        // this.bindings.forEach((b, i) => {
+        //     if (b.targetObject === el) {
+        //         this.bindings.splice(i, 1);
+        //     }
+        // })
+        this.bindings = this.bindings.filter(b => b.targetObject !== el);
+    }
+
     public enforceBinding() {
         if (this.refName === "channel") {
             console.log()

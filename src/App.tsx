@@ -17,6 +17,7 @@ import { Visual } from './vanilla/visual';
 import { UpdateObj } from './vanilla/util';
 import { svgPulses } from './vanilla/default/data/svgPulse';
 import SVGElement, { ISVG, PositionalSVG } from './vanilla/svgElement';
+import { defaultPositional } from './vanilla/default/data';
 
 const DESTINATIONSVGID = "moveSVGHere";
 
@@ -85,10 +86,12 @@ function App() {
     if (positional.element instanceof SVGElement) {
       // React Hook Forms breaks if the class object is used as the default vals.
       // Therefore, this keeps only the properties concerned for ISVG
-      var elementSVGData = UpdateObj(svgPulses[180], positional.element);
+      var elementSVGData = UpdateObj({...svgPulses[180], ...defaultPositional}, positional);
+      // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
+      // to work. Every piece of data will be overriden.
       
       var newForm: ReactNode = <SVGForm handler={handle.current} 
-                defaultVals={(elementSVGData as PositionalSVG)} 
+                values={(elementSVGData as PositionalSVG)} 
                 target={((positional as any) as Positional<SVGElement>)} channel={positional.channel}></SVGForm>
     
       setForm(newForm)

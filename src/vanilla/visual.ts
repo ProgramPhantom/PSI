@@ -58,6 +58,7 @@ export abstract class Visual extends PaddedBox implements IVisual {
     abstract draw(surface: Svg, ...args: any[]): void
     erase(): void {
         this.svg?.remove();
+        this.debugSvg?.remove();
     }
 
     verticalFlip() {
