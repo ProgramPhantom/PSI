@@ -56,6 +56,7 @@ export default class SVGElement extends Visual implements ISVG {
 
 		try {
 			this.svg = SVG(svgContent[this.path]);
+			this.id = this.svg.id();
 		} catch {
 			throw new Error(`Cannot find path ${this.path}`)
 		}

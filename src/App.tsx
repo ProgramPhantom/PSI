@@ -92,7 +92,8 @@ function App() {
       
       var newForm: ReactNode = <SVGForm handler={handle.current} 
                 values={(elementSVGData as PositionalSVG)} 
-                target={((positional as any) as Positional<SVGElement>)} channel={positional.channel}></SVGForm>
+                target={((positional as any) as Positional<SVGElement>)} channel={positional.channel}
+                reselect={SelectPositional}></SVGForm>
     
       setForm(newForm)
     }

@@ -19,13 +19,13 @@ import Positional from '../vanilla/positional';
 interface ISVGForm {
     handler: SequenceHandler, 
     values: PositionalSVG,
-    channel: Channel 
+    channel: Channel,
     target?:  Positional<SVGElement>,
+    reselect: (positional: Positional<Visual> | undefined) => void
 }
 
 const SVGForm: React.FC<ISVGForm> = (props) => {
-    var targetMemory: Positional<SVGElement> | undefined= props.target;
-    var valuesData: PositionalSVG = props.values;
+
 
     const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<PositionalSVG>({
         defaultValues: {...props.values},
@@ -37,23 +37,28 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
     console.log(`New data: ${data}`);
 
     var newSVG: SVGElement = new SVGElement(data);
+
+    // Create the new positional
     var positionalSVG: Positional<SVGElement> = new Positional<SVGElement>(newSVG, props.channel, {config: data.config})
-    
-    if (targetMemory !== undefined) {
-        props.handler.modifyPositional(targetMemory, positionalSVG)
+    console.log("SVG ID on INIT: " + newSVG.svg.id());
+    console.log("SVGElement ID on INIT", newSVG.id);
+
+    if (props.target !== undefined) {
+        props.handler.modifyPositional(props.target, positionalSVG)
     } else {
         props.handler.positional("180", props.handler.channels[0].identifier, data)
     }
 
-    targetMemory = positionalSVG;
-    valuesData = UpdateObj(valuesData, targetMemory);
+
+
+    props.reselect(positionalSVG);
   };
 
   const deleteMe = () => {
-    if (targetMemory === undefined) {return} 
+    if (props.target === undefined) {return} 
 
     console.log("deleting positional!")
-    props.handler.deletePositional(targetMemory);
+    props.handler.deletePositional(props.target);
   }
   
 
