@@ -86,7 +86,7 @@ function App() {
     if (positional.element instanceof SVGElement) {
       // React Hook Forms breaks if the class object is used as the default vals.
       // Therefore, this keeps only the properties concerned for ISVG
-      var elementSVGData = UpdateObj({...svgPulses[180], ...defaultPositional}, positional);
+      var elementSVGData = UpdateObj({...svgPulses[180], ...defaultPositional}, positional.element);
       // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
       // to work. Every piece of data will be overriden.
       
