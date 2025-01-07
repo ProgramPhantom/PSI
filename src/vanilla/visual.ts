@@ -5,22 +5,6 @@ import PaddedBox, { IPaddedBox } from './paddedBox'
 import { IAnnotation } from './annotation'
 import Positional from './positional'
 
-
-
-interface Shift {
-    dx?: number,
-    dy?: number,
-}
-
-interface Place {
-    x?: number,
-    y?: number
-}
-
-
-
-
-
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
 

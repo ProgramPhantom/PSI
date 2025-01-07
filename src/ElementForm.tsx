@@ -8,7 +8,7 @@ import LabelForm from './form/LabelForm';
 import { Tab, Tabs, TabsExpander } from '@blueprintjs/core';
 import { FieldValues, useForm, useWatch } from 'react-hook-form';
 import ArrowForm from './form/ArrowForm';
-import SimpleForm from './form/SimpleForm';
+import SimpleForm from './form/RectForm';
 
 import { positionalElements } from './vanilla/default/data';
 import { ISimplePulse } from './vanilla/pulses/simple/simplePulse';

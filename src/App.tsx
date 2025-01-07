@@ -18,6 +18,9 @@ import { UpdateObj } from './vanilla/util';
 import { svgPulses } from './vanilla/default/data/svgPulse';
 import SVGElement, { ISVG, PositionalSVG } from './vanilla/svgElement';
 import { defaultPositional } from './vanilla/default/data';
+import RectElement, { PositionalRect } from './vanilla/rectElement';
+import { simplePulses } from './vanilla/default/data/simplePulse';
+import RectForm from './form/RectForm';
 
 const DESTINATIONSVGID = "moveSVGHere";
 
@@ -78,27 +81,34 @@ function App() {
       return
     }
 
-
     setSelectedElement(positional.element);
-    // console.log(typeof positional.element)
-    // console.log(SVGElement.toString())
 
     if (positional.element instanceof SVGElement) {
-      // React Hook Forms breaks if the class object is used as the default vals.
-      // Therefore, this keeps only the properties concerned for ISVG
-      var elementSVGData = UpdateObj({...svgPulses[180], ...defaultPositional}, positional.element);
-      // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
-      // to work. Every piece of data will be overriden.
+        // React Hook Forms breaks if the class object is used as the default vals.
+        // Therefore, this keeps only the properties concerned for ISVG
+        var elementSVGData = UpdateObj({...svgPulses[180], ...defaultPositional}, positional.element);
+        // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
+        // to work. Every piece of data will be overriden.
+        
+        var newForm: ReactNode = <SVGForm 
+                  handler={handle.current} 
+                  values={(elementSVGData as PositionalSVG)} 
+                  target={((positional as any) as Positional<SVGElement>)} channel={positional.channel}
+                  reselect={SelectPositional}></SVGForm>
       
-      var newForm: ReactNode = <SVGForm handler={handle.current} 
-                values={(elementSVGData as PositionalSVG)} 
-                target={((positional as any) as Positional<SVGElement>)} channel={positional.channel}
-                reselect={SelectPositional}></SVGForm>
-    
+        setForm(newForm)
+    } 
+    else if (positional.element instanceof RectElement) {
+      var elementRectData = UpdateObj({...simplePulses["pulse180"], ...defaultPositional}, positional.element);
+
+      var newForm: ReactNode = <RectForm 
+                handler={handle.current} 
+                values={(elementRectData as PositionalRect)} 
+                target={((positional as any) as Positional<RectElement>)} channel={positional.channel}
+                reselect={SelectPositional}></RectForm>
       setForm(newForm)
+
     }
-
-
   }
 
   useEffect(() => {

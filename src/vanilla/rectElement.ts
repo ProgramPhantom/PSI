@@ -14,8 +14,6 @@ export interface IRectStyle {
 
 export interface IRect extends IVisual {
 	style: IRectStyle,
-    contentWidth: number,
-    contentHeight: number
 }
 
 export type PositionalRect = IRect & IPositional
@@ -31,16 +29,11 @@ export default class RectElement extends Visual implements IRect {
 		super(fullParams, templateName);
 
 		this.style = fullParams.style;
-
-		// this.svgContent = this.getSVG();
 	}
 
 
     draw(surface: Svg) {
 		// surface.clear();
-
-
-
         if (this.dirty) {
             if (this.svg) {
                 surface.removeElement(this.svg);

@@ -180,8 +180,6 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
 
           </ControlGroup>
         </Section>
-
-
       </ControlGroup>
     </form>
   );
