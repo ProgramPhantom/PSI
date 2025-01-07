@@ -49,8 +49,6 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
         props.handler.positional("180", props.handler.channels[0].identifier, data)
     }
 
-
-
     props.reselect(positionalSVG);
   };
 
