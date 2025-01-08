@@ -17,6 +17,7 @@ import SVGForm from './form/SVGForm';
 import { svgPulses } from './vanilla/default/data/svgPulse';
 import { UpdateObj } from './vanilla/util';
 import Positional from './vanilla/positional';
+import Debug from './Debug';
 
 type MapState = {scale: Number, translation: {x: number, y: number}}
 
@@ -68,10 +69,6 @@ export default function Canvas(props:  {script: string, zoom: number,
         } 
     }, [props.drawSurface, svgDestinationObj])
 
-    
-    if (props.drawSurface.current) {
-        
-    }
 
     // When drawing straight to the MapInteractionCSS div it breaks, so]
     // I am adding elements to a different div first and then moving it onto the canvas
@@ -220,6 +217,7 @@ export default function Canvas(props:  {script: string, zoom: number,
             }}
             >
             
+            <Debug sequenceHandler={props.handler}></Debug>
             <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}} onClick={(e) => canvasClicked(e)}>
                 
             </div>
