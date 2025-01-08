@@ -76,8 +76,8 @@ export default class Channel extends Collection {
 
         this._labelColumn.bind(this.bar, Dimensions.X, "far", "here");  // Bind X of bar
 
-        this.labelColumn.bind(this.upperAligner, Dimensions.X, "here", "here", undefined, true);
-        this.labelColumn.bind(this.lowerAligner, Dimensions.X, "here", "here", undefined, true);
+        this.labelColumn.bind(this.upperAligner, Dimensions.X, "here", "here", undefined, `LABEL COL X> UPPER ALIGNER`);
+        this.labelColumn.bind(this.lowerAligner, Dimensions.X, "here", "here", undefined, `LABEL COL X> LOWER ALIGNER`);
 
         if (this.label) {
             this._labelColumn.add(this.label)
@@ -138,14 +138,14 @@ export default class Channel extends Collection {
         this.identifier = fullParams.identifier;
 
         this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, contentHeight: 20}, "default", `top aligner`);
-        this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, true);
+        this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, `CHANNEL Y> UPPER ALGINER`);
         
         
         this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle}, "bar");
-        this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here");
+        this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here", undefined, `UPPER ALIGNER Y> BAR`);
 
         this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here}, "default", "bottom aligner");
-        this.bar.bind(this.lowerAligner, Dimensions.Y, "far", "here");
+        this.bar.bind(this.lowerAligner, Dimensions.Y, "far", "here", undefined, `BAR Y> LOWER ALGINER`);
         
         
         
@@ -157,7 +157,7 @@ export default class Channel extends Collection {
         if (fullParams.label) {
             this.label = new Label(fullParams.label);
 
-            this.bar.bind(this.label, Dimensions.Y, "centre", "centre");
+            this.bar.bind(this.label, Dimensions.Y, "centre", "centre", undefined, `BAR Y> LABEL`);
 
             this.add(this.label);
         }

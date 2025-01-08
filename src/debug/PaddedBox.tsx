@@ -1,8 +1,14 @@
 import { CSSProperties } from "react"
 import PaddedBox, { IPaddedBox } from "../vanilla/paddedBox"
+import Spacial, { Dimensions } from "../vanilla/spacial"
+import Positional from "../vanilla/positional"
+import SVGElement from "../vanilla/svgElement"
+import BindingsDebug from "./Bindings"
 
-interface IPaddedBoxDebug {
-    element: PaddedBox
+export interface IPaddedBoxDebug {
+    element: PaddedBox,
+    contentColour?: string,
+    padColour?: string
 }
 
 var globalStyle: CSSProperties = {
@@ -12,14 +18,14 @@ var globalStyle: CSSProperties = {
 
 const PaddedBoxDebug: React.FC<IPaddedBoxDebug> = (props) => {
     var paddingStyle: CSSProperties = {
-        background: "orange",
+        background: props.padColour ? props.padColour : "grey",
         opacity: 0.5,
 
         ...globalStyle
     }
 
     var contentStyle: CSSProperties =  {
-        background: "red",
+        background: props.contentColour ? props.contentColour : "red",
         opacity: 0.7,
 
         ...globalStyle
@@ -67,6 +73,12 @@ const PaddedBoxDebug: React.FC<IPaddedBoxDebug> = (props) => {
 
             {/* Boundary 
            <div style={{left: x1, top: y1, width: width, height: height, ...boundaryStyle}}></div>*/}
+
+
+           {/* Bindings */}
+
+           {console.log(props.element.bindings)}
+           <BindingsDebug element={props.element}></BindingsDebug>
         </>
     )
 }

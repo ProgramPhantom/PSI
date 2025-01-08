@@ -78,14 +78,14 @@ export default class Sequence extends Collection {
         // c
         this.channelColumn = new Aligner<Channel>(
             {bindMainAxis: true, axis: Dimensions.Y, alignment: Alignment.here}, "default", "channel column");
-        this.bind(this.channelColumn, Dimensions.Y, "here", "here", undefined, true);
-        this.bind(this.channelColumn, Dimensions.X, "here", "here", undefined, true);
+        this.bind(this.channelColumn, Dimensions.Y, "here", "here", undefined, "SEQ Y-> CHAN COL");
+        this.bind(this.channelColumn, Dimensions.X, "here", "here", undefined, "SEQ X-> CHAN COL");
         this.add(this.channelColumn);
 
         // | h | |p|p|p|p|
         this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true}, "default", "label col | pos cols");
-        this.bind(this.columns, Dimensions.Y, "here", "here", undefined, true);
-        this.bind(this.columns, Dimensions.X, "here", "here", undefined, true);
+        this.bind(this.columns, Dimensions.Y, "here", "here", undefined, "SEQ Y-> COL");
+        this.bind(this.columns, Dimensions.X, "here", "here", undefined, "SEQ X-> COL");
         this.add(this.columns);
 
 

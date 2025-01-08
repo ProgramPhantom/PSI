@@ -64,19 +64,19 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
             // child here bind
             if (preChild !== undefined) {  // Bind the before child to this child
-                preChild.bind(child, this.mainAxis, "far", "here", undefined, false);
+                preChild.bind(child, this.mainAxis, "far", "here", undefined, `${preChild.refName} ${this.mainAxis}> ${child.refName}`, false);
                 preChild.enforceBinding();
 
             } else { // this is the first element, bind to this
                 this.clearBindings(this.mainAxis);
 
-                this.bind(child, this.mainAxis, "here", "here", undefined, true);
+                this.bind(child, this.mainAxis, "here", "here", undefined, `${this.refName} ${this.mainAxis}> ${child.refName}`);
                 this.enforceBinding();
             }
 
             // Child far bound
             if (postChild !== undefined) {
-                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, false);
+                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, `${this.refName} ${this.mainAxis}> ${child.refName}`, false);
                 child.enforceBinding();
             }
         }
@@ -96,13 +96,13 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             case Alignment.none:
                 break;
             case Alignment.here:
-                this.bind(child, this.crossAxis, "here", "here", undefined, true);
+                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
                 break;
             case Alignment.centre:
-                this.bind(child, this.crossAxis, "centre", "centre");
+                this.bind(child, this.crossAxis, "centre", "centre", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
                 break;
             case Alignment.far:
-                this.bind(child, this.crossAxis, "far", "far", undefined, true);
+                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
                 break;
         }
         this.enforceBinding();

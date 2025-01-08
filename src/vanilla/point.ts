@@ -28,7 +28,8 @@ export interface Binding {
     bindingRule: BindingRule,
     targetObject: Point,
     offset?: number,
-    bindToContent: boolean
+    bindToContent: boolean,
+    hint?: string
 }
 
 
@@ -111,7 +112,7 @@ export default class Point implements IPoint {
         this.enforceBinding();
     }
 
-    bind(el: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), targetBindSide: keyof (typeof el.AnchorFunctions), offset?: number) {
+    bind(el: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), targetBindSide: keyof (typeof el.AnchorFunctions), offset?: number, hint?: string) {
         var found = false;
 
         var anchorGetter: BinderGetFunction = this.AnchorFunctions[anchorBindSide].get;
@@ -138,7 +139,7 @@ export default class Point implements IPoint {
             };
 
         
-            this.bindings.push({targetObject: el, bindingRule: newBindingRule, offset: offset, bindToContent: false})
+            this.bindings.push({targetObject: el, bindingRule: newBindingRule, offset: offset, bindToContent: false, hint: hint})
         }
     }
 

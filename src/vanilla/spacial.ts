@@ -139,11 +139,11 @@ export default class Spacial extends Point implements ISpacial {
     }
 
     bind(target: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), 
-         targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number, bindToContent: boolean=false) {
+         targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number, hint: string="binding", bindToContent: boolean=true, ) {
 
         var found = false;
 
-        if (this.refName === "pos col collection") {
+        if (hint === "binding") {
             console.log(".")
         }
 
@@ -172,7 +172,7 @@ export default class Spacial extends Point implements ISpacial {
             };
 
         
-            this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent})
+            this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint})
         }
     }
 
