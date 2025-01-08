@@ -14,14 +14,14 @@ const Debug: React.FC<IDebug> = (props) => {
 
     return (
         <>
-            {/*{
+            {
                 seq.channels.map((c) => {
                     return (c.positionalElements.map((e) => {
                         return (<PaddedBoxDebug element={e.element}></PaddedBoxDebug>)
                     }))
                 })
             } 
-            <AlignerDebug element={seq.positionalColumns}></AlignerDebug>
+            {/*
             <PaddedBoxDebug element={seq} contentColour={"none"} padColour="yellow"></PaddedBoxDebug>
               
             <PaddedBoxDebug element={seq.channelColumn}></PaddedBoxDebug>
@@ -33,6 +33,8 @@ const Debug: React.FC<IDebug> = (props) => {
                     <AlignerDebug element={seq.channels[0].upperAligner}></AlignerDebug>
                 ) : <></>
             }*/}
+
+        <AlignerDebug element={seq.positionalColumns}></AlignerDebug>
             
         </>
     )

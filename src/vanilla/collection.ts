@@ -46,58 +46,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
 
     }
 
-    devDraw(surface: Svg, colour: string="red", offset: number=0, paddingHash: boolean=false) {
-        if (!this.debugSvg) {
-            this.debugSvg = SVG().id(`debugSvg${this.refName}`)  // Create
-        } else {
-            
-            this.debugSvg.clear();
-            this.debugSvg.remove();
-        }
-        
-        var debugElement: Element;
-
-        // Children bounds
-        this.debugSvg.rect(this.childBounds.right - this.childBounds.left, this.childBounds.bottom - this.childBounds.top)
-        .move(this.childBounds.left, this.childBounds.top).fill(colour).attr({"fill-opacity": 0.5}).id("debugSvg");
-
-        // Content Boundary
-        this.debugSvg.rect(this.contentWidth, this.contentHeight)
-        .move(this.contentBounds.left, this.contentBounds.top).attr({"fill-opacity": 0, "stroke-width": 0.5, "stroke": "red"});
-
-        // Boundary
-        this.debugSvg.rect(this.width, this.height)    
-        .move(this.bounds.left, this.bounds.top).attr({"stroke-width": 0.3, "stroke": "black", "fill-opacity": 0});
-
-        this.debugSvg.text(this.refName).font({size: 2}).ay(`${this.y+2}`).ax(`${this.x+1}`)
-
-        if (paddingHash) {
-            // ---- Padding hash ----
-            var hash = surface.pattern(4, 4, function(add) {
-                add.path("M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
-                .attr({"stroke": "black", "stroke-width": 1, "stroke-opacity": 0.3}).attr({"patternUnits": "userSpaceonUse"})
-            }).attr({"id": "hash"})
-            surface.add(hash)
-
-            // Top
-            this.debugSvg.rect(this.width, this.padding[0])    
-                .move(this.bounds.left, this.bounds.top).attr({}).fill(hash);
-            // Bottom
-            this.debugSvg.rect(this.width, this.padding[2])    
-                .move(this.bounds.left, this.contentBounds.bottom).attr({}).fill(hash);
-     
-            // Left
-            this.debugSvg.rect(this.padding[3], this.contentHeight)    
-                .move(this.bounds.left, this.contentBounds.top).attr({}).fill(hash);
-            // Right
-            this.debugSvg.rect(this.padding[1], this.contentHeight)    
-                .move(this.contentBounds.right, this.contentBounds.top).attr({}).fill(hash);
-        }
-        
-        
-        surface.add(this.debugSvg)
-    }
-
 
     add(child: T, index?: number) {
         this.children.splice(index !== undefined ? index : this.children.length-1, 0, child);

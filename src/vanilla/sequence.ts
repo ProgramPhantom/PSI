@@ -116,28 +116,9 @@ export default class Sequence extends Collection {
         return {width: width, height: h1}
     }
 
-    draw(surface: Svg, devMode: boolean = false): {width: number, height: number} {
+    draw(surface: Svg): {width: number, height: number} {
 
-        
-        if (devMode) {
-            this.labelColumn.devDraw(surface);
-            // this.positionalColumns.devDraw(surface);
 
-            this.positionalColumns.children.forEach((c) => {
-                c.devDraw(surface, "green")
-            })
-
-            // this.channels.forEach((c) => {
-            //     c.upperAligner.devDraw(surface, "orange");
-            //     c.lowerAligner.devDraw(surface, "orange");
-            // })
-
-            // this.devDraw(surface, "cyan");
-
-            // this.channels.forEach((c) => {
-            //     c.devDraw(surface, "amber")
-            // })
-        }
 
 
         this.channels.forEach((channel) => {
