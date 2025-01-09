@@ -53,6 +53,8 @@ export abstract class Visual extends PaddedBox implements IVisual {
             c.transform({flip: "y", origin: "bottom left"})
             c.translate(0, -<number>this.svg?.height())
         })
+
+        this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]]
     }
 
     override set x(val: number) {

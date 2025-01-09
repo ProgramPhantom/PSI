@@ -136,6 +136,7 @@ export default class Channel extends Collection {
 
         this.style = fullParams.style;
         this.padding = fullParams.padding;
+        // SIDE PADDING is not permited for channels as it would break alignment
 
         this.identifier = fullParams.identifier;
 
