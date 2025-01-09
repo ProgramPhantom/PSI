@@ -93,7 +93,9 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         var bottom = -Infinity;
         var right = -Infinity;
 
-        
+        if (this.refName == "column at 0" ) {
+            console.log()
+        }
 
         this.children.forEach((c) => {
             if (c.definedVertically) {
@@ -107,19 +109,28 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
             }
         })
 
+        if (this.definedVertically && this.y < top) {
+            top = this.y
+        }
+        if (this.definedHorizontally &&  this.x < left) {
+            left = this.x;
+        }
+
+        /*
         if (this.hasPosition) {
             if (top < this.y || left < this.x) {
-                // throw new Error("Child has been placed outside of collection content boundary")
                 console.warn("Child has been placed outside of collection content boundary")
             }
             top = this.contentY;
             left = this.contentX;
-        }
+        }*/
         
 
         var bounds = {top: top, right: right, bottom: bottom, left: left}
         var width = right - left;
         var height = bottom - top;
+        
+
 
         if (width !== -Infinity) {
             this.contentWidth = width;
@@ -134,7 +145,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
             left: left,
             right: right
         }
-}
+    }
 
     get contentWidth(): number | undefined {
         // this.computeSize(); // TODO: remove this

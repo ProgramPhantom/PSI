@@ -190,6 +190,7 @@ export default class Sequence extends Collection {
 
         // Add the element to the sequence's column collection, this should trigger resizing of bars
         this.positionalColumns.children[index].add(obj.element, undefined, obj.config.alignment);
+        // This will set the X of the child ^^^
 
         // Add element to channel
         this.channelsDic[channelName].addPositional(obj, index, insert);

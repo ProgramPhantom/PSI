@@ -62,6 +62,8 @@ export default class Channel extends Collection {
     style: IChannelStyle;
     identifier: string;
 
+    // Upper and Lower aligners are responsible for binding the elements to the bar,
+    // and carrying a height used to structure the channel.
     public upperAligner: Aligner<Visual>;
     public lowerAligner: Aligner<Visual>;
 

@@ -154,12 +154,6 @@ export default class Point implements IPoint {
     }
 
     public enforceBinding() {
-        if (this.refName === "channel") {
-            console.log()
-        }
-
-        
-
         for (const binding of this.bindings) {
 
             if (this.refName === "top aligner") {
@@ -179,7 +173,7 @@ export default class Point implements IPoint {
             anchorBindCoord = anchorBindCoord + (binding.offset ? binding.offset : 0);
 
             // Use the correct setter on the target with this value
-            setter(dimension, anchorBindCoord);
+            setter(dimension, anchorBindCoord);  // SETTER MAY NEED INTERNAL BINDING FLAG?
         }
     }
 

@@ -55,7 +55,7 @@ const AlignerDebug: React.FC<IAlignerDebug> = (props) => {
                 return (
                     <>
                         <div style={{position: "absolute", left: x1, top: y1, fontSize: "3px",
-                            margin: "0px", textAlign: "center"}}>{i}</div>
+                            margin: "0px", textAlign: "center"}}>{i} {c.width}, {c.height}</div>
                         <div style={{left: x1, top: y1, width: width, height: height, ...childStyle}}></div>
                     </>
                 )
