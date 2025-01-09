@@ -6,10 +6,12 @@ import SVGElement from "../vanilla/svgElement"
 import Aligner from "../vanilla/aligner"
 import PaddedBoxDebug, { IPaddedBoxDebug } from "./PaddedBox"
 import BindingsDebug from "./Bindings"
+import Collection from "../vanilla/collection"
 
-interface IAlignerDebug extends IPaddedBoxDebug {
-    element: Aligner,
-    headColour?: string
+interface ICollectionDebug extends IPaddedBoxDebug {
+    element: Collection,
+    headColour?: string,
+    border?: string,
 }
 
 var globalStyle: CSSProperties = {
@@ -18,9 +20,9 @@ var globalStyle: CSSProperties = {
 }
 
 
-const AlignerDebug: React.FC<IAlignerDebug> = (props) => {
+const CollectionDebug: React.FC<ICollectionDebug> = (props) => {
     var childStyle: CSSProperties = {
-        border: "dotted",
+        border: props.border ? props.border : "dotted",
         strokeOpacity: 0.3,
         borderWidth: "1px",
         opacity: 0.4,
@@ -55,7 +57,7 @@ const AlignerDebug: React.FC<IAlignerDebug> = (props) => {
                 return (
                     <>
                         <div style={{position: "absolute", left: x1, top: y1, fontSize: "3px",
-                            margin: "0px", textAlign: "center"}}>{i} {c.width}, {c.height}</div>
+                            margin: "0px", textAlign: "center"}}>{height} </div>
                         <div style={{left: x1, top: y1, width: width, height: height, ...childStyle}}></div>
                     </>
                 )
@@ -70,4 +72,4 @@ const AlignerDebug: React.FC<IAlignerDebug> = (props) => {
     )
 }
 
-export default AlignerDebug
+export default CollectionDebug

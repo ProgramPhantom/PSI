@@ -2,7 +2,7 @@ import { debug } from "console"
 import Sequence from "./vanilla/sequence"
 import SequenceHandler from "./vanilla/sequenceHandler"
 import PaddedBoxDebug from "./debug/PaddedBox"
-import AlignerDebug from "./debug/Aligner"
+import CollectionDebug from "./debug/Collection"
 import BindingsDebug from "./debug/Bindings"
 
 interface IDebug {
@@ -15,30 +15,43 @@ const Debug: React.FC<IDebug> = (props) => {
 
     return (
         <>
-            {/*{
+            {
                 seq.channels.map((c) => {
                     return (c.positionalElements.map((e) => {
-                        return (<PaddedBoxDebug element={e.element}></PaddedBoxDebug>)
+                        return (<PaddedBoxDebug element={e.element} padColour="purple"></PaddedBoxDebug>)
                     }))
                 })
             } 
-            
+            {/*
             <PaddedBoxDebug element={seq} contentColour={"none"} padColour="yellow"></PaddedBoxDebug>
               
             <PaddedBoxDebug element={seq.channelColumn}></PaddedBoxDebug>
             
             <AlignerDebug element={seq.positionalColumns}></AlignerDebug>
-            */}
+            
             {
                 seq.channels[0] ? (
                     
                     <PaddedBoxDebug element={seq.channels[0]}></PaddedBoxDebug>
                 ) : <></>
-            }
+            }*/}
         {/* <AlignerDebug element={seq.channels[0].upperAligner}></AlignerDebug> */}
 
-        <AlignerDebug element={seq.positionalColumns}></AlignerDebug>
-        <BindingsDebug element={seq}></BindingsDebug>
+        <CollectionDebug element={seq.positionalColumns}></CollectionDebug>
+
+        
+        {
+            seq.channels[0] ? (
+                <>
+                <PaddedBoxDebug element={seq.channels[0]} contentColour="green" padColour="yellow"></PaddedBoxDebug>
+                {/*<AlignerDebug element={seq.channels[0].upperAligner} contentColour="none" border="dashed"></AlignerDebug>
+                <AlignerDebug element={seq.channels[0].lowerAligner} contentColour="none" border="dashed"></AlignerDebug> */}
+
+                <CollectionDebug element={seq} contentColour="none"></CollectionDebug>
+                <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
+                </>
+            ) : <></>
+        }
         </>
     )
 }

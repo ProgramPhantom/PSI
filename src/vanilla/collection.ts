@@ -93,7 +93,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         var bottom = -Infinity;
         var right = -Infinity;
 
-        if (this.refName == "column at 0" ) {
+        if (this.refName == "sequence") {
             console.log()
         }
 
@@ -109,21 +109,16 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
             }
         })
 
-        if (this.definedVertically && this.y < top) {
-            top = this.y
+        // Include current location in boundary.
+        // This fixes a problem for the positional columns where the correct size of the boundary would be computed
+        // as if the collection was positioned at the top left element, but would not actually be in the correct location.
+        if (this.definedVertically && this.contentY < top) {
+            top = this.contentY
         }
-        if (this.definedHorizontally &&  this.x < left) {
-            left = this.x;
+        if (this.definedHorizontally &&  this.contentX < left) {
+            left = this.contentX;
         }
 
-        /*
-        if (this.hasPosition) {
-            if (top < this.y || left < this.x) {
-                console.warn("Child has been placed outside of collection content boundary")
-            }
-            top = this.contentY;
-            left = this.contentX;
-        }*/
         
 
         var bounds = {top: top, right: right, bottom: bottom, left: left}
