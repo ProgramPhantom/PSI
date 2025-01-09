@@ -92,6 +92,11 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             }
         }
 
+        // If this addition is a modification of the positional with max crossAxis size, crossAxis size will need decreasing:
+        // Aligner Special:
+        // Size of cross axis should be max cross axis of all elements:
+        this.squeezeCrossAxis();
+
         switch (alignChild) {
             case Alignment.none:
                 break;
@@ -142,5 +147,81 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
         this.computeBoundry();
         this.enforceBinding();
+    }
+
+    squeezeCrossAxis(): void {
+        var crossAxisSize = 0;
+
+        // Non aligned elements would break the following code,
+        // Currently, an element can only be non-aligned if the aligner is non-aligned.
+        if (this.alignment === Alignment.none) {
+            return 
+        }
+
+
+        this.children.forEach((c) => {
+            var childCrossAxisSize = c.getSizeByDimension(this.crossAxis);
+            if (childCrossAxisSize > crossAxisSize) {
+                crossAxisSize = childCrossAxisSize
+            }
+        })
+
+        this.setSizeByDimension(crossAxisSize, this.crossAxis)
+    }
+
+    computeBoundry(): void {
+
+        var top = Infinity;
+        var left = Infinity;
+        var bottom = -Infinity;
+        var right = -Infinity;
+
+        if (this.refName == "sequence") {
+            console.log()
+        }
+
+        this.children.forEach((c) => {
+            if (c.definedVertically) {
+                top = c.y < top ? c.y : top;
+                bottom = c.getFar(Dimensions.Y) > bottom ? c.getFar(Dimensions.Y) : bottom;
+            }
+            
+            if (c.definedHorizontally) {
+                left = c.x < left ? c.x : left;
+                right = c.getFar(Dimensions.X) > right ? c.getFar(Dimensions.X) : right;
+            }
+        })
+
+        // Include current location in boundary.
+        // This fixes a problem for the positional columns where the correct size of the boundary would be computed
+        // as if the collection was positioned at the top left element, but would not actually be in the correct location.
+        if (this.definedVertically && this.contentY < top) {
+            top = this.contentY
+        }
+        if (this.definedHorizontally &&  this.contentX < left) {
+            left = this.contentX;
+        }
+
+
+
+        var bounds = {top: top, right: right, bottom: bottom, left: left}
+        var width = right - left;
+        var height = bottom - top;
+        
+
+
+        if (width !== -Infinity) {
+            this.contentWidth = width;
+        }
+        if (height !== -Infinity) {
+            this.contentHeight = height;
+        }
+
+        this.childBounds = {
+            top: top,
+            bottom: bottom,
+            left: left,
+            right: right
+        }
     }
 }
