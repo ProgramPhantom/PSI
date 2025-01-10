@@ -221,6 +221,8 @@ export default class Sequence extends Collection {
         this.positionalColumns.children[index].enforceBinding();
         // NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
         // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
+
+        console.log(`INDEX123: ${obj.index}`);
     }
 
     deletePositional(target: Positional<Visual>, removeColumn: boolean=true): void {
@@ -239,7 +241,9 @@ export default class Sequence extends Collection {
 
         channel.removePositional(target, removeColumn);
 
-        this.deleteColumn(index, true);
+        if (removeColumn === true) {
+            this.deleteColumn(index, true);
+        }
     }
 
     addLabel(channelName: string, obj: Span) {
