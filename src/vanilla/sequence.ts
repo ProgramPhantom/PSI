@@ -164,16 +164,21 @@ export default class Sequence extends Collection {
 
     deleteColumn(index: number, ifEmpty: boolean=false) {
         // Update positional indices of elements after this 
-        this.channels.forEach((channel) => {
-            channel.shiftIndices(index, -1);
-        })
 
         if (ifEmpty === true) {
             if (this.positionalColumns.children[index].children.length === 0) {
                 this.positionalColumns.removeAt(index);
+
+                this.channels.forEach((channel) => {
+                    channel.shiftIndices(index, -1);
+                })
             }
         } else {
             this.positionalColumns.removeAt(index);
+
+            this.channels.forEach((channel) => {
+                channel.shiftIndices(index, -1);
+            })
         }
     }
     // ------------------------
@@ -221,8 +226,6 @@ export default class Sequence extends Collection {
         this.positionalColumns.children[index].enforceBinding();
         // NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
         // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
-
-        console.log(`INDEX123: ${obj.index}`);
     }
 
     deletePositional(target: Positional<Visual>, removeColumn: boolean=true): void {
@@ -241,6 +244,13 @@ export default class Sequence extends Collection {
 
         channel.removePositional(target);
 
+        // Remove target from columns 
+        try {
+            this.positionalColumns.children[target.index!].remove(target.element);
+        } catch {
+            console.log()
+        }
+        
         if (removeColumn === true) {
             this.deleteColumn(index, true);
         }

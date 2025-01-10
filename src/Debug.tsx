@@ -45,7 +45,7 @@ const Debug: React.FC<IDebug> = (props) => {
             seq.channels[0] ? (
                 <>
                 <PaddedBoxDebug element={seq.channels[0]} contentColour="green" padColour="yellow"></PaddedBoxDebug> 
-                <PaddedBoxDebug element={seq.channels[0].upperAligner} contentColour="red" ></PaddedBoxDebug>
+                
                 <PaddedBoxDebug element={seq.channels[0].lowerAligner} contentColour="red" ></PaddedBoxDebug>
 
                 

@@ -223,7 +223,7 @@ export default class Channel extends Collection {
         if (positional.index === undefined) {
             throw new Error(`Trying to remove positional with uninitialised index`)
         }
-        this.positionalColumns.children[positional.index!].remove(positional.element);
+        
 
         // Remove from aligner (yes one of these is reduntant)
         this.upperAligner.remove(positional.element);
