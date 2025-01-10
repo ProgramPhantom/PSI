@@ -232,16 +232,15 @@ export default class SequenceHandler {
 
     deletePositional<T extends Visual=Visual>(target: Positional<T>, removeColumn: boolean=true): true | undefined {
         // Find which channel owns this element:
-        var channel: Channel | undefined = target.channel;
-
-        if (channel === undefined) {
-            console.warn("positinal not connected to channel")
-            return undefined
+        try {
+            this.sequence.deletePositional(target, removeColumn);
+        } catch (e) {
+            console.error(e)
+            return undefined;
         }
 
-        channel.removePositional(target, removeColumn);
-
         this.draw();
+        return true;
     }
 
 

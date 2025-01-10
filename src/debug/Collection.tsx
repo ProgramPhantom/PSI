@@ -50,7 +50,7 @@ const CollectionDebug: React.FC<ICollectionDebug> = (props) => {
                     <>
                     <div style={{position: "absolute", left: x1, top: y1, fontSize: "3px",
                         margin: "0px", textAlign: "center"}}>{i}</div>
-                    <div style={{left: x1, top: y1, width: width, height: height, ...headStyle}}></div>
+                    <div style={{left: x1, top: y1, width: width, height: height, ...headStyle}}><p style={{fontSize: 5}}>{width}</p></div>
                     </>
                 )
             } else {
@@ -58,7 +58,7 @@ const CollectionDebug: React.FC<ICollectionDebug> = (props) => {
                     <>
                         <div style={{position: "absolute", left: x1, top: y1, fontSize: "3px",
                             margin: "0px", textAlign: "center"}}> </div>
-                        <div style={{left: x1, top: y1, width: width, height: height, ...childStyle}}></div>
+                        <div style={{left: x1, top: y1, width: width, height: height, ...childStyle}}>{width}</div>
                     </>
                 )
             }

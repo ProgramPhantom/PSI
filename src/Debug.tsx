@@ -16,14 +16,14 @@ const Debug: React.FC<IDebug> = (props) => {
 
     return (
         <>
-            {/*{
+            {
                 seq.channels.map((c) => {
                     return (c.positionalElements.map((e) => {
                         return (<PaddedBoxDebug element={e.element} padColour="purple"></PaddedBoxDebug>)
                     }))
                 })
             } 
-            
+            {/*
             <PaddedBoxDebug element={seq} contentColour={"none"} padColour="yellow"></PaddedBoxDebug>
               
             <PaddedBoxDebug element={seq.channelColumn}></PaddedBoxDebug>
@@ -52,6 +52,8 @@ const Debug: React.FC<IDebug> = (props) => {
                 </>
             ) : <></>
             } */}
+
+        <CollectionDebug element={seq.positionalColumns}></CollectionDebug>
         </>
     )
 }

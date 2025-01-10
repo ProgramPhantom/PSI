@@ -232,13 +232,6 @@ export default class Channel extends Collection {
         this.lowerAligner.remove(positional.element);
         
         positional.element.erase();
-
-        // Check the column and delete it if it's empty
-        if (this.positionalColumns.children[positional.index].children.length === 0 && removeColumn) {
-            this.positionalColumns.removeAt(positional.index);
-        } else {  // Else, remove the binding to this deleted element
-            this.positionalColumns.children[positional.index].removeBind(positional.element);
-        }
     }
 
     addAnnotationLabel(lab: Span) {
@@ -298,6 +291,12 @@ export default class Channel extends Collection {
         this.elementCursor = newCurs
     }
 
-
+    shiftIndices(from: number, n: number=1): void {
+        this.positionalMap.forEach((pos, i) => {
+            if (i >= from && pos !== undefined && pos.index !== undefined) {
+                pos.index = pos.index + n;
+            }
+        })
+    }
 
 }

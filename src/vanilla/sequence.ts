@@ -154,6 +154,27 @@ export default class Sequence extends Collection {
         this.channels.forEach((c) => {
             c.occupancy.splice(index, 0, false);
         })
+
+        // Update indices after this new column:
+        // Update internal indexes of Positional elements in pos col:
+        this.channels.forEach((channel) => {
+            channel.shiftIndices(index, 1);
+        })
+    }
+
+    deleteColumn(index: number, ifEmpty: boolean=false) {
+        // Update positional indices of elements after this 
+        this.channels.forEach((channel) => {
+            channel.shiftIndices(index, -1);
+        })
+
+        if (ifEmpty === true) {
+            if (this.positionalColumns.children[index].children.length === 0) {
+                this.positionalColumns.removeAt(index);
+            }
+        } else {
+            this.positionalColumns.removeAt(index);
+        }
     }
     // ------------------------
 
@@ -202,6 +223,25 @@ export default class Sequence extends Collection {
         // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
     }
 
+    deletePositional(target: Positional<Visual>, removeColumn: boolean=true): void {
+        var channel: Channel | undefined = target.channel;
+        var index: number;
+
+        if (target.index === undefined ) {
+            throw new Error("Index not initialised");
+        }
+        index = target.index;
+
+        if (channel === undefined) {
+            console.warn("positinal not connected to channel")
+            return undefined
+        }
+
+        channel.removePositional(target, removeColumn);
+
+        this.deleteColumn(index, true);
+    }
+
     addLabel(channelName: string, obj: Span) {
         this.channelsDic[channelName].addAnnotationLabel(obj);
     }
@@ -239,4 +279,3 @@ export default class Sequence extends Collection {
         this.brackets.push({bracketObj: bracket, startChannel: channelName, timestamp: pos});
     }
 }
-
