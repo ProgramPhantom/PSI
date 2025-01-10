@@ -55,6 +55,7 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
     if (props.target === undefined) {return} 
 
     props.handler.deletePositional(props.target);
+    props.reselect(undefined);
   }
   
   return (

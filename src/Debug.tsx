@@ -40,8 +40,8 @@ const Debug: React.FC<IDebug> = (props) => {
 
         
         <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
-        
-        {
+        */}
+            {
             seq.channels[0] ? (
                 <>
                 <PaddedBoxDebug element={seq.channels[0]} contentColour="green" padColour="yellow"></PaddedBoxDebug> 
@@ -51,9 +51,10 @@ const Debug: React.FC<IDebug> = (props) => {
                 
                 </>
             ) : <></>
-            } */}
+            } 
 
         <CollectionDebug element={seq.positionalColumns}></CollectionDebug>
+        <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
         </>
     )
 }

@@ -239,7 +239,7 @@ export default class Sequence extends Collection {
             return undefined
         }
 
-        channel.removePositional(target, removeColumn);
+        channel.removePositional(target);
 
         if (removeColumn === true) {
             this.deleteColumn(index, true);

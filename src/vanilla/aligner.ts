@@ -249,9 +249,13 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
         if (width !== -Infinity) {
             this.contentWidth = width;
+        } else {
+            this.contentWidth = 0;
         }
         if (height !== -Infinity) {
             this.contentHeight = height;
+        } else {
+            this.contentHeight = 0;
         }
 
         this.childBounds = {
