@@ -23,7 +23,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             axis: Dimensions.X,
             bindMainAxis: false,
             alignment: Alignment.here,
-            minCrossAxis: 20,
+            minCrossAxis: 0,
             contentWidth: 0,
             contentHeight: 0,
             x: undefined,
@@ -53,7 +53,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
         // This sets cross axis to minCrossAxis which is the expected value upon initialisation.  
         this.squeezeCrossAxis();
-        
+
     }
 
     add(child: T, index?: number, alignItem: Alignment=Alignment.here) {

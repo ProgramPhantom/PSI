@@ -146,7 +146,7 @@ export default class Channel extends Collection {
         this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle}, "bar");
         this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here", undefined, `UPPER ALIGNER Y> BAR`);
 
-        this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here}, "default", "bottom aligner");
+        this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here, minCrossAxis: 0}, "default", "bottom aligner");
         this.bar.bind(this.lowerAligner, Dimensions.Y, "far", "here", undefined, `BAR Y> LOWER ALGINER`);
         
         this.add(this.upperAligner);
