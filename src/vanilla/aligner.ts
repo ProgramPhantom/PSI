@@ -50,6 +50,10 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         this.bindMainAxis = fullParams.bindMainAxis;
         this.alignment = fullParams.alignment;
         this.minCrossAxis = fullParams.minCrossAxis;
+
+        // This sets cross axis to minCrossAxis which is the expected value upon initialisation.  
+        this.squeezeCrossAxis();
+        
     }
 
     add(child: T, index?: number, alignItem: Alignment=Alignment.here) {

@@ -140,9 +140,8 @@ export default class Channel extends Collection {
 
         this.identifier = fullParams.identifier;
 
-        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, contentHeight: 20}, "default", `top aligner`);
+        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, minCrossAxis: 30}, "default", `top aligner`);
         this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, `CHANNEL Y> UPPER ALGINER`);
-        
         
         this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle}, "bar");
         this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here", undefined, `UPPER ALIGNER Y> BAR`);
@@ -150,10 +149,9 @@ export default class Channel extends Collection {
         this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here}, "default", "bottom aligner");
         this.bar.bind(this.lowerAligner, Dimensions.Y, "far", "here", undefined, `BAR Y> LOWER ALGINER`);
         
-        
-        
+        this.add(this.upperAligner);
+        this.add(this.lowerAligner);
         this.add(this.bar);
-
         // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
         this.labelOn = fullParams.labelOn;

@@ -94,9 +94,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
         var bottom = -Infinity;
         var right = -Infinity;
 
-        if (this.refName == "sequence") {
-            console.log()
-        }
+
 
         this.children.forEach((c) => {
             if (c.definedVertically) {
