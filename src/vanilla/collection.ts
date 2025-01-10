@@ -71,7 +71,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
                 if (c instanceof Visual) {
                     c.erase();
                 }
-                
+
+                this.removeBind(child);
             }
         })
 

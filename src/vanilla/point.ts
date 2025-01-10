@@ -114,6 +114,7 @@ export default class Point implements IPoint {
 
     bind(el: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), targetBindSide: keyof (typeof el.AnchorFunctions), offset?: number, hint?: string) {
         var found = false;
+        
 
         var anchorGetter: BinderGetFunction = this.AnchorFunctions[anchorBindSide].get;
         var targetSetter: BinderSetFunction = el.AnchorFunctions[targetBindSide].set;

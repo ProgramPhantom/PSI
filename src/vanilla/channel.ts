@@ -208,11 +208,11 @@ export default class Channel extends Collection {
         }
         this.positionalMap.splice(Index, 0, positional);
 
-
+        // Is this needed?????
         this.add(positional.element);
     }
 
-    removePositional(positional: Positional<Visual>) {
+    removePositional(positional: Positional<Visual>, removeColumn: boolean=true) {
         // Remove from positional elements
         this.positionalMap.forEach((e, i) => {
             if (e === positional) {
@@ -236,8 +236,10 @@ export default class Channel extends Collection {
         positional.element.erase();
 
         // Check the column and delete it if it's empty
-        if (this.positionalColumns.children[positional.index].children.length === 0) {
+        if (this.positionalColumns.children[positional.index].children.length === 0 && removeColumn) {
             this.positionalColumns.removeAt(positional.index);
+        } else {  // Else, remove the binding to this deleted element
+            this.positionalColumns.children[positional.index].removeBind(positional.element);
         }
     }
 

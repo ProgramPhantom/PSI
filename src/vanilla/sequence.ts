@@ -83,7 +83,7 @@ export default class Sequence extends Collection {
         this.add(this.channelColumn);
 
         // | h | |p|p|p|p|
-        this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true}, "default", "label col | pos cols");
+        this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true, alignment: Alignment.here}, "default", "label col | pos cols");
         this.bind(this.columns, Dimensions.Y, "here", "here", undefined, "SEQ Y-> COL");
         this.bind(this.columns, Dimensions.X, "here", "here", undefined, "SEQ X-> COL");
         this.add(this.columns);
@@ -91,12 +91,12 @@ export default class Sequence extends Collection {
 
         // | h |
         this.labelColumn = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, 
-                                                        alignment: Alignment.centre}, "default", "label column");
+                                                        alignment: Alignment.centre, y: 0}, "default", "label column");
         this.columns.add(this.labelColumn);
 
 
         // |p|p|p|p|
-        this.positionalColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X}, "default", "pos col collection");
+        this.positionalColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0}, "default", "pos col collection");
         this.columns.add(this.positionalColumns);
     }
 
@@ -194,6 +194,7 @@ export default class Sequence extends Collection {
 
         // Add element to channel
         this.channelsDic[channelName].addPositional(obj, index, insert);
+        // This should set the Y of the element ^^^
 
         // SET X of element
         this.positionalColumns.children[index].enforceBinding();

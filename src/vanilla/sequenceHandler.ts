@@ -221,7 +221,7 @@ export default class SequenceHandler {
     modifyPositional<T extends Visual=Visual>(target: Positional<T>, newElement: Positional<T>): true | undefined {
         var channel: Channel = target.channel;
 
-        this.deletePositional(target);
+        this.deletePositional(target, false);
 
         this.sequence.addPositional(channel.identifier, newElement, target.index);
 //      
@@ -230,7 +230,7 @@ export default class SequenceHandler {
         return true;
     }
 
-    deletePositional<T extends Visual=Visual>(target: Positional<T>): true | undefined {
+    deletePositional<T extends Visual=Visual>(target: Positional<T>, removeColumn: boolean=true): true | undefined {
         // Find which channel owns this element:
         var channel: Channel | undefined = target.channel;
 
@@ -239,7 +239,7 @@ export default class SequenceHandler {
             return undefined
         }
 
-        channel.removePositional(target);
+        channel.removePositional(target, removeColumn);
 
         this.draw();
     }

@@ -38,19 +38,20 @@ const Debug: React.FC<IDebug> = (props) => {
         {/* <AlignerDebug element={seq.channels[0].upperAligner}></AlignerDebug> */}
 
         <CollectionDebug element={seq.positionalColumns}></CollectionDebug>
+        <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
 
-        
+        {/*
         {
             seq.channels[0] ? (
                 <>
                 <PaddedBoxDebug element={seq.channels[0]} contentColour="green" padColour="yellow"></PaddedBoxDebug>
                 {/*<AlignerDebug element={seq.channels[0].upperAligner} contentColour="none" border="dashed"></AlignerDebug>
-                <AlignerDebug element={seq.channels[0].lowerAligner} contentColour="none" border="dashed"></AlignerDebug> */}
+                <AlignerDebug element={seq.channels[0].lowerAligner} contentColour="none" border="dashed"></AlignerDebug> 
 
-                <CollectionDebug element={seq} contentColour="none"></CollectionDebug>
+                
                 </>
             ) : <></>
-        }
+            } */}
         </>
     )
 }

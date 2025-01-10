@@ -9,7 +9,8 @@ import { SVG } from "@svgdotjs/svg.js";
 export interface IAligner extends ICollection {
     axis: Dimensions,
     bindMainAxis: boolean,
-    alignment: Alignment
+    alignment: Alignment,
+    minCrossAxis?: number
 }
 
 
@@ -22,6 +23,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             axis: Dimensions.X,
             bindMainAxis: false,
             alignment: Alignment.here,
+            minCrossAxis: 20,
             contentWidth: 0,
             contentHeight: 0,
             x: undefined,
@@ -36,6 +38,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
     bindMainAxis: boolean;
     alignment: Alignment;
+    minCrossAxis?: number;
 
     constructor(params: RecursivePartial<IAligner>, templateName: string="default", refName: string="collection") {
         var fullParams: IAligner = FillObject<IAligner>(params, Aligner.defaults[templateName]);
@@ -46,6 +49,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
         this.bindMainAxis = fullParams.bindMainAxis;
         this.alignment = fullParams.alignment;
+        this.minCrossAxis = fullParams.minCrossAxis;
     }
 
     add(child: T, index?: number, alignItem: Alignment=Alignment.here) {
@@ -82,20 +86,20 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         }
         this.children.splice(INDEX, 0, child);
         
-        // cross AXIS
+        // Resize cross axis
         if (alignChild !== Alignment.none) {  // Optimisation AND is required
             var crossAxisSizeChild = child.getSizeByDimension(this.crossAxis);
             var crossAxisSize = this.getSizeByDimension(this.crossAxis);  
 
             if (crossAxisSizeChild > crossAxisSize) {
                 this.setSizeByDimension(child.getSizeByDimension(this.crossAxis), this.crossAxis);
+            } else {
+                // If this addition is a modification of the positional with max crossAxis size, crossAxis size will need decreasing:
+                // Aligner Special:
+                // Size of cross axis should be max cross axis of all elements:
+                this.squeezeCrossAxis();
             }
         }
-
-        // If this addition is a modification of the positional with max crossAxis size, crossAxis size will need decreasing:
-        // Aligner Special:
-        // Size of cross axis should be max cross axis of all elements:
-        this.squeezeCrossAxis();
 
         switch (alignChild) {
             case Alignment.none:
@@ -130,7 +134,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 preChild.removeBind(target);
 
                 if (postChild) {
-                    preChild.bind(postChild, this.mainAxis, "far", "here", undefined, false);
+                    preChild.bind(postChild, this.mainAxis, "far", "here", undefined, `${preChild.refName} ${this.mainAxis}> ${postChild.refName}`, false);
                 }
             } else {
                 // This element is bound to the inside of the aligner object
@@ -138,19 +142,37 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 this.removeBind(target);
 
                 if (postChild) {  // Rebind next element to this
-                    this.bind(postChild, this.mainAxis, "here", "here", undefined, true);
+                    this.bind(postChild, this.mainAxis, "here", "here", undefined, `${this.refName} ${this.mainAxis}> ${postChild.refName}`);
                 }
             }
         }
 
-        this.children.splice(index, 1);
+        this.squeezeCrossAxis();
+
+        this.remove(target);
+    }
+
+    remove(child: T) {
+        this.children.forEach((c, i) => {
+            if (c === child) {
+                this.children.splice(i, 1);
+
+                if (c instanceof Visual) {
+                    c.erase();
+                }
+                
+                this.removeBind(child);
+            }
+        })
+
+        this.squeezeCrossAxis();
 
         this.computeBoundry();
         this.enforceBinding();
     }
 
     squeezeCrossAxis(): void {
-        var crossAxisSize = 0;
+        var crossAxisSize = this.minCrossAxis !== undefined ? this.minCrossAxis : 0;
 
         // Non aligned elements would break the following code,
         // Currently, an element can only be non-aligned if the aligner is non-aligned.
@@ -208,7 +230,18 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         var width = right - left;
         var height = bottom - top;
         
-
+        // Inflate cross axis
+        if (this.minCrossAxis !== undefined) {
+            var currCrossAxis = this.crossAxis === Dimensions.X ? width : height;
+            
+            if (currCrossAxis < this.minCrossAxis) {
+                if (this.crossAxis === Dimensions.X) {
+                    width = this.minCrossAxis
+                } else {
+                    height = this.minCrossAxis
+                }
+            }
+        }
 
         if (width !== -Infinity) {
             this.contentWidth = width;

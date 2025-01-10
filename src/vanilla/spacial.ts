@@ -140,7 +140,7 @@ export default class Spacial extends Point implements ISpacial {
 
     bind(target: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), 
          targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number, hint: string="binding", bindToContent: boolean=true, ) {
-
+        
         var found = false;
 
         if (hint === "binding") {
