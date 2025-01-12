@@ -1,6 +1,7 @@
 import { Svg, Element } from "@svgdotjs/svg.js";
 import Point, { BinderGetFunction, BinderSetFunction, BindingRule, IPoint } from "./point";
 import { SVG } from "@svgdotjs/svg.js";
+import logger from "./log";
 
 export interface Bounds {
     top: number,
@@ -213,6 +214,7 @@ export default class Spacial extends Point implements ISpacial {
 
     notifyChange() {
         this.subscribers?.forEach((s) => {
+            logger.broadcast(this, s.name.split(" ")[1])
             s();
         })
     }

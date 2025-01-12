@@ -7,7 +7,7 @@ import { FillObject, RecursivePartial } from "./util";
 import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS } from "react";
 import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
-import logger, { Operations } from "./log";
+import logger, { Operations, Processes } from "./log";
 
 
 export interface ICollection extends IVisual {
@@ -89,8 +89,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     }
 
     computeBoundry(): void {
-        console.groupCollapsed(`COMPUTE BOUNDARY[${this.refName}]: ${this.refName}`)
-        logger.operation(Operations.COMPUTEBOUNDARY, `${this.refName}`)
+        
+        logger.processStart(Processes.COMPUTE_BOUNDARY, `${this.refName}`, this)
 
         if (this.children.filter((f) => f.displaced === true).length > 0) {
             logger.performance(`ABORT COMPUTE BOUNDRY[${typeof this}]: ${this.refName}`)
@@ -153,8 +153,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
             right: right
         }
 
-        console.groupEnd();
-    }
+        logger.processEnd(Processes.COMPUTE_BOUNDARY, `${this.refName}`, this)
+    } 
 
     get contentWidth(): number | undefined {
         // this.computeSize(); // TODO: remove this

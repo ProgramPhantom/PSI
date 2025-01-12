@@ -5,7 +5,7 @@ import Spacial, { Dimensions } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
 import { SVG } from "@svgdotjs/svg.js";
-import logger, { Operations } from "./log";
+import logger, { Operations, Processes } from "./log";
 
 export interface IAligner extends ICollection {
     axis: Dimensions,
@@ -194,10 +194,11 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
     computeBoundry(): void {
 
-        logger.operation(Operations.COMPUTEBOUNDARY, `${this.refName}`)
+        logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this)
 
-        if (this.children.filter((f) => f.displaced === true).length > 0) {
-            logger.performance(`ABORT COMPUTE BOUNDRY[${typeof this}]: ${this.refName}`)
+        var displacedElements = this.children.filter((f) => f.displaced === true)
+        if (displacedElements.length > 0) {
+            logger.performance(`ABORT COMPUTE BOUNDRY ${this.refName} as ${displacedElements} have not been positioned`)
             return
         }
 
@@ -269,5 +270,6 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             right: right
         }
 
+        logger.processEnd(Processes.COMPUTE_BOUNDARY, `Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`, this)
     }
 }

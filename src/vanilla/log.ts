@@ -1,8 +1,11 @@
+import Point from "./point"
 
 export enum Levels {
     INFO="INFO",
     PERFORMANCE="PERFORMANCE",
-    OPERATION="OPERATION"
+    OPERATION="OPERATION",
+    PROCESS_START="PROCESS_START",
+    PROCESS_END="PROCESS_END"
 }
 
 export enum Operations {
@@ -12,10 +15,30 @@ export enum Operations {
     SETY="SETY",
     SETWIDTH="SETWIDTH",
     SETHEIGHT="SETHEIGHT",
-    COMPUTEBOUNDARY="COMPUTEBOUNDARY",
     ADD="ADD",
     DELETE="DELETE",
-    MODIFY="MODIFY"
+    MODIFY="MODIFY",
+    BIND="BIND",
+    BROADCAST="BROADCAST"
+}
+
+export enum Processes {
+    COMPUTE_BOUNDARY="COMPUTE_BOUNDARY"
+}
+
+interface SimpleLog {
+    level: Levels,
+    message: string
+}
+
+interface OperationLog extends SimpleLog {
+    operation: Operations,
+    caller?: Point
+}
+
+interface ProcessLog extends SimpleLog {
+    process: Processes,
+    caller?: Point
 }
 
 class Logger { 
@@ -30,25 +53,31 @@ class Logger {
         COMPUTEBOUNDARY: "lightgreen",
         ADD: "#10c422",
         DELETE: "#10c422",
-        MODIFY: "#10c422"
+        MODIFY: "#10c422",
+        BIND: "#10c422",
+        BROADCAST: "#54aceb"
     }
-
+    processColour = {
+        COMPUTE_BOUNDARY: "#ff644d"
+    }
     levelColours = {
-        "OPERATION": "#ad03fc",
+        "OPERATION": "#e042ff",
         "INFO": "lightblue",
-        "PERFORMANCE": "orange"
+        "PERFORMANCE": "orange",
+        "PROCESS_START": "#ff644d",
+        "PROCESS_END": "green"
     }
+    stressColour = "#e3ff2b"
     
 
-    getColours(level: Levels, operation: Operations=Operations.NONE) {
+    simpleColours(level: Levels) {
         return [`color:${this.defaultColour}`, 
                 `color:${this.levelColours[level]}`, 
-                `color:${this.defaultColour}`, 
-                `color:${this.operationColour[operation]}`,  
+                `color:${this.defaultColour}`,  
                 `color:${this.defaultColour}`]
     }
 
-    format(s: string, level: Levels, operation?: Operations): string[] {
+    getTime() {
         var nowDate = new Date(Date.now());
         var time = [
             nowDate.getHours(),
@@ -57,28 +86,106 @@ class Logger {
             nowDate.getMilliseconds()
         ].join(":");
 
-        return [`%c${time} `, `%c[${level}]`, `%c ~ `, `%c${operation ? operation : "DO"}: `, `%c${s}`]
+        return time;
     }
 
+    simpleFormat(s: string, level: Levels): string[] {
+        return [`%c${this.getTime()} `, `%c[${level}]`, `%c: `, `%c${s}`]
+    }
+
+    // Simple logs
     info(message: string) {
-        var formattedMessage = this.format(message, Levels.INFO);
+        var formattedMessage = this.simpleFormat(message, Levels.INFO);
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c)
 
-        console.log(concatMessage, ...this.getColours(Levels.INFO))
+        console.log(concatMessage, ...this.simpleColours(Levels.INFO))
     }
 
     performance(message: string) {
-        var formattedMessage = this.format(message, Levels.PERFORMANCE);
+        var formattedMessage = this.simpleFormat(message, Levels.PERFORMANCE);
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c)
 
-        console.log(concatMessage, ...this.getColours(Levels.PERFORMANCE))
+        console.log(concatMessage, ...this.simpleColours(Levels.PERFORMANCE))
     }
 
-    operation(operation: Operations, message: string) {
-        var formattedMessage: string[] = this.format(message, Levels.OPERATION, operation);
-        var concatMessage: string = formattedMessage.reduce((p, c) => p + c)
+    broadcast(from: Point, functionName: string) {
+        var formattedMessage: string[] = [`%c${this.getTime()} `, 
+                                          `%c[BROADCAST]`,
+                                          `%c: `,
 
-        console.log(concatMessage, ...this.getColours(Levels.OPERATION, operation))
+                                          `%c"${from.refName}" `,
+                                          `%cis starting the following `,
+                                          `%c"${functionName}()"`]
+        var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
+        
+        var colours = [`color:${this.defaultColour}`, 
+                       `color:${this.levelColours[Levels.OPERATION]}`, 
+                       `color:${this.defaultColour}`,
+                       `color:${this.stressColour}`,
+                       `color:${this.defaultColour}`,
+                       `color:${this.stressColour}`]
+
+        console.log(concatMessage, ...colours);
+    }
+
+    operation(operation: Operations, message: string, caller: Point) {
+        var formattedMessage: string[] = [`%c${this.getTime()} `, 
+                                          `%c[${Levels.OPERATION}]`, 
+                                          `%c: `, 
+
+                                          caller ? `%c"${caller.refName}" %ccalls ` : `%c%c`,
+                                          `%c${operation}() `, 
+                                          `%c${message}`]
+        var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
+
+        var colours = [`color:${this.defaultColour}`, 
+                       `color:${this.levelColours[Levels.OPERATION]}`, 
+                       `color:${this.defaultColour}`,
+                    
+                       `color:${this.stressColour}`,   
+                       `color:${this.defaultColour}`,
+                       `color:${this.operationColour[operation]}`,
+                       `color:${this.defaultColour}`]
+
+        console.log(concatMessage, ...colours)
+    }
+
+    processStart(process: Processes, message: string, caller: Point) {
+        var formattedMessage = [`%c${this.getTime()} `, 
+                                `%c[${Levels.PROCESS_START}]`, 
+                                `%c: `, 
+                                caller ? `%c"${caller.refName}" %cstarts ` : `%c`,
+                                `%c${process}() `, 
+                                `%c${message}`]
+        var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
+
+        var colours = [`color:${this.defaultColour}`, 
+                       `color:${this.levelColours[Levels.PROCESS_START]}`, 
+                       `color:${this.defaultColour}`,
+                       `color:${this.stressColour}`,
+                       `color:${this.defaultColour}`,
+                       `color:${this.processColour[process]}`,
+                       `color:> ${this.defaultColour}`]
+        
+        console.log(concatMessage, ...colours)
+    }
+
+    processEnd(process: Processes, message: string, caller?: Point) {
+        var formattedMessage = [`%c${this.getTime()} `, 
+                                `%c[${Levels.PROCESS_END}]`, 
+                                `%c: `, 
+                                caller ? `"${caller.refName}" ends ` : ``,
+                                `%c${process}()`, 
+                                `%c> ${message}`]
+        var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
+
+        var colours = [`color:${this.defaultColour}`, 
+                       `color:${this.levelColours[Levels.PROCESS_END]}`, 
+                       `color:${this.defaultColour}`,
+                       `color:${this.processColour[process]}`,
+                       `color:${this.defaultColour}`]
+
+        console.log(concatMessage, ...colours)
     }
 }
 

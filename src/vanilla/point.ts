@@ -177,10 +177,18 @@ export default class Point implements IPoint {
 
             // Apply offset:
             anchorBindCoord = anchorBindCoord + (binding.offset ? binding.offset : 0);
- 
-            logger.operation(Operations.MOV, `(${this.refName}[${this.y}] -> ${targetElement.refName}[${targetElement.getSizeByDimension(dimension)}])`);
-            // Use the correct setter on the target with this value
-            setter(dimension, anchorBindCoord);  // SETTER MAY NEED INTERNAL BINDING FLAG?
+            
+            // Current position of target:
+            var currentPos = targetElement.getSizeByDimension(dimension);
+            
+            // Only go into the setter if it will change a value, massively reduces function calls.
+            // Alternative was doing the check inside the setter which still works but requires a function call
+            if (anchorBindCoord !== currentPos) {
+                // Use the correct setter on the target with this value
+                logger.operation(Operations.BIND, `(${this.refName})[${this.y}] ${dimension}> (${targetElement.refName})[${currentPos}]`, this);
+                setter(dimension, anchorBindCoord);  // SETTER MAY NEED INTERNAL BINDING FLAG?
+            }
+            
             targetElement.displaced = false;
         }
     }
