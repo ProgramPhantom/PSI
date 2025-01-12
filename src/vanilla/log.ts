@@ -49,7 +49,15 @@ class Logger {
     }
 
     format(s: string, level: Levels, operation?: Operations): string[] {
-        return [`%c${new Date(Date.now()).toUTCString()} `, `%c[${level}]`, `%c ~ `, `%c${operation ? operation : "DO"}: `, `%c${s}`]
+        var nowDate = new Date(Date.now());
+        var time = [
+            nowDate.getHours(),
+            nowDate.getMinutes(),
+            nowDate.getSeconds(),
+            nowDate.getMilliseconds()
+        ].join(":");
+
+        return [`%c${time} `, `%c[${level}]`, `%c ~ `, `%c${operation ? operation : "DO"}: `, `%c${s}`]
     }
 
     info(message: string) {
