@@ -25,7 +25,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
     }
 
     return (
-        <form onChange={() => {console.log("CHANGE")}} onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
             <h3>New Channel</h3>
 
             <Tabs defaultSelectedTabId={"core"} animate={false} vertical={false}>

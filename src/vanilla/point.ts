@@ -1,5 +1,9 @@
 import Aligner from "./aligner";
+import logger, { Operations } from "./log";
 import Spacial, { Dimensions } from "./spacial";
+
+
+
 
 interface Shift {
     dx?: number,
@@ -57,6 +61,8 @@ export default class Point implements IPoint {
 
     bindings: Binding[] = [];
 
+    displaced: boolean=false;
+
     constructor(x?: number, y?: number, refName: string = "point") {
         this.x = x;
         this.y = y;
@@ -88,7 +94,7 @@ export default class Point implements IPoint {
         if (val !== this._y) {
             
             if (this.refName === "label column") {
-                console.log()
+                
             }
             
             
@@ -155,12 +161,11 @@ export default class Point implements IPoint {
     }
 
     public enforceBinding() {
+        this.bindings.map((b) => b.targetObject).forEach((e) => {
+            e.displaced = true;
+        })
+
         for (const binding of this.bindings) {
-
-            if (this.refName === "top aligner") {
-                console.log()
-            }
-
             var targetElement: Point = binding.targetObject;
             var getter: BinderGetFunction = this.AnchorFunctions[binding.bindingRule.anchorSiteName as keyof typeof this.AnchorFunctions].get;
             var setter: BinderSetFunction = targetElement.AnchorFunctions[binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions].set;
@@ -172,9 +177,11 @@ export default class Point implements IPoint {
 
             // Apply offset:
             anchorBindCoord = anchorBindCoord + (binding.offset ? binding.offset : 0);
-
+ 
+            logger.operation(Operations.MOV, `(${this.refName}[${this.y}] -> ${targetElement.refName}[${targetElement.getSizeByDimension(dimension)}])`);
             // Use the correct setter on the target with this value
             setter(dimension, anchorBindCoord);  // SETTER MAY NEED INTERNAL BINDING FLAG?
+            targetElement.displaced = false;
         }
     }
 
@@ -205,5 +212,9 @@ export default class Point implements IPoint {
         } else {
             return true;
         }
+    }
+
+    getSizeByDimension(dim: Dimensions): number {
+        return 0;
     }
 }

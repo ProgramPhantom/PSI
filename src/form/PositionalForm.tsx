@@ -11,7 +11,7 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
   // onSubmit={handleSubmit(onSubmit)}x
 
   return (
-    <form onChange={() => {console.log("CHANGE")}} onSubmit={() => props.change()}>
+    <form onSubmit={() => props.change()}>
       <ControlGroup vertical={true}>
         {/* Padding */}
         <Section style={{borderRadius: 0}}

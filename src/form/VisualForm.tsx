@@ -8,11 +8,11 @@ import PositionalForm from './PositionalForm';
 
 
 function VisualForm(props: {control: Control<any>, change: () => void}) {
-  const onSubmit = (data: FieldValues) => console.log(data);
+  const onSubmit = (data: FieldValues) => {};
   // onSubmit={handleSubmit(onSubmit)}x
 
   return (
-    <form onChange={() => {}} onSubmit={() => props.change()}>
+    <form onSubmit={() => props.change()}>
       <ControlGroup vertical={true}>
         {/* Content Size */}
         <FormGroup

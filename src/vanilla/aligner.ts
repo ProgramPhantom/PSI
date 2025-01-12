@@ -5,6 +5,7 @@ import Spacial, { Dimensions } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
 import { SVG } from "@svgdotjs/svg.js";
+import logger, { Operations } from "./log";
 
 export interface IAligner extends ICollection {
     axis: Dimensions,
@@ -60,10 +61,6 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         // AlignItem takes precidence
         var alignChild: Alignment = alignItem !== Alignment.here ? alignItem : this.alignment;
         const INDEX = index !== undefined ? index : this.children.length;
-
-        if (this.refName === "top aligner") {
-            console.log(".")
-        }
 
         // MAIN AXIS COMPUTE
         if (this.bindMainAxis) {
@@ -197,13 +194,20 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
     computeBoundry(): void {
 
+        logger.operation(Operations.COMPUTEBOUNDARY, `${this.refName}`)
+
+        if (this.children.filter((f) => f.displaced === true).length > 0) {
+            logger.performance(`ABORT COMPUTE BOUNDRY[${typeof this}]: ${this.refName}`)
+            return
+        }
+
         var top = Infinity;
         var left = Infinity;
         var bottom = -Infinity;
         var right = -Infinity;
 
         if (this.refName == "sequence") {
-            console.log()
+            
         }
 
         this.children.forEach((c) => {
@@ -264,5 +268,6 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             left: left,
             right: right
         }
+
     }
 }

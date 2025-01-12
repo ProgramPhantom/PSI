@@ -9,13 +9,9 @@ import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, 
 
 function ArrowForm(props: {control: Control<any>, change: () => void}) {
 
-  
-
-  const onSubmit = (data: FieldValues) => console.log(data);
-  // onSubmit={handleSubmit(onSubmit)}x
 
   return (
-    <form onChange={() => {console.log("CHANGE")}}>
+    <form onChange={() => {}}>
       <FormGroup
           fill={false}
           inline={true}

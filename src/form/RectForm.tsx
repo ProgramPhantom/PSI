@@ -66,7 +66,7 @@ const RectForm: React.FC<IRectForm> = (props) => {
                 </button>) : <></>}
             </div>
 
-            <form onChange={() => {console.log("CHANGE")}} onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(onSubmit)}>
                 <h3>Simple Pulse</h3>
 
                 <Tabs defaultSelectedTabId={"core"} animate={false}>

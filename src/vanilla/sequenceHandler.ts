@@ -17,6 +17,7 @@ import { Position } from "@blueprintjs/core";
 import { ILine, Line } from "./line";
 import RectElement, { IRect, PositionalRect } from "./rectElement";
 import SVGElement, { ISVG, PositionalSVG } from "./svgElement";
+import logger, { Operations } from "./log";
 
 
 type IPositionalType = (ISVG | IRect) & IPositional
@@ -219,6 +220,8 @@ export default class SequenceHandler {
     }
 
     modifyPositional<T extends Visual=Visual>(target: Positional<T>, newElement: Positional<T>): true | undefined {
+        logger.operation(Operations.MODIFY, `${target} -> ${newElement}`)
+
         var channel: Channel = target.channel;
 
         this.deletePositional(target, false);
@@ -231,6 +234,8 @@ export default class SequenceHandler {
     }
 
     deletePositional<T extends Visual=Visual>(target: Positional<T>, removeColumn: boolean=true): true | undefined {
+        logger.operation(Operations.DELETE, `${target}`)
+
         // Find which channel owns this element:
         try {
             this.sequence.deletePositional(target, removeColumn);

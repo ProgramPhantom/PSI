@@ -7,6 +7,7 @@ import { FillObject, RecursivePartial } from "./util";
 import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS } from "react";
 import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
+import logger, { Operations } from "./log";
 
 
 export interface ICollection extends IVisual {
@@ -88,6 +89,14 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     }
 
     computeBoundry(): void {
+        console.groupCollapsed(`COMPUTE BOUNDARY[${this.refName}]: ${this.refName}`)
+        logger.operation(Operations.COMPUTEBOUNDARY, `${this.refName}`)
+
+        if (this.children.filter((f) => f.displaced === true).length > 0) {
+            logger.performance(`ABORT COMPUTE BOUNDRY[${typeof this}]: ${this.refName}`)
+            console.groupEnd()
+            return
+        }
 
         var top = Infinity;
         var left = Infinity;
@@ -128,9 +137,13 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
 
         if (width !== -Infinity) {
             this.contentWidth = width;
+        } else {
+            this.contentWidth = 0;
         }
         if (height !== -Infinity) {
             this.contentHeight = height;
+        } else {
+            this.contentHeight = 0;
         }
 
         this.childBounds = {
@@ -139,6 +152,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
             left: left,
             right: right
         }
+
+        console.groupEnd();
     }
 
     get contentWidth(): number | undefined {

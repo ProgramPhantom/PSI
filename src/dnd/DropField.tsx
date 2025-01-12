@@ -132,7 +132,7 @@ function DropField(props: {sequence: SequenceHandler}) {
     const registry = dragDropManager.getRegistry();
     
     
-    console.log(registry)
+    
 
 
     return (

@@ -68,7 +68,7 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
         </button>) : <></>}
     </div>
 
-    <form onChange={() => {console.log("CHANGE")}} onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Tabs defaultSelectedTabId={"core"} animate={false}>
             <Tab id="core" title="Core" panel={
                 <>

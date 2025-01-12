@@ -205,7 +205,7 @@ export default class Channel extends Collection {
         this.positionalMap.splice(Index, 0, positional);
 
         // Is this needed?????
-        this.add(positional.element);
+        // this.add(positional.element);
     }
 
     removePositional(positional: Positional<Visual>) {

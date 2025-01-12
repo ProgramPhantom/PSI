@@ -77,7 +77,7 @@ const PaddedBoxDebug: React.FC<IPaddedBoxDebug> = (props) => {
 
            {/* Bindings */}
 
-           {console.log(props.element.bindings)}
+           {}
            <BindingsDebug element={props.element}></BindingsDebug>
         </>
     )

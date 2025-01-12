@@ -144,7 +144,7 @@ export default class Spacial extends Point implements ISpacial {
         var found = false;
 
         if (hint === "binding") {
-            console.log(".")
+            
         }
 
         // var anchorGetter: BinderGetFunction = this.AnchorFunctions[anchorBindSide].get;
@@ -206,7 +206,7 @@ export default class Spacial extends Point implements ISpacial {
 
     subscribe(toRun: UpdateNotification) {
         if (this.refName === "label") {
-            console.log()
+            
         }
         this.subscribers.push(toRun);
     }

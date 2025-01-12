@@ -21,6 +21,7 @@ import Collection, { ICollection } from "./collection";
 import PaddedBox from "./paddedBox";
 import Aligner from "./aligner";
 import { Alignment } from "./positional";
+import logger, { Operations } from "./log";
 
 interface ISequence extends ICollection {
     grid: IGrid,
@@ -144,7 +145,6 @@ export default class Sequence extends Collection {
     } 
 
     insertColumn(index: number) {
-        console.log(`column at ${index}`)
         var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, alignment: Alignment.centre}, 
                                                             "default", `column at ${index}`);
 
@@ -194,12 +194,13 @@ export default class Sequence extends Collection {
     }
 
     addPositional(channelName: string, obj: Positional<Visual>, index?: number | undefined, insert: boolean=false) {
-        
+        logger.operation(Operations.ADD, `Adding positional ${obj.element.refName}`)
         if (index !== undefined) {
             if (insert || this.positionalColumns.children[index] === undefined) {
                 this.insertColumn(index);
             } 
         } else {  // Auto index
+            
             index = this.channelsDic[channelName].elementCursor + 1;
 
             if (insert) {
@@ -248,7 +249,7 @@ export default class Sequence extends Collection {
         try {
             this.positionalColumns.children[target.index!].remove(target.element);
         } catch {
-            console.log()
+            
         }
         
         if (removeColumn === true) {

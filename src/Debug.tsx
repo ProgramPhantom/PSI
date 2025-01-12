@@ -12,18 +12,18 @@ interface IDebug {
 
 const Debug: React.FC<IDebug> = (props) => {
     var seq: Sequence = props.sequenceHandler.sequence
-    console.log("rendering debug")
+    
 
     return (
         <>
-            {
+            {/*{
                 seq.channels.map((c) => {
                     return (c.positionalElements.map((e) => {
                         return (<PaddedBoxDebug element={e.element} padColour="purple"></PaddedBoxDebug>)
                     }))
                 })
             } 
-            {/*
+            
             <PaddedBoxDebug element={seq} contentColour={"none"} padColour="yellow"></PaddedBoxDebug>
               
             <PaddedBoxDebug element={seq.channelColumn}></PaddedBoxDebug>
@@ -42,15 +42,14 @@ const Debug: React.FC<IDebug> = (props) => {
         <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
         */}
             {
-            seq.channels[0] ? (
-                <>
-                <PaddedBoxDebug element={seq.channels[0]} contentColour="green" padColour="yellow"></PaddedBoxDebug> 
-                
-                <PaddedBoxDebug element={seq.channels[0].lowerAligner} contentColour="red" ></PaddedBoxDebug>
-
-                
-                </>
-            ) : <></>
+            seq.channels.map((c) => {
+                return (
+                    <>
+                    <PaddedBoxDebug element={c} contentColour="green" padColour="yellow"></PaddedBoxDebug> 
+                    <PaddedBoxDebug element={c.upperAligner} contentColour="red"></PaddedBoxDebug>
+                    </>
+                )
+            })
             } 
 
         <CollectionDebug element={seq.positionalColumns}></CollectionDebug>

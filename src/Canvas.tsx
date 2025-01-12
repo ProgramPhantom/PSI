@@ -87,7 +87,7 @@ export default function Canvas(props:  {script: string, zoom: number,
         svgDestinationObj.current!.children().forEach((c) => {
             c.remove();
         })
-        console.log(svgDestinationObj.current!.children());
+        ;
 
         props.drawSurface.current!.children().forEach((c) => {
             var newSvg: Element = c.clone();
@@ -168,7 +168,7 @@ export default function Canvas(props:  {script: string, zoom: number,
 
 
     function canvasClicked(click: React.MouseEvent<HTMLDivElement>) {
-        console.log(click)
+        
         
         var targetId: string | undefined;
         if ((click.target as HTMLDivElement).tagName === "path") {

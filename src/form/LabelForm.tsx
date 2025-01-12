@@ -11,7 +11,7 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
   const onSubmit = (data: FieldValues) => console.log(data);
 
   return (
-    <form onChange={() => {console.log("CHANGE")}} onSubmit={() => props.change()}>
+    <form onSubmit={() => props.change()}>
       <FormGroup
           fill={false}
           inline={true}
