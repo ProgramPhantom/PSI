@@ -179,13 +179,13 @@ export default class Point implements IPoint {
             anchorBindCoord = anchorBindCoord + (binding.offset ? binding.offset : 0);
             
             // Current position of target:
-            var currentPos = targetElement.getSizeByDimension(dimension);
+            var currentPos: number | undefined = targetElement.getPositionByDimension(dimension);
             
             // Only go into the setter if it will change a value, massively reduces function calls.
             // Alternative was doing the check inside the setter which still works but requires a function call
             if (anchorBindCoord !== currentPos) {
                 // Use the correct setter on the target with this value
-                logger.operation(Operations.BIND, `(${this.refName})[${this.y}] ${dimension}> (${targetElement.refName})[${currentPos}]`, this);
+                logger.operation(Operations.BIND, `(${this.refName})[${anchorBindCoord}] ${dimension}> (${targetElement.refName})[${currentPos}]`, this);
                 setter(dimension, anchorBindCoord);  // SETTER MAY NEED INTERNAL BINDING FLAG?
             }
             
@@ -224,5 +224,13 @@ export default class Point implements IPoint {
 
     getSizeByDimension(dim: Dimensions): number {
         return 0;
+    }
+
+    getPositionByDimension(dim: Dimensions): number | undefined {
+        if (dim === Dimensions.X) {
+            return this._x;
+        } else {
+            return this._y;
+        }
     }
 }

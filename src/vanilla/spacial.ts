@@ -323,7 +323,7 @@ export default class Spacial extends Point implements ISpacial {
         }
     }
 
-    getSizeByDimension(dim: Dimensions): number {
+    override getSizeByDimension(dim: Dimensions): number {
         switch (dim) {
             case Dimensions.X:
                 return this.width;
