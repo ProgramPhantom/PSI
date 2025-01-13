@@ -181,6 +181,10 @@ export default class Point implements IPoint {
             // Current position of target:
             var currentPos: number | undefined = targetElement.getPositionByDimension(dimension);
             
+            // This must happen BEFORE the element is positioned so the last element moved in the collection 
+            // triggers the compute boundary
+            targetElement.displaced = false;
+            
             // Only go into the setter if it will change a value, massively reduces function calls.
             // Alternative was doing the check inside the setter which still works but requires a function call
             if (anchorBindCoord !== currentPos) {
@@ -189,7 +193,7 @@ export default class Point implements IPoint {
                 setter(dimension, anchorBindCoord);  // SETTER MAY NEED INTERNAL BINDING FLAG?
             }
             
-            targetElement.displaced = false;
+            
         }
     }
 

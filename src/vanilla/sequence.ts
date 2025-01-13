@@ -197,7 +197,7 @@ export default class Sequence extends Collection {
     }
 
     addPositional(channelName: string, obj: Positional<Visual>, index?: number | undefined, insert: boolean=false) {
-        logger.operation(Operations.ADD, `Adding positional ${obj.element.refName}`, this)
+        logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${obj.element.refName} -------`, this)
         if (index !== undefined) {
             if (insert || this.positionalColumns.children[index] === undefined) {
                 this.insertColumn(index);

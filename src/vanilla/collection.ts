@@ -89,8 +89,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     }
 
     computeBoundry(): void {
-        
-        logger.processStart(Processes.COMPUTE_BOUNDARY, `${this.refName}`, this)
+        logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this)
 
         if (this.children.filter((f) => f.displaced === true).length > 0) {
             logger.performance(`ABORT COMPUTE BOUNDRY[${typeof this}]: ${this.refName}`)
