@@ -87,6 +87,22 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         }
         this.children.splice(INDEX, 0, child);
         
+
+
+        switch (alignChild) {
+            case Alignment.none:
+                break;
+            case Alignment.here:
+                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
+                break;
+            case Alignment.centre:
+                this.bind(child, this.crossAxis, "centre", "centre", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
+                break;
+            case Alignment.far:
+                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
+                break;
+        }
+
         // Resize cross axis
         if (alignChild !== Alignment.none) {  // Optimisation AND is required
             var crossAxisSizeChild = child.getSizeByDimension(this.crossAxis);
@@ -102,19 +118,6 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             }
         }
 
-        switch (alignChild) {
-            case Alignment.none:
-                break;
-            case Alignment.here:
-                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
-                break;
-            case Alignment.centre:
-                this.bind(child, this.crossAxis, "centre", "centre", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
-                break;
-            case Alignment.far:
-                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
-                break;
-        }
         this.enforceBinding();
         
         // Child will tell this to update size when it changes size or position
