@@ -88,6 +88,7 @@ export default class Sequence extends Collection {
         this.bind(this.columns, Dimensions.Y, "here", "here", undefined, "SEQ Y-> COL");
         this.bind(this.columns, Dimensions.X, "here", "here", undefined, "SEQ X-> COL");
         this.add(this.columns);
+        
 
 
         // | h |

@@ -64,19 +64,16 @@ export default class SequenceHandler {
         })
         return id;
     }
-    // id: string;
-    refresh: (uid: string) => void;
-    
+    syncExternal: () => void;
 
     get channels(): Channel[] {return this.sequence.channels}
     hasChannel(name: string): boolean {return this.sequence.channelNames.includes(name)}
 
-    constructor(surface: Svg, refresh: (uid: string) => void) {
-        // this.id = "";
-        this.surface = surface;
+    constructor(emitChange: () => void) {
+        this.syncExternal = emitChange;
+
         this.sequence = new Sequence({});
 
-        this.refresh = refresh;
         this.parser = new Parser(this, "");
     }
 
@@ -194,7 +191,7 @@ export default class SequenceHandler {
         }
         this.surface.size("1000px", "1000px")
         this.sequence.draw(this.surface);
-        this.refresh(this.id);
+        this.syncExternal();
     }
 
     // UI Commands:

@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import Canvas from './Canvas'
 import Editor from './Editor'
 import Channel from './vanilla/channel';
@@ -21,42 +21,28 @@ import { defaultPositional } from './vanilla/default/data';
 import RectElement, { PositionalRect } from './vanilla/rectElement';
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import RectForm from './form/RectForm';
+import ENGINE from './vanilla/engine';
 
 const DESTINATIONSVGID = "moveSVGHere";
 
+
+
 function App() {
-  const [textboxValue, setTextboxValue] = useState<string>("");
-  const [channelNames, setChannelNames] = useState<string[]>([]);
-  const [errors, setErrors] = useState<errorState>({parseError: "", drawError: ""});
+  console.log("CREATING APP")
+
   const svgDrawObj = useRef<Svg>();
 
-  const handle = useRef<SequenceHandler>(new SequenceHandler(svgDrawObj.current!, Refresh));
+  useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
   
-  const [id, setId] = useState<string>(handle.current.id);
-
-  const canvas: ReactNode = <Canvas script={textboxValue} zoom={2} handler={handle.current} 
-                                    updateChannels={setChannelNames}
-                                    provideErrors={UpdateErrors}
-                                    drawSurface={svgDrawObj} sequenceId={id} select={SelectPositional}></Canvas>
+  const canvas: ReactNode = <Canvas zoom={2} 
+                                    handler={ENGINE.handler} 
+                                    drawSurface={svgDrawObj} 
+                                    sequenceId={ENGINE.getSnapshot()} 
+                                    select={SelectPositional}></Canvas>
 
   const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
 
-  function Refresh(uid: string) {
-    setId(uid);
-  }
-
-  function TypeEvent(script: string) {
-    setTextboxValue(script);
-  }
-
-  function AddCommand(line: string) {
-    setTextboxValue(textboxValue + "\n" + line);
-  }
-
-  function UpdateErrors(parse: string, draw: string) {
-    setErrors({parseError: parse, drawError: draw});
-  }
 
   function SaveSVG() {
     var destinationSurface = document.getElementById(DESTINATIONSVGID);
@@ -102,7 +88,7 @@ function App() {
       var elementRectData = UpdateObj({...simplePulses["pulse180"], ...defaultPositional}, positional.element);
 
       var newForm: ReactNode = <RectForm 
-                handler={handle.current} 
+                handler={ENGINE.handler} 
                 values={(elementRectData as PositionalRect)} 
                 target={((positional as any) as Positional<RectElement>)} channel={positional.channel}
                 reselect={SelectPositional}></RectForm>
@@ -111,14 +97,6 @@ function App() {
     }
   }
 
-  useEffect(() => {
-    
-    if (Object.keys(handle.current.sequence.channelsDic).toString() !== channelNames.toString()) {
-      setChannelNames(Object.keys(handle.current.sequence.channelsDic))
-    }
-    
-  }, [channelNames])
-  
 
   return (
       <>
@@ -135,14 +113,13 @@ function App() {
           </div>
           
           <div style={{position: "relative", width: "100%", bottom: "0px"}}>
-            <Editor handler={handle.current} Parse={TypeEvent} editorText={textboxValue} errorStatus={errors} ></Editor>
+            <Editor handler={ENGINE.handler}  ></Editor>
           </div>
         </div>
 
         <div style={{gridColumnStart: 2, gridColumnEnd: 3}}>
-          <Form AddCommand={AddCommand} channelOptions={channelNames} sequence={handle.current} form={form}></Form>
+          <Form sequence={ENGINE.handler} form={form}></Form>
         </div>
-        
       </div>
         
       </>
@@ -150,4 +127,3 @@ function App() {
 }
 
 export default App
-//           

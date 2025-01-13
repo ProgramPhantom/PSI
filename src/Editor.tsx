@@ -24,8 +24,11 @@ const style: any = {width: "100%",
                     
                 }
 
-function Editor(props: {handler: SequenceHandler, editorText: string, Parse: (text: string) => void, errorStatus: errorState}) {
-    const [internalState, setInternalState] = useState(props.editorText);
+interface IEditorProps {
+    handler: SequenceHandler, 
+}
+
+const Editor: React.FC<IEditorProps> = (props) => {
     
     return (
         <div style={{padding: 10}}>
@@ -40,7 +43,8 @@ function Editor(props: {handler: SequenceHandler, editorText: string, Parse: (te
                 </SectionCard>
                 
             </Section>
- 
+
+            {/*
             <Section collapsible={true} title={"Script"} icon={"code"} collapseProps={{defaultIsOpen: false}} compact={true}>
                 <SectionCard>
                     <TextArea
@@ -54,11 +58,11 @@ function Editor(props: {handler: SequenceHandler, editorText: string, Parse: (te
                 <SectionCard>
                     <Errors parseError={props.errorStatus.parseError} drawError={props.errorStatus.drawError}></Errors>
                 </SectionCard>
-            </Section>
+            </Section> */}
+
             
         </div>
     )
 }
 
 export default Editor
-// Parse(e.target.value); setInternalState(e.target.value)
