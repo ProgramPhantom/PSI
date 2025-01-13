@@ -23,7 +23,8 @@ export enum Operations {
 }
 
 export enum Processes {
-    COMPUTE_BOUNDARY="COMPUTE_BOUNDARY"
+    COMPUTE_BOUNDARY="COMPUTE_BOUNDARY",
+    INSTANTIATE="INSTANTIATE"
 }
 
 interface SimpleLog {
@@ -58,7 +59,8 @@ class Logger {
         BROADCAST: "#54aceb"
     }
     processColour = {
-        COMPUTE_BOUNDARY: "#ff644d"
+        COMPUTE_BOUNDARY: "#ff644d",
+        INSTANTIATE: "#ff644d"
     }
     levelColours = {
         "OPERATION": "#e042ff",
@@ -174,13 +176,17 @@ class Logger {
         var formattedMessage = [`%c${this.getTime()} `, 
                                 `%c[${Levels.PROCESS_END}]`, 
                                 `%c: `, 
-                                caller ? `"${caller.refName}" ends ` : ``,
+
+                                caller ? `%c"${caller.refName}" %cends ` : `%c%c`,
                                 `%c${process}()`, 
                                 `%c> ${message}`]
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
 
         var colours = [`color:${this.defaultColour}`, 
                        `color:${this.levelColours[Levels.PROCESS_END]}`, 
+                       `color:${this.defaultColour}`,
+
+                       `color:${this.stressColour}`,
                        `color:${this.defaultColour}`,
                        `color:${this.processColour[process]}`,
                        `color:${this.defaultColour}`]

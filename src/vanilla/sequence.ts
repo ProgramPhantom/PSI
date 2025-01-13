@@ -21,7 +21,7 @@ import Collection, { ICollection } from "./collection";
 import PaddedBox from "./paddedBox";
 import Aligner from "./aligner";
 import { Alignment } from "./positional";
-import logger, { Operations } from "./log";
+import logger, { Operations, Processes } from "./log";
 
 interface ISequence extends ICollection {
     grid: IGrid,
@@ -70,6 +70,7 @@ export default class Sequence extends Collection {
     constructor(params: RecursivePartial<ISequence>, templateName: string="default", refName: string="sequence") {
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
         super(fullParams, templateName, refName);
+        logger.processStart(Processes.INSTANTIATE, ``, this);
 
         this.grid = new Grid(fullParams.grid);
         this.channelsDic = {};  // Wierdest bug ever happening here
@@ -100,6 +101,7 @@ export default class Sequence extends Collection {
         // |p|p|p|p|
         this.positionalColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0}, "default", "pos col collection");
         this.columns.add(this.positionalColumns);
+        logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
 
     reset() {
