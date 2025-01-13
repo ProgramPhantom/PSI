@@ -21,6 +21,7 @@ import Debug from './Debug';
 import ENGINE from './vanilla/engine';
 
 
+
 const DRAWCANVASID = "drawDiv";
 const DESTINATIONVCANVASID = "destinationDiv";
 
@@ -68,14 +69,18 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     // I am adding elements to a different div first and then moving it onto the canvas
     // Mounts the image from the drawSVG
     function MountSequence() {
-        var canvasWidth = props.handler.sequence.width ;
-        var canvasHeight = props.handler.sequence.height ;
+        var canvasWidth = ENGINE.handler.sequence.width ;
+        var canvasHeight = ENGINE.handler.sequence.height ;
 
         props.drawSurface.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
         svgDestinationObj.current!.size(`${canvasWidth}px`, `${canvasHeight}px`)
-        props.drawSurface.current!.rect()
-        .attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%"})
-        .id("BORDER");
+
+        if (document.getElementById("BORDER") === null) {
+            props.drawSurface.current!.rect()
+            .attr({fill: "none", stroke: "black", "stroke-width": "1px", "width": "100%", "height": "100%", "stroke-opacity": 0.4})
+            .id("BORDER");
+        }
+
 
         
         svgDestinationObj.current!.children().forEach((c) => {
@@ -128,7 +133,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     return (
         <>
         {/* width: "0px", height: "0px", visibility: "hidden"*/}
-        <div id={DRAWCANVASID} style={{}}></div>
+        <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
 
         <MapInteractionCSS
             showControls
@@ -147,7 +152,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             }}
             >
             
-            <Debug sequenceHandler={ENGINE.handler}></Debug>
+
             <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}} onClick={(e) => canvasClicked(e)}>
                 
             </div>
