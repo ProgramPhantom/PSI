@@ -130,7 +130,7 @@ class Logger {
         console.log(concatMessage, ...colours);
     }
 
-    operation(operation: Operations, message: string, caller: Point) {
+    operation(operation: Operations, message: string, caller?: Point) {
         var formattedMessage: string[] = [`%c${this.getTime()} `, 
                                           `%c[${Levels.OPERATION}]`, 
                                           `%c: `, 

@@ -156,11 +156,9 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     } 
 
     get contentWidth(): number | undefined {
-        // this.computeSize(); // TODO: remove this
         return this._contentWidth;
     }
     get contentHeight(): number | undefined {
-        // this.computeSize(); // TODO: remove this
         return this._contentHeight;
     }
     protected set contentWidth(v: number) {
