@@ -295,6 +295,13 @@ export default class Channel extends Collection {
                 pos.index = pos.index + n;
             }
         })
+
+        if (n < 0) {
+            this.positionalMap.splice(from, n);
+        } else {
+            this.positionalMap.splice(from, n, ...Array(n).fill(undefined));
+        }
+        
     }
 
 }

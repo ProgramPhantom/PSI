@@ -81,8 +81,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             .id("BORDER");
         }
 
-
-        
         svgDestinationObj.current!.children().forEach((c) => {
             c.remove();
         })
@@ -152,7 +150,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             }}
             >
             
-
+            <Debug sequenceHandler={ENGINE.handler}></Debug>
             <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}} onClick={(e) => canvasClicked(e)}>
                 
             </div>

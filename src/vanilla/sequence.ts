@@ -67,6 +67,8 @@ export default class Sequence extends Collection {
 
     columns: Aligner<Aligner<Visual>>;
 
+    elementMatrix: (Positional<Visual> | undefined)[][] = [];
+
     constructor(params: RecursivePartial<ISequence>, templateName: string="default", refName: string="sequence") {
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
         super(fullParams, templateName, refName);
@@ -163,9 +165,13 @@ export default class Sequence extends Collection {
         this.channels.forEach((channel) => {
             channel.shiftIndices(index, 1);
         })
+
+        this.elementMatrix.forEach((c) => {
+            c.splice(index, 0, undefined)
+        })
     }
 
-    deleteColumn(index: number, ifEmpty: boolean=false) {
+    deleteColumn(index: number, ifEmpty: boolean=false): boolean {
         // Update positional indices of elements after this 
 
         if (ifEmpty === true) {
@@ -175,6 +181,12 @@ export default class Sequence extends Collection {
                 this.channels.forEach((channel) => {
                     channel.shiftIndices(index, -1);
                 })
+                this.elementMatrix.forEach((c) => {
+                    c.splice(index, 1)
+                })
+                return true
+            } else {
+                return false
             }
         } else {
             this.positionalColumns.removeAt(index);
@@ -182,6 +194,11 @@ export default class Sequence extends Collection {
             this.channels.forEach((channel) => {
                 channel.shiftIndices(index, -1);
             })
+
+            this.elementMatrix.forEach((c) => {
+                c.splice(index, 1)
+            })
+            return true
         }
     }
     // ------------------------
@@ -194,10 +211,15 @@ export default class Sequence extends Collection {
         this.channelsDic[name] = channel; 
         channel.positionalColumns = this.positionalColumns;  // And apply the column ref
         channel.labelColumn = this.labelColumn;
+
+        this.elementMatrix.splice(this.elementMatrix.length, 0, []);
     }
 
     addPositional(channelName: string, obj: Positional<Visual>, index?: number | undefined, insert: boolean=false) {
         logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${obj.element.refName} -------`, this)
+
+        var targetChannel: Channel = this.channelsDic[channelName];
+
         if (index !== undefined) {
             if (insert || this.positionalColumns.children[index] === undefined) {
                 this.insertColumn(index);
@@ -223,17 +245,23 @@ export default class Sequence extends Collection {
         // This will set the X of the child ^^^
 
         // Add element to channel
-        this.channelsDic[channelName].addPositional(obj, index, insert);
+        targetChannel.addPositional(obj, index, insert);
         // This should set the Y of the element ^^^
 
         // SET X of element
         this.positionalColumns.children[index].enforceBinding();
         // NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
         // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
+
+
+        var channelIndex = this.channels.indexOf(targetChannel);
+        this.elementMatrix[channelIndex][index] = obj;
     }
 
+    // Remove column is set to false when modifyPositional is called.
     deletePositional(target: Positional<Visual>, removeColumn: boolean=true): void {
         var channel: Channel | undefined = target.channel;
+        var channelIndex: number = this.channels.indexOf(channel);
         var index: number;
 
         if (target.index === undefined ) {
@@ -254,9 +282,15 @@ export default class Sequence extends Collection {
         } catch {
             
         }
-        
+
+
+        let removed;
         if (removeColumn === true) {
-            this.deleteColumn(index, true);
+            removed = this.deleteColumn(index, true);
+        } 
+
+        if (removed === false) {
+            this.elementMatrix[channelIndex][index] = undefined;
         }
     }
 

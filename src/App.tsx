@@ -77,7 +77,7 @@ function App() {
         // to work. Every piece of data will be overriden.
         
         var newForm: ReactNode = <SVGForm 
-                  handler={handle.current} 
+                  handler={ENGINE.handler} 
                   values={(elementSVGData as PositionalSVG)} 
                   target={((positional as any) as Positional<SVGElement>)} channel={positional.channel}
                   reselect={SelectPositional}></SVGForm>
