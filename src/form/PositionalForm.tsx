@@ -133,9 +133,9 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
                 
                 <Controller control={props.control} name="config.alignment" render={({field}) => (
                     <HTMLSelect {...field} iconName='caret-down'>
-                        <option value={"left"}>Left</option>
+                        <option value={"here"}>Left</option>
                         <option value={"centre"}>Centre</option>
-                        <option value={"right"}>Right</option>
+                        <option value={"far"}>Right</option>
                     </HTMLSelect>
                     )}>
                 </Controller>

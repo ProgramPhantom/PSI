@@ -57,9 +57,9 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
     }
 
-    add(child: T, index?: number, alignItem: Alignment=Alignment.here) {
+    add(child: T, index?: number, alignItem: Alignment=Alignment.none) {
         // AlignItem takes precidence
-        var alignChild: Alignment = alignItem !== Alignment.here ? alignItem : this.alignment;
+        var alignChild: Alignment = alignItem !== Alignment.none ? alignItem : this.alignment;
         const INDEX = index !== undefined ? index : this.children.length;
 
         // MAIN AXIS COMPUTE
@@ -87,7 +87,6 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         }
         this.children.splice(INDEX, 0, child);
         
-
 
         switch (alignChild) {
             case Alignment.none:

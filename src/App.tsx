@@ -54,7 +54,7 @@ function App() {
   }
 
   function SaveScript() {
-    var script = handle.current.parser.script;
+    var script = ENGINE.handler.parser.script;
 
     var blob = new Blob([script], {type: "text/plain;charset=utf-8"});
     FileSaver.saveAs(blob, "sequence.nmpd");
