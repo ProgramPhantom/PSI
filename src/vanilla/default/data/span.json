@@ -2,7 +2,6 @@
     "config": {
         "orientation": "top",
         "alignment": "centre",
-        "overridePad": false,
         "inheritWidth": true,
         "noSections": 1
     },

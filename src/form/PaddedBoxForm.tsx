@@ -141,20 +141,6 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
                 </Controller>
             </FormGroup>
 
-
-            <FormGroup
-                fill={false}
-                inline={true}
-                label="Override Pad"
-                labelFor="text-input">
-                
-                <Controller control={props.control} name="config.overridePad" render={({field}) => (
-                    <Switch {...field}></Switch>
-                    )}>
-                </Controller>
-            </FormGroup>
-
-
             <FormGroup
                 fill={false}
                 inline={true}

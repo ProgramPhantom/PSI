@@ -42,7 +42,6 @@ export interface IConfig {
 
     orientation: Orientation,
     alignment: Alignment,
-    overridePad: boolean
     inheritWidth: boolean,
     noSections: number,
 }

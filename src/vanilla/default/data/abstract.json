@@ -5,7 +5,6 @@
     "config": {
         "orientation": "top",
         "alignment": "centre",
-        "overridePad": false,
         "inheritWidth": false,
         "noSections": 1
     },
