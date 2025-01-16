@@ -70,9 +70,14 @@ function App() {
     setSelectedElement(positional.element);
 
     if (positional.element instanceof SVGElement) {
+        let scaffold: PositionalSVG = {...(svgPulses["180"] as any), ...defaultPositional}
+        let data: PositionalSVG = Object.assign(positional.element, {config: positional.config})
+        // Use object.assign as spread operator does not include properties such as contentHeight
+        // as they are found in the prototype.
+
         // React Hook Forms breaks if the class object is used as the default vals.
         // Therefore, this keeps only the properties concerned for ISVG
-        var elementSVGData = UpdateObj({...svgPulses[180], ...defaultPositional}, positional.element);
+        var elementSVGData = UpdateObj(scaffold, data);
         // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
         // to work. Every piece of data will be overriden.
         
@@ -85,12 +90,17 @@ function App() {
         setForm(newForm)
     } 
     else if (positional.element instanceof RectElement) {
-      var elementRectData = UpdateObj({...simplePulses["pulse180"], ...defaultPositional}, positional.element);
+      let scaffold: PositionalRect = {...(simplePulses["pulse180"] as any), ...defaultPositional}
+      let data: PositionalRect = Object.assign(positional.element, {config: positional.config})
+
+      // var elementRectData: PositionalRect = {...positional.element, config: positional.config};
+      var elementRectData = UpdateObj(scaffold, data);
 
       var newForm: ReactNode = <RectForm 
                 handler={ENGINE.handler} 
                 values={(elementRectData as PositionalRect)} 
-                target={((positional as any) as Positional<RectElement>)} channel={positional.channel}
+                target={((positional as any) as Positional<RectElement>)} 
+                channel={positional.channel}
                 reselect={SelectPositional}></RectForm>
       setForm(newForm)
 
