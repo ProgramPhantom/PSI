@@ -22,10 +22,18 @@ import RectElement, { PositionalRect } from './vanilla/rectElement';
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
+import { ResizableBox, Resizable} from 'react-resizable/'
+import {Rnd} from 'react-rnd/'
 
 const DESTINATIONSVGID = "moveSVGHere";
 
-
+const style = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "solid 1px #ddd",
+  background: "#f0f0f0"
+};
 
 function App() {
   console.log("CREATING APP")
@@ -112,13 +120,12 @@ function App() {
       <>
 
       <div style={{display: "grid", width: "100%", gridTemplateColumns: "auto 400px", gridTemplateRows: "50px auto", minHeight: "100vh", rowGap: "0", columnGap: "0"}}>
-
         <div style={{gridColumnStart: 1, gridColumnEnd: 3, width: "100%"}}>
           <Banner saveSVG={SaveSVG} saveScript={SaveScript}></Banner>
         </div>
         
         <div style={{gridColumnStart: 1, gridColumnEnd: 2, gridRowStart: 2, gridRowEnd: 3, height: "100%", display: "flex", flexDirection: "column"}}>
-          <div style={{height: "100%"}} >
+          <div style={{height: "100%", position: "relative"}} >
             {canvas}
           </div>
           
@@ -131,7 +138,6 @@ function App() {
           <Form sequence={ENGINE.handler} form={form}></Form>
         </div>
       </div>
-        
       </>
     )
 }

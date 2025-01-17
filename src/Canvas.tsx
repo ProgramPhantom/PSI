@@ -1,7 +1,7 @@
-import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore} from 'react'
+import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore, DOMElement} from 'react'
 import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
 import Channel from './vanilla/channel';
-import SVGElement, { ISVG } from './vanilla/svgElement';
+import  { ISVG } from './vanilla/svgElement';
 import { IChannel, IChannelStyle } from './vanilla/channel';
 import Sequence from "./vanilla/sequence";
 import { ScriptError } from './vanilla/parser';
@@ -19,6 +19,8 @@ import { UpdateObj } from './vanilla/util';
 import Positional from './vanilla/positional';
 import Debug from './Debug';
 import ENGINE from './vanilla/engine';
+import Resizer from './Resizer';
+import { select } from 'svg.js';
 
 
 
@@ -38,6 +40,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     const handlerId = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
 
     const svgDestinationObj = useRef<Svg>();
+
+    const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
 
     useLayoutEffect(() => {
         var drawSurface = document.getElementById(DRAWSVGID);
@@ -111,12 +115,27 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             targetId = (click.target as HTMLDivElement).id;
         }
 
+
         if (targetId === undefined) { 
             console.warn(`Cannot find id for ${click}`);
             return
         }
         
         var element: Positional<Visual> | undefined = ENGINE.handler.selectPositional(targetId);
+
+        console.log("mouse down")
+        if (element === undefined && selectedElement !== undefined) { // Clicking off
+            console.log("no element found")
+            selectedElement!.svg?.show();
+            setSelectedElement(undefined)
+        } else if (element !== undefined && selectedElement !== undefined) {  // Click straight to a new element
+            selectedElement!.svg?.show();
+            setSelectedElement(element.element!)
+            element?.element.svg?.hide();
+        } else if (element !== undefined) { // From nothing selected to element
+            setSelectedElement(element.element!)
+            element?.element.svg?.hide();
+        }
         
         
         if (element !== undefined) {
@@ -124,8 +143,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         } else {
             props.select(undefined)
         }
-        
+        MountSequence();
     }
+
 
 
     return (
@@ -134,6 +154,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
 
         <MapInteractionCSS
+            
+            disableZoom={selectedElement === undefined ? false : true}
             showControls
             defaultValue={{
                 scale: 1,
@@ -149,17 +171,28 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                 yMax: ENGINE.handler.sequence.height * 40
             }}
             >
-            
-            <Debug sequenceHandler={ENGINE.handler}></Debug>
-            <div id={DESTINATIONVCANVASID} style={{position: "absolute", zIndex: -1}} onClick={(e) => canvasClicked(e)}>
-                
-            </div>
-            <DropField sequence={ENGINE.handler}></DropField>
 
-            
-        </MapInteractionCSS>
+            <Debug sequenceHandler={ENGINE.handler}></Debug>
+                <div id={DESTINATIONVCANVASID} style={{position: "absolute",  pointerEvents: "all"}} 
+                    onMouseDown={(e) => {e.stopPropagation(); canvasClicked(e)}}>
+                    
+                </div>
+            <DropField sequence={ENGINE.handler}></DropField>
     
+                
+            {
+                selectedElement !== undefined ?
+                <DraggableElement handler={ENGINE.handler} name={selectedElement.refName} element={selectedElement}>
+
+                </DraggableElement> : <></>
+            }
+
+        </MapInteractionCSS>
         
+        
+     
+                    
+                
         </>
     )
 }
