@@ -42,10 +42,8 @@ function App() {
 
   useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
   
-  const canvas: ReactNode = <Canvas zoom={2} 
-                                    handler={ENGINE.handler} 
+  const canvas: ReactNode = <Canvas handler={ENGINE.handler} 
                                     drawSurface={svgDrawObj} 
-                                    sequenceId={ENGINE.getSnapshot()} 
                                     select={SelectPositional}></Canvas>
 
   const [form, setForm] = useState<ReactNode | null>(null);

@@ -1,3 +1,4 @@
+import RectElement from "./rectElement";
 import SequenceHandler from "./sequenceHandler";
 
 
@@ -15,10 +16,13 @@ class ENGINE {
         return ENGINE.handler.id;
     }
     static emitChange() {
+        console.log("------- EMITTING CHANGE --------")
         ENGINE.listeners.forEach((l) => {
             l();
         })
     }
+
+    static PULSE90 = new RectElement({}, "pulse90");
 }
 
 

@@ -83,7 +83,7 @@ export default class SVGElement extends Visual implements ISVG {
 			// var clickArea = SVG(`<rect height="100%" width="100%" style="fill: #fff; fill-opacity: 0">`).id(this.id);
 			// this.svg.add(clickArea);
 			//clickArea.id(this.id)
-
+			this.svg.draggable()
 			surface.add(this.svg);
 
 			

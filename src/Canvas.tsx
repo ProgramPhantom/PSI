@@ -8,7 +8,6 @@ import { ScriptError } from './vanilla/parser';
 import SequenceHandler from './vanilla/sequenceHandler';
 import TokenType from "./vanilla/sequenceHandler"
 // import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { MapInteractionCSS } from 'react-map-interaction';
 import DropArea from './dnd/InsertArea';
 import DraggableElement from './dnd/DraggableElement';
 import DropField from './dnd/DropField';
@@ -18,10 +17,15 @@ import { svgPulses } from './vanilla/default/data/svgPulse';
 import { UpdateObj } from './vanilla/util';
 import Positional from './vanilla/positional';
 import Debug from './Debug';
-import ENGINE from './vanilla/engine';
 import Resizer from './Resizer';
 import { select } from 'svg.js';
-
+import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { CanvasDragLayer } from './dnd/CanvasDragLayer';
+import { CanvasDropContainer } from './dnd/CanvasDropContainer';
+import CanvasDraggableElement from './dnd/CanvasDraggableElement';
+import ENGINE from './vanilla/engine';
 
 
 const DRAWCANVASID = "drawDiv";
@@ -33,6 +37,7 @@ const DESTINATIONSVGID = "moveSVGHere";
 interface ICanvasProps {
     drawSurface: React.MutableRefObject<Svg | undefined>
     select: (element?: Positional<Visual>) => void
+    handler: SequenceHandler
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
@@ -41,6 +46,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
     const svgDestinationObj = useRef<Svg>();
 
+    const [zoom, setZoom] = useState(5);
+    const [dragging, setDragging] = useState(false);
+    const [panning, setPanning] = useState(false);
     const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
 
     useLayoutEffect(() => {
@@ -55,7 +63,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             } else {
                 var drawSvg = SVG().addTo("#" + DRAWCANVASID).size("800px", "400px").attr({id: DRAWSVGID});
                 props.drawSurface.current = drawSvg;
-                props.handler.surface = props.drawSurface.current;
+                ENGINE.handler.surface = props.drawSurface.current;
 
                 var destinationSvg = SVG().addTo("#" + DESTINATIONVCANVASID).size("800px", "400px").attr({id: DESTINATIONSVGID});
                 svgDestinationObj.current = destinationSvg;
@@ -91,14 +99,14 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         ;
 
         props.drawSurface.current!.children().forEach((c) => {
-            var newSvg: Element = c.clone();
+            var newSvg: Element = c.clone(true, false);
             var originalId = c.id();
 
             // RECURSION
 
             newSvg.id(originalId)
             
-            svgDestinationObj.current!.add(newSvg).id(originalId);
+            svgDestinationObj.current!.add(newSvg);
 
             // Following did not work because this broke the connection between the svg inside the rect class and the parent,
             // drawSvg element destruction is now handled by element class.
@@ -108,6 +116,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     }
 
     function canvasClicked(click: React.MouseEvent<HTMLDivElement>) {
+
         var targetId: string | undefined;
         if ((click.target as HTMLDivElement).tagName === "path") {
             targetId = (click.target as HTMLDivElement).parentElement?.id;
@@ -124,17 +133,24 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         var element: Positional<Visual> | undefined = ENGINE.handler.selectPositional(targetId);
 
         console.log("mouse down")
+        console.log(element)
+        console.log(targetId)
         if (element === undefined && selectedElement !== undefined) { // Clicking off
-            console.log("no element found")
+            
             selectedElement!.svg?.show();
             setSelectedElement(undefined)
+            setDragging(false)
+
         } else if (element !== undefined && selectedElement !== undefined) {  // Click straight to a new element
             selectedElement!.svg?.show();
             setSelectedElement(element.element!)
             element?.element.svg?.hide();
+            
+            
         } else if (element !== undefined) { // From nothing selected to element
             setSelectedElement(element.element!)
             element?.element.svg?.hide();
+            
         }
         
         
@@ -147,52 +163,66 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     }
 
 
-
     return (
         <>
         {/* width: "0px", height: "0px", visibility: "hidden"*/}
         <div id={DRAWCANVASID} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
 
-        <MapInteractionCSS
-            
-            disableZoom={selectedElement === undefined ? false : true}
-            showControls
-            defaultValue={{
-                scale: 1,
-                translation: { x: 0, y: 0 }
-            }}
-            minScale={1}
-            maxScale={7}
-            translationBounds={{
-                yMin: -ENGINE.handler.sequence.height * 10,
-                xMin: -ENGINE.handler.sequence.width * 30,
 
-                xMax: ENGINE.handler.sequence.width * 40,
-                yMax: ENGINE.handler.sequence.height * 40
-            }}
-            >
+        <div style={{width: "100%", height: "100%",  display: "flex"}} 
+        onMouseUp={(e) => {canvasClicked(e); }}
+        onDragEnd={() => {console.log("drag ended"); setDragging(false)}}
+                >
 
-            <Debug sequenceHandler={ENGINE.handler}></Debug>
-                <div id={DESTINATIONVCANVASID} style={{position: "absolute",  pointerEvents: "all"}} 
-                    onMouseDown={(e) => {e.stopPropagation(); canvasClicked(e)}}>
-                    
-                </div>
-            <DropField sequence={ENGINE.handler}></DropField>
-    
-                
-            {
-                selectedElement !== undefined ?
-                <DraggableElement handler={ENGINE.handler} name={selectedElement.refName} element={selectedElement}>
+            <CanvasDropContainer >
+                <TransformWrapper initialScale={zoom} onZoomStop={(z) => {setZoom(z.state.scale)}}
+                                centerOnInit={true} 
+                                limitToBounds={false} 
+                                centerZoomedOut={true}
+                                disabled={dragging}
+                                onPanningStart={() => {setPanning(true); console.log("PANNING START")}}
+                                onPanningStop={() => {setPanning(false); console.log("PANNING EN")}}
+                                >
+                    <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
+                        <div style={{width: "100%", height: "100%", display: "inline-block", position: "relative"}}>
+                            
+                            
+                                <Debug sequenceHandler={ENGINE.handler}></Debug>
+                                <div id={DESTINATIONVCANVASID} >
+                                    
+                                </div>
+                                <DropField sequence={ENGINE.handler}></DropField>
 
-                </DraggableElement> : <></>
-            }
+                            
 
-        </MapInteractionCSS>
+                                {
+                                    selectedElement !== undefined ?
+                                    <div style={{position: "absolute", 
+                                        width: selectedElement.contentWidth,
+                                        height: selectedElement.contentHeight, 
+                                        left: selectedElement.contentX, 
+                                        top: selectedElement.contentY,}} 
+                                        onMouseDown={() => {setDragging(true)}} 
+                                        >
+
+                                        <CanvasDraggableElement handler={ENGINE.handler} name={selectedElement.refName} element={selectedElement} x={selectedElement.x} 
+                                                                y={selectedElement.y}>
+
+                                        </CanvasDraggableElement>
+                                        </div>
+                                     : <></>
+                                }   
+                                
+
+                        </div>
+                    </TransformComponent>
+                </TransformWrapper>
+
+                <CanvasDragLayer scale={zoom} />
+            </CanvasDropContainer>
+        </div>
         
         
-     
-                    
-                
         </>
     )
 }

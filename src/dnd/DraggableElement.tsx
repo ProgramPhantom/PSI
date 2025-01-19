@@ -24,6 +24,9 @@ import { useDrag } from 'react-dnd';
 import SequenceHandler from '../vanilla/sequenceHandler';
 import { Orientation } from '../vanilla/positional';
 import { Visual } from '../vanilla/visual';
+import '@svgdotjs/svg.draggable.js'
+import { SVG } from '@svgdotjs/svg.js';
+import { IInsertAreaResult } from './InsertArea';
 
 const style: CSSProperties = {
   border: '1px dashed gray',
@@ -40,38 +43,37 @@ const style: CSSProperties = {
 
 
 export const ElementTypes = {
-    PULSE: "pulse"
+    PREFAB: "pulse",
+    REAL_ELEMENT: "real_element"
 }
 
-export interface DropResult {
-  index: number,
-  channelName: string,
-  orientation: Orientation,
-  insert: boolean,
-}
+
 
 interface IDraggableElementProps {
-  name: string, 
-  handler: SequenceHandler,
-  element?: Visual
+  element: Visual,
+  handler: SequenceHandler
+}
+
+interface IDraggableElementDropItem {
+  element: Visual
 }
 
 const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
   const [{ isDragging }, drag] = useDrag(() => ({
-
-    type: ElementTypes.PULSE,
-    item: { name: props.name },
+    type: ElementTypes.PREFAB,
+    item: { element: props.element } as IDraggableElementDropItem,
     end: (item, monitor) => {
-      const dropResult = monitor.getDropResult<DropResult>();
+      const dropResult = monitor.getDropResult<IInsertAreaResult>();
+
       if (item && dropResult) {
-        props.handler.positional(props.name, dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
+        props.handler.positional(props.element.refName, dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
         props.handler.draw();
       }
     },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
       handlerId: monitor.getHandlerId(),
-    }),
+    })
   }))
 
   if (props.element) {
@@ -79,28 +81,30 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
     copy?.x(0);
     copy?.y(0);
     copy?.show();
+    if (copy) {
+      copy.draggable(true)
+    }
+    
   }
 
-  const opacity = isDragging ? 0 : 1
+  var svg = SVG("<svg>" + copy?.svg() + "<\\svg>")
+
+  const opacity = isDragging ? 0.5 : 1
 
   // const opacity = isDragging ? 0.4 : 1
   return (
-    
-    props.element === undefined ? 
-
-    (<div ref={drag} style={{ ...style, opacity }} data-testid={`pulse`} >{props.name}</div>) 
-
-    : 
-
-    (<div ref={drag} style={{position: "absolute", 
+    (
+      <div ref={drag} style={{position: "relative", 
           width: props.element.contentWidth,
           height: props.element.contentHeight, 
-          left: props.element.contentX, 
-          top: props.element.contentY, opacity: opacity}}>
+          left: 0, 
+          top: 0, opacity: opacity}}  >
+            <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} 
+                 dangerouslySetInnerHTML={{__html: copy?.svg()!}}>
 
-      <svg className="content" dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} 
-        style={{height: props.element.contentHeight, width: props.element.contentWidth, display: "inline-block"}}></svg>
-      </div>)
+            </svg>
+      </div>
+    )
     
   )
 }

@@ -3,6 +3,7 @@ import React, { ChangeEvent, useEffect, useState } from 'react'
 import Errors, { errorState } from './Errors';
 import DraggableElement from './dnd/DraggableElement';
 import SequenceHandler from './vanilla/sequenceHandler';
+import ENGINE from "./vanilla/engine";
 
 type InputEvent = ChangeEvent<HTMLTextAreaElement>;
 
@@ -29,17 +30,20 @@ interface IEditorProps {
 }
 
 const Editor: React.FC<IEditorProps> = (props) => {
+
+
     
     return (
         <div style={{padding: 10}}>
 
             <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true}>
                 <SectionCard>
-                    <DraggableElement name={"pulse90"} handler={props.handler}></DraggableElement>
-                    <DraggableElement name={"pulse180"} handler={props.handler}></DraggableElement>
+                    <div style={{display: 'flex', flexDirection: "row", gap: "10px", margin: "10px"}}>
+                        <DraggableElement element={ENGINE.PULSE90} handler={props.handler}></DraggableElement>
 
-                    <DraggableElement name={"180"} handler={props.handler}></DraggableElement>
-                    <DraggableElement name={"amp"} handler={props.handler}></DraggableElement>
+                    </div>
+                    
+
                 </SectionCard>
                 
             </Section>
