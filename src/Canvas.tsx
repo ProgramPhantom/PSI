@@ -35,13 +35,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     }
 
     function doubleClick(click: React.MouseEvent<HTMLDivElement>) {
-
         var targetSVGId: string | undefined;
-
         targetSVGId = (click.target as HTMLDivElement).id;
         
-
-
         if (targetSVGId === undefined) { 
             console.warn(`Cannot find id for ${click}`);
             deselect()
@@ -56,36 +52,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             }
             select(element)
         }
-        
-        
-        // console.log("mouse down")
-        // console.log(element)
-        // console.log(targetSVGId)
-        // if (element === undefined && selectedElement !== undefined) { // Clicking off
-        //     
-        //     selectedElement!.svg?.show();
-        //     setSelectedElement(undefined)
-        //     setDragging(false)
-// 
-        // } else if (element !== undefined && selectedElement !== undefined) {  // Click straight to a new element
-        //     selectedElement!.svg?.show();
-        //     setSelectedElement(element.element!)
-        //     element?.element.svg?.hide();
-        //     
-        //     
-        // } else if (element !== undefined) { // From nothing selected to element
-        //     setSelectedElement(element.element!)
-        //     element?.element.svg?.hide();
-        //     
-        // }
-        // 
-        // 
-        // if (element !== undefined) {
-        //     props.select(element)
-        // } else {
-        //     props.select(undefined)
-        // }
-        // MountSequence();
     }
 
     function singleClick(click: React.MouseEvent<HTMLDivElement>) {

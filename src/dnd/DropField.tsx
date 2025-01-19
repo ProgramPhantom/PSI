@@ -62,7 +62,7 @@ class SequenceDropInterpreter {
 
                     let newBlock: AddSpec = {
                         area: {x: column.x + this.slitherWidth / 2, 
-                               y: channel.y, 
+                               y: channel.contentY, 
                                width: columnWidth - this.slitherWidth, 
                                height: upperAlignerHeight}, 
                         index: columnIndex, orientation: Orientation.top, channelName: name, insert: false}
