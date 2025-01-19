@@ -1,33 +1,23 @@
 import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import Canvas from './Canvas'
 import Editor from './Editor'
-import Channel from './vanilla/channel';
 import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
-import { IChannel, IChannelStyle } from './vanilla/channel';
-import Positional, { IPositional } from './vanilla/positional';
+import Positional from './vanilla/positional';
 import Form from './Form';
-import SequenceHandler from './vanilla/sequenceHandler';
-import Errors, { errorState } from './Errors';
 import Banner from './Banner';
 import FileSaver, { saveAs } from 'file-saver';
-import DraggableElement from './dnd/DraggableElement';
 import SVGForm from './form/SVGForm';
-import ChannelForm from './form/ChannelForm';
 import { Visual } from './vanilla/visual';
 import { UpdateObj } from './vanilla/util';
 import { svgPulses } from './vanilla/default/data/svgPulse';
-import SVGElement, { ISVG, PositionalSVG } from './vanilla/svgElement';
+import SVGElement, { PositionalSVG } from './vanilla/svgElement';
 import { defaultPositional } from './vanilla/default/data';
 import RectElement, { PositionalRect } from './vanilla/rectElement';
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
-import { ResizableBox, Resizable} from 'react-resizable/'
-import {Rnd} from 'react-rnd/'
 
 ENGINE.surface = SVG();
-
-const DESTINATIONSVGID = "moveSVGHere";
 
 const style = {
   display: "flex",
@@ -49,12 +39,7 @@ function App() {
 
 
   function SaveSVG() {
-    var destinationSurface = document.getElementById(DESTINATIONSVGID);
-    var boarder = document.getElementById("BOARDER");
-    destinationSurface?.removeChild(boarder!)
-
-    var blob = new Blob([destinationSurface?.outerHTML!], {type: "text/plain;charset=utf-8"});
-    FileSaver.saveAs(blob, "sequence.svg");
+    throw new Error("Not implemented")
   }
 
   function SaveScript() {

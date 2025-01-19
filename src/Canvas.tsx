@@ -22,51 +22,74 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     const [panning, setPanning] = useState(false);
     const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
 
-    function canvasClicked(click: React.MouseEvent<HTMLDivElement>) {
+    function deselect() {
+        selectedElement!.svg?.show();
+        setSelectedElement(undefined);
+        props.select(undefined)
+    }
 
-        var targetId: string | undefined;
-        if ((click.target as HTMLDivElement).tagName === "path") {
-            targetId = (click.target as HTMLDivElement).parentElement?.id;
-        } else {
-            targetId = (click.target as HTMLDivElement).id;
-        }
+    function select(e: Positional<Visual>) {
+        setSelectedElement(e.element);
+        props.select(e)
+        e.element.svg?.hide();
+    }
+
+    function doubleClick(click: React.MouseEvent<HTMLDivElement>) {
+
+        var targetSVGId: string | undefined;
+
+        targetSVGId = (click.target as HTMLDivElement).id;
+        
 
 
-        if (targetId === undefined) { 
+        if (targetSVGId === undefined) { 
             console.warn(`Cannot find id for ${click}`);
+            deselect()
             return
-        }
-        
-        var element: Positional<Visual> | undefined = ENGINE.handler.selectPositional(targetId);
-
-        console.log("mouse down")
-        console.log(element)
-        console.log(targetId)
-        if (element === undefined && selectedElement !== undefined) { // Clicking off
-            
-            selectedElement!.svg?.show();
-            setSelectedElement(undefined)
-            setDragging(false)
-
-        } else if (element !== undefined && selectedElement !== undefined) {  // Click straight to a new element
-            selectedElement!.svg?.show();
-            setSelectedElement(element.element!)
-            element?.element.svg?.hide();
-            
-            
-        } else if (element !== undefined) { // From nothing selected to element
-            setSelectedElement(element.element!)
-            element?.element.svg?.hide();
-            
-        }
-        
-        
-        if (element !== undefined) {
-            props.select(element)
         } else {
-            props.select(undefined)
+            var element: Positional<Visual> | undefined = ENGINE.handler.selectPositional(targetSVGId);
+
+            if (element === undefined) {
+                console.warn(`Cannot find element with id: ${targetSVGId}`)
+                deselect()
+                return
+            }
+            select(element)
         }
+        
+        
+        // console.log("mouse down")
+        // console.log(element)
+        // console.log(targetSVGId)
+        // if (element === undefined && selectedElement !== undefined) { // Clicking off
+        //     
+        //     selectedElement!.svg?.show();
+        //     setSelectedElement(undefined)
+        //     setDragging(false)
+// 
+        // } else if (element !== undefined && selectedElement !== undefined) {  // Click straight to a new element
+        //     selectedElement!.svg?.show();
+        //     setSelectedElement(element.element!)
+        //     element?.element.svg?.hide();
+        //     
+        //     
+        // } else if (element !== undefined) { // From nothing selected to element
+        //     setSelectedElement(element.element!)
+        //     element?.element.svg?.hide();
+        //     
+        // }
+        // 
+        // 
+        // if (element !== undefined) {
+        //     props.select(element)
+        // } else {
+        //     props.select(undefined)
+        // }
         // MountSequence();
+    }
+
+    function singleClick(click: React.MouseEvent<HTMLDivElement>) {
+        deselect();
     }
 
     return (
@@ -76,9 +99,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 
         <div style={{width: "100%", height: "100%",  display: "flex"}} 
-                onMouseUp={(e) => {canvasClicked(e); }}
-                onDragEnd={() => {setDragging(false)}}
-                >
+                onDoubleClick={(e) => {doubleClick(e); }}
+                onMouseUp={(e) => {singleClick(e); setDragging(false)}} 
+                onDragEnd={() => {setDragging(false)}}>
 
             <CanvasDropContainer >
                 <TransformWrapper initialScale={zoom} onZoomStop={(z) => {setZoom(z.state.scale)}}
@@ -88,6 +111,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 disabled={dragging}
                                 onPanningStart={() => {setPanning(true)}}
                                 onPanningStop={() => {setPanning(false)}}
+                                doubleClick={{disabled: true}}
                                 >
                     <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
                         <div style={{width: "100%", height: "100%", display: "inline-block", position: "relative"}}>
