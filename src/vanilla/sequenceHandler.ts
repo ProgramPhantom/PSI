@@ -69,12 +69,13 @@ export default class SequenceHandler {
     get channels(): Channel[] {return this.sequence.channels}
     hasChannel(name: string): boolean {return this.sequence.channelNames.includes(name)}
 
-    constructor(emitChange: () => void) {
+    constructor(surface: Svg, emitChange: () => void) {
         this.syncExternal = emitChange;
 
         this.sequence = new Sequence({});
 
         this.parser = new Parser(this, "");
+        this.surface = surface;
     }
 
     clear() {
@@ -185,11 +186,11 @@ export default class SequenceHandler {
     }
 
     draw() {
-       
         if (!this.surface) {
             throw new Error("Svg surface not attatched!")
         }
-        this.surface.size("1000px", "1000px")
+
+        this.surface.size(`${this.sequence.width}px`, `${this.sequence.height}px`)
         this.sequence.draw(this.surface);
         this.syncExternal();
     }

@@ -25,6 +25,8 @@ import ENGINE from './vanilla/engine';
 import { ResizableBox, Resizable} from 'react-resizable/'
 import {Rnd} from 'react-rnd/'
 
+ENGINE.surface = SVG();
+
 const DESTINATIONSVGID = "moveSVGHere";
 
 const style = {
@@ -38,13 +40,9 @@ const style = {
 function App() {
   console.log("CREATING APP")
 
-  const svgDrawObj = useRef<Svg>();
-
   useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
   
-  const canvas: ReactNode = <Canvas handler={ENGINE.handler} 
-                                    drawSurface={svgDrawObj} 
-                                    select={SelectPositional}></Canvas>
+  const canvas: ReactNode = <Canvas select={SelectPositional}></Canvas>
 
   const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | null>(null);

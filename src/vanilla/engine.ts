@@ -1,3 +1,4 @@
+import { Svg } from "@svgdotjs/svg.js";
 import RectElement from "./rectElement";
 import SequenceHandler from "./sequenceHandler";
 import SVGElement from "./svgElement";
@@ -5,7 +6,25 @@ import SVGElement from "./svgElement";
 
 class ENGINE {
     static listeners: (() => void)[] = []
-    static handler: SequenceHandler = new SequenceHandler(ENGINE.emitChange);
+
+    static set surface(s: Svg) {
+        ENGINE._handler = new SequenceHandler(s, ENGINE.emitChange)
+        ENGINE._surface = s;
+        console.log("SURFACE ATTACHED")
+    }
+    static get surface(): Svg {
+        return ENGINE._surface;
+    }
+    private static _surface: Svg;
+
+
+    static get handler(): SequenceHandler {
+        if (ENGINE._handler === undefined) {
+            throw new Error("Handler has not been created")
+        }
+        return ENGINE._handler;
+    }
+    private static _handler: SequenceHandler;
 
     static subscribe(listener: () => void) {
         ENGINE.listeners = [...ENGINE.listeners, listener];
