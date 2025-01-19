@@ -29,6 +29,7 @@ import { SVG } from '@svgdotjs/svg.js';
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { ElementTypes } from './DraggableElement';
 import { ICanvasDropResult } from './CanvasDropContainer';
+import { HandleStyles, Rnd } from 'react-rnd';
 
 
 const style: CSSProperties = {
@@ -43,7 +44,30 @@ const style: CSSProperties = {
   height: "30px"
 }
 
+const handleStyle: React.CSSProperties = {
+  width: "2px",
+  height: "2px",
+  borderRadius: "50%",
+  borderColor: "#a7acb0",
+  borderWidth: "1px",
+  borderStyle: "solid",
+  backgroundColor: "white",
 
+  display: "inline-block",
+  transform: "translate(-50%, -50%)",
+  transformOrigin: "top left"
+}
+
+const hStyle: HandleStyles = {
+  topLeft: {... handleStyle, left: 0, top: 0},
+  top: {...handleStyle, left: "50%", top: 0 },
+  topRight: {...handleStyle, left: "100%", top: 0},
+  left: {...handleStyle, left: 0, top: "50%"},
+  right: {...handleStyle, left: "100%", top: "50%"},
+  bottomLeft: {...handleStyle, left: 0, top: "100%"},
+  bottom: {...handleStyle, left: "50%", top: "100%"},
+  bottomRight: {...handleStyle, left: "100%",  top: "100%"}
+}
 
 
 export interface DropResult {
@@ -97,10 +121,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
   }, [])
 
   return (
-    <div ref={drag} style={{ opacity: isDragging ? 0 : 1}}>
-        <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} 
-             dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}}></svg>
-    </div>
+    <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
+      <div ref={drag} style={{ opacity: isDragging ? 0 : 1, height: props.element.contentHeight, width: props.element.contentWidth}}>
+          <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} 
+              dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}}></svg>
+      </div>
+    </Rnd>
+
   )
 })
 

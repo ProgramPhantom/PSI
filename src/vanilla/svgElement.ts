@@ -6,7 +6,7 @@ import { Element, Svg } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 
 const svgContent: {[path: string]: string} = {}
-const svgPaths = ["\\src\\assets\\aquire2.svg",
+const svgPaths = ["\\src\\assets\\acquire2.svg",
 				  "\\src\\assets\\saltirelohi.svg",
 				  "\\src\\assets\\saltirehilo.svg",
 				  "\\src\\assets\\halfsine.svg",
@@ -49,13 +49,13 @@ export default class SVGElement extends Visual implements ISVG {
 
     constructor(params: RecursivePartial<ISVG>, templateName: string="default") {
 		var fullParams: ISVG = FillObject(params, SVGElement.defaults[templateName])
-		super(fullParams);
+		super(fullParams, templateName);
 
 		this.style = fullParams.style;
         this.path = fullParams.path;
 
 		try {
-			this.svg = SVG(svgContent[this.path]);
+			this.svg = SVG(svgContent[this.path]).height(this.contentHeight!).width(this.contentWidth!);
 			this.id = this.svg.id();
 		} catch {
 			throw new Error(`Cannot find path ${this.path}`)

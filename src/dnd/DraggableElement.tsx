@@ -27,6 +27,9 @@ import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
 import { IInsertAreaResult } from './InsertArea';
+import { getEmptyImage } from 'react-dnd-html5-backend';
+import '@svgdotjs/svg.draggable.js'
+
 
 const style: CSSProperties = {
   border: '1px dashed gray',
@@ -59,7 +62,7 @@ interface IDraggableElementDropItem {
 }
 
 const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
-  const [{ isDragging }, drag] = useDrag(() => ({
+  const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: ElementTypes.PREFAB,
     item: { element: props.element } as IDraggableElementDropItem,
     end: (item, monitor) => {
@@ -91,18 +94,28 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
 
   const opacity = isDragging ? 0.5 : 1
 
+
+  useEffect(() => {
+    preview(getEmptyImage(), { captureDraggingState: true })
+  }, [])
+
   // const opacity = isDragging ? 0.4 : 1
   return (
     (
-      <div ref={drag} style={{position: "relative", 
-          width: props.element.contentWidth,
-          height: props.element.contentHeight, 
-          left: 0, 
-          top: 0, opacity: opacity}}  >
+      <div ref={drag} style={{
+                minWidth: "30px",
+                minHeight: "30px", 
+                padding: "20px",
+                border: "1px solid black",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                opacity: opacity}}  >
             <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} 
                  dangerouslySetInnerHTML={{__html: copy?.svg()!}}>
 
             </svg>
+            <span style={{margin: "15px 0px 0px 0px"}}>"{props.element.refName}"</span>
       </div>
     )
     

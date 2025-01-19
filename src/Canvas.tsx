@@ -187,7 +187,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                         <div style={{width: "100%", height: "100%", display: "inline-block", position: "relative"}}>
                             
                             
-                                <Debug sequenceHandler={ENGINE.handler}></Debug>
+                                {/* <Debug sequenceHandler={ENGINE.handler}></Debug> */}
                                 <div id={DESTINATIONVCANVASID} >
                                     
                                 </div>

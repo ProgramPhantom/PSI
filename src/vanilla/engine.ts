@@ -1,5 +1,6 @@
 import RectElement from "./rectElement";
 import SequenceHandler from "./sequenceHandler";
+import SVGElement from "./svgElement";
 
 
 class ENGINE {
@@ -23,6 +24,13 @@ class ENGINE {
     }
 
     static PULSE90 = new RectElement({}, "pulse90");
+    static PULSE180 = new RectElement({}, "pulse180");
+
+    static P180 = new SVGElement({}, "180");
+    static AMP = new SVGElement({}, "amp");
+    static ACQUIRE = new SVGElement({}, "acquire");
+    static CHIRPHILO = new SVGElement({}, "chirphilo");
+    static CHIRPLOHI = new SVGElement({}, "chirplohi");
 }
 
 

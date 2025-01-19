@@ -30,20 +30,21 @@ interface IEditorProps {
 }
 
 const Editor: React.FC<IEditorProps> = (props) => {
-
-
-    
     return (
         <div style={{padding: 10}}>
 
             <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true}>
                 <SectionCard>
-                    <div style={{display: 'flex', flexDirection: "row", gap: "10px", margin: "10px"}}>
+                    <div style={{display: 'flex', flexDirection: "row", gap: "20px 50px", margin: "10px", }}>
                         <DraggableElement element={ENGINE.PULSE90} handler={props.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.PULSE180} handler={props.handler}></DraggableElement>
 
+                        <DraggableElement element={ENGINE.P180} handler={props.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.AMP} handler={props.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.ACQUIRE} handler={props.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.CHIRPHILO} handler={props.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.CHIRPLOHI} handler={props.handler}></DraggableElement>
                     </div>
-                    
-
                 </SectionCard>
                 
             </Section>

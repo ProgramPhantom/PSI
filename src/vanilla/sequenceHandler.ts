@@ -24,7 +24,7 @@ type IPositionalType = (ISVG | IRect) & IPositional
 
 export default class SequenceHandler {
     static positionalTypes: {[name: string]: typeof Visual} = {
-        "aquire": SVGElement,
+        "acquire": SVGElement,
         "halfsine": SVGElement,
         "amp": SVGElement,
         "180": SVGElement,
