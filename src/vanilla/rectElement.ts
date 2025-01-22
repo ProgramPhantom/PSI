@@ -39,9 +39,7 @@ export default class RectElement extends Visual implements IRect {
         })
 	}
 
-
     draw(surface: Svg) {
-		// surface.clear();
         if (this.dirty) {
             if (this.svg) {
                 try {
@@ -62,6 +60,12 @@ export default class RectElement extends Visual implements IRect {
 
             this.id = this.svg.id();
         }
-    
+    }
+
+    public restructure(data: Partial<IRect>): void {
+        // Style:
+        this.style = data.style ?? this.style;
+
+        super.restructure(data);
     }
 }

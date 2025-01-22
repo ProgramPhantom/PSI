@@ -88,9 +88,17 @@ export default class SVGElement extends Visual implements ISVG {
 			this.svg.add(clickArea);
 
 			surface.add(this.svg);
-
-			
 		}
         
     }
+
+	public restructure(data: Partial<ISVG>): void {
+		// Path
+		this.path = data.path ?? this.path;
+		
+		// Style:
+		this.style = data.style ?? this.style;
+
+		super.restructure(data);
+	}
 }

@@ -11,26 +11,25 @@ import ENGINE from './vanilla/engine';
 
 interface ICanvasProps {
     select: (element?: Positional<Visual>) => void
+    selectedElement: Visual | undefined
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
     console.log("CREATING CANVAS")
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
+    let selectedElement = props.selectedElement;
 
     const [zoom, setZoom] = useState(5);
     const [dragging, setDragging] = useState(false);
     const [panning, setPanning] = useState(false);
-    const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
 
     function deselect() {
         selectedElement!.svg?.show();
-        setSelectedElement(undefined);
-        props.select(undefined)
+        props.select(undefined);
     }
 
     function select(e: Positional<Visual>) {
-        setSelectedElement(e.element);
-        props.select(e)
+        props.select(e);
         e.element.svg?.hide();
     }
 

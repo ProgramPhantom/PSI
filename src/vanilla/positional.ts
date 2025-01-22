@@ -53,12 +53,12 @@ export interface IPositional {
 
 
 
-
+export type PositionalVisual<T extends IVisual> = IPositional & T
                                     // Has default construct
 export default class Positional<T extends Visual> {
     static defaults: {[name: string]: IPositional} = {"default": <any>defaultPositional}
     
-    config: IConfig;
+    _config: IConfig;
     element: T;
 
     channel: Channel;
@@ -68,17 +68,23 @@ export default class Positional<T extends Visual> {
         var fullParams: IPositional = FillObject(params, defaults);
         
         this.element = object;
-        this.config = {...fullParams.config};
+        this._config = {...fullParams.config};
 
         this.channel = channel;
 
-        if (this.config.orientation === Orientation.bottom) {
+        if (this._config.orientation === Orientation.bottom) {
             this.element.verticalFlip();
         }
     }
 
     draw(surface: Svg) {
         this.element.draw(surface);
+    }
+
+    restructure(data: Partial<PositionalVisual<T>>) {
+        this._config = data.config ?? this._config;
+        
+        this.element.restructure(data);
     }
 
     set x(val: number) {
@@ -92,7 +98,7 @@ export default class Positional<T extends Visual> {
         if (this.element.x !== undefined) {
             return this.x;
         }
-        throw new Error(`x unset in ${this.element.refName, this.config.index}`);
+        throw new Error(`x unset in ${this.element.refName, this._config.index}`);
     }
     set y(val: number) {
         if (val !== this.element.y) {
@@ -105,6 +111,12 @@ export default class Positional<T extends Visual> {
         if (this.element.y !== undefined) {
             return this.element.y;
         }
-        throw new Error(`y unset in ${this.element.refName, this.config.index}` );
+        throw new Error(`y unset in ${this.element.refName, this._config.index}` );
+    }
+    get config(): IConfig {
+        return this._config;
+    }
+    set config(val: IConfig) {
+        this._config = val;
     }
 }

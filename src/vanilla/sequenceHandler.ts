@@ -5,8 +5,8 @@ import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
 import Bracket, { Direction, IBracket } from "./bracket";
 import Label from "./label";
-import Positional, { IPositional } from "./positional";
-import { Visual } from "./visual";
+import Positional, { IPositional, PositionalVisual } from "./positional";
+import { IVisual, Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import Section, { ISection } from "./section";
@@ -217,7 +217,7 @@ export default class SequenceHandler {
         }
     }
 
-    modifyPositional<T extends Visual=Visual>(target: Positional<T>, newElement: Positional<T>): true | undefined {
+    hardModify<T extends Visual=Visual>(target: Positional<T>, newElement: Positional<T>): true | undefined {
         logger.operation(Operations.MODIFY, `${target} -> ${newElement}`)
 
         var channel: Channel = target.channel;
@@ -225,10 +225,16 @@ export default class SequenceHandler {
         this.deletePositional(target, false);
 
         this.sequence.addPositional(channel.identifier, newElement, target.index);
-//      
+     
         this.draw();
 
         return true;
+    }
+
+    softModify<T extends Visual=Visual>(target: Positional<T>, data: Partial<PositionalVisual<T>>) {
+        target.restructure(data);
+
+        this.draw();
     }
 
     deletePositional<T extends Visual=Visual>(target: Positional<T>, removeColumn: boolean=true): true | undefined {

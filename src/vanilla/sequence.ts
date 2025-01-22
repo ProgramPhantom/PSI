@@ -241,7 +241,7 @@ export default class Sequence extends Collection {
         // TODO: figure out inherit width and multi section element (hard)
 
         // Add the element to the sequence's column collection, this should trigger resizing of bars
-        this.positionalColumns.children[index].add(obj.element, undefined, obj.config.alignment);
+        this.positionalColumns.children[index].add(obj.element, undefined, obj._config.alignment);
         // This will set the X of the child ^^^
 
         // Add element to channel

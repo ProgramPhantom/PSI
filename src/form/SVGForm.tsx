@@ -41,7 +41,7 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
 
     if (props.target !== undefined) {
         // MODIFICATION
-        props.handler.modifyPositional(props.target, positionalSVG)
+        props.handler.hardModify(props.target, positionalSVG)
     } else {
         // ADDITION
         props.handler.positional("180", props.handler.channels[0].identifier, data)

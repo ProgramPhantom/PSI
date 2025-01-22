@@ -1,9 +1,10 @@
 import { Element, SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
-import Point, { BinderSetFunction, } from './point'
+import Point, { BinderSetFunction, IPoint, } from './point'
 import Spacial from './spacial'
 import PaddedBox, { IPaddedBox } from './paddedBox'
 import { IAnnotation } from './annotation'
 import Positional from './positional'
+import { RecursivePartial } from './util'
 
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
@@ -15,7 +16,6 @@ export interface IVisual extends IPaddedBox {
     contentHeight?: number,
     offset: [number, number],
 }
-
 
 
 export abstract class Visual extends PaddedBox implements IVisual {
@@ -57,6 +57,22 @@ export abstract class Visual extends PaddedBox implements IVisual {
         this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]]
     }
 
+    public restructure(data: Partial<IVisual>) {
+        // Dimensions
+        this.contentWidth = data.contentWidth ?? this.contentWidth;
+        this.contentHeight = data.contentHeight ?? this.contentHeight;
+
+        // Position
+        this.x = data.x ?? this.x;
+        this.y = data.y ?? this.y;
+
+        // Padding
+        this.padding = data.padding ?? this.padding;
+
+        // Offset 
+        this.offset = data.offset ?? this.offset;
+    }
+
     override set x(val: number) {
         if (val !== this._x) {
             this.dirty = true;
@@ -89,7 +105,7 @@ export abstract class Visual extends PaddedBox implements IVisual {
     override get contentWidth() : number | undefined {
         return this._contentWidth;
     }
-    override set contentWidth(v : number) {
+    override set contentWidth(v : number | undefined) {
         if (v !== this._contentWidth) {
             this.dirty = true;
             this._contentWidth = v;
@@ -102,7 +118,7 @@ export abstract class Visual extends PaddedBox implements IVisual {
         return this._contentHeight;
         
     }
-    override set contentHeight(v : number) {
+    override set contentHeight(v : number | undefined) {
         if (v !== this._contentHeight) {
             this.dirty = true;
             this._contentHeight = v;

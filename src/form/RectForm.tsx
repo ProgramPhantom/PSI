@@ -39,7 +39,8 @@ const RectForm: React.FC<IRectForm> = (props) => {
     
         if (props.target !== undefined) {
             // MODIFICATION
-            props.handler.modifyPositional(props.target, positionalRect)
+            props.handler.hardModify(props.target, positionalRect)
+            // props.handler.softModify(props.target, data);
         } else {
             // ADDITION
             props.handler.positional("90pulse", props.handler.channels[0].identifier, data)

@@ -32,11 +32,12 @@ function App() {
 
   useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
   
-  const canvas: ReactNode = <Canvas select={SelectPositional}></Canvas>
+  
 
   const [form, setForm] = useState<ReactNode | null>(null);
-  const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
+  const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
 
+  const canvas: ReactNode = <Canvas select={SelectPositional} selectedElement={selectedElement}></Canvas>
 
   function SaveSVG() {
     throw new Error("Not implemented")
@@ -51,7 +52,7 @@ function App() {
 
   function SelectPositional<T extends Visual>(positional: Positional<T> | undefined) {
     if (positional === undefined) {
-      setSelectedElement(null);
+      setSelectedElement(undefined);
       setForm(null);
       return
     }
@@ -60,7 +61,7 @@ function App() {
 
     if (positional.element instanceof SVGElement) {
         let scaffold: PositionalSVG = {...(svgPulses["180"] as any), ...defaultPositional}
-        let data: PositionalSVG = Object.assign(positional.element, {config: positional.config})
+        let data: PositionalSVG = Object.assign(positional.element, {config: positional._config})
         // Use object.assign as spread operator does not include properties such as contentHeight
         // as they are found in the prototype.
 
@@ -80,7 +81,7 @@ function App() {
     } 
     else if (positional.element instanceof RectElement) {
       let scaffold: PositionalRect = {...(simplePulses["pulse180"] as any), ...defaultPositional}
-      let data: PositionalRect = Object.assign(positional.element, {config: positional.config})
+      let data: PositionalRect = Object.assign(positional.element, {config: positional._config})
 
       // var elementRectData: PositionalRect = {...positional.element, config: positional.config};
       var elementRectData = UpdateObj(scaffold, data);

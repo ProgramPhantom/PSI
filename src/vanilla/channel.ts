@@ -172,7 +172,7 @@ export default class Channel extends Collection {
         positional.index = Index;
 
         var element: Visual = positional.element;  // Extract element from positional framework
-        var config: IConfig = positional.config;
+        var config: IConfig = positional._config;
 
         if (!config.index) {
             config.index = Index;
@@ -193,7 +193,7 @@ export default class Channel extends Collection {
                 break;
         }
 
-        positional.config.index = Index;  // Update internal index property
+        positional._config.index = Index;  // Update internal index property
 
         if (Index >= this.positionalMap.length) {  // Padd out positional Map
             var extra: number = Index - this.positionalMap.length;
@@ -231,6 +231,8 @@ export default class Channel extends Collection {
         
         positional.element.erase();
     }
+
+    
 
     addAnnotationLabel(lab: Span) {
         if (!this.annotationLayer) {
