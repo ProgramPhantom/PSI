@@ -37,9 +37,6 @@ export default class SequenceHandler {
 
         "pulse90": RectElement,
         "pulse180": RectElement,
-
-        // "abstract": Abstract,
-        // "span": Span
     }
     isPositional(elementName: string): boolean {return Object.keys(SequenceHandler.positionalTypes).includes(elementName)}
 
@@ -48,13 +45,11 @@ export default class SequenceHandler {
     }
     isAnnotation(name: string): boolean {return Object.keys(SequenceHandler.annotationTypes).includes(name)}
 
-    commandSegments: number[][] = [];
-
     sequence: Sequence;
-    parser: Parser;
+    // parser: Parser;
 
     surface?: Svg;
-    dirty: boolean = false;
+
     get id(): string {
         var id: string = "";
         this.sequence.channels.forEach((c) => {
@@ -74,17 +69,34 @@ export default class SequenceHandler {
 
         this.sequence = new Sequence({});
 
-        this.parser = new Parser(this, "");
+        // this.parser = new Parser(this, "");
         this.surface = surface;
     }
 
-    clear() {
-        this.sequence = new Sequence({});
+    // TODO: forced index for channel addition
+    channel(name: string, pParameters: RecursivePartial<IChannel>, index?: number) {
+        if (this.sequence.channelNames.includes(name)) {
+            alert(`Duplicate channel name: ${name}`)
+            return
+        }
+
+        var newChannel = new Channel(pParameters);
+        this.sequence.addChannel(name, newChannel);
     }
 
-    // ELEMENT ADDIION COMMANDS: 
+    // Technical commands:
+    draw() {
+        if (!this.surface) {
+            throw new Error("Svg surface not attatched!")
+        }
 
-    // Add a positional ement by providing elementName, channel name, and partial positional interface.
+        this.surface.size(`${this.sequence.width}px`, `${this.sequence.height}px`)
+        this.sequence.draw(this.surface);
+        this.syncExternal();
+    }
+
+    // Interaction commands:
+    // Add a positional element by providing elementName, channel name, and partial positional interface.
     // Function uses element name to lookup default parameters and replaces with those provided 
     positional(elementName: string, channelName: string, pParameters: RecursivePartial<IPositionalType>, index?: number, insert: boolean=false) {
         // var positionalType: typeof Positional = SequenceHandler.positionalTypes[elementName];
@@ -130,73 +142,6 @@ export default class SequenceHandler {
 
     }
 
-    // TODO: forced index for channel addition
-    channel(name: string, pParameters: RecursivePartial<IChannel>, index?: number) {
-        if (this.sequence.channelNames.includes(name)) {
-            alert(`Duplicate channel name: ${name}`)
-            return
-        }
-
-        var newChannel = new Channel(pParameters);
-        this.sequence.addChannel(name, newChannel);
-    }
-
-    // ADD TEMPLATE NAMES
-    vLine(channelName: string, pParameters: RecursivePartial<ILine>, index?: number) {
-        var newLine = new Line(pParameters, )
-
-        this.sequence.addVLine(channelName, newLine, index)
-    }
-
-    // TODO: add template name
-    bracket(channelName: string, pParameters: RecursivePartial<IBracket>, index?: number) {
-        var newBracket = new Bracket(pParameters);
-
-        this.sequence.addBracket(channelName, newBracket, index)
-    }
-
-    section(channelName: string, pParameters: RecursivePartial<ISection>, templateName?: string, indexRange?: [number, number]) {
-        var newSection = new Section(pParameters, templateName);
-
-        this.sequence.addSection(channelName, newSection, indexRange);
-    }
-
-    // Technical commands:
-    syncOn(caller: string) {  // TODO: add narrowing of channels to sync
-        var referenceChan = this.sequence.channelsDic[caller];
-        var referenceCurs = referenceChan.elementCursor;
-
-        this.sequence.channelNames.forEach((val) => {
-            if (val !== caller) {
-                this.sequence.channelsDic[val].jumpTimespan(referenceCurs-1);
-            }
-        })
-    }
-
-    syncNext(reference: string) {  // TODO: add narrowing of channels to sync
-        var referenceChan = this.sequence.channelsDic[reference];
-        var referenceCurs = referenceChan.elementCursor;
-
-        // Sync all
-        Object.keys(this.sequence.channelsDic).forEach((val) => {
-            if (val !== reference) {
-                this.sequence.channelsDic[val].jumpTimespan(referenceCurs);
-            }
-        })
-    }
-
-    draw() {
-        if (!this.surface) {
-            throw new Error("Svg surface not attatched!")
-        }
-
-        this.surface.size(`${this.sequence.width}px`, `${this.sequence.height}px`)
-        this.sequence.draw(this.surface);
-        this.syncExternal();
-    }
-
-    // UI Commands:
-
     selectPositional(id: string): Positional<Visual> | undefined {
         var element: Positional<Visual> | undefined = undefined;
 
@@ -224,7 +169,7 @@ export default class SequenceHandler {
 
         this.deletePositional(target, false);
 
-        this.sequence.addPositional(channel.identifier, newElement, target.index);
+        this.sequence.addPositional(channel.identifier, newElement, target.index!);
      
         this.draw();
 
@@ -251,6 +196,4 @@ export default class SequenceHandler {
         this.draw();
         return true;
     }
-
-
 }

@@ -200,62 +200,6 @@ export default class Channel extends Collection {
         positional.element.erase();
     }
 
-    
-
-    addAnnotationLabel(lab: Span) {
-        if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer({}, )
-        }
-        var index;
-        
-        if (lab.index !== undefined) {
-            index = lab.index;
-        } else {
-            index = this.elementCursor;
-        }
-
-        if (index == -1) {
-            return;
-        }
-
-        this.annotationLayer.annotateLabel(lab);
-    }
-
-    addSection(section: Section) {
-        if (!this.annotationLayer) {
-            this.annotationLayer = new AnnotationLayer({}, );
-        }
-
-        var indexStart: number;
-        var indexEnd: number;
-        
-        if (section.indexRange === undefined) {
-            indexStart = 0;
-            indexEnd = 1;
-        } else {
-            indexStart = section.indexRange[0];
-            indexEnd = section.indexRange[1];
-        }
-
-
-        var range: [number, number] = section.indexRange ? section.indexRange : [indexStart, indexEnd];
-
-        if (range[0] < 0) {range[0] = 0;}
-        if (range[1] > this.sectionWidths.length+1) {range[1] = this.sectionWidths.length+1}
-        if (range[0] > range[1]) {range = [0, 1]}
-
-
-        section.indexRange = range;
-        this.annotationLayer.annotateLong(section);
-    }
-
-    
-    // Index related
-
-    jumpTimespan(newCurs: number) {
-        throw new Error("Not implemented")
-    }
-
     shiftIndices(from: number, n: number=1): void {
         this.positionalOccupancy.forEach((pos, i) => {
             if (i >= from && pos !== undefined && pos.index !== undefined) {
