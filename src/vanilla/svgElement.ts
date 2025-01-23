@@ -57,6 +57,13 @@ export default class SVGElement extends Visual implements ISVG {
 		try {
 			this.svg = SVG(svgContent[this.path]).height(this.contentHeight!).width(this.contentWidth!);
 			this.id = this.svg.id();
+
+			var clickArea = SVG().rect().width("100%").height("100%").attr({
+				"fill-opacity": "0",
+				"pointer-events": "all",
+				"stroke-width": "0",
+			}).id(this.id);
+			this.svg.add(clickArea);
 		} catch {
 			throw new Error(`Cannot find path ${this.path}`)
 		}
@@ -78,14 +85,9 @@ export default class SVGElement extends Visual implements ISVG {
 			this.svg.move(this.contentX + this.offset[0], this.contentY + this.offset[1]);
 			this.svg.size(this.contentWidth, this.contentHeight)
 
-			this.id = this.svg.id();
+			// this.id = this.svg.id();
 
-			var clickArea = SVG().rect().width("100%").height("100%").attr({
-				"fill-opacity": "0",
-				"pointerEvents": "all",
-				"stroke-width": "0"
-			}).id(this.id);
-			this.svg.add(clickArea);
+
 
 			surface.add(this.svg);
 		}

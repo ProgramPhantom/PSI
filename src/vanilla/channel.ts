@@ -105,28 +105,24 @@ export default class Channel extends Collection {
         this._positionalColumns.bindSize(this.bar, Dimensions.X);
     }
 
-
-    intrinsicWidths: number[] = []; // Widths of positional elements
-    sectionWidths: number[] = [];  // List of widths of each section along the sequence
-    sectionXs: number[] = [];  // X coords of the leftmost of each section (including end) taken from sequence
-    elementCursor: number = -1;
+    private _positionalOccupancy?: (Positional<Visual> | undefined)[];
+    public get positionalOccupancy(): (Positional<Visual> | undefined)[] {
+        if (this._positionalOccupancy === undefined) {
+            throw Error("Positional occupancy not set");
+        }
+        return this._positionalOccupancy;
+    }
+    public set positionalOccupancy(val: (Positional<Visual> | undefined)[]) {
+        this._positionalOccupancy = val;
+    }
 
     labelOn: boolean;
     label?: Label;
 
     public get positionalElements(): Positional<Visual>[] { // All positional elements on this channel
-        return this.positionalMap.filter(p => p !== undefined);
+        return this.positionalOccupancy.filter(p => p !== undefined);
     };  
-    positionalMap: (Positional<Visual> | undefined)[] = [];  // Positional list
 
-    get occupancy(): boolean[] {
-        var occ: boolean[] = Array<boolean>(this.positionalMap.length);
-
-        this.positionalMap.forEach((p, i) => {
-            occ[i] = p !== undefined ? true : false
-        })
-        return occ;
-    }
 
     constructor(params: RecursivePartial<IChannel>, templateName: string="default", refName: string="channel") {
         var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
@@ -165,22 +161,14 @@ export default class Channel extends Collection {
 
     // Position positional elements on the bar
     addPositional(positional: Positional<Visual>, index?: number, insert: boolean=false): void {
-        this.elementCursor += 1;  // Keep this here.
-
-        var Index: number = index !== undefined ? index : this.elementCursor;
+        var Index: number = index !== undefined ? index : 0;
 
         positional.index = Index;
 
         var element: Visual = positional.element;  // Extract element from positional framework
         var config: IConfig = positional._config;
 
-        if (!config.index) {
-            config.index = Index;
-            this.elementCursor += config.noSections - 1;  // Multi column element
-        }
 
-        this.intrinsicWidths[Index] = element.width;
-        
         // ---- Bind to the upper and lower aligners for Y ONLY
         switch (config.orientation) {
             case Orientation.top:
@@ -194,28 +182,9 @@ export default class Channel extends Collection {
         }
 
         positional._config.index = Index;  // Update internal index property
-
-        if (Index >= this.positionalMap.length) {  // Padd out positional Map
-            var extra: number = Index - this.positionalMap.length;
-
-            for (var i = 0; i<extra; i++) {
-                this.positionalMap.push(undefined)
-            }
-        }
-        this.positionalMap.splice(Index, 0, positional);
-
-        // Is this needed?????
-        // this.add(positional.element);
     }
 
     removePositional(positional: Positional<Visual>) {
-        // Remove from positional elements
-        this.positionalMap.forEach((e, i) => {
-            if (e === positional) {
-                this.positionalMap.splice(i, 1);
-            }
-        })
-
         // Remove from children of this channel (positional elements should be property taking positionals from children)
         this.remove(positional.element);
 
@@ -223,7 +192,6 @@ export default class Channel extends Collection {
         if (positional.index === undefined) {
             throw new Error(`Trying to remove positional with uninitialised index`)
         }
-        
 
         // Remove from aligner (yes one of these is reduntant)
         this.upperAligner.remove(positional.element);
@@ -285,25 +253,15 @@ export default class Channel extends Collection {
     // Index related
 
     jumpTimespan(newCurs: number) {
-        for (var empty = this.elementCursor; empty < newCurs; empty++) {
-            this.sectionWidths.push(0);
-        }
-        this.elementCursor = newCurs
+        throw new Error("Not implemented")
     }
 
     shiftIndices(from: number, n: number=1): void {
-        this.positionalMap.forEach((pos, i) => {
+        this.positionalOccupancy.forEach((pos, i) => {
             if (i >= from && pos !== undefined && pos.index !== undefined) {
                 pos.index = pos.index + n;
             }
         })
-
-        if (n < 0) {
-            this.positionalMap.splice(from, n);
-        } else {
-            this.positionalMap.splice(from, n, ...Array(n).fill(undefined));
-        }
-        
     }
 
 }

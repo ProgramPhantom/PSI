@@ -123,10 +123,6 @@ export default class Sequence extends Collection {
     }
 
     draw(surface: Svg): {width: number, height: number} {
-
-
-
-
         this.channels.forEach((channel) => {
             channel.draw(surface);
         })
@@ -153,12 +149,8 @@ export default class Sequence extends Collection {
         var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, alignment: Alignment.centre}, 
                                                             "default", `column at ${index}`);
 
+        // Add to positional columns
         this.positionalColumns.add(newColumn, index);
-
-        // Shift occupancy
-        this.channels.forEach((c) => {
-            c.occupancy.splice(index, 0, false);
-        })
 
         // Update indices after this new column:
         // Update internal indexes of Positional elements in pos col:
@@ -209,34 +201,32 @@ export default class Sequence extends Collection {
         
         // Set and initialise channel
         this.channelsDic[name] = channel; 
+
+        var index = this.channels.length - 1;
         channel.positionalColumns = this.positionalColumns;  // And apply the column ref
         channel.labelColumn = this.labelColumn;
+        
 
         this.elementMatrix.splice(this.elementMatrix.length, 0, []);
+
+        channel.positionalOccupancy = this.elementMatrix[index];
     }
 
-    addPositional(channelName: string, obj: Positional<Visual>, index?: number | undefined, insert: boolean=false) {
+    addPositional(channelName: string, obj: Positional<Visual>, index: number, insert: boolean=false) {
         logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${obj.element.refName} -------`, this)
 
         var targetChannel: Channel = this.channelsDic[channelName];
 
-        if (index !== undefined) {
-            if (insert || this.positionalColumns.children[index] === undefined) {
-                this.insertColumn(index);
-            } 
-        } else {  // Auto index
-            
-            index = this.channelsDic[channelName].elementCursor + 1;
-
-            if (insert) {
-                this.insertColumn(index);  // Insert at end 
-            }  
-            else {  
-                if (index > this.positionalColumns.children.length-1) {  // Add to end
-                    this.insertColumn(index);  // Not needed if index already has columns set up for it.
-                }
+        // Need to insert a new column
+        if (this.positionalColumns.children[index] === undefined || insert) {
+            this.insertColumn(index);
+        } else if (insert === false) {
+            // Check element is already there
+            if (targetChannel.positionalOccupancy[index] !== undefined) {
+                throw new Error(`Cannot place element ${obj.element.refName} at index ${index} as it is already occupied.`)
             }
         }
+        
 
         // TODO: figure out inherit width and multi section element (hard)
 
@@ -275,6 +265,8 @@ export default class Sequence extends Collection {
         }
 
         channel.removePositional(target);
+
+        this.elementMatrix[channelIndex][index] = undefined;
 
         // Remove target from columns 
         try {

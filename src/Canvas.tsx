@@ -24,7 +24,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     const [panning, setPanning] = useState(false);
 
     function deselect() {
-        selectedElement!.svg?.show();
+        selectedElement?.svg?.show();
         props.select(undefined);
     }
 
