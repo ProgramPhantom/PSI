@@ -91,8 +91,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                     <div style={{position: "absolute", 
                                         width: selectedElement.contentWidth,
                                         height: selectedElement.contentHeight, 
-                                        left: selectedElement.contentX, 
-                                        top: selectedElement.contentY,}} 
+                                        left: selectedElement.drawX, 
+                                        top: selectedElement.drawY,}} 
                                         onMouseDown={() => {setDragging(true)}} 
                                         >
 

@@ -76,7 +76,7 @@ export default class SVGElement extends Visual implements ISVG {
 			})
 	
 			this.svg.move(this.contentX + this.offset[0], this.contentY + this.offset[1]);
-			this.svg.size(this.contentWidth, this.contentHeight).fill("#fff");
+			this.svg.size(this.contentWidth, this.contentHeight)
 
 			this.id = this.svg.id();
 

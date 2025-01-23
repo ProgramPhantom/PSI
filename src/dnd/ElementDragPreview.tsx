@@ -17,7 +17,7 @@ export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(
     copy?.show();
 
     return (
-      <div style={{display: 'inline-block'}}>
+      <div style={{display: 'inline-block', background: "rgba(255, 211, 92, 0.66)"}}>
         <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}}></svg>
       </div>
     )
