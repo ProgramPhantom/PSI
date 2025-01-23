@@ -128,7 +128,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
       </Rnd> */}
       <div style={{background: "rgba(255, 211, 92, 0.66)", opacity: isDragging ? 0 : 1,}}>
         <div ref={drag} style={{  height: props.element.contentHeight, width: props.element.contentWidth}}>
-            <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} 
+            <svg style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block"}} 
                 dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}}></svg>
         </div>
       </div>
