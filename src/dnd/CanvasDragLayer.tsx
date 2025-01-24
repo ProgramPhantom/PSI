@@ -61,8 +61,7 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
     switch (itemType) {
       case ElementTypes.REAL_ELEMENT:
         return <ElementDragPreview element={item.element}/>
-      case ElementTypes.PREFAB:
-        console.log(item)  
+      case ElementTypes.PREFAB: 
         return <ElementDragPreview element={item.element}/>
       default:
         return null

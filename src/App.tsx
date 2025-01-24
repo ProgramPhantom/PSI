@@ -17,7 +17,7 @@ import { simplePulses } from './vanilla/default/data/simplePulse';
 import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
 
-ENGINE.surface = SVG();
+ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
 const style = {
   display: "flex",
@@ -32,8 +32,6 @@ function App() {
 
   useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
   
-  
-
   const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
 

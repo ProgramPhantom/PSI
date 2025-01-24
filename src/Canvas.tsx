@@ -35,7 +35,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
     function doubleClick(click: React.MouseEvent<HTMLDivElement>) {
         var targetSVGId: string | undefined;
-        targetSVGId = (click.target as HTMLDivElement).id;
+        targetSVGId = (click.target as HTMLElement).id;
+        
+        // If target is path
+        if (targetSVGId === "") {
+            targetSVGId = (click.target as HTMLElement).parentElement?.id
+        }
         
         if (targetSVGId === undefined) { 
             console.warn(`Cannot find id for ${click}`);
@@ -81,7 +86,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                     <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
                         <div style={{width: "100%", height: "100%", display: "inline-block", position: "relative"}}>
                             
-                                <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}}>
+                                <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} >
                                     
                                 </div>
                                 <DropField sequence={ENGINE.handler}></DropField>
