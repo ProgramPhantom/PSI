@@ -73,6 +73,7 @@ export default class Positional<T extends Visual> {
         this.channel = channel;
 
         if (this._config.orientation === Orientation.bottom) {
+
             this.element.verticalFlip();
         }
     }

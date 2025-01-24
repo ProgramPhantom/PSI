@@ -46,12 +46,12 @@ export abstract class Visual extends PaddedBox implements IVisual {
     }
 
     verticalFlip() {
-        // this.offset[1] = -Math.abs(this.offset[1]);
+        // TODO: this is slightly problematic
+        this.offset = [this.offset[0], -Math.abs(this.offset[1])];  // Strange entanglement error was happening here
 			
         this.svg?.children().forEach((c) => {
 
-            c.transform({flip: "y", origin: "bottom left"})
-            c.translate(0, -<number>this.svg?.height())
+            c.transform({flip: "y", })
         })
 
         this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]]
