@@ -48,6 +48,7 @@ function InsertArea(props: {areaSpec: AddSpec, key: string}) {
         top: `${props.areaSpec.area.y}px`,
         left: `${props.areaSpec.area.x}px`,
         opacity: 0.4,
+        zIndex: 200
     }
 
     const isActive = canDrop && isOver
