@@ -14,15 +14,16 @@ import { dataTypes } from '@data-driven-forms/react-form-renderer';
 import { ClassProperties, UpdateObj } from '../vanilla/util';
 import Channel from '../vanilla/channel';
 import { Visual } from '../vanilla/visual';
-import Positional from '../vanilla/positional';
+import Positional, { IPositional } from '../vanilla/positional';
 import VisualForm from './VisualForm';
 
 interface ISVGForm {
     handler: SequenceHandler, 
     values: PositionalSVG,
     channel: Channel,
-    target?:  Positional<SVGElement>,
-    reselect: (positional: Positional<Visual> | undefined) => void
+    target?:  SVGElement,
+    positionalData?: Positional<SVGElement>,
+    reselect: (element: Visual | undefined, positionalData?: Positional<Visual>) => void
 }
 
 const SVGForm: React.FC<ISVGForm> = (props) => {
@@ -31,6 +32,10 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
         mode: "onChange"
     });
   
+
+    if (props.positionalData) {
+        
+    }
 
   const onSubmit = (data: PositionalSVG) => {
     // Create new element
@@ -41,27 +46,27 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
 
     if (props.target !== undefined) {
         // MODIFICATION
-        props.handler.hardModify(props.target, positionalSVG)
+        props.handler.hardModify(props.positionalData!, positionalSVG)
     } else {
         // ADDITION
-        props.handler.positional("180", props.handler.channels[0].identifier, data)
+        props.handler.addPositionalUsingTemplate("180", props.handler.channels[0].identifier, data)
     }
 
     // Select this new element
-    props.reselect(positionalSVG);
+    props.reselect(positionalSVG.element, positionalSVG);
   };
 
   const deleteMe = () => {
     if (props.target === undefined) {return} 
 
-    props.handler.deletePositional(props.target);
+    props.handler.deletePositional(props.positionalData!);
     props.reselect(undefined);
   }
   
   return (
     <>
 <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
-        <h3>{props.target ? props.target.element.refName : "Rect pulse"}</h3>
+        <h3>{props.target ? props.target.refName : "Rect pulse"}</h3>
         {props.target !== undefined ? (
         <button style={{width: "30", height: "30", justifySelf: "end"}} onClick={() => deleteMe()}>
             delete

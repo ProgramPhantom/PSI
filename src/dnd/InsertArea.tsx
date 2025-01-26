@@ -2,6 +2,7 @@ import { useDrop } from "react-dnd";
 import { ElementTypes } from "./DraggableElement";
 import { CSSProperties } from "react";
 import { Orientation } from "../vanilla/positional";
+import { IDrop } from "./CanvasDropContainer";
 
 interface Rect {
     x: number,
@@ -18,7 +19,7 @@ export interface AddSpec {
     insert: boolean,
 }
 
-export interface IInsertAreaResult {
+export interface IInsertAreaResult extends IDrop {
   index: number,
   channelName: string,
   orientation: Orientation,
@@ -27,14 +28,16 @@ export interface IInsertAreaResult {
 
 function InsertArea(props: {areaSpec: AddSpec, key: string}) {
     const [{ canDrop, isOver }, drop] = useDrop(() => ({
-        accept: [ElementTypes.PREFAB, ElementTypes.REAL_ELEMENT],
+        accept: [ElementTypes.PREFAB, ElementTypes.CANVAS_ELEMENT],
         drop: () => ({ 
             index: props.areaSpec.index, 
             channelName: props.areaSpec.channelName,
             insert: props.areaSpec.insert,
-            orientation: props.areaSpec.orientation} as IInsertAreaResult),
+            orientation: props.areaSpec.orientation,
+            dropEffect: "insert"} as IInsertAreaResult),
         collect: (monitor) => ({
             isOver: monitor.isOver(),
+            isOverCurrent: monitor.isOver({shallow: true}),
             canDrop: monitor.canDrop(),
         }),
     }))

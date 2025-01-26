@@ -100,9 +100,10 @@ export default class SVGElement extends Visual implements ISVG {
         // TODO: this is slightly problematic
         this.offset = [this.offset[0], -Math.abs(this.offset[1])];  // Strange entanglement error was happening here
 		
-		this.elementGroup.attr({"transform-origin": "center"});
+		//this.elementGroup.attr({"transform-origin": "center"});
 
-        this.elementGroup.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: 0})
+        //this.elementGroup.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: 0})
+		this.elementGroup.transform({flip: "y", origin: "center"}, true)
 
 
         this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]]

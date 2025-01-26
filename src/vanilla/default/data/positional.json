@@ -3,6 +3,8 @@
         "orientation": "top",
         "alignment": "centre",
         "inheritWidth": false,
-        "noSections": 1
+        "noSections": 1,
+        "index": null,
+        "channelName": null
     }
 }

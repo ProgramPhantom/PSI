@@ -21,12 +21,17 @@ export interface ICanvasContainerProps {
     children: ReactNode[]
 }
 
-export interface ICanvasDropResult {
+export interface ICanvasDropResult extends IDrop {
     x: number,
     y: number
 }
 
+export interface IDrop {
+  dropEffect: string
+}
 
+/* This is a drop target that covers the entire canvas for collecting drops that are intended
+for movements of elements. */
 export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 
   const [element, setElement] = useState<ReactNode[]>(props.children);
@@ -43,21 +48,28 @@ export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 
   const [, drop] = useDrop(
     () => ({
-      accept: [ElementTypes.REAL_ELEMENT, /* ElementTypes.PREFAB */ ],
+      accept: [ElementTypes.CANVAS_ELEMENT, /* ElementTypes.PREFAB */ ],
       drop(item: ICanvasDropResult, monitor) {
+        // Allow drop to be handled by insertAreas
+        const didDrop = monitor.didDrop()
+        if (didDrop) {
+          return undefined
+        }
+        
+        
         // Function called on drop by the drop location
         const delta = monitor.getDifferenceFromInitialOffset() as {
           x: number
           y: number
         }
 
-        let left = Math.round(item.x + delta.x)
-        let top = Math.round(item.y + delta.y)
+        // let left = Math.round(item.x + delta.x)
+        // let top = Math.round(item.y + delta.y)
 
         // moveBox(item.id, left, top)
-        console.log(`item:`)
-        console.log(item)
-        return undefined
+
+        // TODO: return coords for draggable element to move element in end
+        return {dropEffect: "move"}
       },
     }),
     [moveBox]

@@ -98,7 +98,7 @@ export default class SequenceHandler {
     // Interaction commands:
     // Add a positional element by providing elementName, channel name, and partial positional interface.
     // Function uses element name to lookup default parameters and replaces with those provided 
-    positional(elementName: string, channelName: string, pParameters: RecursivePartial<IPositionalType>, index?: number, insert: boolean=false) {
+    addPositionalUsingTemplate(elementName: string, channelName: string, pParameters: RecursivePartial<IPositionalType>, index?: number, insert: boolean=false) {
         // var positionalType: typeof Positional = SequenceHandler.positionalTypes[elementName];
         var positionalType = SequenceHandler.positionalTypes[elementName];
         var channel: Channel = this.sequence.channelsDic[channelName];
@@ -115,13 +115,13 @@ export default class SequenceHandler {
                 defaults = SVGElement.defaults[elementName];
                 element = new SVGElement(pParameters as RecursivePartial<IRect>, elementName)
 
-                newPositional = new Positional<SVGElement>(element, channel, pParameters, defaults);
+                newPositional = new Positional<SVGElement>(element, channel, pParameters, );
                 break;
             case (RectElement.name):
                 defaults = RectElement.defaults[elementName];
                 element = new RectElement(pParameters as RecursivePartial<IRect>, elementName)
 
-                newPositional = new Positional<RectElement>(element, channel, pParameters, defaults);
+                newPositional = new Positional<RectElement>(element, channel, pParameters, );
                 break;
             case (Span.name):
                 element = new Span(pParameters, elementName);
@@ -140,6 +140,11 @@ export default class SequenceHandler {
         
         this.sequence.addPositional(channelName, newPositional, index, insert);
 
+    }
+
+    addPositional<T extends Visual=Visual>(target: Positional<T>, insert: boolean=true) {
+        this.sequence.addPositional(target.channel.identifier, target, target.index, insert);
+        this.draw();
     }
 
     selectPositional(id: string): Positional<Visual> | undefined {
@@ -195,5 +200,15 @@ export default class SequenceHandler {
 
         this.draw();
         return true;
+    }
+
+    movePositional<T extends Visual=Visual>(target: Positional<T>, index: number): void {
+        var currIndex = target.index;
+
+        //target.index = index;
+        this.deletePositional(target, true);
+
+        target.index = index;
+        this.addPositional(target);
     }
 }

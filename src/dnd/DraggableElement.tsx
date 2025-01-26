@@ -47,7 +47,7 @@ const style: CSSProperties = {
 
 export const ElementTypes = {
     PREFAB: "pulse",
-    REAL_ELEMENT: "real_element"
+    CANVAS_ELEMENT: "real_element"
 }
 
 
@@ -69,7 +69,7 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
       const dropResult = monitor.getDropResult<IInsertAreaResult>();
 
       if (item && dropResult) {
-        props.handler.positional(props.element.refName, dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
+        props.handler.addPositionalUsingTemplate(props.element.refName, dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
         props.handler.draw();
       }
     },

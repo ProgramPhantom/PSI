@@ -22,14 +22,16 @@ import SortableItem from './SortableItem';
 import { Item } from './Item';
 import { useDrag } from 'react-dnd';
 import SequenceHandler from '../vanilla/sequenceHandler';
-import { Orientation } from '../vanilla/positional';
+import Positional, { IConfig, IPositional, Orientation } from '../vanilla/positional';
 import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { ElementTypes } from './DraggableElement';
-import { ICanvasDropResult } from './CanvasDropContainer';
+import { ICanvasDropResult, IDrop } from './CanvasDropContainer';
 import { HandleStyles, Rnd } from 'react-rnd';
+import { IInsertAreaResult } from './InsertArea';
+import ENGINE from '../vanilla/engine';
 
 
 const style: CSSProperties = {
@@ -81,27 +83,49 @@ interface IDraggableElementProps {
   name: string, 
   handler: SequenceHandler,
   element: Visual,
+  positionalConfig?: IPositional,
   x: number,
   y: number
 }
 
 export interface CanvasDraggableElementPayload {
     element: Visual
+    positionalConfig?: Positional<Visual>
 }
+
 
 
 
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function CanvasDraggableElement(props: IDraggableElementProps) {
   const [{ isDragging }, drag, preview] = useDrag(() => ({
-    type: ElementTypes.REAL_ELEMENT,
-    item: { element: props.element } as CanvasDraggableElementPayload,
+    type: ElementTypes.CANVAS_ELEMENT,
+    item: { element: props.element, positionalConfig: props.positionalConfig } as CanvasDraggableElementPayload,
     end: (item, monitor) => {
-      const dropResult = monitor.getDropResult<ICanvasDropResult>();
+      const dropResult = monitor.getDropResult<IDrop>();
+      if (dropResult === null) {return}
+      
+      if (dropResult && dropResult.dropEffect === "move") {
 
-      // if (item && dropResult) {
-      //   props.handler.positional(props.name, dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
-      //   props.handler.draw();
-      // }
+      } else if (dropResult.dropEffect === "insert") {
+        var result = dropResult as IInsertAreaResult
+        var targetChannel = ENGINE.handler.sequence.channelsDic[result.channelName];
+
+        var positionalElement;
+        if (item.positionalConfig !== undefined) {
+          // positionalElement = new Positional(item.element, targetChannel, item.positionalConfig)
+          positionalElement = item.positionalConfig;
+          positionalElement.config = {...positionalElement.config, orientation: result.orientation, channelName: result.channelName};
+        } else {
+          throw Error("Not yet implimented");
+          positionalElement = new Positional(item.element, targetChannel, {config: {orientation: result.orientation, index: result.index}})
+        }
+
+        props.handler.movePositional(positionalElement, result.index);
+        // props.handler.deletePositional(positionalElement, true);
+
+        props.handler.draw();
+      }
+
     },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),

@@ -38,7 +38,8 @@ export interface labelable {
 }
 
 export interface IConfig {
-    index?: number, 
+    index: number,
+    channelName: string,
 
     orientation: Orientation,
     alignment: Alignment,
@@ -58,14 +59,14 @@ export type PositionalVisual<T extends IVisual> = IPositional & T
 export default class Positional<T extends Visual> {
     static defaults: {[name: string]: IPositional} = {"default": <any>defaultPositional}
     
-    _config: IConfig;
+    private _config: IConfig;
     element: T;
 
     channel: Channel;
     index: number | undefined;
 
-    constructor(object: T, channel: Channel, params: RecursivePartial<IPositional>, defaults: IPositional=Positional.defaults["default"]) {
-        var fullParams: IPositional = FillObject(params, defaults);
+    constructor(object: T, channel: Channel, params: RecursivePartial<IPositional>, templateName: string="default") {
+        var fullParams: IPositional = FillObject(params, Positional.defaults[templateName]);
         
         this.element = object;
         this._config = {...fullParams.config};
@@ -114,10 +115,15 @@ export default class Positional<T extends Visual> {
         }
         throw new Error(`y unset in ${this.element.refName, this._config.index}` );
     }
+
     get config(): IConfig {
         return this._config;
     }
     set config(val: IConfig) {
+        if (val.orientation !== this._config.orientation) {
+            this.element.verticalFlip();
+        }
+
         this._config = val;
     }
 }

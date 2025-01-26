@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState, useSync
 import Canvas from './Canvas'
 import Editor from './Editor'
 import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
-import Positional from './vanilla/positional';
+import Positional, { IPositional } from './vanilla/positional';
 import Form from './Form';
 import Banner from './Banner';
 import FileSaver, { saveAs } from 'file-saver';
@@ -16,6 +16,7 @@ import RectElement, { PositionalRect } from './vanilla/rectElement';
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
+import Channel from './vanilla/channel';
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
@@ -34,8 +35,10 @@ function App() {
   
   const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
+  const [selectedPositionalData, setSelectedPositionalData] = useState<Positional<Visual> | undefined>(undefined);
 
-  const canvas: ReactNode = <Canvas select={SelectPositional} selectedElement={selectedElement}></Canvas>
+  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement}
+                                    selectedElementPositional={selectedPositionalData}></Canvas>
 
   function SaveSVG() {
     throw new Error("Not implemented")
@@ -48,18 +51,24 @@ function App() {
     FileSaver.saveAs(blob, "sequence.nmpd");
   }
 
-  function SelectPositional<T extends Visual>(positional: Positional<T> | undefined) {
-    if (positional === undefined) {
+  function SelectElement<T extends Visual>(element: T | undefined, positionalData?: Positional<T>) {
+    if (element === undefined) {
       setSelectedElement(undefined);
+      setSelectedPositionalData(undefined)
       setForm(null);
       return
     }
 
-    setSelectedElement(positional.element);
+    setSelectedElement(element);
+    setSelectedPositionalData(positionalData);
 
-    if (positional.element instanceof SVGElement) {
+    if (positionalData === undefined) {
+      throw new Error("Not implemented")
+    }
+
+    if (element instanceof SVGElement) {
         let scaffold: PositionalSVG = {...(svgPulses["180"] as any), ...defaultPositional}
-        let data: PositionalSVG = Object.assign(positional.element, {config: positional._config})
+        let data: PositionalSVG = Object.assign(element, {config: positionalData.config})
         // Use object.assign as spread operator does not include properties such as contentHeight
         // as they are found in the prototype.
 
@@ -69,27 +78,31 @@ function App() {
         // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
         // to work. Every piece of data will be overriden.
         
+        var channel: Channel = ENGINE.handler.sequence.channelsDic[positionalData.config.channelName]
         var newForm: ReactNode = <SVGForm 
                   handler={ENGINE.handler} 
                   values={(elementSVGData as PositionalSVG)} 
-                  target={((positional as any) as Positional<SVGElement>)} channel={positional.channel}
-                  reselect={SelectPositional}></SVGForm>
+                  target={((element as any) as SVGElement)}
+                  positionalData={positionalData as Positional<SVGElement> }
+                  channel={channel}
+                  reselect={SelectElement}></SVGForm>
       
-        setForm(newForm)
+        setForm(newForm);
     } 
-    else if (positional.element instanceof RectElement) {
+    else if (element instanceof RectElement) {
       let scaffold: PositionalRect = {...(simplePulses["pulse180"] as any), ...defaultPositional}
-      let data: PositionalRect = Object.assign(positional.element, {config: positional._config})
+      let data: PositionalRect = Object.assign(element, {config: positionalData.config})
 
       // var elementRectData: PositionalRect = {...positional.element, config: positional.config};
       var elementRectData = UpdateObj(scaffold, data);
 
+      var channel: Channel = ENGINE.handler.sequence.channelsDic[positionalData.config.channelName]
       var newForm: ReactNode = <RectForm 
                 handler={ENGINE.handler} 
                 values={(elementRectData as PositionalRect)} 
-                target={((positional as any) as Positional<RectElement>)} 
-                channel={positional.channel}
-                reselect={SelectPositional}></RectForm>
+                target={((element as any) as Positional<RectElement>)} 
+                channel={channel}
+                reselect={SelectElement}></RectForm>
       setForm(newForm)
 
     }

@@ -739,7 +739,7 @@ class Parser {
         }
 
         if (this.handler.isPositional(commandName)) {
-            this.handler.positional(commandName, channelName, args);
+            this.handler.addPositionalUsingTemplate(commandName, channelName, args);
         } else if (this.handler.isAnnotation(commandName)) {
             this.handler.section(channelName, args, )
         } else {

@@ -22,6 +22,7 @@ import PaddedBox from "./paddedBox";
 import Aligner from "./aligner";
 import { Alignment } from "./positional";
 import logger, { Operations, Processes } from "./log";
+import { defaultNewIndexGetter } from "@dnd-kit/sortable";
 
 interface ISequence extends ICollection {
     grid: IGrid,
@@ -172,18 +173,26 @@ export default class Sequence extends Collection {
     addPositional(channelName: string, obj: Positional<Visual>, index?: number, insert: boolean=false) {
         logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${obj.element.refName} -------`, this)
 
-        if (index === undefined) {
-            throw new Error("Undefined index undefined");
-        }
-
         var targetChannel: Channel = this.channelsDic[channelName];
+        var numColumns = this.positionalColumns.children.length;
+        
+        var INDEX = index;
+        if (INDEX === undefined) {
+            INDEX = numColumns;
+        }
+        var skip = INDEX - numColumns > 0 ? INDEX - numColumns : 0;
+        INDEX = INDEX - skip;
+        obj.index = INDEX;
 
         // Need to insert a new column
-        if (this.positionalColumns.children[index] === undefined || insert) {
-            this.insertColumn(index);
+        if (this.positionalColumns.children[INDEX] === undefined  || insert) {
+
+            this.insertColumn(INDEX);
+            // This stops you adding a column at 1 when there are 0 columns for instance.
+            
         } else if (insert === false) {
             // Check element is already there
-            if (targetChannel.positionalOccupancy[index] !== undefined) {
+            if (targetChannel.positionalOccupancy[INDEX] !== undefined) {
                 throw new Error(`Cannot place element ${obj.element.refName} at index ${index} as it is already occupied.`)
             }
         }
@@ -192,21 +201,21 @@ export default class Sequence extends Collection {
         // TODO: figure out inherit width and multi section element (hard)
 
         // Add the element to the sequence's column collection, this should trigger resizing of bars
-        this.positionalColumns.children[index].add(obj.element, undefined, obj._config.alignment);
+        this.positionalColumns.children[INDEX].add(obj.element, undefined, obj.config.alignment);
         // This will set the X of the child ^^^
 
         // Add element to channel
-        targetChannel.addPositional(obj, index, insert);
+        targetChannel.addPositional(obj, INDEX, insert);
         // This should set the Y of the element ^^^
 
         // SET X of element
-        this.positionalColumns.children[index].enforceBinding();
+        this.positionalColumns.children[INDEX].enforceBinding();
         // NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
         // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
 
 
         var channelIndex = this.channels.indexOf(targetChannel);
-        this.elementMatrix[channelIndex][index] = obj;
+        this.elementMatrix[channelIndex][INDEX] = obj;
     }
 
     // Remove column is set to false when modifyPositional is called.
@@ -221,7 +230,7 @@ export default class Sequence extends Collection {
         index = target.index;
 
         if (channel === undefined) {
-            console.warn("positinal not connected to channel")
+            console.warn("Positional not connected to channel")
             return undefined
         }
 
@@ -242,8 +251,6 @@ export default class Sequence extends Collection {
             removed = this.deleteColumn(index, true);
         } 
 
-        if (removed === false) {
-            this.elementMatrix[channelIndex][index] = undefined;
-        }
+
     }
 }

@@ -164,9 +164,10 @@ export default class Channel extends Collection {
         var Index: number = index !== undefined ? index : 0;
 
         positional.index = Index;
+        positional.channel = this;
 
         var element: Visual = positional.element;  // Extract element from positional framework
-        var config: IConfig = positional._config;
+        var config: IConfig = positional.config;
 
 
         // ---- Bind to the upper and lower aligners for Y ONLY
@@ -181,7 +182,7 @@ export default class Channel extends Collection {
                 break;
         }
 
-        positional._config.index = Index;  // Update internal index property
+        positional.config.index = Index;  // Update internal index property
     }
 
     removePositional(positional: Positional<Visual>) {

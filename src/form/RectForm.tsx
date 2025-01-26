@@ -11,7 +11,7 @@ import { Divide } from '@blueprintjs/icons';
 import SequenceHandler from '../vanilla/sequenceHandler';
 import RectElement, { PositionalRect } from '../vanilla/rectElement';
 
-import Positional from '../vanilla/positional';
+import Positional, { IPositional } from '../vanilla/positional';
 import { Visual } from '../vanilla/visual';
 import Channel from '../vanilla/channel';
 import VisualForm from './VisualForm';
@@ -21,7 +21,7 @@ interface IRectForm {
     values: PositionalRect,
     channel: Channel,
     target?:  Positional<RectElement>,
-    reselect: (positional: Positional<Visual> | undefined) => void
+    reselect: (element: Visual | undefined, positionalData?: IPositional) => void
 }
 
 const RectForm: React.FC<IRectForm> = (props) => {
@@ -43,11 +43,11 @@ const RectForm: React.FC<IRectForm> = (props) => {
             // props.handler.softModify(props.target, data);
         } else {
             // ADDITION
-            props.handler.positional("90pulse", props.handler.channels[0].identifier, data)
+            props.handler.addPositionalUsingTemplate("90pulse", props.handler.channels[0].identifier, data)
         }
     
         // Select this new element
-        props.reselect(positionalRect);
+        props.reselect(positionalRect.element, positionalRect);
       };
     
     const deleteMe = () => {

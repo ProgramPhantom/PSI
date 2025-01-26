@@ -24,16 +24,12 @@ function getItemStyles(
     ) {
   if (!initialOffset || !currentOffset) {
     // If not dragging don't show
-    console.log("NO OFFSET NOT SHOWING PREVIEW")
     return {
       display: 'none',
     }
   }
 
   let { x, y } = currentOffset
-
-  console.log(`initialOffset: ${x} ${y}`)
-  console.log(`currentOffset: ${x} ${y}`)
 
   const transform = `translate(${x}px, ${y}px) `
   const s = `scale(${scale})`
@@ -59,7 +55,7 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
 
   function renderItem() {
     switch (itemType) {
-      case ElementTypes.REAL_ELEMENT:
+      case ElementTypes.CANVAS_ELEMENT:
         return <ElementDragPreview element={item.element}/>
       case ElementTypes.PREFAB: 
         return <ElementDragPreview element={item.element}/>
@@ -71,9 +67,6 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
   var css;
 
     css = getItemStyles(initialOffset, currentOffset, props.scale);
-    console.log(css)
-
-  
 
   if (!isDragging) {
     return null

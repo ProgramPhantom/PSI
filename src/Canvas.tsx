@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore, DOMElement} from 'react'
 import DropField from './dnd/DropField';
 import { Visual } from './vanilla/visual';
-import Positional from './vanilla/positional';
+import Positional, { IPositional } from './vanilla/positional';
 import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
 import { CanvasDragLayer } from './dnd/CanvasDragLayer';
 import { CanvasDropContainer } from './dnd/CanvasDropContainer';
@@ -11,14 +11,16 @@ import Debug from './Debug';
 
 
 interface ICanvasProps {
-    select: (element?: Positional<Visual>) => void
-    selectedElement: Visual | undefined
+    select: (element?: Visual, positionalData?: Positional<Visual>) => void
+    selectedElement: Visual | undefined,
+    selectedElementPositional?: Positional<Visual>
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
     console.log("CREATING CANVAS")
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
     let selectedElement = props.selectedElement;
+    let selectedElementPositionalData = props.selectedElementPositional;
 
     const [zoom, setZoom] = useState(5);
     const [dragging, setDragging] = useState(false);
@@ -30,7 +32,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     }
 
     function select(e: Positional<Visual>) {
-        props.select(e);
+        props.select(e.element, e);
         e.element.svg?.hide();
     }
 
@@ -91,7 +93,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                     
                                 </div>
                                 <DropField sequence={ENGINE.handler}></DropField>
-                                <Debug sequenceHandler={ENGINE.handler}></Debug>
+                                
                                 {
                                     selectedElement !== undefined ?
                                     <div style={{position: "absolute", 
@@ -104,7 +106,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
                                         <CanvasDraggableElement handler={ENGINE.handler} 
                                                                 name={selectedElement.refName} 
-                                                                element={selectedElement} 
+                                                                element={selectedElement}
+                                                                positionalConfig={selectedElementPositionalData}
                                                                 x={selectedElement.x} 
                                                                 y={selectedElement.y}>
 
