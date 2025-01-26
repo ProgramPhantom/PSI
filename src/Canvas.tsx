@@ -7,6 +7,7 @@ import { CanvasDragLayer } from './dnd/CanvasDragLayer';
 import { CanvasDropContainer } from './dnd/CanvasDropContainer';
 import CanvasDraggableElement from './dnd/CanvasDraggableElement';
 import ENGINE from './vanilla/engine';
+import Debug from './Debug';
 
 
 interface ICanvasProps {
@@ -90,7 +91,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                     
                                 </div>
                                 <DropField sequence={ENGINE.handler}></DropField>
-
+                                <Debug sequenceHandler={ENGINE.handler}></Debug>
                                 {
                                     selectedElement !== undefined ?
                                     <div style={{position: "absolute", 

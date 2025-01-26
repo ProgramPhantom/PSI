@@ -50,7 +50,7 @@ export abstract class Visual extends PaddedBox implements IVisual {
         this.offset = [this.offset[0], -Math.abs(this.offset[1])];  // Strange entanglement error was happening here
 			
         this.svg?.children().forEach((c) => {
-
+        
             c.transform({flip: "y", })
         })
 
