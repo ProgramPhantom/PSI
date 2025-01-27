@@ -43,8 +43,18 @@ export interface IPoint {
     y?: number
 }
 
+export interface IStateTarget<T extends IPoint> {
+    get state(): T
+}
 
-export default class Point implements IPoint {
+
+export default class Point implements IPoint, IStateTarget<IPoint> {
+    get state(): IPoint {
+        return {
+        x: this.x,
+        y: this.y
+    }}
+
     AnchorFunctions = {
         "here": {
             // Anchors:

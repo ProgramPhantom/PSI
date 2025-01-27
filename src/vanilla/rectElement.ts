@@ -23,6 +23,16 @@ export default class RectElement extends Visual implements IRect {
         "bar": <any>defaultBar
     };
 
+    getState: () => IRect = () => { return {
+        x: this.x,
+        y: this.y,
+        contentWidth: this.contentWidth,
+        contentHeight: this.contentHeight,
+        padding: this.padding,
+        offset: this.offset,
+        style: this.style,
+    }}
+
 	style: IRectStyle;	
 
     constructor(params: RecursivePartial<IRect>, templateName: string="pulse90") {

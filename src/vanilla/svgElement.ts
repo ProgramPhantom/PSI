@@ -44,6 +44,17 @@ export type PositionalSVG = ISVG & IPositional;
 export default class SVGElement extends Visual implements ISVG {
     static defaults: {[key: string]: PositionalSVG} = {...<any>svgPulses, "default": svgPulses[180]};
 
+	getState: () => ISVG = () => { return {
+        x: this.x,
+        y: this.y,
+        contentWidth: this.contentWidth,
+        contentHeight: this.contentHeight,
+        padding: this.padding,
+        offset: this.offset,
+		path: this.path,
+		style: this.style,
+    }}
+
 	elementGroup: G = new G();
 	style: ISVGStyle;
     path: string;

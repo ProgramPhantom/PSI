@@ -27,9 +27,16 @@ export interface IPaddedBox extends ISpacial {
 
 // After inheriting from this class, x and y are now located away from the actual content, defined by this.padding.
 export default abstract class PaddedBox extends Spacial implements IPaddedBox {
+    get state(): IPaddedBox { return {
+        x: this.x,
+        y: this.y,
+        contentWidth: this.contentWidth,
+        contentHeight: this.contentHeight,
+        padding: this.padding
+    }}
 
     padding: [number, number, number, number] = [0, 0, 0, 0];
-    
+
     constructor(padding: Padding=0, x?: number, y?: number, width?: number, height?: number, refName: string="paddedBox") {
         super(x, y, width, height, refName);
 
