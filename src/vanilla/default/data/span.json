@@ -1,9 +1,10 @@
 {
-    "config": {
+    "mountConfig": {
         "orientation": "top",
         "alignment": "centre",
         "inheritWidth": true,
-        "noSections": 1
+        "noSections": 1,
+        "channelName": null
     },
     
     "padding": [0, 0, 5, 0],

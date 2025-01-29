@@ -4,63 +4,57 @@ import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 
 import { ILabel } from '../vanilla/label';
 
 import { Button, ControlGroup, Divider, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
-import PositionalForm from './PositionalForm';
+import MountableForm from './MonutableForm';
 import LabelForm from './LabelForm';
 import ArrowForm from './ArrowForm';
 import { Divide } from '@blueprintjs/icons';
 import SequenceHandler from '../vanilla/sequenceHandler';
-import RectElement, { PositionalRect } from '../vanilla/rectElement';
-
-import Positional, { IPositional } from '../vanilla/positional';
+import RectElement, { IRect } from '../vanilla/rectElement';
 import { Visual } from '../vanilla/visual';
 import Channel from '../vanilla/channel';
 import VisualForm from './VisualForm';
 
 interface IRectForm {
     handler: SequenceHandler, 
-    values: PositionalRect,
-    channel: Channel,
-    target?:  Positional<RectElement>,
-    reselect: (element: Visual | undefined, positionalData?: IPositional) => void
+    values: IRect,
+    target?: RectElement,
+    reselect: (element: Visual | undefined) => void
 }
 
 const RectForm: React.FC<IRectForm> = (props) => {
-    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<PositionalRect>({
+    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<IRect>({
         defaultValues: {...props.values},
         mode: "onChange"
     });
 
-    const onSubmit = (data: PositionalRect) => {
-        // Create new element
-        var newSVG: RectElement = new RectElement(data);
-    
+    const onSubmit = (data: IRect) => {
         // Create the new positional
-        var positionalRect: Positional<RectElement> = new Positional<RectElement>(newSVG, props.channel, {config: data.config})
+        var newRect: RectElement = new RectElement(data)
     
         if (props.target !== undefined) {
             // MODIFICATION
-            props.handler.hardModify(props.target, positionalRect)
+            props.handler.replaceElement(props.target, newRect)
             // props.handler.softModify(props.target, data);
         } else {
             // ADDITION
-            props.handler.addPositionalUsingTemplate("90pulse", props.handler.channels[0].identifier, data)
+            props.handler.mountElementFromTemplate(data, "90pulse")
         }
     
         // Select this new element
-        props.reselect(positionalRect.element, positionalRect);
+        props.reselect(newRect);
       };
     
     const deleteMe = () => {
         if (props.target === undefined) {return} 
 
-        props.handler.deletePositional(props.target);
+        props.handler.deleteElement(props.target);
         props.reselect(undefined);
     }
 
     return (
         <>
             <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
-                <h3>{props.target ? props.target.element.refName : "Rect pulse"}</h3>
+                <h3>{props.target ? props.target.refName : "Rect pulse"}</h3>
                 {props.target !== undefined ? (
                 <button style={{width: "30", height: "30", justifySelf: "end"}} onClick={() => deleteMe()}>
                     delete

@@ -1,8 +1,8 @@
 import { useDrop } from "react-dnd";
 import { ElementTypes } from "./DraggableElement";
 import { CSSProperties } from "react";
-import { Orientation } from "../vanilla/positional";
 import { IDrop } from "./CanvasDropContainer";
+import { Orientation } from "../vanilla/mountable";
 
 interface Rect {
     x: number,

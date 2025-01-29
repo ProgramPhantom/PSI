@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { Visual, IVisual, Offset } from "./visual";
+import { Visual, IVisual, Offset, IDraw, doesDraw } from "./visual";
 import PaddedBox from "./paddedBox";
 import Point, { Place } from "./point";
 import Spacial, { Bounds, Dimensions } from "./spacial";
@@ -38,10 +38,10 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     draw(surface: Svg) {
         // --- dev ---
         
-
+        
         this.children.forEach((c) => {
-            if (c instanceof Visual) {
-                (c as Visual).draw(surface);
+            if (doesDraw(c)) {
+                c.draw(surface);
             }
         })
 
@@ -51,13 +51,13 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
     add(child: T, index?: number) {
         this.children.splice(index !== undefined ? index : this.children.length-1, 0, child);
         
-        child.subscribe(this.computeBoundry.bind(this));
+        child.subscribe(this.computeBoundary.bind(this));
 
         if (this.isResolved) {
             this.enforceBinding();
         }
         
-        this.computeBoundry();
+        this.computeBoundary();
 
         // A final compute 
     }
@@ -77,18 +77,18 @@ export default class Collection<T extends Spacial = Spacial> extends Visual {
             }
         })
 
-        this.computeBoundry();
+        this.computeBoundary();
         this.enforceBinding();
     }
 
     removeAt(index: number) {
         this.children.splice(index, 1);
 
-        this.computeBoundry();
+        this.computeBoundary();
         this.enforceBinding();
     }
 
-    computeBoundry(): void {
+    computeBoundary(): void {
         logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this)
 
         if (this.children.filter((f) => f.displaced === true).length > 0) {

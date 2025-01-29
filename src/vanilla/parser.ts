@@ -11,7 +11,7 @@ import Channel, { IChannel } from "./channel";
 import { PartialConstruct, UpdateObj } from "./util";
 import Section from "./section";
 import { Script } from "vm";
-import { positionalElements } from "./default/data";
+import { mountableElements } from "./default/data";
 import SequenceHandler from "./sequenceHandler";
 import { ILine } from "./line";
 import SVGElement from "./svgElement";
@@ -739,7 +739,7 @@ class Parser {
         }
 
         if (this.handler.isPositional(commandName)) {
-            this.handler.addPositionalUsingTemplate(commandName, channelName, args);
+            this.handler.mountElementFromTemplate(commandName, channelName, args);
         } else if (this.handler.isAnnotation(commandName)) {
             this.handler.section(channelName, args, )
         } else {

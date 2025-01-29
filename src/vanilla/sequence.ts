@@ -1,6 +1,5 @@
 import { Visual, IVisual } from "./visual";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Positional, { Orientation } from "./positional";
 import { Position, ILabel } from "./label";
 import Channel, { IChannel } from "./channel"
 import Label from "./label";
@@ -20,9 +19,9 @@ import Spacial, { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
 import PaddedBox from "./paddedBox";
 import Aligner from "./aligner";
-import { Alignment } from "./positional";
 import logger, { Operations, Processes } from "./log";
 import { defaultNewIndexGetter } from "@dnd-kit/sortable";
+import { Alignment } from "./mountable";
 
 interface ISequence extends ICollection {
     grid: IGrid,
@@ -49,12 +48,12 @@ export default class Sequence extends Collection {
 
     channelColumn: Aligner<Channel>;
 
-    positionalColumns: Aligner<Aligner<Visual>>;
+    pulseColumns: Aligner<Aligner<Visual>>;
     labelColumn: Aligner<Visual>;
 
     columns: Aligner<Aligner<Visual>>;
 
-    elementMatrix: (Positional<Visual> | undefined)[][] = [];
+    elementMatrix: (Visual | undefined)[][] = [];
 
     constructor(params: RecursivePartial<ISequence>, templateName: string="default", refName: string="sequence") {
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
@@ -88,8 +87,8 @@ export default class Sequence extends Collection {
 
 
         // |p|p|p|p|
-        this.positionalColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0}, "default", "pos col collection");
-        this.columns.add(this.positionalColumns);
+        this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0}, "default", "pos col collection");
+        this.columns.add(this.pulseColumns);
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
 
@@ -108,7 +107,7 @@ export default class Sequence extends Collection {
                                                             "default", `column at ${index}`);
 
         // Add to positional columns
-        this.positionalColumns.add(newColumn, index);
+        this.pulseColumns.add(newColumn, index);
 
         // Update indices after this new column:
         // Update internal indexes of Positional elements in pos col:
@@ -125,8 +124,8 @@ export default class Sequence extends Collection {
         // Update positional indices of elements after this 
 
         if (ifEmpty === true) {
-            if (this.positionalColumns.children[index].children.length === 0) {
-                this.positionalColumns.removeAt(index);
+            if (this.pulseColumns.children[index].children.length === 0) {
+                this.pulseColumns.removeAt(index);
 
                 this.channels.forEach((channel) => {
                     channel.shiftIndices(index, -1);
@@ -139,7 +138,7 @@ export default class Sequence extends Collection {
                 return false
             }
         } else {
-            this.positionalColumns.removeAt(index);
+            this.pulseColumns.removeAt(index);
 
             this.channels.forEach((channel) => {
                 channel.shiftIndices(index, -1);
@@ -161,7 +160,7 @@ export default class Sequence extends Collection {
         this.channelsDic[name] = channel; 
 
         var index = this.channels.length - 1;
-        channel.positionalColumns = this.positionalColumns;  // And apply the column ref
+        channel.positionalColumns = this.pulseColumns;  // And apply the column ref
         channel.labelColumn = this.labelColumn;
         
 
@@ -170,87 +169,98 @@ export default class Sequence extends Collection {
         channel.positionalOccupancy = this.elementMatrix[index];
     }
 
-    addPositional(channelName: string, obj: Positional<Visual>, index?: number, insert: boolean=false) {
-        logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${obj.element.refName} -------`, this)
+    public addElement(element: Visual) {
+        if (element.isMountable) {
+            element.mountConfig!.mountOn = false;
+        }
 
-        var targetChannel: Channel = this.channelsDic[channelName];
-        var numColumns = this.positionalColumns.children.length;
+        // Add
+    }
+
+    // @isMountable...
+    public mountElement(element: Visual, insert: boolean=false) {
+        logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${element.refName} -------`, this);
+        if (element.mountConfig === undefined) {
+            console.warn("Cannot mount element without mount config")
+            return
+        }
+        element.mountConfig.mountOn = true;
+
+        var targetChannel: Channel = this.channelsDic[element.mountConfig.channelName];
+        var numColumns = this.pulseColumns.children.length;
         
-        var INDEX = index;
+        var INDEX = element.mountConfig.index;
         if (INDEX === undefined) {
             INDEX = numColumns;
         }
         var skip = INDEX - numColumns > 0 ? INDEX - numColumns : 0;
         INDEX = INDEX - skip;
-        obj.index = INDEX;
+        element.mountConfig.index = INDEX;
 
         // Need to insert a new column
-        if (this.positionalColumns.children[INDEX] === undefined  || insert) {
-
+        if (this.pulseColumns.children[INDEX] === undefined  || insert) {
             this.insertColumn(INDEX);
             // This stops you adding a column at 1 when there are 0 columns for instance.
             
         } else if (insert === false) {
             // Check element is already there
             if (targetChannel.positionalOccupancy[INDEX] !== undefined) {
-                throw new Error(`Cannot place element ${obj.element.refName} at index ${index} as it is already occupied.`)
+                throw new Error(`Cannot place element ${element.refName} at index ${element.mountConfig.index} as it is already occupied.`)
             }
         }
         
-
         // TODO: figure out inherit width and multi section element (hard)
 
         // Add the element to the sequence's column collection, this should trigger resizing of bars
-        this.positionalColumns.children[INDEX].add(obj.element, undefined, obj.config.alignment);
+        this.pulseColumns.children[INDEX].add(element, undefined, element.mountConfig.alignment);
         // This will set the X of the child ^^^
 
         // Add element to channel
-        targetChannel.addPositional(obj, INDEX, insert);
+        targetChannel.mountElement(element);
         // This should set the Y of the element ^^^
 
         // SET X of element
-        this.positionalColumns.children[INDEX].enforceBinding();
+        this.pulseColumns.children[INDEX].enforceBinding();
         // NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
         // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
 
 
         var channelIndex = this.channels.indexOf(targetChannel);
-        this.elementMatrix[channelIndex][INDEX] = obj;
+        this.elementMatrix[channelIndex][INDEX] = element;
     }
 
+    // @isMounted
     // Remove column is set to false when modifyPositional is called.
-    deletePositional(target: Positional<Visual>, removeColumn: boolean=true): void {
-        var channel: Channel | undefined = target.channel;
+    deleteMountedElement(target: Visual, removeColumn: boolean=true): void {
+        var channelName: string = target.mountConfig!.channelName;
+        var channel: Channel | undefined = this.channelsDic[channelName]
         var channelIndex: number = this.channels.indexOf(channel);
         var index: number;
 
-        if (target.index === undefined ) {
+        if (target.mountConfig!.index === undefined ) {
             throw new Error("Index not initialised");
         }
-        index = target.index;
+        index = target.mountConfig!.index;
 
-        if (channel === undefined) {
+        if (channelName === undefined) {
             console.warn("Positional not connected to channel")
             return undefined
         }
 
-        channel.removePositional(target);
+        channel.removeMountable(target);
 
         this.elementMatrix[channelIndex][index] = undefined;
 
         // Remove target from columns 
         try {
-            this.positionalColumns.children[target.index!].remove(target.element);
+            this.pulseColumns.children[index].remove(target);
         } catch {
             
         }
-
 
         let removed;
         if (removeColumn === true) {
             removed = this.deleteColumn(index, true);
         } 
-
-
     }
 }

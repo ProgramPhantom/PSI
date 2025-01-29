@@ -1,11 +1,11 @@
 import { Svg } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
-import { Alignment } from "./positional";
 import Spacial, { Dimensions } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
 import { SVG } from "@svgdotjs/svg.js";
 import logger, { Operations, Processes } from "./log";
+import { Alignment } from "./mountable";
 
 export interface IAligner extends ICollection {
     axis: Dimensions,
@@ -120,8 +120,8 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         this.enforceBinding();
         
         // Child will tell this to update size when it changes size or position
-        child.subscribe(this.computeBoundry.bind(this));
-        this.computeBoundry();
+        child.subscribe(this.computeBoundary.bind(this));
+        this.computeBoundary();
     }
 
     removeAt(index: number) {
@@ -170,7 +170,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
         this.squeezeCrossAxis();
 
-        this.computeBoundry();
+        this.computeBoundary();
         this.enforceBinding();
     }
 
@@ -194,7 +194,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         this.setSizeByDimension(crossAxisSize, this.crossAxis)
     }
 
-    computeBoundry(): void {
+    computeBoundary(): void {
 
         logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this)
 

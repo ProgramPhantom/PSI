@@ -34,10 +34,10 @@ export type UpdateNotification = (...args: any[]) => any
 export default class Spacial extends Point implements ISpacial {
     get state(): ISpacial {
         return {
-            x: this.x,
-            y: this.y,
-            contentWidth: this.contentWidth,
-            contentHeight: this.contentHeight
+            x: this._x,
+            y: this._y,
+            contentWidth: this._contentWidth,
+            contentHeight: this._contentHeight
     }}
 
     AnchorFunctions = {

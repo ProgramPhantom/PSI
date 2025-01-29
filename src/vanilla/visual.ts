@@ -3,29 +3,33 @@ import Point, { BinderSetFunction, IPoint, } from './point'
 import Spacial from './spacial'
 import PaddedBox, { IPaddedBox } from './paddedBox'
 import { IAnnotation } from './annotation'
-import Positional from './positional'
 import { RecursivePartial } from './util'
+import { IMountable, IMountConfig, Mountable, Orientation } from './mountable'
 
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
 
 
 
-export interface IVisual extends IPaddedBox {
+export interface IVisual extends IMountable {
     offset: [number, number],
 }
 
 export interface IDraw {
-    draw: (surface: Svg, ...args: any[]) => void
+    draw: (surface: Svg) => void
+}
+
+export function doesDraw(object: any): object is IDraw {
+    return "draw" in object
 }
 
 
-export abstract class Visual extends PaddedBox implements IVisual {
+export abstract class Visual extends Mountable implements IVisual {
     get state(): IVisual { return {
-        x: this.x,
-        y: this.y,
-        contentWidth: this.contentWidth,
-        contentHeight: this.contentHeight,
+        x: this._x,
+        y: this._y,
+        contentWidth: this._contentWidth,
+        contentHeight: this._contentHeight,
         padding: this.padding,
         offset: this.offset
     }}
@@ -43,16 +47,13 @@ export abstract class Visual extends PaddedBox implements IVisual {
     }
 
     constructor(params: IVisual, refName: string="element") {
-        super(params.padding, params.x, params.y, params.contentWidth, params.contentHeight, refName);  // Will make dirty??
+        super(params, refName);  // Will make dirty??
 
         this.offset = params.offset;  // Fixed for some reason
     }
 
 
-    draw(surface: Svg): void {
-        this.svg?.remove();
-        this.svg?.addTo(surface);
-    }
+    abstract draw(surface: Svg): void 
     erase(): void {
         this.svg?.remove();
         this.debugSvg?.remove();

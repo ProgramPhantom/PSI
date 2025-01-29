@@ -6,11 +6,13 @@
     "contentWidth": 10,
     "contentHeight": 40,
 
-    "config": {
+    "mountConfig": {
         "orientation": "top",
         "alignment": "centre",
         "inheritWidth": false,
-        "noSections": 1
+        "noSections": 1,
+        "channelName": null,
+        "index": null
     },
 
     "style": {

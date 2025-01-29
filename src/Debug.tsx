@@ -52,7 +52,7 @@ const Debug: React.FC<IDebug> = (props) => {
             })
             } 
 
-        <CollectionDebug element={seq.positionalColumns}></CollectionDebug>
+        <CollectionDebug element={seq.pulseColumns}></CollectionDebug>
         <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
         </>
     )

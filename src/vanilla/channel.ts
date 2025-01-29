@@ -1,7 +1,6 @@
 import defaultChannel from "./default/data/channel.json"
 import { Visual, IVisual } from "./visual";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Positional, { Alignment, IConfig, Orientation, labelable } from "./positional";
 import Label, { ILabel, Position } from "./label";
 import Span from "./span";
 import Abstract from "./abstract";
@@ -16,6 +15,7 @@ import Point from "./point";
 import Spacial, { Dimensions } from "./spacial";
 import RectElement, { IRectStyle } from "./rectElement";
 import Aligner from "./aligner";
+import { Alignment, IMountable, IMountConfig, Orientation } from "./mountable";
  
 interface Dim {
     width: number,
@@ -34,7 +34,7 @@ interface Bounds {
 
 
 export interface IChannel extends ICollection {
-    positionalElements: Positional<Visual>[],
+    positionalElements: Visual[],
     identifier: string;
 
     style: IChannelStyle;
@@ -105,21 +105,21 @@ export default class Channel extends Collection {
         this._positionalColumns.bindSize(this.bar, Dimensions.X);
     }
 
-    private _positionalOccupancy?: (Positional<Visual> | undefined)[];
-    public get positionalOccupancy(): (Positional<Visual> | undefined)[] {
+    private _positionalOccupancy?: (Visual | undefined)[];
+    public get positionalOccupancy(): (Visual | undefined)[] {
         if (this._positionalOccupancy === undefined) {
             throw Error("Positional occupancy not set");
         }
         return this._positionalOccupancy;
     }
-    public set positionalOccupancy(val: (Positional<Visual> | undefined)[]) {
+    public set positionalOccupancy(val: (Visual | undefined)[]) {
         this._positionalOccupancy = val;
     }
 
     labelOn: boolean;
     label?: Label;
 
-    public get positionalElements(): Positional<Visual>[] { // All positional elements on this channel
+    public get positionalElements(): Visual[] { // All positional elements on this channel
         return this.positionalOccupancy.filter(p => p !== undefined);
     };  
 
@@ -160,14 +160,14 @@ export default class Channel extends Collection {
 
 
     // Position positional elements on the bar
-    addPositional(positional: Positional<Visual>, index?: number, insert: boolean=false): void {
-        var Index: number = index !== undefined ? index : 0;
+    mountElement(element: Visual): void {
+        if (element.mountConfig === undefined) {
+            throw new Error("Cannot mount element with uninitialised mount config.")
+        } 
+        element.mountConfig.channelName = this.identifier;
 
-        positional.index = Index;
-        positional.channel = this;
-
-        var element: Visual = positional.element;  // Extract element from positional framework
-        var config: IConfig = positional.config;
+        var element: Visual = element;  // Extract element from positional framework
+        var config: IMountConfig = element.mountConfig!;
 
 
         // ---- Bind to the upper and lower aligners for Y ONLY
@@ -181,30 +181,29 @@ export default class Channel extends Collection {
                 this.lowerAligner.add(element);
                 break;
         }
-
-        positional.config.index = Index;  // Update internal index property
     }
 
-    removePositional(positional: Positional<Visual>) {
+    removeMountable(element: Visual) {
         // Remove from children of this channel (positional elements should be property taking positionals from children)
-        this.remove(positional.element);
+        this.remove(element);
 
         // Remove from the column
-        if (positional.index === undefined) {
+        if (element.mountConfig!.index === undefined) {
             throw new Error(`Trying to remove positional with uninitialised index`)
         }
 
-        // Remove from aligner (yes one of these is reduntant)
-        this.upperAligner.remove(positional.element);
-        this.lowerAligner.remove(positional.element);
+        // Remove from aligner (yes one of these is redundant)
+        this.upperAligner.remove(element);
+        this.lowerAligner.remove(element);
         
-        positional.element.erase();
+        element.erase();
     }
 
+    // 
     shiftIndices(from: number, n: number=1): void {
         this.positionalOccupancy.forEach((pos, i) => {
-            if (i >= from && pos !== undefined && pos.index !== undefined) {
-                pos.index = pos.index + n;
+            if (i >= from && pos !== undefined && pos.mountConfig!.index !== undefined) {
+                pos.mountConfig!.index = pos.mountConfig!.index + n;
             }
         })
     }

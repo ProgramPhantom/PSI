@@ -1,10 +1,10 @@
-import { Visual, IVisual } from "./visual";
+import { Visual, IVisual, IDraw } from "./visual";
 import { svgPulses } from "./default/data/svgPulse";
-import { IPositional } from "./positional";
 import { FillObject, RecursivePartial } from "./util";
 import { Element, Svg } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
+import { Orientation } from "./mountable";
 
 const svgContent: {[path: string]: string} = {}
 const svgPaths = ["\\src\\assets\\acquire2.svg",
@@ -40,9 +40,8 @@ export interface ISVG extends IVisual {
 }
 
 
-export type PositionalSVG = ISVG & IPositional;
-export default class SVGElement extends Visual implements ISVG {
-    static defaults: {[key: string]: PositionalSVG} = {...<any>svgPulses, "default": svgPulses[180]};
+export default class SVGElement extends Visual implements ISVG, IDraw {
+    static defaults: {[key: string]: ISVG} = {...<any>svgPulses, "default": svgPulses[180]};
 
 	getState: () => ISVG = () => { return {
         x: this.x,
@@ -96,26 +95,34 @@ export default class SVGElement extends Visual implements ISVG {
 			this.svg.children().forEach((c) => {
 				c.attr({"vector-effect": "non-scaling-stroke"})
 			})
-	
+
+			if (this.isMountable) {
+				if (!this.flipped && this.mountConfig?.orientation === Orientation.bottom
+					|| this.flipped && this.mountConfig?.orientation === Orientation.top
+				) {
+					this.flipped = !this.flipped;
+					this.verticalFlip();
+				}
+
+				if (this.flipped) {
+					this.offset = [this.offset[0], -Math.abs(this.offset[1])]
+				} else {
+					this.offset = [this.offset[0], Math.abs(this.offset[1])]
+				}
+			}
+
 			this.svg.move(this.drawX, this.drawY);
-			this.svg.size(this.contentWidth, this.contentHeight)
+			this.svg.size(this.contentWidth, this.contentHeight);
 
 			surface.add(this.svg);
 		}
-        
     }
 
 	verticalFlip() {
 		// https://stackoverflow.com/questions/65514861/transform-is-not-applied-on-embedded-svgs-chrome
 
-        // TODO: this is slightly problematic
-        this.offset = [this.offset[0], -Math.abs(this.offset[1])];  // Strange entanglement error was happening here
-		
-		//this.elementGroup.attr({"transform-origin": "center"});
-
         //this.elementGroup.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: 0})
 		this.elementGroup.transform({flip: "y", origin: "center"}, true)
-
 
         this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]]
     }

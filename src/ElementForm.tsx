@@ -10,7 +10,7 @@ import { FieldValues, useForm, useWatch } from 'react-hook-form';
 import ArrowForm from './form/ArrowForm';
 import SimpleForm from './form/RectForm';
 
-import { positionalElements } from './vanilla/default/data';
+import { mountableElements } from './vanilla/default/data';
 import { ISimplePulse } from './vanilla/pulses/simple/simplePulse';
 import { ISvgPulse } from './vanilla/pulses/image/svgPulse';
 import { IChannel } from './vanilla/channel';
@@ -23,7 +23,7 @@ type ElementType = ISimplePulse | ISvgPulse | IChannel;
 
 function ElementForm(props: {AddCommand: (line: string) => void, commandName: string, channelName: string}) {
 
-    var defaultValues = positionalElements[props.commandName as keyof typeof positionalElements];
+    var defaultValues = mountableElements[props.commandName as keyof typeof mountableElements];
     
     const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<ElementType>({
         defaultValues: {...(defaultValues as any)},

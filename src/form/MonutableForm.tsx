@@ -6,7 +6,7 @@ import { ILabel } from '../vanilla/label';
 import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
 
 
-function PositionalForm(props: {control: Control<any>, change: () => void}) {
+function MountableForm(props: {control: Control<any>, change: () => void}) {
   const onSubmit = (data: FieldValues) => console.log(data);
   // onSubmit={handleSubmit(onSubmit)}x
 
@@ -114,7 +114,7 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
                 label="Orientation"
                 labelFor="text-input">
                 
-                <Controller control={props.control} name="config.orientation" render={({field}) => (
+                <Controller control={props.control} name="mountConfig.orientation" render={({field}) => (
                     <HTMLSelect {...field} iconName='caret-down'>
                         <option value={"top"}>Top</option>
                         <option value={"both"}>Both</option>
@@ -131,7 +131,7 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
                 label="Alignment"
                 labelFor="text-input">
                 
-                <Controller control={props.control} name="config.alignment" render={({field}) => (
+                <Controller control={props.control} name="mountConfig.alignment" render={({field}) => (
                     <HTMLSelect {...field} iconName='caret-down'>
                         <option value={"here"}>Left</option>
                         <option value={"centre"}>Centre</option>
@@ -147,7 +147,7 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
                 label="Inherit Width"
                 labelFor="text-input">
                 
-                <Controller control={props.control} name="config.inheritWidth" render={({field}) => (
+                <Controller control={props.control} name="mountConfig.inheritWidth" render={({field}) => (
                     <Switch {...field}></Switch>
                     )}>
                 </Controller>
@@ -159,7 +159,7 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
               inline={true}
               label="No Sections"
               labelFor="text-input">
-              <Controller control={props.control} name="config.noSections" render={({field}) => (
+              <Controller control={props.control} name="mountConfig.noSections" render={({field}) => (
                 <NumericInput {...field} onValueChange={field.onChange} min={1} max={10} small={true}></NumericInput>)}>
               </Controller>
             </FormGroup>
@@ -171,4 +171,4 @@ function PositionalForm(props: {control: Control<any>, change: () => void}) {
   );
 }
     
-export default PositionalForm
+export default MountableForm

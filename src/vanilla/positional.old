@@ -45,6 +45,7 @@ export interface IConfig {
     alignment: Alignment,
     inheritWidth: boolean,
     noSections: number,
+    mountOn: boolean
 }
 
 export interface IPositional {
@@ -56,7 +57,7 @@ export interface IPositional {
 
 export type PositionalVisual<T extends IVisual> = IPositional & T
                                     // Has default construct
-export default class Positional<T extends Visual> {
+ class Positional<T extends Visual> {
     static defaults: {[name: string]: IPositional} = {"default": <any>defaultPositional}
     
     private _config: IConfig;
@@ -83,7 +84,7 @@ export default class Positional<T extends Visual> {
     }
 
     restructure(data: Partial<PositionalVisual<T>>) {
-        this._config = data.config ?? this._config;
+        this._config = data.mountConfig ?? this._config;
         
         this.element.restructure(data);
     }

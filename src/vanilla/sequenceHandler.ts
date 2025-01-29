@@ -5,22 +5,20 @@ import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
 import Bracket, { Direction, IBracket } from "./bracket";
 import Label from "./label";
-import Positional, { IPositional, PositionalVisual } from "./positional";
 import { IVisual, Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import Section, { ISection } from "./section";
 import { Script } from "vm";
 import Parser from "./parser";
-import { positionalElements } from "./default/data";
+import { mountableElements } from "./default/data";
 import { Position } from "@blueprintjs/core";
 import { ILine, Line } from "./line";
-import RectElement, { IRect, PositionalRect } from "./rectElement";
-import SVGElement, { ISVG, PositionalSVG } from "./svgElement";
+import RectElement, { IRect, } from "./rectElement";
+import SVGElement, { ISVG, } from "./svgElement";
 import logger, { Operations } from "./log";
+import { error } from "console";
 
-
-type IPositionalType = (ISVG | IRect) & IPositional
 
 export default class SequenceHandler {
     static positionalTypes: {[name: string]: typeof Visual} = {
@@ -69,7 +67,6 @@ export default class SequenceHandler {
 
         this.sequence = new Sequence({});
 
-        // this.parser = new Parser(this, "");
         this.surface = surface;
     }
 
@@ -84,10 +81,9 @@ export default class SequenceHandler {
         this.sequence.addChannel(name, newChannel);
     }
 
-    // Technical commands:
     draw() {
         if (!this.surface) {
-            throw new Error("Svg surface not attatched!")
+            throw new Error("Svg surface not attached!")
         }
 
         this.surface.size(`${this.sequence.width}px`, `${this.sequence.height}px`)
@@ -95,65 +91,54 @@ export default class SequenceHandler {
         this.syncExternal();
     }
 
-    // Interaction commands:
-    // Add a positional element by providing elementName, channel name, and partial positional interface.
-    // Function uses element name to lookup default parameters and replaces with those provided 
-    addPositionalUsingTemplate(elementName: string, channelName: string, pParameters: RecursivePartial<IPositionalType>, index?: number, insert: boolean=false) {
-        // var positionalType: typeof Positional = SequenceHandler.positionalTypes[elementName];
-        var positionalType = SequenceHandler.positionalTypes[elementName];
-        var channel: Channel = this.sequence.channelsDic[channelName];
+
+    public addElementFromTemplate(pParameters: RecursivePartial<IVisual>, elementRef: string) {
+        var positionalType = SequenceHandler.positionalTypes[elementRef];
 
         var element;
-        index
-        
-        // Fix for now.
-        var defaults;
-        var newPositional: Positional<Visual> | undefined;
-        
+
         switch (positionalType.name) {
             case (SVGElement.name):
-                defaults = SVGElement.defaults[elementName];
-                element = new SVGElement(pParameters as RecursivePartial<IRect>, elementName)
-
-                newPositional = new Positional<SVGElement>(element, channel, pParameters, );
+                element = new SVGElement(pParameters, elementRef)
                 break;
             case (RectElement.name):
-                defaults = RectElement.defaults[elementName];
-                element = new RectElement(pParameters as RecursivePartial<IRect>, elementName)
-
-                newPositional = new Positional<RectElement>(element, channel, pParameters, );
-                break;
-            case (Span.name):
-                element = new Span(pParameters, elementName);
-                break;
-            case (Abstract.name):
-                element = new Abstract(pParameters as RecursivePartial<IAbstract>, elementName);
+                element = new RectElement(pParameters, elementRef)
                 break;
             default:
                 throw new Error("error 1")
         }
 
-        if (newPositional === undefined) {
-            throw new Error("This error")
-        }
 
+        this.sequence.addElement(element);
+    }
+
+    public moveElement(element: Visual) {
+        throw new Error("not implemented")
         
-        this.sequence.addPositional(channelName, newPositional, index, insert);
-
+        // Move element
     }
 
-    addPositional<T extends Visual=Visual>(target: Positional<T>, insert: boolean=true) {
-        this.sequence.addPositional(target.channel.identifier, target, target.index, insert);
-        this.draw();
+    public replaceElement(target: Visual, newElement: Visual): void {
+        if (target.isMountable) {
+            this.replaceMountable(target, newElement)
+        } else {
+            throw new Error("not implemented")
+        }
     }
 
-    selectPositional(id: string): Positional<Visual> | undefined {
-        var element: Positional<Visual> | undefined = undefined;
+    public deleteElement(target: Visual) {
+        if (target.isMountable) {
+            this.deleteMountedElement(target, true);
+        }
+    }
+
+    public identifyElement(id: string): Visual | undefined {
+        var element: Visual | undefined = undefined;
 
         // Search for element:
         this.channels.forEach((c) => {
             c.positionalElements.forEach((p) => {
-                if (p.element.id === id) {
+                if (p.id === id) {
                     element = p;
                 }
             })
@@ -167,32 +152,50 @@ export default class SequenceHandler {
         }
     }
 
-    hardModify<T extends Visual=Visual>(target: Positional<T>, newElement: Positional<T>): true | undefined {
-        logger.operation(Operations.MODIFY, `${target} -> ${newElement}`)
-
-        var channel: Channel = target.channel;
-
-        this.deletePositional(target, false);
-
-        this.sequence.addPositional(channel.identifier, newElement, target.index!);
-     
-        this.draw();
-
-        return true;
+    public addElement(element: Visual) {
+        if (element.isMountable === true) {
+            this.mountElement(element, false);
+        } else {
+            throw new Error("Not implemented")
+        }
     }
 
-    softModify<T extends Visual=Visual>(target: Positional<T>, data: Partial<PositionalVisual<T>>) {
-        target.restructure(data);
 
+    /* Interaction commands:
+    Add a positional element by providing elementName, channel name, and partial positional interface.
+    Function uses element name to lookup default parameters and replaces with those provided */
+    public mountElementFromTemplate(pParameters: RecursivePartial<IVisual>, elementRef: string, insert: boolean=false) {
+        var positionalType = SequenceHandler.positionalTypes[elementRef];
+
+        var element;
+
+        switch (positionalType.name) {
+            case (SVGElement.name):
+                element = new SVGElement(pParameters, elementRef)
+                break;
+            case (RectElement.name):
+                element = new RectElement(pParameters, elementRef)
+                break;
+            default:
+                throw new Error("error 1")
+        }
+
+
+        this.sequence.mountElement(element, insert);
+    }
+
+    // @isMountable
+    private mountElement(target: Visual, insert: boolean=true) {
+        this.sequence.mountElement(target, insert);
         this.draw();
     }
 
-    deletePositional<T extends Visual=Visual>(target: Positional<T>, removeColumn: boolean=true): true | undefined {
+    private deleteMountedElement(target: Visual, removeColumn: boolean=true): true | undefined {
         logger.operation(Operations.DELETE, `${target}`)
 
         // Find which channel owns this element:
         try {
-            this.sequence.deletePositional(target, removeColumn);
+            this.sequence.deleteMountedElement(target, removeColumn);
         } catch (e) {
             console.error(e)
             return undefined;
@@ -202,13 +205,22 @@ export default class SequenceHandler {
         return true;
     }
 
-    movePositional<T extends Visual=Visual>(target: Positional<T>, index: number): void {
-        var currIndex = target.index;
+    private replaceMountable(target: Visual,  newElement: Visual) {
+        logger.operation(Operations.MODIFY, `${target} -> ${newElement}`)
 
+        this.deleteMountedElement(target, false);
+
+        this.sequence.mountElement(newElement, false);
+     
+        this.draw();
+    }
+
+    // @isMountable
+    public shiftMountedElements(target: Visual, index: number): void {
         //target.index = index;
-        this.deletePositional(target, true);
+        this.deleteMountedElement(target, true);
 
-        target.index = index;
-        this.addPositional(target);
+        target.mountConfig!.index = index;
+        this.mountElement(target);
     }
 }

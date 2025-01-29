@@ -3,10 +3,10 @@ import { ElementTypes } from "./DraggableElement";
 import { CSSProperties, useEffect, useState } from "react";
 import SequenceHandler from "../vanilla/sequenceHandler";
 import InsertArea, { AddSpec } from "./InsertArea";
-import { Orientation } from "../vanilla/positional";
 import { Dimensions } from "../vanilla/spacial";
 import { Visual } from "../vanilla/visual";
 import Aligner from "../vanilla/aligner";
+import { Orientation } from "../vanilla/mountable";
 
 
 class SequenceDropInterpreter {
@@ -25,7 +25,7 @@ class SequenceDropInterpreter {
         this.insertAreas = [];
         
         var sequence = this.handler.sequence;
-        var columns = sequence.positionalColumns.children;
+        var columns = sequence.pulseColumns.children;
         var newSlither: AddSpec;
 
         columns.forEach((column, columnIndex) => {

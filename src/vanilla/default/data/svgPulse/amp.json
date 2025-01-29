@@ -1,13 +1,15 @@
 {
-    "config": {
+    "mountConfig": {
         "orientation": "top",
         "alignment": "centre",
         "inheritWidth": false,
-        "noSections": 1
+        "noSections": 1,
+        "channelName": null,
+        "index": null
     },
 
     "padding": [0, 0, 0, 0],
-    "offset": [0, 0],
+    "offset": [0, 1],
     "path": "\\src\\assets\\ampseries.svg",
     "contentWidth": 15,
     "contentHeight": 40,

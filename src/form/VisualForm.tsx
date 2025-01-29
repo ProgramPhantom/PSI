@@ -4,7 +4,7 @@ import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 
 import { ILabel } from '../vanilla/label';
 
 import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
-import PositionalForm from './PositionalForm';
+import MountableForm from './MonutableForm';
 
 
 function VisualForm(props: {control: Control<any>, change: () => void}) {
@@ -34,7 +34,7 @@ function VisualForm(props: {control: Control<any>, change: () => void}) {
         </FormGroup>
         
         {/* Positional */}
-        <PositionalForm control={props.control} change={() => {}}></PositionalForm>
+        <MountableForm control={props.control} change={() => {}}></MountableForm>
       </ControlGroup>
     </form>
   );

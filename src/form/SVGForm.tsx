@@ -2,64 +2,54 @@ import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
 import * as ReactDOM from 'react-dom';
 import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 'react-hook-form';
 import { ILabel } from '../vanilla/label';
-
 import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
-import PositionalForm from './PositionalForm';
+import MountableForm from './MonutableForm';
 import LabelForm from './LabelForm';
 import ArrowForm from './ArrowForm';
 import SequenceHandler from '../vanilla/sequenceHandler';
-import SVGElement, { ISVG, PositionalSVG } from '../vanilla/svgElement';
+import SVGElement, { ISVG } from '../vanilla/svgElement';
 import { svgPulses } from '../vanilla/default/data/svgPulse';
 import { dataTypes } from '@data-driven-forms/react-form-renderer';
 import { ClassProperties, UpdateObj } from '../vanilla/util';
 import Channel from '../vanilla/channel';
 import { Visual } from '../vanilla/visual';
-import Positional, { IPositional } from '../vanilla/positional';
 import VisualForm from './VisualForm';
 
 interface ISVGForm {
     handler: SequenceHandler, 
-    values: PositionalSVG,
-    channel: Channel,
+    values: ISVG,
     target?:  SVGElement,
-    positionalData?: Positional<SVGElement>,
-    reselect: (element: Visual | undefined, positionalData?: Positional<Visual>) => void
+    reselect: (element: Visual | undefined) => void
 }
 
 const SVGForm: React.FC<ISVGForm> = (props) => {
-    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<PositionalSVG>({
+    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<ISVG>({
         defaultValues: {...props.values},
         mode: "onChange"
     });
   
 
-    if (props.positionalData) {
-        
-    }
 
-  const onSubmit = (data: PositionalSVG) => {
+  const onSubmit = (data: ISVG) => {
     // Create new element
     var newSVG: SVGElement = new SVGElement(data);
 
-    // Create the new positional
-    var positionalSVG: Positional<SVGElement> = new Positional<SVGElement>(newSVG, props.channel, {config: data.config})
-
     if (props.target !== undefined) {
         // MODIFICATION
-        props.handler.hardModify(props.positionalData!, positionalSVG)
+        props.handler.replaceElement(props.target, newSVG)
     } else {
         // ADDITION
-        props.handler.addPositionalUsingTemplate("180", props.handler.channels[0].identifier, data)
+        props.handler.mountElementFromTemplate(data, "180",)
     }
 
     // Select this new element
-    props.reselect(positionalSVG.element, positionalSVG);
+    props.reselect(newSVG);
   };
 
   const deleteMe = () => {
     if (props.target === undefined) {return} 
 
-    props.handler.deletePositional(props.positionalData!);
+    props.handler.deleteElement(props.target);
     props.reselect(undefined);
   }
   

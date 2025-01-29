@@ -40,7 +40,7 @@ export interface Binding {
 
 export interface IPoint {
     x?: number,
-    y?: number
+    y?: number,
 }
 
 export interface IStateTarget<T extends IPoint> {
@@ -51,8 +51,8 @@ export interface IStateTarget<T extends IPoint> {
 export default class Point implements IPoint, IStateTarget<IPoint> {
     get state(): IPoint {
         return {
-        x: this.x,
-        y: this.y
+        x: this._x,
+        y: this._y,
     }}
 
     AnchorFunctions = {

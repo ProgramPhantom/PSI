@@ -2,7 +2,6 @@ import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState, useSync
 import Canvas from './Canvas'
 import Editor from './Editor'
 import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
-import Positional, { IPositional } from './vanilla/positional';
 import Form from './Form';
 import Banner from './Banner';
 import FileSaver, { saveAs } from 'file-saver';
@@ -10,9 +9,9 @@ import SVGForm from './form/SVGForm';
 import { Visual } from './vanilla/visual';
 import { UpdateObj } from './vanilla/util';
 import { svgPulses } from './vanilla/default/data/svgPulse';
-import SVGElement, { PositionalSVG } from './vanilla/svgElement';
-import { defaultPositional } from './vanilla/default/data';
-import RectElement, { PositionalRect } from './vanilla/rectElement';
+import SVGElement, { ISVG } from './vanilla/svgElement';
+import { defaultMountable } from './vanilla/default/data';
+import RectElement, { IRect } from './vanilla/rectElement';
 import { simplePulses } from './vanilla/default/data/simplePulse';
 import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
@@ -35,40 +34,37 @@ function App() {
   
   const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
-  const [selectedPositionalData, setSelectedPositionalData] = useState<Positional<Visual> | undefined>(undefined);
 
-  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement}
-                                    selectedElementPositional={selectedPositionalData}></Canvas>
+  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement}></Canvas>
 
   function SaveSVG() {
     throw new Error("Not implemented")
   }
 
   function SaveScript() {
-    var script = ENGINE.handler.parser.script;
-
-    var blob = new Blob([script], {type: "text/plain;charset=utf-8"});
-    FileSaver.saveAs(blob, "sequence.nmpd");
+    // var script = ENGINE.handler.parser.script;
+// 
+    // var blob = new Blob([script], {type: "text/plain;charset=utf-8"});
+    // FileSaver.saveAs(blob, "sequence.nmpd");
   }
 
-  function SelectElement<T extends Visual>(element: T | undefined, positionalData?: Positional<T>) {
+  function SelectElement(element: Visual | undefined) {
     if (element === undefined) {
       setSelectedElement(undefined);
-      setSelectedPositionalData(undefined)
       setForm(null);
       return
     }
 
     setSelectedElement(element);
-    setSelectedPositionalData(positionalData);
-
-    if (positionalData === undefined) {
-      throw new Error("Not implemented")
-    }
 
     if (element instanceof SVGElement) {
-        let scaffold: PositionalSVG = {...(svgPulses["180"] as any), ...defaultPositional}
-        let data: PositionalSVG = Object.assign(element, {config: positionalData.config})
+      if (element.isMountable === false) {
+        return
+        throw new Error("Not implemented")
+      }
+
+        let scaffold: ISVG = {...(svgPulses["180"] as any), ...defaultMountable}
+        let data: ISVG = Object.assign(element)
         // Use object.assign as spread operator does not include properties such as contentHeight
         // as they are found in the prototype.
 
@@ -76,35 +72,34 @@ function App() {
         // Therefore, this keeps only the properties concerned for ISVG
         var elementSVGData = UpdateObj(scaffold, data);
         // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
-        // to work. Every piece of data will be overriden.
+        // to work. Every piece of data will be overridden.
         
-        var channel: Channel = ENGINE.handler.sequence.channelsDic[positionalData.config.channelName]
         var newForm: ReactNode = <SVGForm 
-                  handler={ENGINE.handler} 
-                  values={(elementSVGData as PositionalSVG)} 
-                  target={((element as any) as SVGElement)}
-                  positionalData={positionalData as Positional<SVGElement> }
-                  channel={channel}
-                  reselect={SelectElement}></SVGForm>
+                                  handler={ENGINE.handler} 
+                                  values={(elementSVGData as ISVG)} 
+                                  target={element}
+                                  reselect={SelectElement}></SVGForm>
       
         setForm(newForm);
     } 
     else if (element instanceof RectElement) {
-      let scaffold: PositionalRect = {...(simplePulses["pulse180"] as any), ...defaultPositional}
-      let data: PositionalRect = Object.assign(element, {config: positionalData.config})
+      if (element.isMountable === false) {
+        throw new Error("Not implemented")
+      }
+
+      let scaffold: IRect = {...(simplePulses["pulse180"] as any), ...defaultMountable}
+      let data: IRect = Object.assign(element)
 
       // var elementRectData: PositionalRect = {...positional.element, config: positional.config};
       var elementRectData = UpdateObj(scaffold, data);
 
-      var channel: Channel = ENGINE.handler.sequence.channelsDic[positionalData.config.channelName]
+      var channel: Channel = ENGINE.handler.sequence.channelsDic[element.mountConfig!.channelName]
       var newForm: ReactNode = <RectForm 
                 handler={ENGINE.handler} 
-                values={(elementRectData as PositionalRect)} 
-                target={((element as any) as Positional<RectElement>)} 
-                channel={channel}
+                values={(elementRectData as IRect)} 
+                target={element} 
                 reselect={SelectElement}></RectForm>
       setForm(newForm)
-
     }
   }
 

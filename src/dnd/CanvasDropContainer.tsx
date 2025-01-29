@@ -8,7 +8,6 @@ import { Visual } from '../vanilla/visual'
 import { ElementTypes } from './DraggableElement'
 import CanvasDraggableElement, { } from './CanvasDraggableElement'
 import ENGINE from '../vanilla/engine'
-import { Orientation } from '../vanilla/positional'
 
 
 const styles: CSSProperties = {

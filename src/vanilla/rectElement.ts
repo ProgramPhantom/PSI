@@ -1,10 +1,9 @@
 import { Svg } from "@svgdotjs/svg.js";
-import { Visual, IVisual } from "./visual";
+import { Visual, IVisual, IDraw } from "./visual";
 import { FillObject, RecursivePartial } from "./util";
 import PaddedBox, { IHaveDefault, IPaddedBox } from "./paddedBox";
 import { simplePulses } from "./default/data/simplePulse";
 import defaultBar from "./default/data/bar.json";
-import Positional, { IPositional } from "./positional";
 import { SVG } from "@svgdotjs/svg.js";
 
 export interface IRectStyle {
@@ -17,9 +16,8 @@ export interface IRect extends IVisual {
 	style: IRectStyle,
 }
 
-export type PositionalRect = IRect & IPositional
-export default class RectElement extends Visual implements IRect {
-	static defaults: {[key: string]: PositionalRect } = {...<any>simplePulses,
+export default class RectElement extends Visual implements IRect, IDraw {
+	static defaults: {[key: string]: IRect } = {...<any>simplePulses,
         "bar": <any>defaultBar
     };
 

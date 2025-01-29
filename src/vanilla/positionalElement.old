@@ -8,12 +8,12 @@ import { defaultPositional } from "./default/data";
 
 
 
-export class PositionalElement<T extends Visual> extends Visual implements IPositional {
+export class PositionalElement<T extends Visual=Visual> extends Visual implements IPositional {
     static defaults: {[name: string]: IPositional} = {"default": <any>defaultPositional}
 
     get state(): (typeof this.element.state) & IPositional { return {
         ...this.element.state,
-        config: this.config
+        config: this._config
     }}
 
     private _config: IConfig;
@@ -33,17 +33,21 @@ export class PositionalElement<T extends Visual> extends Visual implements IPosi
         if (this._config.orientation === Orientation.bottom) {
             this.element.verticalFlip();
         }
+
+        this.draw = this.element.draw.bind(this.element);
     }
 
 
-    get config(): IConfig {
+    get mountConfig(): IConfig {
         return this._config;
     }
-    set config(val: IConfig) {
+    set mountConfig(val: IConfig) {
         if (val.orientation !== this._config.orientation) {
             this.element.verticalFlip();
         }
 
         this._config = val;
     }
+
+    
 } 

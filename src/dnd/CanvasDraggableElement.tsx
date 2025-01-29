@@ -22,7 +22,6 @@ import SortableItem from './SortableItem';
 import { Item } from './Item';
 import { useDrag } from 'react-dnd';
 import SequenceHandler from '../vanilla/sequenceHandler';
-import Positional, { IConfig, IPositional, Orientation } from '../vanilla/positional';
 import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
@@ -32,6 +31,8 @@ import { ICanvasDropResult, IDrop } from './CanvasDropContainer';
 import { HandleStyles, Rnd } from 'react-rnd';
 import { IInsertAreaResult } from './InsertArea';
 import ENGINE from '../vanilla/engine';
+import { hasMountConfig } from '../vanilla/util';
+import { Orientation } from '../vanilla/mountable';
 
 
 const style: CSSProperties = {
@@ -83,14 +84,12 @@ interface IDraggableElementProps {
   name: string, 
   handler: SequenceHandler,
   element: Visual,
-  positionalConfig?: IPositional,
   x: number,
   y: number
 }
 
 export interface CanvasDraggableElementPayload {
     element: Visual
-    positionalConfig?: Positional<Visual>
 }
 
 
@@ -99,7 +98,7 @@ export interface CanvasDraggableElementPayload {
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function CanvasDraggableElement(props: IDraggableElementProps) {
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: ElementTypes.CANVAS_ELEMENT,
-    item: { element: props.element, positionalConfig: props.positionalConfig } as CanvasDraggableElementPayload,
+    item: { element: props.element } as CanvasDraggableElementPayload,
     end: (item, monitor) => {
       const dropResult = monitor.getDropResult<IDrop>();
       if (dropResult === null) {return}
@@ -111,17 +110,14 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
         var targetChannel = ENGINE.handler.sequence.channelsDic[result.channelName];
 
         var positionalElement;
-        if (item.positionalConfig !== undefined) {
+        if (item.element.hasMountConfig) {
           // positionalElement = new Positional(item.element, targetChannel, item.positionalConfig)
-          positionalElement = item.positionalConfig;
-          positionalElement.config = {...positionalElement.config, orientation: result.orientation, channelName: result.channelName};
-        } else {
-          throw Error("Not yet implimented");
-          positionalElement = new Positional(item.element, targetChannel, {config: {orientation: result.orientation, index: result.index}})
-        }
+          item.element.mountConfig = {...item.element.mountConfig!, orientation: result.orientation, channelName: result.channelName};
 
-        props.handler.movePositional(positionalElement, result.index);
-        // props.handler.deletePositional(positionalElement, true);
+          props.handler.shiftMountedElements(item.element, result.index);
+        } else {
+          throw Error("Not yet implemented");
+        }
 
         props.handler.draw();
       }

@@ -22,7 +22,6 @@ import SortableItem from './SortableItem';
 import { Item } from './Item';
 import { useDrag } from 'react-dnd';
 import SequenceHandler from '../vanilla/sequenceHandler';
-import { Orientation } from '../vanilla/positional';
 import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
@@ -69,7 +68,7 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
       const dropResult = monitor.getDropResult<IInsertAreaResult>();
 
       if (item && dropResult) {
-        props.handler.addPositionalUsingTemplate(props.element.refName, dropResult.channelName, {config: {orientation: dropResult.orientation}}, dropResult.index, dropResult.insert)
+        props.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.refName, dropResult.insert)
         props.handler.draw();
       }
     },

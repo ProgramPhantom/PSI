@@ -1,3 +1,5 @@
+import { Visual } from "./visual";
+
 function isEmpty(obj: any) {
   for (var prop in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, prop)) {
@@ -52,4 +54,8 @@ export type RecursivePartial<T> = {
 
 export type ClassProperties<C> = {  
   [Key in keyof C as C[Key] extends Function ? never : Key]: C[Key]
+}
+
+export function hasMountConfig(element: Visual): element is Visual {
+  return element.mountConfig !== undefined
 }

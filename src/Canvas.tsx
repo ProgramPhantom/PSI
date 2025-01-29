@@ -1,7 +1,6 @@
 import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore, DOMElement} from 'react'
 import DropField from './dnd/DropField';
 import { Visual } from './vanilla/visual';
-import Positional, { IPositional } from './vanilla/positional';
 import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
 import { CanvasDragLayer } from './dnd/CanvasDragLayer';
 import { CanvasDropContainer } from './dnd/CanvasDropContainer';
@@ -11,16 +10,14 @@ import Debug from './Debug';
 
 
 interface ICanvasProps {
-    select: (element?: Visual, positionalData?: Positional<Visual>) => void
+    select: (element?: Visual) => void
     selectedElement: Visual | undefined,
-    selectedElementPositional?: Positional<Visual>
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
     console.log("CREATING CANVAS")
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
     let selectedElement = props.selectedElement;
-    let selectedElementPositionalData = props.selectedElementPositional;
 
     const [zoom, setZoom] = useState(5);
     const [dragging, setDragging] = useState(false);
@@ -31,9 +28,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         props.select(undefined);
     }
 
-    function select(e: Positional<Visual>) {
-        props.select(e.element, e);
-        e.element.svg?.hide();
+    function select(e: Visual) {
+        props.select(e);
+        e.svg?.hide();
     }
 
     function doubleClick(click: React.MouseEvent<HTMLDivElement>) {
@@ -50,7 +47,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             deselect()
             return
         } else {
-            var element: Positional<Visual> | undefined = ENGINE.handler.selectPositional(targetSVGId);
+            var element: Visual | undefined = ENGINE.handler.identifyElement(targetSVGId);
 
             if (element === undefined) {
                 console.warn(`Cannot find element with id: ${targetSVGId}`)
@@ -107,7 +104,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                         <CanvasDraggableElement handler={ENGINE.handler} 
                                                                 name={selectedElement.refName} 
                                                                 element={selectedElement}
-                                                                positionalConfig={selectedElementPositionalData}
                                                                 x={selectedElement.x} 
                                                                 y={selectedElement.y}>
 
