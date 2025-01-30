@@ -1,7 +1,7 @@
 import Positional, {Orientation, IPositional, labelable, positionalConfig, Alignment} from "../../positional";
 import * as SVG from '@svgdotjs/svg.js'
 import SVGPulse from "../image/svgPulse";
-import Label, { Position, ILabel } from "../../label";
+import Text, { Position, IText } from "../../label";
 import {FillObject, UpdateObj} from "../../util";
 import {simplePulses} from "../../default/data/simplePulse"
 import '@svgdotjs/svg.draggable.js';

@@ -3,14 +3,14 @@ import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultAnnotation from "./default/data/annotation.json";
 import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
-import Label, { Position as Position, ILabel } from "./label";
+import Text, { Position as Position, IText } from "./label";
 import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import PaddedBox from "./paddedBox";
 
 
 export interface IAnnotation {
     labelOn: boolean;
-    label: ILabel;
+    label: IText;
 
     arrowOn: boolean;
     arrow: IArrow;
@@ -22,7 +22,7 @@ export default class Annotation extends PaddedBox {
     static defaults: {[key: string]: IAnnotation} = {"default": {...<any>defaultAnnotation}}
 
     labelOn: boolean;
-    label?: Label;
+    label?: Text;
 
     arrowOn: boolean;
     arrow?: Arrow;
@@ -33,7 +33,7 @@ export default class Annotation extends PaddedBox {
 
         this.labelOn = fullParams.labelOn;
         if (params.labelOn) {
-            this.label = PartialConstruct(Label, fullParams.label, Label.defaults["label"])
+            this.label = PartialConstruct(Text, fullParams.label, Text.defaults["label"])
         }
         
         this.arrowOn = fullParams.arrowOn;

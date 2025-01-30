@@ -9,7 +9,10 @@ import { IMountable, IMountConfig, Mountable, Orientation } from './mountable'
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
 
-
+export enum Display {
+    None="none",
+    Block="block"
+}
 
 export interface IVisual extends IMountable {
     offset: [number, number],

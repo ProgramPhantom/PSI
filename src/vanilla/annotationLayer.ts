@@ -1,11 +1,11 @@
 import { arrowStyle } from "./arrow";
 import { Visual, IVisual } from "./visual";
-import Label, { Position, ILabel } from "./label";
+import Text, { Position, IText } from "./label";
 import { labelable } from "./positional";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";
 import Bracket, { Direction, bracketType } from "./bracket";
-import Section from "./section";
+import Section from "./section.old";
 import Annotation from "./annotation";
 import defaultAnnotationLayer from "./default/data/annotationLayer.json";
 import { FillObject, RecursivePartial } from "./util";
@@ -14,7 +14,7 @@ import PaddedBox from "./paddedBox";
 
 export interface bigISpan {
     padding: number[],
-    label?: ILabel | null
+    label?: IText | null
 }
 
 export interface IAnnotationLayer extends IVisual {

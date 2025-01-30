@@ -3,12 +3,10 @@ import Sequence from "./sequence";
 import Span, { ISpan } from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
-import Bracket, { Direction, IBracket } from "./bracket";
-import Label from "./label";
+import Text from "./label";
 import { IVisual, Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
-import Section, { ISection } from "./section";
 import { Script } from "vm";
 import Parser from "./parser";
 import { mountableElements } from "./default/data";
@@ -38,11 +36,11 @@ export default class SequenceHandler {
     }
     isPositional(elementName: string): boolean {return Object.keys(SequenceHandler.positionalTypes).includes(elementName)}
 
-    static annotationTypes: {[name: string]: typeof Section} = {
-        "section": Section
-    }
-    isAnnotation(name: string): boolean {return Object.keys(SequenceHandler.annotationTypes).includes(name)}
-
+   //static annotationTypes: {[name: string]: typeof Section} = {
+   //    "section": Section
+   //}
+   //isAnnotation(name: string): boolean {return Object.keys(SequenceHandler.annotationTypes).includes(name)}
+ 
     sequence: Sequence;
     // parser: Parser;
 

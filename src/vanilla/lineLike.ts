@@ -2,7 +2,7 @@ import { Visual, IVisual } from "./visual";
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import defaultLineLike from "./default/data/lineLike.json";
 import { Svg } from "@svgdotjs/svg.js";
-import Label from "./label";
+import Text from "./label";
 import PaddedBox from "./paddedBox";
 
 enum Orientation {

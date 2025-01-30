@@ -1,8 +1,8 @@
 import { Visual, IVisual } from "./visual";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import { Position, ILabel } from "./label";
+import { Position, IText } from "./label";
 import Channel, { IChannel } from "./channel"
-import Label from "./label";
+import Text from "./label";
 import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
 import Span from "./span";
@@ -11,7 +11,7 @@ import defaultSequence from "./default/data/sequence.json"
 import SequenceHandler from "./sequenceHandler";
 import Bracket, { Direction, IBracket } from "./bracket";
 import { NumberAlias } from "svg.js";
-import Section from "./section";
+import Section from "./section.old";
 import { FillObject, PartialConstruct, RecursivePartial } from "./util";
 import { ILine, Line } from "./line";
 import { Grid, IGrid } from "./grid";

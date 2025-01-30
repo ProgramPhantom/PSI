@@ -1,7 +1,7 @@
 
 import { labelable } from "./positional";
 import defaultSection from "./default/data/section.json"
-import Label, { ILabel, Position } from "./label";
+import Text, { IText, Position } from "./label";
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import Bracket, { IBracket } from "./bracket";
 
@@ -22,3 +22,4 @@ export default class Section extends Bracket implements labelable {
         this.indexRange = fullParams.indexRange;
     }
 }
+

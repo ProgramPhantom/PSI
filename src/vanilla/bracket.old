@@ -2,7 +2,7 @@ import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Visual, IVisual } from "./visual";
 import { labelable } from "./positional";
 import defaultBracket from "./default/data/bracket.json"
-import Label, { ILabel, Position } from "./label";
+import Text, { IText, Position } from "./label";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
 import { Dimensions } from "./spacial";
@@ -27,7 +27,7 @@ export interface IBracket extends ILineLike {
     style: bracketStyle,
 
     labelOn: boolean,
-    label: ILabel,
+    label: IText,
 }
 
 export interface bracketStyle {
@@ -50,7 +50,7 @@ export default class Bracket extends LineElement implements labelable {
     direction: Direction = Direction.down;  // "mouth" of bracket is facing down
 
     labelOn: boolean;
-    label?: Label;
+    label?: Text;
 
     constructor(params: RecursivePartial<IBracket>, templateName: string="horizontal") {
         var fullParams: IBracket = params ? UpdateObj(Bracket.defaults[templateName], params) : Bracket.defaults[templateName];
@@ -77,7 +77,7 @@ export default class Bracket extends LineElement implements labelable {
 
         this.labelOn = fullParams.labelOn;
         if (params.labelOn) {
-            this.label = PartialConstruct(Label, params.label, Label.defaults["label"]);
+            this.label = PartialConstruct(Text, params.label, Text.defaults["label"]);
         }
         
         this.computeTotalProtrusion();

@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
 import * as ReactDOM from 'react-dom';
 import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 'react-hook-form';
-import { ILabel } from '../vanilla/label';
+import { IText } from '../vanilla/label';
 
 import { Button, ControlGroup, Divider, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
 import MountableForm from './MonutableForm';

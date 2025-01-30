@@ -1,6 +1,6 @@
 import { Svg } from "@svgdotjs/svg.js";
 import Arrow, { IArrow, arrowStyle } from "./arrow";
-import { Position, ILabel } from "./label";
+import { Position, IText } from "./label";
 import Positional, { Alignment, Orientation, labelable, IPositional, positionalConfig } from "./positional";
 import defaultSpan from "./default/data/span.json"
 import { FillObject, RecursivePartial, UpdateObj } from "./util";

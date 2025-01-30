@@ -1,21 +1,21 @@
-import { Visual, IVisual as IVisual } from "./visual";
+import { Visual, IVisual as IVisual, Display } from "./visual";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
-import defaultLabel from "./default/data/label.json";
+import defaultLabel from "./default/data/text.json";
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 
 
-export interface ILabel extends IVisual {
+export interface IText extends IVisual {
     text: string,
-    position: Position,
-    style: labelStyle,
+    style: ITextStyle,
 }
 
-export interface labelStyle {
+export interface ITextStyle {
     size: number,
     colour: string,
     background?: string,
+    display: Display
 }
 
 export enum Position {top="top",
@@ -25,31 +25,25 @@ export enum Position {top="top",
                       centre="centre"}
 
 
-export default class Label extends Visual {
-    static defaults: {[key: string]: ILabel} = {"label": {...<ILabel>defaultLabel}}
-
-
+export default class Text extends Visual implements IText {
+    static defaults: {[key: string]: IText} = {"label": {...<IText>defaultLabel}}
 
     text: string;
-    style: labelStyle;
-
-    padding: [number, number, number, number];
-    position: Position;
+    style: ITextStyle;
     
-    constructor(params: RecursivePartial<ILabel>, templateName: string="label") {
-        var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
+    constructor(params: RecursivePartial<IText>, templateName: string="label") {
+        var fullParams: IText = FillObject(params, Text.defaults[templateName])
         super(fullParams, templateName);
         
         this.text = fullParams.text;
         this.style = fullParams.style;
-        this.padding = fullParams.padding;
-        this.position = fullParams.position;
 
-        var dim = this.resolveDimensions()
+        var dim = this.resolveDimensions();
         this.contentHeight = dim.height;
         this.contentWidth = dim.width;
     }
     
+    // TODO: investigate this
     // Sets this.width and this.height
     // Currently needs to add and remove the svg to find these dimensions, not ideal
     resolveDimensions(): {width: number, height: number} {

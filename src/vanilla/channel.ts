@@ -1,12 +1,12 @@
 import defaultChannel from "./default/data/channel.json"
 import { Visual, IVisual } from "./visual";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Label, { ILabel, Position } from "./label";
+import Text, { IText, Position } from "./label";
 import Span from "./span";
 import Abstract from "./abstract";
 import AnnotationLayer from "./annotationLayer";
 import Bracket, { IBracket } from "./bracket";
-import Section from "./section";
+import Section from "./section.old";
 import Annotation from "./annotation";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
@@ -40,7 +40,7 @@ export interface IChannel extends ICollection {
     style: IChannelStyle;
 
     labelOn: boolean;
-    label: ILabel;
+    label: IText;
     
     annotationStyle: channelAnnotation,
 }
@@ -117,7 +117,7 @@ export default class Channel extends Collection {
     }
 
     labelOn: boolean;
-    label?: Label;
+    label?: Text;
 
     public get positionalElements(): Visual[] { // All positional elements on this channel
         return this.positionalOccupancy.filter(p => p !== undefined);
@@ -150,7 +150,7 @@ export default class Channel extends Collection {
         
         this.labelOn = fullParams.labelOn;
         if (fullParams.label) {
-            this.label = new Label(fullParams.label);
+            this.label = new Text(fullParams.label);
 
             this.bar.bind(this.label, Dimensions.Y, "centre", "centre", undefined, `BAR Y> LABEL`);
 

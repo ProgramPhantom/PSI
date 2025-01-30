@@ -5,7 +5,8 @@
     "text": "\\textrm{H}",
     "padding": [0, 0, 0, 0],
     "offset": [0, 0],
-    "position": "top",
+
+    
     "style": {
         "size": 15,
         "colour": "black"
