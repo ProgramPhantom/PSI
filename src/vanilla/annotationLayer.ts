@@ -1,6 +1,6 @@
 import { arrowStyle } from "./arrow";
 import { Visual, IVisual } from "./visual";
-import Text, { Position, IText } from "./label";
+import Text, { Position, IText } from "./text";
 import { labelable } from "./positional";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
 import Span from "./span";

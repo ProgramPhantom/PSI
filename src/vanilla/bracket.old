@@ -2,7 +2,7 @@ import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Visual, IVisual } from "./visual";
 import { labelable } from "./positional";
 import defaultBracket from "./default/data/bracket.json"
-import Text, { IText, Position } from "./label";
+import Text, { IText, Position } from "./text";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import LineElement, { ILineLike } from "./lineElement";
 import { Dimensions } from "./spacial";

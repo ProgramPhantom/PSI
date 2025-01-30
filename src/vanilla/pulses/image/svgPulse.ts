@@ -1,6 +1,6 @@
 import { SVG, Svg } from "@svgdotjs/svg.js";
 import Positional, {Alignment, Orientation, IPositional, positionalConfig, IDefaultConstruct} from "../../positional";
-import {Position, IText } from "../../label";
+import {Position, IText } from "../../text";
 import { FillObject, PartialConstruct, UpdateObj } from "../../util";
 import {svgPulses} from "../../default/data/svgPulse"
 import { IDraw } from "../../element";

@@ -3,7 +3,7 @@ import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultAnnotation from "./default/data/annotation.json";
 import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
-import Text, { Position as Position, IText } from "./label";
+import Text, { Position as Position, IText } from "./text";
 import Arrow, { ArrowPosition, IArrow } from "./arrow";
 import PaddedBox from "./paddedBox";
 

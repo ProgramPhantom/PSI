@@ -1,12 +1,10 @@
 import defaultChannel from "./default/data/channel.json"
 import { Visual, IVisual } from "./visual";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Text, { IText, Position } from "./label";
+import Text, { IText, Position } from "./text";
 import Span from "./span";
 import Abstract from "./abstract";
 import AnnotationLayer from "./annotationLayer";
-import Bracket, { IBracket } from "./bracket";
-import Section from "./section.old";
 import Annotation from "./annotation";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";

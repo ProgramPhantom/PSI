@@ -1,8 +1,8 @@
 import { Visual, IVisual } from "./visual";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import { Position, IText } from "./label";
+import { Position, IText } from "./text";
 import Channel, { IChannel } from "./channel"
-import Text from "./label";
+import Text from "./text";
 import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
 import Span from "./span";

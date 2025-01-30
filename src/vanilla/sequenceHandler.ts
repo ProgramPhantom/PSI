@@ -3,7 +3,7 @@ import Sequence from "./sequence";
 import Span, { ISpan } from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
-import Text from "./label";
+import Text from "./text";
 import { IVisual, Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";

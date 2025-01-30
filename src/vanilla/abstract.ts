@@ -1,7 +1,7 @@
 import Positional, {Orientation, IPositional, labelable, Alignment} from "./positional";
 import defaultAbstract from "./default/data/abstract.json"
 import * as SVG from '@svgdotjs/svg.js'
-import Text, { Position, IText} from "./label";
+import Text, { Position, IText} from "./text";
 import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import { simplePulseStyle } from "./pulses/simple/simplePulse";
 import { Section } from "@blueprintjs/core";

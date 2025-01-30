@@ -4,7 +4,7 @@ import Span from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
 import Bracket, { Direction, IBracket } from "./bracket";
-import Text from "./label";
+import Text from "./text";
 import Positional, { IPositional } from "./positional";
 import { Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
