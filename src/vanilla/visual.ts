@@ -59,7 +59,6 @@ export abstract class Visual extends Mountable implements IVisual {
     abstract draw(surface: Svg): void 
     erase(): void {
         this.svg?.remove();
-        this.debugSvg?.remove();
     }
 
     verticalFlip() {

@@ -57,9 +57,6 @@ export default class Spacial extends Point implements ISpacial {
     }
     protected _contentWidth?: number;
     protected _contentHeight?: number;
-
-    debugSvg: Svg = SVG().id(`debugSvg${this.refName}`);
-
     
     sizeBindings: SizeBinding[] = [];
 
