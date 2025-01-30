@@ -37,8 +37,7 @@ export interface IChannel extends ICollection {
 
     style: IChannelStyle;
 
-    labelOn: boolean;
-    label: IText;
+    channelSymbol: IText;
     
     annotationStyle: channelAnnotation,
 }
@@ -114,7 +113,6 @@ export default class Channel extends Collection {
         this._positionalOccupancy = val;
     }
 
-    labelOn: boolean;
     label?: Text;
 
     public get positionalElements(): Visual[] { // All positional elements on this channel
@@ -146,9 +144,8 @@ export default class Channel extends Collection {
         this.add(this.bar);
         // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
-        this.labelOn = fullParams.labelOn;
-        if (fullParams.label) {
-            this.label = new Text(fullParams.label);
+        if (fullParams.channelSymbol !== undefined) {
+            this.label = new Text(fullParams.channelSymbol);
 
             this.bar.bind(this.label, Dimensions.Y, "centre", "centre", undefined, `BAR Y> LABEL`);
 

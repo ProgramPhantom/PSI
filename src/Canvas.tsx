@@ -86,11 +86,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                     <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
                         <div style={{width: "100%", height: "100%", display: "inline-block", position: "relative"}}>
                             
-                                <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} >
+                                <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv">
                                     
                                 </div>
                                 <DropField sequence={ENGINE.handler}></DropField>
-                                
+                                {/* <Debug sequenceHandler={ENGINE.handler}></Debug> */}
                                 {
                                     selectedElement !== undefined ?
                                     <div style={{position: "absolute", 

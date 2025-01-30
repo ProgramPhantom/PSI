@@ -13,15 +13,14 @@
         }
     },
 
-    "labelOn": true,
-    "label": {
-        "text": "^{1}\\textrm{H}",
-        "padding": [0, 4, 0, 0],
-        "offset": [0, 0],
-        "position": "top",
+    "labelMap": {},
+
+    "channelSymbol": {
+        "text": "_{1}\\mathrm{H}",
         "style": {
-            "size": 20,
-            "colour": "black"
+            "fontSize": 50,
+            "colour": "black",
+            "display": "block"
         }
     },
 

@@ -46,7 +46,7 @@ const Debug: React.FC<IDebug> = (props) => {
                 return (
                     <>
                     <PaddedBoxDebug element={c} contentColour="green" padColour="yellow"></PaddedBoxDebug> 
-
+                    <PaddedBoxDebug element={c.label!} contentColour="red" padColour="yellow"></PaddedBoxDebug> 
                     </>
                 )
             })

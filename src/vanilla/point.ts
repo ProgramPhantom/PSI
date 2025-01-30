@@ -96,20 +96,13 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
     }
     protected set x(val: number | undefined) {
         if (val !== this._x) {
-            this._x = val;
+            this._x = val !== undefined ? Math.trunc(val) : undefined;
             this.enforceBinding();
         }
     }
     protected set y(val: number | undefined) {
         if (val !== this._y) {
-            
-            if (this.refName === "label column") {
-                
-            }
-            
-            
-
-            this._y = val;
+            this._y = val !== undefined ? Math.trunc(val) : undefined;
             this.enforceBinding();
         }
     }

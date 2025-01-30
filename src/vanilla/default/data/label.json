@@ -16,7 +16,7 @@
     
         
         "style": {
-            "size": 15,
+            "fontSize": 15,
             "colour": "black"
         }
     }

@@ -15,26 +15,5 @@
     "contentWidth": 15,
     "contentHeight": 20,
     
-
-    "labelOn": false,
-    "label": {
-        "text": "",
-        "padding": [5, 0, 3, 0],
-        "position": "bottom",
-        "style": {
-            "size": 15,
-            "colour": "black"
-        }
-    },
-    "arrowOn": false,
-    "arrow": {
-        "padding": [0, 0, 0, 0],
-        "position": "inline",
-        "style": {
-            "thickness": 2, 
-            "headStyle": "default", 
-            "stroke": "black"
-        }
-    }
-
+    "labelMap": {}
 }

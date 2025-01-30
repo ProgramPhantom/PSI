@@ -21,26 +21,5 @@
         "strokeWidth": 1
     },
 
-    "labelOn": false,
-    "label": {
-        "text": "\\mathrm{90}",
-        "padding": [0, 0, 3, 0],
-        "position": "top",
-        "style": {
-            "size": 10,
-            "colour": "black"
-        }
-    },
-
-    "arrowOn": false,
-    "arrow": {
-        "padding": [0, 0, 10, 0],
-        "position": "top",
-        "style": {
-            "thickness": 2, 
-            "headStyle": "default", 
-            "stroke": "black"
-        }
-    }
-
+    "labelMap": {}
 }

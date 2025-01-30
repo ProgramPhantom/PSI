@@ -18,25 +18,5 @@
         "strokeWidth": 0
     },
 
-    "labelOn": false,
-    "label": {
-        "text": "\\lambda",
-        "padding": [0, 0, 5, 0],
-        "position": "top",
-        "style": {
-            "size": 10,
-            "colour": "black"
-        }
-    },
-
-    "arrowOn": false,
-    "arrow": {
-        "padding": [0, 0, 10, 0],
-        "position": "inline",
-        "style": {
-            "thickness": 2, 
-            "headStyle": "default", 
-            "stroke": "black"
-        }
-    }
+    "labelMap": {}
 }

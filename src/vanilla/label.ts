@@ -14,8 +14,6 @@ export default class Label extends Collection implements ILabel {
         "default": {
             contentWidth: 0,
             contentHeight: 0,
-            x: undefined,
-            y: undefined,
             offset: [0, 0],
             padding: [0, 0, 0, 0],
 

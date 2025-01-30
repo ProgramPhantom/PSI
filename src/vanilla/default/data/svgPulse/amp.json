@@ -14,25 +14,14 @@
     "contentWidth": 15,
     "contentHeight": 40,
 
-    "labelOn": true,
-    "label": {
-        "text": "\\tau",
-        "padding": [3, 0, 7, 0],
-        "position": "top",
-        "style": {
-            "size": 10,
-            "colour": "black"
-        }
-    },
-
-    "arrowOn": false,
-    "arrow": {
-        "padding": [0, 0, 0, 0],
-        "position": "inline",
-        "style": {
-            "thickness": 2, 
-            "headStyle": "default", 
-            "stroke": "black"
+    "labelMap": {
+        "top": {
+            "text": "hello",
+            "style": {
+                "fontSize": 45,
+                "colour": "black",
+                "display": "block"
+            }
         }
     }
 }

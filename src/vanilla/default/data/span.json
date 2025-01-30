@@ -11,16 +11,7 @@
     "offset": [0, 0],
     "contentWidth": 20,
 
-    "labelOn": true,
-    "label": {
-        "text": "\\lambda",
-        "padding": [0, 0, 0, 0],
-        "position": "top",
-        "style": {
-            "size": 7,
-            "colour": "black"
-        }
-    },
+    "labelMap": {},
 
     "arrowOn": true,
     "arrow": {

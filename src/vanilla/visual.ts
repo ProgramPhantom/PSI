@@ -92,7 +92,7 @@ export abstract class Visual extends Mountable implements IVisual {
     override set x(val: number) {
         if (val !== this._x) {
             this.dirty = true;
-            this._x = val;
+            this._x = Math.trunc(val);
             this.enforceBinding();
             this.notifyChange();
         }
@@ -106,7 +106,7 @@ export abstract class Visual extends Mountable implements IVisual {
     override set y(val: number) {
         if (val !== this._y) {
             this.dirty = true;
-            this._y = val;
+            this._y = Math.trunc(val);
             this.enforceBinding();
             this.notifyChange();
         }

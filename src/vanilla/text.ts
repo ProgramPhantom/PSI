@@ -1,10 +1,11 @@
 import { Visual, IVisual as IVisual, Display } from "./visual";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
-import defaultText from "./default/data/text.json";
+import defaultLabel from "./default/data/text.json";
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 
+export const EXTOPX = 38.314;
 
 export interface IText extends IVisual {
     text: string,
@@ -12,7 +13,7 @@ export interface IText extends IVisual {
 }
 
 export interface ITextStyle {
-    size: number,
+    fontSize: number,
     colour: string,
     background?: string,
     display: Display
@@ -26,7 +27,10 @@ export enum Position {top="top",
 
 
 export default class Text extends Visual implements IText {
-    static defaults: {[key: string]: IText} = {"default": {...<IText>defaultText}}
+    static defaults: {[key: string]: IText} = {"default": {...<IText>defaultLabel}}
+
+    intrinsicSize: {width: number, height: number}
+    wHRatio: number
 
     text: string;
     style: ITextStyle;
@@ -38,41 +42,37 @@ export default class Text extends Visual implements IText {
         this.text = fullParams.text;
         this.style = fullParams.style;
 
-        var dim = this.resolveDimensions();
-        this.contentHeight = dim.height;
-        this.contentWidth = dim.width;
+        this.intrinsicSize = this.resolveDimensions();
+        this.wHRatio = this.intrinsicSize.width / this.intrinsicSize.height;
+
+        this.contentHeight = this.intrinsicSize.height/5 * this.style.fontSize/EXTOPX;
+        this.contentWidth = this.intrinsicSize.width/5 * this.style.fontSize/EXTOPX;
     }
     
     // TODO: investigate this
     // Sets this.width and this.height
     // Currently needs to add and remove the svg to find these dimensions, not ideal
     resolveDimensions(): {width: number, height: number} {
-        var SVGEquation = TeXToSVG(`${this.text}`); 
+        var SVGEquation: string = TeXToSVG(`${this.text}`); 
         
-        var temp = SVG().addTo('#drawDiv').size(300, 300)  // TERRIBLE CODE HERE.
-
-        var SVGobj = SVG(SVGEquation);
+        var SVGobj: SVGElement = SVG(SVGEquation);
         
         SVGobj.id("svgTempID");
         SVGobj.attr({preserveAspectRatio: "xMinYMin"})
-        SVGobj.width(this.style.size);
-        SVGobj.attr("height", null);
 
-        temp.add(SVGobj);
-
-        var content = document.getElementById("svgTempID");
-        SVGobj.attr("id", null);
         
-        var width = content!.getBoundingClientRect().width;
-        var height = content!.getBoundingClientRect().height;
+        var exWidthString: string = <string>SVGobj.width();
+        var exHeightString: string = <string>SVGobj.height();
+        
+        exWidthString = Array.from(exWidthString).splice(0, exWidthString.length-2).join("");
+        exHeightString = Array.from(exHeightString).splice(0, exHeightString.length-2).join("");
 
-        var width = width;
-        var height = height;
+        var exWidth: number = Number(exWidthString);
+        var exHeight: number = Number(exHeightString);
 
         SVGobj.remove();
-        temp.remove();
 
-        return {width: width, height: height}
+        return {width: exWidth * EXTOPX, height: exHeight * EXTOPX}
     }
 
     draw(surface: Svg) {
@@ -86,10 +86,10 @@ export default class Text extends Visual implements IText {
         
             var SVGobj = SVG(SVGEquation);
             SVGobj.move(this.x, this.y);
-            SVGobj.attr({preserveAspectRatio: "xMinYMin"})
-            SVGobj.width(this.style.size);  // TODO: fix  this.
+            SVGobj.attr({height: null, preserveAspectRatio: "xMinYMin"})
+            SVGobj.width(this.contentWidth!); 
             
-            SVGobj.attr({"height": null, "style": `color:${this.style.colour}`});
+            SVGobj.attr({"style": `color:${this.style.colour}`});
             var group = SVGobj.children()[1];
     
             if (this.style.background) {

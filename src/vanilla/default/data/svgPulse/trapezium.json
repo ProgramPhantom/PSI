@@ -14,26 +14,5 @@
     "contentWidth": 60,
     "contentHeight": 10,
     
-
-    "labelOn": true,
-    "label": {
-        "text": "\\mathrm{G}_1",
-        "padding": [3, 0, 3, 0],
-        "position": "bottom",
-        "style": {
-            "size": 15,
-            "colour": "black"
-        }
-    },
-
-    "arrowOn": false,
-    "arrow": {
-        "padding": [0, 0, 0, 0],
-        "position": "inline",
-        "style": {
-            "thickness": 2, 
-            "headStyle": "default", 
-            "stroke": "black"
-        }
-    }
+    "labelMap": {}
 }

@@ -118,16 +118,16 @@ function LabelForm(props: {control: Control<any>, change: () => void}) {
           collapsible={true}>
           <FormGroup
               inline={true}
-              label="Size"
+              label="Font Size"
               labelFor="text-input">
-              <Controller control={props.control} name="label.style.size" render={({field}) => (
+              <Controller control={props.control} name="label.style.fontSize" render={({field}) => (
                 <Slider {...field} max={60} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
           </FormGroup>
 
           <FormGroup
               inline={true}
-              label="Size"
+              label="Colour"
               labelFor="text-input">
               <Controller control={props.control} name="label.style.colour" render={({field}) => (
                 <input type={"color"} {...field}></input>)}>

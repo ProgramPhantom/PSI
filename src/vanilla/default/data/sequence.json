@@ -31,16 +31,7 @@
             "stroke": "black"
         },
 
-        "labelOn": true,
-        "label": {
-            "text": "\\tau",
-            "padding": [2, 2, 3, 2],
-            "position": "bottom",
-            "style": {
-                "size": 10,
-                "colour": "black"
-            }
-        }
+        "labelMap": {}
     }
     
 }

@@ -5,6 +5,7 @@ import { Element, Svg } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
 import { Orientation } from "./mountable";
+import Labellable, { ILabellable } from "./labellable";
 
 const svgContent: {[path: string]: string} = {}
 const svgPaths = ["\\src\\assets\\acquire2.svg",
@@ -34,25 +35,25 @@ interface ISVGStyle {
 }
 
 
-export interface ISVG extends IVisual {
+export interface ISVG extends ILabellable {
     path: string,
     style: ISVGStyle
 }
 
 
-export default class SVGElement extends Visual implements ISVG, IDraw {
+export default class SVGElement extends Labellable implements ISVG, IDraw {
     static defaults: {[key: string]: ISVG} = {...<any>svgPulses, "default": svgPulses[180]};
 
-	getState: () => ISVG = () => { return {
-        x: this.x,
-        y: this.y,
-        contentWidth: this.contentWidth,
-        contentHeight: this.contentHeight,
-        padding: this.padding,
-        offset: this.offset,
-		path: this.path,
-		style: this.style,
-    }}
+	// getState: () => ISVG = () => { return {
+    //     x: this.x,
+    //     y: this.y,
+    //     contentWidth: this.contentWidth,
+    //     contentHeight: this.contentHeight,
+    //     padding: this.padding,
+    //     offset: this.offset,
+	// 	path: this.path,
+	// 	style: this.style,
+    // }}
 
 	elementGroup: G = new G();
 	style: ISVGStyle;
