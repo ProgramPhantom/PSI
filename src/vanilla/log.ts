@@ -131,6 +131,9 @@ class Logger {
     }
 
     operation(operation: Operations, message: string, caller?: Point) {
+        if (operation === Operations.BIND && caller?.refName === "label collection") {
+            console.log()
+        }
         var formattedMessage: string[] = [`%c${this.getTime()} `, 
                                           `%c[${Levels.OPERATION}]`, 
                                           `%c: `, 

@@ -194,7 +194,7 @@ export default class SequenceHandler {
         switch (positionalType.name) {
             case (SVGElement.name):
                 element = new SVGElement(pParameters, elementRef)
-                l = new Labellable<SVGElement>({labelMap: {right: testLabel}, offset: [0, 0], padding: [0, 0, 0, 0], mountConfig: element.mountConfig}, 
+                l = new Labellable<SVGElement>({labelMap: {left: testLabel}, offset: [0, 0], padding: [0, 0, 0, 0], mountConfig: element.mountConfig}, 
                     element, "default", "pulse collection");
                 break;
             case (RectElement.name):

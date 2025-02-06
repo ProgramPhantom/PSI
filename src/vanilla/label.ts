@@ -29,9 +29,9 @@ export default class Label extends Collection implements ILabel {
         super(fullParams, templateName, "label collection")
 
         this.text = new Text(fullParams.text, undefined, "text in label");
-        this.add(this.text, undefined, false);
+        this.add(this.text);
 
-        this.bind(this.text, Dimensions.X, "centre", "centre", undefined, `Collection ${this.refName} X> Child ${this.text.refName}`, true);
-        this.bind(this.text, Dimensions.Y, "centre", "centre", undefined, `Collection ${this.refName} Y> Child ${this.text.refName}`, true);
+        this.bind(this.text, Dimensions.X, "centre", "centre", undefined, `Collection ${this.refName} [centre] X> Child ${this.text.refName} [centre]`, true);
+        this.bind(this.text, Dimensions.Y, "centre", "centre", undefined, `Collection ${this.refName} [centre] Y> Child ${this.text.refName} [centre]`, true);
     }
 }

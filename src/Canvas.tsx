@@ -90,7 +90,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                     
                                 </div>
                                 <DropField sequence={ENGINE.handler}></DropField>
-                                {/* <Debug sequenceHandler={ENGINE.handler}></Debug> */}
+                                <Debug sequenceHandler={ENGINE.handler}></Debug>
                                 {
                                     selectedElement !== undefined ?
                                     <div style={{position: "absolute", 

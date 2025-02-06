@@ -60,9 +60,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             this.enforceBinding();
         }
 
-
-        // this.computeBoundary();
-
         // A final compute 
     }
 
