@@ -66,9 +66,15 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         // A final compute 
     }
 
-    remove(child: T) {
-        
+    erase(): void {
+        this.children.forEach((c) => {
+            if (doesDraw(c)) {
+                c.erase();
+            }
+        })
+    }
 
+    remove(child: T) {
         this.children.forEach((c, i) => {
             if (c === child) {
                 this.children.splice(i, 1);

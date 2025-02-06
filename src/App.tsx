@@ -16,6 +16,7 @@ import { simplePulses } from './vanilla/default/data/simplePulse';
 import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
 import Channel from './vanilla/channel';
+import Labellable from './vanilla/labellable';
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
@@ -57,22 +58,23 @@ function App() {
 
     setSelectedElement(element);
 
-    if (element instanceof SVGElement) {
+    if (element instanceof Labellable) {
       if (element.isMountable === false) {
         return
         throw new Error("Not implemented")
       }
 
         let scaffold: ISVG = {...(svgPulses["180"] as any), ...defaultMountable}
-        let data: ISVG = Object.assign(element)
+        let data: ISVG = Object.assign(element.parentElement)
         // Use object.assign as spread operator does not include properties such as contentHeight
         // as they are found in the prototype.
 
         // React Hook Forms breaks if the class object is used as the default vals.
         // Therefore, this keeps only the properties concerned for ISVG
-        var elementSVGData = UpdateObj(scaffold, data);
+        var elementSVGData: ISVG = UpdateObj(scaffold, data);
         // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
         // to work. Every piece of data will be overridden.
+        
         
         var newForm: ReactNode = <SVGForm 
                                   handler={ENGINE.handler} 

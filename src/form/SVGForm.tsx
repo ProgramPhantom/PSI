@@ -25,7 +25,15 @@ interface ISVGForm {
 
 const SVGForm: React.FC<ISVGForm> = (props) => {
     const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<ISVG>({
-        defaultValues: {...props.values},
+        defaultValues: {
+            path: props.values.path,
+            style: props.values.style,
+            offset: props.values.offset,
+            padding: props.values.padding,
+            mountConfig: props.values.mountConfig,
+            contentHeight: props.values.contentHeight,
+            contentWidth: props.values.contentWidth
+        },
         mode: "onChange"
     });
   

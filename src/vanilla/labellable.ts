@@ -21,7 +21,7 @@ export interface ILabellable extends ICollection {
 }
 
 
-export default class Labellable<T extends Visual> extends Collection implements ILabellable {
+export default class Labellable<T extends Visual=Visual> extends Collection implements ILabellable {
     parentElement: T;
 
     labelMap: Labels = {};
@@ -49,6 +49,9 @@ export default class Labellable<T extends Visual> extends Collection implements 
         })
     }
 
+    get id(): string {
+        return this.parentElement.id;
+    }
 
 
     bindLabel(label: Label, pos: Locations) {

@@ -37,7 +37,14 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
     protected _x?: number;
     protected _y?: number;
 
-    id: string;
+    private _id: string;
+    public get id(): string {
+        return this._id;
+    }
+    public set id(value: string) {
+        this._id = value;
+    }
+
     refName: string;
 
     bindings: Binding[] = [];  // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
@@ -50,7 +57,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
 
         this.refName = refName;
 
-        this.id = Math.random().toString(16).slice(2);
+        this._id = Math.random().toString(16).slice(2);
     }
 
     get x(): number {

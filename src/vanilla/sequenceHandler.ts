@@ -138,7 +138,7 @@ export default class SequenceHandler {
 
         // Search for element:
         this.channels.forEach((c) => {
-            c.positionalElements.forEach((p) => {
+            c.mountedElements.forEach((p) => {
                 if (p.id === id) {
                     element = p;
                 }

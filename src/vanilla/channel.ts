@@ -14,6 +14,7 @@ import Spacial, { Dimensions } from "./spacial";
 import RectElement, { IRectStyle } from "./rectElement";
 import Aligner from "./aligner";
 import { Alignment, IMountable, IMountConfig, Orientation } from "./mountable";
+import Labellable from "./labellable";
  
 interface Dim {
     width: number,
@@ -90,33 +91,33 @@ export default class Channel extends Collection {
     }
     
     // A collection of columns to align this channel's positionals to
-    private _positionalColumns?: Aligner<Aligner<Visual>>;
-    public get positionalColumns(): Aligner<Aligner<Visual>> {
-        if (this._positionalColumns !== undefined) {
-            return this._positionalColumns;
+    private _mountColumns?: Aligner<Aligner<Visual>>;
+    public get mountColumns(): Aligner<Aligner<Visual>> {
+        if (this._mountColumns !== undefined) {
+            return this._mountColumns;
         }
         throw new Error(`Positional Columns have not been set for channel: ${this.identifier}`)
     }
-    public set positionalColumns(value: Aligner<Aligner<Visual>>) {
-        this._positionalColumns = value;
-        this._positionalColumns.bindSize(this.bar, Dimensions.X);
+    public set mountColumns(value: Aligner<Aligner<Visual>>) {
+        this._mountColumns = value;
+        this._mountColumns.bindSize(this.bar, Dimensions.X);
     }
 
-    private _positionalOccupancy?: (Visual | undefined)[];
-    public get positionalOccupancy(): (Visual | undefined)[] {
-        if (this._positionalOccupancy === undefined) {
+    private _mountOccupancy?: (Visual | undefined)[];
+    public get mountOccupancy(): (Visual | undefined)[] {
+        if (this._mountOccupancy === undefined) {
             throw Error("Positional occupancy not set");
         }
-        return this._positionalOccupancy;
+        return this._mountOccupancy;
     }
-    public set positionalOccupancy(val: (Visual | undefined)[]) {
-        this._positionalOccupancy = val;
+    public set mountOccupancy(val: (Visual | undefined)[]) {
+        this._mountOccupancy = val;
     }
 
     label?: Text;
 
-    public get positionalElements(): Visual[] { // All positional elements on this channel
-        return this.positionalOccupancy.filter(p => p !== undefined);
+    public get mountedElements(): Visual[] { // All positional elements on this channel
+        return this.mountOccupancy.filter(p => p !== undefined);
     };  
 
 
@@ -197,7 +198,7 @@ export default class Channel extends Collection {
 
     // 
     shiftIndices(from: number, n: number=1): void {
-        this.positionalOccupancy.forEach((pos, i) => {
+        this.mountOccupancy.forEach((pos, i) => {
             if (i >= from && pos !== undefined && pos.mountConfig!.index !== undefined) {
                 pos.mountConfig!.index = pos.mountConfig!.index + n;
             }

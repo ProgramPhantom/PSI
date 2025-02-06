@@ -103,19 +103,20 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         }
 
         // Resize cross axis
-        if (alignChild !== Alignment.none) {  // Optimisation AND is required
-            var crossAxisSizeChild = child.getSizeByDimension(this.crossAxis);
-            var crossAxisSize = this.getSizeByDimension(this.crossAxis);
-
-            if (crossAxisSizeChild > crossAxisSize) {
-                this.setSizeByDimension(child.getSizeByDimension(this.crossAxis), this.crossAxis);
-            } else {
-                // If this addition is a modification of the positional with max crossAxis size, crossAxis size will need decreasing:
-                // Aligner Special:
-                // Size of cross axis should be max cross axis of all elements:
-                this.squeezeCrossAxis();
-            }
-        }
+        //if (alignChild !== Alignment.none) {  // Optimisation AND is required
+        //    var crossAxisSizeChild = child.getSizeByDimension(this.crossAxis);
+        //    var crossAxisSize = this.getSizeByDimension(this.crossAxis);
+//
+        //    if (crossAxisSizeChild > crossAxisSize) {
+        //        this.setSizeByDimension(child.getSizeByDimension(this.crossAxis), this.crossAxis);
+        //    } else {
+        //        // If this addition is a modification of the positional with max crossAxis size, crossAxis size will need decreasing:
+        //        // Aligner Special:
+        //        // Size of cross axis should be max cross axis of all elements:
+        //        
+        //    }
+        //}
+        //this.squeezeCrossAxis();
 
         this.enforceBinding();
         

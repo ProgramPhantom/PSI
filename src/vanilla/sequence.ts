@@ -158,13 +158,13 @@ export default class Sequence extends Collection {
         this.channelsDic[name] = channel; 
 
         var index = this.channels.length - 1;
-        channel.positionalColumns = this.pulseColumns;  // And apply the column ref
+        channel.mountColumns = this.pulseColumns;  // And apply the column ref
         channel.labelColumn = this.labelColumn;
         
 
         this.elementMatrix.splice(this.elementMatrix.length, 0, []);
 
-        channel.positionalOccupancy = this.elementMatrix[index];
+        channel.mountOccupancy = this.elementMatrix[index];
     }
 
     public addElement(element: Visual) {
@@ -202,7 +202,7 @@ export default class Sequence extends Collection {
             
         } else if (insert === false) {
             // Check element is already there
-            if (targetChannel.positionalOccupancy[INDEX] !== undefined) {
+            if (targetChannel.mountOccupancy[INDEX] !== undefined) {
                 throw new Error(`Cannot place element ${element.refName} at index ${element.mountConfig.index} as it is already occupied.`)
             }
         }
