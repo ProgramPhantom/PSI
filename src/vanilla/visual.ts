@@ -19,7 +19,7 @@ export interface IVisual extends IMountable {
 }
 
 export interface IDraw {
-    draw: (surface: Svg) => void
+    draw: (surface: Element) => void
     erase: () => void
 }
 

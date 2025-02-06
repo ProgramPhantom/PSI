@@ -6,6 +6,9 @@ import Spacial, { Bounds, Dimensions } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS } from "react";
 import logger, { Operations, Processes } from "./log";
+import { SVG } from "@svgdotjs/svg.js";
+import { Element } from "@svgdotjs/svg.js";
+import { G } from "@svgdotjs/svg.js";
 
 
 export interface ICollection extends IVisual {
@@ -35,15 +38,17 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         super(fullParams, refName);
     }
 
-    draw(surface: Svg) {
-        var group = surface.group().id(this.refName);
+    draw(surface: Element) {
+        var group = new G().id(this.id);
 
         this.children.forEach((c) => {
             if (doesDraw(c)) {
-                c.draw(surface);
+                c.draw(group);
             }
         })
 
+        // group.move(this.x, this.y).size(this.width, this.height)
+        surface.add(group)
     }
 
     add(child: T, index?: number, bindHere: boolean = false) {

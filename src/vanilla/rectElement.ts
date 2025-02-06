@@ -5,6 +5,8 @@ import PaddedBox, { IHaveDefault, IPaddedBox } from "./paddedBox";
 import { simplePulses } from "./default/data/simplePulse";
 import defaultBar from "./default/data/bar.json";
 import { SVG } from "@svgdotjs/svg.js";
+import { Rect } from "@svgdotjs/svg.js";
+import { Element } from "@svgdotjs/svg.js";
 
 export interface IRectStyle {
 	fill: string,
@@ -47,24 +49,25 @@ export default class RectElement extends Visual implements IRect, IDraw {
         })
 	}
 
-    draw(surface: Svg) {
+    draw(surface: Element) {
         if (this.dirty) {
             if (this.svg) {
                 try {
-                    surface.removeElement(this.svg);
+                    this.svg.remove();
                 } catch {
                     
                 }
                 
             }
 
-            this.svg = surface.rect(this.contentWidth, this.contentHeight)
+            this.svg = new Rect().size(this.contentWidth, this.contentHeight)
             .attr({fill: this.style.fill,
                     stroke: this.style.stroke})
             .move(this.contentX + this.offset[0], this.contentY + this.offset[1])
             .attr({"stroke-width": this.style.strokeWidth,
                    "shape-rendering": "crispEdges"
             });
+            surface.add(this.svg);
 
             this.id = this.svg.id();
         }

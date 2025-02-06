@@ -85,7 +85,7 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 		this.elementGroup.id(this.id);
 	}
 
-    draw(surface: Svg) {
+    draw(surface: Element) {
 		if (this.dirty) {
 			if (this.svg) {
 				this.svg.remove();

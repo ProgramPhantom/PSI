@@ -80,7 +80,7 @@ export default class Text extends Visual implements IText {
         
         if (this.dirty) {
             if (this.svg) {
-                surface.removeElement(this.svg);
+                this.svg.remove();
             }
 
             const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 

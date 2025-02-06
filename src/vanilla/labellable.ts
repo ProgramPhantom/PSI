@@ -71,10 +71,11 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 break;
             case Locations.Right:
                 // Override
-                this.bind(this.parentElement, Dimensions.Y, "centre", "centre", undefined, `T Collection ${this.refName} [centre] Y> Child ${this.parentElement.refName} [centre]`)
-                this.bind(label, Dimensions.Y, "centre", "centre", undefined, `Parent ${this.parentElement.refName} [centre] Y> Label ${label.refName} [centre]`)
+                this.bind(this.parentElement, Dimensions.Y, "far", "far", undefined, `Collection ${this.refName} [far] Y> Child ${this.parentElement.refName} [far]`)
+                
+                this.bind(label, Dimensions.Y, "far", "far", undefined, `Parent ${this.parentElement.refName} [centre] Y> Label ${label.refName} [centre]`)
 
-                this.parentElement.bind(label, Dimensions.X, "far", "here", undefined, `Parent ${this.parentElement.refName} [far] X> Child ${label.refName} [here]`)
+                this.parentElement.bind(label, Dimensions.X, "far", "here", undefined, `Parent ${this.parentElement.refName} [far] X> Child ${label.refName} [here]`, false)
 
                 this.add(label)
                 this._contentWidth = this._contentWidth! + label.width;
@@ -95,6 +96,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 this.bind(label, Dimensions.Y, "centre", "centre", undefined, `${this.refName} Y> ${label.refName}`)
 
                 label.bind(this.parentElement, Dimensions.X, "far", "here", undefined, `${label.refName} Y> ${this.parentElement.refName}`, false)
+                this.bind(this.parentElement, Dimensions.Y, "far", "far", undefined, `${this.refName} [far] Y> ${this.parentElement.refName} [far]`)
 
                 this.add(label);
                 this._contentWidth = this._contentWidth! + label.width;
