@@ -14,11 +14,12 @@ import { ClassProperties, UpdateObj } from '../vanilla/util';
 import Channel from '../vanilla/channel';
 import { Visual } from '../vanilla/visual';
 import VisualForm from './VisualForm';
+import Labellable from '../vanilla/labellable';
 
 interface ISVGForm {
     handler: SequenceHandler, 
     values: ISVG,
-    target?:  SVGElement,
+    target?:  Labellable<SVGElement>,
     reselect: (element: Visual | undefined) => void
 }
 

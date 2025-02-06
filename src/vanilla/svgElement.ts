@@ -35,25 +35,24 @@ interface ISVGStyle {
 }
 
 
-export interface ISVG extends ILabellable {
+export interface ISVG extends IVisual {
     path: string,
     style: ISVGStyle
 }
 
 
-export default class SVGElement extends Labellable implements ISVG, IDraw {
+export default class SVGElement extends Visual implements ISVG, IDraw {
     static defaults: {[key: string]: ISVG} = {...<any>svgPulses, "default": svgPulses[180]};
-
-	// getState: () => ISVG = () => { return {
-    //     x: this.x,
-    //     y: this.y,
-    //     contentWidth: this.contentWidth,
-    //     contentHeight: this.contentHeight,
-    //     padding: this.padding,
-    //     offset: this.offset,
-	// 	path: this.path,
-	// 	style: this.style,
-    // }}
+	getState: () => ISVG = () => { return {
+        x: this.x,
+        y: this.y,
+        contentWidth: this.contentWidth,
+        contentHeight: this.contentHeight,
+        padding: this.padding,
+        offset: this.offset,
+		path: this.path,
+		style: this.style,
+    }}
 
 	elementGroup: G = new G();
 	style: ISVGStyle;
@@ -66,7 +65,7 @@ export default class SVGElement extends Labellable implements ISVG, IDraw {
 
 		this.style = fullParams.style;
         this.path = fullParams.path;
-
+		
 		try {
 			var rawSVG: Element = SVG(svgContent[this.path])
 		} catch {

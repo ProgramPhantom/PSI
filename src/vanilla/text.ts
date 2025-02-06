@@ -1,11 +1,12 @@
 import { Visual, IVisual as IVisual, Display } from "./visual";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
-import defaultLabel from "./default/data/text.json";
-import { FillObject, RecursivePartial, UpdateObj } from "./util";
+import defaultText from "./default/data/text.json";
+import { FillObject, posPrecision, RecursivePartial, sizePrecision, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 
 export const EXTOPX = 38.314;
+export const SCALER = 5;
 
 export interface IText extends IVisual {
     text: string,
@@ -27,7 +28,7 @@ export enum Position {top="top",
 
 
 export default class Text extends Visual implements IText {
-    static defaults: {[key: string]: IText} = {"default": {...<IText>defaultLabel}}
+    static defaults: {[key: string]: IText} = {"default": {...<IText>defaultText}}
 
     intrinsicSize: {width: number, height: number}
     wHRatio: number
@@ -35,9 +36,9 @@ export default class Text extends Visual implements IText {
     text: string;
     style: ITextStyle;
     
-    constructor(params: RecursivePartial<IText>, templateName: string="default") {
+    constructor(params: RecursivePartial<IText>, templateName: string="default", refName: string="text") {
         var fullParams: IText = FillObject(params, Text.defaults[templateName])
-        super(fullParams, templateName);
+        super(fullParams, refName);
         
         this.text = fullParams.text;
         this.style = fullParams.style;
@@ -45,8 +46,8 @@ export default class Text extends Visual implements IText {
         this.intrinsicSize = this.resolveDimensions();
         this.wHRatio = this.intrinsicSize.width / this.intrinsicSize.height;
 
-        this.contentHeight = this.intrinsicSize.height/5 * this.style.fontSize/EXTOPX;
-        this.contentWidth = this.intrinsicSize.width/5 * this.style.fontSize/EXTOPX;
+        this.contentHeight = sizePrecision(this.intrinsicSize.height/SCALER * this.style.fontSize/EXTOPX);
+        this.contentWidth = sizePrecision(this.intrinsicSize.width/SCALER * this.style.fontSize/EXTOPX);
     }
     
     // TODO: investigate this
@@ -85,7 +86,7 @@ export default class Text extends Visual implements IText {
             const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
         
             var SVGobj = SVG(SVGEquation);
-            SVGobj.move(this.x, this.y);
+            SVGobj.move(this.contentX, this.contentY);
             SVGobj.attr({height: null, preserveAspectRatio: "xMinYMin"})
             SVGobj.width(this.contentWidth!); 
             

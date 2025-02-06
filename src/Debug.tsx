@@ -5,6 +5,8 @@ import PaddedBoxDebug from "./debug/PaddedBox"
 import CollectionDebug from "./debug/Collection"
 import BindingsDebug from "./debug/Bindings"
 import PaddedBox from "./vanilla/paddedBox"
+import Labellable from "./vanilla/labellable"
+import { Visual } from "./vanilla/visual"
 
 interface IDebug {
     sequenceHandler: SequenceHandler
@@ -43,17 +45,18 @@ const Debug: React.FC<IDebug> = (props) => {
         */}
             {
             seq.channels.map((c) => {
-                return (
-                    <>
-                    <PaddedBoxDebug element={c} contentColour="green" padColour="yellow"></PaddedBoxDebug> 
-                    <PaddedBoxDebug element={c.label!} contentColour="red" padColour="yellow"></PaddedBoxDebug> 
-                    </>
-                )
+                return c.positionalElements.map((e) => {
+                    return <>
+                    <PaddedBoxDebug element={(e as Labellable<Visual>).parentElement} contentColour="yellow"></PaddedBoxDebug>
+                    <PaddedBoxDebug element={(e as Labellable<Visual>).labelMap["right"]!} contentColour="purple" padColour="purple"></PaddedBoxDebug>
+                    <PaddedBoxDebug element={e} contentColour="grey" padColour="purple"></PaddedBoxDebug></>
+                    
+                })
             })
             } 
 
-        <CollectionDebug element={seq.pulseColumns}></CollectionDebug>
-        <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
+            {/* <PaddedBoxDebug element={seq} contentColour="blue"></PaddedBoxDebug> */}
+
         </>
     )
 }

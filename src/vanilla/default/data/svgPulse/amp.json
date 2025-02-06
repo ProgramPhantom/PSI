@@ -12,16 +12,5 @@
     "offset": [0, 1],
     "path": "\\src\\assets\\ampseries.svg",
     "contentWidth": 15,
-    "contentHeight": 40,
-
-    "labelMap": {
-        "top": {
-            "text": "hello",
-            "style": {
-                "fontSize": 45,
-                "colour": "black",
-                "display": "block"
-            }
-        }
-    }
+    "contentHeight": 40
 }

@@ -1,7 +1,6 @@
 import { CSSProperties } from "react"
 import PaddedBox, { IPaddedBox } from "../vanilla/paddedBox"
 import Spacial, { Dimensions } from "../vanilla/spacial"
-import Positional from "../vanilla/positional"
 import SVGElement from "../vanilla/svgElement"
 import BindingsDebug from "./Bindings"
 
@@ -60,7 +59,7 @@ const PaddedBoxDebug: React.FC<IPaddedBoxDebug> = (props) => {
             <div style={{left: x1, top: y1, width: width, height: padding[0], ...paddingStyle}}></div>
 
             {/* Content */}
-            <div style={{left: cx, top: cy, width: contentWidth, height: contentHeight, ...contentStyle}}><p style={{fontSize: 5}}>{width} {height}</p></div>
+            <div style={{left: cx, top: cy, width: contentWidth, height: contentHeight, ...contentStyle}}><p style={{fontSize: 5}}>{x1} {y1}</p></div>
 
             {/* Padding Left */}
             <div style={{left: x1, top: cy, width: padding[3], height: contentHeight, ...paddingStyle}}></div>

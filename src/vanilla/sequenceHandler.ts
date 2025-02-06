@@ -4,7 +4,7 @@ import Span, { ISpan } from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
 import Text from "./text";
-import { IVisual, Visual } from "./visual";
+import { Display, IVisual, Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import { Script } from "vm";
@@ -16,6 +16,8 @@ import RectElement, { IRect, } from "./rectElement";
 import SVGElement, { ISVG, } from "./svgElement";
 import logger, { Operations } from "./log";
 import { error } from "console";
+import Labellable from "./labellable";
+import { ILabel } from "./label";
 
 
 export default class SequenceHandler {
@@ -30,6 +32,7 @@ export default class SequenceHandler {
         "saltirelohi": SVGElement,
         "chirphilo": SVGElement,
         "chirplohi": SVGElement,
+        "element": SVGElement,
 
         "pulse90": RectElement,
         "pulse180": RectElement,
@@ -162,24 +165,48 @@ export default class SequenceHandler {
     /* Interaction commands:
     Add a positional element by providing elementName, channel name, and partial positional interface.
     Function uses element name to lookup default parameters and replaces with those provided */
+    
     public mountElementFromTemplate(pParameters: RecursivePartial<IVisual>, elementRef: string, insert: boolean=false) {
         var positionalType = SequenceHandler.positionalTypes[elementRef];
 
         var element;
 
+        var testLabel: ILabel = {
+
+            offset: [0, 0],
+            padding: [10, 10, 10, 10],
+
+            text: {
+                text: "_{1}\\textrm{H}",
+                padding: [0, 0, 0, 0],
+                offset: [0, 0],
+            
+            
+                style: {
+                    fontSize: 10,
+                    colour: "green",
+                    display: Display.Block
+                }
+            }
+        }
+
+        var l: Labellable<Visual>;
         switch (positionalType.name) {
             case (SVGElement.name):
                 element = new SVGElement(pParameters, elementRef)
+                l = new Labellable<SVGElement>({labelMap: {right: testLabel}, offset: [0, 0], padding: [0, 0, 0, 0], mountConfig: element.mountConfig}, 
+                    element, "default", "pulse collection");
                 break;
             case (RectElement.name):
-                element = new RectElement(pParameters, elementRef)
+                element = new RectElement(pParameters, elementRef);
+                l = new Labellable<RectElement>({labelMap: {}, offset: [0, 0], padding: [0, 0, 0, 0]}, element, elementRef);
                 break;
             default:
                 throw new Error("error 1")
         }
 
-
-        this.sequence.mountElement(element, insert);
+        
+        this.sequence.mountElement(l, insert);
     }
 
     // @isMountable

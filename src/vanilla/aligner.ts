@@ -57,8 +57,8 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
     }
 
-    add(child: T, index?: number, alignItem: Alignment=Alignment.none) {
-        // AlignItem takes precidence
+    add(child: T, index?: number, bindHere: boolean = false, alignItem: Alignment=Alignment.none) {
+        // AlignItem takes precedence
         var alignChild: Alignment = alignItem !== Alignment.none ? alignItem : this.alignment;
         const INDEX = index !== undefined ? index : this.children.length;
 
@@ -92,20 +92,20 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             case Alignment.none:
                 break;
             case Alignment.here:
-                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
+                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.refName} [here] ${this.crossAxis}> ${child.refName} [here]`);
                 break;
             case Alignment.centre:
-                this.bind(child, this.crossAxis, "centre", "centre", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
+                this.bind(child, this.crossAxis, "centre", "centre", undefined, `${this.refName} [centre] ${this.crossAxis}> ${child.refName} [centre]`);
                 break;
             case Alignment.far:
-                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.refName} ${this.crossAxis}> ${child.refName}`);
+                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.refName} [far] ${this.crossAxis}> ${child.refName} [far]`);
                 break;
         }
 
         // Resize cross axis
         if (alignChild !== Alignment.none) {  // Optimisation AND is required
             var crossAxisSizeChild = child.getSizeByDimension(this.crossAxis);
-            var crossAxisSize = this.getSizeByDimension(this.crossAxis);  
+            var crossAxisSize = this.getSizeByDimension(this.crossAxis);
 
             if (crossAxisSizeChild > crossAxisSize) {
                 this.setSizeByDimension(child.getSizeByDimension(this.crossAxis), this.crossAxis);
@@ -216,12 +216,16 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         this.children.forEach((c) => {
             if (c.definedVertically) {
                 top = c.y < top ? c.y : top;
-                bottom = c.getFar(Dimensions.Y) > bottom ? c.getFar(Dimensions.Y) : bottom;
+
+                var far = c.getFar(Dimensions.Y);
+                bottom = far === undefined ? -Infinity : far  > bottom ? far : bottom;
             }
             
             if (c.definedHorizontally) {
                 left = c.x < left ? c.x : left;
-                right = c.getFar(Dimensions.X) > right ? c.getFar(Dimensions.X) : right;
+
+                var farX = c.getFar(Dimensions.X);
+                right = farX === undefined ? -Infinity : farX > right ? farX : right;
             }
         })
 
@@ -270,6 +274,10 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             bottom: bottom,
             left: left,
             right: right
+        }
+
+        if (top === -3) {
+            console.log()
         }
 
         logger.processEnd(Processes.COMPUTE_BOUNDARY, `Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`, this)

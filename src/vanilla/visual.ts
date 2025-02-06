@@ -3,7 +3,7 @@ import Point, { BinderSetFunction, IPoint, } from './point'
 import Spacial from './spacial'
 import PaddedBox, { IPaddedBox } from './paddedBox'
 import { IAnnotation } from './annotation'
-import { RecursivePartial } from './util'
+import { posPrecision, RecursivePartial } from './util'
 import { IMountable, IMountConfig, Mountable, Orientation } from './mountable'
 
 type Padding = number | [number, number] | [number, number, number, number]
@@ -92,7 +92,7 @@ export abstract class Visual extends Mountable implements IVisual {
     override set x(val: number) {
         if (val !== this._x) {
             this.dirty = true;
-            this._x = Math.trunc(val);
+            this._x = posPrecision(val);
             this.enforceBinding();
             this.notifyChange();
         }
@@ -104,9 +104,12 @@ export abstract class Visual extends Mountable implements IVisual {
         throw new Error(`x unset in ${this.refName}`);
     }
     override set y(val: number) {
+        if (this.refName === "text in label" && val === 25) {
+            console.log()
+        }
         if (val !== this._y) {
             this.dirty = true;
-            this._y = Math.trunc(val);
+            this._y = posPrecision(val);
             this.enforceBinding();
             this.notifyChange();
         }

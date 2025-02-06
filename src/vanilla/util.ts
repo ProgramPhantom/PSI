@@ -12,7 +12,7 @@ function isEmpty(obj: any) {
 
 export function UpdateObj(template: any, partial: any) {
     var templateKeyval = Object.entries(template);
-    let newObj = {...template}
+    let newObj = {...template, ...partial}
     let partialObj = partial;
   
     templateKeyval.forEach(([key, val]) => {
@@ -22,7 +22,7 @@ export function UpdateObj(template: any, partial: any) {
         
         if (partialObj[key]) {
           newObj[key] = UpdateObj(template[key], partialObj[key]);
-        }
+        } 
         
       } else {
         if (partialObj[key] !== undefined) {
@@ -58,4 +58,13 @@ export type ClassProperties<C> = {
 
 export function hasMountConfig(element: Visual): element is Visual {
   return element.mountConfig !== undefined
+}
+
+export function posPrecision(val: number): number {
+  // return Math.round(val * 10) / 10;
+  return val;
+}
+
+export function sizePrecision(val: number) : number {
+  return Math.round(val);
 }

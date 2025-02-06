@@ -1,7 +1,8 @@
 import { Svg, Element } from "@svgdotjs/svg.js";
-import Point, { BinderGetFunction, BinderSetFunction, BindingRule, IPoint } from "./point";
+import Point, { IPoint } from "./point";
 import { SVG } from "@svgdotjs/svg.js";
-import logger from "./log";
+import logger, { Operations } from "./log";
+import { posPrecision } from "./util";
 
 export interface Bounds {
     top: number,
@@ -13,6 +14,27 @@ export interface Bounds {
 export interface Size {
     width?: number,
     height?: number
+}
+
+export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
+export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number | undefined;
+
+export interface BindingRule {
+    anchorSiteGetter?: BinderGetFunction,
+    targetSiteSetter?: BinderSetFunction,
+
+    anchorSiteName: string,
+    targetSiteName: string,
+
+    dimension: Dimensions,
+}
+
+export interface Binding {
+    bindingRule: BindingRule,
+    targetObject: Spacial,
+    offset?: number,
+    bindToContent: boolean,
+    hint?: string
 }
 
 export enum Dimensions {X="x", Y="y"}
@@ -59,6 +81,7 @@ export default class Spacial extends Point implements ISpacial {
     protected _contentHeight?: number;
     
     sizeBindings: SizeBinding[] = [];
+    bindings: Binding[] = [];
 
     constructor(x?: number, y?: number, width?: number, height?: number, refName: string="spacial") {
         super(x, y, refName);
@@ -144,7 +167,7 @@ export default class Spacial extends Point implements ISpacial {
         this.bindings = this.bindings.filter(b => b.bindingRule.dimension !== dimension);
     }
 
-    bind(target: Point, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), 
+    bind(target: Spacial, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), 
          targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number, hint: string="binding", bindToContent: boolean=true, ) {
         
         var found = false;
@@ -152,9 +175,6 @@ export default class Spacial extends Point implements ISpacial {
         if (hint === "binding") {
             
         }
-
-        // var anchorGetter: BinderGetFunction = this.AnchorFunctions[anchorBindSide].get;
-        // var targetSetter: BinderSetFunction = el.AnchorFunctions[targetBindSide].set;
 
         this.bindings.forEach((b) => {
             if (b.targetObject === target && b.bindingRule.dimension === dimension) {
@@ -182,6 +202,47 @@ export default class Spacial extends Point implements ISpacial {
         }
     }
 
+    public enforceBinding() {
+        this.bindings.map((b) => b.targetObject).forEach((e) => {
+            e.displaced = true;
+        })
+
+        for (const binding of this.bindings) {
+            var targetElement: Spacial = binding.targetObject;
+            var getter: BinderGetFunction = this.AnchorFunctions[binding.bindingRule.anchorSiteName as keyof typeof this.AnchorFunctions].get;
+            var setter: BinderSetFunction = targetElement.AnchorFunctions[binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions].set;
+            var targetPosChecker: BinderGetFunction = targetElement.AnchorFunctions[binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions].get
+            var dimension: Dimensions = binding.bindingRule.dimension;
+
+            
+            // get the X coord of the location on the anchor
+            var anchorBindCoord: number | undefined = getter(dimension, binding.bindToContent);
+
+            if (anchorBindCoord === undefined) {
+                continue
+            }
+
+            // Apply offset:
+            anchorBindCoord = anchorBindCoord + (binding.offset ? binding.offset : 0);
+            
+            // Current position of target:
+            var currentTargetPointPosition: number | undefined = targetPosChecker(dimension, binding.bindToContent);
+            
+            // This must happen BEFORE the element is positioned so the last element moved in the collection 
+            // triggers the compute boundary
+            targetElement.displaced = false;
+
+            // Only go into the setter if it will change a value, massively reduces function calls.
+            // Alternative was doing the check inside the setter which still works but requires a function call
+            if (anchorBindCoord !== currentTargetPointPosition) {
+                // Use the correct setter on the target with this value
+                logger.operation(Operations.BIND, `(${this.refName})[${anchorBindCoord}] ${dimension}> (${targetElement.refName})[${currentTargetPointPosition}]`, this);
+                setter(dimension, anchorBindCoord!);  // SETTER MAY NEED INTERNAL BINDING FLAG?
+            }
+        }
+    }
+    
+
     bindSize(el: Spacial, dimension: Dimensions) {
         var found = this.sizeBindings.map(b => b.target).indexOf(el)
         if (found !== -1) {
@@ -193,6 +254,31 @@ export default class Spacial extends Point implements ISpacial {
         } else {
             this.sizeBindings.push({target: el, dimension: dimension})
         }
+    }
+
+    removeBind(el: Point, dimension?: Dimensions) {
+        // Remove all bindings associated with el
+        // this.bindings.forEach((b, i) => {
+        //     if (b.targetObject === el) {
+        //         this.bindings.splice(i, 1);
+        //     }
+        // })
+        this.bindings = this.bindings.filter(function(binding) {
+            if (binding.targetObject == el) {
+                if (dimension !== undefined) {
+                    if (binding.bindingRule.dimension === dimension) {
+                        return false
+                    } else {
+                        return true
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return true;
+            }
+            
+        });
     }
 
     enforceSizeBinding() {
@@ -225,16 +311,18 @@ export default class Spacial extends Point implements ISpacial {
     }
 
     // Anchors:
-    public getNear(dimension: Dimensions, ofContent: boolean=false): number {
+    public getNear(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
             case Dimensions.X:
+                if (this._x === undefined) {return undefined}
                 if (ofContent) { 
                     return this.contentX; 
                 }
-                return this.x;
+                return this._x;
             case Dimensions.Y:
+                if (this._y === undefined) {return undefined}
                 if (ofContent) { return this.contentY; }
-                return this.y;
+                return this._y;
         }
     }
     public setNear(dimension: Dimensions, v : number) {
@@ -248,14 +336,16 @@ export default class Spacial extends Point implements ISpacial {
         }
     }
 
-    public getCentre(dimension: Dimensions, ofContent: boolean=false): number {
+    public getCentre(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
             case Dimensions.X:
-                if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth/2 : 0); }
-                return this.x + this.width/2;
+                if (this._x === undefined) {return undefined}
+                if (ofContent) { return this.contentX + (this.contentWidth ? posPrecision(this.contentWidth/2) : 0); }
+                return this.x + posPrecision(this.width/2);
             case Dimensions.Y:
-                if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight/2 : 0); }
-                return this.y + this.height/2;
+                if (this._y === undefined) {return undefined}
+                if (ofContent) { return this.contentY + (this.contentHeight ? posPrecision(this.contentHeight/2) : 0); }
+                return this.y + posPrecision(this.height/2);
         }
     }
     public setCentre(dimension: Dimensions, v : number) {
@@ -269,12 +359,14 @@ export default class Spacial extends Point implements ISpacial {
         }
     }
 
-    public getFar(dimension: Dimensions, ofContent: boolean=false): number {
+    public getFar(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
             case Dimensions.X:
+                if (this._x === undefined) {return undefined}
                 if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth : 0); }
                 return this.x + this.width;
             case Dimensions.Y:
+                if (this._y === undefined) {return undefined}
                 if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight : 0); }
                 return this.y + this.height;
         }
@@ -287,6 +379,31 @@ export default class Spacial extends Point implements ISpacial {
             case Dimensions.Y:
                 this.y = v - this.height;
                 break;
+        }
+    }
+
+    get x(): number {
+        if (this._x !== undefined) {
+            return this._x;
+        }
+        throw new Error("x unset");
+    }
+    get y(): number {
+        if (this._y !== undefined) {
+            return this._y;
+        }
+        throw new Error("y unset");
+    }
+    protected set x(val: number | undefined) {
+        if (val !== this._x) {
+            this._x = val !== undefined ? posPrecision(val) : undefined;
+            this.enforceBinding();
+        }
+    }
+    protected set y(val: number | undefined) {
+        if (val !== this._y) {
+            this._y = val !== undefined ? posPrecision(val) : undefined;
+            this.enforceBinding();
         }
     }
 
@@ -305,7 +422,6 @@ export default class Spacial extends Point implements ISpacial {
         }
         return false;
     }
-
     get definedHorizontally(): boolean {
         if (this._x !== undefined && this.contentWidth !== undefined) {
             return true;
@@ -328,7 +444,7 @@ export default class Spacial extends Point implements ISpacial {
         }
     }
 
-    override getSizeByDimension(dim: Dimensions): number {
+    getSizeByDimension(dim: Dimensions): number {
         switch (dim) {
             case Dimensions.X:
                 return this.width;

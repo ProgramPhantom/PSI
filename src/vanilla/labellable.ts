@@ -3,6 +3,7 @@ import Label, { ILabel } from "./label";
 import { RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
 import { Dimensions } from "./spacial";
+import Collection, { ICollection } from "./collection";
 
 export enum Locations {
     Top="top",
@@ -15,19 +16,29 @@ export enum Locations {
 type Labels = {[key in Locations]?: Label} 
 type ILabels = {[key in Locations]?: ILabel} 
 
-export interface ILabellable extends IVisual {
+export interface ILabellable extends ICollection {
     labelMap: ILabels
 }
 
 
-export default class Labellable extends Visual implements ILabellable {
+export default class Labellable<T extends Visual> extends Collection implements ILabellable {
+    parentElement: T;
+
     labelMap: Labels = {};
     get labels() : Label[] {
         return Object.values(this.labelMap);
     }
     
-    constructor(params: ILabellable, templateName: string="default") {
-        super(params, templateName);
+    constructor(params: ILabellable, parent: T, templateName: string="default", refName: string="label collection") {
+        super(params, templateName, refName);
+
+        this._contentHeight = parent.contentHeight!;
+        this._contentWidth = parent.contentWidth!;
+
+        this.parentElement = parent;
+        // this.bindParentElement(this.parentElement);
+        this.add(parent, undefined, true);
+        // Override
 
         Object.entries(params.labelMap).forEach(([pos, label]) => {
             if (label !== undefined) {
@@ -38,23 +49,52 @@ export default class Labellable extends Visual implements ILabellable {
         })
     }
 
-    draw(surface: Svg) {
-        this.labels.forEach((l) => {
-            l.draw(surface);
-        })
-    }
+
 
     bindLabel(label: Label, pos: Locations) {
         switch (pos) {
             case Locations.Top:
-                this.bind(label, Dimensions.X, "centre", "centre", undefined, `${this.refName} X> ${label.refName}`);
-                this.bind(label, Dimensions.Y, "here", "far", undefined, `${this.refName} Y> ${label.refName}`, false);
+                this.removeBind(this.parentElement, Dimensions.Y);
+
+                this.parentElement.bind(label, Dimensions.X, "centre", "centre", undefined, `${this.refName} X> ${label.refName}`);
+
+                this.bind(label, Dimensions.Y, "here", "here", undefined, `${this.refName} Y> ${label.refName}`, false);
+
+                this.bind(this.parentElement, Dimensions.X, "centre", "centre", undefined, `Collection ${this.refName} [centre] X> Child ${this.parentElement.refName} [centre]`, true);
+                label.bind(this.parentElement, Dimensions.Y, "far", "here", undefined, `Label ${label.refName} Y> Parent ${this.parentElement.refName}`, false)
+
+                this.add(label);
+                this._contentHeight = this._contentHeight! + label.height;
                 break;
             case Locations.Right:
+                // Override
+                this.bind(this.parentElement, Dimensions.Y, "centre", "centre", undefined, `Collection ${this.refName} [centre] Y> Child ${this.parentElement.refName} [centre]`)
+                this.parentElement.bind(label, Dimensions.Y, "centre", "centre", undefined, `Parent ${this.parentElement.refName} [centre] Y> Label ${label.refName} [centre]`)
+
+                this.parentElement.bind(label, Dimensions.X, "far", "here", undefined, `Parent ${this.parentElement.refName} [far] X> Child ${label.refName} [here]`)
+
+                this.add(label)
+                this._contentWidth = this._contentWidth! + label.width;
                 break;
             case Locations.Bottom:
+                this.bind(this.parentElement, Dimensions.X, "centre", "centre", undefined, `Collection ${this.refName} [centre] X> Child ${this.parentElement.refName} [centre]`, true);
+
+                this.parentElement.bind(label, Dimensions.Y, "far", "here", undefined, `Parent ${this.parentElement.refName} [far] Y> Child ${label.refName} [here]`)
+                this.parentElement.bind(label, Dimensions.X, "centre", "centre", undefined, `Parent ${this.parentElement.refName} [centre] X> Child ${label.refName} [centre]`)
+
+                this.add(label);
+                this._contentHeight = this._contentHeight! + label.height;
                 break;
             case Locations.Left:
+                this.removeBind(this.parentElement, Dimensions.X);
+
+                this.bind(label, Dimensions.X, "here", "here", undefined, `${this.refName} X> ${label.refName}`)
+                this.bind(label, Dimensions.Y, "centre", "centre", undefined, `${this.refName} Y> ${label.refName}`)
+
+                label.bind(this.parentElement, Dimensions.X, "far", "here", undefined, `${label.refName} Y> ${this.parentElement.refName}`)
+
+                this.add(label);
+                this._contentWidth = this._contentWidth! + label.width;
                 break;
             case Locations.Centre:
                 break;
@@ -62,4 +102,13 @@ export default class Labellable extends Visual implements ILabellable {
                 throw new Error("this shouldn't happen");
         }
     }
+
+
+    // bindParentElement(val: T) {
+    //     this.removeBind(this.parentElement);
+// 
+    //     this.parentElement = val;
+    //     this.bind(val, Dimensions.X, "here", "here", undefined, `Collection ${this.refName} X> Parent ${this.parentElement.refName}`, true)
+    //     this.bind(val, Dimensions.Y, "here", "here", undefined, `Collection ${this.refName} Y> Parent ${this.parentElement.refName}`, true)
+    // }
 }

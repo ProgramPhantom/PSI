@@ -9,9 +9,7 @@ import Span from "./span";
 import Abstract from "./abstract";
 import defaultSequence from "./default/data/sequence.json"
 import SequenceHandler from "./sequenceHandler";
-import Bracket, { Direction, IBracket } from "./bracket";
 import { NumberAlias } from "svg.js";
-import Section from "./section.old";
 import { FillObject, PartialConstruct, RecursivePartial } from "./util";
 import { ILine, Line } from "./line";
 import { Grid, IGrid } from "./grid";
@@ -25,7 +23,7 @@ import { Alignment } from "./mountable";
 
 interface ISequence extends ICollection {
     grid: IGrid,
-    bracket: IBracket
+    bracket: undefined
 }
 
 
@@ -68,15 +66,15 @@ export default class Sequence extends Collection {
         // c
         this.channelColumn = new Aligner<Channel>(
             {bindMainAxis: true, axis: Dimensions.Y, alignment: Alignment.here}, "default", "channel column");
-        this.bind(this.channelColumn, Dimensions.Y, "here", "here", undefined, "SEQ Y-> CHAN COL");
-        this.bind(this.channelColumn, Dimensions.X, "here", "here", undefined, "SEQ X-> CHAN COL");
-        this.add(this.channelColumn);
+        // this.bind(this.channelColumn, Dimensions.Y, "here", "here", undefined, "SEQ Y-> CHAN COL");
+        // this.bind(this.channelColumn, Dimensions.X, "here", "here", undefined, "SEQ X-> CHAN COL");
+        this.add(this.channelColumn, undefined, true);
 
         // | h | |p|p|p|p|
         this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true, alignment: Alignment.here}, "default", "label col | pos cols");
-        this.bind(this.columns, Dimensions.Y, "here", "here", undefined, "SEQ Y-> COL");
-        this.bind(this.columns, Dimensions.X, "here", "here", undefined, "SEQ X-> COL");
-        this.add(this.columns);
+        // this.bind(this.columns, Dimensions.Y, "here", "here", undefined, "SEQ Y-> COL");
+        // this.bind(this.columns, Dimensions.X, "here", "here", undefined, "SEQ X-> COL");
+        this.add(this.columns, undefined, true);
         
 
 
@@ -181,7 +179,7 @@ export default class Sequence extends Collection {
     public mountElement(element: Visual, insert: boolean=false) {
         logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${element.refName} -------`, this);
         if (element.mountConfig === undefined) {
-            console.warn("Cannot mount element without mount config")
+            throw new Error("Cannot mount element without mount config")
             return
         }
         element.mountConfig.mountOn = true;
@@ -212,8 +210,10 @@ export default class Sequence extends Collection {
         // TODO: figure out inherit width and multi section element (hard)
 
         // Add the element to the sequence's column collection, this should trigger resizing of bars
-        this.pulseColumns.children[INDEX].add(element, undefined, element.mountConfig.alignment);
+        this.pulseColumns.children[INDEX].add(element, undefined, false, element.mountConfig.alignment);
         // This will set the X of the child ^^^
+
+        // TODO TOMORROW: WHen moving the Labellable<> to position, does not move the parent element.
 
         // Add element to channel
         targetChannel.mountElement(element);
