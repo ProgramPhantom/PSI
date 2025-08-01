@@ -19,7 +19,7 @@ import Labellable from '../vanilla/labellable';
 interface ISVGForm {
     handler: SequenceHandler, 
     values: ISVG,
-    target?:  Labellable<SVGElement>,
+    target?:  Labellable<SVGElement>,  // Split this into "LabellableForm" and "SVGElementForm"
     reselect: (element: Visual | undefined) => void
 }
 
@@ -37,7 +37,6 @@ const SVGForm: React.FC<ISVGForm> = (props) => {
         mode: "onChange"
     });
   
-
 
   const onSubmit = (data: ISVG) => {
     // Create new element

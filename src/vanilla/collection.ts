@@ -24,8 +24,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             y: undefined,
             offset: [0, 0],
             padding: [0, 0, 0, 0],
-
-
         },
     }
 
@@ -39,7 +37,11 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
     }
 
     draw(surface: Element) {
-        var group = new G().id(this.id);
+        if (this.svg) {
+            this.svg.remove();
+        }
+
+        var group = new G().id(this.id).attr({"title": this.refName});
 
         this.children.forEach((c) => {
             if (doesDraw(c)) {
@@ -48,9 +50,10 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         })
 
         // group.move(this.x, this.y).size(this.width, this.height)
-        surface.add(group)
+        this.svg = group;
+        surface.add(this.svg);
     }
-
+ 
     add(child: T, index?: number, bindHere: boolean = false) {
         this.children.splice(index !== undefined ? index : this.children.length-1, 0, child);
         
@@ -184,7 +187,18 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         }
 
         logger.processEnd(Processes.COMPUTE_BOUNDARY, `${this.refName}`, this)
-    } 
+    }
+
+    // Construct and SVG with children positioned relative to (0, 0)
+    override getInternalRepresentation(): Element | undefined {
+        var deltaX = -this.contentX;
+        var deltaY = -this.contentY;
+
+        var internalSVG = this.svg?.clone(true, true).attr({"transform": `translate(${deltaX}, ${deltaY})`});
+        internalSVG?.attr({"style": "display: block;"})
+
+        return internalSVG;
+    }
 
     get contentWidth(): number | undefined {
         return this._contentWidth;

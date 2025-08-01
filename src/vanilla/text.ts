@@ -48,7 +48,67 @@ export default class Text extends Visual implements IText {
 
         this.contentHeight = sizePrecision(this.intrinsicSize.height/SCALER * this.style.fontSize/EXTOPX);
         this.contentWidth = sizePrecision(this.intrinsicSize.width/SCALER * this.style.fontSize/EXTOPX);
+
+        this.constructSVG()
     }
+
+    constructSVG(): void {
+        // Produce tex
+        const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
+
+        var crudeSvg: SVGElement = SVG(SVGEquation)
+
+        var paths: SVGElement[] = crudeSvg.children()[0].children()
+        var pathDict: {[id: string]: SVGElement } = {}
+        paths.forEach((p) => {
+            pathDict[p.id()] = p
+        })
+
+        var structureGroup: SVGElement = crudeSvg.children()[1];
+
+        function replace(svg: SVGElement) {
+            var children: SVGElement[] = svg.children()
+
+            children.forEach((c) => {
+                if (c.children().length > 0) {
+                    replace(c);
+                } else {
+                    var childId: string = (c.attr('xlink:href') as string);
+                    var childTransform: string = (c.attr("transform") as string);
+                    
+
+                    if (childId !== undefined && childId[0] == "#") {
+                        var pathToReplace: SVGElement =  pathDict[childId.slice(1)];
+                        
+                        // Apply transform to path
+                        if (childTransform !== undefined) {
+                            pathToReplace.attr({"transform": childTransform}) 
+                        }
+
+                        c.replace(pathToReplace)
+                    }
+
+                }
+            })
+        }
+
+        replace(structureGroup);
+
+        crudeSvg.children().forEach(c => {c.remove()})
+        crudeSvg.add(structureGroup)
+
+        this.svg = crudeSvg
+
+        this.svg.attr({height: null, preserveAspectRatio: "xMinYMin"})
+        this.svg.width(this.contentWidth!); 
+        this.svg.attr({"style": `color:${this.style.colour}`});
+
+        var group = this.svg.children()[1];
+    
+        if (this.style.background) {
+            group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
+        }
+     }
     
     // TODO: investigate this
     // Sets this.width and this.height
@@ -83,23 +143,16 @@ export default class Text extends Visual implements IText {
                 this.svg.remove();
             }
 
-            const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
-        
-            var SVGobj = SVG(SVGEquation);
-            SVGobj.move(this.contentX, this.contentY);
-            SVGobj.attr({height: null, preserveAspectRatio: "xMinYMin"})
-            SVGobj.width(this.contentWidth!); 
-            
-            SVGobj.attr({"style": `color:${this.style.colour}`});
-            var group = SVGobj.children()[1];
     
-            if (this.style.background) {
-                group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
+            this.svg?.move(this.contentX, this.contentY);
+
+            if (this.svg) {
+                surface.add(this.svg);
             }
-            
-            this.svg = SVGobj;
-            surface.add(SVGobj);
         }
-        
+    }
+
+    getInternalRepresentation(): SVGElement | undefined {
+        return this.svg
     }
 }

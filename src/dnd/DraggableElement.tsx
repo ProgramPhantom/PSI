@@ -28,6 +28,7 @@ import { SVG } from '@svgdotjs/svg.js';
 import { IInsertAreaResult } from './InsertArea';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import '@svgdotjs/svg.draggable.js'
+import { title } from 'process';
 
 
 const style: CSSProperties = {
@@ -60,6 +61,8 @@ interface IDraggableElementDropItem {
   element: Visual
 }
 
+/* When an element is selected, the svg on the canvas is hidden and the element is replaced
+by this. It is a different object that can be dragged. */
 const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: ElementTypes.PREFAB,
@@ -89,16 +92,13 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
     
   }
 
-  var svg = SVG("<svg>" + copy?.svg() + "<\\svg>")
-
   const opacity = isDragging ? 0.5 : 1
-
 
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true })
   }, [])
 
-  // const opacity = isDragging ? 0.4 : 1
+
   return (
     (
       <div ref={drag} style={{
@@ -109,7 +109,7 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                opacity: opacity}}  >
+                opacity: opacity}} title='draggable element' >
             <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} 
                  dangerouslySetInnerHTML={{__html: copy?.svg()!}}>
 

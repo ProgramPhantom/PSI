@@ -33,6 +33,7 @@ import { IInsertAreaResult } from './InsertArea';
 import ENGINE from '../vanilla/engine';
 import { hasMountConfig } from '../vanilla/util';
 import { Orientation } from '../vanilla/mountable';
+import { Svg } from '@svgdotjs/svg.js';
 
 
 const style: CSSProperties = {
@@ -94,7 +95,7 @@ export interface CanvasDraggableElementPayload {
 
 
 
-
+/* When an element on the canvas is selected, it is replaced by this, a draggable element */
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function CanvasDraggableElement(props: IDraggableElementProps) {
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: ElementTypes.CANVAS_ELEMENT,
@@ -111,7 +112,6 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
 
         var positionalElement;
         if (item.element.hasMountConfig) {
-          // positionalElement = new Positional(item.element, targetChannel, item.positionalConfig)
           item.element.mountConfig = {...item.element.mountConfig!, orientation: result.orientation, channelName: result.channelName};
 
           props.handler.shiftMountedElements(item.element, result.index);
@@ -130,10 +130,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
   }), [props.x, props.y, props.name])
 
   
-  var copy = props.element.svg?.clone(true, true)
-  copy?.x(0);
-  copy?.y(0);
-  copy?.show();
+  var visual = props.element.getInternalRepresentation();
   
   // Removed the default preview?
   useEffect(() => {
@@ -145,15 +142,15 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
     
     {/*
     <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
+    <div style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block"}} 
+                dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} ></div>
       </Rnd> */}
       <div style={{background: "rgba(255, 211, 92, 0.66)", opacity: isDragging ? 0 : 1}}>
         <div ref={drag} style={{  height: props.element.contentHeight, width: props.element.contentWidth}}>
             <svg style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block"}} 
-                dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} ></svg>
+                dangerouslySetInnerHTML={{__html: visual?.node.outerHTML!}} ></svg>
         </div>
       </div>
-      
-    
     </>
   )
 })

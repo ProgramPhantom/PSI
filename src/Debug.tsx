@@ -48,14 +48,12 @@ const Debug: React.FC<IDebug> = (props) => {
                 return c.mountedElements.map((e) => {
                     return <>
                     <PaddedBoxDebug element={(e as Labellable<Visual>).parentElement} contentColour="yellow"></PaddedBoxDebug>
-                    <PaddedBoxDebug element={(e as Labellable<Visual>).labelMap["top"]!} contentColour="purple" padColour="purple"></PaddedBoxDebug>
-                    <PaddedBoxDebug element={e} contentColour="grey" padColour="purple"></PaddedBoxDebug></>
+                    <PaddedBoxDebug element={(e as Labellable<Visual>).labelMap["top"]!} contentColour="green" padColour="purple"></PaddedBoxDebug>
+                    </>
                     
                 })
             })
             } 
-
-            {/* <PaddedBoxDebug element={seq} contentColour="blue"></PaddedBoxDebug> */}
 
         </>
     )

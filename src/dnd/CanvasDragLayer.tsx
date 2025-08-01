@@ -43,6 +43,7 @@ export interface CustomDragLayerProps {
     scale: number
 }
 
+// Custom drag layer (for displaying drag preview)
 export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
   const { itemType, isDragging, item, initialOffset, currentOffset } =
     useDragLayer((monitor) => ({

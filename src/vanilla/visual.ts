@@ -90,6 +90,12 @@ export abstract class Visual extends Mountable implements IVisual {
         this.offset = data.offset ?? this.offset;
     }
 
+    // Construct and SVG with children positioned relative to (0, 0)
+    getInternalRepresentation(): Element | undefined {
+
+        return this.svg
+    }
+
     override set x(val: number) {
         if (val !== this._x) {
             this.dirty = true;

@@ -7,6 +7,7 @@ import { G } from "@svgdotjs/svg.js";
 import { Orientation } from "./mountable";
 import Labellable, { ILabellable } from "./labellable";
 
+// ----------- TEMPORARY ---------------
 const svgContent: {[path: string]: string} = {}
 const svgPaths = ["\\src\\assets\\acquire2.svg",
 				  "\\src\\assets\\saltirelohi.svg",
@@ -28,12 +29,12 @@ for (const p of svgPaths) {
 
 	svgContent[p] = svg;
 }
+// ---------------------------------------
 
 
 interface ISVGStyle {
 
 }
-
 
 export interface ISVG extends IVisual {
     path: string,
@@ -81,21 +82,26 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 		this.svg = SVG(rawSVG.node.outerHTML).height(this.contentHeight ?? 0).width(this.contentWidth ?? 0);
 		this.svg.add(this.elementGroup);
 
+		// Synchronise Id
 		this.id = this.svg.id();
 		this.elementGroup.id(this.id);
+
+		// Configure some attributes 
+		this.svg.attr({"preserveAspectRatio": "none"})
+		this.svg.children().forEach((c) => {
+			c.attr({"vector-effect": "non-scaling-stroke"})
+		})
 	}
 
     draw(surface: Element) {
 		if (this.dirty) {
+			// Clear old svg
 			if (this.svg) {
 				this.svg.remove();
 			}
 
-			this.svg.attr({"preserveAspectRatio": "none"})
-			this.svg.children().forEach((c) => {
-				c.attr({"vector-effect": "non-scaling-stroke"})
-			})
 
+			// Flip svg depending on orientation.
 			if (this.isMountable) {
 				if (!this.flipped && this.mountConfig?.orientation === Orientation.bottom
 					|| this.flipped && this.mountConfig?.orientation === Orientation.top
@@ -110,7 +116,9 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 					this.offset = [this.offset[0], Math.abs(this.offset[1])]
 				}
 			}
+			
 
+			// Position, size and draw svg.
 			this.svg.move(this.drawX, this.drawY);
 			this.svg.size(this.contentWidth, this.contentHeight);
 
@@ -127,6 +135,7 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
         this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]]
     }
 
+	// Wtf does this do
 	public restructure(data: Partial<ISVG>): void {
 		// Path
 		this.path = data.path ?? this.path;
