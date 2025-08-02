@@ -172,12 +172,11 @@ export default class SequenceHandler {
         var element;
 
         var testLabel: ILabel = {
-
             offset: [0, 0],
-            padding: [0, 0, 3, 0],
+            padding: [0, 0, 4, 0],
 
             text: {
-                text: "\\textrm{90}°",
+                text: "\\textrm{90}\\circ",
                 padding: [0, 0, 0, 0],
                 offset: [0, 0],
             
@@ -194,8 +193,7 @@ export default class SequenceHandler {
         switch (positionalType.name) {
             case (SVGElement.name):
                 element = new SVGElement(pParameters, elementRef)
-                l = new Labellable<SVGElement>({labelMap: {top: testLabel}, offset: [0, 0], padding: [0, 0, 0, 0], mountConfig: element.mountConfig}, 
-                    element, "default", "pulse collection");
+                l = new Labellable<SVGElement>({labelMap: {"top": testLabel}}, element, "default", "pulse collection");
                 break;
             case (RectElement.name):
                 element = new RectElement(pParameters, elementRef);

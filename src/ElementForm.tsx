@@ -14,7 +14,7 @@ import { mountableElements } from './vanilla/default/data';
 import { ISimplePulse } from './vanilla/pulses/simple/simplePulse';
 import { ISvgPulse } from './vanilla/pulses/image/svgPulse';
 import { IChannel } from './vanilla/channel';
-import SVGForm from './form/SVGForm';
+import SVGForm from './form/SVGElementForm';
 import Parser from './vanilla/parser';
 
 

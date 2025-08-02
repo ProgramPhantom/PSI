@@ -17,7 +17,11 @@ export interface Place {
 }
 
 
-export interface IPoint {
+export interface IElement {
+
+}
+
+export interface IPoint extends IElement {
     x?: number,
     y?: number,
 }
@@ -28,6 +32,13 @@ export interface IStateTarget<T extends IPoint> {
 
 
 export default class Point implements IPoint, IStateTarget<IPoint> {
+    static defaults: {[name: string]: IPoint} = {
+        "default": {
+            x: undefined,
+            y: undefined,
+        },
+    }
+
     get state(): IPoint {
         return {
         x: this._x,

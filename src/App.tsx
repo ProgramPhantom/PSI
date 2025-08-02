@@ -5,7 +5,7 @@ import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
 import Form from './Form';
 import Banner from './Banner';
 import FileSaver, { saveAs } from 'file-saver';
-import SVGForm from './form/SVGForm';
+import SVGForm from './form/SVGElementForm';
 import { Visual } from './vanilla/visual';
 import { UpdateObj } from './vanilla/util';
 import { svgPulses } from './vanilla/default/data/svgPulse';
@@ -58,6 +58,11 @@ function App() {
 
     setSelectedElement(element);
 
+    // Form stuff
+
+    /*
+
+
     if (element instanceof Labellable) {
       if (element.isMountable === false) {
         return
@@ -103,6 +108,7 @@ function App() {
                 reselect={SelectElement}></RectForm>
       setForm(newForm)
     }
+    */
   }
 
 
@@ -125,7 +131,7 @@ function App() {
         </div>
 
         <div style={{gridColumnStart: 2, gridColumnEnd: 3}}>
-          <Form sequence={ENGINE.handler} form={form}></Form>
+          <Form target={selectedElement}></Form>
         </div>
       </div>
       </>

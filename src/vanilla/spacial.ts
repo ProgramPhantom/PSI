@@ -54,6 +54,15 @@ export type UpdateNotification = (...args: any[]) => any
 
 
 export default class Spacial extends Point implements ISpacial {
+    static override defaults: {[name: string]: ISpacial} = {
+        "default": {
+            x: undefined,
+            y: undefined,
+            contentWidth: 0,
+            contentHeight: 0,
+        },
+    }
+
     get state(): ISpacial {
         return {
             x: this._x,

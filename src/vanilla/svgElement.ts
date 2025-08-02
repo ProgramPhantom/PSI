@@ -43,7 +43,7 @@ export interface ISVG extends IVisual {
 
 
 export default class SVGElement extends Visual implements ISVG, IDraw {
-    static defaults: {[key: string]: ISVG} = {...<any>svgPulses, "default": svgPulses[180]};
+    static override defaults: {[key: string]: ISVG} = {...<any>svgPulses, "default": svgPulses[180]};
 	getState: () => ISVG = () => { return {
         x: this.x,
         y: this.y,

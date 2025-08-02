@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
 import * as ReactDOM from 'react-dom';
-import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 'react-hook-form';
+import { Control, Controller, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
 import { IText } from '../vanilla/text';
 
 import { Button, ControlGroup, Divider, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
@@ -8,26 +8,18 @@ import LabelForm from './LabelForm';
 import SequenceHandler from '../vanilla/sequenceHandler';
 import { IChannel } from '../vanilla/channel';
 import { defaultChannel } from '../vanilla/default/data';
+import ENGINE from '../vanilla/engine';
+import FormRequirements from "./FormHolder"
 
+interface ChannelFormProps {
+    onSubmit: (data: IChannel) => void
+}
 
-
-function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) {  
-    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm({
-        defaultValues: {...(props.defaultVals as any)},
-        mode: "onChange"
-    });
-  
-    function onSubmit(data: IChannel) {
-        
-        props.sequence.channel(data.identifier, data);
-
-        props.sequence.draw();
-    }
+const ChannelForm: React.FC<FormRequirements> = () => {
+    const formControls = useFormContext<IChannel>();
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <h3>New Channel</h3>
-
+        <>
             <Tabs defaultSelectedTabId={"core"} animate={false} vertical={false}>
                 <Tab id="core" title="Core" panel={
                     <ControlGroup vertical={true}>
@@ -38,7 +30,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                         label="Identifier"
                         helperText="Name of channel"
                         labelFor="text-input">
-                            <Controller control={control} name="identifier" render={({field}) => (
+                            <Controller control={formControls.control} name="identifier" render={({field}) => (
                                 <InputGroup {...field} id="text" placeholder="h" small={true} />
                                 )}>
                             </Controller>
@@ -58,7 +50,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                                     inline={true}
                                     label="Padding top"
                                     labelFor="text-input">
-                                    <Controller control={control} name="padding.0" render={({field: { onChange, onBlur, value, name, ref },}) => (
+                                    <Controller control={formControls.control} name="padding.0" render={({field: { onChange, onBlur, value, name, ref },}) => (
                                         <Slider value={value} onChange={onChange} max={30} min={0} labelStepSize={10}></Slider>)}>
                                     </Controller>
                                 </FormGroup>
@@ -68,7 +60,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                                     inline={true}
                                     label="Padding right"
                                     labelFor="text-input">
-                                    <Controller control={control} name="padding.1" render={({field}) => (
+                                    <Controller control={formControls.control} name="padding.1" render={({field}) => (
                                         <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
                                     </Controller>
                                 </FormGroup>
@@ -78,7 +70,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                                     inline={true}
                                     label="Padding bottom"
                                     labelFor="text-input">
-                                    <Controller control={control} name="padding.2" render={({field}) => (
+                                    <Controller control={formControls.control} name="padding.2" render={({field}) => (
                                         <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
                                     </Controller>
                                 </FormGroup>
@@ -88,7 +80,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                                     inline={true}
                                     label="Padding left"
                                     labelFor="text-input">
-                                    <Controller control={control} name="padding.3" render={({field}) => (
+                                    <Controller control={formControls.control} name="padding.3" render={({field}) => (
                                         <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
                                     </Controller>
                                 </FormGroup>
@@ -112,7 +104,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                                 inline={true}
                                 label="Offset X"
                                 labelFor="text-input">
-                                <Controller control={control} name="offset.0" render={({field}) => (
+                                <Controller control={formControls.control} name="offset.0" render={({field}) => (
                                     <NumericInput {...field} onValueChange={field.onChange} min={-50} max={50} small={true}></NumericInput>)}>
                                 </Controller>
                             </FormGroup>
@@ -122,7 +114,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                             inline={true}
                             label="Offset Y"
                             labelFor="text-input">
-                            <Controller control={control} name="offset.1" render={({field}) => (
+                            <Controller control={formControls.control} name="offset.1" render={({field}) => (
                                 <NumericInput {...field} onValueChange={field.onChange} min={-50} max={50} small={true}></NumericInput>)}>
                             </Controller>
                             </FormGroup>
@@ -137,7 +129,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                             <FormGroup
                                 label="Thickness"
                                 labelFor="text-input">
-                                <Controller control={control} name="style.thickness" render={({field}) => (
+                                <Controller control={formControls.control} name="style.thickness" render={({field}) => (
                                     <NumericInput {...field} onValueChange={field.onChange} min={1} small={true} fill={true}></NumericInput>)}>
                                 </Controller>
                             </FormGroup>
@@ -149,7 +141,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                                 label="Fill"
                                 labelFor="text-input">
             
-                                <Controller control={control} name="style.barStyle.fill" render={({field}) => (
+                                <Controller control={formControls.control} name="style.barStyle.fill" render={({field}) => (
                                     <input type={"color"} {...field}></input>)}>
                                 </Controller>
                             </FormGroup>
@@ -159,7 +151,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                                 label="Stroke"
                                 labelFor="text-input">
             
-                                <Controller control={control} name="style.barStyle.stroke" render={({field}) => (
+                                <Controller control={formControls.control} name="style.barStyle.stroke" render={({field}) => (
                                     <input type={"color"} {...field}></input>)}>
                                 </Controller>
                             </FormGroup>
@@ -168,7 +160,7 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                                 inline={true}
                                 label="Stroke Width"
                                 labelFor="text-input">
-                                <Controller control={control} name="style.barStyle.strokeWidth" render={({field}) => (
+                                <Controller control={formControls.control} name="style.barStyle.strokeWidth" render={({field}) => (
                                     <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
                                 </Controller>
                             </FormGroup>
@@ -177,16 +169,15 @@ function ChannelForm(props: {sequence: SequenceHandler, defaultVals: IChannel}) 
                     </ControlGroup>
                 }/>
 
-                <Tab id="label" title="Label" panel={<LabelForm control={control} change={() => {}}></LabelForm>}/>
+                <Tab id="label" title="Label" panel={<LabelForm control={formControls.control} change={() => {}}></LabelForm>}/>
 
             </Tabs>
-
-            <input style={{width: "100%", margin: "4px 2px 18px 2px", height: "30px"}} 
-                    type={"submit"}>
-
-            </input>
-        </form>
+        </>
     )
 }
 
-export default ChannelForm
+ChannelForm.onSubmit = (data: IChannel) => {
+        ENGINE.handler.channel(data.identifier, data);
+}
+
+export default ChannelFormp

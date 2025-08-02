@@ -8,6 +8,7 @@ import { simplePulses } from "./simplePulse"
 import * as Abstract from "./abstract.json"
 import * as Span from "./span.json"
 import * as defMountable from "./mountable.json"
+import * as defVisual from "./visual.json"
 
 import * as Channel from "./channel.json";
 
@@ -19,4 +20,5 @@ export const mountableElements: {[name: string]: any} = {
 };
 
 export const defaultMountable = defMountable;
+export const defaultVisual = defVisual;
 export const defaultChannel = Channel;

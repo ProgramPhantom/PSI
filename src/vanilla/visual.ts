@@ -1,13 +1,18 @@
 import { Element, SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
-import Point, { BinderSetFunction, IPoint, } from './point'
+
 import Spacial from './spacial'
 import PaddedBox, { IPaddedBox } from './paddedBox'
 import { IAnnotation } from './annotation'
 import { posPrecision, RecursivePartial } from './util'
 import { IMountable, IMountConfig, Mountable, Orientation } from './mountable'
+import { defaultVisual } from './default/data'
+import VisualForm, { IVisualForm } from '../form/VisualForm'
+import { FormDescriptor } from '../form/FormBase'
 
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
+
+
 
 export enum Display {
     None="none",
@@ -29,6 +34,9 @@ export function doesDraw(object: any): object is IDraw {
 
 
 export abstract class Visual extends Mountable implements IVisual {
+    static override defaults: {[name: string]: IVisual} = {"default": <any>defaultVisual}
+    static form: React.FC = VisualForm;
+
     get state(): IVisual { return {
         x: this._x,
         y: this._y,

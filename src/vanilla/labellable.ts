@@ -1,6 +1,6 @@
 import { Svg } from "@svgdotjs/svg.js";
 import Label, { ILabel } from "./label";
-import { RecursivePartial } from "./util";
+import { FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
 import { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
@@ -22,6 +22,19 @@ export interface ILabellable extends ICollection {
 
 
 export default class Labellable<T extends Visual=Visual> extends Collection implements ILabellable {
+    static defaults: {[name: string]: ILabellable} = {
+        "default": {
+            contentWidth: 0,
+            contentHeight: 0,
+            x: undefined,
+            y: undefined,
+            offset: [0, 0],
+            padding: [0, 0, 0, 0],
+
+            labelMap: {}
+        },
+    }
+
     parentElement: T;
 
     labelMap: Labels = {};
@@ -29,30 +42,32 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
         return Object.values(this.labelMap);
     }
     
-    constructor(params: ILabellable, parent: T, templateName: string="default", refName: string="label collection") {
-        super(params, templateName, refName);
+    constructor(params: RecursivePartial<ILabellable>, parent: T, templateName: string="default", refName: string="label collection") {
+        var fullParams: ILabellable = FillObject<ILabellable>(params, Labellable.defaults[templateName]);
+        super(fullParams, templateName, refName);
 
         this._contentHeight = parent.contentHeight!;
         this._contentWidth = parent.contentWidth!;
 
-        this.parentElement = parent;
-        // this.bindParentElement(this.parentElement);
-        this.add(parent, undefined, true);
-        // Override
+        this.mountConfig = parent.mountConfig;
 
-        Object.entries(params.labelMap).forEach(([pos, label]) => {
+        this.parentElement = parent;
+        this.add(parent, undefined, true);
+
+
+        if (fullParams.labelMap !== undefined) {
+                    Object.entries(fullParams.labelMap).forEach(([pos, label]) => {
             if (label !== undefined) {
                 var newLabel = new Label(label); 
                 this.labelMap[<Locations>pos] = newLabel; // TODO: error check here
                 this.bindLabel(newLabel, <Locations>pos);
-            }
-        })
+            }})
+        }
     }
 
     get id(): string {
         return this.parentElement.id;
     }
-
 
     bindLabel(label: Label, pos: Locations) {
         switch (pos) {
@@ -73,7 +88,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 // Override
                 this.bind(this.parentElement, Dimensions.Y, "far", "far", undefined, `Collection ${this.refName} [far] Y> Child ${this.parentElement.refName} [far]`)
                 
-                this.bind(label, Dimensions.Y, "far", "far", undefined, `Parent ${this.parentElement.refName} [centre] Y> Label ${label.refName} [centre]`)
+                this.bind(label, Dimensions.Y, "centre", "far", undefined, `Parent ${this.parentElement.refName} [centre] Y> Label ${label.refName} [centre]`)
 
                 this.parentElement.bind(label, Dimensions.X, "far", "here", undefined, `Parent ${this.parentElement.refName} [far] X> Child ${label.refName} [here]`, false)
 

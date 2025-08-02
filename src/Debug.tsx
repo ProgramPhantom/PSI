@@ -39,16 +39,17 @@ const Debug: React.FC<IDebug> = (props) => {
                 ) : <></>
             }*/}
         {/* <AlignerDebug element={seq.channels[0].upperAligner}></AlignerDebug> 
-
-        
+                        
+                        
+        <PaddedBoxDebug element={(e as Labellable<Visual>).parentElement} contentColour="yellow"></PaddedBoxDebug>
+        <PaddedBoxDebug element={(e as Labellable<Visual>).labelMap["top"]!} contentColour="green" padColour="purple"></PaddedBoxDebug>
         <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
         */}
             {
             seq.channels.map((c) => {
                 return c.mountedElements.map((e) => {
                     return <>
-                    <PaddedBoxDebug element={(e as Labellable<Visual>).parentElement} contentColour="yellow"></PaddedBoxDebug>
-                    <PaddedBoxDebug element={(e as Labellable<Visual>).labelMap["top"]!} contentColour="green" padColour="purple"></PaddedBoxDebug>
+                    
                     </>
                     
                 })
