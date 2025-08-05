@@ -16,8 +16,11 @@ import RectElement, { IRect, } from "./rectElement";
 import SVGElement, { ISVG, } from "./svgElement";
 import logger, { Operations } from "./log";
 import { error } from "console";
-import Labellable from "./labellable";
+import Labellable, { ILabellable } from "./labellable";
 import { ILabel } from "./label";
+import { ElementTypes, ID } from "./point";
+import { ElementType } from "react";
+import { ElementTypes, ElementTypes } from "../dnd/DraggableElement";
 
 
 export default class SequenceHandler {
@@ -72,14 +75,19 @@ export default class SequenceHandler {
     }
 
     // TODO: forced index for channel addition
-    channel(name: string, pParameters: RecursivePartial<IChannel>, index?: number) {
-        if (this.sequence.channelNames.includes(name)) {
-            alert(`Duplicate channel name: ${name}`)
+    channel(pParameters: RecursivePartial<IChannel>, index?: number) {
+        if (pParameters.identifier === undefined) {
+            alert(`Channel id not provided`)
+            return
+        }
+        if (this.sequence.channelNames.includes(pParameters.identifier)) {
+            alert(`Duplicate channel name: ${pParameters.identifier}`)
             return
         }
 
         var newChannel = new Channel(pParameters);
-        this.sequence.addChannel(name, newChannel);
+        this.sequence.addChannel(newChannel);
+        this.draw()
     }
 
     draw() {
@@ -93,22 +101,80 @@ export default class SequenceHandler {
     }
 
 
-    public addElementFromTemplate(pParameters: RecursivePartial<IVisual>, elementRef: string) {
+    // ---- Form interfaces ----
+    public submitElement(pParameters: RecursivePartial<IVisual>, type: ElementTypes) {
+        console.log("submitted element")
+        console.log(pParameters)
+
+        switch (type) {
+            case "abstract":
+                throw new Error("Cannot instantiate abstract object")
+                break;
+            case "channel":
+                this.channel(pParameters)
+                break;
+            case "visual":
+                this.addElementFromTemplate(pParameters, "temp ref")
+                break;
+            case "labelled":
+                this.addElementFromTemplate(pParameters, "test ref");
+                break;
+            default:
+                throw new Error(`Unexpected element type "${type}"`)
+        }
+    }
+
+    public submitModifyElement(pParameters: RecursivePartial<IVisual>, type: ElementTypes, target: Visual) {
+        console.log("Submitted element modification")
+        console.log(pParameters)
+
+        // Delete element
+        this.deleteElement(target)
+
+        var newElement = this.submitElement(pParameters, type)
+    }
+
+    public submitDeleteElement(target: Visual) {
+        this.deleteElement(target);
+    }
+    // ------------------------
+
+
+    public addLabelledElement(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string) {
+        if (pParameters.labelMap === undefined) {
+            throw new Error("No label map found")
+        }
+
+
+    }
+
+    public addElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string) {
         var positionalType = SequenceHandler.positionalTypes[elementRef];
 
-        var element;
+        var element: Visual;
 
         switch (positionalType.name) {
             case (SVGElement.name):
                 element = new SVGElement(pParameters, elementRef)
+                
+                if (pParameters.labelMap !== undefined) {
+                    element = new Labellable<SVGElement>({labelMap: pParameters.labelMap}, element as SVGElement) 
+                }
+
                 break;
             case (RectElement.name):
                 element = new RectElement(pParameters, elementRef)
+                if (pParameters.labelMap !== undefined) {
+                    element = new Labellable<RectElement>({labelMap: pParameters.labelMap}, element) 
+                }
                 break;
             default:
                 throw new Error("error 1")
         }
 
+        // if (element.mountConfig !== undefined) {
+        //     this.mountElement(element, element.mountConfig)
+        // }
 
         this.sequence.addElement(element);
     }
@@ -131,6 +197,14 @@ export default class SequenceHandler {
         if (target.isMountable) {
             this.deleteMountedElement(target, true);
         }
+    }
+
+    public deleteElementByID(targetId: ID) {
+        var target: Visual | undefined = this.identifyElement(targetId);
+        if (target === undefined) {
+            return
+        }
+        this.deleteElement(target);
     }
 
     public identifyElement(id: string): Visual | undefined {
@@ -166,45 +240,32 @@ export default class SequenceHandler {
     Add a positional element by providing elementName, channel name, and partial positional interface.
     Function uses element name to lookup default parameters and replaces with those provided */
     
-    public mountElementFromTemplate(pParameters: RecursivePartial<IVisual>, elementRef: string, insert: boolean=false) {
+    public mountElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string, insert: boolean=false) {
         var positionalType = SequenceHandler.positionalTypes[elementRef];
 
-        var element;
+        var element: Visual;
 
-        var testLabel: ILabel = {
-            offset: [0, 0],
-            padding: [0, 0, 4, 0],
-
-            text: {
-                text: "\\textrm{90}\\circ",
-                padding: [0, 0, 0, 0],
-                offset: [0, 0],
-            
-            
-                style: {
-                    fontSize: 16,
-                    colour: "black",
-                    display: Display.Block
-                }
-            }
-        }
-
-        var l: Labellable<Visual>;
         switch (positionalType.name) {
             case (SVGElement.name):
                 element = new SVGElement(pParameters, elementRef)
-                l = new Labellable<SVGElement>({labelMap: {"top": testLabel}}, element, "default", "pulse collection");
+                
+                if (pParameters.labelMap !== undefined) {
+                    element = new Labellable<SVGElement>({labelMap: pParameters.labelMap}, element as SVGElement) 
+                }
+
                 break;
             case (RectElement.name):
-                element = new RectElement(pParameters, elementRef);
-                l = new Labellable<RectElement>({labelMap: {}, offset: [0, 0], padding: [0, 0, 0, 0]}, element, elementRef);
+                element = new RectElement(pParameters, elementRef)
+                if (pParameters.labelMap !== undefined) {
+                    element = new Labellable<RectElement>({labelMap: pParameters.labelMap}, element as RectElement) 
+                }
                 break;
             default:
                 throw new Error("error 1")
         }
 
         
-        this.sequence.mountElement(l, insert);
+        this.sequence.mountElement(element, insert);
     }
 
     // @isMountable

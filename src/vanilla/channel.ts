@@ -9,7 +9,7 @@ import Annotation from "./annotation";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 import Collection, { ICollection } from "./collection";
-import Point from "./point";
+import Point, { ElementTypes } from "./point";
 import Spacial, { Dimensions } from "./spacial";
 import RectElement, { IRectStyle } from "./rectElement";
 import Aligner from "./aligner";
@@ -33,7 +33,7 @@ interface Bounds {
 
 
 export interface IChannel extends ICollection {
-    positionalElements: Visual[],
+    positionalElements: IVisual[],
     identifier: string;
 
     style: IChannelStyle;
@@ -56,6 +56,7 @@ export interface channelAnnotation {
 
 export default class Channel extends Collection {
     static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
+    static ElementType: ElementTypes = "channel"; 
 
     style: IChannelStyle;
     identifier: string;

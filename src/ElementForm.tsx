@@ -14,7 +14,7 @@ import { mountableElements } from './vanilla/default/data';
 import { ISimplePulse } from './vanilla/pulses/simple/simplePulse';
 import { ISvgPulse } from './vanilla/pulses/image/svgPulse';
 import { IChannel } from './vanilla/channel';
-import SVGForm from './form/SVGElementForm';
+import SVGElementForm from './form/SVGElementForm';
 import Parser from './vanilla/parser';
 
 
@@ -35,7 +35,7 @@ function ElementForm(props: {AddCommand: (line: string) => void, commandName: st
     if (Object.keys(simplePulses).includes(props.commandName)) {
         relevantForm = <SimpleForm control={control} change={changedForm}></SimpleForm>
     } else if (Object.keys(svgPulses).includes(props.commandName)) {
-        relevantForm = <SVGForm control={control} change={changedForm}></SVGForm>
+        relevantForm = <SVGElementForm control={control} change={changedForm}></SVGElementForm>
     } else if (props.commandName === "span") {
         
     } else if (props.commandName === "abstract") {

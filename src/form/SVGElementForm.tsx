@@ -14,10 +14,11 @@ import Channel from '../vanilla/channel';
 import { Visual } from '../vanilla/visual';
 import Labellable from '../vanilla/labellable';
 import VisualForm from './VisualForm';
+import { FormRequirements } from './FormHolder';
 
 
 
-const SVGForm: React.FC = (props) => {
+const SVGElementForm: React.FC<FormRequirements> = (props) => {
     const formControls = useFormContext<ISVG>();
 
     /*
@@ -68,6 +69,7 @@ const SVGForm: React.FC = (props) => {
     </div>
     */
   
+
   return (
     <>
     
@@ -98,5 +100,6 @@ const SVGForm: React.FC = (props) => {
     </>
   );
 }
+
     
-export default SVGForm
+export default SVGElementForm

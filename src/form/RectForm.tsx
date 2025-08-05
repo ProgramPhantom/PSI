@@ -1,18 +1,12 @@
 import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
-import * as ReactDOM from 'react-dom';
-import { Control, Controller, FieldValue, FieldValues, useForm, useWatch } from 'react-hook-form';
-import { IText } from '../vanilla/text';
-
-import { Button, ControlGroup, Divider, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
-import MountableForm from './MonutableForm';
 import LabelForm from './LabelForm';
 import ArrowForm from './ArrowForm';
-import { Divide } from '@blueprintjs/icons';
 import SequenceHandler from '../vanilla/sequenceHandler';
 import RectElement, { IRect } from '../vanilla/rectElement';
 import { Visual } from '../vanilla/visual';
-import Channel from '../vanilla/channel';
 import VisualForm from './VisualForm';
+
+
 
 interface IRectForm {
     handler: SequenceHandler, 

@@ -4,6 +4,7 @@ import { FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
 import { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
+import { ElementTypes } from "./point";
 
 export enum Locations {
     Top="top",
@@ -34,6 +35,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             labelMap: {}
         },
     }
+    static ElementType: ElementTypes = "labelled";
 
     parentElement: T;
 

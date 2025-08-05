@@ -5,7 +5,7 @@ import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
 import Form from './Form';
 import Banner from './Banner';
 import FileSaver, { saveAs } from 'file-saver';
-import SVGForm from './form/SVGElementForm';
+import SVGElementForm from './form/SVGElementForm';
 import { Visual } from './vanilla/visual';
 import { UpdateObj } from './vanilla/util';
 import { svgPulses } from './vanilla/default/data/svgPulse';

@@ -18,7 +18,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     console.log("CREATING CANVAS")
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
     let selectedElement = props.selectedElement;
-
+    
     const [zoom, setZoom] = useState(5);
     const [dragging, setDragging] = useState(false);
     const [panning, setPanning] = useState(false);

@@ -151,11 +151,11 @@ export default class Sequence extends Collection {
     // ------------------------
 
     // Content Commands
-    addChannel(name: string, channel: Channel) {
+    addChannel(channel: Channel) {
         this.channelColumn.add(channel);
         
         // Set and initialise channel
-        this.channelsDic[name] = channel; 
+        this.channelsDic[channel.identifier] = channel; 
 
         var index = this.channels.length - 1;
         channel.mountColumns = this.pulseColumns;  // And apply the column ref

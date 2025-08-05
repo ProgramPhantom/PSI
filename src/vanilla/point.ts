@@ -3,8 +3,8 @@ import logger, { Operations } from "./log";
 import Spacial, { Binding, Dimensions } from "./spacial";
 import { posPrecision } from "./util";
 
-
-
+export type ElementTypes = "abstract" | "visual" | "channel" | "labelled"
+export type ID = string;
 
 interface Shift {
     dx?: number,
@@ -38,6 +38,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
             y: undefined,
         },
     }
+    static ElementType: ElementTypes = "abstract"; 
 
     get state(): IPoint {
         return {
@@ -48,11 +49,11 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
     protected _x?: number;
     protected _y?: number;
 
-    private _id: string;
-    public get id(): string {
+    private _id: ID;
+    public get id(): ID {
         return this._id;
     }
-    public set id(value: string) {
+    public set id(value: ID) {
         this._id = value;
     }
 

@@ -6,6 +6,8 @@ import { SVG } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
 import { Orientation } from "./mountable";
 import Labellable, { ILabellable } from "./labellable";
+import { ElementTypes } from "./point";
+import SVGElementForm from "../form/SVGElementForm";
 
 // ----------- TEMPORARY ---------------
 const svgContent: {[path: string]: string} = {}
@@ -44,7 +46,7 @@ export interface ISVG extends IVisual {
 
 export default class SVGElement extends Visual implements ISVG, IDraw {
     static override defaults: {[key: string]: ISVG} = {...<any>svgPulses, "default": svgPulses[180]};
-	getState: () => ISVG = () => { return {
+	get state(): ISVG { return {
         x: this.x,
         y: this.y,
         contentWidth: this.contentWidth,
@@ -54,6 +56,8 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 		path: this.path,
 		style: this.style,
     }}
+	static ElementType: ElementTypes = "visual"; 
+	static form: React.FC = SVGElementForm;
 
 	elementGroup: G = new G();
 	style: ISVGStyle;

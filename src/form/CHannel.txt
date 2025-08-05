@@ -8,21 +8,19 @@ import { IChannel } from '../vanilla/channel';
 import { defaultChannel } from '../vanilla/default/data';
 import ENGINE from '../vanilla/engine';
 import { FormRequirements } from './FormHolder';
-import LabelMapForm from './LabelMapForm';
 
-
-
-interface ChanelFormProps {
-    onSubmit: (data: IChannel) => void 
+interface ChannelFormProps {
+    onSubmit: (data: IChannel) => void
 }
 
-const ChannelForm: React.FC = () => {
-    const formControls = useFormContext();
+const ChannelForm: React.FC<FormRequirements> = () => {
+    const formControls = useFormContext<IChannel>();
     
-
     return (
         <>
-            <ControlGroup vertical={true}>
+            <Tabs defaultSelectedTabId={"core"} animate={false} vertical={false}>
+                <Tab id="core" title="Core" panel={
+                    <ControlGroup vertical={true}>
                         { /* Identifier */}
                         <FormGroup
                         fill={false}
@@ -167,9 +165,17 @@ const ChannelForm: React.FC = () => {
                         </Section>
             
                     </ControlGroup>
+                }/>
+
+                <Tab id="label" title="Label" panel={<LabelForm control={formControls.control} change={() => {}}></LabelForm>}/>
+
+            </Tabs>
         </>
     )
 }
 
+ChannelForm.onSubmit = (data: IChannel) => {
+        ENGINE.handler.channel(data.identifier, data);
+}
 
 export default ChannelForm
