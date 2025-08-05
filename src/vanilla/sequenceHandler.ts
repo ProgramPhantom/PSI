@@ -20,7 +20,9 @@ import Labellable, { ILabellable } from "./labellable";
 import { ILabel } from "./label";
 import { ElementTypes, ID } from "./point";
 import { ElementType } from "react";
-import { ElementTypes, ElementTypes } from "../dnd/DraggableElement";
+
+
+type ElementBundle = IVisual & Partial<ILabellable>
 
 
 export default class SequenceHandler {
@@ -102,36 +104,40 @@ export default class SequenceHandler {
 
 
     // ---- Form interfaces ----
-    public submitElement(pParameters: RecursivePartial<IVisual>, type: ElementTypes) {
+    public submitElement(parameters: ElementBundle, type: ElementTypes): Visual {
         console.log("submitted element")
-        console.log(pParameters)
+        console.log(parameters)
 
+        var element: Visual;
         switch (type) {
             case "abstract":
                 throw new Error("Cannot instantiate abstract object")
                 break;
             case "channel":
-                this.channel(pParameters)
+                this.channel(parameters)
                 break;
-            case "visual":
-                this.addElementFromTemplate(pParameters, "temp ref")
-                break;
+            case "rect":
+            case "svg":
             case "labelled":
-                this.addElementFromTemplate(pParameters, "test ref");
+                element = this.createElement(parameters, type)
+                return element
                 break;
             default:
                 throw new Error(`Unexpected element type "${type}"`)
         }
+
+        throw new Error("Could not create element")
     }
 
-    public submitModifyElement(pParameters: RecursivePartial<IVisual>, type: ElementTypes, target: Visual) {
+    public submitModifyElement(parameters: IVisual, type: ElementTypes, target: Visual): Visual {
         console.log("Submitted element modification")
-        console.log(pParameters)
+        console.log(parameters)
 
         // Delete element
         this.deleteElement(target)
 
-        var newElement = this.submitElement(pParameters, type)
+        var element: Visual = this.submitElement(parameters, type)
+        return element;
     }
 
     public submitDeleteElement(target: Visual) {
@@ -165,7 +171,7 @@ export default class SequenceHandler {
             case (RectElement.name):
                 element = new RectElement(pParameters, elementRef)
                 if (pParameters.labelMap !== undefined) {
-                    element = new Labellable<RectElement>({labelMap: pParameters.labelMap}, element) 
+                    element = new Labellable<RectElement>({labelMap: pParameters.labelMap}, element as RectElement) 
                 }
                 break;
             default:
@@ -177,6 +183,39 @@ export default class SequenceHandler {
         // }
 
         this.sequence.addElement(element);
+    }
+
+    public createElement(parameters: ElementBundle, type: ElementTypes): Visual {
+        var element: Visual;
+        
+        switch (type) {
+            case "svg":
+                element = new SVGElement(parameters)
+                
+                if (parameters.labelMap !== undefined) {
+                    element = new Labellable<SVGElement>({labelMap: parameters.labelMap}, element as SVGElement) 
+                }
+
+                break;
+            case "rect":
+                element = new RectElement(parameters)
+                if (parameters.labelMap !== undefined) {
+                    element = new Labellable<RectElement>({labelMap: parameters.labelMap}, element as RectElement) 
+                }
+                break;
+            default:
+                throw new Error("Cannot create requested element type")
+        }
+
+        
+
+        if (element.mountConfig !== undefined) {
+            this.mountElement(element)
+        } else {
+            this.sequence.addElement(element);
+        }
+
+        return element;
     }
 
     public moveElement(element: Visual) {

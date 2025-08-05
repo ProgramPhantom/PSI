@@ -11,14 +11,15 @@ import ENGINE from './vanilla/engine';
 
 
 interface IFormProps {
-    target?: Visual
+    target?: Visual,
+    changeTarget: (val: Visual | undefined) => void
 }
 
 const Form: React.FC<IFormProps> = (props) => {
     return (
         <>
             <div style={{padding: 20}}>
-                <FormHolder target={props.target}/>
+                <FormHolder target={props.target} changeTarget={props.changeTarget}/>
             </div>
         </>
     ) // Use key in Dynamic form so it forces a remount, triggering the inital values in the form // ?

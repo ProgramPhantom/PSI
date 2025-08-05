@@ -26,24 +26,24 @@ const style: any = {width: "100%",
                 }
 
 interface IEditorProps {
-    handler: SequenceHandler, 
+
 }
 
-const Editor: React.FC<IEditorProps> = (props) => {
+const Editor: React.FC<IEditorProps> = () => {
     return (
         <div style={{padding: 10}}>
 
             <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true}>
                 <SectionCard>
                     <div style={{display: 'flex', flexDirection: "row", gap: "20px 50px", margin: "10px", }}>
-                        <DraggableElement element={ENGINE.PULSE90} handler={props.handler}></DraggableElement>
-                        <DraggableElement element={ENGINE.PULSE180} handler={props.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.PULSE90} handler={ENGINE.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.PULSE180} handler={ENGINE.handler}></DraggableElement>
 
-                        <DraggableElement element={ENGINE.P180} handler={props.handler}></DraggableElement>
-                        <DraggableElement element={ENGINE.AMP} handler={props.handler}></DraggableElement>
-                        <DraggableElement element={ENGINE.ACQUIRE} handler={props.handler}></DraggableElement>
-                        <DraggableElement element={ENGINE.CHIRPHILO} handler={props.handler}></DraggableElement>
-                        <DraggableElement element={ENGINE.CHIRPLOHI} handler={props.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.P180} handler={ENGINE.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.AMP} handler={ENGINE.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.ACQUIRE} handler={ENGINE.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.CHIRPHILO} handler={ENGINE.handler}></DraggableElement>
+                        <DraggableElement element={ENGINE.CHIRPLOHI} handler={ENGINE.handler}></DraggableElement>
                     </div>
                 </SectionCard>
                 

@@ -126,12 +126,12 @@ function App() {
           </div>
           
           <div style={{position: "relative", width: "100%", bottom: "0px"}}>
-            <Editor handler={ENGINE.handler}  ></Editor>
+            <Editor></Editor>
           </div>
         </div>
 
         <div style={{gridColumnStart: 2, gridColumnEnd: 3}}>
-          <Form target={selectedElement}></Form>
+          <Form target={selectedElement} changeTarget={setSelectedElement}></Form>
         </div>
       </div>
       </>

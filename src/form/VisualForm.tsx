@@ -156,6 +156,37 @@ const VisualForm: React.FC = () => {
             </FormGroup>
           </ControlGroup>
         </Section>
+
+        {/* Offset */}
+        <Section style={{borderRadius: 0}}
+          collapseProps={{defaultIsOpen: false}}
+          compact={true}
+          title={"Offset"}
+          collapsible={true}>
+          <ControlGroup
+              vertical={true}
+              >
+              <FormGroup
+                  fill={false}
+                  inline={true}
+                  label="Offset X"
+                  labelFor="text-input">
+                  <Controller control={formControls.control} name="offset.0" render={({field}) => (
+                      <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small"></NumericInput>)}>
+                  </Controller>
+              </FormGroup>
+                    
+              <FormGroup
+              fill={false}
+              inline={true}
+              label="Offset Y"
+              labelFor="text-input">
+              <Controller control={formControls.control} name="offset.1" render={({field}) => (
+                  <NumericInput {...field}  min={-50} max={50} onValueChange={field.onChange}  size="small"></NumericInput>)}>
+              </Controller>
+              </FormGroup>
+          </ControlGroup>
+        </Section>
       
       </ControlGroup>
   );

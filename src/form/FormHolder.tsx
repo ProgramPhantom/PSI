@@ -11,8 +11,9 @@ import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 
 
-interface FormHolder {
+interface FormHolderProps {
     target?:  Visual,
+    changeTarget: (val: Visual | undefined) => void
 }
 
 export interface FormRequirements {
@@ -26,10 +27,10 @@ interface FormActions {
 
 type SubmissionType = (data: any, type: ElementTypes) => void
 type DeleteType = (val: Visual) => void
-type ModifyType = (data: any, type: ElementTypes, target: Visual) => void
+type ModifyType = (data: any, type: ElementTypes, target: Visual) => Visual
 
 
-export function FormHolder(props: FormHolder) {
+export function FormHolder(props: FormHolderProps) {
     var elementType: ElementTypes = props.target === undefined ? "channel" : (props.target.constructor as typeof Visual).ElementType;
     const [labelType, setLabelType] = useState<boolean>((elementType === "labelled" ? true : false))
 
@@ -68,7 +69,6 @@ export function FormHolder(props: FormHolder) {
         } else {
             defaults = props.target?.state!;
         }
-
         formControls.reset(defaults);
     }, [props.target]); 
     // This stops some weird default value caching, don't remove it or code breaks.
@@ -79,7 +79,8 @@ export function FormHolder(props: FormHolder) {
         if (props.target === undefined) {
             submitFunction(data, elementType)
         } else {
-            modifyFunction(data, elementType, props.target)
+            var newElement = modifyFunction(data, elementType, props.target)
+            props.changeTarget(newElement)
         }
     }
 
@@ -88,17 +89,19 @@ export function FormHolder(props: FormHolder) {
 
     return (
         <>
+        <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
+            <h3>{props.target ? props.target.refName : "New Channel"}</h3>
+
+            {props.target !== undefined ? (
+                <button style={{width: "30", height: "30", justifySelf: "end"}} 
+                onClick={() => {deleteFunction(props.target!)}}>
+                        Delete
+                </button>
+            ) : <></>}
+        </div>
         <FormProvider {...formControls}>
             <form onSubmit={formControls.handleSubmit(onSubmit)}>
-                <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
-                    <h3>{props.target ? props.target.refName : "New Channel"}</h3>
 
-                    {props.target !== undefined ? (
-                        <button style={{width: "30", height: "30", justifySelf: "end"}} onClick={() => {deleteFunction(props.target!)}}>
-                                Delete
-                        </button>
-                    ) : <></>}
-                </div>
                 <Tabs defaultSelectedTabId={"core"}>
                     <Tab id={"core"} title={"Core"} panel={
                         <ElementForm target={props.target}></ElementForm>

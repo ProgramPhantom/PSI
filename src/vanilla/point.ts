@@ -3,7 +3,7 @@ import logger, { Operations } from "./log";
 import Spacial, { Binding, Dimensions } from "./spacial";
 import { posPrecision } from "./util";
 
-export type ElementTypes = "abstract" | "visual" | "channel" | "labelled"
+export type ElementTypes = "abstract" | "visual" | "channel" | "labelled" | "svg" | "rect"
 export type ID = string;
 
 interface Shift {
