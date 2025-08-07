@@ -114,9 +114,6 @@ export function FormHolder(props: FormHolderProps) {
     });
 
 
-
-    
-
     // Submit function
     function onSubmit(data: IVisual) {
         var coreValues = coreFormControls.getValues();
@@ -132,11 +129,6 @@ export function FormHolder(props: FormHolderProps) {
         }
     }
 
-    console.log("core: ")
-    console.log(coreFormControls.control._defaultValues)
-    console.log("label: ")
-    console.log(labelFormControls.control._defaultValues)
-
 
     return (
         <>
@@ -145,7 +137,7 @@ export function FormHolder(props: FormHolderProps) {
 
             {props.target !== undefined ? (
                 <button style={{width: "30", height: "30", justifySelf: "end"}} 
-                onClick={() => {deleteFunction(props.target!)}}>
+                onClick={() => {deleteFunction(props.target!); props.changeTarget(undefined)}}>
                         Delete
                 </button>
             ) : <></>}

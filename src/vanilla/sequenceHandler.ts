@@ -186,39 +186,19 @@ export default class SequenceHandler {
     public createElement(parameters: ElementBundle, type: ElementTypes): Visual {
         var element: Visual;
 
-        var testLabel: ILabel = {
-            offset: [0, 0],
-            padding: [0, 0, 3, 0],
-            position: Position.top,
-
-            text: {
-                text: "\\textrm{90}°",
-                padding: [0, 0, 0, 0],
-                offset: [0, 0],
-            
-            
-                style: {
-                    fontSize: 16,
-                    colour: "black",
-                    display: Display.Block
-                }
-            }
-        }
-
-
         switch (type) {
             case "svg":
                 element = new SVGElement(parameters)
                 
                 if (parameters.labels !== undefined) {
-                    element = new Labellable<SVGElement>({labels: [...parameters.labels]}, element as SVGElement) 
+                    element = new Labellable<SVGElement>(parameters, element as SVGElement) 
                 }
 
                 break;
             case "rect":
                 element = new RectElement(parameters)
                 if (parameters.labels !== undefined) {
-                    element = new Labellable<RectElement>({labels: [testLabel, ...parameters.labels]}, element as RectElement) 
+                    element = new Labellable<RectElement>(parameters, element as RectElement) 
                 }
                 break;
             default:
@@ -302,39 +282,20 @@ export default class SequenceHandler {
 
         var element: Visual;
 
-        var testLabel: ILabel = {
-            offset: [0, 0],
-            padding: [0, 0, 3, 0],
-            position: Position.top,
-
-            text: {
-                text: "\\textrm{90}°",
-                padding: [0, 0, 0, 0],
-                offset: [0, 0],
-            
-            
-                style: {
-                    fontSize: 16,
-                    colour: "black",
-                    display: Display.Block
-                }
-            }
-        }
-        pParameters.labels = [testLabel, ...(pParameters.labels ?? [])]
 
         switch (positionalType.name) {
             case (SVGElement.name):
                 element = new SVGElement(pParameters, elementRef)
                 
                 if (pParameters.labels !== undefined) {
-                    element = new Labellable<SVGElement>({labels: pParameters.labels}, element as SVGElement) 
+                    element = new Labellable<SVGElement>(pParameters, element as SVGElement) 
                 }
 
                 break;
             case (RectElement.name):
                 element = new RectElement(pParameters, elementRef)
                 if (pParameters.labels !== undefined) {
-                    element = new Labellable<RectElement>({labels: pParameters.labels}, element as RectElement) 
+                    element = new Labellable<RectElement>(pParameters, element as RectElement) 
                 }
                 break;
             default:

@@ -98,6 +98,24 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 		})
 	}
 
+	override getInternalRepresentation(): Element | undefined {
+        var deltaX
+        var deltaY
+
+		if (this.hasPosition) {
+			deltaX  = -this.contentX
+			deltaY  = -this.contentY
+		} else {
+			deltaX = 0
+			deltaY = 0
+		}
+
+        var internalSVG = this.svg?.clone(true, true).attr({"transform": `translate(${deltaX}, ${deltaY})`});
+        internalSVG?.attr({"style": "display: block;"})
+
+        return internalSVG;
+    }
+
     draw(surface: Element) {
 		if (this.dirty) {
 			// Clear old svg
