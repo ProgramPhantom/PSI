@@ -8,9 +8,8 @@ import { IVisual, Visual } from '../vanilla/visual';
 
 const VisualForm: React.FC = () => {
   const formControls = useFormContext<IVisual>();
-  
-  console.log("vals in vis")
-  console.log(formControls.getValues())
+
+  var vals = formControls.getValues()
   return (
       <ControlGroup vertical={true}>
         {/* Content Width */}
@@ -19,7 +18,7 @@ const VisualForm: React.FC = () => {
             label="Width"
             labelFor="text-input">
                 <Controller control={formControls.control} name="contentWidth" render={({field}) => (
-                    <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
+                    <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"></NumericInput>)}>
                 </Controller>
         </FormGroup>
         
@@ -29,7 +28,7 @@ const VisualForm: React.FC = () => {
             label="Height"
             labelFor="text-input">
             <Controller control={formControls.control} name="contentHeight" render={({field}) => (
-                <NumericInput {...field} onValueChange={field.onChange} min={1} small={true}></NumericInput>)}>
+                <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"></NumericInput>)}>
             </Controller>
         </FormGroup>
         
@@ -97,7 +96,7 @@ const VisualForm: React.FC = () => {
               label="No Sections"
               labelFor="text-input">
               <Controller control={formControls.control} name="mountConfig.noSections" render={({field}) => (
-                <NumericInput {...field} onValueChange={field.onChange} min={1} max={10} small={true}></NumericInput>)}>
+                <NumericInput {...field} onValueChange={field.onChange} size="small"></NumericInput>)}>
               </Controller>
             </FormGroup>
 
@@ -182,7 +181,7 @@ const VisualForm: React.FC = () => {
               label="Offset Y"
               labelFor="text-input">
               <Controller control={formControls.control} name="offset.1" render={({field}) => (
-                  <NumericInput {...field}  min={-50} max={50} onValueChange={field.onChange}  size="small"></NumericInput>)}>
+                  <NumericInput {...field}  min={-50} max={50} onValueChange={field.onChange} size="small"></NumericInput>)}>
               </Controller>
               </FormGroup>
           </ControlGroup>

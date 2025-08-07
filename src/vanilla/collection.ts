@@ -14,7 +14,6 @@ import { G } from "@svgdotjs/svg.js";
 export interface ICollection extends IVisual {
     
 }
-
 export default class Collection<T extends Spacial = Spacial> extends Visual implements IDraw {
     static defaults: {[name: string]: ICollection} = {
         "default": {

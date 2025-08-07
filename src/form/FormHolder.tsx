@@ -9,6 +9,8 @@ import ENGINE from "../vanilla/engine";
 import { Switch, Tab, Tabs } from "@blueprintjs/core";
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
+import { ILabellable } from "../vanilla/labellable";
+import { ElementBundle } from "../vanilla/sequenceHandler";
 
 
 interface FormHolderProps {
@@ -30,20 +32,49 @@ type DeleteType = (val: Visual) => void
 type ModifyType = (data: any, type: ElementTypes, target: Visual) => Visual
 
 
-export function FormHolder(props: FormHolderProps) {
-    var elementType: ElementTypes = props.target === undefined ? "channel" : (props.target.constructor as typeof Visual).ElementType;
-    const [labelType, setLabelType] = useState<boolean>((elementType === "labelled" ? true : false))
-
-
-    var defaults: IVisual;
-    // Decide on form and defaults
-    var ElementForm: React.FC<FormRequirements> | undefined = (props.target?.constructor as typeof Visual)?.form;
-    if (ElementForm === undefined) {
-        ElementForm = ChannelForm
-        defaults = Channel.defaults.default;
+function getCoreDefaults(target: Visual): IVisual {
+    if (Visual.isLabellable(target)) {
+        return target.parentElement.state
     } else {
-        defaults = props.target?.state!;
+        return target.state
     }
+}
+
+export function FormHolder(props: FormHolderProps) {
+    var isLabellable: boolean;
+    var elementType: ElementTypes;
+    var coreDefaults: IVisual;
+    var labelDefaults: ILabellable;
+    var ElementForm: React.FC<FormRequirements> | undefined;
+
+    // Target exists. Decide element type, form type and defaults
+    if (props.target) {
+        
+
+        if (Visual.isLabellable(props.target)) {
+            isLabellable = true;
+            elementType =  (props.target.parentElement.constructor as typeof Visual).ElementType;
+            ElementForm = (props.target?.parentElement.constructor as typeof Visual).form;
+            coreDefaults = props.target.parentElement.state;
+            labelDefaults = props.target.state;
+        } else {
+            isLabellable = false;
+            elementType =  (props.target.constructor as typeof Visual).ElementType;
+            ElementForm = (props.target.constructor as typeof Visual).form;
+            coreDefaults = props.target.state;
+        }
+    } else {
+        isLabellable = false;
+        elementType = "channel";
+        ElementForm = ChannelForm
+        coreDefaults = Channel.defaults.default;
+    }
+
+
+    const [labelType, setLabelType] = useState<boolean>(false);
+    useEffect(() => { setLabelType(isLabellable)}, [props.target])
+
+
     
     // Decide on submit and delete function
     var submitFunction: SubmissionType;
@@ -57,35 +88,55 @@ export function FormHolder(props: FormHolderProps) {
         deleteFunction = ENGINE.handler.submitDeleteElement.bind(ENGINE.handler)
     }
 
-    
-    // Create form hook
-
-    const formControls = useForm<IVisual>({
-        defaultValues:  defaults as DefaultValues<IVisual>
-    });
+    // Resetter (I don't understand why I need this...)
     useEffect(() => {
         if (props.target === undefined) {
-            defaults = Channel.defaults.default;
+            coreDefaults = Channel.defaults.default;
         } else {
-            defaults = props.target?.state!;
+            labelFormControls.reset(labelDefaults)
         }
-        formControls.reset(defaults);
+        
+        coreFormControls.reset(coreDefaults);
+        
     }, [props.target]); 
+    
+
+    // Create form hook
+    const coreFormControls = useForm<IVisual>({
+        defaultValues:  coreDefaults as DefaultValues<IVisual>
+    });
+
     // This stops some weird default value caching, don't remove it or code breaks.
+
+    // Create label hook form
+    const labelFormControls = useForm<ILabellable>({
+        defaultValues:  coreDefaults as DefaultValues<ILabellable>
+    });
+
+
+
     
 
     // Submit function
     function onSubmit(data: IVisual) {
+        var coreValues = coreFormControls.getValues();
+        var labelValues = labelFormControls.getValues();
+        var formData: ElementBundle = {...coreValues, 
+                                       "labels": labelValues.labels}
+        
         if (props.target === undefined) {
             submitFunction(data, elementType)
         } else {
-            var newElement = modifyFunction(data, elementType, props.target)
+            var newElement = modifyFunction(formData, elementType, props.target)
             props.changeTarget(newElement)
         }
     }
 
-    console.log(formControls.control._defaultValues)
-    console.log(defaults)
+    console.log("core: ")
+    console.log(coreFormControls.control._defaultValues)
+    console.log("label: ")
+    console.log(labelFormControls.control._defaultValues)
+
 
     return (
         <>
@@ -99,28 +150,34 @@ export function FormHolder(props: FormHolderProps) {
                 </button>
             ) : <></>}
         </div>
-        <FormProvider {...formControls}>
-            <form onSubmit={formControls.handleSubmit(onSubmit)}>
+        
+            <form onSubmit={coreFormControls.handleSubmit(onSubmit)}>
 
                 <Tabs defaultSelectedTabId={"core"}>
-                    <Tab id={"core"} title={"Core"} panel={
-                        <ElementForm target={props.target}></ElementForm>
-                    }></Tab>
+                    
+                        <Tab id={"core"} title={"Core"} panel={
+                            <FormProvider {...coreFormControls}>
+                                <ElementForm target={props.target}></ElementForm>
+                            </FormProvider>
+                        }></Tab>
+                    
 
                     <Tab id={"label"} title={"Label"} panel={
                         <>
-                        <Switch onChange={() => {setLabelType(!labelType)}}></Switch>
-                        { labelType ? <LabelMapForm></LabelMapForm> : <></>}
+                        <Switch onChange={() => {setLabelType(!labelType)}} checked={labelType}></Switch>
+                        { labelType ? 
+                        <FormProvider {...labelFormControls}>
+                            <LabelMapForm target={props.target}></LabelMapForm> 
+                        </FormProvider>
+                        : <></>}
                         </>
                     }></Tab>
                 </Tabs>
                 
 
                 <input style={{width: "100%", margin: "4px 2px 18px 2px", height: "30px"}} 
-                    type={"submit"} value={props.target !== undefined ? "Modify" : "Add"}></input>
+                    type={"submit"} value={props.target !== undefined ? "Apply" : "Add"}></input>
             </form>
-        </FormProvider>
-
         </>
     );
 }

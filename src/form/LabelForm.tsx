@@ -1,4 +1,4 @@
-import { Control, Controller, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
+import { Control, Controller, ControllerRenderProps, FieldPath, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
 import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
 import { IVisual } from '../vanilla/visual';
 import { ILabellable } from '../vanilla/labellable';
@@ -20,27 +20,34 @@ function LabelForm() {
           helperText="LaTeX input"
           labelFor="text-input">
           
-          <Controller control={formControls.control} name="text.text" render={({field}) => (
-            <InputGroup {...field} id="text" placeholder="\textrm{H}" small={true} />
+          <Controller control={formControls.control} name={"text.text"} render={({field}) => (
+            <InputGroup {...field} id="text" placeholder="90o" size="small" />
             )}>
           </Controller>
           
         </FormGroup>
+
+        {/* Position */}
+        <FormGroup
+          fill={false}
+          inline={true}
+          label="Position"
+          helperText="Label position on parent"
+          labelFor="text-input">
+          
+          <Controller control={formControls.control} name={"position"} render={({field}) => (
+              <HTMLSelect {...field} iconName='caret-down'>
+                  <option value={"top"}>Top</option>
+                  <option value={"bottom"}>Bottom</option>
+                  <option value={"left"}>Left</option>
+                  <option value={"right"}>Right</option>
+              </HTMLSelect>
+            )}>
+          </Controller>
+        </FormGroup>
           
         {/* Visual form */}
-        <Section
-          collapseProps={{defaultIsOpen: false}}
-          compact={true}
-          title={"Padding"}
-          collapsible={true}
-          >
-          <ControlGroup
-            vertical={true}
-            >
-              <VisualForm></VisualForm>
-          </ControlGroup>
-        </Section>
-        
+        <VisualForm></VisualForm>
 
         {/* Style */}
         <Section

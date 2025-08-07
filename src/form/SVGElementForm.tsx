@@ -69,7 +69,7 @@ const SVGElementForm: React.FC<FormRequirements> = (props) => {
     </div>
     */
   
-
+    var values = formControls.getValues()
   return (
     <>
     

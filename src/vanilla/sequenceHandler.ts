@@ -3,14 +3,13 @@ import Sequence from "./sequence";
 import Span, { ISpan } from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
-import Text from "./text";
+import Text, { Position } from "./text";
 import { Display, IVisual, Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import { Script } from "vm";
 import Parser from "./parser";
 import { mountableElements } from "./default/data";
-import { Position } from "@blueprintjs/core";
 import { ILine, Line } from "./line";
 import RectElement, { IRect, } from "./rectElement";
 import SVGElement, { ISVG, } from "./svgElement";
@@ -20,9 +19,10 @@ import Labellable, { ILabellable } from "./labellable";
 import { ILabel } from "./label";
 import { ElementTypes, ID } from "./point";
 import { ElementType } from "react";
+import { IMountConfig } from "./mountable";
 
 
-type ElementBundle = IVisual & Partial<ILabellable>
+export type ElementBundle = IVisual & Partial<ILabellable>
 
 
 export default class SequenceHandler {
@@ -133,10 +133,17 @@ export default class SequenceHandler {
         console.log("Submitted element modification")
         console.log(parameters)
 
+        var mountConfigCopy: IMountConfig | undefined = target.mountConfig
         // Delete element
         this.deleteElement(target)
 
-        var element: Visual = this.submitElement(parameters, type)
+        // Copy hidden parameter channelName
+        if (mountConfigCopy !== undefined && parameters.mountConfig !== undefined) {
+            parameters.mountConfig.channelName = mountConfigCopy.channelName; 
+        }
+
+        var element: Visual = this.submitElement(parameters, type);
+
         return element;
     }
 
@@ -145,16 +152,7 @@ export default class SequenceHandler {
     }
     // ------------------------
 
-
-    public addLabelledElement(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string) {
-        if (pParameters.labelMap === undefined) {
-            throw new Error("No label map found")
-        }
-
-
-    }
-
-    public addElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string) {
+    public addElementFromTemplate(pParameters: RecursivePartial<ElementBundle>, elementRef: string) {
         var positionalType = SequenceHandler.positionalTypes[elementRef];
 
         var element: Visual;
@@ -163,15 +161,15 @@ export default class SequenceHandler {
             case (SVGElement.name):
                 element = new SVGElement(pParameters, elementRef)
                 
-                if (pParameters.labelMap !== undefined) {
-                    element = new Labellable<SVGElement>({labelMap: pParameters.labelMap}, element as SVGElement) 
+                if (pParameters.labels !== undefined) {
+                    element = new Labellable<SVGElement>(pParameters, element as SVGElement) 
                 }
 
                 break;
             case (RectElement.name):
                 element = new RectElement(pParameters, elementRef)
-                if (pParameters.labelMap !== undefined) {
-                    element = new Labellable<RectElement>({labelMap: pParameters.labelMap}, element as RectElement) 
+                if (pParameters.labels !== undefined) {
+                    element = new Labellable<RectElement>(pParameters, element as RectElement) 
                 }
                 break;
             default:
@@ -187,24 +185,44 @@ export default class SequenceHandler {
 
     public createElement(parameters: ElementBundle, type: ElementTypes): Visual {
         var element: Visual;
-        
+
+        var testLabel: ILabel = {
+            offset: [0, 0],
+            padding: [0, 0, 3, 0],
+            position: Position.top,
+
+            text: {
+                text: "\\textrm{90}°",
+                padding: [0, 0, 0, 0],
+                offset: [0, 0],
+            
+            
+                style: {
+                    fontSize: 16,
+                    colour: "black",
+                    display: Display.Block
+                }
+            }
+        }
+
+
         switch (type) {
             case "svg":
                 element = new SVGElement(parameters)
                 
-                if (parameters.labelMap !== undefined) {
-                    element = new Labellable<SVGElement>({labelMap: parameters.labelMap}, element as SVGElement) 
+                if (parameters.labels !== undefined) {
+                    element = new Labellable<SVGElement>({labels: [...parameters.labels]}, element as SVGElement) 
                 }
 
                 break;
             case "rect":
                 element = new RectElement(parameters)
-                if (parameters.labelMap !== undefined) {
-                    element = new Labellable<RectElement>({labelMap: parameters.labelMap}, element as RectElement) 
+                if (parameters.labels !== undefined) {
+                    element = new Labellable<RectElement>({labels: [testLabel, ...parameters.labels]}, element as RectElement) 
                 }
                 break;
             default:
-                throw new Error("Cannot create requested element type")
+                throw new Error(`Cannot create requested element type ${type}`)
         }
 
         
@@ -284,19 +302,39 @@ export default class SequenceHandler {
 
         var element: Visual;
 
+        var testLabel: ILabel = {
+            offset: [0, 0],
+            padding: [0, 0, 3, 0],
+            position: Position.top,
+
+            text: {
+                text: "\\textrm{90}°",
+                padding: [0, 0, 0, 0],
+                offset: [0, 0],
+            
+            
+                style: {
+                    fontSize: 16,
+                    colour: "black",
+                    display: Display.Block
+                }
+            }
+        }
+        pParameters.labels = [testLabel, ...(pParameters.labels ?? [])]
+
         switch (positionalType.name) {
             case (SVGElement.name):
                 element = new SVGElement(pParameters, elementRef)
                 
-                if (pParameters.labelMap !== undefined) {
-                    element = new Labellable<SVGElement>({labelMap: pParameters.labelMap}, element as SVGElement) 
+                if (pParameters.labels !== undefined) {
+                    element = new Labellable<SVGElement>({labels: pParameters.labels}, element as SVGElement) 
                 }
 
                 break;
             case (RectElement.name):
                 element = new RectElement(pParameters, elementRef)
-                if (pParameters.labelMap !== undefined) {
-                    element = new Labellable<RectElement>({labelMap: pParameters.labelMap}, element as RectElement) 
+                if (pParameters.labels !== undefined) {
+                    element = new Labellable<RectElement>({labels: pParameters.labels}, element as RectElement) 
                 }
                 break;
             default:

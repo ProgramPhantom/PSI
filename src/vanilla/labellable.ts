@@ -1,24 +1,19 @@
-import { Svg } from "@svgdotjs/svg.js";
+import { Svg, Element } from "@svgdotjs/svg.js";
 import Label, { ILabel } from "./label";
 import { FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
 import { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
 import { ElementTypes } from "./point";
+import { Position } from "./text";
 
-export enum Locations {
-    Top="top",
-    Right="right",
-    Bottom="bottom",
-    Left="left",
-    Centre="centre"
-}
 
-type Labels = {[key in Locations]?: Label} 
-type ILabels = {[key in Locations]?: ILabel} 
+
+type Labels = {[key in Position]?: Label} 
+type ILabels = {[key in Position]?: ILabel} 
 
 export interface ILabellable extends ICollection {
-    labelMap: ILabels
+    labels?: ILabel[]
 }
 
 
@@ -32,19 +27,31 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             offset: [0, 0],
             padding: [0, 0, 0, 0],
 
-            labelMap: {}
+            labels: []
         },
     }
     static ElementType: ElementTypes = "labelled";
+    get state(): ILabellable { 
+        return {
+        x: this._x,
+        y: this._y,
+        contentWidth: this._contentWidth,
+        contentHeight: this._contentHeight,
+        padding: this.padding,
+        offset: this.offset,
+        labels: this.labels.map((l) => {
+            return l.state
+        }),
+        mountConfig: this.mountConfig
+    }}
+
 
     parentElement: T;
 
-    labelMap: Labels = {};
-    get labels() : Label[] {
-        return Object.values(this.labelMap);
-    }
+
+    labels: Label[] = [];
     
-    constructor(params: RecursivePartial<ILabellable>, parent: T, templateName: string="default", refName: string="label collection") {
+    constructor(params: RecursivePartial<ILabellable>, parent: T, templateName: string="default", refName: string="labellable") {
         var fullParams: ILabellable = FillObject<ILabellable>(params, Labellable.defaults[templateName]);
         super(fullParams, templateName, refName);
 
@@ -56,24 +63,25 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
         this.parentElement = parent;
         this.add(parent, undefined, true);
 
+        fullParams.labels?.forEach((label) => {
+            var newLabel = new Label(label);
+            this.labels.push(newLabel);
+            this.bindLabel(newLabel);
+        })
+    }
 
-        if (fullParams.labelMap !== undefined) {
-                    Object.entries(fullParams.labelMap).forEach(([pos, label]) => {
-            if (label !== undefined) {
-                var newLabel = new Label(label); 
-                this.labelMap[<Locations>pos] = newLabel; // TODO: error check here
-                this.bindLabel(newLabel, <Locations>pos);
-            }})
-        }
+    draw(surface: Element) {
+        super.draw(surface);
+
     }
 
     get id(): string {
         return this.parentElement.id;
     }
 
-    bindLabel(label: Label, pos: Locations) {
-        switch (pos) {
-            case Locations.Top:
+    bindLabel(label: Label) {
+        switch (label.position) {
+            case Position.top:
                 this.removeBind(this.parentElement, Dimensions.Y);
 
                 this.parentElement.bind(label, Dimensions.X, "centre", "centre", undefined, `${this.refName} X> ${label.refName}`);
@@ -86,7 +94,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height;
                 break;
-            case Locations.Right:
+            case Position.right:
                 // Override
                 this.bind(this.parentElement, Dimensions.Y, "far", "far", undefined, `Collection ${this.refName} [far] Y> Child ${this.parentElement.refName} [far]`)
                 
@@ -97,7 +105,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 this.add(label)
                 this._contentWidth = this._contentWidth! + label.width;
                 break;
-            case Locations.Bottom:
+            case Position.bottom:
                 this.bind(this.parentElement, Dimensions.X, "centre", "centre", undefined, `Collection ${this.refName} [centre] X> Child ${this.parentElement.refName} [centre]`, true);
 
                 this.parentElement.bind(label, Dimensions.Y, "far", "here", undefined, `Parent ${this.parentElement.refName} [far] Y> Child ${label.refName} [here]`)
@@ -106,7 +114,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height;
                 break;
-            case Locations.Left:
+            case Position.left:
                 this.removeBind(this.parentElement, Dimensions.X);
 
                 this.bind(label, Dimensions.X, "here", "here", undefined, `${this.refName} X> ${label.refName}`)
@@ -118,7 +126,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 this.add(label);
                 this._contentWidth = this._contentWidth! + label.width;
                 break;
-            case Locations.Centre:
+            case Position.centre:
                 break;
             default:
                 throw new Error("this shouldn't happen");

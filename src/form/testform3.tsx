@@ -22,7 +22,7 @@ interface dsWithClass {
 
 
 const ChannelForm: React.FC = () => {
-    const formControls = useFormContext<dsWithClass>();
+    const formControls = useFormContext();
 
     return (
         <Controller control={formControls.control}></Controller>

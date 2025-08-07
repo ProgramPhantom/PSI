@@ -61,7 +61,7 @@ export function hasMountConfig(element: Visual): element is Visual {
 }
 
 export function posPrecision(val: number): number {
-  // return Math.round(val * 10) / 10;
+  // return Math.round(val * 100) / 100;
   return val;
 }
 

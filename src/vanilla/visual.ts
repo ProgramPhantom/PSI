@@ -6,8 +6,9 @@ import { IAnnotation } from './annotation'
 import { posPrecision, RecursivePartial } from './util'
 import { IMountable, IMountConfig, Mountable, Orientation } from './mountable'
 import { defaultVisual } from './default/data'
-import VisualForm, { IVisualForm } from '../form/VisualForm'
+import VisualForm, { } from '../form/VisualForm'
 import { FormDescriptor } from '../form/FormBase'
+import Labellable from './labellable'
 
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
@@ -166,5 +167,9 @@ export abstract class Visual extends Mountable implements IVisual {
     }
     get drawY(): number {
         return this.contentY + this.offset[1];
+    }
+
+    static isLabellable(val: Visual): val is Labellable {
+        return (val as Labellable).labels !== undefined
     }
 }
