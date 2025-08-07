@@ -6,11 +6,12 @@ import Channel, { IChannel } from "../vanilla/channel";
 import { defaultChannel } from "../vanilla/default/data";
 import ChannelForm from "./ChannelForm"
 import ENGINE from "../vanilla/engine";
-import { Switch, Tab, Tabs } from "@blueprintjs/core";
+import { Button, Icon, Switch, Tab, Tabs } from "@blueprintjs/core";
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import { ILabellable } from "../vanilla/labellable";
 import { ElementBundle } from "../vanilla/sequenceHandler";
+import { myToaster } from "../App";
 
 
 interface FormHolderProps {
@@ -133,13 +134,13 @@ export function FormHolder(props: FormHolderProps) {
     return (
         <>
         <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
-            <h3>{props.target ? props.target.refName : "New Channel"}</h3>
+            <span style={{width: "100%"}}><h3>{props.target ? props.target.refName : "New Channel"}</h3></span>
 
             {props.target !== undefined ? (
-                <button style={{width: "30", height: "30", justifySelf: "end"}} 
-                onClick={() => {deleteFunction(props.target!); props.changeTarget(undefined)}}>
-                        Delete
-                </button>
+                <Button style={{height: "30px", alignSelf: "center"}} icon="trash" intent="danger"
+                    onClick={() => {deleteFunction(props.target!); props.changeTarget(undefined); 
+                    myToaster.show({message: "Deleted element", intent: "danger"})}}>
+                </Button>
             ) : <></>}
         </div>
         

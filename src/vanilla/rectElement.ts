@@ -7,6 +7,7 @@ import defaultBar from "./default/data/bar.json";
 import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
 import { Element } from "@svgdotjs/svg.js";
+import { ElementTypes } from "./point";
 
 export interface IRectStyle {
 	fill: string,
@@ -22,7 +23,6 @@ export default class RectElement extends Visual implements IRect, IDraw {
 	static defaults: {[key: string]: IRect } = {...<any>simplePulses,
         "bar": <any>defaultBar
     };
-
     getState: () => IRect = () => { return {
         x: this.x,
         y: this.y,
@@ -32,6 +32,7 @@ export default class RectElement extends Visual implements IRect, IDraw {
         offset: this.offset,
         style: this.style,
     }}
+    static ElementType: ElementTypes = "rect"; 
 
 	style: IRectStyle;	
 

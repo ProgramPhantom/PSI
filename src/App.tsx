@@ -17,8 +17,12 @@ import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
 import Channel from './vanilla/channel';
 import Labellable from './vanilla/labellable';
+import { OverlayToaster, Toaster } from '@blueprintjs/core';
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
+
+export const myToaster: Toaster = await OverlayToaster.create({ position: "bottom-right",  });
+
 
 const style = {
   display: "flex",

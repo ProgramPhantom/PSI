@@ -51,7 +51,7 @@ function LabelMapForm(props: ILabelMapProps) {
       <CardList compact={true}>
         {labels.map((label, i) => (
           <Card key={i.toString()}>
-            <span >{label.text.text}</span>
+            <span style={{width: "100%"}} >{label.text.text}</span>
             <Button style={{color: "red"}} value={i} key={i} name="delete"
                     onClick={() => {deleteLabel(i)}}>Delete</Button>
           </Card>
