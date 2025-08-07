@@ -115,7 +115,7 @@ class Logger {
                                           `%c[BROADCAST]`,
                                           `%c: `,
 
-                                          `%c"${from.refName}" `,
+                                          `%c"${from.ref}" `,
                                           `%cis starting the following `,
                                           `%c"${functionName}()"`]
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
@@ -131,14 +131,14 @@ class Logger {
     }
 
     operation(operation: Operations, message: string, caller?: Point) {
-        if (operation === Operations.BIND && caller?.refName === "label collection") {
+        if (operation === Operations.BIND && caller?.ref === "label collection") {
             console.log()
         }
         var formattedMessage: string[] = [`%c${this.getTime()} `, 
                                           `%c[${Levels.OPERATION}]`, 
                                           `%c: `, 
 
-                                          caller ? `%c"${caller.refName}" %ccalls ` : `%c%c`,
+                                          caller ? `%c"${caller.ref}" %ccalls ` : `%c%c`,
                                           `%c${operation}() `, 
                                           `%c${message}`]
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
@@ -159,7 +159,7 @@ class Logger {
         var formattedMessage = [`%c${this.getTime()} `, 
                                 `%c[${Levels.PROCESS_START}]`, 
                                 `%c: `, 
-                                caller ? `%c"${caller.refName}" %cstarts ` : `%c`,
+                                caller ? `%c"${caller.ref}" %cstarts ` : `%c`,
                                 `%c${process}() `, 
                                 `%c${message}`]
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
@@ -180,7 +180,7 @@ class Logger {
                                 `%c[${Levels.PROCESS_END}]`, 
                                 `%c: `, 
 
-                                caller ? `%c"${caller.refName}" %cends ` : `%c%c`,
+                                caller ? `%c"${caller.ref}" %cends ` : `%c%c`,
                                 `%c${process}()`, 
                                 `%c> ${message}`]
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c);

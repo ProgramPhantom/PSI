@@ -40,7 +40,7 @@ class SequenceDropInterpreter {
                            y: channel.y, 
                            width: this.slitherWidth, 
                            height: channel.upperAligner.contentHeight! + channel.padding[0]},
-                    index: columnIndex, orientation: Orientation.top, channelName: name, insert: true,
+                    index: columnIndex, orientation: Orientation.top, channelID: name, insert: true,
                 };
                 this.insertAreas.push(newSlither)
 
@@ -50,7 +50,7 @@ class SequenceDropInterpreter {
                         y: channel.lowerAligner.y, 
                         width: this.slitherWidth, 
                         height: channel.lowerAligner.contentHeight! + channel.padding[2]},
-                    index: columnIndex, orientation: Orientation.bottom, channelName: name, insert: true
+                    index: columnIndex, orientation: Orientation.bottom, channelID: name, insert: true
                 };
                 this.insertAreas.push(newSlither)
 
@@ -65,7 +65,7 @@ class SequenceDropInterpreter {
                                y: channel.contentY, 
                                width: columnWidth - this.slitherWidth, 
                                height: upperAlignerHeight}, 
-                        index: columnIndex, orientation: Orientation.top, channelName: name, insert: false}
+                        index: columnIndex, orientation: Orientation.top, channelID: name, insert: false}
                     this.insertAreas.push(newBlock);
 
                     // Bottom block
@@ -74,7 +74,7 @@ class SequenceDropInterpreter {
                                y: channel.lowerAligner.y, 
                                width: columnWidth - this.slitherWidth, 
                                height: lowerAlignerHeight}, 
-                        index: columnIndex, orientation: Orientation.bottom, channelName: name, insert: false}
+                        index: columnIndex, orientation: Orientation.bottom, channelID: name, insert: false}
                     this.insertAreas.push(newBlock);
                 } 
             })
@@ -98,7 +98,7 @@ class SequenceDropInterpreter {
                            y: channel.y, 
                            width: this.slitherWidth, 
                            height: upperAlignerHeight},
-                    index: i+1, orientation: Orientation.top, channelName: name, insert: true,
+                    index: i+1, orientation: Orientation.top, channelID: name, insert: true,
                 };
                 this.insertAreas.push(newSlither)
 
@@ -108,7 +108,7 @@ class SequenceDropInterpreter {
                            y: channel.lowerAligner.y, 
                            width: this.slitherWidth, 
                            height: lowerAlignerHeight + channel.padding[2]},
-                    index: i+1, orientation: Orientation.bottom, channelName: name, insert: true
+                    index: i+1, orientation: Orientation.bottom, channelID: name, insert: true
                 };
                 this.insertAreas.push(newSlither)
         })
@@ -145,7 +145,7 @@ function DropField(props: {sequence: SequenceHandler}) {
     <div>
         {areaGenerator.insertAreas?.map((insertArea) => {
             return (                               // This fixes an enormous, impossible to fix problem
-                <InsertArea areaSpec={insertArea} key={insertArea.channelName + insertArea.index + insertArea.insert + insertArea.orientation}></InsertArea>
+                <InsertArea areaSpec={insertArea} key={insertArea.channelID + insertArea.index + insertArea.insert + insertArea.orientation}></InsertArea>
             )
             })
         }

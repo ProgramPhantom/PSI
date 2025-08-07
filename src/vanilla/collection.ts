@@ -23,6 +23,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             y: undefined,
             offset: [0, 0],
             padding: [0, 0, 0, 0],
+            ref: "default-collection"
         },
     }
 
@@ -40,7 +41,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             this.svg.remove();
         }
 
-        var group = new G().id(this.id).attr({"title": this.refName});
+        var group = new G().id(this.id).attr({"title": this.ref});
 
         this.children.forEach((c) => {
             if (doesDraw(c)) {
@@ -59,8 +60,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         child.subscribe(this.computeBoundary.bind(this));
 
         if (bindHere) {
-            this.bind(child, Dimensions.X, "here", "here", undefined, `Collection ${this.refName} X> Child ${child.refName}`, true);
-            this.bind(child, Dimensions.Y, "here", "here", undefined, `Collection ${this.refName} Y> Child ${child.refName}`, true);
+            this.bind(child, Dimensions.X, "here", "here", undefined, `Collection ${this.ref} X> Child ${child.ref}`, true);
+            this.bind(child, Dimensions.Y, "here", "here", undefined, `Collection ${this.ref} Y> Child ${child.ref}`, true);
         }
 
         if (this.isResolved) {
@@ -121,7 +122,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this)
 
         if (this.children.filter((f) => f.displaced === true).length > 0) {
-            logger.performance(`ABORT COMPUTE BOUNDARY[${typeof this}]: ${this.refName}`)
+            logger.performance(`ABORT COMPUTE BOUNDARY[${typeof this}]: ${this.ref}`)
             console.groupEnd()
             return
         }
@@ -185,7 +186,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             right: right
         }
 
-        logger.processEnd(Processes.COMPUTE_BOUNDARY, `${this.refName}`, this)
+        logger.processEnd(Processes.COMPUTE_BOUNDARY, `${this.ref}`, this)
     }
 
     // Construct and SVG with children positioned relative to (0, 0)

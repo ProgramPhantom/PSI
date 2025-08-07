@@ -23,19 +23,6 @@ const ChannelForm: React.FC = () => {
     return (
         <>
             <ControlGroup vertical={true}>
-                        { /* Identifier */}
-                        <FormGroup
-                        fill={false}
-                        inline={true}
-                        label="Identifier"
-                        helperText="Name of channel"
-                        labelFor="text-input">
-                            <Controller control={formControls.control} name="identifier" render={({field}) => (
-                                <InputGroup {...field} id="text" placeholder="h" small={true} />
-                                )}>
-                            </Controller>
-                        </FormGroup>
-                        
                         {/* Padding */}
                         <Section
                             collapseProps={{defaultIsOpen: false}}

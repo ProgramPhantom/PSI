@@ -102,7 +102,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                         >
 
                                         <CanvasDraggableElement handler={ENGINE.handler} 
-                                                                name={selectedElement.refName} 
+                                                                name={selectedElement.ref} 
                                                                 element={selectedElement}
                                                                 x={selectedElement.x} 
                                                                 y={selectedElement.y}>

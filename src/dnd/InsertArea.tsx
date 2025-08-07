@@ -3,6 +3,7 @@ import { ElementTypes } from "./DraggableElement";
 import { CSSProperties } from "react";
 import { IDrop } from "./CanvasDropContainer";
 import { Orientation } from "../vanilla/mountable";
+import { ID } from "../vanilla/point";
 
 interface Rect {
     x: number,
@@ -13,7 +14,7 @@ interface Rect {
 
 export interface AddSpec {
     area: Rect,
-    channelName: string,
+    channelID: ID,
     index: number,
     orientation: Orientation,
     insert: boolean,
@@ -21,7 +22,7 @@ export interface AddSpec {
 
 export interface IInsertAreaResult extends IDrop {
   index: number,
-  channelName: string,
+  channelID: ID,
   orientation: Orientation,
   insert: boolean,
 }
@@ -31,7 +32,7 @@ function InsertArea(props: {areaSpec: AddSpec, key: string}) {
         accept: [ElementTypes.PREFAB, ElementTypes.CANVAS_ELEMENT],
         drop: () => ({ 
             index: props.areaSpec.index, 
-            channelName: props.areaSpec.channelName,
+            channelID: props.areaSpec.channelID,
             insert: props.areaSpec.insert,
             orientation: props.areaSpec.orientation,
             dropEffect: "insert"} as IInsertAreaResult),
@@ -67,7 +68,7 @@ function InsertArea(props: {areaSpec: AddSpec, key: string}) {
     
 
     return (
-        <div ref={drop} style={{ ...style, backgroundColor}} data-testid={props.areaSpec.channelName + props.areaSpec.index}
+        <div ref={drop} style={{ ...style, backgroundColor}} data-testid={props.areaSpec.channelID + props.areaSpec.index}
                 key={props.key}
                 >
             

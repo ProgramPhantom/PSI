@@ -21,58 +21,9 @@ import { FormRequirements } from './FormHolder';
 const SVGElementForm: React.FC<FormRequirements> = (props) => {
     const formControls = useFormContext<ISVG>();
 
-    /*
-    const { control, handleSubmit, formState: {isDirty, dirtyFields} } = useForm<Partial<ISVG>>({
-        defaultValues: {
-            path: props.values.path,
-            style: props.values.style,
-            offset: props.values.offset,
-            padding: props.values.padding,
-            mountConfig: props.values.mountConfig,
-            contentHeight: props.values.contentHeight,
-            contentWidth: props.values.contentWidth
-        },
-        mode: "onChange"
-    });
-
-        const onSubmit = (data: ISVG) => {
-    // Create new element
-    var newSVG: SVGElement = new SVGElement(data);
-
-    if (props.target !== undefined) {
-        // MODIFICATION
-        props.handler.replaceElement(props.target, newSVG)
-    } else {
-        // ADDITION
-        props.handler.mountElementFromTemplate(data, "180",)
-    }
-
-    // Select this new element
-    props.reselect(newSVG);
-    };
-
-    const deleteMe = () => {
-    if (props.target === undefined) {return} 
-
-    props.handler.deleteElement(props.target);
-    props.reselect(undefined);
-    }
-
-    <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
-        <h3>{props.target ? props.target.refName : "Rect pulse"}</h3>
-
-        {props.target !== undefined ? (
-            <button style={{width: "30", height: "30", justifySelf: "end"}} onClick={() => deleteMe()}>
-                    Delete
-            </button>
-        ) : <></>}
-    </div>
-    */
-  
-    var values = formControls.getValues()
-  return (
+    return (
     <>
-    
+
         {/* SVG Specific fields */}
         <FormGroup
             fill={false}
@@ -98,7 +49,7 @@ const SVGElementForm: React.FC<FormRequirements> = (props) => {
         
         <VisualForm></VisualForm>
     </>
-  );
+    );
 }
 
     

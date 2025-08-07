@@ -9,7 +9,6 @@ import { IVisual, Visual } from '../vanilla/visual';
 const VisualForm: React.FC = () => {
   const formControls = useFormContext<IVisual>();
 
-  var vals = formControls.getValues()
   return (
       <ControlGroup vertical={true}>
         {/* Content Width */}

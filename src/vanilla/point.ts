@@ -18,7 +18,7 @@ export interface Place {
 
 
 export interface IElement {
-
+    ref: string
 }
 
 export interface IPoint extends IElement {
@@ -36,6 +36,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
         "default": {
             x: undefined,
             y: undefined,
+            ref: "default"
         },
     }
     static ElementType: ElementTypes = "abstract"; 
@@ -44,6 +45,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
         return {
         x: this._x,
         y: this._y,
+        ref: this.ref
     }}
 
     protected _x?: number;
@@ -57,7 +59,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
         this._id = value;
     }
 
-    refName: string;
+    ref: string;
 
     bindings: Binding[] = [];  // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
 
@@ -67,7 +69,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
         this.x = x;
         this.y = y;
 
-        this.refName = refName;
+        this.ref = refName;
 
         this._id = Math.random().toString(16).slice(2);
     }

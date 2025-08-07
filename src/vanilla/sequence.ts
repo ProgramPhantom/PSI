@@ -32,7 +32,7 @@ export default class Sequence extends Collection {
 
     channelsDic: {[name: string]: Channel;} = {};
     get channels(): Channel[] {return Object.values(this.channelsDic)}
-    get channelNames(): string[] {return Object.keys(this.channelsDic)}
+    get channelIDs(): string[] {return Object.keys(this.channelsDic)}
 
 
     grid: Grid;
@@ -155,7 +155,7 @@ export default class Sequence extends Collection {
         this.channelColumn.add(channel);
         
         // Set and initialise channel
-        this.channelsDic[channel.identifier] = channel; 
+        this.channelsDic[channel.id] = channel; 
 
         var index = this.channels.length - 1;
         channel.mountColumns = this.pulseColumns;  // And apply the column ref
@@ -177,14 +177,14 @@ export default class Sequence extends Collection {
 
     // @isMountable...
     public mountElement(element: Visual, insert: boolean=false) {
-        logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${element.refName} -------`, this);
+        logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${element.ref} -------`, this);
         if (element.mountConfig === undefined) {
             throw new Error("Cannot mount element without mount config")
             return
         }
         element.mountConfig.mountOn = true;
 
-        var targetChannel: Channel = this.channelsDic[element.mountConfig.channelName];
+        var targetChannel: Channel = this.channelsDic[element.mountConfig.channelID];
         var numColumns = this.pulseColumns.children.length;
         
         var INDEX = element.mountConfig.index;
@@ -203,7 +203,7 @@ export default class Sequence extends Collection {
         } else if (insert === false) {
             // Check element is already there
             if (targetChannel.mountOccupancy[INDEX] !== undefined) {
-                throw new Error(`Cannot place element ${element.refName} at index ${element.mountConfig.index} as it is already occupied.`)
+                throw new Error(`Cannot place element ${element.ref} at index ${element.mountConfig.index} as it is already occupied.`)
             }
         }
         
@@ -232,8 +232,8 @@ export default class Sequence extends Collection {
     // @isMounted
     // Remove column is set to false when modifyPositional is called.
     deleteMountedElement(target: Visual, removeColumn: boolean=true): void {
-        var channelName: string = target.mountConfig!.channelName;
-        var channel: Channel | undefined = this.channelsDic[channelName]
+        var channelID: string = target.mountConfig!.channelID;
+        var channel: Channel | undefined = this.channelsDic[channelID]
         var channelIndex: number = this.channels.indexOf(channel);
         var index: number;
 
@@ -242,7 +242,7 @@ export default class Sequence extends Collection {
         }
         index = target.mountConfig!.index;
 
-        if (channelName === undefined) {
+        if (channelID === undefined) {
             console.warn("Positional not connected to channel")
             return undefined
         }

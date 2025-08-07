@@ -20,7 +20,8 @@ export default class Label extends Collection implements ILabel {
             padding: [0, 0, 0, 0],
 
             text: Text.defaults["default"],
-            position: Position.top
+            position: Position.top,
+            ref: "default-label"
         }
     }
     get state(): ILabel {
@@ -32,7 +33,8 @@ export default class Label extends Collection implements ILabel {
             text: this.text.state,
             offset: this.offset,
             padding: this.padding,
-            position: this.position
+            position: this.position,
+            ref: this.ref
         }
     }
 
@@ -47,7 +49,7 @@ export default class Label extends Collection implements ILabel {
         this.position = fullParams.position;
         this.add(this.text);
 
-        this.bind(this.text, Dimensions.X, "centre", "centre", undefined, `Collection ${this.refName} [centre] X> Child ${this.text.refName} [centre]`, true);
-        this.bind(this.text, Dimensions.Y, "centre", "centre", undefined, `Collection ${this.refName} [centre] Y> Child ${this.text.refName} [centre]`, true);
+        this.bind(this.text, Dimensions.X, "centre", "centre", undefined, `Collection ${this.ref} [centre] X> Child ${this.text.ref} [centre]`, true);
+        this.bind(this.text, Dimensions.Y, "centre", "centre", undefined, `Collection ${this.ref} [centre] Y> Child ${this.text.ref} [centre]`, true);
     }
 }

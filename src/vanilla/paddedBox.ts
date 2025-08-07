@@ -34,6 +34,7 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
             contentWidth: 0,
             contentHeight: 0,
             padding: [0, 0, 0, 0],
+            ref: "default-paddedbox"
         },
     }
 
@@ -42,7 +43,8 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
         y: this._y,
         contentWidth: this._contentWidth,
         contentHeight: this._contentHeight,
-        padding: this.padding
+        padding: this.padding,
+        ref: this.ref
     }}
 
     padding: [number, number, number, number] = [0, 0, 0, 0];

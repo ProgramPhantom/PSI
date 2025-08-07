@@ -61,58 +61,6 @@ function App() {
     }
 
     setSelectedElement(element);
-
-    // Form stuff
-
-    /*
-
-
-    if (element instanceof Labellable) {
-      if (element.isMountable === false) {
-        return
-        throw new Error("Not implemented")
-      }
-
-        let scaffold: ISVG = {...(svgPulses["180"] as any), ...defaultMountable}
-        let data: ISVG = Object.assign(element.parentElement)
-        // Use object.assign as spread operator does not include properties such as contentHeight
-        // as they are found in the prototype.
-
-        // React Hook Forms breaks if the class object is used as the default vals.
-        // Therefore, this keeps only the properties concerned for ISVG
-        var elementSVGData: ISVG = UpdateObj(scaffold, data);
-        // Currently "svgPulses[180]" is used simply to have an object with all data required for UpdateObj
-        // to work. Every piece of data will be overridden.
-        
-        
-        var newForm: ReactNode = <SVGForm 
-                                  handler={ENGINE.handler} 
-                                  values={(elementSVGData as ISVG)} 
-                                  target={element}
-                                  reselect={SelectElement}></SVGForm>
-      
-        setForm(newForm);
-    } 
-    else if (element instanceof RectElement) {
-      if (element.isMountable === false) {
-        throw new Error("Not implemented")
-      }
-
-      let scaffold: IRect = {...(simplePulses["pulse180"] as any), ...defaultMountable}
-      let data: IRect = Object.assign(element)
-
-      // var elementRectData: PositionalRect = {...positional.element, config: positional.config};
-      var elementRectData = UpdateObj(scaffold, data);
-
-      var channel: Channel = ENGINE.handler.sequence.channelsDic[element.mountConfig!.channelName]
-      var newForm: ReactNode = <RectForm 
-                handler={ENGINE.handler} 
-                values={(elementRectData as IRect)} 
-                target={element} 
-                reselect={SelectElement}></RectForm>
-      setForm(newForm)
-    }
-    */
   }
 
 

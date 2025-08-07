@@ -44,7 +44,8 @@ export abstract class Visual extends Mountable implements IVisual {
         contentWidth: this._contentWidth,
         contentHeight: this._contentHeight,
         padding: this.padding,
-        offset: this.offset
+        offset: this.offset,
+        ref: this.ref
     }}
 
     offset: [number, number];
@@ -117,10 +118,10 @@ export abstract class Visual extends Mountable implements IVisual {
         if (this._x !== undefined) {
             return this._x;
         }
-        throw new Error(`x unset in ${this.refName}`);
+        throw new Error(`x unset in ${this.ref}`);
     }
     override set y(val: number) {
-        if (this.refName === "text in label" && val === 25) {
+        if (this.ref === "text in label" && val === 25) {
             console.log()
         }
         if (val !== this._y) {
@@ -134,7 +135,7 @@ export abstract class Visual extends Mountable implements IVisual {
         if (this._y !== undefined) {
             return this._y;
         }
-        throw new Error(`y unset in ${this.refName}` );
+        throw new Error(`y unset in ${this.ref}` );
     }
 
     override get contentWidth() : number | undefined {

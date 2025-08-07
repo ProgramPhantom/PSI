@@ -1,5 +1,6 @@
 import { defaultMountable } from "./default/data";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
+import { ID } from "./point";
 import { Visual } from "./visual";
 
 
@@ -10,7 +11,7 @@ export enum Alignment { here=<any>"here", centre=<any>"centre", far=<any>"far", 
 
 export interface IMountConfig {
     index: number,
-    channelName: string,
+    channelID: ID,
 
     orientation: Orientation,
     alignment: Alignment,

@@ -38,7 +38,8 @@ export default class Text extends Visual implements IText {
             text: this.text,
             offset: this.offset,
             padding: this.padding,
-            style: this.style
+            style: this.style,
+            ref: this.ref
         }
     }
 

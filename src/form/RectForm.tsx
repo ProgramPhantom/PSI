@@ -48,7 +48,7 @@ const RectForm: React.FC<IRectForm> = (props) => {
     return (
         <>
             <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
-                <h3>{props.target ? props.target.refName : "Rect pulse"}</h3>
+                <h3>{props.target ? props.target.ref : "Rect pulse"}</h3>
                 {props.target !== undefined ? (
                 <button style={{width: "30", height: "30", justifySelf: "end"}} onClick={() => deleteMe()}>
                     delete

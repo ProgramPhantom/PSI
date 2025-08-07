@@ -66,7 +66,7 @@ export default class SequenceHandler {
     syncExternal: () => void;
 
     get channels(): Channel[] {return this.sequence.channels}
-    hasChannel(name: string): boolean {return this.sequence.channelNames.includes(name)}
+    hasChannel(name: string): boolean {return this.sequence.channelIDs.includes(name)}
 
     constructor(surface: Svg, emitChange: () => void) {
         this.syncExternal = emitChange;
@@ -78,15 +78,6 @@ export default class SequenceHandler {
 
     // TODO: forced index for channel addition
     channel(pParameters: RecursivePartial<IChannel>, index?: number) {
-        if (pParameters.identifier === undefined) {
-            alert(`Channel id not provided`)
-            return
-        }
-        if (this.sequence.channelNames.includes(pParameters.identifier)) {
-            alert(`Duplicate channel name: ${pParameters.identifier}`)
-            return
-        }
-
         var newChannel = new Channel(pParameters);
         this.sequence.addChannel(newChannel);
         this.draw()
@@ -137,9 +128,9 @@ export default class SequenceHandler {
         // Delete element
         this.deleteElement(target)
 
-        // Copy hidden parameter channelName
+        // Copy hidden parameter channelID
         if (mountConfigCopy !== undefined && parameters.mountConfig !== undefined) {
-            parameters.mountConfig.channelName = mountConfigCopy.channelName; 
+            parameters.mountConfig.channelID = mountConfigCopy.channelID; 
         }
 
         var element: Visual = this.submitElement(parameters, type);

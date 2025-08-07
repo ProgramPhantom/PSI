@@ -23,7 +23,7 @@ export default class RectElement extends Visual implements IRect, IDraw {
 	static defaults: {[key: string]: IRect } = {...<any>simplePulses,
         "bar": <any>defaultBar
     };
-    getState: () => IRect = () => { return {
+    get state(): IRect { return {
         x: this.x,
         y: this.y,
         contentWidth: this.contentWidth,
@@ -31,6 +31,7 @@ export default class RectElement extends Visual implements IRect, IDraw {
         padding: this.padding,
         offset: this.offset,
         style: this.style,
+        ref: this.ref
     }}
     static ElementType: ElementTypes = "rect"; 
 

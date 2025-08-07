@@ -34,7 +34,6 @@ interface Bounds {
 
 export interface IChannel extends ICollection {
     positionalElements: IVisual[],
-    identifier: string;
 
     style: IChannelStyle;
 
@@ -59,7 +58,6 @@ export default class Channel extends Collection {
     static ElementType: ElementTypes = "channel"; 
 
     style: IChannelStyle;
-    identifier: string;
 
     // Upper and Lower aligners are responsible for binding the elements to the bar,
     // and carrying a height used to structure the channel.
@@ -88,7 +86,7 @@ export default class Channel extends Collection {
         if (this._labelColumn !== undefined) {
             return this._labelColumn;
         }
-        throw new Error(`Label column has not been set for channel ${this.identifier}`)
+        throw new Error(`Label column has not been set for channel ${this.id}`)
     }
     
     // A collection of columns to align this channel's positionals to
@@ -97,7 +95,7 @@ export default class Channel extends Collection {
         if (this._mountColumns !== undefined) {
             return this._mountColumns;
         }
-        throw new Error(`Positional Columns have not been set for channel: ${this.identifier}`)
+        throw new Error(`Positional Columns have not been set for channel: ${this.id}`)
     }
     public set mountColumns(value: Aligner<Aligner<Visual>>) {
         this._mountColumns = value;
@@ -130,8 +128,6 @@ export default class Channel extends Collection {
         this.padding = fullParams.padding;
         // SIDE PADDING is not permitted for channels as it would break alignment
 
-        this.identifier = fullParams.identifier;
-
         this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, minCrossAxis: 30}, "default", `top aligner`);
         // this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, `CHANNEL Y> UPPER ALIGNER`);
         this.add(this.upperAligner, undefined, true)
@@ -162,7 +158,7 @@ export default class Channel extends Collection {
         if (element.mountConfig === undefined) {
             throw new Error("Cannot mount element with uninitialised mount config.")
         } 
-        element.mountConfig.channelName = this.identifier;
+        element.mountConfig.channelID = this.id;
 
         var element: Visual = element;  // Extract element from positional framework
         var config: IMountConfig = element.mountConfig!;

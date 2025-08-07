@@ -2,7 +2,7 @@
     "positionalElements": [],
     "padding": [0, 0, 0, 0], 
     "offset": [0, 0],
-    "identifier": "h",
+    "ref": "my-channel",
 
     "style": {
         "thickness": 3,

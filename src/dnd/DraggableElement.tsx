@@ -71,7 +71,7 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
       const dropResult = monitor.getDropResult<IInsertAreaResult>();
 
       if (item && dropResult) {
-        props.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.refName, dropResult.insert)
+        props.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert)
         props.handler.draw();
       }
     },
@@ -114,7 +114,7 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
                  dangerouslySetInnerHTML={{__html: copy?.svg()!}}>
 
             </svg>
-            <span style={{margin: "15px 0px 0px 0px"}}>"{props.element.refName}"</span>
+            <span style={{margin: "15px 0px 0px 0px"}}>"{props.element.ref}"</span>
       </div>
     )
     

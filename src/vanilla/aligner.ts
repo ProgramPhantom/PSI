@@ -69,19 +69,19 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
             // child here bind
             if (preChild !== undefined) {  // Bind the before child to this child
-                preChild.bind(child, this.mainAxis, "far", "here", undefined, `${preChild.refName} ${this.mainAxis}> ${child.refName}`, false);
+                preChild.bind(child, this.mainAxis, "far", "here", undefined, `${preChild.ref} ${this.mainAxis}> ${child.ref}`, false);
                 preChild.enforceBinding();
 
             } else { // this is the first element, bind to this
                 this.clearBindings(this.mainAxis);
 
-                this.bind(child, this.mainAxis, "here", "here", undefined, `${this.refName} ${this.mainAxis}> ${child.refName}`);
+                this.bind(child, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`);
                 this.enforceBinding();
             }
 
             // Child far bound
             if (postChild !== undefined) {
-                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, `${this.refName} ${this.mainAxis}> ${child.refName}`, false);
+                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`, false);
                 child.enforceBinding();
             }
         }
@@ -92,13 +92,13 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             case Alignment.none:
                 break;
             case Alignment.here:
-                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.refName} [here] ${this.crossAxis}> ${child.refName} [here]`);
+                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.ref} [here] ${this.crossAxis}> ${child.ref} [here]`);
                 break;
             case Alignment.centre:
-                this.bind(child, this.crossAxis, "centre", "centre", undefined, `${this.refName} [centre] ${this.crossAxis}> ${child.refName} [centre]`);
+                this.bind(child, this.crossAxis, "centre", "centre", undefined, `${this.ref} [centre] ${this.crossAxis}> ${child.ref} [centre]`);
                 break;
             case Alignment.far:
-                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.refName} [far] ${this.crossAxis}> ${child.refName} [far]`);
+                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.ref} [far] ${this.crossAxis}> ${child.ref} [far]`);
                 break;
         }
 
@@ -138,7 +138,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 preChild.removeBind(target);
 
                 if (postChild) {
-                    preChild.bind(postChild, this.mainAxis, "far", "here", undefined, `${preChild.refName} ${this.mainAxis}> ${postChild.refName}`, false);
+                    preChild.bind(postChild, this.mainAxis, "far", "here", undefined, `${preChild.ref} ${this.mainAxis}> ${postChild.ref}`, false);
                 }
             } else {
                 // This element is bound to the inside of the aligner object
@@ -146,7 +146,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 this.removeBind(target);
 
                 if (postChild) {  // Rebind next element to this
-                    this.bind(postChild, this.mainAxis, "here", "here", undefined, `${this.refName} ${this.mainAxis}> ${postChild.refName}`);
+                    this.bind(postChild, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${postChild.ref}`);
                 }
             }
         }
@@ -201,7 +201,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
         var displacedElements = this.children.filter((f) => f.displaced === true)
         if (displacedElements.length > 0) {
-            logger.performance(`ABORT COMPUTE BOUNDRY ${this.refName} as ${displacedElements} have not been positioned`)
+            logger.performance(`ABORT COMPUTE BOUNDRY ${this.ref} as ${displacedElements} have not been positioned`)
             return
         }
 
@@ -210,7 +210,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         var bottom = -Infinity;
         var right = -Infinity;
 
-        if (this.refName == "sequence") {
+        if (this.ref == "sequence") {
             
         }
 

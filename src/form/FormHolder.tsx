@@ -1,4 +1,4 @@
-import { DefaultValues, FormProvider, useForm } from "react-hook-form";
+import { Controller, DefaultValues, FormProvider, useForm } from "react-hook-form";
 import IForm, { FormDescriptor } from "./FormBase";
 import { ElementTypes, IElement } from "../vanilla/point";
 import { IVisual, Visual } from "../vanilla/visual";
@@ -6,7 +6,7 @@ import Channel, { IChannel } from "../vanilla/channel";
 import { defaultChannel } from "../vanilla/default/data";
 import ChannelForm from "./ChannelForm"
 import ENGINE from "../vanilla/engine";
-import { Button, Icon, Switch, Tab, Tabs } from "@blueprintjs/core";
+import { Button, Divider, FormGroup, Icon, InputGroup, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import { ILabellable } from "../vanilla/labellable";
@@ -131,31 +131,64 @@ export function FormHolder(props: FormHolderProps) {
     }
 
 
+    var vals = coreFormControls.getValues(); 
     return (
         <>
         <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
-            <span style={{width: "100%"}}><h3>{props.target ? props.target.refName : "New Channel"}</h3></span>
+            <div style={{width: "100%"}}>
+                
+                <div style={{width: "100%", margin: "0px 20px 10px 0px", display: "flex", flexDirection: "row", alignItems: "center"}}>
+                    { props.target === undefined ? (<>
+                        <Icon icon="cube-add" style={{margin: "0px 9px 0px 0px"}}></Icon>
+                        <h3 style={{ textDecoration: "underline"}}>Create Channel</h3></>
+                    ) : (<>
+                        <Icon icon="build" style={{margin: "0px 9px 0px 0px"}}></Icon>
+                        <h3 style={{ textDecoration: "underline"}}>{`Modify '${props.target.ref}'`}</h3>
+                    </>)}
+                    
 
-            {props.target !== undefined ? (
-                <Button style={{height: "30px", alignSelf: "center"}} icon="trash" intent="danger"
-                    onClick={() => {deleteFunction(props.target!); props.changeTarget(undefined); 
-                    myToaster.show({message: "Deleted element", intent: "danger"})}}>
-                </Button>
-            ) : <></>}
+                    {props.target !== undefined ? (
+                    <Button style={{height: "30px", alignSelf: "center", marginLeft: "auto"}} icon="trash" intent="danger"
+                        onClick={() => {deleteFunction(props.target!); props.changeTarget(undefined); 
+                        myToaster.show({message: `Deleted element '${props.target?.ref}'`, intent: "danger"})}}>
+                    </Button>
+                    ) : <></>}
+                </div>
+                
+                {/* Text */}
+                <FormGroup style={{userSelect: "none"}}
+                    fill={false}
+                    inline={true}
+                    label="Reference"
+                    labelFor="text-input">
+                
+                    <Controller control={coreFormControls.control} name="ref" render={({field}) => (
+                        <InputGroup {...field} id="text" size="medium" readOnly={false}/>
+                        )}>
+                    </Controller>
+                
+                </FormGroup>
+
+                <Divider></Divider>
+            </div>
+            
+
+
+            
         </div>
         
             <form onSubmit={coreFormControls.handleSubmit(onSubmit)}>
 
                 <Tabs defaultSelectedTabId={"core"}>
                     
-                        <Tab id={"core"} title={"Core"} panel={
+                        <Tab style={{userSelect: "none"}} id={"core"} title={"Core"} panel={
                             <FormProvider {...coreFormControls}>
                                 <ElementForm target={props.target}></ElementForm>
                             </FormProvider>
                         }></Tab>
                     
 
-                    <Tab id={"label"} title={"Label"} panel={
+                    <Tab style={{userSelect: "none"}} id={"label"} title={"Label"} panel={
                         <>
                         <Switch onChange={() => {setLabelType(!labelType)}} checked={labelType}></Switch>
                         { labelType ? 

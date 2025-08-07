@@ -34,6 +34,7 @@ import ENGINE from '../vanilla/engine';
 import { hasMountConfig } from '../vanilla/util';
 import { Orientation } from '../vanilla/mountable';
 import { Svg } from '@svgdotjs/svg.js';
+import { ID } from '../vanilla/point';
 
 
 const style: CSSProperties = {
@@ -76,7 +77,7 @@ const hStyle: HandleStyles = {
 
 export interface DropResult {
   index: number,
-  channelName: string,
+  channelID: ID,
   orientation: Orientation,
   insert: boolean,
 }
@@ -108,11 +109,11 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
 
       } else if (dropResult.dropEffect === "insert") {
         var result = dropResult as IInsertAreaResult
-        var targetChannel = ENGINE.handler.sequence.channelsDic[result.channelName];
+        var targetChannel = ENGINE.handler.sequence.channelsDic[result.channelID];
 
         var positionalElement;
         if (item.element.hasMountConfig) {
-          item.element.mountConfig = {...item.element.mountConfig!, orientation: result.orientation, channelName: result.channelName};
+          item.element.mountConfig = {...item.element.mountConfig!, orientation: result.orientation, channelID: result.channelID};
 
           props.handler.shiftMountedElements(item.element, result.index);
         } else {

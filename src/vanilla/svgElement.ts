@@ -55,7 +55,8 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
         offset: this.offset,
 		path: this.path,
 		style: this.style,
-		mountConfig: this.mountConfig
+		mountConfig: this.mountConfig,
+		ref: this.ref
     }}
 	static ElementType: ElementTypes = "svg"; 
 	static form: React.FC = SVGElementForm;

@@ -4,7 +4,7 @@
         "alignment": "centre",
         "inheritWidth": true,
         "noSections": 1,
-        "channelName": null
+        "channelID": null
     },
     
     "padding": [0, 0, 5, 0],

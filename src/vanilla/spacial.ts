@@ -60,6 +60,7 @@ export default class Spacial extends Point implements ISpacial {
             y: undefined,
             contentWidth: 0,
             contentHeight: 0,
+            ref: "default-spacial"
         },
     }
 
@@ -68,7 +69,8 @@ export default class Spacial extends Point implements ISpacial {
             x: this._x,
             y: this._y,
             contentWidth: this._contentWidth,
-            contentHeight: this._contentHeight
+            contentHeight: this._contentHeight,
+            ref: this.ref
     }}
 
     AnchorFunctions = {
@@ -95,7 +97,7 @@ export default class Spacial extends Point implements ISpacial {
     constructor(x?: number, y?: number, width?: number, height?: number, refName: string="spacial") {
         super(x, y, refName);
 
-        this.refName = refName;
+        this.ref = refName;
         
         width !== undefined ? this._contentWidth = width : null;
         height !== undefined ? this._contentHeight = height : null;
@@ -189,7 +191,7 @@ export default class Spacial extends Point implements ISpacial {
             if (b.targetObject === target && b.bindingRule.dimension === dimension) {
                 found = true;
                 
-                console.warn(`Warning: overriding binding on dimension ${b.bindingRule.dimension} anchor ${this.refName}`);
+                console.warn(`Warning: overriding binding on dimension ${b.bindingRule.dimension} anchor ${this.ref}`);
                 
                 b.bindingRule.anchorSiteName = anchorBindSide;
                 b.bindingRule.targetSiteName = targetBindSide;
@@ -245,7 +247,7 @@ export default class Spacial extends Point implements ISpacial {
             // Alternative was doing the check inside the setter which still works but requires a function call
             if (anchorBindCoord !== currentTargetPointPosition) {
                 // Use the correct setter on the target with this value
-                logger.operation(Operations.BIND, `(${this.refName})[${anchorBindCoord}] ${dimension}> (${targetElement.refName})[${currentTargetPointPosition}]`, this);
+                logger.operation(Operations.BIND, `(${this.ref})[${anchorBindCoord}] ${dimension}> (${targetElement.ref})[${currentTargetPointPosition}]`, this);
                 setter(dimension, anchorBindCoord!);  // SETTER MAY NEED INTERNAL BINDING FLAG?
             }
         }
@@ -306,7 +308,7 @@ export default class Spacial extends Point implements ISpacial {
     subscribers: UpdateNotification[] = [];
 
     subscribe(toRun: UpdateNotification) {
-        if (this.refName === "label") {
+        if (this.ref === "label") {
             
         }
         this.subscribers.push(toRun);
