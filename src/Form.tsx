@@ -18,7 +18,7 @@ interface IFormProps {
 const Form: React.FC<IFormProps> = (props) => {
     return (
         <>
-            <div style={{padding: 20}}>
+            <div style={{ padding: "5px", height: "100%",  overflow: "hidden", display: "flex", flexDirection: "column"}}>
                 <FormHolder target={props.target} changeTarget={props.changeTarget}/>
             </div>
         </>

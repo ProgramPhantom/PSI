@@ -67,7 +67,7 @@ function App() {
   return (
       <>
 
-      <div style={{display: "grid", width: "100%", gridTemplateColumns: "auto 400px", gridTemplateRows: "50px auto", minHeight: "100vh", rowGap: "0", columnGap: "0"}}>
+      <div style={{display: "grid", height: "100%", width: "100%", gridTemplateColumns: "auto 400px", gridTemplateRows: "50px auto", rowGap: "0", columnGap: "0"}}>
         <div style={{gridColumnStart: 1, gridColumnEnd: 3, width: "100%"}}>
           <Banner saveSVG={SaveSVG} saveScript={SaveScript}></Banner>
         </div>
@@ -82,7 +82,7 @@ function App() {
           </div>
         </div>
 
-        <div style={{gridColumnStart: 2, gridColumnEnd: 3}}>
+        <div style={{gridColumnStart: 2, gridColumnEnd: 3, overflow: "hidden",}}>
           <Form target={selectedElement} changeTarget={setSelectedElement}></Form>
         </div>
       </div>

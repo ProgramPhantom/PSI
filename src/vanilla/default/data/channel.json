@@ -13,8 +13,6 @@
         }
     },
 
-    "labelMap": {},
-
     "channelSymbol": {
         "text": "_{1}\\mathrm{H}",
         "style": {
@@ -22,10 +20,5 @@
             "colour": "black",
             "display": "block"
         }
-    },
-
-    "annotationStyle": {
-        "padding": [0, 0, 5, 0]
     }
-    
 }

@@ -50,7 +50,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
 
     parentElement: T;
 
-
+    public labelDict: {[key in Position]?: Label} = {};
     labels: Label[] = [];
     
     constructor(params: RecursivePartial<ILabellable>, parent: T, templateName: string="default", refName: string="labellable") {
@@ -83,6 +83,10 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
     }
 
     bindLabel(label: Label) {
+        if (this.labelDict[label.position] !== undefined) {
+            throw new Error("Cannot add a label to the same position twice")
+        }
+
         switch (label.position) {
             case Position.top:
                 this.removeBind(this.parentElement, Dimensions.Y);

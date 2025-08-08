@@ -84,7 +84,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 doubleClick={{disabled: true}}
                                 >
                     <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
-                        <div style={{width: "100%", height: "100%", display: "inline-block", position: "relative"}}>
+                        <div style={{width: "100%", height: "100%", display: "inline-block", position: "relative", 
+                                     border: "dashed", 
+                                     borderWidth: "0.2px", borderColor: "#0000003d"}}>
                             
                                 <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv">
                                     

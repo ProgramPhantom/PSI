@@ -177,33 +177,44 @@ export function FormHolder(props: FormHolderProps) {
             
         </div>
         
-            <form onSubmit={coreFormControls.handleSubmit(onSubmit)}>
-
+        <form onSubmit={coreFormControls.handleSubmit(onSubmit)}
+                style={{height: "100%", flex: "0 1 auto", display: "flex", flexDirection: "column", overflow: "hidden",
+                        padding: "4px"
+                }}>
+            
+            <div style={{overflowY: "auto", flex: "0 1 auto", padding: "3px"}}>
                 <Tabs defaultSelectedTabId={"core"}>
-                    
-                        <Tab style={{userSelect: "none"}} id={"core"} title={"Core"} panel={
+                    <Tab style={{userSelect: "none", position: "sticky"}} id={"core"} title={"Core"} panel={
                             <FormProvider {...coreFormControls}>
                                 <ElementForm target={props.target}></ElementForm>
                             </FormProvider>
-                        }></Tab>
-                    
+                    }></Tab>
+                
 
-                    <Tab style={{userSelect: "none"}} id={"label"} title={"Label"} panel={
-                        <>
-                        <Switch onChange={() => {setLabelType(!labelType)}} checked={labelType}></Switch>
+                <Tab style={{userSelect: "none"}} id={"label"} title={"Label"} panel={
+                    <>
+                        <p style={{display: "inline-block"}}>Use Labels</p>
+                        <Switch onChange={() => {setLabelType(!labelType)}} checked={labelType} 
+                                style={{display: "inline-block", marginLeft: "10px"}}></Switch>
+                        
                         { labelType ? 
                         <FormProvider {...labelFormControls}>
                             <LabelMapForm target={props.target}></LabelMapForm> 
                         </FormProvider>
                         : <></>}
-                        </>
-                    }></Tab>
+                    </>
+                }></Tab>
                 </Tabs>
-                
+            </div>
+            
+            <div style={{width: "100%", alignSelf: "center", 
+                    margin: "4px 2px 18px 2px", height: "30px", marginTop: "auto", display: "flex", flexDirection: "column"}} >
+                <Divider></Divider>
+                <Button style={{width: "80%", margin: "auto", alignSelf: "center", }}
+                    type={"submit"} text={props.target !== undefined ? "Apply" : "Add"} icon="add"></Button>
+            </div>
 
-                <input style={{width: "100%", margin: "4px 2px 18px 2px", height: "30px"}} 
-                    type={"submit"} value={props.target !== undefined ? "Apply" : "Add"}></input>
-            </form>
+        </form>
         </>
     );
 }
