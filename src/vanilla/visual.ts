@@ -61,7 +61,7 @@ export abstract class Visual extends Mountable implements IVisual {
     }
 
     constructor(params: IVisual, refName: string="element") {
-        super(params, refName);  // Will make dirty??
+        super(params, params.ref || refName);  // Use ref from params if available, otherwise use refName
 
         this.offset = params.offset;  // Fixed for some reason
     }
@@ -98,6 +98,11 @@ export abstract class Visual extends Mountable implements IVisual {
 
         // Offset 
         this.offset = data.offset ?? this.offset;
+
+        // Reference
+        if (data.ref !== undefined) {
+            this.ref = data.ref;
+        }
     }
 
     // Construct and SVG with children positioned relative to (0, 0)

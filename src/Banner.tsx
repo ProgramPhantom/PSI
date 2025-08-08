@@ -13,8 +13,6 @@ export default function Banner(props: {saveSVG: () => void, saveScript: () => vo
 
                 <Button small={true} minimal={true} icon="cloud-download" text="Save SVG" onClick={props.saveSVG}/>
                 <Navbar.Divider />
-                <Button small={true} minimal={true} icon="document-share" text="Save Script" onClick={props.saveScript}/>
-                <Navbar.Divider />
                 <Button small={true} minimal={true} icon="media" text="Save JPG" onClick={props.saveScript}/>
                 
             </Navbar.Group>
