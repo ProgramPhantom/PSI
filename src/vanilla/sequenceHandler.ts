@@ -71,7 +71,7 @@ export default class SequenceHandler {
     constructor(surface: Svg, emitChange: () => void) {
         this.syncExternal = emitChange;
 
-        this.sequence = new Sequence({});
+        this.sequence = new Sequence({ref: "sequence"});
 
         this.surface = surface;
     }

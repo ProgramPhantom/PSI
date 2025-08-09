@@ -191,7 +191,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             right: right
         }
 
-        logger.processEnd(Processes.COMPUTE_BOUNDARY, `${this.ref}`, this)
+        logger.processEnd(Processes.COMPUTE_BOUNDARY, `Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`, this)
     }
 
     // Construct and SVG with children positioned relative to (0, 0)

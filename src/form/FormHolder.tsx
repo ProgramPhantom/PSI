@@ -211,7 +211,7 @@ export function FormHolder(props: FormHolderProps) {
                     margin: "4px 2px 18px 2px", height: "30px", marginTop: "auto", display: "flex", flexDirection: "column"}} >
                 <Divider></Divider>
                 <Button style={{width: "80%", margin: "auto", alignSelf: "center", }}
-                    type={"submit"} text={props.target !== undefined ? "Apply" : "Add"} icon="add"></Button>
+                    type={"submit"} text={props.target !== undefined ? "Apply" : "Add"} icon={props.target !== undefined ? "tick" : "add"}></Button>
             </div>
 
         </form>

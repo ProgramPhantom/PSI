@@ -61,7 +61,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
         this._contentWidth = parent.contentWidth!;
 
         this.mountConfig = parent.mountConfig;
-        this.ref = parent.ref;
+        this.ref = parent.ref + "(parent)";
 
         this.parentElement = parent;
         this.add(parent, undefined, true);
@@ -95,43 +95,36 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
 
                 this.bind(label, Dimensions.Y, "here", "here", undefined, `${this.ref} Y> ${label.ref}`, false);
 
-                this.bind(this.parentElement, Dimensions.X, "centre", "centre", undefined, `Collection ${this.ref} [centre] X> Child ${this.parentElement.ref} [centre]`, true);
                 label.bind(this.parentElement, Dimensions.Y, "far", "here", undefined, `Label ${label.ref} Y> Parent ${this.parentElement.ref}`, false)
 
                 this.add(label);
-                // this._contentHeight = this._contentHeight! + label.height; don't know why this was here
+                this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
                 break;
             case Position.right:
-                // Override
-                this.bind(this.parentElement, Dimensions.Y, "far", "far", undefined, `Collection ${this.ref} [far] Y> Child ${this.parentElement.ref} [far]`)
-                
-                this.bind(label, Dimensions.Y, "centre", "far", undefined, `Parent ${this.parentElement.ref} [centre] Y> Label ${label.ref} [centre]`)
+                this.parentElement.bind(label, Dimensions.Y, "centre", "far", undefined, `Parent ${this.parentElement.ref} [centre] Y> Label ${label.ref} [centre]`)
 
                 this.parentElement.bind(label, Dimensions.X, "far", "here", undefined, `Parent ${this.parentElement.ref} [far] X> Child ${label.ref} [here]`, false)
 
                 this.add(label)
-                this._contentWidth = this._contentWidth! + label.width;
+                this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
                 break;
             case Position.bottom:
-                this.bind(this.parentElement, Dimensions.X, "centre", "centre", undefined, `Collection ${this.ref} [centre] X> Child ${this.parentElement.ref} [centre]`, true);
-
                 this.parentElement.bind(label, Dimensions.Y, "far", "here", undefined, `Parent ${this.parentElement.ref} [far] Y> Child ${label.ref} [here]`)
                 this.parentElement.bind(label, Dimensions.X, "centre", "centre", undefined, `Parent ${this.parentElement.ref} [centre] X> Child ${label.ref} [centre]`)
 
                 this.add(label);
-                this._contentHeight = this._contentHeight! + label.height;
+                this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
                 break;
             case Position.left:
                 this.removeBind(this.parentElement, Dimensions.X);
 
                 this.bind(label, Dimensions.X, "here", "here", undefined, `${this.ref} X> ${label.ref}`)
-                this.bind(label, Dimensions.Y, "centre", "centre", undefined, `${this.ref} Y> ${label.ref}`)
+                this.parentElement.bind(label, Dimensions.Y, "centre", "centre", undefined, `${this.ref} Y> ${label.ref}`)
 
                 label.bind(this.parentElement, Dimensions.X, "far", "here", undefined, `${label.ref} Y> ${this.parentElement.ref}`, false)
-                this.bind(this.parentElement, Dimensions.Y, "far", "far", undefined, `${this.ref} [far] Y> ${this.parentElement.ref} [far]`)
 
                 this.add(label);
-                this._contentWidth = this._contentWidth! + label.width;
+                this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
                 break;
             case Position.centre:
                 throw new Error("Not implemented")

@@ -1,4 +1,5 @@
 import Point from "./point"
+import Spacial from "./spacial"
 
 export enum Levels {
     INFO="INFO",
@@ -110,14 +111,14 @@ class Logger {
         console.log(concatMessage, ...this.simpleColours(Levels.PERFORMANCE))
     }
 
-    broadcast(from: Point, functionName: string) {
+    broadcast(from: Spacial, functionName: string) {
         var formattedMessage: string[] = [`%c${this.getTime()} `, 
                                           `%c[BROADCAST]`,
                                           `%c: `,
 
                                           `%c"${from.ref}" `,
                                           `%cis starting the following `,
-                                          `%c"${functionName}()"`]
+                                          `%c"${functionName}(), width: ${from.width}, height: ${from.height}"`]
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
         
         var colours = [`color:${this.defaultColour}`, 

@@ -52,7 +52,7 @@ export default class Text extends Visual implements IText {
     constructor(params: RecursivePartial<IText>, templateName: string="default") {
         var fullParams: IText = FillObject(params, Text.defaults[templateName])
         super(fullParams);
-        
+        this.ref = "TEXT"
         this.text = fullParams.text;
         this.style = fullParams.style;
 

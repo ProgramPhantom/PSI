@@ -43,10 +43,11 @@ export default class Label extends Collection implements ILabel {
 
     constructor(params: ILabel, templateName="default") {
         var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
-        super(fullParams, templateName, "label collection")
-
-        this.text = new Text(fullParams.text, undefined, "text in label");
+        super(fullParams, templateName)
+        
+        this.text = new Text(fullParams.text, undefined);
         this.position = fullParams.position;
+        this.ref = "LABEL(" + this.position.toString() + ")"
         this.add(this.text);
 
         this.bind(this.text, Dimensions.X, "centre", "centre", undefined, `Collection ${this.ref} [centre] X> Child ${this.text.ref} [centre]`, true);

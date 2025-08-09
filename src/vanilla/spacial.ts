@@ -189,7 +189,7 @@ export default class Spacial extends Point implements ISpacial {
             if (b.targetObject === target && b.bindingRule.dimension === dimension) {
                 found = true;
                 
-                console.warn(`Warning: overriding binding on dimension ${b.bindingRule.dimension} anchor ${this.ref}`);
+                console.warn(`Warning: overriding binding on dimension ${b.bindingRule.dimension} for anchor ${this.ref} to target ${target.ref}`);
                 
                 b.bindingRule.anchorSiteName = anchorBindSide;
                 b.bindingRule.targetSiteName = targetBindSide;

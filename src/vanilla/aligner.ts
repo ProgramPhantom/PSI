@@ -30,7 +30,8 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             x: undefined,
             y: undefined,
             offset: [0, 0],
-            padding: [0, 0, 0, 0]
+            padding: [0, 0, 0, 0],
+            ref: "default-aligner"
         }
     }
 
@@ -233,12 +234,12 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         // Include current location in boundary.
         // This fixes a problem for the positional columns where the correct size of the boundary would be computed
         // as if the collection was positioned at the top left element, but would not actually be in the correct location.
-        if (this.definedVertically && this.contentY < top) {
-            top = this.contentY
-        }
-        if (this.definedHorizontally &&  this.contentX < left) {
-            left = this.contentX;
-        }
+        // if (this.definedVertically && this.contentY < top) {
+        //     top = this.contentY
+        // }
+        // if (this.definedHorizontally &&  this.contentX < left) {
+        //     left = this.contentX;
+        // }
 
 
 
@@ -277,9 +278,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             right: right
         }
 
-        if (top === -3) {
-            console.log()
-        }
+
 
         logger.processEnd(Processes.COMPUTE_BOUNDARY, `Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`, this)
     }
