@@ -107,6 +107,24 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                      borderColor: "#0000003d"
                                 }}>
                             
+                                {/* Image name display text box */}
+                                <div style={{
+                                    position: "absolute",
+                                    top: "-10px",
+                                    left: "-5px",
+                                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                    padding: "2px 4px",
+                                    fontSize: "4px",
+                                    fontFamily: "monospace",
+                                    color: "#666",
+                                    zIndex: 10,
+                                    pointerEvents: "none",
+                                    userSelect: "none",
+                                    whiteSpace: "nowrap"
+                                }}>
+                                    {ENGINE.currentImageName}
+                                </div>
+
                                 <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv">
                                     
                                 </div>

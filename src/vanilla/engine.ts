@@ -6,6 +6,7 @@ import SVGElement from "./svgElement";
 
 class ENGINE {
     static listeners: (() => void)[] = []
+    static currentImageName: string = "newPulseImage.svg"
 
     static set surface(s: Svg) {
         ENGINE._handler = new SequenceHandler(s, ENGINE.emitChange)
