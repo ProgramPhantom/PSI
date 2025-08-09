@@ -19,7 +19,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
     let selectedElement = props.selectedElement;
     
-    const [zoom, setZoom] = useState(5);
+    const [zoom, setZoom] = useState(3);
     const [dragging, setDragging] = useState(false);
     const [panning, setPanning] = useState(false);
 
@@ -83,10 +83,29 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 onPanningStop={() => {setPanning(false)}}
                                 doubleClick={{disabled: true}}
                                 >
-                    <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
-                        <div style={{width: "100%", height: "100%", display: "inline-block", position: "relative", 
+                        <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
+                        {/* Large background grid that moves with transform */}
+                        <div style={{
+                            position: "absolute",
+                            width: "10000px", 
+                            height: "10000px",
+                            left: "-5000px",
+                            top: "-5000px",
+                            backgroundImage: "radial-gradient(circle,rgba(204, 204, 204, 0.26) 1px, transparent 1px)",
+                            backgroundSize: "15px 15px",
+                            backgroundPosition: "0 0",
+                            pointerEvents: "none",
+                            zIndex: -1
+                        }}></div>
+                        <div style={{
+                                     width: "100%", 
+                                     height: "100%", 
+                                     display: "inline-block", 
+                                     position: "relative", 
                                      border: "dashed", 
-                                     borderWidth: "0.2px", borderColor: "#0000003d"}}>
+                                     borderWidth: "0.2px", 
+                                     borderColor: "#0000003d"
+                                }}>
                             
                                 <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv">
                                     

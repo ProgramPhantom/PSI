@@ -163,7 +163,7 @@ export function FormHolder(props: FormHolderProps) {
                     labelFor="text-input">
                 
                     <Controller control={coreFormControls.control} name="ref" render={({field}) => (
-                        <InputGroup {...field} id="text" size="medium" readOnly={true}/>
+                        <InputGroup {...field} id="text" size="medium"/>
                         )}>
                     </Controller>
                 </FormGroup>
@@ -172,7 +172,7 @@ export function FormHolder(props: FormHolderProps) {
 
                 { props.target !== undefined ? 
                 <Section style={{display: "flex", flexDirection: "column", margin: "0px", overflow: "hidden",
-                            padding: "4px 8px"}} collapsible={true} title="Properties" compact={true}
+                            padding: "4px 4px"}} collapsible={true} title="Properties" compact={true}
                             icon="wrench">
                     
 
@@ -225,7 +225,6 @@ export function FormHolder(props: FormHolderProps) {
                     </SectionCard>
                 
                 </Section>
-                
                 : <></>}
             
 
