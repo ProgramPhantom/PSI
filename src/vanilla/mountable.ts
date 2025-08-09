@@ -31,8 +31,8 @@ export class Mountable extends PaddedBox implements IMountable {
     protected _mountConfig?: IMountConfig;
     public flipped: boolean = false;
 
-    constructor(params: IMountable, refName="element") {
-        super(params.padding, params.x, params.y, params.contentWidth, params.contentHeight, refName=refName)
+    constructor(params: IMountable) {
+        super(params.padding, params.x, params.y, params.contentWidth, params.contentHeight, params.ref)
 
         this.mountConfig = params.mountConfig; 
     }

@@ -94,10 +94,8 @@ export default class Spacial extends Point implements ISpacial {
     sizeBindings: SizeBinding[] = [];
     bindings: Binding[] = [];
 
-    constructor(x?: number, y?: number, width?: number, height?: number, refName: string="spacial") {
-        super(x, y, refName);
-
-        this.ref = refName;
+    constructor(x?: number, y?: number, width?: number, height?: number, ref: string="spacial") {
+        super(x, y, ref);
         
         width !== undefined ? this._contentWidth = width : null;
         height !== undefined ? this._contentHeight = height : null;

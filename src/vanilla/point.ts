@@ -65,11 +65,11 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
 
     displaced: boolean=false;
 
-    constructor(x?: number, y?: number, refName: string = "point") {
+    constructor(x?: number, y?: number, ref: string = "point") {
         this.x = x;
         this.y = y;
 
-        this.ref = refName;
+        this.ref = ref;
 
         this._id = Math.random().toString(16).slice(2);
     }

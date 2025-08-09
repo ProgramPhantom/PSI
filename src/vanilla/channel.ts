@@ -120,15 +120,15 @@ export default class Channel extends Collection {
     };  
 
 
-    constructor(params: RecursivePartial<IChannel>, templateName: string="default", refName: string="channel") {
+    constructor(params: RecursivePartial<IChannel>, templateName: string="default") {
         var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
-        super(fullParams, templateName, refName);
+        super(fullParams, templateName);
 
         this.style = fullParams.style;
         this.padding = fullParams.padding;
         // SIDE PADDING is not permitted for channels as it would break alignment
 
-        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, minCrossAxis: 30}, "default", `top aligner`);
+        this.upperAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.far, minCrossAxis: 30, ref: `top aligner`}, "default");
         // this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, `CHANNEL Y> UPPER ALIGNER`);
         this.add(this.upperAligner, undefined, true)
         
@@ -136,7 +136,7 @@ export default class Channel extends Collection {
         this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here", undefined, `UPPER ALIGNER Y> BAR`);
         this.add(this.bar);
 
-        this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here, minCrossAxis: 20}, "default", "bottom aligner");
+        this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here, minCrossAxis: 20, ref: "bottom aligner"}, "default");
         this.bar.bind(this.lowerAligner, Dimensions.Y, "far", "here", undefined, `BAR Y> LOWER ALIGNER`);
         this.add(this.lowerAligner);
         

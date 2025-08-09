@@ -53,9 +53,9 @@ export default class Sequence extends Collection {
 
     elementMatrix: (Visual | undefined)[][] = [];
 
-    constructor(params: RecursivePartial<ISequence>, templateName: string="default", refName: string="sequence") {
+    constructor(params: RecursivePartial<ISequence>, templateName: string="default") {
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
-        super(fullParams, templateName, refName);
+        super(fullParams, templateName);
         logger.processStart(Processes.INSTANTIATE, ``, this);
 
         this.grid = new Grid(fullParams.grid);
@@ -65,13 +65,13 @@ export default class Sequence extends Collection {
         // c
         // c
         this.channelColumn = new Aligner<Channel>(
-            {bindMainAxis: true, axis: Dimensions.Y, alignment: Alignment.here}, "default", "channel column");
+            {bindMainAxis: true, axis: Dimensions.Y, alignment: Alignment.here, ref: "channel column"}, "default", );
         // this.bind(this.channelColumn, Dimensions.Y, "here", "here", undefined, "SEQ Y-> CHAN COL");
         // this.bind(this.channelColumn, Dimensions.X, "here", "here", undefined, "SEQ X-> CHAN COL");
         this.add(this.channelColumn, undefined, true);
 
         // | h | |p|p|p|p|
-        this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true, alignment: Alignment.here}, "default", "label col | pos cols");
+        this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true, alignment: Alignment.here, ref: "label col | pos cols"}, "default");
         // this.bind(this.columns, Dimensions.Y, "here", "here", undefined, "SEQ Y-> COL");
         // this.bind(this.columns, Dimensions.X, "here", "here", undefined, "SEQ X-> COL");
         this.add(this.columns, undefined, true);
@@ -80,12 +80,12 @@ export default class Sequence extends Collection {
 
         // | h |
         this.labelColumn = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, 
-                                                        alignment: Alignment.centre, y: 0}, "default", "label column");
+                                                        alignment: Alignment.centre, y: 0, ref: "label column"}, "default",);
         this.columns.add(this.labelColumn);
 
 
         // |p|p|p|p|
-        this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0}, "default", "pos col collection");
+        this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0, ref: "pos col collection"}, "default", );
         this.columns.add(this.pulseColumns);
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
@@ -101,8 +101,8 @@ export default class Sequence extends Collection {
     } 
 
     insertColumn(index: number) {
-        var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, alignment: Alignment.centre}, 
-                                                            "default", `column at ${index}`);
+        var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, alignment: Alignment.centre,
+                                                              ref: `column at ${index}`}, "default", );
 
         // Add to positional columns
         this.pulseColumns.add(newColumn, index);
@@ -211,7 +211,7 @@ export default class Sequence extends Collection {
 
         // Add the element to the sequence's column collection, this should trigger resizing of bars
         this.pulseColumns.children[INDEX].add(element, undefined, false, element.mountConfig.alignment);
-        // This will set the X of the child ^^^
+        // This will set the X of the child ^^^ (the column should gain width immediately.)
 
         // TODO TOMORROW: WHen moving the Labellable<> to position, does not move the parent element.
 

@@ -42,14 +42,14 @@ class ENGINE {
         })
     }
 
-    static PULSE90 = new RectElement({}, "pulse90");
-    static PULSE180 = new RectElement({}, "pulse180");
+    static PULSE90 = new RectElement({ref: "pulse90"}, "pulse90");
+    static PULSE180 = new RectElement({ref: "pulse180"}, "pulse180");
 
-    static P180 = new SVGElement({}, "180");
-    static AMP = new SVGElement({}, "amp");
-    static ACQUIRE = new SVGElement({}, "acquire");
-    static CHIRPHILO = new SVGElement({}, "chirphilo");
-    static CHIRPLOHI = new SVGElement({}, "chirplohi");
+    static P180 = new SVGElement({ref: "180"}, "180");
+    static AMP = new SVGElement({ref: "amp"}, "amp");
+    static ACQUIRE = new SVGElement({ref: "acquire"}, "acquire");
+    static CHIRPHILO = new SVGElement({ref: "chirphilo"}, "chirphilo");
+    static CHIRPLOHI = new SVGElement({ref: "chirplohi"}, "chirplohi");
 }
 
 

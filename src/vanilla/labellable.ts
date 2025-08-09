@@ -53,9 +53,9 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
     public labelDict: {[key in Position]?: Label} = {};
     labels: Label[] = [];
     
-    constructor(params: RecursivePartial<ILabellable>, parent: T, templateName: string="default", refName: string="labellable") {
+    constructor(params: RecursivePartial<ILabellable>, parent: T, templateName: string="default") {
         var fullParams: ILabellable = FillObject<ILabellable>(params, Labellable.defaults[templateName]);
-        super(fullParams, templateName, refName);
+        super(fullParams, templateName);
 
         this._contentHeight = parent.contentHeight!;
         this._contentWidth = parent.contentWidth!;
@@ -99,7 +99,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 label.bind(this.parentElement, Dimensions.Y, "far", "here", undefined, `Label ${label.ref} Y> Parent ${this.parentElement.ref}`, false)
 
                 this.add(label);
-                this._contentHeight = this._contentHeight! + label.height;
+                // this._contentHeight = this._contentHeight! + label.height; don't know why this was here
                 break;
             case Position.right:
                 // Override
@@ -134,18 +134,10 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 this._contentWidth = this._contentWidth! + label.width;
                 break;
             case Position.centre:
+                throw new Error("Not implemented")
                 break;
             default:
-                throw new Error("this shouldn't happen");
+                throw new Error(`Unknown label bind location ${label.position}`);
         }
     }
-
-
-    // bindParentElement(val: T) {
-    //     this.removeBind(this.parentElement);
-// 
-    //     this.parentElement = val;
-    //     this.bind(val, Dimensions.X, "here", "here", undefined, `Collection ${this.refName} X> Parent ${this.parentElement.refName}`, true)
-    //     this.bind(val, Dimensions.Y, "here", "here", undefined, `Collection ${this.refName} Y> Parent ${this.parentElement.refName}`, true)
-    // }
 }

@@ -49,8 +49,9 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 
     padding: [number, number, number, number] = [0, 0, 0, 0];
 
-    constructor(padding: Padding=0, x?: number, y?: number, width?: number, height?: number, refName: string="paddedBox") {
-        super(x, y, width, height, refName);
+    constructor(padding: Padding=0, x?: number, y?: number, width?: number, height?: number, 
+                ref: string=PaddedBox.defaults["default"].ref) {
+        super(x, y, width, height, ref);
 
         if (typeof padding === "number") {
             this.padding = [padding, padding, padding, padding]

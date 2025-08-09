@@ -41,9 +41,9 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
     alignment: Alignment;
     minCrossAxis?: number;
 
-    constructor(params: RecursivePartial<IAligner>, templateName: string="default", refName: string="collection") {
+    constructor(params: RecursivePartial<IAligner>, templateName: string="default") {
         var fullParams: IAligner = FillObject<IAligner>(params, Aligner.defaults[templateName]);
-        super(fullParams, templateName, refName);
+        super(fullParams, templateName);
         
         this.mainAxis = fullParams.axis;
         this.crossAxis = this.mainAxis === Dimensions.X ? Dimensions.Y : Dimensions.X;
@@ -118,7 +118,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         //}
         //this.squeezeCrossAxis();
 
-        this.enforceBinding();
+        // this.enforceBinding();
         
         // Child will tell this to update size when it changes size or position
         child.subscribe(this.computeBoundary.bind(this));

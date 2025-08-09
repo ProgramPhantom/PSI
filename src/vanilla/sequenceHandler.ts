@@ -128,9 +128,11 @@ export default class SequenceHandler {
         // Delete element
         this.deleteElement(target)
 
-        // Copy hidden parameter channelID
+        // Copy hidden parameter channelID (this shouldn't be needed as it should take the state
+        // from the form. The hidden values should still be in the form.)
         if (mountConfigCopy !== undefined && parameters.mountConfig !== undefined) {
             parameters.mountConfig.channelID = mountConfigCopy.channelID; 
+            parameters.mountConfig
         }
 
         var element: Visual = this.submitElement(parameters, type);
@@ -176,6 +178,9 @@ export default class SequenceHandler {
 
     public createElement(parameters: ElementBundle, type: ElementTypes): Visual {
         var element: Visual;
+
+        parameters.x = undefined;
+        parameters.y = undefined;
 
         switch (type) {
             case "svg":

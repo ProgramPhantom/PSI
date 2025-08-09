@@ -60,8 +60,8 @@ export abstract class Visual extends Mountable implements IVisual {
         this._dirty = value
     }
 
-    constructor(params: IVisual, refName: string="element") {
-        super(params, params.ref || refName);  // Use ref from params if available, otherwise use refName
+    constructor(params: IVisual) {
+        super(params); 
 
         this.offset = params.offset;  // Fixed for some reason
     }

@@ -31,9 +31,9 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
     children: T[] = [];
     childBounds: Bounds = {top: 0, bottom: 0, left: 0, right: 0};
 
-    constructor(params: RecursivePartial<ICollection>, templateName: string="default", refName: string="collection") {
+    constructor(params: RecursivePartial<ICollection>, templateName: string=Collection.defaults["default"].ref) {
         var fullParams: ICollection = FillObject<ICollection>(params, Collection.defaults[templateName]);
-        super(fullParams, refName);
+        super(fullParams);
     }
 
     draw(surface: Element) {
@@ -127,6 +127,10 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             return
         }
 
+        if (this.ref === "default-paddedbox") {
+            console.log()
+        }
+
         var top = Infinity;
         var left = Infinity;
         var bottom = -Infinity;
@@ -153,12 +157,13 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         // Include current location in boundary.
         // This fixes a problem for the positional columns where the correct size of the boundary would be computed
         // as if the collection was positioned at the top left element, but would not actually be in the correct location.
-        if (this.definedVertically && this.contentY < top) {
-            top = this.contentY
-        }
-        if (this.definedHorizontally &&  this.contentX < left) {
-            left = this.contentX;
-        }
+        // if (this.definedVertically && this.contentY < top) {
+        //     top = this.contentY
+        // }
+        // if (this.definedHorizontally &&  this.contentX < left) {
+        //     left = this.contentX;
+        // }
+        // Don't know why I had that. The dimensions of a collection ARE defined by the children.
 
         
 
