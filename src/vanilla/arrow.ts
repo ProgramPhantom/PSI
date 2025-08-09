@@ -1,6 +1,5 @@
 import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Visual, IVisual } from "./visual";
-import { labelable } from "./positional";
 import defaultArrow from "./default/data/arrow.json"
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import LineElement, { ILineLike } from "./lineElement";

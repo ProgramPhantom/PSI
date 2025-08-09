@@ -1,13 +1,13 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { Visual, IVisual, IDraw } from "./visual";
 import { FillObject, RecursivePartial } from "./util";
-import PaddedBox, { IHaveDefault, IPaddedBox } from "./paddedBox";
 import { simplePulses } from "./default/data/simplePulse";
 import defaultBar from "./default/data/bar.json";
 import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
 import { Element } from "@svgdotjs/svg.js";
 import { ElementTypes } from "./point";
+import RectElementForm from "../form/RectForm";
 
 export interface IRectStyle {
 	fill: string,
@@ -31,15 +31,17 @@ export default class RectElement extends Visual implements IRect, IDraw {
         padding: this.padding,
         offset: this.offset,
         style: this.style,
-        ref: this.ref
+        ref: this.ref,
+        mountConfig: this.mountConfig
     }}
-    static ElementType: ElementTypes = "rect"; 
+    static ElementType: ElementTypes = "rect";
+    static form: React.FC = RectElementForm;
 
 	style: IRectStyle;	
 
     constructor(params: RecursivePartial<IRect>, templateName: string="pulse90") {
 		var fullParams: IRect = FillObject(params, RectElement.defaults[templateName])
-		super(fullParams, templateName);
+		super(fullParams);
 
 		this.style = fullParams.style;
 

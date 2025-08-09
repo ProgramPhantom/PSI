@@ -68,7 +68,7 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 
     constructor(params: RecursivePartial<ISVG>, templateName: string="default") {
 		var fullParams: ISVG = FillObject(params, SVGElement.defaults[templateName])
-		super(fullParams, templateName);
+		super(fullParams);
 
 		this.style = fullParams.style;
         this.path = fullParams.path;
