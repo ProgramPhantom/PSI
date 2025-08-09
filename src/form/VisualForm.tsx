@@ -9,19 +9,25 @@ import { IVisual, Visual } from '../vanilla/visual';
 const VisualForm: React.FC = () => {
   const formControls = useFormContext<IVisual>();
 
+  var vals = formControls.getValues();
   return (
       <ControlGroup vertical={true}>
+        { /* Width and height */ }
         {/* Content Width */}
-        <FormGroup
-            inline={true}
-            label="Width"
-            labelFor="text-input">
-                <Controller control={formControls.control} name="contentWidth" render={({field}) => (
-                    <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"></NumericInput>)}>
-                </Controller>
-        </FormGroup>
+        { vals.contentWidth !== undefined ? <>
+          
+          <FormGroup
+              inline={true}
+              label="Width"
+              labelFor="text-input">
+                  <Controller control={formControls.control} name="contentWidth" render={({field}) => (
+                      <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"></NumericInput>)}>
+                  </Controller>
+          </FormGroup>
+        </> : <></>}
         
         {/* Content Height */}
+        { vals.contentHeight !== undefined ? <> 
         <FormGroup
             inline={true}
             label="Height"
@@ -30,77 +36,84 @@ const VisualForm: React.FC = () => {
                 <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"></NumericInput>)}>
             </Controller>
         </FormGroup>
-        
+        </> : <></>}
+
         {/* Config */}
-        <Section style={{borderRadius: 0}}
-          collapseProps={{defaultIsOpen: false}}
-          compact={true}
-          title={"Config"}
-          collapsible={true}
-          >
-          <ControlGroup
-            vertical={true}
+        { vals.mountConfig !== undefined ? 
+          <>
+          
+          <Section style={{borderRadius: 0}}
+            collapseProps={{defaultIsOpen: false}}
+            compact={true}
+            title={"Config"}
+            collapsible={true}
             >
-            {/* Orientation */}
-            <FormGroup
+            <ControlGroup
+              vertical={true}
+              >
+              {/* Orientation */}
+              <FormGroup
+                  fill={false}
+                  inline={true}
+                  label="Orientation"
+                  labelFor="text-input">
+                  
+                  <Controller control={formControls.control} name="mountConfig.orientation" render={({field}) => (
+                      <HTMLSelect {...field} iconName='caret-down'>
+                          <option value={"top"}>Top</option>
+                          <option value={"both"}>Both</option>
+                          <option value={"bottom"}>Bottom</option>
+                      </HTMLSelect>
+                      )}>
+                  </Controller>
+              </FormGroup>
+              
+              {/* Alignment */}
+              <FormGroup
+                  fill={false}
+                  inline={true}
+                  label="Alignment"
+                  labelFor="text-input">
+                  
+                  <Controller control={formControls.control} name="mountConfig.alignment" render={({field}) => (
+                      <HTMLSelect {...field} iconName='caret-down'>
+                          <option value={"here"}>Left</option>
+                          <option value={"centre"}>Centre</option>
+                          <option value={"far"}>Right</option>
+                      </HTMLSelect>
+                      )}>
+                  </Controller>
+              </FormGroup>
+
+              {/* Inherit Width */}
+              <FormGroup
+                  fill={false}
+                  inline={true}
+                  label="Inherit Width"
+                  labelFor="text-input">
+                  
+                  <Controller control={formControls.control} name="mountConfig.inheritWidth" render={({field}) => (
+                      <Switch {...formControls.getFieldState}></Switch>
+                      )}>
+                  </Controller>
+              </FormGroup>
+
+              {/* No Sections */}
+              <FormGroup
                 fill={false}
                 inline={true}
-                label="Orientation"
+                label="No Sections"
                 labelFor="text-input">
-                
-                <Controller control={formControls.control} name="mountConfig.orientation" render={({field}) => (
-                    <HTMLSelect {...field} iconName='caret-down'>
-                        <option value={"top"}>Top</option>
-                        <option value={"both"}>Both</option>
-                        <option value={"bottom"}>Bottom</option>
-                    </HTMLSelect>
-                    )}>
+                <Controller control={formControls.control} name="mountConfig.noSections" render={({field}) => (
+                  <NumericInput {...field} onValueChange={field.onChange} size="small"></NumericInput>)}>
                 </Controller>
-            </FormGroup>
-            
-            {/* Alignment */}
-            <FormGroup
-                fill={false}
-                inline={true}
-                label="Alignment"
-                labelFor="text-input">
-                
-                <Controller control={formControls.control} name="mountConfig.alignment" render={({field}) => (
-                    <HTMLSelect {...field} iconName='caret-down'>
-                        <option value={"here"}>Left</option>
-                        <option value={"centre"}>Centre</option>
-                        <option value={"far"}>Right</option>
-                    </HTMLSelect>
-                    )}>
-                </Controller>
-            </FormGroup>
+              </FormGroup>
 
-            {/* Inherit Width */}
-            <FormGroup
-                fill={false}
-                inline={true}
-                label="Inherit Width"
-                labelFor="text-input">
-                
-                <Controller control={formControls.control} name="mountConfig.inheritWidth" render={({field}) => (
-                    <Switch {...formControls.getFieldState}></Switch>
-                    )}>
-                </Controller>
-            </FormGroup>
-
-            {/* No Sections */}
-            <FormGroup
-              fill={false}
-              inline={true}
-              label="No Sections"
-              labelFor="text-input">
-              <Controller control={formControls.control} name="mountConfig.noSections" render={({field}) => (
-                <NumericInput {...field} onValueChange={field.onChange} size="small"></NumericInput>)}>
-              </Controller>
-            </FormGroup>
-
-          </ControlGroup>
-        </Section>
+            </ControlGroup>
+          </Section>
+          </>  : <></>
+        }
+        
 
         {/* Padding */}
         <Section style={{borderRadius: 0}}

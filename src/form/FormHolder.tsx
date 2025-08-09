@@ -6,7 +6,7 @@ import Channel, { IChannel } from "../vanilla/channel";
 import { defaultChannel } from "../vanilla/default/data";
 import ChannelForm from "./ChannelForm"
 import ENGINE from "../vanilla/engine";
-import { Button, Divider, FormGroup, Icon, InputGroup, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
+import { Button, Card, Divider, EditableText, EntityTitle, FormGroup, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import { ILabellable } from "../vanilla/labellable";
@@ -163,18 +163,77 @@ export function FormHolder(props: FormHolderProps) {
                     labelFor="text-input">
                 
                     <Controller control={coreFormControls.control} name="ref" render={({field}) => (
-                        <InputGroup {...field} id="text" size="medium" readOnly={false}/>
+                        <InputGroup {...field} id="text" size="medium" readOnly={true}/>
                         )}>
                     </Controller>
-                
                 </FormGroup>
 
+                
+
+                { props.target !== undefined ? 
+                <Section style={{display: "flex", flexDirection: "column", margin: "0px", overflow: "hidden",
+                            padding: "4px 8px"}} collapsible={true} title="Properties" compact={true}
+                            icon="wrench">
+                    
+
+                    <SectionCard style={{padding: "0px", overflow: "hidden"}} padded={false}>
+                        <div style={{margin: "8px 4px"}}>
+                        <Text style={{padding: "0px 4px 8px 4px", fontWeight: "400"}}>Position</Text>
+
+                        <div style={{"width": "80%", display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                            <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                                <Text style={{padding: "0px 4px", fontWeight: "600"}}>X:</Text>
+                                <Card style={{padding: "4px"}}>
+                                    
+                                    <EditableText disabled={true} value={`${coreFormControls.getValues().contentWidth}`}></EditableText>
+                                </Card>
+                            </div>
+
+                            <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                                <Text style={{padding: "0px 4px", fontWeight: "600"}}>Y:</Text>
+                                <Card style={{padding: "4px"}}>
+                                    
+                                    <EditableText disabled={true} value={`${coreFormControls.getValues().contentHeight}`}></EditableText>
+                                </Card>
+                            </div>
+                        </div>
+                        </div>
+
+                        <Divider style={{display: "inline-block", width: "100%"}}></Divider>
+
+                        <div style={{margin: "8px 4px"}}>
+                            <Text style={{padding: "0px 4px 8px 4px", fontWeight: "400"}}>Size</Text>
+
+                            <div style={{"width": "80%", display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                                <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                                    <Text style={{padding: "0px 4px", fontWeight: "600"}}>W:</Text>
+                                    <Card style={{padding: "4px"}}>
+                                        
+                                        <EditableText disabled={true} value={`${coreFormControls.getValues().contentWidth}`}></EditableText>
+                                    </Card>
+                                </div>
+
+                                <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                                    <Text style={{padding: "0px 4px", fontWeight: "600"}}>H:</Text>
+                                    <Card style={{padding: "4px"}}>
+                                        
+                                        <EditableText disabled={true} value={`${coreFormControls.getValues().contentHeight}`}></EditableText>
+                                    </Card>
+                                </div>
+                            </div>
+                        </div>
+                    </SectionCard>
+                
+                </Section>
+                
+                : <></>}
+            
+
+
                 <Divider></Divider>
+
+                
             </div>
-            
-
-
-            
         </div>
         
         <form onSubmit={coreFormControls.handleSubmit(onSubmit)}

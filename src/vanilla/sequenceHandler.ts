@@ -204,7 +204,7 @@ export default class SequenceHandler {
         
 
         if (element.mountConfig !== undefined) {
-            this.mountElement(element)
+            this.mountElement(element, false)
         } else {
             this.sequence.addElement(element);
         }

@@ -21,7 +21,7 @@ import { OverlayToaster, Toaster } from '@blueprintjs/core';
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
-export const myToaster: Toaster = await OverlayToaster.create({ position: "bottom-right",  });
+export const myToaster: Toaster = await OverlayToaster.create({ position: "bottom",  });
 
 
 const style = {

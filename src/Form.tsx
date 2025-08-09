@@ -8,6 +8,7 @@ import SVGElementForm from './form/SVGElementForm';
 import { FormHolder } from './form/FormHolder';
 import { Visual } from './vanilla/visual';
 import ENGINE from './vanilla/engine';
+import { Card } from '@blueprintjs/core';
 
 
 interface IFormProps {
@@ -18,9 +19,11 @@ interface IFormProps {
 const Form: React.FC<IFormProps> = (props) => {
     return (
         <>
-            <div style={{ padding: "5px", height: "100%",  overflow: "hidden", display: "flex", flexDirection: "column"}}>
+        <Card style={{ padding: "4px 12px", height: "100%",  overflow: "hidden", display: "flex", flexDirection: 
+            "column", borderLeft: "1px solid #c3c3c4"}}>
                 <FormHolder target={props.target} changeTarget={props.changeTarget}/>
-            </div>
+        </Card>
+            
         </>
     ) // Use key in Dynamic form so it forces a remount, triggering the inital values in the form // ?
 }
