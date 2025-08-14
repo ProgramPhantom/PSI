@@ -91,8 +91,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                             height: "10000px",
                             left: "-5000px",
                             top: "-5000px",
-                            backgroundImage: "radial-gradient(circle,rgba(204, 204, 204, 0.26) 1px, transparent 1px)",
-                            backgroundSize: "15px 15px",
+                            backgroundImage: "radial-gradient(circle,rgba(204, 204, 204, 0.12) 0.6px, transparent 1px)",
+                            backgroundSize: "5px 5px",
                             backgroundPosition: "0 0",
                             pointerEvents: "none",
                             zIndex: -1

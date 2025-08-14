@@ -1,93 +1,87 @@
 import { Control, Controller, ControllerRenderProps, FieldPath, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
-import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
+import { Button, Card, CheckboxCard, ControlGroup, FormGroup, HTMLSelect, InputGroup, Section, SectionCard, Slider, Switch, SwitchCard, Text, Tooltip } from "@blueprintjs/core";
 import { IVisual } from '../vanilla/visual';
 import { ILabellable } from '../vanilla/labellable';
 import { ILabel } from '../vanilla/label';
 import VisualForm from './VisualForm';
+import TextForm from './TextForm';
+import { ChangeEventHandler, useState } from 'react';
+import ArrowForm from './ArrowForm';
 
 
 function LabelForm() {
   const formControls = useFormContext<ILabel>();
-  
+  var formVals: ILabel = formControls.getValues()
+
+  const [textOn, setTextOn] = useState<boolean>(formVals.text === undefined ? false : true)
+  const [lineOn, setLineOn] = useState<boolean>(formVals.line === undefined ? false : true)
+
+
+
   return (
     <>
-      <ControlGroup vertical={true}>
-        {/* Text */}
-        <FormGroup
-          fill={false}
-          inline={true}
-          label="Text"
-          helperText="LaTeX input"
-          labelFor="text-input">
-          
-          <Controller control={formControls.control} name={"text.text"} render={({field}) => (
-            <InputGroup {...field} id="text" placeholder="90o" size="small" />
-            )}>
-          </Controller>
-          
-        </FormGroup>
+      {/* Position */}
+      <FormGroup
+        fill={false}
+        inline={true}
+        label="Position"
+        helperText="Label position on parent"
+        labelFor="text-input">
+        
+        <Controller control={formControls.control} name={"labelConfig.labelPosition"} render={({field}) => (
+            <HTMLSelect {...field} iconName='caret-down'>
+                <option value={"top"}>Top</option>
+                <option value={"bottom"}>Bottom</option>
+                <option value={"left"}>Left</option>
+                <option value={"right"}>Right</option>
+            </HTMLSelect>
+          )}>
+        </Controller>
+      </FormGroup>
+      
+      {/* Text position */}
+      <FormGroup
+        fill={false}
+        inline={true}
+        label="Text Position"
+        labelFor="text-input" helperText="Text position relative to arrow">
+        <Controller control={formControls.control} name="labelConfig.textPosition" render={({field}) => (
+            <HTMLSelect {...field} iconName='caret-down' >
+              <option value={"top"}>Top</option>
+              <option value={"inline"}>Inline</option>
+              <option value={"bottom"}>Bottom</option>
+            </HTMLSelect>
+          )}>
+        </Controller>
+      </FormGroup>
 
-        {/* Position */}
-        <FormGroup
-          fill={false}
-          inline={true}
-          label="Position"
-          helperText="Label position on parent"
-          labelFor="text-input">
-          
-          <Controller control={formControls.control} name={"position"} render={({field}) => (
-              <HTMLSelect {...field} iconName='caret-down'>
-                  <option value={"top"}>Top</option>
-                  <option value={"bottom"}>Bottom</option>
-                  <option value={"left"}>Left</option>
-                  <option value={"right"}>Right</option>
-              </HTMLSelect>
-            )}>
-          </Controller>
-        </FormGroup>
-          
-        {/* Visual form */}
-        <VisualForm></VisualForm>
+      {/* Text form */}
+      <Section collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true}  title={
+        <div style={{display: "flex", flexDirection: "row", alignSelf: "center"}}>
+          <Switch style={{margin: "0px"}} type='checkbox' checked={textOn}
+             size="medium" onChange={(e) => {setTextOn(e.target.checked)}}></Switch>
+          <Text style={{fontWeight: 600, marginLeft: "4px"}}>Text</Text>
+        </div>
+      }>
 
-        {/* Style */}
-        <Section
-          collapseProps={{defaultIsOpen: false}}
-          compact={true}
-          title={"Style"}
-          collapsible={true}>
-          <FormGroup
-              inline={true}
-              label="Font Size"
-              labelFor="text-input">
-              <Controller control={formControls.control} name="text.style.fontSize" render={({field}) => (
-                <Slider {...field} max={60} min={0} labelStepSize={10}></Slider>)}>
-              </Controller>
-          </FormGroup>
+        <SectionCard style={{padding: "8px"}}>
+          <TextForm></TextForm>
+        </SectionCard>
+      </Section>
 
-          <FormGroup
-              inline={true}
-              label="Colour"
-              labelFor="text-input">
-              <Controller control={formControls.control} name="text.style.colour" render={({field}) => (
-                <input type={"color"} {...field}></input>)}>
-              </Controller>
-          </FormGroup>
+      {/* Arrow form */}
+      <Section collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={
+        <div style={{display: "flex", flexDirection: "row", alignSelf: "center"}}>
+          <Switch style={{margin: "0px"}} 
+               id="switch" size="medium" onClick={(e) => {}}></Switch>
+          <Text style={{fontWeight: 600, marginLeft: "4px"}}>Arrow</Text>
+        </div>
+      }>
 
-          <FormGroup
-              inline={true}
-              label="Background"
-              labelFor="text-input">
-
-              <Controller control={formControls.control} name="text.style.background" render={({ field: { onChange, onBlur, value, ref } }) => (
-                
-                <input type={"color"} value={value} ></input>
-                
-                )}>
-              </Controller>
-          </FormGroup>
-        </Section>
-
-      </ControlGroup>
+        <SectionCard style={{padding: "4px"}}>
+          <ArrowForm></ArrowForm>
+        </SectionCard>
+      </Section>
     </>
   );
 }

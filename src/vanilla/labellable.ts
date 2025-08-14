@@ -83,11 +83,11 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
     }
 
     bindLabel(label: Label) {
-        if (this.labelDict[label.position] !== undefined) {
+        if (this.labelDict[label.labelConfig.labelPosition] !== undefined) {
             throw new Error("Cannot add a label to the same position twice")
         }
 
-        switch (label.position) {
+        switch (label.labelConfig.labelPosition) {
             case Position.top:
                 this.removeBind(this.parentElement, Dimensions.Y);
 
@@ -130,7 +130,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 throw new Error("Not implemented")
                 break;
             default:
-                throw new Error(`Unknown label bind location ${label.position}`);
+                throw new Error(`Unknown label bind location ${label.labelConfig.labelPosition}`);
         }
     }
 }

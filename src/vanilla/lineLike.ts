@@ -1,9 +1,10 @@
 import { Visual, IVisual } from "./visual";
-import { FillObject, RecursivePartial, UpdateObj } from "./util";
+import { FillObject, posPrecision, RecursivePartial, UpdateObj } from "./util";
 import defaultLineLike from "./default/data/lineLike.json";
 import { Svg } from "@svgdotjs/svg.js";
 import Text from "./text";
 import PaddedBox from "./paddedBox";
+import Spacial, { BindingRule, Dimensions } from "./spacial";
 
 enum Orientation {
     horizontal="horizontal",
@@ -16,8 +17,23 @@ export interface ILineLike extends IVisual {
     orientation: Orientation
 }
 
-export default abstract class LineLike extends PaddedBox {
+export default abstract class LineLike extends Visual {
     static defaults: {[key: string]: ILineLike} = {"default": <any>defaultLineLike}
+
+    public AnchorFunctions = {
+        "here": {
+            get: this.getNear.bind(this),
+            set: this.setNear.bind(this)
+        },
+        "centre": {
+            get: this.getCentre.bind(this),
+            set: this.setCentre.bind(this),
+        },
+        "far": {
+            get: this.getFar.bind(this),
+            set: this.setFar.bind(this)
+        }
+    }
 
     adjustment: [number, number];
     orientation: Orientation;
@@ -27,11 +43,14 @@ export default abstract class LineLike extends PaddedBox {
     
     
     constructor(params: RecursivePartial<ILineLike>, templateName: string="default") {
-        var fullParams: ILineLike = FillObject(params, LineLike.defaults[templateName]);
-        super(fullParams.offset, fullParams.padding);
+        var fullParams: ILineLike = FillObject<ILineLike>(params, LineLike.defaults[templateName]);
+        super(fullParams);
+        this.ref = "LINE"
 
         this.adjustment = fullParams.adjustment;
         this.orientation = fullParams.orientation;
+
+        this.stretchy = true;
     }
 
     resolveDimensions(): void {
@@ -88,5 +107,75 @@ export default abstract class LineLike extends PaddedBox {
     }
     public set y2(v : number) {
         this._y2 = v;
+    }
+
+    // Anchors:
+    public override getNear(dimension: Dimensions, ofContent: boolean=false): number | undefined {
+        switch (dimension) {
+            case Dimensions.X:
+                if (this._x === undefined) {return undefined}
+                if (ofContent) { 
+                    return this.contentX; 
+                }
+                return this._x;
+            case Dimensions.Y:
+                if (this._y === undefined) {return undefined}
+                if (ofContent) { return this.contentY; }
+                return this._y;
+        }
+    }
+    public override setNear(dimension: Dimensions, v : number) {
+        switch (dimension) {
+            case Dimensions.X:
+                this.x = v;
+                break;
+            case Dimensions.Y:
+                this.y = v;
+                break;
+        }
+    }
+    public override getCentre(dimension: Dimensions, ofContent: boolean=false): number | undefined {
+        switch (dimension) {
+            case Dimensions.X:
+                if (this._x === undefined) {return undefined}
+                if (ofContent) { return this.contentX + (this.contentWidth ? posPrecision(this.contentWidth/2) : 0); }
+                return this.x + posPrecision(this.width/2);
+            case Dimensions.Y:
+                if (this._y === undefined) {return undefined}
+                if (ofContent) { return this.contentY + (this.contentHeight ? posPrecision(this.contentHeight/2) : 0); }
+                return this.y + posPrecision(this.height/2);
+        }
+    }
+    public override setCentre(dimension: Dimensions, v : number) {
+        switch (dimension) {
+            case Dimensions.X:
+                this.x = v - this.width/2;
+                break;
+            case Dimensions.Y:
+                this.y = v - this.height/2;
+                break;
+        }
+    }
+    public override getFar(dimension: Dimensions, ofContent: boolean=false): number | undefined {
+        switch (dimension) {
+            case Dimensions.X:
+                if (this._x2 === undefined) {return undefined}
+                // if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth : 0); }
+                return this.x2;
+            case Dimensions.Y:
+                if (this._y2 === undefined) {return undefined}
+                // if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight : 0); }
+                return this.y2;
+        }
+    }
+    public override setFar(dimension: Dimensions, v : number) {
+        switch (dimension) {
+            case Dimensions.X:
+                this.x2 = v;
+                break;
+            case Dimensions.Y:
+                this.y2 = v;
+                break;
+        }
     }
 }

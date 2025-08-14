@@ -112,13 +112,24 @@ class Logger {
     }
 
     broadcast(from: Spacial, functionName: string) {
-        var formattedMessage: string[] = [`%c${this.getTime()} `, 
-                                          `%c[BROADCAST]`,
-                                          `%c: `,
+        try {
+            var formattedMessage: string[] = [`%c${this.getTime()} `, 
+                                            `%c[BROADCAST]`,
+                                            `%c: `,
 
-                                          `%c"${from.ref}" `,
-                                          `%cis starting the following `,
-                                          `%c"${functionName}(), width: ${from.width}, height: ${from.height}"`]
+                                            `%c"${from.ref}" `,
+                                            `%cis starting the following `,
+                                            `%c"${functionName}(), width: ${from.width}, height: ${from.height}"`]
+        } catch {
+            var formattedMessage: string[] = [`%c${this.getTime()} `, 
+                                            `%c[BROADCAST]`,
+                                            `%c: `,
+
+                                            `%c"${from.ref}" `,
+                                            `%cis starting the following `,
+                                            `%c"${functionName}()`]
+        }
+
         var concatMessage: string = formattedMessage.reduce((p, c) => p + c);
         
         var colours = [`color:${this.defaultColour}`, 

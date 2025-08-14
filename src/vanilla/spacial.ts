@@ -73,7 +73,7 @@ export default class Spacial extends Point implements ISpacial {
             ref: this.ref
     }}
 
-    AnchorFunctions = {
+    public AnchorFunctions = {
         "here": {
             get: this.getNear.bind(this),
             set: this.setNear.bind(this)
@@ -172,6 +172,8 @@ export default class Spacial extends Point implements ISpacial {
         throw new Error("Dimensions undefined")
     }
 
+    public stretchy: boolean = false;
+
     public clearBindings(dimension: Dimensions) {
         this.bindings = this.bindings.filter(b => b.bindingRule.dimension !== dimension);
     }
@@ -189,13 +191,25 @@ export default class Spacial extends Point implements ISpacial {
             if (b.targetObject === target && b.bindingRule.dimension === dimension) {
                 found = true;
                 
-                console.warn(`Warning: overriding binding on dimension ${b.bindingRule.dimension} for anchor ${this.ref} to target ${target.ref}`);
+                if (b.targetObject.stretchy === false) {
+                    // Not stretchy so this gets overridden
+                    console.warn(`Warning: overriding binding on dimension ${b.bindingRule.dimension} for anchor ${this.ref} to target ${target.ref}`);
+                    
+                    b.bindingRule.anchorSiteName = anchorBindSide;
+                    b.bindingRule.targetSiteName = targetBindSide;
+                    b.bindingRule.dimension = dimension;
+                    b.bindToContent = bindToContent;
+                    b.offset = offset;
+                } else {  // Stretchy === true
+                    var newBindingRule: BindingRule = {
+                        anchorSiteName: anchorBindSide,
+                        targetSiteName: targetBindSide,
+                        dimension: dimension,
+                    };
+
                 
-                b.bindingRule.anchorSiteName = anchorBindSide;
-                b.bindingRule.targetSiteName = targetBindSide;
-                b.bindingRule.dimension = dimension;
-                b.bindToContent = bindToContent;
-                b.offset = offset;
+                    this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint})
+                }
         }})
 
 
@@ -215,6 +229,10 @@ export default class Spacial extends Point implements ISpacial {
         this.bindings.map((b) => b.targetObject).forEach((e) => {
             e.displaced = true;
         })
+
+        if (this.ref === "default-label") {
+            console.log()
+        }
 
         for (const binding of this.bindings) {
             var targetElement: Spacial = binding.targetObject;
@@ -246,6 +264,8 @@ export default class Spacial extends Point implements ISpacial {
             if (anchorBindCoord !== currentTargetPointPosition) {
                 // Use the correct setter on the target with this value
                 logger.operation(Operations.BIND, `(${this.ref})[${anchorBindCoord}] ${dimension}> (${targetElement.ref})[${currentTargetPointPosition}]`, this);
+                
+
                 setter(dimension, anchorBindCoord!);  // SETTER MAY NEED INTERNAL BINDING FLAG?
             }
         }

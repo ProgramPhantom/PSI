@@ -25,15 +25,19 @@ function LabelMapForm(props: ILabelMapProps) {
 
   function addLabel() {
     var toAddLabel: ILabel = structuredClone(labelForm.getValues());
+    // if (toAddLabel === undefined) {
+    //   return
+    // }
+
     var newLabels: ILabel[] = [...structuredClone(labels)]; 
     newLabels.push(toAddLabel)
 
     var positions: {[key in Position]?: number}  = {}
     newLabels.forEach((l) => {
-      if (positions[l.position] !== undefined) {
-        positions[l.position]! += 1
+      if (positions[l.labelConfig.labelPosition] !== undefined) {
+        positions[l.labelConfig.labelPosition]! += 1
       } else {
-        positions[l.position] = 1
+        positions[l.labelConfig.labelPosition] = 1
       }
     })
     if (Object.values(positions).some(n => n > 1)) {
@@ -62,13 +66,21 @@ function LabelMapForm(props: ILabelMapProps) {
           labelFor="text-input">
         </FormGroup>
 
-      <CardList compact={true}>
+      <div style={{display: "flex", flexDirection: "row"}}>
+        <Text style={{width: "40%"}}>Ref</Text>
+        <Text style={{width: "40%"}}>Position</Text>
+        <Text style={{width: "20%"}}>Delete</Text>
+      </div>
+
+      <Divider style={{margin: "0px 0px 4px 0px"}}></Divider>
+
+      <CardList compact={true} style={{padding: "0px"}}>
         {labels.map((label, i) => (
           <Card key={i.toString()}>
             <div style={{display: "flex", flexDirection: "row", alignItems: "center", width: "100%"}}>
-              <Text style={{width: "40%"}} >{label.text.text}</Text>
+              <Text style={{width: "40%"}} >{label.ref}</Text>
               
-              <Text>{label.position}</Text>
+              <Text>{label.labelConfig.labelPosition}</Text>
               <Button style={{color: "red", justifySelf: "flex-end", marginLeft: "auto" }} value={i} key={i} name="delete"
                     onClick={() => {deleteLabel(i)}}>Delete</Button>
             </div>
@@ -78,19 +90,19 @@ function LabelMapForm(props: ILabelMapProps) {
 
       <Divider></Divider>
 
-      <div>
-        <div style={{width: "100%", margin: "10px 0px", display: "flex", flexDirection: "row", alignItems: "center"}}>
+      <Card compact={true} style={{padding: "0px 8px 8px 8px"}}>
+        <div style={{width: "100%", margin: "0px 4px", display: "flex", flexDirection: "row", alignItems: "center"}}>
           <Icon icon="build" style={{margin: "0px 9px 0px 0px"}} size={15}></Icon>
           <h5 style={{ textDecoration: "underline"}}>Create Label</h5>
 
           <Button style={{margin: "4px", height: "30px", marginLeft: "auto", justifySelf: "center"}} 
-               value={"Add Label"} onClick={() => {addLabel()}} icon="add"> Add label</Button>
+               value={"Add Label"} onClick={() => {addLabel()}} icon="add"></Button>
         </div>
 
           <FormProvider {...labelForm}> 
             <LabelForm></LabelForm>
           </FormProvider>
-      </div>
+      </Card>
       
     </>
   );

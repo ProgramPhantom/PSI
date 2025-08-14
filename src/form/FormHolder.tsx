@@ -172,7 +172,7 @@ export function FormHolder(props: FormHolderProps) {
 
                 { props.target !== undefined ? 
                 <Section style={{display: "flex", flexDirection: "column", margin: "0px", overflow: "hidden",
-                            padding: "4px 4px"}} collapsible={true} title="Properties" compact={true}
+                            padding: "4px 4px"}} collapsible={true} title="Properties" compact={true} collapseProps={{defaultIsOpen: false}}
                             icon="wrench">
                     
 
