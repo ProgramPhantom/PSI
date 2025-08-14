@@ -37,7 +37,7 @@ export class Grid {
                 var cursX = timestampX[0];
                 
                 for (const [timestamp, line] of Object.entries(this.vLines)) {
-                    attr = {"stroke-width": line.style.strokeWidth,
+                    attr = {"stroke-width": line.style.thickness,
                             "stroke-dasharray": line.style.dashing,
                             "stroke": line.style.stroke}
 
@@ -52,7 +52,7 @@ export class Grid {
                 var cursX = timestampX[0];
 
                 for (const [timestamp, line] of Object.entries(this.vLines)) {
-                    attr = {"stroke-width": line.style.strokeWidth,
+                    attr = {"stroke-width": line.style.thickness,
                             "stroke-dasharray": line.style.dashing,
                             "stroke": line.style.stroke}
 

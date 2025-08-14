@@ -5,7 +5,7 @@
 
     "style": {
         "stroke": "black",
-        "strokeWidth": 1,
+        "thickness": 1,
         "dashing": [7, 7]
     }
 }

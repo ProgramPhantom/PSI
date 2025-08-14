@@ -14,6 +14,22 @@ function ArrowForm() {
   return (
     <>
       <ControlGroup vertical={true}>
+        {/* Arrowhead style */}
+        <FormGroup
+          fill={false}
+          inline={true}
+          label="Arrowhead style"
+          labelFor="text-input">
+          <Controller control={formControls.control} name="line.arrowStyle.headStyle" render={({field}) => (
+              <HTMLSelect {...field} iconName='caret-down' >
+                <option value={"default"}>Default</option>
+                <option value={"thin"}>Thin</option>
+                <option value={"None"}>None</option>
+              </HTMLSelect>
+            )}>
+          </Controller>
+        </FormGroup>
+
         {/* PADDING */}
         <VisualForm></VisualForm>
 
@@ -26,7 +42,7 @@ function ArrowForm() {
               inline={true}
               label="Stroke thickness"
               labelFor="text-input">
-              <Controller control={formControls.control} name="line.style.strokeWidth" render={({field}) => (
+              <Controller control={formControls.control} name="line.style.thickness" render={({field}) => (
                 <NumericInput {...field} onValueChange={field.onChange} min={0} small={true}></NumericInput>)}>
               </Controller>
           </FormGroup>

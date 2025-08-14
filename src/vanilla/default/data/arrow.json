@@ -1,9 +1,16 @@
 {
     "padding": [0, 0, 0, 0],
+    "offset": [0, 0],
+    
+    "adjustment": [0, 0],
+
+    "arrowStyle": {
+        "headStyle": "default"
+    },
 
     "style": {
-        "thickness": 2, 
-        "headStyle": "default", 
-        "stroke": "black"
+        "stroke": "black",
+        "thickness": 1,
+        "dashing": [7, 7]
     }
 }

@@ -9,7 +9,7 @@ import ENGINE from "../vanilla/engine";
 import { Button, Card, Divider, EditableText, EntityTitle, FormGroup, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
-import { ILabellable } from "../vanilla/labellable";
+import Labellable, { ILabellable } from "../vanilla/labellable";
 import { ElementBundle } from "../vanilla/sequenceHandler";
 import { myToaster } from "../App";
 
@@ -45,7 +45,7 @@ export function FormHolder(props: FormHolderProps) {
     var isLabellable: boolean;
     var elementType: ElementTypes;
     var coreDefaults: IVisual;
-    var labelDefaults: ILabellable;
+    var labelDefaults: ILabellable = Labellable.defaults["default"];
     var ElementForm: React.FC<FormRequirements> | undefined;
 
     // Target exists. Decide element type, form type and defaults
@@ -111,7 +111,7 @@ export function FormHolder(props: FormHolderProps) {
 
     // Create label hook form
     const labelFormControls = useForm<ILabellable>({
-        defaultValues:  coreDefaults as DefaultValues<ILabellable>
+        defaultValues: labelDefaults as DefaultValues<ILabellable>
     });
 
 

@@ -8,7 +8,6 @@ import { Display, IVisual, Visual } from "./visual";
 import Channel, { IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import { Script } from "vm";
-import Parser from "./parser";
 import { mountableElements } from "./default/data";
 import { ILine, Line } from "./line";
 import RectElement, { IRect, } from "./rectElement";

@@ -12,7 +12,7 @@ export interface ILine extends ILineLike {
 
 interface lineStyle {
     stroke: string,
-    strokeWidth: number,
+    thickness: number,
     dashing: [number, number]
 }
 

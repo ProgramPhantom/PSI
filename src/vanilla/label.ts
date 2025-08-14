@@ -1,3 +1,4 @@
+import Arrow, { IArrow } from "./arrow";
 import Collection, { ICollection } from "./collection";
 import { ILine, Line } from "./line";
 import LineLike, { ILineLike } from "./lineLike";
@@ -16,7 +17,7 @@ export interface ILabelConfig {
 
 export interface ILabel extends ICollection {
     text?: IText ,
-    line?: ILine,
+    line?: IArrow,
 
     labelConfig: ILabelConfig,
 }
@@ -31,7 +32,7 @@ export default class Label extends Collection implements ILabel {
             padding: [0, 0, 0, 0],
 
             text: Text.defaults["default"],
-            line: Line.defaults["default"],
+            line: Arrow.defaults["default"],
             ref: "default-label",
             labelConfig: {
                 labelPosition: Position.top,
@@ -56,7 +57,7 @@ export default class Label extends Collection implements ILabel {
     }
 
     text?: Text;
-    line?: Line;
+    line?: Arrow;
 
     labelConfig: ILabelConfig
 
@@ -75,7 +76,7 @@ export default class Label extends Collection implements ILabel {
         } 
         
         if (fullParams.line !== undefined) {
-            this.line = new Line(fullParams.line);
+            this.line = new Arrow(fullParams.line);
 
             this.bind(this.line, Dimensions.X, "here", "here", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [here]`, true);
             this.bind(this.line, Dimensions.X, "far", "far", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [far]`, true);
@@ -85,8 +86,6 @@ export default class Label extends Collection implements ILabel {
 
             this.add(this.line)
         }
-        
-
     }
 
     private arrangeContent() {
@@ -98,7 +97,7 @@ export default class Label extends Collection implements ILabel {
             case "top":
                 this.bind(this.line, Dimensions.Y, "far", "here", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [here]`, true);
                 this.bind(this.line, Dimensions.Y, "far", "far", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [far]`, true);
-                this.text.padding[2] += this.line.style.strokeWidth  // Add bottom padding to text
+                this.text.padding[2] += this.line.style.thickness  // Add bottom padding to text
                 break;
             case "inline":
                 this.bind(this.line, Dimensions.Y, "centre", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
@@ -107,7 +106,7 @@ export default class Label extends Collection implements ILabel {
             case "bottom":
                 this.bind(this.line, Dimensions.Y, "here", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
                 this.bind(this.line, Dimensions.Y, "here", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
-                this.text.padding[0] += this.line.style.strokeWidth  // Add top padding to text
+                this.text.padding[0] += this.line.style.thickness  // Add top padding to text
                 break;
             default:
                 throw new Error(`Unknown text position ${this.labelConfig.textPosition}`)

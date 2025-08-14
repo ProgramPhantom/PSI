@@ -2,74 +2,32 @@ import { Svg, SVG } from "@svgdotjs/svg.js";
 import { Visual, IVisual } from "./visual";
 import defaultArrow from "./default/data/arrow.json"
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
-import LineElement, { ILineLike } from "./lineElement";
+import { ILine, Line } from "./line";
 
-interface Dim {
-  width: number,
-  height: number
-}
-
-interface Bounds {
-  top: number,
-  bottom: number,
-  left: number,
-  right: number
-
-  width: number,
-  height: number,
-}
 
 export enum HeadStyle {
     default="default",
-    thin="thin"
+    thin="thin",
+    none="none"
 }
 
-export enum ArrowPosition {
-  bottom="bottom",
-  inline="inline",
-  top="top"
-}
-
-export interface IArrow extends ILineLike {
-    position: ArrowPosition,
-    style: arrowStyle,
-}
-
-export interface arrowStyle {
-    thickness: number,
+export interface IArrowStyle {
     headStyle: HeadStyle,
-    stroke: string,
+}
+
+export interface IArrow extends ILine {
+    arrowStyle: IArrowStyle,
 }
 
 
-export default class Arrow extends LineElement {
-  static defaults: {[key: string]: IArrow} = {"arrow": {...<any>defaultArrow}}
-
-  style: arrowStyle;
-  position: ArrowPosition;
- 
-  constructor(params: RecursivePartial<IArrow>, templateName: string="arrow") {
-    var fullParams: IArrow = FillObject(params, Arrow.defaults[templateName])
-    super(fullParams);
-
-    this.style = fullParams.style;
-    this.padding = fullParams.padding;
-    this.position = fullParams.position;
-  }
-
-
-  public draw(surface: Svg): void {
-    if (!this.dirty) {
-      return
-    }
-    this.dirty = false;
-
-    const def = `
+export default class Arrow extends Line {
+  static defaults: {[key: string]: IArrow} = {"default": {...<any>defaultArrow}}
+  static def: string = `
     <defs>
         <marker 
           id='head' 
           viewBox="0 0 20 20"
-          refX="0"
+          refX="4"
           refY="4"
           markerWidth="6"
           markerHeight="6"
@@ -78,27 +36,53 @@ export default class Arrow extends LineElement {
         </marker>
       </defs>
     `
+  static arbitraryAdjustment: number = 1;
+  get state(): IArrow { return {
+    x: this._x,
+    y: this._y,
+    contentWidth: this._contentWidth,
+    contentHeight: this._contentHeight,
+    padding: this.padding,
+    offset: this.offset,
+    ref: this.ref,
+    style: this.style,
+    adjustment: this.adjustment,
+    orientation: this.orientation,
+    arrowStyle: this.arrowStyle
+  }}
 
-    // Could do some maths to automatically scale arrow head
-    // to thickness but not now
-  
-    const arbiraryAdjustment = 5;
-    var arrowSVG = `<svg>
-          ${def}
+  arrowStyle: IArrowStyle;
+ 
+  constructor(params: RecursivePartial<IArrow>, templateName: string="default") {
+    var fullParams: IArrow = FillObject(params, Arrow.defaults[templateName])
+    super(fullParams);
+
+    this.arrowStyle = fullParams.arrowStyle;
+  }
+
+
+
+
+  public override draw(surface: Svg): void {
+    if (this.dirty) {
+      // Clear old svg
+      if (this.svg) {
+          this.svg.remove();
+      }
+
+      this.svg = SVG(`<svg>
+          ${Arrow.def}
         <path
           id='arrow-line'
-          marker-start='url(#head)'
-          marker-end='url(#head)'
+          ${ this.arrowStyle.headStyle !== HeadStyle.none ? "marker-start='url(#head)' marker-end='url(#head)'" : ''}
           stroke-width='${this.style.thickness}'
-          stroke='${this.style.stroke}'  
-          d='M${this.x + arbiraryAdjustment},${this.y}, ${this.x2 -  arbiraryAdjustment} ${this.y2}'
+          stroke='${this.style.stroke}'
+          stroke-linecap="butt"
+          d='M${this.x + Arrow.arbitraryAdjustment}, ${this.y}, ${this.x2 - Arrow.arbitraryAdjustment} ${this.y2}'
         />
-              
-      </svg>`
-
+      </svg>`)
       
-
-      var svgObj = SVG(arrowSVG);
-      surface.add(svgObj);
+      surface.add(this.svg)
+    }
   }
 }
