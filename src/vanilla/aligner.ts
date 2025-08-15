@@ -74,10 +74,10 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 preChild.enforceBinding();
 
             } else { // this is the first element, bind to this
-                this.clearBindings(this.mainAxis);
+                this.clearBindsTo(postChild, Dimensions.X);
 
                 this.bind(child, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`);
-                this.enforceBinding();
+                // this.enforceBinding();
             }
 
             // Child far bound
@@ -119,7 +119,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         //}
         //this.squeezeCrossAxis();
 
-        // this.enforceBinding();
+        this.enforceBinding();
         
         // Child will tell this to update size when it changes size or position
         child.subscribe(this.computeBoundary.bind(this));

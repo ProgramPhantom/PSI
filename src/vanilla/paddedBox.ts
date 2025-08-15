@@ -104,11 +104,38 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
         }
         throw new Error("Width unset")
     }
+    override set width(v: number | undefined) {
+        if (v === undefined) {
+            this.contentWidth = undefined
+        } else {
+            var newContentWidth: number = v - this.padding[0] - this.padding[2];
+
+            if (newContentWidth < 0) {  // Don't allow content height to go below 0
+                this.contentWidth = 0
+            } else {
+                this.contentWidth = newContentWidth;
+            }
+        }
+    }
+    
     override get height(): number {
         if (this.contentHeight !== undefined) {
             return this.padding[0] + this.contentHeight + this.padding[2];
         }
         throw new Error("Dimensions undefined")
+    }
+    override set height(v: number | undefined) {
+        if (v === undefined) {
+            this.contentHeight = undefined
+        } else {
+            var newContentHeight: number = v - this.padding[3] - this.padding[1];
+
+            if (newContentHeight < 0) {  // Don't allow content height to go below 0
+                this.contentHeight = 0
+            } else {
+                this.contentHeight = newContentHeight;
+            }
+        }
     }
     
 }

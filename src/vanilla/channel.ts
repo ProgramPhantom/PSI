@@ -99,7 +99,11 @@ export default class Channel extends Collection {
     }
     public set mountColumns(value: Aligner<Aligner<Visual>>) {
         this._mountColumns = value;
-        this._mountColumns.bindSize(this.bar, Dimensions.X);
+        // this._mountColumns.bindSize(this.bar, Dimensions.X);
+
+        this._mountColumns.bind(this.bar, Dimensions.X, "far", "far")
+        this.bar.contentWidth = this._mountColumns.width; 
+        // This means when adding a new channel the bar is already as long as image
     }
 
     private _mountOccupancy?: (Visual | undefined)[];
@@ -132,8 +136,9 @@ export default class Channel extends Collection {
         // this.bind(this.upperAligner, Dimensions.Y, "here", "here", undefined, `CHANNEL Y> UPPER ALIGNER`);
         this.add(this.upperAligner, undefined, true)
         
-        this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle}, "bar");
+        this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle, ref: "bar"}, "bar");
         this.upperAligner.bind(this.bar, Dimensions.Y, "far", "here", undefined, `UPPER ALIGNER Y> BAR`);
+        this.bar.stretchy = true;
         this.add(this.bar);
 
         this.lowerAligner = new Aligner({axis: Dimensions.X, alignment: Alignment.here, minCrossAxis: 20, ref: "bottom aligner"}, "default");

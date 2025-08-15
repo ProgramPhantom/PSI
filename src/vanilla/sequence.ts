@@ -71,7 +71,7 @@ export default class Sequence extends Collection {
         this.add(this.channelColumn, undefined, true);
 
         // | h | |p|p|p|p|
-        this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true, alignment: Alignment.here, ref: "label col | pos cols"}, "default");
+        this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true, alignment: Alignment.here, ref: "label col | pulse columns"}, "default");
         // this.bind(this.columns, Dimensions.Y, "here", "here", undefined, "SEQ Y-> COL");
         // this.bind(this.columns, Dimensions.X, "here", "here", undefined, "SEQ X-> COL");
         this.add(this.columns, undefined, true);
@@ -85,7 +85,7 @@ export default class Sequence extends Collection {
 
 
         // |p|p|p|p|
-        this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0, ref: "pos col collection"}, "default", );
+        this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0, ref: "pulse columns"}, "default", );
         this.columns.add(this.pulseColumns);
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }

@@ -262,7 +262,7 @@ export function FormHolder(props: FormHolderProps) {
                         padding: "4px"
                 }}>
             
-            <div style={{overflowY: "auto", flex: "1 1 0", minHeight: "0", padding: "4px"}} id="form-fields">
+            <div style={{overflowY: "auto", flex: "1 1 0",  padding: "4px"}} id="form-fields">
                 <Tabs defaultSelectedTabId={"core"}>
                     <Tab style={{userSelect: "none", position: "sticky"}} id={"core"} title={"Core"} panel={
                             <FormProvider {...coreFormControls}>

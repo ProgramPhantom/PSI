@@ -18,6 +18,7 @@ const Debug: React.FC<IDebug> = (props) => {
 
     return (
         <>
+        <CollectionDebug element={seq.pulseColumns}></CollectionDebug> 
             {/*{
                 seq.channels.map((c) => {
                     return (c.positionalElements.map((e) => {

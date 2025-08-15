@@ -212,10 +212,12 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         return this._contentHeight;
     }
     protected set contentWidth(v: number) {
+        if (this.ref === "pulse columns") {
+            console.log()
+        }
         if (v !== this._contentWidth) {
             this._contentWidth = v;
             this.enforceBinding();
-            this.enforceSizeBinding();
             this.notifyChange();
         }
     }
@@ -223,7 +225,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         if (v !== this._contentHeight) {
             this._contentHeight = v;
             this.enforceBinding();
-            this.enforceSizeBinding();
             this.notifyChange();
         }
     }
