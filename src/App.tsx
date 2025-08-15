@@ -84,16 +84,21 @@ function App() {
             </div>
           </div>
 
-          <div>
+          
+          
+            
+          
+
+          <div style={{gridColumnStart: 2, gridColumnEnd: 3,}}>
             <ComponentResizer 
-              defaultWidth={400} 
-              minWidth={200} 
-              maxWidth={800}
-            >
+                defaultWidth={400} 
+                minWidth={200} 
+                maxWidth={800}
+              >
               <Form target={selectedElement} changeTarget={setSelectedElement}></Form>
             </ComponentResizer>
           </div>
-
+          
         </div>
       </div>
       </>

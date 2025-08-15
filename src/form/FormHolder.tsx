@@ -258,11 +258,11 @@ export function FormHolder(props: FormHolderProps) {
         </div>
         
         <form onSubmit={coreFormControls.handleSubmit(onSubmit)}
-                style={{height: "100%", flex: "0 1 auto", display: "flex", flexDirection: "column", overflow: "hidden",
+                style={{height: "100%", display: "flex", flexDirection: "column", overflow: "hidden",
                         padding: "4px"
                 }}>
             
-            <div style={{overflowY: "auto", flex: "0 1 auto", padding: "3px"}}>
+            <div style={{overflowY: "auto", flex: "1 1 0", minHeight: "0", padding: "4px"}} id="form-fields">
                 <Tabs defaultSelectedTabId={"core"}>
                     <Tab style={{userSelect: "none", position: "sticky"}} id={"core"} title={"Core"} panel={
                             <FormProvider {...coreFormControls}>
@@ -287,8 +287,7 @@ export function FormHolder(props: FormHolderProps) {
                 </Tabs>
             </div>
             
-            <div style={{width: "100%", alignSelf: "center", 
-                    margin: "4px 2px 18px 2px", height: "30px", marginTop: "auto", display: "flex", flexDirection: "column"}} >
+            <div id="submit-area" style={{width: "100%", alignSelf: "center", margin: "4px 2px 18px 2px", height: "30px", marginTop: "auto", display: "flex", flexDirection: "column"}} >
                 <Divider></Divider>
                 <Button style={{width: "80%", margin: "auto", alignSelf: "center", }}
                     type={"submit"} text={props.target !== undefined ? "Apply" : "Add"} icon={props.target !== undefined ? "tick" : "add"}></Button>
