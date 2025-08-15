@@ -18,6 +18,7 @@ import ENGINE from './vanilla/engine';
 import Channel from './vanilla/channel';
 import Labellable from './vanilla/labellable';
 import { OverlayToaster, Toaster } from '@blueprintjs/core';
+import ComponentResizer from './ComponentResizer';
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
@@ -67,23 +68,32 @@ function App() {
   return (
       <>
 
-      <div style={{display: "grid", height: "100%", width: "100%", gridTemplateColumns: "auto 400px", gridTemplateRows: "50px auto", rowGap: "0", columnGap: "0"}}>
-        <div style={{gridColumnStart: 1, gridColumnEnd: 3, width: "100%"}}>
+      <div style={{display: "flex", height: "100%", width: "100%", flexDirection: "column"}}>
+        <div style={{width: "100%"}}>
           <Banner saveSVG={SaveSVG} saveScript={SaveScript}></Banner>
         </div>
         
-        <div style={{gridColumnStart: 1, gridColumnEnd: 2, gridRowStart: 2, gridRowEnd: 3, height: "100%", display: "flex", flexDirection: "column"}}>
-          <div style={{height: "100%", position: "relative"}} >
-            {canvas}
+        <div style={{display: "flex", height: "100%", width: "100%"}}>
+          <div style={{flex: "1 1", height: "100%", display: "flex", flexDirection: "column"}}>
+            <div style={{height: "100%", position: "relative"}} >
+              {canvas}
+            </div>
+            
+            <div style={{position: "relative", bottom: "0px", display: "flex", flexDirection: "column"}}>
+              <Editor></Editor>
+            </div>
           </div>
-          
-          <div style={{position: "relative", width: "100%", bottom: "0px"}}>
-            <Editor></Editor>
-          </div>
-        </div>
 
-        <div style={{gridColumnStart: 2, gridColumnEnd: 3, overflow: "hidden",}}>
-          <Form target={selectedElement} changeTarget={setSelectedElement}></Form>
+          <div>
+            <ComponentResizer 
+              defaultWidth={400} 
+              minWidth={200} 
+              maxWidth={800}
+            >
+              <Form target={selectedElement} changeTarget={setSelectedElement}></Form>
+            </ComponentResizer>
+          </div>
+
         </div>
       </div>
       </>

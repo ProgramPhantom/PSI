@@ -12,9 +12,10 @@ export default function Banner(props: {saveSVG: () => void, saveScript: () => vo
                 <Navbar.Heading>Pulse Planner v0.2.3 (BETA)</Navbar.Heading>
                 <Navbar.Divider />
 
-                <Button small={true} minimal={true} icon="cloud-download" text="Save SVG" onClick={props.saveSVG}/>
+                
+                <Button size="small" variant="minimal" icon="cloud-download" text="Save SVG" onClick={props.saveSVG} disabled={true}/>
                 <Navbar.Divider />
-                <Button small={true} minimal={true} icon="media" text="Save JPG" onClick={props.saveScript}/>
+                <Button size="small" variant="minimal" icon="media" text="Save JPG" onClick={props.saveScript} disabled={true}/>
                 
             </Navbar.Group>
         </Navbar>

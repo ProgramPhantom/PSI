@@ -31,11 +31,12 @@ interface IEditorProps {
 
 const Editor: React.FC<IEditorProps> = () => {
     return (
-        <div style={{padding: 10}}>
-
+        <div style={{padding: 8}}>
             <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true}>
                 <SectionCard>
-                    <div style={{display: 'flex', flexDirection: "row", gap: "20px 50px", margin: "10px", }}>
+                    <div style={{display: 'flex', 
+                        flexDirection: "row", gap: "16px 16px", margin: "4px", overflowY: "auto",
+                        flexWrap: "wrap", maxHeight: "200px"}}>
                         <DraggableElement element={ENGINE.PULSE90} handler={ENGINE.handler}></DraggableElement>
                         <DraggableElement element={ENGINE.PULSE180} handler={ENGINE.handler}></DraggableElement>
 
