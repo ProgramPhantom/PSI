@@ -106,6 +106,9 @@ export default class Sequence extends Collection {
 
         // Add to positional columns
         this.pulseColumns.add(newColumn, index);
+        this.pulseColumns.children.forEach((c, i) => {
+            c.ref = `column at ${i}`
+        })
 
         // Update indices after this new column:
         // Update internal indexes of Positional elements in pos col:
@@ -121,7 +124,7 @@ export default class Sequence extends Collection {
     deleteColumn(index: number, ifEmpty: boolean=false): boolean {
         // Update positional indices of elements after this 
 
-        if (ifEmpty === true) {
+        if (ifEmpty === true) {  // Removing column ONLY if it's empty now
             if (this.pulseColumns.children[index].children.length === 0) {
                 this.pulseColumns.removeAt(index);
 
@@ -135,7 +138,7 @@ export default class Sequence extends Collection {
             } else {
                 return false
             }
-        } else {
+        } else {  // Remove column (regardless of if it's empty)
             this.pulseColumns.removeAt(index);
 
             this.channels.forEach((channel) => {
@@ -191,7 +194,7 @@ export default class Sequence extends Collection {
         if (INDEX === undefined) {
             INDEX = numColumns;
         }
-        var skip = INDEX - numColumns > 0 ? INDEX - numColumns : 0;
+        var skip = INDEX - numColumns > 0 ? INDEX - numColumns : 0;  // If inserted at an index more than the number of columns
         INDEX = INDEX - skip;
         element.mountConfig.index = INDEX;
 
@@ -243,8 +246,7 @@ export default class Sequence extends Collection {
         index = target.mountConfig!.index;
 
         if (channelID === undefined) {
-            console.warn("Positional not connected to channel")
-            return undefined
+            throw new Error(`No channel owner found when deleting ${target.ref}`)
         }
 
         channel.removeMountable(target);
@@ -255,7 +257,7 @@ export default class Sequence extends Collection {
         try {
             this.pulseColumns.children[index].remove(target);
         } catch {
-            
+            throw new Error(`Cannot remove pulse column at index ${index}`)
         }
 
         let removed;

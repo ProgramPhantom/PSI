@@ -186,7 +186,7 @@ export default class Channel extends Collection {
         // Remove from children of this channel (positional elements should be property taking positionals from children)
         this.remove(element);
 
-        // Remove from the column
+        // Remove from the column (?)
         if (element.mountConfig!.index === undefined) {
             throw new Error(`Trying to remove positional with uninitialised index`)
         }

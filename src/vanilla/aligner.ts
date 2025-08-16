@@ -65,23 +65,27 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
         // MAIN AXIS COMPUTE
         if (this.bindMainAxis) {
-            var preChild: T | undefined = this.children[INDEX - 1];
-            var postChild: T | undefined = this.children[INDEX];
+            var leftChild: T | undefined = this.children[INDEX - 1];
+            var rightChild: T | undefined = this.children[INDEX];
 
             // child here bind
-            if (preChild !== undefined) {  // Bind the before child to this child
-                preChild.bind(child, this.mainAxis, "far", "here", undefined, `${preChild.ref} ${this.mainAxis}> ${child.ref}`, false);
-                preChild.enforceBinding();
+            if (leftChild !== undefined) {  // Bind the before child to this child
+                if (rightChild !== undefined) {  // Release bind to post child if necessary
+                    leftChild.clearBindsTo(rightChild)
+                }
+
+                leftChild.bind(child, this.mainAxis, "far", "here", undefined, `${leftChild.ref} ${this.mainAxis}> ${child.ref}`, false);
+                leftChild.enforceBinding();  // Needed for some reason
 
             } else { // this is the first element, bind to this
-                this.clearBindsTo(postChild, Dimensions.X);
+                this.clearBindsTo(rightChild, Dimensions.X);
 
                 this.bind(child, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`);
                 // this.enforceBinding();
             }
 
             // Child far bound
-            if (postChild !== undefined) {
+            if (rightChild !== undefined) {
                 child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`, false);
                 child.enforceBinding();
             }
@@ -127,16 +131,30 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
     }
 
     removeAt(index: number) {
-        var target: T = this.children[index];
+        var target: T | undefined = this.children[index];
 
+        if (target === undefined) {
+            throw new Error(`No child element exists at index ${index}`)
+        }
 
+        this.remove(target);
+    }
+
+    remove(target: T): boolean {
+        var index: number | -1 = this.children.indexOf(target);
+
+        if (index === -1) {
+            return false
+        }
+
+        // Update bindings
         if (this.bindMainAxis) {
             var preChild: T | undefined = this.children[index - 1];
             var postChild: T | undefined = this.children[index + 1];
 
             if (preChild !== undefined) {
                 // Remove binding to target
-                preChild.removeBind(target);
+                preChild.clearBindsTo(target);
 
                 if (postChild) {
                     preChild.bind(postChild, this.mainAxis, "far", "here", undefined, `${preChild.ref} ${this.mainAxis}> ${postChild.ref}`, false);
@@ -144,36 +162,35 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             } else {
                 // This element is bound to the inside of the aligner object
                 // Remove this binding to target:
-                this.removeBind(target);
+                this.clearBindsTo(target);
 
                 if (postChild) {  // Rebind next element to this
-                    this.bind(postChild, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${postChild.ref}`);
+                    this.bind(postChild, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${postChild.ref}`, true);
                 }
             }
         }
 
-        this.squeezeCrossAxis();
 
-        this.remove(target);
-    }
-
-    remove(child: T) {
+        // Remove child and clear visual
         this.children.forEach((c, i) => {
-            if (c === child) {
+            if (c === target) {
                 this.children.splice(i, 1);
 
                 if (c instanceof Visual) {
                     c.erase();
                 }
                 
-                this.removeBind(child);
+                this.removeBind(target);
             }
         })
 
-        this.squeezeCrossAxis();
+        
 
         this.computeBoundary();
         this.enforceBinding();
+
+        this.squeezeCrossAxis();
+        return true
     }
 
     squeezeCrossAxis(): void {

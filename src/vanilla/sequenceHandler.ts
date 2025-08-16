@@ -115,8 +115,6 @@ export default class SequenceHandler {
             default:
                 throw new Error(`Unexpected element type "${type}"`)
         }
-
-        throw new Error("Could not create element")
     }
 
     public submitModifyElement(parameters: IVisual, type: ElementTypes, target: Visual): Visual {

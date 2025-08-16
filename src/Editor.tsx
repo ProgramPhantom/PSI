@@ -32,7 +32,7 @@ interface IEditorProps {
 const Editor: React.FC<IEditorProps> = () => {
     return (
         <div style={{padding: 8}}>
-            <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true}>
+            <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true} style={{userSelect: "none"}}>
                 <SectionCard>
                     <div style={{display: 'flex', 
                         flexDirection: "row", gap: "16px 16px", margin: "4px", overflowY: "auto",
