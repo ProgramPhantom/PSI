@@ -84,7 +84,6 @@ export interface DropResult {
 
 interface IDraggableElementProps {
   name: string, 
-  handler: SequenceHandler,
   element: Visual,
   x: number,
   y: number
@@ -115,12 +114,17 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
         if (item.element.hasMountConfig) {
           item.element.mountConfig = {...item.element.mountConfig!, orientation: result.orientation, channelID: result.channelID};
 
-          props.handler.shiftMountedElements(item.element, result.index);
+          if (result.insert) {
+            ENGINE.handler.shiftMountedElement(item.element, result.index);
+          } else {
+            ENGINE.handler.moveMountedElement(item.element, result.index)
+          }
+          
         } else {
-          throw Error("Not yet implemented");
+          throw Error("Not yet implemented"); // Converting an unmounted object into a mounted one.
         }
 
-        props.handler.draw();
+        ENGINE.handler.draw();
       }
 
     },

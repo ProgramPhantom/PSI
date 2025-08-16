@@ -98,7 +98,7 @@ export default class SequenceHandler {
         console.log("submitted element")
         console.log(parameters)
 
-        var element: Visual;
+        var element: Visual | undefined;
         switch (type) {
             case "abstract":
                 throw new Error("Cannot instantiate abstract object")
@@ -115,6 +115,11 @@ export default class SequenceHandler {
             default:
                 throw new Error(`Unexpected element type "${type}"`)
         }
+
+        if (element === undefined) {
+            throw new Error(`Cannot create element ${parameters.ref}`)
+        }
+        return element
     }
 
     public submitModifyElement(parameters: IVisual, type: ElementTypes, target: Visual): Visual {
@@ -331,11 +336,18 @@ export default class SequenceHandler {
     }
 
     // @isMountable
-    public shiftMountedElements(target: Visual, index: number): void {
+    public shiftMountedElement(target: Visual, index: number): void {
         //target.index = index;
         this.deleteMountedElement(target, true);
 
         target.mountConfig!.index = index;
         this.mountElement(target);
+    }
+
+    public moveMountedElement(target: Visual, index: number) {
+        this.deleteMountedElement(target, true);
+
+        target.mountConfig!.index = index;
+        this.mountElement(target, false);
     }
 }

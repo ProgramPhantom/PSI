@@ -194,8 +194,15 @@ export default class Sequence extends Collection {
         if (INDEX === undefined) {
             INDEX = numColumns;
         }
-        var skip = INDEX - numColumns > 0 ? INDEX - numColumns : 0;  // If inserted at an index more than the number of columns
-        INDEX = INDEX - skip;
+
+        if (insert) {
+            INDEX = Math.min(INDEX, numColumns)
+        } else {
+            INDEX = Math.min(INDEX, numColumns-1)
+        }
+        // If insert is false then the maximum allowed index is numCols - 1.
+        //var skip = INDEX - numColumns - (insert ? 0 : 1) > 0 ? INDEX - numColumns - (insert ? 0 : 1) : 0;  // If inserted at an index more than the number of columns
+        //INDEX = INDEX - skip;
         element.mountConfig.index = INDEX;
 
         // Need to insert a new column
