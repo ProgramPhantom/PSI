@@ -87,18 +87,19 @@ function App() {
               {canvas}
             </div>
             
-            <div style={{position: "relative", bottom: "0px", display: "flex", flexDirection: "column"}}>
-              <Editor></Editor>
-            </div>
+            
+              <div style={{position: "relative", bottom: "0px", display: "flex", flexDirection: "column"}}>
+                <ComponentResizer resizeDirection="vertical" defaultHeight={400} panelName="Elements">
+                  <Editor></Editor>
+                </ComponentResizer>
+              </div>
+            
+
           </div>
 
-          
-          
-            
-          
 
           <div style={{gridColumnStart: 2, gridColumnEnd: 3,}}>
-            <ComponentResizer 
+            <ComponentResizer resizeDirection='horizontal'
                 defaultWidth={400} 
                 minWidth={200} 
                 maxWidth={800}

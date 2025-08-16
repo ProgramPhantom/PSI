@@ -31,8 +31,9 @@ interface IEditorProps {
 
 const Editor: React.FC<IEditorProps> = () => {
     return (
-        <div style={{padding: 8}}>
-            <Section collapsible={true} title={"Blocks"} icon={"waves"} compact={true} style={{userSelect: "none"}}>
+        <div style={{padding: 0, height: "100%", borderTop: "1px solid #dcdcdd"}}>
+            <Section title={"Blocks"} icon={"waves"} compact={true} 
+            style={{userSelect: "none", height: "100%",borderRadius: "0px"}}>
                 <SectionCard>
                     <div style={{display: 'flex', 
                         flexDirection: "row", gap: "16px 16px", margin: "4px", overflowY: "auto",
