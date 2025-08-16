@@ -47,7 +47,6 @@ const Editor: React.FC<IEditorProps> = () => {
                         <DraggableElement element={ENGINE.CHIRPLOHI} handler={ENGINE.handler}></DraggableElement>
                     </div>
                 </SectionCard>
-                
             </Section>
 
             {/*

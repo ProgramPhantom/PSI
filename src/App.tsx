@@ -17,8 +17,9 @@ import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
 import Channel from './vanilla/channel';
 import Labellable from './vanilla/labellable';
-import { OverlayToaster, Toaster } from '@blueprintjs/core';
+import { OverlayToaster, Toaster, Drawer, Position } from '@blueprintjs/core';
 import ComponentResizer from './ComponentResizer';
+import Console from './Console';
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
@@ -35,11 +36,14 @@ const style = {
 
 function App() {
   console.log("CREATING APP")
+  console.info("Application initialized successfully")
+  console.warn("This is a sample warning message")
 
   useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
   
   const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
+  const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 
   const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement}></Canvas>
 
@@ -64,13 +68,17 @@ function App() {
     setSelectedElement(element);
   }
 
+  function openConsole() {
+    setIsConsoleOpen(true);
+  }
+
 
   return (
       <>
 
       <div style={{display: "flex", height: "100%", width: "100%", flexDirection: "column"}}>
         <div style={{width: "100%"}}>
-          <Banner saveSVG={SaveSVG} saveScript={SaveScript}></Banner>
+          <Banner saveSVG={SaveSVG} saveScript={SaveScript} openConsole={openConsole}></Banner>
         </div>
         
         <div style={{display: "flex", height: "100%", width: "100%"}}>
@@ -101,6 +109,19 @@ function App() {
           
         </div>
       </div>
+
+      {/* Console Drawer */}
+      <Drawer
+        isOpen={isConsoleOpen}
+        onClose={() => setIsConsoleOpen(false)}
+        position={Position.BOTTOM}
+        size="50%"
+        title="Console Output"
+        icon="console"
+        
+      >
+        <Console isOpen={isConsoleOpen} />
+      </Drawer>
       </>
     )
 }

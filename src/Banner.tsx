@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import DraggableElement from './dnd/DraggableElement'
 
 
-export default function Banner(props: {saveSVG: () => void, saveScript: () => void}) {
+export default function Banner(props: {saveSVG: () => void, saveScript: () => void, openConsole: () => void}) {
     return (
         <>
         <Navbar>
@@ -17,6 +17,16 @@ export default function Banner(props: {saveSVG: () => void, saveScript: () => vo
                 <Navbar.Divider />
                 <Button size="small" variant="minimal" icon="media" text="Save JPG" onClick={props.saveScript} disabled={true}/>
                 
+            </Navbar.Group>
+            
+            <Navbar.Group align={Alignment.RIGHT}>
+                <Button 
+                    size="small" 
+                    variant="minimal" 
+                    icon="console" 
+                    text="Console" 
+                    onClick={props.openConsole}
+                />
             </Navbar.Group>
         </Navbar>
         </>
