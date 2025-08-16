@@ -183,7 +183,6 @@ export default class Sequence extends Collection {
         logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${element.ref} -------`, this);
         if (element.mountConfig === undefined) {
             throw new Error("Cannot mount element without mount config")
-            return
         }
         element.mountConfig.mountOn = true;
 
@@ -195,14 +194,12 @@ export default class Sequence extends Collection {
             INDEX = numColumns;
         }
 
+        // INDEX limiting (decreases index when index is too high)
         if (insert) {
             INDEX = Math.min(INDEX, numColumns)
         } else {
-            INDEX = Math.min(INDEX, numColumns-1)
+            INDEX = Math.max(Math.min(INDEX, numColumns-1), 0)  // Max stops going below 0
         }
-        // If insert is false then the maximum allowed index is numCols - 1.
-        //var skip = INDEX - numColumns - (insert ? 0 : 1) > 0 ? INDEX - numColumns - (insert ? 0 : 1) : 0;  // If inserted at an index more than the number of columns
-        //INDEX = INDEX - skip;
         element.mountConfig.index = INDEX;
 
         // Need to insert a new column

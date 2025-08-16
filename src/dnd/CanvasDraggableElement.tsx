@@ -32,7 +32,7 @@ import { HandleStyles, Rnd } from 'react-rnd';
 import { IInsertAreaResult } from './InsertArea';
 import ENGINE from '../vanilla/engine';
 import { hasMountConfig } from '../vanilla/util';
-import { Orientation } from '../vanilla/mountable';
+import { IMountConfig, Orientation } from '../vanilla/mountable';
 import { Svg } from '@svgdotjs/svg.js';
 import { ID } from '../vanilla/point';
 
@@ -112,12 +112,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
 
         var positionalElement;
         if (item.element.hasMountConfig) {
-          item.element.mountConfig = {...item.element.mountConfig!, orientation: result.orientation, channelID: result.channelID};
+          var newMountConfig: IMountConfig = {...item.element.mountConfig!, 
+            orientation: result.orientation, channelID: result.channelID, index: result.index};
 
           if (result.insert) {
-            ENGINE.handler.shiftMountedElement(item.element, result.index);
+            ENGINE.handler.shiftMountedElement(item.element, newMountConfig);
           } else {
-            ENGINE.handler.moveMountedElement(item.element, result.index)
+            ENGINE.handler.moveMountedElement(item.element, newMountConfig)
           }
           
         } else {

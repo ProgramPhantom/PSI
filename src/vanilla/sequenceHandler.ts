@@ -336,18 +336,22 @@ export default class SequenceHandler {
     }
 
     // @isMountable
-    public shiftMountedElement(target: Visual, index: number): void {
+    public shiftMountedElement(target: Visual, newMountConfig: IMountConfig): void {
         //target.index = index;
         this.deleteMountedElement(target, true);
 
-        target.mountConfig!.index = index;
+        target.mountConfig = newMountConfig;
         this.mountElement(target);
     }
 
-    public moveMountedElement(target: Visual, index: number) {
-        this.deleteMountedElement(target, true);
+    public moveMountedElement(target: Visual, newMountConfig: IMountConfig) {
+        var removeCol: boolean = true;
+        if (target.mountConfig!.index === newMountConfig.index) {
+            removeCol = false
+        }
+        this.deleteMountedElement(target, removeCol);
 
-        target.mountConfig!.index = index;
+        target.mountConfig = newMountConfig;
         this.mountElement(target, false);
     }
 }
