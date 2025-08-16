@@ -192,8 +192,18 @@ export default class Channel extends Collection {
         }
 
         // Remove from aligner (yes one of these is redundant)
-        this.upperAligner.remove(element);
-        this.lowerAligner.remove(element);
+        switch (element.mountConfig?.orientation) {
+            case Orientation.top:
+                this.upperAligner.remove(element);
+                break;
+            case Orientation.bottom:
+                this.lowerAligner.remove(element);
+                break;
+            case Orientation.both:
+                throw new Error(`Not implemented`)
+            default:
+                throw new Error(`Unknown element orientation '${element.mountConfig?.orientation}`);
+        }
         
         element.erase();
     }

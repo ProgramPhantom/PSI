@@ -50,8 +50,6 @@ export function FormHolder(props: FormHolderProps) {
 
     // Target exists. Decide element type, form type and defaults
     if (props.target) {
-        
-
         if (Visual.isLabellable(props.target)) {
             isLabellable = true;
             elementType =  (props.target.parentElement.constructor as typeof Visual).ElementType;
@@ -123,7 +121,7 @@ export function FormHolder(props: FormHolderProps) {
                                        "labels": labelValues.labels}
         
         if (props.target === undefined) {
-            submitFunction(data, elementType)
+            submitFunction(formData, elementType)
         } else {
             var newElement = modifyFunction(formData, elementType, props.target)
             props.changeTarget(newElement)

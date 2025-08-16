@@ -76,10 +76,12 @@ export default class SequenceHandler {
     }
 
     // TODO: forced index for channel addition
-    channel(pParameters: RecursivePartial<IChannel>, index?: number) {
+    channel(pParameters: RecursivePartial<IChannel>, index?: number): Visual {
         var newChannel = new Channel(pParameters);
         this.sequence.addChannel(newChannel);
         this.draw()
+
+        return newChannel
     }
 
     draw() {
@@ -95,8 +97,6 @@ export default class SequenceHandler {
 
     // ---- Form interfaces ----
     public submitElement(parameters: ElementBundle, type: ElementTypes): Visual {
-        console.log("submitted element")
-        console.log(parameters)
 
         var element: Visual | undefined;
         switch (type) {
@@ -104,7 +104,7 @@ export default class SequenceHandler {
                 throw new Error("Cannot instantiate abstract object")
                 break;
             case "channel":
-                this.channel(parameters)
+                element = this.channel(parameters)
                 break;
             case "rect":
             case "svg":
@@ -123,18 +123,14 @@ export default class SequenceHandler {
     }
 
     public submitModifyElement(parameters: IVisual, type: ElementTypes, target: Visual): Visual {
-        console.log("Submitted element modification")
-        console.log(parameters)
-
-        var mountConfigCopy: IMountConfig | undefined = target.mountConfig
+        var mountConfigCopy: IMountConfig | undefined = target.mountConfig;
         // Delete element
-        this.deleteElement(target)
+        this.deleteElement(target, false)
 
         // Copy hidden parameter channelID (this shouldn't be needed as it should take the state
         // from the form. The hidden values should still be in the form.)
         if (mountConfigCopy !== undefined && parameters.mountConfig !== undefined) {
             parameters.mountConfig.channelID = mountConfigCopy.channelID; 
-            parameters.mountConfig
         }
 
         var element: Visual = this.submitElement(parameters, type);
@@ -143,7 +139,7 @@ export default class SequenceHandler {
     }
 
     public submitDeleteElement(target: Visual) {
-        this.deleteElement(target);
+        this.deleteElement(target, true);
     }
     // ------------------------
 
@@ -228,9 +224,9 @@ export default class SequenceHandler {
         }
     }
 
-    public deleteElement(target: Visual) {
+    public deleteElement(target: Visual, removeColumn?: boolean) {
         if (target.isMountable) {
-            this.deleteMountedElement(target, true);
+            this.deleteMountedElement(target, removeColumn);
         }
     }
 

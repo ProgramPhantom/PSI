@@ -246,9 +246,7 @@ export default class Spacial extends Point implements ISpacial {
             e.displaced = true;
         })
 
-        if (this.ref === "default-label") {
-            console.log()
-        }
+
 
         for (const binding of this.bindings) {
             var targetElement: Spacial = binding.targetObject;
@@ -257,6 +255,9 @@ export default class Spacial extends Point implements ISpacial {
             var targetPosChecker: BinderGetFunction = targetElement.AnchorFunctions[binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions].get
             var dimension: Dimensions = binding.bindingRule.dimension;
 
+            if (this.ref === "top aligner" && dimension === Dimensions.Y) {
+                console.log()
+            }
             
             // get the X coord of the location on the anchor
             var anchorBindCoord: number | undefined = getter(dimension, binding.bindToContent);
@@ -275,7 +276,7 @@ export default class Spacial extends Point implements ISpacial {
             // triggers the compute boundary
             targetElement.displaced = false;
 
-            if (targetElement.ref === "bar") {
+            if (targetElement.ref === "LINE") {
                 console.log()
             }
 
@@ -466,7 +467,7 @@ export default class Spacial extends Point implements ISpacial {
     }
     public set x2(v : number) {
         if (this.width !== undefined) {
-            this._x = v - this.width
+            this.x = v - this.width
         }
     }
     public get y2() : number {
@@ -477,7 +478,7 @@ export default class Spacial extends Point implements ISpacial {
     }
     public set y2(v : number) {
         if (this.height !== undefined) {
-            this._y = v - this.height
+            this.y = v - this.height
         }
     }
 

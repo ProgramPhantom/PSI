@@ -81,7 +81,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 this.clearBindsTo(rightChild, Dimensions.X);
 
                 this.bind(child, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`);
-                // this.enforceBinding();
+                this.enforceBinding();
             }
 
             // Child far bound

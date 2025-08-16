@@ -58,9 +58,8 @@ export default class Arrow extends Line {
     super(fullParams);
 
     this.arrowStyle = fullParams.arrowStyle;
+    this.stretchy = true
   }
-
-
 
 
   public override draw(surface: Svg): void {

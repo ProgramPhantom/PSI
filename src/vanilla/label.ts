@@ -79,8 +79,7 @@ export default class Label extends Collection implements ILabel {
             this.line = new Arrow(fullParams.line);
 
             this.bind(this.line, Dimensions.X, "here", "here", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [here]`, true);
-            this.bind(this.line, Dimensions.X, "far", "far", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [far]`, true);
-
+            this.bind(this.line, Dimensions.X, "far", "far", undefined, `Collection ${this.ref} [far] X> Child ${this.line.ref} [far]`, true);
 
             this.arrangeContent()
 

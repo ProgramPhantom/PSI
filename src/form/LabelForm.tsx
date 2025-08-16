@@ -72,8 +72,8 @@ function LabelForm() {
       {/* Arrow form */}
       <Section collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={
         <div style={{display: "flex", flexDirection: "row", alignSelf: "center"}}>
-          <Switch style={{margin: "0px"}} 
-               id="switch" size="medium" onClick={(e) => {}}></Switch>
+          <Switch style={{margin: "0px"}} checked={lineOn}
+               id="switch" size="medium" onChange={(e) => {setLineOn(e.target.checked)}}></Switch>
           <Text style={{fontWeight: 600, marginLeft: "4px"}}>Arrow</Text>
         </div>
       }>
