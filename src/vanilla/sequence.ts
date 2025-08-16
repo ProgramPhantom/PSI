@@ -238,7 +238,7 @@ export default class Sequence extends Collection {
 
     // @isMounted
     // Remove column is set to false when modifyPositional is called.
-    deleteMountedElement(target: Visual, removeColumn: boolean=true): void {
+    deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
         var channelID: string = target.mountConfig!.channelID;
         var channel: Channel | undefined = this.channelsDic[channelID]
         var channelIndex: number = this.channels.indexOf(channel);
@@ -264,9 +264,11 @@ export default class Sequence extends Collection {
             throw new Error(`Cannot remove pulse column at index ${index}`)
         }
 
-        let removed;
+        let removed = false;
         if (removeColumn === true) {
             removed = this.deleteColumn(index, true);
-        } 
+        }
+
+        return removed;
     }
 }

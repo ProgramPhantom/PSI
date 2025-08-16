@@ -310,19 +310,20 @@ export default class SequenceHandler {
         this.draw();
     }
 
-    private deleteMountedElement(target: Visual, removeColumn: boolean=true): true | undefined {
+    private deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
         logger.operation(Operations.DELETE, `${target}`)
 
+        var columnRemoved: boolean = false;
         // Find which channel owns this element:
         try {
-            this.sequence.deleteMountedElement(target, removeColumn);
+            columnRemoved = this.sequence.deleteMountedElement(target, removeColumn);
         } catch (e) {
             console.error(e)
-            return undefined;
+            return false;
         }
 
         this.draw();
-        return true;
+        return columnRemoved;
     }
 
     private replaceMountable(target: Visual,  newElement: Visual) {
@@ -336,20 +337,30 @@ export default class SequenceHandler {
     }
 
     // @isMountable
+    // For inserting
     public shiftMountedElement(target: Visual, newMountConfig: IMountConfig): void {
-        //target.index = index;
-        this.deleteMountedElement(target, true);
+        var deleted: boolean = this.deleteMountedElement(target, true);
+
+        if (deleted && target.mountConfig!.index+1 === newMountConfig.index) {
+            newMountConfig.index -= 1
+        }
 
         target.mountConfig = newMountConfig;
-        this.mountElement(target);
+        this.mountElement(target, true);
     }
 
+    // For moving to free location
     public moveMountedElement(target: Visual, newMountConfig: IMountConfig) {
         var removeCol: boolean = true;
-        if (target.mountConfig!.index === newMountConfig.index) {
+        if (target.mountConfig!.index === newMountConfig.index) {  // Moving to the same column (for intra-channel movement)
             removeCol = false
         }
-        this.deleteMountedElement(target, removeCol);
+        var deleted: boolean = this.deleteMountedElement(target, removeCol);
+
+        if (deleted && target.mountConfig!.index < newMountConfig.index) {
+            newMountConfig.index -= 1
+        }
+        
 
         target.mountConfig = newMountConfig;
         this.mountElement(target, false);
