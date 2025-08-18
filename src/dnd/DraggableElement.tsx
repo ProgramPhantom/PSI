@@ -32,15 +32,22 @@ import { title } from 'process';
 
 
 const style: CSSProperties = {
-  border: '1px dashed gray',
+  border: '1px solid #d3d8de',
   backgroundColor: 'white',
-  padding: '0.5rem 1rem',
-  marginRight: '1.5rem',
-  marginBottom: '1.5rem',
+  padding: '12px 8px',
+  marginRight: '0.5rem',
+  marginBottom: '0.5rem',
   cursor: 'move',
   float: 'left',
   width: "100px",
-  height: "30px"
+  height: "60px",
+  borderRadius: "4px",
+  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+  transition: "all 0.2s ease",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center"
 }
 
 
@@ -82,7 +89,7 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
   }))
 
   if (props.element) {
-    var copy = props.element.svg?.clone(true, true)
+    var copy = props.element.getInternalRepresentation()
     copy?.x(0);
     copy?.y(0);
     copy?.show();
@@ -101,23 +108,57 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
 
   return (
     (
-      <div ref={drag} style={{
-                minWidth: "30px",
-                minHeight: "30px", 
-                padding: "20px",
-                border: "1px solid black",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                opacity: opacity}} title='draggable element' >
-            <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} 
-                 dangerouslySetInnerHTML={{__html: copy?.svg()!}}>
-
-            </svg>
-            <span style={{margin: "15px 0px 0px 0px"}}>"{props.element.ref}"</span>
+      <div 
+        ref={drag} 
+        style={{
+          width: "120px",
+          height: "120px", 
+          padding: "12px 8px",
+          border: "1px solid #d3d8de",
+          borderRadius: "4px",
+          backgroundColor: "white",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: opacity,
+          cursor: "grab",
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+          transition: "all 0.2s ease",
+          userSelect: "none"
+        }} 
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+        title={`Drag ${props.element.ref} to canvas`}
+      >
+        <svg 
+          style={{
+            width: props.element.contentWidth,
+            height: props.element.contentHeight,
+            maxWidth: "90%", 
+            maxHeight: "90%",
+            marginBottom: "auto", marginTop: "auto"
+          }} 
+          dangerouslySetInnerHTML={{__html: copy?.svg()!}}
+        />
+        <span style={{
+          fontSize: "12px",
+          color: "#5c7080",
+          fontWeight: "600",
+          textAlign: "center",
+          lineHeight: "1.4",
+          marginTop: "auto"
+        }}>
+          {props.element.ref}
+        </span>
       </div>
     )
-    
   )
 }
 

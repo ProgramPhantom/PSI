@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import Canvas from './Canvas'
-import Editor from './Editor'
+import ElementsDraw from './ElementsDraw'
 import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
 import Form from './Form';
 import Banner from './Banner';
@@ -87,9 +87,9 @@ function App() {
             </div>
             
             
-              <div style={{position: "relative", bottom: "0px", display: "flex", flexDirection: "column"}}>
-                <ComponentResizer resizeDirection="vertical" defaultHeight={250} panelName="Elements">
-                  <Editor></Editor>
+              <div style={{position: "relative", bottom: "0px", display: "flex", flexDirection: "column", borderTop: "1px solid #c7c7c7"}}>
+                <ComponentResizer resizeDirection="vertical" defaultHeight={250} maxHeight={600} panelName="Elements">
+                  <ElementsDraw></ElementsDraw>
                 </ComponentResizer>
               </div>
             

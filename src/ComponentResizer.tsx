@@ -119,7 +119,8 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
               resizeDirection === 'vertical' ? 'row-resize' : 'nw-resize',
       backgroundColor: isResizing ? '#0066cc' : isHovering ? '#e6f3ff' : 'transparent',
       zIndex: 1000,
-      transition: 'background-color 0.1s ease'
+      transition: 'background-color 0.1s ease',
+      
     };
 
     if (resizeDirection === 'horizontal') {
@@ -319,7 +320,7 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
         height: '100%',
         overflow: 'auto',
         opacity: isCollapsed ? 0 : 1,
-        transition: 'opacity 0.3s ease-in-out',
+        transition: 'opacity 0.3s ease-in-out', 
       }}>
         {children}
       </div>
