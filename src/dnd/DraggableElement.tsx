@@ -61,7 +61,8 @@ export const ElementTypes = {
 
 interface IDraggableElementProps {
   element: Visual,
-  handler: SequenceHandler
+  handler: SequenceHandler,
+  onDoubleClick?: (element: Visual) => void
 }
 
 interface IDraggableElementDropItem {
@@ -105,6 +106,11 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
     preview(getEmptyImage(), { captureDraggingState: true })
   }, [])
 
+  const handleDoubleClick = () => {
+    if (props.onDoubleClick) {
+      props.onDoubleClick(props.element);
+    }
+  };
 
   return (
     (
@@ -135,6 +141,7 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
           e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
           e.currentTarget.style.transform = "translateY(0)";
         }}
+        onDoubleClick={handleDoubleClick}
         title={`Drag ${props.element.ref} to canvas`}
       >
         <svg 

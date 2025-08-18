@@ -1,35 +1,36 @@
-import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider } from '@blueprintjs/core';
+import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dialog, Button, DialogFooter, DialogBody } from '@blueprintjs/core';
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import Errors, { errorState } from './Errors';
 import DraggableElement from './dnd/DraggableElement';
 import SequenceHandler from './vanilla/sequenceHandler';
 import ENGINE from "./vanilla/engine";
+import { Visual } from './vanilla/visual';
 
-type InputEvent = ChangeEvent<HTMLTextAreaElement>;
 
-interface EditorProps {
-    Parse(text: string): void,
-    editorText: string
-}
-
-const style: any = {width: "100%",
-                    height: "150px",
-                    padding: "12px 20px 20px 20px",
-                    boxSizing: "border-box",
-                    border: "2px dotted #aaa",
-                    borderRadius: "4px",
-                    backgroundColor: "#f8f8f8",
-                    fontSize: "16px",
-                    resize: "vertical",
-                    fontFamily: "Lucida Sans Typewriter",
-                    
-                }
-
-interface IEditorProps {
+interface IElementDrawProps {
 
 }
 
-const ElementsDraw: React.FC<IEditorProps> = () => {
+const ElementsDraw: React.FC<IElementDrawProps> = () => {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
+
+    const handleElementDoubleClick = (element: Visual) => {
+        setSelectedElement(element);
+        setIsDialogOpen(true);
+    };
+
+    const handleDialogClose = () => {
+        setIsDialogOpen(false);
+        setSelectedElement(null);
+    };
+
+    const handleSubmit = () => {
+        // Handle form submission here
+        console.log('Editing element:', selectedElement?.ref);
+        handleDialogClose();
+    };
+
     return (
 
         <div style={{height: "100%", }}>
@@ -68,17 +69,47 @@ const ElementsDraw: React.FC<IEditorProps> = () => {
                             gap: "12px",
                             padding: "4px"
                         }}>
-                            <DraggableElement element={ENGINE.PULSE90} handler={ENGINE.handler} />
-                            <DraggableElement element={ENGINE.PULSE180} handler={ENGINE.handler} />
-                            <DraggableElement element={ENGINE.P180} handler={ENGINE.handler} />
-                            <DraggableElement element={ENGINE.AMP} handler={ENGINE.handler} />
-                            <DraggableElement element={ENGINE.ACQUIRE} handler={ENGINE.handler} />
-                            <DraggableElement element={ENGINE.CHIRPHILO} handler={ENGINE.handler} />
-                            <DraggableElement element={ENGINE.CHIRPLOHI} handler={ENGINE.handler} />
+                            <DraggableElement element={ENGINE.PULSE90} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
+                            <DraggableElement element={ENGINE.PULSE180} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
+                            <DraggableElement element={ENGINE.P180} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
+                            <DraggableElement element={ENGINE.AMP} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
+                            <DraggableElement element={ENGINE.ACQUIRE} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
+                            <DraggableElement element={ENGINE.CHIRPHILO} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
+                            <DraggableElement element={ENGINE.CHIRPLOHI} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
                         </div>
                     </div>
                 </SectionCard>
             </Section>
+
+            <Dialog
+                isOpen={isDialogOpen}
+                onClose={handleDialogClose}
+                title="Edit element"
+                canOutsideClickClose={true}
+                canEscapeKeyClose={true}
+                
+            >
+                <DialogBody>
+                    <Text>
+                        Editing element: {selectedElement?.ref}
+                    </Text>
+                </DialogBody>
+                    
+                {/* Add your form content here */}
+
+                <DialogFooter actions={
+                    <>
+                    <Button 
+                            text="Cancel" 
+                            onClick={handleDialogClose}
+                            variant="minimal"/>
+                    <Button 
+                            text="Submit" 
+                            intent="primary"
+                            onClick={handleSubmit}/>
+                    </>
+                }></DialogFooter>
+            </Dialog>
 
             {/*
             <Section collapsible={true} title={"Script"} icon={"code"} collapseProps={{defaultIsOpen: false}} compact={true}>
