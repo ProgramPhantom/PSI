@@ -2,6 +2,7 @@ import type { CSSProperties, FC } from 'react'
 import { memo, useEffect, useState } from 'react'
 import { Visual } from '../vanilla/visual'
 import { Element } from '@svgdotjs/svg.js'
+import { Colors } from '@blueprintjs/core'
 
 
 
@@ -15,9 +16,14 @@ export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(
     var visual = props.element.getInternalRepresentation();
 
     return (
-      <div style={{display: 'inline-block', background: "rgba(255, 211, 92, 0.66)"}} >
+      <div style={{display: 'inline-block'}} >
         <svg style={{width: props.element.contentWidth, height: props.element.contentHeight}} pointerEvents={"none"}
           dangerouslySetInnerHTML={{__html: visual?.node.outerHTML!}}></svg>
+
+        <svg style={{width: props.element.contentWidth, height: props.element.contentHeight, position: "absolute", top: 0, left: 0}}>
+          <rect style={{stroke: `${Colors.BLUE3}`, width: "100%", height: "100%", 
+            strokeWidth: "1px", fill: `${Colors.BLUE5}`, fillOpacity: "10%", strokeDasharray: "1 1"}}></rect>
+        </svg>
       </div>
     )
   },

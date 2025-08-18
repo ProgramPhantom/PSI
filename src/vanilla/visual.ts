@@ -107,7 +107,7 @@ export abstract class Visual extends Mountable implements IVisual {
 
     // Construct and SVG with children positioned relative to (0, 0)
     getInternalRepresentation(): Element | undefined {
-
+        
         return this.svg
     }
 

@@ -35,6 +35,7 @@ import { hasMountConfig } from '../vanilla/util';
 import { IMountConfig, Orientation } from '../vanilla/mountable';
 import { Svg } from '@svgdotjs/svg.js';
 import { ID } from '../vanilla/point';
+import { Colors } from '@blueprintjs/core';
 
 
 const style: CSSProperties = {
@@ -149,13 +150,26 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
     {/*
     <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
     <div style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block"}} 
-                dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} ></div>
+                dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} ></div> outline: isDragging ? `none` : `1px dashed ${Colors.BLUE3}`
       </Rnd> */}
-      <div style={{background: "rgba(255, 211, 92, 0.66)", opacity: isDragging ? 0 : 1}}>
+      <div style={{ opacity: isDragging ? 0.4 : 1}}>
+        
         <div ref={drag} style={{  height: props.element.contentHeight, width: props.element.contentWidth}}>
-            <svg style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block"}} 
+            {/* Border */}
+            <svg style={{width: "100%", height: "100%", position: "absolute", top: 0, left: 0}}>
+              <rect style={{stroke: isDragging ? `none` : `${Colors.BLUE3}`, width: "100%", height: "100%", 
+                strokeWidth: "1px", fill: `${Colors.BLUE5}`, fillOpacity: "10%", strokeDasharray: "1 1"}}></rect>
+            </svg>
+
+
+            <svg style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block", 
+            position: "relative", top: -props.element.offset[1], left: -props.element.offset[0]}} 
                 dangerouslySetInnerHTML={{__html: visual?.node.outerHTML!}} ></svg>
+          
+            
         </div>
+
+        
       </div>
     </>
   )
