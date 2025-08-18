@@ -169,4 +169,6 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 
 		super.restructure(data);
 	}
+
+
 }

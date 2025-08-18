@@ -37,7 +37,6 @@ const style = {
 function App() {
   console.log("CREATING APP")
   console.info("Application initialized successfully")
-  console.warn("This is a sample warning message")
 
   useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
   
@@ -89,7 +88,7 @@ function App() {
             
             
               <div style={{position: "relative", bottom: "0px", display: "flex", flexDirection: "column"}}>
-                <ComponentResizer resizeDirection="vertical" defaultHeight={400} panelName="Elements">
+                <ComponentResizer resizeDirection="vertical" defaultHeight={250} panelName="Elements">
                   <Editor></Editor>
                 </ComponentResizer>
               </div>

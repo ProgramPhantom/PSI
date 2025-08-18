@@ -140,8 +140,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                         onMouseDown={() => {setDragging(true)}} 
                                         >
 
-                                        <CanvasDraggableElement handler={ENGINE.handler} 
-                                                                name={selectedElement.ref} 
+                                        <CanvasDraggableElement name={selectedElement.ref} 
                                                                 element={selectedElement}
                                                                 x={selectedElement.x} 
                                                                 y={selectedElement.y}>

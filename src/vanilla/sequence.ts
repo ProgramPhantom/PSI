@@ -5,7 +5,6 @@ import Channel, { IChannel } from "./channel"
 import Text from "./text";
 import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
-import Span from "./span";
 import Abstract from "./abstract";
 import defaultSequence from "./default/data/sequence.json"
 import SequenceHandler from "./sequenceHandler";
@@ -65,27 +64,27 @@ export default class Sequence extends Collection {
         // c
         // c
         this.channelColumn = new Aligner<Channel>(
-            {bindMainAxis: true, axis: Dimensions.Y, alignment: Alignment.here, ref: "channel column"}, "default", );
-        // this.bind(this.channelColumn, Dimensions.Y, "here", "here", undefined, "SEQ Y-> CHAN COL");
-        // this.bind(this.channelColumn, Dimensions.X, "here", "here", undefined, "SEQ X-> CHAN COL");
+            {bindMainAxis: true, axis: "y", alignment: Alignment.here, ref: "channel column"}, "default", );
+        // this.bind(this.channelColumn, "y", "here", "here", undefined, "SEQ Y-> CHAN COL");
+        // this.bind(this.channelColumn, "x", "here", "here", undefined, "SEQ X-> CHAN COL");
         this.add(this.channelColumn, undefined, true);
 
         // | h | |p|p|p|p|
-        this.columns = new Aligner({axis: Dimensions.X, bindMainAxis: true, alignment: Alignment.here, ref: "label col | pulse columns"}, "default");
-        // this.bind(this.columns, Dimensions.Y, "here", "here", undefined, "SEQ Y-> COL");
-        // this.bind(this.columns, Dimensions.X, "here", "here", undefined, "SEQ X-> COL");
+        this.columns = new Aligner({axis: "x", bindMainAxis: true, alignment: Alignment.here, ref: "label col | pulse columns"}, "default");
+        // this.bind(this.columns, "y", "here", "here", undefined, "SEQ Y-> COL");
+        // this.bind(this.columns, "x", "here", "here", undefined, "SEQ X-> COL");
         this.add(this.columns, undefined, true);
         
 
 
         // | h |
-        this.labelColumn = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, 
+        this.labelColumn = new Aligner<Visual>({axis: "y", bindMainAxis: false, 
                                                         alignment: Alignment.centre, y: 0, ref: "label column"}, "default",);
         this.columns.add(this.labelColumn);
 
 
         // |p|p|p|p|
-        this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: Dimensions.X, y: 0, ref: "pulse columns"}, "default", );
+        this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: "x", y: 0, ref: "pulse columns"}, "default", );
         this.columns.add(this.pulseColumns);
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
@@ -101,8 +100,8 @@ export default class Sequence extends Collection {
     } 
 
     insertColumn(index: number) {
-        var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: Dimensions.Y, bindMainAxis: false, alignment: Alignment.centre,
-                                                              ref: `column at ${index}`}, "default", );
+        var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, alignment: Alignment.centre,
+                                                              ref: `column at ${index}`, minCrossAxis: 50}, "default", );
 
         // Add to positional columns
         this.pulseColumns.add(newColumn, index);

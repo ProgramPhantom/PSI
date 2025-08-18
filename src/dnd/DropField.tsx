@@ -95,7 +95,7 @@ class SequenceDropInterpreter {
                 
                 // Top slither
                 newSlither = {
-                    area: {x: column.getFar(Dimensions.X) ?? 0 - this.slitherWidth/2, 
+                    area: {x: column.getFar("x") ?? 0 - this.slitherWidth/2, 
                            y: channel.y, 
                            width: this.slitherWidth, 
                            height: upperAlignerHeight},
@@ -105,7 +105,7 @@ class SequenceDropInterpreter {
 
                 // bottom slither
                 newSlither = {
-                    area: {x: column.getFar(Dimensions.X) ?? 0 - this.slitherWidth/2, 
+                    area: {x: column.getFar("x") ?? 0 - this.slitherWidth/2, 
                            y: channel.lowerAligner.y, 
                            width: this.slitherWidth, 
                            height: lowerAlignerHeight + channel.padding[2]},

@@ -6,7 +6,7 @@ import { Visual } from "./visual";
 
 export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both" }
 
-export enum Alignment { here=<any>"here", centre=<any>"centre", far=<any>"far", none=<any>"none" }
+export enum Alignment { here=<any>"here", centre=<any>"centre", far=<any>"far", none=<any>"none", stretch="stretch" }
 
 
 export interface IMountConfig {
@@ -15,7 +15,6 @@ export interface IMountConfig {
 
     orientation: Orientation,
     alignment: Alignment,
-    inheritWidth: boolean,
     noSections: number,
     mountOn: boolean
 }
@@ -34,7 +33,11 @@ export class Mountable extends PaddedBox implements IMountable {
     constructor(params: IMountable) {
         super(params.padding, params.x, params.y, params.contentWidth, params.contentHeight, params.ref)
 
-        this.mountConfig = params.mountConfig; 
+        this.mountConfig = params.mountConfig;
+
+        if (this.mountConfig?.alignment === Alignment.stretch) {
+            this.sizeSource.x = "inherited"
+        }
     }
 
     get isMountable(): boolean {

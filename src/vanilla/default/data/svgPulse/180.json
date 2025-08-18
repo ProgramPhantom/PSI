@@ -2,7 +2,6 @@
     "mountConfig": {
         "orientation": "top",
         "alignment": "centre",
-        "inheritWidth": false,
         "noSections": 1,
         "channelID": null,
         "index": null

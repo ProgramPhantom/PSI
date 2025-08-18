@@ -50,7 +50,7 @@ export default abstract class LineLike extends Visual {
         this.adjustment = fullParams.adjustment;
         this.orientation = fullParams.orientation;
 
-        this.stretchy = true;
+        this.sizeSource.x = "inherited"; this.sizeSource.y = "inherited"
     }
 
     resolveDimensions(): void {
@@ -112,13 +112,13 @@ export default abstract class LineLike extends Visual {
     // Anchors:
     public override getNear(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 if (this._x === undefined) {return undefined}
                 if (ofContent) { 
                     return this.contentX; 
                 }
                 return this._x;
-            case Dimensions.Y:
+            case "y":
                 if (this._y === undefined) {return undefined}
                 if (ofContent) { return this.contentY; }
                 return this._y;
@@ -126,21 +126,21 @@ export default abstract class LineLike extends Visual {
     }
     public override setNear(dimension: Dimensions, v : number) {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 this.x = v;
                 break;
-            case Dimensions.Y:
+            case "y":
                 this.y = v;
                 break;
         }
     }
     public override getCentre(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 if (this._x === undefined) {return undefined}
                 if (ofContent) { return this.contentX + (this.contentWidth ? posPrecision(this.contentWidth/2) : 0); }
                 return this.x + posPrecision(this.width/2);
-            case Dimensions.Y:
+            case "y":
                 if (this._y === undefined) {return undefined}
                 if (ofContent) { return this.contentY + (this.contentHeight ? posPrecision(this.contentHeight/2) : 0); }
                 return this.y + posPrecision(this.height/2);
@@ -148,21 +148,21 @@ export default abstract class LineLike extends Visual {
     }
     public override setCentre(dimension: Dimensions, v : number) {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 this.x = v - this.width/2;
                 break;
-            case Dimensions.Y:
+            case "y":
                 this.y = v - this.height/2;
                 break;
         }
     }
     public override getFar(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 if (this._x2 === undefined) {return undefined}
                 // if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth : 0); }
                 return this.x2;
-            case Dimensions.Y:
+            case "y":
                 if (this._y2 === undefined) {return undefined}
                 // if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight : 0); }
                 return this.y2;
@@ -170,10 +170,10 @@ export default abstract class LineLike extends Visual {
     }
     public override setFar(dimension: Dimensions, v : number) {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 this.x2 = v;
                 break;
-            case Dimensions.Y:
+            case "y":
                 this.y2 = v;
                 break;
         }

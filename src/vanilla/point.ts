@@ -118,7 +118,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
     }
 
     getPositionByDimension(dim: Dimensions): number | undefined {
-        if (dim === Dimensions.X) {
+        if (dim === "x") {
             return this._x;
         } else {
             return this._y;

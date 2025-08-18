@@ -89,39 +89,39 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
 
         switch (label.labelConfig.labelPosition) {
             case Position.top:
-                this.removeBind(this.parentElement, Dimensions.Y);
+                this.removeBind(this.parentElement, "y");
 
-                this.parentElement.bind(label, Dimensions.X, "centre", "centre", undefined, `${this.ref} X> ${label.ref}`);
+                this.parentElement.bind(label, "x", "centre", "centre", undefined, `${this.ref} X> ${label.ref}`);
 
-                this.bind(label, Dimensions.Y, "here", "here", undefined, `${this.ref} Y> ${label.ref}`, false);
+                this.bind(label, "y", "here", "here", undefined, `${this.ref} Y> ${label.ref}`, false);
 
-                label.bind(this.parentElement, Dimensions.Y, "far", "here", undefined, `Label ${label.ref} Y> Parent ${this.parentElement.ref}`, false)
+                label.bind(this.parentElement, "y", "far", "here", undefined, `Label ${label.ref} Y> Parent ${this.parentElement.ref}`, false)
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
                 break;
             case Position.right:
-                this.parentElement.bind(label, Dimensions.Y, "centre", "far", undefined, `Parent ${this.parentElement.ref} [centre] Y> Label ${label.ref} [centre]`)
+                this.parentElement.bind(label, "y", "centre", "far", undefined, `Parent ${this.parentElement.ref} [centre] Y> Label ${label.ref} [centre]`)
 
-                this.parentElement.bind(label, Dimensions.X, "far", "here", undefined, `Parent ${this.parentElement.ref} [far] X> Child ${label.ref} [here]`, false)
+                this.parentElement.bind(label, "x", "far", "here", undefined, `Parent ${this.parentElement.ref} [far] X> Child ${label.ref} [here]`, false)
 
                 this.add(label)
                 this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
                 break;
             case Position.bottom:
-                this.parentElement.bind(label, Dimensions.Y, "far", "here", undefined, `Parent ${this.parentElement.ref} [far] Y> Child ${label.ref} [here]`)
-                this.parentElement.bind(label, Dimensions.X, "centre", "centre", undefined, `Parent ${this.parentElement.ref} [centre] X> Child ${label.ref} [centre]`)
+                this.parentElement.bind(label, "y", "far", "here", undefined, `Parent ${this.parentElement.ref} [far] Y> Child ${label.ref} [here]`)
+                this.parentElement.bind(label, "x", "centre", "centre", undefined, `Parent ${this.parentElement.ref} [centre] X> Child ${label.ref} [centre]`)
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
                 break;
             case Position.left:
-                this.removeBind(this.parentElement, Dimensions.X);
+                this.removeBind(this.parentElement, "x");
 
-                this.bind(label, Dimensions.X, "here", "here", undefined, `${this.ref} X> ${label.ref}`)
-                this.parentElement.bind(label, Dimensions.Y, "centre", "centre", undefined, `${this.ref} Y> ${label.ref}`)
+                this.bind(label, "x", "here", "here", undefined, `${this.ref} X> ${label.ref}`)
+                this.parentElement.bind(label, "y", "centre", "centre", undefined, `${this.ref} Y> ${label.ref}`)
 
-                label.bind(this.parentElement, Dimensions.X, "far", "here", undefined, `${label.ref} Y> ${this.parentElement.ref}`, false)
+                label.bind(this.parentElement, "x", "far", "here", undefined, `${label.ref} Y> ${this.parentElement.ref}`, false)
 
                 this.add(label);
                 this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
@@ -131,6 +131,72 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 break;
             default:
                 throw new Error(`Unknown label bind location ${label.labelConfig.labelPosition}`);
+        }
+    }
+
+    getTotalLabelHeight(): number {
+        var totalHeight: number = 0;
+        this.labels.forEach((l) => {
+            if (l.labelConfig.labelPosition === Position.top || l.labelConfig.labelPosition === Position.bottom) {
+                totalHeight += l.height
+            }
+        })
+        return totalHeight;
+    }
+
+    getTotalLabelWidth(): number {
+        var totalWidth: number = 0;
+        this.labels.forEach((l) => {
+            if (l.labelConfig.labelPosition === Position.left || l.labelConfig.labelPosition === Position.right) {
+                totalWidth += l.width
+            }
+        })
+        return totalWidth;
+    }
+
+    // Override setters for content width and height to change parent element
+    override get contentWidth() : number | undefined {
+        return this._contentWidth;
+    }
+    override set contentWidth(v : number | undefined) {
+        if (v === undefined) {
+            this._contentWidth === undefined;
+            this._parentElement?.contentWidth === undefined;
+            return
+        }
+
+        if (v !== this._contentWidth) {
+            this._contentWidth = v;
+
+            if (this.sizeSource.x === "inherited") {
+                this.parentElement.contentWidth = v - this.getTotalLabelWidth();
+            }
+
+            this.enforceBinding();
+            this.notifyChange();
+        }
+    }
+
+    override get contentHeight() : number | undefined {
+        return this._contentHeight;
+    }
+    override set contentHeight(v : number | undefined) {
+        if (v === undefined) {
+            this._contentHeight === undefined;
+            this._parentElement?.contentHeight === undefined;
+            return
+        }
+
+        if (v !== this.contentHeight) {
+            this._contentHeight = v;
+
+            if (this.sizeSource.y === "inherited") {
+                this.parentElement.contentHeight = v - this.getTotalLabelHeight();
+            }
+            
+
+            this.enforceBinding();
+            this.notifyChange();
         }
     }
 }

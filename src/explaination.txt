@@ -1,0 +1,14 @@
+Key:
+
+- Sequence: the object which is an entire pulse sequence, currently the largest object which makes up the entire diagram. It shouldn't be too hard in the future to make the diagram consist of multiple sequences. The sequence owns the channel column, the label col + pulse cols, label col, pulse columns. 
+- Channel: A channel is a collection of object which makes up a channel label, a bar and a series of pulses. The channel owns the channel label, the upper and lower aligners and the bar. It does not directly position the pulses
+- Upper/lower aligners: these are "aligner" objects which have the role of positioning the pulses vertically in the channel. They ensure that all pulses are moved up flush with the bar.
+- Channel column: an aligner that positions all the channels in a column.
+- Channel label:  the channel label is a text object belonging to a channel. It's x is controlled by the label col and it's y is controlled by the y of the corresponding bar.
+- label col + pulse columns: an aligner which positions the label col next to the pulse columns
+- label col: the column responsible for setting the x value of the channel labels. This ensures that all channel labels are centralised
+- pulse columns: this is an alinger which arranges a series of columns (which are also aligners) one after eachother.
+- pulse column: a pulse column is responsible for controlling the x coordinate of a pulse. A pulse is added to a pulse column and it is centralised to the column. When a larger pulse is added, the pulse column increases in width and all children are notified of this change and set to it's centre.
+
+- svg element: a visual element which is drawn by means of stored svg written to the surface
+- rect element: a visual element which is constructed by the draw command by it's internal properties with a call to the rect method in the svg library (this is basically a more simple element which doesnt need any direct svg to be defined)

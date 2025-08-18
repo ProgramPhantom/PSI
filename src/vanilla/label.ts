@@ -70,16 +70,16 @@ export default class Label extends Collection implements ILabel {
         if (fullParams.text !== undefined) {
             this.text = new Text(fullParams.text, undefined);
 
-            this.bind(this.text, Dimensions.X, "centre", "centre", undefined, `Collection ${this.ref} [centre] X> Child ${this.text.ref} [centre]`, true);
-            this.bind(this.text, Dimensions.Y, "centre", "centre", undefined, `Collection ${this.ref} [centre] Y> Child ${this.text.ref} [centre]`, true);
+            this.bind(this.text, "x", "centre", "centre", undefined, `Collection ${this.ref} [centre] X> Child ${this.text.ref} [centre]`, true);
+            this.bind(this.text, "y", "centre", "centre", undefined, `Collection ${this.ref} [centre] Y> Child ${this.text.ref} [centre]`, true);
             this.add(this.text);
         } 
         
         if (fullParams.line !== undefined) {
             this.line = new Arrow(fullParams.line);
 
-            this.bind(this.line, Dimensions.X, "here", "here", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [here]`, true);
-            this.bind(this.line, Dimensions.X, "far", "far", undefined, `Collection ${this.ref} [far] X> Child ${this.line.ref} [far]`, true);
+            this.bind(this.line, "x", "here", "here", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [here]`, true);
+            this.bind(this.line, "x", "far", "far", undefined, `Collection ${this.ref} [far] X> Child ${this.line.ref} [far]`, true);
 
             this.arrangeContent()
 
@@ -94,17 +94,17 @@ export default class Label extends Collection implements ILabel {
 
         switch (this.labelConfig.textPosition) {
             case "top":
-                this.bind(this.line, Dimensions.Y, "far", "here", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, Dimensions.Y, "far", "far", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [far]`, true);
+                this.bind(this.line, "y", "far", "here", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [here]`, true);
+                this.bind(this.line, "y", "far", "far", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [far]`, true);
                 this.text.padding[2] += this.line.style.thickness  // Add bottom padding to text
                 break;
             case "inline":
-                this.bind(this.line, Dimensions.Y, "centre", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, Dimensions.Y, "centre", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
+                this.bind(this.line, "y", "centre", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
+                this.bind(this.line, "y", "centre", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
                 break;
             case "bottom":
-                this.bind(this.line, Dimensions.Y, "here", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, Dimensions.Y, "here", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
+                this.bind(this.line, "y", "here", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
+                this.bind(this.line, "y", "here", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
                 this.text.padding[0] += this.line.style.thickness  // Add top padding to text
                 break;
             default:

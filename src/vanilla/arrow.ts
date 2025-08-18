@@ -58,7 +58,7 @@ export default class Arrow extends Line {
     super(fullParams);
 
     this.arrowStyle = fullParams.arrowStyle;
-    this.stretchy = true
+    this.sizeSource = true
   }
 
 

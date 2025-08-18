@@ -21,7 +21,7 @@ export interface IAligner extends ICollection {
 export default class Aligner<T extends Spacial = Spacial> extends Collection<T> {
     static defaults: {[name: string]: IAligner} = {
         "default": {
-            axis: Dimensions.X,
+            axis: "x",
             bindMainAxis: false,
             alignment: Alignment.here,
             minCrossAxis: 0,
@@ -47,7 +47,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         super(fullParams, templateName);
         
         this.mainAxis = fullParams.axis;
-        this.crossAxis = this.mainAxis === Dimensions.X ? Dimensions.Y : Dimensions.X;
+        this.crossAxis = this.mainAxis === "x" ? "y" : "x";
 
         this.bindMainAxis = fullParams.bindMainAxis;
         this.alignment = fullParams.alignment;
@@ -78,7 +78,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 leftChild.enforceBinding();  // Needed for some reason
 
             } else { // this is the first element, bind to this
-                this.clearBindsTo(rightChild, Dimensions.X);
+                this.clearBindsTo(rightChild, "x");
 
                 this.bind(child, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`);
                 this.enforceBinding();
@@ -92,7 +92,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         }
         this.children.splice(INDEX, 0, child);
         
-
+        // Cross axis
         switch (alignChild) {
             case Alignment.none:
                 break;
@@ -105,6 +105,13 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             case Alignment.far:
                 this.bind(child, this.crossAxis, "far", "far", undefined, `${this.ref} [far] ${this.crossAxis}> ${child.ref} [far]`);
                 break;
+            case Alignment.stretch:
+                // child.sizeSource[this.crossAxis] = "inherited";
+                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.ref} [here] ${this.crossAxis}> ${child.ref} [here]`);
+                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.ref} [far] ${this.crossAxis}> ${child.ref} [far]`)
+                break;
+            default:
+                throw new Error(`Unknown element alignment '${alignChild}'`)
         }
 
         // Resize cross axis
@@ -234,17 +241,17 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         }
 
         this.children.forEach((c) => {
-            if (c.definedVertically) {
+            if (c.definedVertically && c.sizeSource.y === "given") {
                 top = c.y < top ? c.y : top;
 
-                var far = c.getFar(Dimensions.Y);
+                var far = c.getFar("y");
                 bottom = far === undefined ? -Infinity : far  > bottom ? far : bottom;
             }
             
-            if (c.definedHorizontally) {
+            if (c.definedHorizontally && c.sizeSource.x === "given") {
                 left = c.x < left ? c.x : left;
 
-                var farX = c.getFar(Dimensions.X);
+                var farX = c.getFar("x");
                 right = farX === undefined ? -Infinity : farX > right ? farX : right;
             }
         })
@@ -267,10 +274,10 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         
         // Inflate cross axis
         if (this.minCrossAxis !== undefined) {
-            var currCrossAxis = this.crossAxis === Dimensions.X ? width : height;
+            var currCrossAxis = this.crossAxis === "x" ? width : height;
             
             if (currCrossAxis < this.minCrossAxis) {
-                if (this.crossAxis === Dimensions.X) {
+                if (this.crossAxis === "x") {
                     width = this.minCrossAxis
                 } else {
                     height = this.minCrossAxis

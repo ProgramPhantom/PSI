@@ -1,6 +1,5 @@
 import Abstract, { IAbstract } from "./abstract";
 import Sequence from "./sequence";
-import Span, { ISpan } from "./span";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
 import Text, { Position } from "./text";

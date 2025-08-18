@@ -99,8 +99,8 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 
 
     override get width(): number {
-        if (this.contentWidth !== undefined) {
-            return this.padding[3] + this.contentWidth + this.padding[1];
+        if (this._contentWidth !== undefined) {
+            return this.padding[3] + this._contentWidth + this.padding[1];
         }
         throw new Error("Width unset")
     }
@@ -119,8 +119,8 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
     }
     
     override get height(): number {
-        if (this.contentHeight !== undefined) {
-            return this.padding[0] + this.contentHeight + this.padding[2];
+        if (this._contentHeight !== undefined) {
+            return this.padding[0] + this._contentHeight + this.padding[2];
         }
         throw new Error("Dimensions undefined")
     }

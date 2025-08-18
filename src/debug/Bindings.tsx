@@ -18,7 +18,7 @@ const BindingsDebug: React.FC<IBindings> = (props) => {
             
                 props.element.bindings.map((bind) => {
                     var mainAxis = bind.bindingRule.dimension
-                    var crossAxis = mainAxis === Dimensions.X ? Dimensions.Y : Dimensions.X ;
+                    var crossAxis = mainAxis === "x" ? "y" : "x" ;
     
                     
                     var getter = props.element.AnchorFunctions[bind.bindingRule.anchorSiteName as keyof typeof props.element.AnchorFunctions].get;
@@ -30,7 +30,7 @@ const BindingsDebug: React.FC<IBindings> = (props) => {
                         crossAxisValue = (bind.targetObject as Spacial).getCentre(crossAxis);
                     } 
     
-                    var coords: [number, number] = mainAxis === Dimensions.X ? [bindAxisValue, crossAxisValue] : [crossAxisValue, bindAxisValue]
+                    var coords: [number, number] = mainAxis === "x" ? [bindAxisValue, crossAxisValue] : [crossAxisValue, bindAxisValue]
                     
                     if (props.element instanceof SVGElement) {
                         

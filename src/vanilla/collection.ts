@@ -60,8 +60,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         child.subscribe(this.computeBoundary.bind(this));
 
         if (bindHere) {
-            this.bind(child, Dimensions.X, "here", "here", undefined, `Collection ${this.ref} X> Child ${child.ref}`, true);
-            this.bind(child, Dimensions.Y, "here", "here", undefined, `Collection ${this.ref} Y> Child ${child.ref}`, true);
+            this.bind(child, "x", "here", "here", undefined, `Collection ${this.ref} X> Child ${child.ref}`, true);
+            this.bind(child, "y", "here", "here", undefined, `Collection ${this.ref} Y> Child ${child.ref}`, true);
         }
 
         if (this.isResolved) {
@@ -142,14 +142,14 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             if (c.definedVertically) {
                 top = c.y < top ? c.y : top;
 
-                var far = c.getFar(Dimensions.Y);
+                var far = c.getFar("y");
                 bottom = far === undefined ? -Infinity : far  > bottom ? far : bottom;
             }
             
             if (c.definedHorizontally) {
                 left = c.x < left ? c.x : left;
 
-                var farX = c.getFar(Dimensions.X);
+                var farX = c.getFar("x");
                 right = farX === undefined ? -Infinity : farX > right ? farX : right;
             }
         })

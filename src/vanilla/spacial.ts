@@ -16,6 +16,8 @@ export interface Size {
     height?: number
 }
 
+export type SizeMethod = "given" | "inherited"
+
 export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
 export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number | undefined;
 
@@ -37,7 +39,7 @@ export interface Binding {
     hint?: string
 }
 
-export enum Dimensions {X="x", Y="y"}
+export type Dimensions = "x" | "y"
 
 export interface ISpacial extends IPoint {
     contentWidth?: number,
@@ -110,25 +112,7 @@ export default class Spacial extends Point implements ISpacial {
         // this._contentY = v;
     }
 
-    get contentWidth() : number | undefined {
-        return this._contentWidth;
-    }
-    set contentWidth(v : number | undefined) {
-        if (v !== this._contentWidth) {
-            this._contentWidth = v;
-            this.enforceBinding();
-        }
-    }
 
-    get contentHeight() : number | undefined {
-        return this._contentHeight;
-    }
-    set contentHeight(v : number | undefined) {
-        if (v !== this.contentHeight) {
-            this._contentHeight = v;
-            this.enforceBinding();
-        }
-    }
 
     get contentBounds(): Bounds {
         var top = this.contentY;
@@ -150,6 +134,27 @@ export default class Spacial extends Point implements ISpacial {
         throw new Error("dimensions unset");
     }
 
+    // ----------- Size --------------
+    get contentWidth() : number | undefined {
+        return this._contentWidth;
+    }
+    set contentWidth(v : number | undefined) {
+        if (v !== this._contentWidth) {
+            this._contentWidth = v;
+            this.enforceBinding();
+        }
+    }
+
+    get contentHeight() : number | undefined {
+        return this._contentHeight;
+    }
+    set contentHeight(v : number | undefined) {
+        if (v !== this.contentHeight) {
+            this._contentHeight = v;
+            this.enforceBinding();
+        }
+    }
+
     get width(): number {
         if (this.contentWidth !== undefined) {
             return this.contentWidth;
@@ -157,8 +162,6 @@ export default class Spacial extends Point implements ISpacial {
         throw new Error("Width unset")
     }
     set width(v: number | undefined) {
-
-
         if (v === undefined) {
             this.contentWidth = undefined
         } else {
@@ -183,7 +186,7 @@ export default class Spacial extends Point implements ISpacial {
         }
     }
 
-    public stretchy: boolean = false;
+    public sizeSource: Record<Dimensions, SizeMethod> = {"x": "given", "y": "given"};
 
     public clearBindings(dimension: Dimensions) {
         this.bindings = this.bindings.filter(b => b.bindingRule.dimension !== dimension);
@@ -207,7 +210,7 @@ export default class Spacial extends Point implements ISpacial {
             if (b.targetObject === target && b.bindingRule.dimension === dimension) {
                 found = true;
                 
-                if (b.targetObject.stretchy === false) {
+                if (b.targetObject.sizeSource[dimension] === "given") {
                     // Not stretchy so this gets overridden
                     console.warn(`Warning: overriding binding on dimension ${b.bindingRule.dimension} for anchor ${this.ref} to target ${target.ref}`);
                     
@@ -255,7 +258,7 @@ export default class Spacial extends Point implements ISpacial {
             var targetPosChecker: BinderGetFunction = targetElement.AnchorFunctions[binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions].get
             var dimension: Dimensions = binding.bindingRule.dimension;
 
-            if (this.ref === "top aligner" && dimension === Dimensions.Y) {
+            if (this.ref === "top aligner" && dimension === "y") {
                 console.log()
             }
             
@@ -267,7 +270,7 @@ export default class Spacial extends Point implements ISpacial {
             }
 
             // Apply offset:
-            anchorBindCoord = anchorBindCoord + (binding.offset ? binding.offset : 0);
+            anchorBindCoord = anchorBindCoord + (binding.offset ?? 0);
             
             // Current position of target:
             var currentTargetPointPosition: number | undefined = targetPosChecker(dimension, binding.bindToContent);
@@ -337,13 +340,13 @@ export default class Spacial extends Point implements ISpacial {
     // Anchors:
     public getNear(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 if (this._x === undefined) {return undefined}
                 if (ofContent) { 
                     return this.contentX; 
                 }
                 return this._x;
-            case Dimensions.Y:
+            case "y":
                 if (this._y === undefined) {return undefined}
                 if (ofContent) { return this.contentY; }
                 return this._y;
@@ -351,10 +354,10 @@ export default class Spacial extends Point implements ISpacial {
     }
     public setNear(dimension: Dimensions, v : number) {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 this.x = v;
                 break;
-            case Dimensions.Y:
+            case "y":
                 this.y = v;
                 break;
         }
@@ -362,11 +365,11 @@ export default class Spacial extends Point implements ISpacial {
 
     public getCentre(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 if (this._x === undefined) {return undefined}
                 if (ofContent) { return this.contentX + (this.contentWidth ? posPrecision(this.contentWidth/2) : 0); }
                 return this.x + posPrecision(this.width/2);
-            case Dimensions.Y:
+            case "y":
                 if (this._y === undefined) {return undefined}
                 if (ofContent) { return this.contentY + (this.contentHeight ? posPrecision(this.contentHeight/2) : 0); }
                 return this.y + posPrecision(this.height/2);
@@ -374,10 +377,10 @@ export default class Spacial extends Point implements ISpacial {
     }
     public setCentre(dimension: Dimensions, v : number) {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 this.x = v - this.width/2;
                 break;
-            case Dimensions.Y:
+            case "y":
                 this.y = v - this.height/2;
                 break;
         }
@@ -385,11 +388,11 @@ export default class Spacial extends Point implements ISpacial {
 
     public getFar(dimension: Dimensions, ofContent: boolean=false): number | undefined {
         switch (dimension) {
-            case Dimensions.X:
+            case "x":
                 if (this._x === undefined) {return undefined}
                 if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth : 0); }
                 return this.x2;
-            case Dimensions.Y:
+            case "y":
                 if (this._y === undefined) {return undefined}
                 if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight : 0); }
                 return this.y2;
@@ -397,10 +400,9 @@ export default class Spacial extends Point implements ISpacial {
     }
     public setFar(dimension: Dimensions, v : number, stretch?: boolean) {
         switch (dimension) {
-            case Dimensions.X:
-
-                if (this.stretchy || stretch) {
-                    if (this.x === undefined) {
+            case "x":
+                if (this.sizeSource.x === "inherited" || stretch) {
+                    if (this._x === undefined) {
                         throw new Error(`Trying to stretch element ${this.ref} with unset position`)
                     }
     
@@ -408,21 +410,27 @@ export default class Spacial extends Point implements ISpacial {
                     if (diff < 0) {
                         throw new Error(`Flipped element ${this.ref}`)
                     }
+                    if (diff === 0) {
+                        return
+                    }
 
                     this.width = diff
                 } else {
                     this.x2 = v;
                 }
                 break;
-            case Dimensions.Y:
-                if (this.stretchy || stretch) {
-                    if (this.y === undefined) {
+            case "y":
+                if (this.sizeSource.y === "inherited" || stretch) {
+                    if (this._y === undefined) {
                         throw new Error(`Trying to stretch element ${this.ref} with unset position`)
                     }
 
                     var diff: number = v - this.y;
                     if (diff < 0) {
                         throw new Error(`Flipped element ${this.ref}`)
+                    }
+                    if (diff === 0) {
+                        return
                     }
 
                     this.height = diff
@@ -466,7 +474,7 @@ export default class Spacial extends Point implements ISpacial {
         throw new Error(`${this.ref} not defined horizontally`);
     }
     public set x2(v : number) {
-        if (this.width !== undefined) {
+        if (this._contentWidth !== undefined) {
             this.x = v - this.width
         }
     }
@@ -477,7 +485,7 @@ export default class Spacial extends Point implements ISpacial {
         throw new Error(`${this.ref} not defined vertically`);
     }
     public set y2(v : number) {
-        if (this.height !== undefined) {
+        if (this._contentHeight !== undefined) {
             this.y = v - this.height
         }
     }
@@ -510,10 +518,10 @@ export default class Spacial extends Point implements ISpacial {
 
     setSizeByDimension(v: number, dim: Dimensions) {
         switch (dim) {
-            case Dimensions.X:
+            case "x":
                 this.contentWidth = v;
                 break;
-            case Dimensions.Y:
+            case "y":
                 this.contentHeight = v;
                 break;
         }
@@ -521,9 +529,9 @@ export default class Spacial extends Point implements ISpacial {
 
     getSizeByDimension(dim: Dimensions): number {
         switch (dim) {
-            case Dimensions.X:
+            case "x":
                 return this.width;
-            case Dimensions.Y:
+            case "y":
                 return this.height;
         }
     }

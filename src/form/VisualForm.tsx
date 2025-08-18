@@ -80,20 +80,8 @@ const VisualForm: React.FC = () => {
                           <option value={"here"}>Left</option>
                           <option value={"centre"}>Centre</option>
                           <option value={"far"}>Right</option>
+                          <option value={"stretch"}>Stretch</option>
                       </HTMLSelect>
-                      )}>
-                  </Controller>
-              </FormGroup>
-
-              {/* Inherit Width */}
-              <FormGroup
-                  fill={false}
-                  inline={true}
-                  label="Inherit Width"
-                  labelFor="text-input">
-                  
-                  <Controller control={formControls.control} name="mountConfig.inheritWidth" render={({field}) => (
-                      <Switch {...formControls.getFieldState}></Switch>
                       )}>
                   </Controller>
               </FormGroup>

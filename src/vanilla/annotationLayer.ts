@@ -3,7 +3,7 @@ import { Visual, IVisual } from "./visual";
 import Text, { Position, IText } from "./text";
 import { labelable } from "./positional";
 import { SVG, Element as SVGElement, Svg, Timeline } from '@svgdotjs/svg.js'
-import Span from "./span";
+import Span from "./span.old";
 import Bracket, { Direction, bracketType } from "./bracket";
 import Section from "./section.old";
 import Annotation from "./annotation";
