@@ -35,7 +35,7 @@ import { hasMountConfig } from '../vanilla/util';
 import { IMountConfig, Orientation } from '../vanilla/mountable';
 import { Svg } from '@svgdotjs/svg.js';
 import { ID } from '../vanilla/point';
-import { Colors } from '@blueprintjs/core';
+import { Button, Colors, Icon } from '@blueprintjs/core';
 
 
 const style: CSSProperties = {
@@ -152,7 +152,32 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
     <div style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block"}} 
                 dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} ></div> outline: isDragging ? `none` : `1px dashed ${Colors.BLUE3}`
       </Rnd> */}
-      <div style={{ opacity: isDragging ? 0.4 : 1}}>
+      <div style={{ opacity: isDragging ? 0.4 : 1, position: "relative"}}>
+        
+        {/* Pin Button - positioned in top left, slightly outside */}
+          <Button type='button'
+             variant='minimal' 
+             icon={<Icon icon="lock" size={5} style={{opacity: 0.6}}/>}
+             style={{transition: "all 0.2s ease",
+             position: "absolute",
+             minHeight: 0, minWidth: 0,
+             top: "-8px",
+             left: "0px",
+             zIndex: 10,
+             width: "6px",
+             height: "8px",
+             padding: 0,
+             outline: "none",
+             background: "transparent"
+             
+          }}        
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+         />
         
         <div ref={drag} style={{  height: props.element.contentHeight, width: props.element.contentWidth}}>
             {/* Border */}
