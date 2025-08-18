@@ -7,6 +7,7 @@ import { CanvasDropContainer } from './dnd/CanvasDropContainer';
 import CanvasDraggableElement from './dnd/CanvasDraggableElement';
 import ENGINE from './vanilla/engine';
 import Debug from './Debug';
+import { EditableText, Label } from '@blueprintjs/core';
 
 
 interface ICanvasProps {
@@ -22,6 +23,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     const [zoom, setZoom] = useState(3);
     const [dragging, setDragging] = useState(false);
     const [panning, setPanning] = useState(false);
+    const [fileName, setFileName] = useState(ENGINE.currentImageName);
 
     function deselect() {
         selectedElement?.svg?.show();
@@ -62,16 +64,47 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         deselect();
     }
 
+    function handleFileNameChange(newFileName: string) {
+        setFileName(newFileName);
+        ENGINE.currentImageName = newFileName;
+    }
+
+    function handleFileNameBlur() {
+        // Check if filename ends with .svg when editing is finished
+        if (!fileName.toLowerCase().endsWith('.svg')) {
+            // If it doesn't end with .svg, extract the base name and add .svg
+            const baseName = fileName.split('.')[0]; // Get everything before the first dot
+            const correctedFileName = baseName + '.svg';
+            setFileName(correctedFileName);
+            ENGINE.currentImageName = correctedFileName;
+        }
+    }
+
     return (
         <>
-        {/* width: "0px", height: "0px", visibility: "hidden"*/}
-        <div id={"drawDiv"} style={{width: "0px", height: "0px", visibility: "hidden"}}></div>
-
-
-        <div style={{width: "100%", height: "100%",  display: "flex"}} 
+        <div style={{width: "100%", height: "100%",  display: "flex", position: "relative"}} 
                 onDoubleClick={(e) => {doubleClick(e); }}
                 onMouseUp={(e) => {singleClick(e); setDragging(false)}} 
                 onDragEnd={() => {setDragging(false)}}>
+
+            {/* Image name display text box - positioned outside TransformWrapper */}
+            <div style={{
+                position: "absolute",
+                top: "5px",
+                left: "10px",
+                zIndex: 100,
+            }}>
+                <Label style={{ fontSize: "10px", marginBottom: "0px" }}>
+                    filename
+                </Label>
+                                 <EditableText
+                      value={fileName}
+                      onChange={handleFileNameChange}
+                      onConfirm={handleFileNameBlur}
+                      multiline={false}
+                      selectAllOnFocus={true}
+                  />
+            </div>
 
             <CanvasDropContainer >
                 <TransformWrapper initialScale={zoom} onZoomStop={(z) => {setZoom(z.state.scale)}}
@@ -97,6 +130,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                             pointerEvents: "none",
                             zIndex: -1
                         }}></div>
+
                         <div style={{
                                      width: "100%", 
                                      height: "100%", 
@@ -106,24 +140,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                      borderWidth: "0.2px", 
                                      borderColor: "#0000003d"
                                 }}>
-                            
-                                {/* Image name display text box */}
-                                <div style={{
-                                    position: "absolute",
-                                    top: "-10px",
-                                    left: "-5px",
-                                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                    padding: "2px 4px",
-                                    fontSize: "4px",
-                                    fontFamily: "monospace",
-                                    color: "#666",
-                                    zIndex: 10,
-                                    pointerEvents: "none",
-                                    userSelect: "none",
-                                    whiteSpace: "nowrap"
-                                }}>
-                                    {ENGINE.currentImageName}
-                                </div>
 
                                 <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv">
                                     
@@ -149,8 +165,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                         </div>
                                      : <></>
                                 }   
-                                
-
                         </div>
                     </TransformComponent>
                 </TransformWrapper>

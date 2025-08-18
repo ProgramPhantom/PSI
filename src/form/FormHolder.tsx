@@ -6,7 +6,7 @@ import Channel, { IChannel } from "../vanilla/channel";
 import { defaultChannel } from "../vanilla/default/data";
 import ChannelForm from "./ChannelForm"
 import ENGINE from "../vanilla/engine";
-import { Button, Card, Divider, EditableText, EntityTitle, FormGroup, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
+import { Button, Card, Divider, EditableText, EntityTitle, FormGroup, H5, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import Labellable, { ILabellable } from "../vanilla/labellable";
@@ -135,15 +135,14 @@ export function FormHolder(props: FormHolderProps) {
         <div style={{display: "flex", flexDirection: "row", width: "100%"}}>
             <div style={{width: "100%"}}>
                 
-                <div style={{width: "100%", margin: "0px 20px 10px 0px", display: "flex", flexDirection: "row", alignItems: "center"}}>
+                <div style={{width: "100%", padding: "16px 8px 16px 8px", display: "flex", flexDirection: "row", alignItems: "center"}}>
                     { props.target === undefined ? (<>
-                        <Icon icon="cube-add" style={{margin: "0px 9px 0px 0px"}}></Icon>
-                        <h3 style={{ textDecoration: "underline"}}>Create Channel</h3></>
+                        <EntityTitle title={"Create Channel"}
+                        icon="cube-add" heading={H5} ></EntityTitle></>
                     ) : (<>
-                        <Icon icon="build" style={{margin: "0px 9px 0px 0px"}}></Icon>
-                        <h3 style={{ textDecoration: "underline"}}>{`Modify '${props.target.ref}'`}</h3>
+                        <EntityTitle title={`Modify '${props.target.ref}'`}
+                        icon="build" heading={H5} ></EntityTitle>
                     </>)}
-                    
 
                     {props.target !== undefined ? (
                     <Button style={{height: "30px", alignSelf: "center", marginLeft: "auto"}} icon="trash" intent="danger"
@@ -152,7 +151,9 @@ export function FormHolder(props: FormHolderProps) {
                     </Button>
                     ) : <></>}
                 </div>
-                
+
+                <Divider style={{margin: "0 0 16px 0"}}></Divider>
+
                 {/* Text */}
                 <FormGroup style={{userSelect: "none"}}
                     fill={false}

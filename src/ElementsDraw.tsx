@@ -1,4 +1,4 @@
-import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dialog, Button, DialogFooter, DialogBody } from '@blueprintjs/core';
+import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dialog, Button, DialogFooter, DialogBody, EntityTitle } from '@blueprintjs/core';
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import Errors, { errorState } from './Errors';
 import DraggableElement from './dnd/DraggableElement';
@@ -51,14 +51,13 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                         padding: "8px 16px 4px 16px",
                         
                     }}>
-                        <H5 style={{margin: "0 0 4px 0", color: "#182026", userSelect: "none"}}>
-                            Elements
-                        </H5>
-                        <Text style={{color: "#5c7080", fontSize: "12px", marginBottom: "8px", userSelect: "none"}}>
-                            Drag and drop these elements onto the canvas
-                        </Text>
-                        <Divider style={{margin: "0 0 0px 0"}} />
+                        <EntityTitle title={"Elements"} subtitle={"Drag and drop these elements onto the canvas"} 
+                        icon="new-object" heading={H5} ></EntityTitle>
+
+                        
                     </div>
+
+                    <Divider style={{margin: "4px 8px 0 8px"}} />
 
                     <div style={{
                         padding: "8px 16px"
