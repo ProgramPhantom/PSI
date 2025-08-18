@@ -58,7 +58,7 @@ export default class Arrow extends Line {
     super(fullParams);
 
     this.arrowStyle = fullParams.arrowStyle;
-    this.sizeSource = true
+    this.sizeSource.x = "inherited"; this.sizeSource.y = "inherited"
   }
 
 
@@ -77,7 +77,7 @@ export default class Arrow extends Line {
           stroke-width='${this.style.thickness}'
           stroke='${this.style.stroke}'
           stroke-linecap="butt"
-          d='M${this.x + Arrow.arbitraryAdjustment}, ${this.y}, ${this.x2 - Arrow.arbitraryAdjustment} ${this.y2}'
+          d='M${this.x}, ${this.y}, ${this.x2} ${this.y2}'
         />
       </svg>`)
       

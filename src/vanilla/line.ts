@@ -39,6 +39,7 @@ export class Line extends LineLike {
         super(fullParams)
 
         this.style = fullParams.style;
+        this.padding = [0, 0, 0, 0]
     }
 
     draw(surface: Svg): void {

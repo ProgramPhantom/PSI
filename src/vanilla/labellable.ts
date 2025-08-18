@@ -89,38 +89,52 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
 
         switch (label.labelConfig.labelPosition) {
             case Position.top:
+                // X
+                label.sizeSource.x = "inherited"
+                this.parentElement.bind(label, "x", "here", "here", undefined, `Label ${label.ref} [here] X> Parent ${this.parentElement.ref} [here]`)
+                this.parentElement.bind(label, "x", "far", "far", undefined, `Label ${label.ref} [far] X> Parent ${this.parentElement.ref} [far]`)
+                
+                // Y
                 this.removeBind(this.parentElement, "y");
-
-                this.parentElement.bind(label, "x", "centre", "centre", undefined, `${this.ref} X> ${label.ref}`);
-
                 this.bind(label, "y", "here", "here", undefined, `${this.ref} Y> ${label.ref}`, false);
-
                 label.bind(this.parentElement, "y", "far", "here", undefined, `Label ${label.ref} Y> Parent ${this.parentElement.ref}`, false)
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
                 break;
             case Position.right:
-                this.parentElement.bind(label, "y", "centre", "far", undefined, `Parent ${this.parentElement.ref} [centre] Y> Label ${label.ref} [centre]`)
+                // Y
+                label.sizeSource.y = "inherited"
+                this.parentElement.bind(label, "y", "here", "here", undefined, `Label ${label.ref} [here] Y> Parent ${this.parentElement.ref} [here]`)
+                this.parentElement.bind(label, "y", "far", "far", undefined, `Label ${label.ref} [far] Y> Parent ${this.parentElement.ref} [far]`)
 
+                // X
                 this.parentElement.bind(label, "x", "far", "here", undefined, `Parent ${this.parentElement.ref} [far] X> Child ${label.ref} [here]`, false)
 
                 this.add(label)
                 this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
                 break;
             case Position.bottom:
+                // Y
                 this.parentElement.bind(label, "y", "far", "here", undefined, `Parent ${this.parentElement.ref} [far] Y> Child ${label.ref} [here]`)
-                this.parentElement.bind(label, "x", "centre", "centre", undefined, `Parent ${this.parentElement.ref} [centre] X> Child ${label.ref} [centre]`)
+                
+                // X
+                label.sizeSource.x = "inherited"
+                this.parentElement.bind(label, "x", "here", "here", undefined, `Label ${label.ref} [here] X> Parent ${this.parentElement.ref} [here]`)
+                this.parentElement.bind(label, "x", "far", "far", undefined, `Label ${label.ref} [far] X> Parent ${this.parentElement.ref} [far]`)
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
                 break;
             case Position.left:
+                // Y
+                label.sizeSource.y = "inherited"
+                this.parentElement.bind(label, "y", "here", "here", undefined, `Label ${label.ref} [here] Y> Parent ${this.parentElement.ref} [here]`)
+                this.parentElement.bind(label, "y", "far", "far", undefined, `Label ${label.ref} [far] Y> Parent ${this.parentElement.ref} [far]`)
+
+                // X
                 this.removeBind(this.parentElement, "x");
-
                 this.bind(label, "x", "here", "here", undefined, `${this.ref} X> ${label.ref}`)
-                this.parentElement.bind(label, "y", "centre", "centre", undefined, `${this.ref} Y> ${label.ref}`)
-
                 label.bind(this.parentElement, "x", "far", "here", undefined, `${label.ref} Y> ${this.parentElement.ref}`, false)
 
                 this.add(label);

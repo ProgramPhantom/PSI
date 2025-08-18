@@ -29,7 +29,7 @@ export default class Label extends Collection implements ILabel {
             contentWidth: 20,
             contentHeight: 20,
             offset: [0, 0],
-            padding: [0, 0, 0, 0],
+            padding: [2, 0, 2, 0],
 
             text: Text.defaults["default"],
             line: Arrow.defaults["default"],
@@ -78,34 +78,49 @@ export default class Label extends Collection implements ILabel {
         if (fullParams.line !== undefined) {
             this.line = new Arrow(fullParams.line);
 
-            this.bind(this.line, "x", "here", "here", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [here]`, true);
-            this.bind(this.line, "x", "far", "far", undefined, `Collection ${this.ref} [far] X> Child ${this.line.ref} [far]`, true);
+            var orientationSelect: Dimensions;
+            switch (this.labelConfig.labelPosition) {
+                case Position.top:
+                case Position.bottom:
+                    orientationSelect = "y";
+                    break;
+                case Position.left:
+                case Position.right:
+                    orientationSelect = "x"
+                    break;
+                default:
+                    orientationSelect = "y"
+            }
+            var otherDimension: Dimensions = orientationSelect === "x" ? "y" : "x" 
 
-            this.arrangeContent()
+            this.bind(this.line, otherDimension, "here", "here", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [here]`, true);
+            this.bind(this.line, otherDimension, "far", "far", undefined, `Collection ${this.ref} [far] X> Child ${this.line.ref} [far]`, true);
+
+            this.arrangeContent(orientationSelect)
 
             this.add(this.line)
         }
     }
 
-    private arrangeContent() {
+    private arrangeContent(orientation: Dimensions) {
         if (this.line === undefined || this.text === undefined) {
             throw new Error("Only for use when text and line are present.")
         }
 
         switch (this.labelConfig.textPosition) {
             case "top":
-                this.bind(this.line, "y", "far", "here", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, "y", "far", "far", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [far]`, true);
-                this.text.padding[2] += this.line.style.thickness  // Add bottom padding to text
+                this.bind(this.line, orientation, "far", "here", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [here]`, true);
+                this.bind(this.line, orientation, "far", "far", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [far]`, true);
+                // this.text.padding[2] += this.line.style.thickness  // Add bottom padding to text
                 break;
             case "inline":
-                this.bind(this.line, "y", "centre", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, "y", "centre", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
+                this.bind(this.line, orientation, "centre", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
+                this.bind(this.line, orientation, "centre", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
                 break;
             case "bottom":
-                this.bind(this.line, "y", "here", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, "y", "here", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
-                this.text.padding[0] += this.line.style.thickness  // Add top padding to text
+                this.bind(this.line, orientation, "here", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
+                this.bind(this.line, orientation, "here", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
+                // this.text.padding[0] += this.line.style.thickness  // Add top padding to text
                 break;
             default:
                 throw new Error(`Unknown text position ${this.labelConfig.textPosition}`)

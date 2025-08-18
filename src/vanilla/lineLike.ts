@@ -91,7 +91,7 @@ export default abstract class LineLike extends Visual {
 
 
     public get x2() : number {
-        if (this._x2) {
+        if (this._x2 !== undefined) {
             return this._x2;
         }
         throw new Error("x2 unset");
@@ -100,7 +100,7 @@ export default abstract class LineLike extends Visual {
         this._x2 = v;
     }
     public get y2() : number {
-        if (this._y2) {
+        if (this._y2 !== undefined) {
             return this._y2;
         }
         throw new Error("y2 unset");
