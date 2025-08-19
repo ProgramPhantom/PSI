@@ -18,8 +18,8 @@ const Debug: React.FC<IDebug> = (props) => {
 
     return (
         <>
-        
-            {/*{<CollectionDebug element={seq.pulseColumns}></CollectionDebug> 
+        <CollectionDebug element={seq.pulseColumns}></CollectionDebug> 
+            {/*{
                 seq.channels.map((c) => {
                     return (c.positionalElements.map((e) => {
                         return (<PaddedBoxDebug element={e.element} padColour="purple"></PaddedBoxDebug>)

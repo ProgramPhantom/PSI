@@ -258,7 +258,7 @@ export default class Spacial extends Point implements ISpacial {
             var targetPosChecker: BinderGetFunction = targetElement.AnchorFunctions[binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions].get
             var dimension: Dimensions = binding.bindingRule.dimension;
 
-            if (this.ref === "top aligner" && dimension === "y") {
+            if (this.ref === "acquire(parent)") {
                 console.log()
             }
             

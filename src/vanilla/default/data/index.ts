@@ -11,6 +11,7 @@ import * as defMountable from "./mountable.json"
 import * as defVisual from "./visual.json"
 
 import * as Channel from "./channel.json";
+import * as Space from "./space.json"
 
 export const mountableElements: {[name: string]: any} = {
     ...svgPulses,
@@ -22,3 +23,4 @@ export const mountableElements: {[name: string]: any} = {
 export const defaultMountable = defMountable;
 export const defaultVisual = defVisual;
 export const defaultChannel = Channel;
+export const defaultSpace = Space

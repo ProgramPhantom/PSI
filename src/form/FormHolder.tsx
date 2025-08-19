@@ -123,6 +123,10 @@ export function FormHolder(props: FormHolderProps) {
         if (props.target === undefined) {
             submitFunction(formData, elementType)
         } else {
+            // if (formData.mountConfig) {  // TODO: Add a field so this gets done automatically  
+            //     formData.mountConfig.index = props.target!.mountConfig!.index;
+            // }
+            
             var newElement = modifyFunction(formData, elementType, props.target)
             props.changeTarget(newElement)
         }
@@ -239,6 +243,14 @@ export function FormHolder(props: FormHolderProps) {
                                     <Card style={{padding: "4px"}}>
                                         
                                         <EditableText disabled={true} value={`${props.target.height}`}></EditableText>
+                                    </Card>
+                                </div>
+
+                                <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                                    <Text style={{padding: "0px 4px", fontWeight: "600"}}>index:</Text>
+                                    <Card style={{padding: "4px"}}>
+                                        
+                                        <EditableText disabled={true} value={`${props.target.mountConfig?.index}`}></EditableText>
                                     </Card>
                                 </div>
                             </div>

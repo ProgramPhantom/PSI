@@ -6,6 +6,7 @@ import Form from './Form';
 import Banner from './Banner';
 import FileSaver, { saveAs } from 'file-saver';
 import SVGElementForm from './form/SVGElementForm';
+import Mountable from './vanilla/mountable';
 import { Visual } from './vanilla/visual';
 import { UpdateObj } from './vanilla/util';
 import { svgPulses } from './vanilla/default/data/svgPulse';
@@ -20,6 +21,7 @@ import Labellable from './vanilla/labellable';
 import { OverlayToaster, Toaster, Drawer, Position } from '@blueprintjs/core';
 import ComponentResizer from './ComponentResizer';
 import Console from './Console';
+
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 

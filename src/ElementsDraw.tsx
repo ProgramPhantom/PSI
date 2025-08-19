@@ -49,10 +49,11 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                         backgroundColor: "white",
                         zIndex: 10,
                         padding: "8px 16px 4px 16px",
+                        userSelect: "none"
                         
                     }}>
                         <EntityTitle title={"Elements"} subtitle={"Drag and drop these elements onto the canvas"} 
-                        icon="new-object" heading={H5} ></EntityTitle>
+                        icon="new-object" heading={H5}></EntityTitle>
 
                         
                     </div>

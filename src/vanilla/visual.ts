@@ -1,18 +1,16 @@
-import { Element, SVG, Element as SVGElement, Svg, off } from '@svgdotjs/svg.js'
-
-import Spacial from './spacial'
-import PaddedBox, { IPaddedBox } from './paddedBox'
+import { Element, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import { IAnnotation } from './annotation'
 import { posPrecision, RecursivePartial } from './util'
-import { IMountable, IMountConfig, Mountable, Orientation } from './mountable'
+import { IMountable } from './mountable'
 import { defaultVisual } from './default/data'
-import VisualForm, { } from '../form/VisualForm'
-import { FormDescriptor } from '../form/FormBase'
+import VisualForm from '../form/VisualForm'
 import Labellable from './labellable'
+import PaddedBox from './paddedBox'
+import Mountable from './mountable'
+
 
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
-
 
 
 export enum Display {

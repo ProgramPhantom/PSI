@@ -137,14 +137,18 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         this.computeBoundary();
     }
 
-    removeAt(index: number) {
-        var target: T | undefined = this.children[index];
+    removeAt(index: number, quantity: number=1): number {
+        var targets: (T | undefined)[] = this.children.slice(index, index+quantity);
 
-        if (target === undefined) {
+        if (targets.some(t => t = undefined)) {
             throw new Error(`No child element exists at index ${index}`)
         }
 
-        this.remove(target);
+        var numRemoved: number = 0;
+        targets.forEach((target) => {
+            if (target !== undefined ) {this.remove(target); numRemoved += 1;}
+        })
+        return numRemoved;
     }
 
     remove(target: T): boolean {
@@ -155,7 +159,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             return false
         }
 
-        // Update bindings
+        // Update bindingsT
         if (this.bindMainAxis) {
             var preChild: T | undefined = this.children[index - 1];
             var postChild: T | undefined = this.children[index + 1];
@@ -167,6 +171,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 if (postChild) {
                     preChild.bind(postChild, this.mainAxis, "far", "here", undefined, `${preChild.ref} ${this.mainAxis}> ${postChild.ref}`, false);
                 }
+                preChild.enforceBinding();
             } else {
                 // This element is bound to the inside of the aligner object
                 // Remove this binding to target:

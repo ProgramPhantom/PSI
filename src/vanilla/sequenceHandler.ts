@@ -129,7 +129,8 @@ export default class SequenceHandler {
         // Copy hidden parameter channelID (this shouldn't be needed as it should take the state
         // from the form. The hidden values should still be in the form.)
         if (mountConfigCopy !== undefined && parameters.mountConfig !== undefined) {
-            parameters.mountConfig.channelID = mountConfigCopy.channelID; 
+            parameters.mountConfig.channelID = mountConfigCopy.channelID;
+            parameters.mountConfig.index = mountConfigCopy.index;
         }
 
         var element: Visual = this.submitElement(parameters, type);
@@ -336,15 +337,15 @@ export default class SequenceHandler {
     public shiftMountedElement(target: Visual, newMountConfig: IMountConfig): void {
         var deleted: boolean = this.deleteMountedElement(target, true);
 
-        if (deleted && target.mountConfig!.index+1 === newMountConfig.index) {
-            newMountConfig.index -= 1
+        if (deleted && target.mountConfig!.index+target.mountConfig!.noSections === newMountConfig.index) {
+            newMountConfig.index -= target.mountConfig!.noSections
         }
 
         target.mountConfig = newMountConfig;
         this.mountElement(target, true);
     }
 
-    // For moving to free location
+    // For moving to another mount
     public moveMountedElement(target: Visual, newMountConfig: IMountConfig) {
         var removeCol: boolean = true;
         if (target.mountConfig!.index === newMountConfig.index) {  // Moving to the same column (for intra-channel movement)
@@ -352,7 +353,7 @@ export default class SequenceHandler {
         }
         var deleted: boolean = this.deleteMountedElement(target, removeCol);
 
-        if (deleted && target.mountConfig!.index < newMountConfig.index) {
+        if (deleted && target.mountConfig!.index + target.mountConfig!.noSections < newMountConfig.index) {
             newMountConfig.index -= 1
         }
         

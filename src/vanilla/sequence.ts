@@ -8,7 +8,7 @@ import Arrow, { HeadStyle } from "./arrow";
 import Abstract from "./abstract";
 import defaultSequence from "./default/data/sequence.json"
 import SequenceHandler from "./sequenceHandler";
-import { NumberAlias } from "svg.js";
+import { NumberAlias, select } from "svg.js";
 import { FillObject, PartialConstruct, RecursivePartial } from "./util";
 import { ILine, Line } from "./line";
 import { Grid, IGrid } from "./grid";
@@ -19,6 +19,7 @@ import Aligner from "./aligner";
 import logger, { Operations, Processes } from "./log";
 import { defaultNewIndexGetter } from "@dnd-kit/sortable";
 import { Alignment } from "./mountable";
+import Space from "./space";
 
 interface ISequence extends ICollection {
     grid: IGrid,
@@ -50,7 +51,7 @@ export default class Sequence extends Collection {
 
     columns: Aligner<Aligner<Visual>>;
 
-    elementMatrix: (Visual | undefined)[][] = [];
+    elementMatrix: (Visual | "." | undefined)[][] = [];
 
     constructor(params: RecursivePartial<ISequence>, templateName: string="default") {
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
@@ -97,58 +98,81 @@ export default class Sequence extends Collection {
         this.channels.forEach((channel) => {
             channel.draw(surface);
         })
-    } 
-
-    insertColumn(index: number) {
-        var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, alignment: Alignment.centre,
-                                                              ref: `column at ${index}`, minCrossAxis: 50}, "default", );
-
-        // Add to positional columns
-        this.pulseColumns.add(newColumn, index);
-        this.pulseColumns.children.forEach((c, i) => {
-            c.ref = `column at ${i}`
+    }
+    
+    clearEmptyColumns() {
+        this.pulseColumns.children.forEach((c) => {
+            if (c.children.length === 0) {
+                this.pulseColumns.remove(c);
+                console.warn("Clearing empty columns. Delete has not cleared up properly")
+            }
         })
+    }
+
+    insertColumns(index: number, quantity: number=1) {
+        var split: boolean = false;
+        for (var channel of this.elementMatrix) {
+            var currChannel: (Visual | "." | undefined)[] = channel;
+
+            if (currChannel[index-1] === undefined && currChannel[index] === undefined) {
+                continue
+            }
+            if (currChannel[index-1] === currChannel[index]) {
+                split = true;
+                break;
+            }
+        }
+        if (split) {
+            throw new Error(`Inserting column at ${index} is splitting multi-column element`)
+        }
+
+        var columnsToAdd: Aligner<Visual>[] = [];
+        
+        for (var i=0; i<quantity; i++) {
+            var INDEX: number = index + i;
+
+            var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, alignment: Alignment.centre,
+                                                              ref: `column at ${index+i}`, minCrossAxis: 10}, "default", );
+
+            // Add to positional columns
+            this.pulseColumns.add(newColumn, INDEX);
+
+        }
 
         // Update indices after this new column:
         // Update internal indexes of Positional elements in pos col:
         this.channels.forEach((channel) => {
-            channel.shiftIndices(index, 1);
+            channel.shiftIndices(index, quantity);
         })
 
+        // Update element matrix
         this.elementMatrix.forEach((c) => {
-            c.splice(index, 0, undefined)
+            c.splice(index, 0, ...Array<Visual | undefined>(quantity).fill(undefined))
         })
     }
 
-    deleteColumn(index: number, ifEmpty: boolean=false): boolean {
+    deleteColumns(index: number, ifEmpty: boolean=false, quantity: number=1): boolean {
         // Update positional indices of elements after this 
+        var columnsRemoved: number = 0;
+        var targets: (Aligner<Visual> | undefined)[] = this.pulseColumns.children.slice(index, index+quantity);
 
-        if (ifEmpty === true) {  // Removing column ONLY if it's empty now
-            if (this.pulseColumns.children[index].children.length === 0) {
-                this.pulseColumns.removeAt(index);
-
+        targets.forEach((t, i) => {
+            if (t && ((ifEmpty && t.children.length === 0) || !ifEmpty)) {
+                var INDEX = this.pulseColumns.children.indexOf(t);
+                this.pulseColumns.remove(t);
+                columnsRemoved += 1
+                
                 this.channels.forEach((channel) => {
-                    channel.shiftIndices(index, -1);
+                    channel.shiftIndices(INDEX, -1);
                 })
                 this.elementMatrix.forEach((c) => {
-                    c.splice(index, 1)
+                    c.splice(INDEX, 1)
                 })
-                return true
-            } else {
-                return false
             }
-        } else {  // Remove column (regardless of if it's empty)
-            this.pulseColumns.removeAt(index);
+        })
 
-            this.channels.forEach((channel) => {
-                channel.shiftIndices(index, -1);
-            })
-
-            this.elementMatrix.forEach((c) => {
-                c.splice(index, 1)
-            })
-            return true
-        }
+        if (columnsRemoved > 0) {return true}
+        return false
     }
     // ------------------------
 
@@ -190,7 +214,7 @@ export default class Sequence extends Collection {
         
         var INDEX = element.mountConfig.index;
         if (INDEX === undefined) {
-            INDEX = numColumns;
+            INDEX = numColumns;  // What?
         }
 
         // INDEX limiting (decreases index when index is too high)
@@ -200,12 +224,27 @@ export default class Sequence extends Collection {
             INDEX = Math.max(Math.min(INDEX, numColumns-1), 0)  // Max stops going below 0
         }
         element.mountConfig.index = INDEX;
+        var endINDEX: number = INDEX + element.mountConfig.noSections - 1;
 
-        // Need to insert a new column
-        if (this.pulseColumns.children[INDEX] === undefined  || insert) {
-            this.insertColumn(INDEX);
-            // This stops you adding a column at 1 when there are 0 columns for instance.
-            
+        // Calculate how many columns to insert
+        var targetedOccupancy: (Visual | "." | undefined)[] = targetChannel.mountOccupancy.slice(INDEX, endINDEX+1);
+        var targetedColumns: Aligner<Visual>[] = this.pulseColumns.children.slice(INDEX, endINDEX+1);
+
+        var columnsToAdd: number = element.mountConfig.noSections;
+        for (var i=0; i < targetedColumns.length; i++) {
+            var presence: Visual | "." | undefined = targetedOccupancy[i];
+
+            if (!presence) {
+                columnsToAdd -= 1
+            } else {
+                break;
+            }
+        }
+        if (insert && columnsToAdd === 0) {columnsToAdd += 1}
+
+        // Insert columns
+        if (columnsToAdd > 0 || insert) {
+            this.insertColumns(INDEX, columnsToAdd);
         } else if (insert === false) {
             // Check element is already there
             if (targetChannel.mountOccupancy[INDEX] !== undefined) {
@@ -213,26 +252,50 @@ export default class Sequence extends Collection {
             }
         }
         
-        // TODO: figure out inherit width and multi section element (hard)
-
         // Add the element to the sequence's column collection, this should trigger resizing of bars
-        this.pulseColumns.children[INDEX].add(element, undefined, false, element.mountConfig.alignment);
+        
         // This will set the X of the child ^^^ (the column should gain width immediately.)
 
-        // TODO TOMORROW: WHen moving the Labellable<> to position, does not move the parent element.
+        if (element.mountConfig.noSections > 1) {
+            // Add dummies
+            var width: number = element.width / element.mountConfig.noSections;
+
+            for (var i = 0; i<element.mountConfig.noSections; i++) {
+                var newSpace = new Space({contentHeight: 0, contentWidth: width, padding: [0, 0, 0, 0]})
+
+                this.pulseColumns.children[INDEX+i].add(newSpace, undefined, false, element.mountConfig.alignment);
+                element.dummies.push(newSpace);
+            }
+
+            var startColumn: Aligner<Visual> = this.pulseColumns.children[INDEX];
+            var endColumn: Aligner<Visual> = this.pulseColumns.children[endINDEX];
+            // Stretch element
+            startColumn.bind(element, "x", "here", "here", undefined, `${this.ref} [here] X> ${element.ref} [here]`)
+            endColumn.bind(element, "x", "far", "far", undefined, `${this.ref} [far] X> ${element.ref} [far]`)
+        } else {
+            this.pulseColumns.children[INDEX].add(element, undefined, false, element.mountConfig.alignment);
+        }
 
         // Add element to channel
         targetChannel.mountElement(element);
         // This should set the Y of the element ^^^
+
+        // When an element is modified to have less sections, the optimisation to not delete the column means that
+        // the unused column is not removed. 
+        // this.clearEmptyColumns();  // TODO: this shouldn't be needed
 
         // SET X of element
         this.pulseColumns.children[INDEX].enforceBinding();
         // NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
         // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
 
+        // This makes sure multi-column elements correctly bind far to the endColumn. For some reason they don't if this isn't here
+        this.pulseColumns.children[endINDEX].enforceBinding();
+
 
         var channelIndex = this.channels.indexOf(targetChannel);
         this.elementMatrix[channelIndex][INDEX] = element;
+        this.elementMatrix[channelIndex].fill(".", INDEX+1, endINDEX+1);
     }
 
     // @isMounted
@@ -241,31 +304,62 @@ export default class Sequence extends Collection {
         var channelID: string = target.mountConfig!.channelID;
         var channel: Channel | undefined = this.channelsDic[channelID]
         var channelIndex: number = this.channels.indexOf(channel);
-        var index: number;
+        var INDEX: number;
+        var endINDEX: number
 
+        if (target.mountConfig === undefined) {
+            throw new Error(`Cannot demount element ${target.ref} as it is not mountable`)
+        }
         if (target.mountConfig!.index === undefined ) {
             throw new Error("Index not initialised");
         }
-        index = target.mountConfig!.index;
-
         if (channelID === undefined) {
             throw new Error(`No channel owner found when deleting ${target.ref}`)
         }
 
+
+        INDEX = target.mountConfig!.index;
+        endINDEX = INDEX + target.mountConfig.noSections-1;
+
+        var startColumn: Aligner<Visual> = this.pulseColumns.children[INDEX];
+        var endColumn: Aligner<Visual> = this.pulseColumns.children[endINDEX];
+
+        startColumn.clearBindsTo(target, "x")
+        endColumn.clearBindsTo(target, "x")
+
         channel.removeMountable(target);
 
-        this.elementMatrix[channelIndex][index] = undefined;
+        this.elementMatrix[channelIndex].fill(undefined, INDEX, INDEX+target.mountConfig.noSections);
 
-        // Remove target from columns 
+        // Remove target from columns (and remove dummies if necessary)
         try {
-            this.pulseColumns.children[index].remove(target);
+            if (target.mountConfig.noSections > 1) {
+                for (var i=0; i<target.mountConfig.noSections; i++) {
+                    var selectedColumn = this.pulseColumns.children[INDEX + i];
+
+                    selectedColumn.children.forEach((c) => {
+                        if (target.dummies.includes(c)) {
+                            selectedColumn.remove(c);
+                        }
+                    })
+                }
+                target.dummies = [];
+            } else {
+                this.pulseColumns.children[INDEX].remove(target);
+            }
+            
         } catch {
-            throw new Error(`Cannot remove pulse column at index ${index}`)
+            throw new Error(`Cannot remove pulse column at index ${INDEX}`)
         }
 
+
+        // Remove columns
         let removed = false;
         if (removeColumn === true) {
-            removed = this.deleteColumn(index, true);
+            removed = this.deleteColumns(INDEX, true, target.mountConfig.noSections);  // True indicates only if empty.
+        } else {
+            removed = this.deleteColumns(INDEX+1, true, target.mountConfig.noSections-1)
+            // Delete trailing columns (could be more efficient but this is elegant)
         }
 
         return removed;

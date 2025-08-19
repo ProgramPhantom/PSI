@@ -105,21 +105,21 @@ export default class Channel extends Collection {
         // This means when adding a new channel the bar is already as long as image
     }
 
-    private _mountOccupancy?: (Visual | undefined)[];
-    public get mountOccupancy(): (Visual | undefined)[] {
+    private _mountOccupancy?: (Visual | "." | undefined)[];
+    public get mountOccupancy(): (Visual | "." | undefined)[] {
         if (this._mountOccupancy === undefined) {
             throw Error("Positional occupancy not set");
         }
         return this._mountOccupancy;
     }
-    public set mountOccupancy(val: (Visual | undefined)[]) {
+    public set mountOccupancy(val: (Visual | "." | undefined)[]) {
         this._mountOccupancy = val;
     }
 
     label?: Text;
 
-    public get mountedElements(): Visual[] { // All positional elements on this channel
-        return this.mountOccupancy.filter(p => p !== undefined);
+    public get mountedElements(): Visual[]  { // All positional elements on this channel
+        return this.mountOccupancy.filter(p => (p !== undefined) && (p !== "."));
     };  
 
 
@@ -164,7 +164,7 @@ export default class Channel extends Collection {
         } 
         element.mountConfig.channelID = this.id;
 
-        var element: Visual = element;  // Extract element from positional framework
+        var element: Visual = element;  
         var config: IMountConfig = element.mountConfig!;
 
 
@@ -209,9 +209,14 @@ export default class Channel extends Collection {
 
     // 
     shiftIndices(from: number, n: number=1): void {
+        //var shifted: Visual[] = []
         this.mountOccupancy.forEach((pos, i) => {
+            if (pos === ".") {return}
             if (i >= from && pos !== undefined && pos.mountConfig!.index !== undefined) {
-                pos.mountConfig!.index = pos.mountConfig!.index + n;
+                //if (!shifted.includes(pos)) {
+                    pos.mountConfig!.index = pos.mountConfig!.index + n;
+                  //  shifted.push(pos)
+                //} 
             }
         })
     }

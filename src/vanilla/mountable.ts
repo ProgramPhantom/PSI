@@ -1,7 +1,7 @@
 import { defaultMountable } from "./default/data";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { ID } from "./point";
-import { Visual } from "./visual";
+import Space from "./space";
 
 
 export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both" }
@@ -24,11 +24,12 @@ export interface IMountable extends IPaddedBox {
 }
 
 
-export class Mountable extends PaddedBox implements IMountable {
+class Mountable extends PaddedBox implements IMountable {
     static override defaults: {[name: string]: IMountable} = {"default": <any>defaultMountable}
 
     protected _mountConfig?: IMountConfig;
     public flipped: boolean = false;
+    public dummies: Space[] = [];
 
     constructor(params: IMountable) {
         super(params.padding, params.x, params.y, params.contentWidth, params.contentHeight, params.ref)
@@ -37,6 +38,11 @@ export class Mountable extends PaddedBox implements IMountable {
 
         if (this.mountConfig?.alignment === Alignment.stretch) {
             this.sizeSource.x = "inherited"
+        }
+
+        if (this.mountConfig !== undefined && this.mountConfig.noSections > 1) {
+            this.mountConfig.alignment = Alignment.stretch;
+            this.sizeSource.x = "inherited";
         }
     }
 
@@ -66,3 +72,5 @@ export class Mountable extends PaddedBox implements IMountable {
         this._mountConfig = val;
     }
 }
+
+export default Mountable
