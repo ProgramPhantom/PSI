@@ -282,8 +282,8 @@ export default class Sequence extends Collection {
             var startColumn: Aligner<Visual> = this.pulseColumns.children[INDEX];
             var endColumn: Aligner<Visual> = this.pulseColumns.children[endINDEX];
             // Stretch element
-            startColumn.bind(element, "x", "here", "here", undefined, `${this.ref} [here] X> ${element.ref} [here]`)
-            endColumn.bind(element, "x", "far", "far", undefined, `${this.ref} [far] X> ${element.ref} [far]`)
+            startColumn.bind(element, "x", "here", "here")
+            endColumn.bind(element, "x", "far", "far")
         } else {
             // Add the element to the sequence's column collection, this should trigger resizing of bars
             this.pulseColumns.children[INDEX].add(element, undefined, false, element.mountConfig.alignment);

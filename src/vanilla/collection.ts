@@ -60,8 +60,8 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         child.subscribe(this.computeBoundary.bind(this));
 
         if (bindHere) {
-            this.bind(child, "x", "here", "here", undefined, `Collection ${this.ref} X> Child ${child.ref}`, true);
-            this.bind(child, "y", "here", "here", undefined, `Collection ${this.ref} Y> Child ${child.ref}`, true);
+            this.bind(child, "x", "here", "here", undefined);
+            this.bind(child, "y", "here", "here", undefined);
         }
 
         if (this.isResolved) {

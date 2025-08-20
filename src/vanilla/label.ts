@@ -70,8 +70,8 @@ export default class Label extends Collection implements ILabel {
         if (fullParams.text !== undefined) {
             this.text = new Text(fullParams.text, undefined);
 
-            this.bind(this.text, "x", "centre", "centre", undefined, `Collection ${this.ref} [centre] X> Child ${this.text.ref} [centre]`, true);
-            this.bind(this.text, "y", "centre", "centre", undefined, `Collection ${this.ref} [centre] Y> Child ${this.text.ref} [centre]`, true);
+            this.bind(this.text, "x", "centre", "centre", undefined);
+            this.bind(this.text, "y", "centre", "centre", undefined);
             this.add(this.text);
         } 
         
@@ -93,8 +93,8 @@ export default class Label extends Collection implements ILabel {
             }
             var otherDimension: Dimensions = orientationSelect === "x" ? "y" : "x" 
 
-            this.bind(this.line, otherDimension, "here", "here", undefined, `Collection ${this.ref} [here] X> Child ${this.line.ref} [here]`, true);
-            this.bind(this.line, otherDimension, "far", "far", undefined, `Collection ${this.ref} [far] X> Child ${this.line.ref} [far]`, true);
+            this.bind(this.line, otherDimension, "here", "here");
+            this.bind(this.line, otherDimension, "far", "far");
 
             this.arrangeContent(orientationSelect)
 
@@ -109,17 +109,17 @@ export default class Label extends Collection implements ILabel {
 
         switch (this.labelConfig.textPosition) {
             case "top":
-                this.bind(this.line, orientation, "far", "here", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, orientation, "far", "far", undefined, `Collection ${this.ref} [far] Y> Child ${this.line.ref} [far]`, true);
+                this.bind(this.line, orientation, "far", "here");
+                this.bind(this.line, orientation, "far", "far");
                 // this.text.padding[2] += this.line.style.thickness  // Add bottom padding to text
                 break;
             case "inline":
-                this.bind(this.line, orientation, "centre", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, orientation, "centre", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
+                this.bind(this.line, orientation, "centre", "here");
+                this.bind(this.line, orientation, "centre", "far");
                 break;
             case "bottom":
-                this.bind(this.line, orientation, "here", "here", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [here]`, true);
-                this.bind(this.line, orientation, "here", "far", undefined, `Collection ${this.ref} [here] Y> Child ${this.line.ref} [far]`, true);
+                this.bind(this.line, orientation, "here", "here");
+                this.bind(this.line, orientation, "here", "far");
                 // this.text.padding[0] += this.line.style.thickness  // Add top padding to text
                 break;
             default:

@@ -198,14 +198,13 @@ export default class Spacial extends Point implements ISpacial {
     }
 
     bind(target: Spacial, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), 
-         targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number, hint: string="binding", bindToContent: boolean=true, ) {
+         targetBindSide: keyof (typeof this.AnchorFunctions), offset?: number, hint?: string, bindToContent: boolean=true, ) {
         
-        var found = false;
-
-        if (this.ref === "pulse columns") {
-            console.log()
+        if (hint === undefined) {
+            hint = `'${this.ref}' [${anchorBindSide}] ${dimension}> '${target.ref}' [${targetBindSide}]`
         }
 
+        var found = false;
         this.bindings.forEach((b) => {
             if (b.targetObject === target && b.bindingRule.dimension === dimension) {
                 found = true;
@@ -225,9 +224,9 @@ export default class Spacial extends Point implements ISpacial {
                         targetSiteName: targetBindSide,
                         dimension: dimension,
                     };
+                    hint += " (stretch)";
 
-                
-                    this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint})
+                    this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint});
                 }
         }})
 
@@ -239,7 +238,6 @@ export default class Spacial extends Point implements ISpacial {
                 dimension: dimension,
             };
 
-        
             this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint})
         }
     }

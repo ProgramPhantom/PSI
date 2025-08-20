@@ -12,6 +12,9 @@ import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "r
 import Labellable, { ILabellable } from "../vanilla/labellable";
 import { ElementBundle } from "../vanilla/sequenceHandler";
 import { myToaster } from "../App";
+import { inspect } from "util"
+import ReactJson from "react18-json-view"
+import { Inspector, ObjectInspector } from "react-inspector"
 
 
 interface FormHolderProps {
@@ -247,14 +250,6 @@ export function FormHolder(props: FormHolderProps) {
                                         <EditableText disabled={true} value={`${props.target.height}`}></EditableText>
                                     </Card>
                                 </div>
-
-                                <div style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
-                                    <Text style={{padding: "0px 4px", fontWeight: "600"}}>index:</Text>
-                                    <Card style={{padding: "4px"}}>
-                                        
-                                        <EditableText disabled={true} value={`${props.target.mountConfig?.index}`}></EditableText>
-                                    </Card>
-                                </div>
                             </div>
                         </div>
                     </SectionCard>
@@ -319,16 +314,16 @@ export function FormHolder(props: FormHolderProps) {
             <DialogBody style={{overflowY: "scroll"}}>
                 <div style={{display: "flex", flexDirection: "column"}}>
                     <EntityTitle title={"State"} icon="wrench-time"></EntityTitle>
-                    <pre style={{ height: "100%", marginBottom: "8px"}}>
-                        {JSON.stringify(props.target?.state, null, 2)}
-                    </pre>
+
+                    <ObjectInspector data={props.target}></ObjectInspector>
+
                     <Divider style={{ marginBottom: "8px"}}></Divider>
                     <EntityTitle title={"Bindings"} icon="bring-data"></EntityTitle>
-                    <pre style={{ height: "100%"}}>
-                        {props.target?.bindings.map((b) => {
-                            return (JSON.stringify(b, null, 2))
-                        })}
-                    </pre>
+                    
+                    
+                    <ObjectInspector data={props.target?.bindings.map((b) => b)}></ObjectInspector>
+                    
+                    
                 </div>
             </DialogBody>
         </Dialog>

@@ -75,8 +75,8 @@ export default class Channel extends Collection {
 
         this._labelColumn.bind(this.bar, "x", "far", "here");  // Bind X of bar
 
-        this.labelColumn.bind(this.upperAligner, "x", "here", "here", undefined, `LABEL COL X> UPPER ALIGNER`);
-        this.labelColumn.bind(this.lowerAligner, "x", "here", "here", undefined, `LABEL COL X> LOWER ALIGNER`);
+        this.labelColumn.bind(this.upperAligner, "x", "here", "here", undefined);
+        this.labelColumn.bind(this.lowerAligner, "x", "here", "here", undefined);
 
         if (this.label) {
             this._labelColumn.add(this.label)
@@ -133,16 +133,15 @@ export default class Channel extends Collection {
         // SIDE PADDING is not permitted for channels as it would break alignment
 
         this.upperAligner = new Aligner({axis: "x", alignment: Alignment.far, minCrossAxis: 30, ref: `top aligner`}, "default");
-        // this.bind(this.upperAligner, "y", "here", "here", undefined, `CHANNEL Y> UPPER ALIGNER`);
         this.add(this.upperAligner, undefined, true)
         
         this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle, ref: "bar"}, "bar");
-        this.upperAligner.bind(this.bar, "y", "far", "here", undefined, `UPPER ALIGNER Y> BAR`);
+        this.upperAligner.bind(this.bar, "y", "far", "here");
         this.bar.sizeSource.x = "inherited";
         this.add(this.bar);
 
         this.lowerAligner = new Aligner({axis: "x", alignment: Alignment.here, minCrossAxis: 20, ref: "bottom aligner"}, "default");
-        this.bar.bind(this.lowerAligner, "y", "far", "here", undefined, `BAR Y> LOWER ALIGNER`);
+        this.bar.bind(this.lowerAligner, "y", "far", "here");
         this.add(this.lowerAligner);
         
         
@@ -151,7 +150,7 @@ export default class Channel extends Collection {
         if (fullParams.channelSymbol !== undefined) {
             this.label = new Text(fullParams.channelSymbol);
 
-            this.bar.bind(this.label, "y", "centre", "centre", undefined, `BAR Y> LABEL`);
+            this.bar.bind(this.label, "y", "centre", "centre");
 
             this.add(this.label);
         }

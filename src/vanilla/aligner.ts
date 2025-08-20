@@ -74,19 +74,19 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                     leftChild.clearBindsTo(rightChild)
                 }
 
-                leftChild.bind(child, this.mainAxis, "far", "here", undefined, `${leftChild.ref} ${this.mainAxis}> ${child.ref}`, false);
+                leftChild.bind(child, this.mainAxis, "far", "here", undefined, undefined, false);
                 leftChild.enforceBinding();  // Needed for some reason
 
             } else { // this is the first element, bind to this
                 this.clearBindsTo(rightChild, "x");
 
-                this.bind(child, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`);
+                this.bind(child, this.mainAxis, "here", "here", undefined);
                 this.enforceBinding();
             }
 
             // Child far bound
             if (rightChild !== undefined) {
-                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, `${this.ref} ${this.mainAxis}> ${child.ref}`, false);
+                child.bind(this.children[INDEX], this.mainAxis, "far", "here", undefined, undefined, false);
                 child.enforceBinding();
             }
         }
@@ -97,18 +97,18 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             case Alignment.none:
                 break;
             case Alignment.here:
-                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.ref} [here] ${this.crossAxis}> ${child.ref} [here]`);
+                this.bind(child, this.crossAxis, "here", "here", undefined);
                 break;
             case Alignment.centre:
-                this.bind(child, this.crossAxis, "centre", "centre", undefined, `${this.ref} [centre] ${this.crossAxis}> ${child.ref} [centre]`);
+                this.bind(child, this.crossAxis, "centre", "centre", undefined);
                 break;
             case Alignment.far:
-                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.ref} [far] ${this.crossAxis}> ${child.ref} [far]`);
+                this.bind(child, this.crossAxis, "far", "far", undefined);
                 break;
             case Alignment.stretch:
                 // child.sizeSource[this.crossAxis] = "inherited";
-                this.bind(child, this.crossAxis, "here", "here", undefined, `${this.ref} [here] ${this.crossAxis}> ${child.ref} [here]`);
-                this.bind(child, this.crossAxis, "far", "far", undefined, `${this.ref} [far] ${this.crossAxis}> ${child.ref} [far]`)
+                this.bind(child, this.crossAxis, "here", "here", undefined);
+                this.bind(child, this.crossAxis, "far", "far", undefined)
                 break;
             default:
                 throw new Error(`Unknown element alignment '${alignChild}'`)
@@ -169,7 +169,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 preChild.clearBindsTo(target);
 
                 if (postChild) {
-                    preChild.bind(postChild, this.mainAxis, "far", "here", undefined, `${preChild.ref} ${this.mainAxis}> ${postChild.ref}`, false);
+                    preChild.bind(postChild, this.mainAxis, "far", "here", undefined, undefined, false);
                 }
                 preChild.enforceBinding();
             } else {
@@ -178,7 +178,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 this.clearBindsTo(target);
 
                 if (postChild) {  // Rebind next element to this
-                    this.bind(postChild, this.mainAxis, "here", "here", undefined, `${this.ref} ${this.mainAxis}> ${postChild.ref}`, true);
+                    this.bind(postChild, this.mainAxis, "here", "here");
                 }
             }
         }
