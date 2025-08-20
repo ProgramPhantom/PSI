@@ -6,7 +6,7 @@ import Channel, { IChannel } from "../vanilla/channel";
 import { defaultChannel } from "../vanilla/default/data";
 import ChannelForm from "./ChannelForm"
 import ENGINE from "../vanilla/engine";
-import { Button, Card, Divider, EditableText, EntityTitle, FormGroup, H5, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
+import { Button, Card, Dialog, DialogBody, Divider, EditableText, EntityTitle, FormGroup, H5, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import Labellable, { ILabellable } from "../vanilla/labellable";
@@ -42,6 +42,8 @@ function getCoreDefaults(target: Visual): IVisual {
 }
 
 export function FormHolder(props: FormHolderProps) {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     var isLabellable: boolean;
     var elementType: ElementTypes;
     var coreDefaults: IVisual;
@@ -142,10 +144,10 @@ export function FormHolder(props: FormHolderProps) {
                 <div style={{width: "100%", padding: "16px 8px 16px 8px", display: "flex", flexDirection: "row", alignItems: "center"}}>
                     { props.target === undefined ? (<>
                         <EntityTitle title={"Create Channel"}
-                        icon="cube-add" heading={H5} ></EntityTitle></>
+                        icon={<Icon icon="cube-add" onClick={() => {setIsDialogOpen(true)}} style={{cursor: "help"}}></Icon>} heading={H5} ></EntityTitle></>
                     ) : (<>
                         <EntityTitle title={`Modify '${props.target.ref}'`}
-                        icon="build" heading={H5} ></EntityTitle>
+                        icon={<Icon icon="add-child" onClick={() => {setIsDialogOpen(true)}} style={{cursor: "help"}}></Icon>} heading={H5}></EntityTitle>
                     </>)}
 
                     {props.target !== undefined ? (
@@ -305,6 +307,31 @@ export function FormHolder(props: FormHolderProps) {
             </div>
 
         </form>
+
+
+        <Dialog style={{width: "800px", height: "500px"}}
+            isOpen={isDialogOpen}
+            onClose={() => {setIsDialogOpen(false)}}
+            title="Element details"
+            canOutsideClickClose={true}
+            canEscapeKeyClose={true} icon="wrench"
+        >
+            <DialogBody style={{overflowY: "scroll"}}>
+                <div style={{display: "flex", flexDirection: "column"}}>
+                    <EntityTitle title={"State"} icon="wrench-time"></EntityTitle>
+                    <pre style={{ height: "100%", marginBottom: "8px"}}>
+                        {JSON.stringify(props.target?.state, null, 2)}
+                    </pre>
+                    <Divider style={{ marginBottom: "8px"}}></Divider>
+                    <EntityTitle title={"Bindings"} icon="bring-data"></EntityTitle>
+                    <pre style={{ height: "100%"}}>
+                        {props.target?.bindings.map((b) => {
+                            return (JSON.stringify(b, null, 2))
+                        })}
+                    </pre>
+                </div>
+            </DialogBody>
+        </Dialog>
         </>
     );
 }

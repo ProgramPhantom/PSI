@@ -264,16 +264,16 @@ export default class Sequence extends Collection {
             }
         }
         
-        // Add the element to the sequence's column collection, this should trigger resizing of bars
         
-        // This will set the X of the child ^^^ (the column should gain width immediately.)
+        
+   
 
         if (element.mountConfig.noSections > 1) {
             // Add dummies
-            var width: number = element.width / element.mountConfig.noSections;
+            // var width: number = element.width / element.mountConfig.noSections;
 
             for (var i = 0; i<element.mountConfig.noSections; i++) {
-                var newSpace = new Space({contentHeight: 0, contentWidth: width, padding: [0, 0, 0, 0]})
+                var newSpace = new Space({contentHeight: 0, contentWidth: 10, padding: [0, 0, 0, 0]})
 
                 this.pulseColumns.children[INDEX+i].add(newSpace, undefined, false, element.mountConfig.alignment);
                 element.dummies.push(newSpace);
@@ -285,7 +285,9 @@ export default class Sequence extends Collection {
             startColumn.bind(element, "x", "here", "here", undefined, `${this.ref} [here] X> ${element.ref} [here]`)
             endColumn.bind(element, "x", "far", "far", undefined, `${this.ref} [far] X> ${element.ref} [far]`)
         } else {
+            // Add the element to the sequence's column collection, this should trigger resizing of bars
             this.pulseColumns.children[INDEX].add(element, undefined, false, element.mountConfig.alignment);
+            // This will set the X of the child ^^^ (the column should gain width immediately.)
         }
 
         // Add element to channel
