@@ -7,7 +7,9 @@ import { Dimensions } from "../vanilla/spacial";
 import { Visual } from "../vanilla/visual";
 import Aligner from "../vanilla/aligner";
 import { Orientation } from "../vanilla/mountable";
-
+import Channel from "../vanilla/channel";
+import { OccupancyStatus } from "../vanilla/sequence";
+import ENGINE from "../vanilla/engine";
 
 class SequenceDropInterpreter {
     public handler: SequenceHandler;
@@ -26,35 +28,61 @@ class SequenceDropInterpreter {
         
         var sequence = this.handler.sequence;
         var columns = sequence.pulseColumns.children;
+        var channels = sequence.channels;
+        var noColumns = columns.length;
+        var noChannels = channels.length;
         var newSlither: AddSpec;
+
+        // Allowed Slither indexes
+        var slitherIndexes: boolean[] = Array<boolean>(noColumns).fill(true);
+        for (var channelIndex=0; channelIndex<noChannels; channelIndex++) {
+            var channel: Channel = channels[channelIndex];
+
+            // Columns
+            for (var columnIndex=0; columnIndex<noColumns+1; columnIndex++) {
+                let preOccupancy: OccupancyStatus = sequence.elementMatrix[channelIndex][columnIndex-1];
+                let hereOccupancy: OccupancyStatus= sequence.elementMatrix[channelIndex][columnIndex];
+
+                if (!((preOccupancy === undefined) ||
+                    (preOccupancy === "." && hereOccupancy !== ".") || 
+                    (preOccupancy instanceof Visual &&
+                     hereOccupancy instanceof Visual && preOccupancy !== hereOccupancy))) {
+                    slitherIndexes[columnIndex] = false
+                }
+            }
+
+        }
 
         columns.forEach((column, columnIndex) => {
             var heightTop;
             var heightBottom; 
 
             Object.entries(sequence.channelsDic).forEach(([name, channel], channelIndex) => { 
-                // Insert start
-                // Top slither
-                newSlither = {
-                    area: {x: column.x - this.slitherWidth/2, 
-                           y: channel.y, 
-                           width: this.slitherWidth, 
-                           height: channel.upperAligner.contentHeight! + channel.padding[0]},
-                    index: columnIndex, orientation: Orientation.top, channelID: name, insert: true,
-                };
-                this.insertAreas.push(newSlither)
-
-                // bottom slither
-                newSlither = {
-                    area: {x: column.x - this.slitherWidth/2, 
-                        y: channel.lowerAligner.y, 
-                        width: this.slitherWidth, 
-                        height: channel.lowerAligner.contentHeight! + channel.padding[2]},
-                    index: columnIndex, orientation: Orientation.bottom, channelID: name, insert: true
-                };
-                this.insertAreas.push(newSlither)
-
                 let occupied: boolean = sequence.elementMatrix[channelIndex][columnIndex] === undefined ? false : true;
+
+                if (slitherIndexes[columnIndex]) {
+                    // Insert start
+                    // Top slither
+                    newSlither = {
+                        area: {x: column.x - this.slitherWidth/2, 
+                            y: channel.y, 
+                            width: this.slitherWidth, 
+                            height: channel.upperAligner.contentHeight! + channel.padding[0]},
+                        index: columnIndex, orientation: Orientation.top, channelID: name, insert: true,
+                    };
+                    this.insertAreas.push(newSlither)
+
+                    // bottom slither
+                    newSlither = {
+                        area: {x: column.x - this.slitherWidth/2, 
+                            y: channel.lowerAligner.y, 
+                            width: this.slitherWidth, 
+                            height: channel.lowerAligner.contentHeight! + channel.padding[2]},
+                        index: columnIndex, orientation: Orientation.bottom, channelID: name, insert: true
+                    };
+                    this.insertAreas.push(newSlither)
+                }
+
                 if (!occupied) {  // Top block
                     var columnWidth = column.contentWidth === undefined ? 0 : column.contentWidth;
                     var upperAlignerHeight = channel.upperAligner.contentHeight === undefined ? 0 : channel.upperAligner.contentHeight;
@@ -117,33 +145,13 @@ class SequenceDropInterpreter {
 
 }
 
-const style: CSSProperties = {
-    height: '12rem',
-    width: '12rem',
-    marginRight: '1.5rem',
-    marginBottom: '1.5rem',
-    color: 'white',
-    padding: '1rem',
-    textAlign: 'center',
-    fontSize: '1rem',
-    lineHeight: 'normal',
-    float: 'left',
-    backgroundColor: "transparent"
-  }
 
-function DropField(props: {sequence: SequenceHandler}) {
-    const [sequence] = useState<SequenceHandler>(props.sequence);
-    const dragDropManager = useDragDropManager();
 
-    let areaGenerator: SequenceDropInterpreter = new SequenceDropInterpreter(props.sequence);
-    const registry = dragDropManager.getRegistry();
-    
-    
-    
-
+function DropField() {
+    let areaGenerator: SequenceDropInterpreter = new SequenceDropInterpreter(ENGINE.handler);
 
     return (
-    <div>
+    <div id="drop-field">
         {areaGenerator.insertAreas?.map((insertArea) => {
             return (                               // This fixes an enormous, impossible to fix problem
                 <InsertArea areaSpec={insertArea} key={insertArea.channelID + insertArea.index + insertArea.insert + insertArea.orientation}></InsertArea>

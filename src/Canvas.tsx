@@ -144,7 +144,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv">
                                     
                                 </div>
-                                <DropField sequence={ENGINE.handler}></DropField>
+                                <DropField></DropField>
                                 <Debug sequenceHandler={ENGINE.handler}></Debug> 
                                 {
                                     selectedElement !== undefined ?

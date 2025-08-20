@@ -26,6 +26,8 @@ interface ISequence extends ICollection {
     bracket: undefined
 }
 
+export type OccupancyStatus = Visual | "." | undefined
+
 
 export default class Sequence extends Collection {
     static defaults: {[key: string]: ISequence} = {"default": {...<any>defaultSequence}}
@@ -51,7 +53,7 @@ export default class Sequence extends Collection {
 
     columns: Aligner<Aligner<Visual>>;
 
-    elementMatrix: (Visual | "." | undefined)[][] = [];
+    elementMatrix: OccupancyStatus[][] = [];
 
     constructor(params: RecursivePartial<ISequence>, templateName: string="default") {
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
@@ -111,19 +113,29 @@ export default class Sequence extends Collection {
 
     insertColumns(index: number, quantity: number=1) {
         var split: boolean = false;
+        var splitElements: Visual[] = [];
         for (var channel of this.elementMatrix) {
-            var currChannel: (Visual | "." | undefined)[] = channel;
+            var currChannel: OccupancyStatus[] = channel;
 
             if (currChannel[index-1] === undefined && currChannel[index] === undefined) {
                 continue
             }
-            if (currChannel[index-1] === currChannel[index]) {
+            if (currChannel[index-1] instanceof Visual && currChannel[index] === "." ||
+                currChannel[index-1] === "." && currChannel[index] === "."
+            ) {
                 split = true;
-                break;
+                
+                // Find element
+                var elementSearch: OccupancyStatus = currChannel[index]
+                while (typeof elementSearch !== typeof Visual) {
+                    index -= 1
+                    elementSearch = currChannel[index]
+                }
+                splitElements.push(elementSearch as Visual)
             }
         }
         if (split) {
-            throw new Error(`Inserting column at ${index} is splitting multi-column element`)
+            console.warn(`Splitting elements ${splitElements}`);
         }
 
         var columnsToAdd: Aligner<Visual>[] = [];
@@ -227,7 +239,7 @@ export default class Sequence extends Collection {
         var endINDEX: number = INDEX + element.mountConfig.noSections - 1;
 
         // Calculate how many columns to insert
-        var targetedOccupancy: (Visual | "." | undefined)[] = targetChannel.mountOccupancy.slice(INDEX, endINDEX+1);
+        var targetedOccupancy: OccupancyStatus[] = targetChannel.mountOccupancy.slice(INDEX, endINDEX+1);
         var targetedColumns: Aligner<Visual>[] = this.pulseColumns.children.slice(INDEX, endINDEX+1);
 
         var columnsToAdd: number = element.mountConfig.noSections;

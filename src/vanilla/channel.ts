@@ -14,6 +14,7 @@ import RectElement, { IRectStyle } from "./rectElement";
 import Aligner from "./aligner";
 import { Alignment, IMountable, IMountConfig, Orientation } from "./mountable";
 import Labellable from "./labellable";
+import { OccupancyStatus } from "./sequence";
  
 interface Dim {
     width: number,
@@ -105,14 +106,14 @@ export default class Channel extends Collection {
         // This means when adding a new channel the bar is already as long as image
     }
 
-    private _mountOccupancy?: (Visual | "." | undefined)[];
-    public get mountOccupancy(): (Visual | "." | undefined)[] {
+    private _mountOccupancy?: OccupancyStatus[];
+    public get mountOccupancy(): OccupancyStatus[] {
         if (this._mountOccupancy === undefined) {
             throw Error("Positional occupancy not set");
         }
         return this._mountOccupancy;
     }
-    public set mountOccupancy(val: (Visual | "." | undefined)[]) {
+    public set mountOccupancy(val: OccupancyStatus[]) {
         this._mountOccupancy = val;
     }
 
