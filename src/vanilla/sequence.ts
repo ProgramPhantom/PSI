@@ -55,6 +55,14 @@ export default class Sequence extends Collection {
 
     elementMatrix: OccupancyStatus[][] = [];
 
+    get allElements(): Visual[] {
+        var elements: Visual[] = [];
+        this.channels.forEach((c) => {
+            elements.push(...c.mountedElements)
+        })
+        return elements;
+    }
+
     constructor(params: RecursivePartial<ISequence>, templateName: string="default") {
         var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
         super(fullParams, templateName);

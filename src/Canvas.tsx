@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore, DOMElement} from 'react'
+import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore, DOMElement, useMemo} from 'react'
 import DropField from './dnd/DropField';
 import { Visual } from './vanilla/visual';
 import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
@@ -7,8 +7,21 @@ import { CanvasDropContainer } from './dnd/CanvasDropContainer';
 import CanvasDraggableElement from './dnd/CanvasDraggableElement';
 import ENGINE from './vanilla/engine';
 import Debug from './Debug';
-import { EditableText, Label } from '@blueprintjs/core';
+import { Checkbox, Dialog, DialogBody, Divider, EditableText, EntityTitle, HotkeyConfig, Label, useHotkeys } from '@blueprintjs/core';
+import { ObjectInspector } from 'react-inspector';
+import { Tick } from '@blueprintjs/icons';
 
+ 
+export type ImageComponent = "element" | "pulse columns"| "channels" | "label column" | "upper aligner" | "lower aligner" | "sequence"
+const DefaultDebugSelection: Record<ImageComponent, boolean> = {
+    "element": false,
+    "pulse columns": false,
+    "channels": false,
+    "label column": false,
+    "upper aligner": false,
+    "lower aligner": false,
+    "sequence": false
+}
 
 interface ICanvasProps {
     select: (element?: Visual) => void
@@ -16,8 +29,32 @@ interface ICanvasProps {
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
+    const [debugDialogOpen, setDebugDialogOpen] = useState(false);
+    const [debugElements, setDebugElements] = useState<Visual[]>([]);
+    const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<ImageComponent, boolean>>(DefaultDebugSelection);
+    const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
+        () => [
+            {
+                combo: "ctrl+d",
+                global: true,
+                label: "Open debug dialog",
+                onKeyDown: () => {setDebugDialogOpen(!debugDialogOpen)},
+                preventDefault: true
+            },
+        ],
+        [debugDialogOpen],
+    );
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+    function handleSetDebugSelection(type: ImageComponent) {
+        var newDebugSelection: Record<ImageComponent, boolean> = {...debugSelectionTypes}
+        newDebugSelection[type] = !newDebugSelection[type]
+        setDebugSelectionTypes(newDebugSelection);
+    }
+
     console.log("CREATING CANVAS")
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
+    
+
     let selectedElement = props.selectedElement;
     
     const [zoom, setZoom] = useState(3);
@@ -145,7 +182,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                     
                                 </div>
                                 <DropField></DropField>
-                                <Debug sequenceHandler={ENGINE.handler}></Debug> 
+                                <Debug debugGroupSelection={debugSelectionTypes} debugSelection={debugElements}></Debug>
                                 {
                                     selectedElement !== undefined ?
                                     <div style={{position: "absolute", 
@@ -173,7 +210,37 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             </CanvasDropContainer>
         </div>
         
-        
+        <Dialog style={{width: "400px"}}
+            isOpen={debugDialogOpen}
+            onClose={() => {setDebugDialogOpen(false)}}
+            title="Debug"
+            canOutsideClickClose={true}
+            canEscapeKeyClose={true} icon="wrench"
+        >
+            <DialogBody style={{overflowY: "scroll"}}>
+                <div style={{display: "flex", flexDirection: "column"}}>
+                   <Checkbox label='Pulse columns' alignIndicator='end' checked={debugSelectionTypes['pulse columns']}
+                            onChange={() => {handleSetDebugSelection("pulse columns")}}></Checkbox>
+                   <Checkbox label='Elements' alignIndicator='end' checked={debugSelectionTypes['element']} 
+                             onChange={() => {handleSetDebugSelection("element")}}></Checkbox>
+
+                   <Checkbox label='Label Column' alignIndicator='end' checked={debugSelectionTypes['label column']} 
+                             onChange={() => {handleSetDebugSelection("label column")}}></Checkbox>
+
+                   <Checkbox label='Channels' alignIndicator='end' checked={debugSelectionTypes['channels']} 
+                             onChange={() => {handleSetDebugSelection("channels")}}></Checkbox>
+
+                    <Checkbox label='Upper aligners' alignIndicator='end' checked={debugSelectionTypes['upper aligner']} 
+                             onChange={() => {handleSetDebugSelection('upper aligner')}}></Checkbox>
+
+                    <Checkbox label='Lower aligners' alignIndicator='end' checked={debugSelectionTypes['lower aligner']} 
+                             onChange={() => {handleSetDebugSelection("lower aligner")}}></Checkbox>
+
+                    <Checkbox label='Sequence' alignIndicator='end' checked={debugSelectionTypes['sequence']} 
+                             onChange={() => {handleSetDebugSelection("sequence")}}></Checkbox>
+                </div>
+            </DialogBody>
+        </Dialog>
         </>
     )
 }

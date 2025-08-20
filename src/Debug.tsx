@@ -7,56 +7,49 @@ import BindingsDebug from "./debug/Bindings"
 import PaddedBox from "./vanilla/paddedBox"
 import Labellable from "./vanilla/labellable"
 import { Visual } from "./vanilla/visual"
+import { ImageComponent } from "./Canvas"
+import ENGINE from "./vanilla/engine"
+import { Colors } from "@blueprintjs/core"
 
 interface IDebug {
-    sequenceHandler: SequenceHandler
+    debugGroupSelection: Record<ImageComponent, boolean>;
+    debugSelection: Visual[];
 }
 
 const Debug: React.FC<IDebug> = (props) => {
-    var seq: Sequence = props.sequenceHandler.sequence
-    
 
     return (
         <>
-        <CollectionDebug element={seq.pulseColumns}></CollectionDebug> 
-            {/*{
-                seq.channels.map((c) => {
-                    return (c.positionalElements.map((e) => {
-                        return (<PaddedBoxDebug element={e.element} padColour="purple"></PaddedBoxDebug>)
-                    }))
-                })
-            } 
-            
-            <PaddedBoxDebug element={seq} contentColour={"none"} padColour="yellow"></PaddedBoxDebug>
-              
-            <PaddedBoxDebug element={seq.channelColumn}></PaddedBoxDebug>
-            
-            <AlignerDebug element={seq.positionalColumns}></AlignerDebug>
-            
-            {
-                seq.channels[0] ? (
+        {Object.entries(props.debugGroupSelection).map(([componentType, visible]) => {
+            if (!visible) {return}
+            switch (componentType) {
+                case "element":
+                    return ENGINE.handler.sequence.allElements.map((e) => {
+                        return <PaddedBoxDebug element={e}></PaddedBoxDebug>
+                    })
+                    break;
+                case "pulse columns":
+                    return <CollectionDebug element={ENGINE.handler.sequence.pulseColumns}></CollectionDebug>
+                case "label column":
+                    return <CollectionDebug element={ENGINE.handler.sequence.labelColumn}></CollectionDebug>
+                case "channels":
+                    return ENGINE.handler.sequence.channels.map((c) => {
+                        return <PaddedBoxDebug element={c} contentColour={Colors.BLUE4}></PaddedBoxDebug>
+                    })
+                case "upper aligner":
+                    return ENGINE.handler.sequence.channels.map((c) => {
+                        return <PaddedBoxDebug element={c.upperAligner} contentColour={Colors.VIOLET3}></PaddedBoxDebug>
+                    })
+                case "lower aligner":
+                    return ENGINE.handler.sequence.channels.map((c) => {
+                        return <PaddedBoxDebug element={c.lowerAligner} contentColour={Colors.GREEN5}></PaddedBoxDebug>
+                    })
+                case "sequence":
+                    return <PaddedBoxDebug element={ENGINE.handler.sequence} contentColour={Colors.LIME2}></PaddedBoxDebug>
                     
-                    <PaddedBoxDebug element={seq.channels[0]}></PaddedBoxDebug>
-                ) : <></>
-            }*/}
-        {/* <AlignerDebug element={seq.channels[0].upperAligner}></AlignerDebug> 
-                        
-                        
-        <PaddedBoxDebug element={(e as Labellable<Visual>).parentElement} contentColour="yellow"></PaddedBoxDebug>
-        <PaddedBoxDebug element={(e as Labellable<Visual>).labelMap["top"]!} contentColour="green" padColour="purple"></PaddedBoxDebug>
-        <PaddedBoxDebug element={seq} contentColour="none"></PaddedBoxDebug>
-        
-            {
-            seq.channels.map((c) => {
-                return c.mountedElements.map((e) => {
-                    return <>
-                    
-                    </>
-                    
-                })
-            })
-            } 
-*/}
+                
+            }
+        })}
         </>
     )
 }
