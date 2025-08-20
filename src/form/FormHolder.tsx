@@ -320,10 +320,12 @@ export function FormHolder(props: FormHolderProps) {
                     <Divider style={{ marginBottom: "8px"}}></Divider>
                     <EntityTitle title={"Bindings"} icon="bring-data"></EntityTitle>
                     
-                    
                     <ObjectInspector data={props.target?.bindings.map((b) => b)}></ObjectInspector>
+
+                    <Divider style={{ marginBottom: "8px"}}></Divider>
+                    <EntityTitle title={"Binds to this"} icon="bring-forward"></EntityTitle>
                     
-                    
+                    <ObjectInspector data={props.target?.bindingsToThis.map((b) => b)}></ObjectInspector>
                 </div>
             </DialogBody>
         </Dialog>

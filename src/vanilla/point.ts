@@ -62,6 +62,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
     ref: string;
 
     bindings: Binding[] = [];  // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
+    bindingsToThis: Binding[] = [];
 
     displaced: boolean=false;
 

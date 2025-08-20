@@ -3,6 +3,7 @@ import Point, { IPoint } from "./point";
 import { SVG } from "@svgdotjs/svg.js";
 import logger, { Operations } from "./log";
 import { posPrecision } from "./util";
+import { inspect } from "util";
 
 export interface Bounds {
     top: number,
@@ -34,6 +35,7 @@ export interface BindingRule {
 export interface Binding {
     bindingRule: BindingRule,
     targetObject: Spacial,
+    anchorObject: Spacial,
     offset?: number,
     bindToContent: boolean,
     hint?: string
@@ -87,7 +89,8 @@ export default class Spacial extends Point implements ISpacial {
     protected _contentWidth?: number;
     protected _contentHeight?: number;
     
-    bindings: Binding[] = [];
+    override bindings: Binding[] = [];
+    override bindingsToThis: Binding[] = [];
 
     constructor(x?: number, y?: number, width?: number, height?: number, ref: string="spacial") {
         super(x, y, ref);
@@ -189,12 +192,29 @@ export default class Spacial extends Point implements ISpacial {
     public sizeSource: Record<Dimensions, SizeMethod> = {"x": "given", "y": "given"};
 
     public clearBindings(dimension: Dimensions) {
-        this.bindings = this.bindings.filter(b => b.bindingRule.dimension !== dimension);
+        var toRemove: Binding[] = [];
+        for (var bind of this.bindings) {
+            if (bind.bindingRule.dimension === dimension) {
+                toRemove.push(bind);
+                bind.targetObject.bindingsToThis = bind.targetObject.bindingsToThis.filter(b => b !== bind)
+            }
+        }
+
+        this.bindings = this.bindings.filter(b => !toRemove.includes(b))
+
     }
 
-    public clearBindsTo(object: Spacial, dimension?: Dimensions) {
-        this.bindings = this.bindings.filter(b => (b.targetObject !== object) || 
-        (dimension !== undefined ? (b.bindingRule.dimension !== dimension) : false));
+    public clearBindsTo(target: Spacial, dimension?: Dimensions) {
+        var toRemove: Binding[] = [];
+        for (var bind of this.bindings) {
+            if (bind.targetObject === target && ((bind.bindingRule.dimension === dimension) || dimension === undefined)) {
+                toRemove.push(bind);
+                console.warn(`Removing binding ${bind.hint}`)
+            }
+        }
+        
+        this.bindings = this.bindings.filter(b => !toRemove.includes(b));
+        target.bindingsToThis = target.bindingsToThis.filter(b => !toRemove.includes(b))
     }
 
     bind(target: Spacial, dimension: Dimensions, anchorBindSide: keyof (typeof this.AnchorFunctions), 
@@ -226,7 +246,10 @@ export default class Spacial extends Point implements ISpacial {
                     };
                     hint += " (stretch)";
 
-                    this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint});
+                    var newBinding: Binding = {targetObject: target, anchorObject: this, 
+                        bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint}
+                    this.bindings.push(newBinding);
+                    target.bindingsToThis.push(newBinding);
                 }
         }})
 
@@ -238,7 +261,11 @@ export default class Spacial extends Point implements ISpacial {
                 dimension: dimension,
             };
 
-            this.bindings.push({targetObject: target, bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint})
+            var newBinding: Binding = {targetObject: target, anchorObject: this, 
+                bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint}
+
+            this.bindings.push(newBinding);
+            target.bindingsToThis.push(newBinding);
         }
     }
 
@@ -294,30 +321,30 @@ export default class Spacial extends Point implements ISpacial {
     }
     
 
-    removeBind(el: Point, dimension?: Dimensions) {
-        // Remove all bindings associated with el
-        // this.bindings.forEach((b, i) => {
-        //     if (b.targetObject === el) {
-        //         this.bindings.splice(i, 1);
-        //     }
-        // })
-        this.bindings = this.bindings.filter(function(binding) {
-            if (binding.targetObject == el) {
-                if (dimension !== undefined) {
-                    if (binding.bindingRule.dimension === dimension) {
-                        return false
-                    } else {
-                        return true
-                    }
-                } else {
-                    return false;
-                }
-            } else {
-                return true;
-            }
-            
-        });
-    }
+    // removeBind(el: Point, dimension?: Dimensions) {
+    //     // Remove all bindings associated with el
+    //     // this.bindings.forEach((b, i) => {
+    //     //     if (b.targetObject === el) {
+    //     //         this.bindings.splice(i, 1);
+    //     //     }
+    //     // })
+    //     this.bindings = this.bindings.filter(function(binding) {
+    //         if (binding.targetObject == el) {
+    //             if (dimension !== undefined) {
+    //                 if (binding.bindingRule.dimension === dimension) {
+    //                     return false
+    //                 } else {
+    //                     return true
+    //                 }
+    //             } else {
+    //                 return false;
+    //             }
+    //         } else {
+    //             return true;
+    //         }
+    //         
+    //     });
+    // }
 
     subscribers: UpdateNotification[] = [];
 

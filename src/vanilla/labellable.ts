@@ -95,7 +95,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 this.parentElement.bind(label, "x", "far", "far");
                 
                 // Y
-                this.removeBind(this.parentElement, "y");
+                this.clearBindsTo(this.parentElement, "y");
                 this.bind(label, "y", "here", "here", undefined, undefined, false);
                 label.bind(this.parentElement, "y", "far", "here", undefined, undefined, false)
 
@@ -133,7 +133,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 this.parentElement.bind(label, "y", "far", "far")
 
                 // X
-                this.removeBind(this.parentElement, "x");
+                this.clearBindsTo(this.parentElement, "x");
                 this.bind(label, "x", "here", "here")
                 label.bind(this.parentElement, "x", "far", "here", undefined, undefined, false)
 

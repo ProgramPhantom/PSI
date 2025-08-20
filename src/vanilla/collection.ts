@@ -88,7 +88,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
                     c.erase();
                 }
 
-                this.removeBind(child);
+                this.clearBindsTo(child);
             }
         })
 

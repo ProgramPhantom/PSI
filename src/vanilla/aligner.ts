@@ -78,7 +78,9 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                 leftChild.enforceBinding();  // Needed for some reason
 
             } else { // this is the first element, bind to this
-                this.clearBindsTo(rightChild, "x");
+                if (rightChild !== undefined) {
+                    this.clearBindsTo(rightChild, "x");
+                }
 
                 this.bind(child, this.mainAxis, "here", "here", undefined);
                 this.enforceBinding();
@@ -193,7 +195,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
                     c.erase();
                 }
                 
-                this.removeBind(target);
+                this.clearBindsTo(target);
             }
         })
 
