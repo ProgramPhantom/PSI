@@ -38,7 +38,7 @@ export default class Sequence extends Collection {
 
 
     grid: Grid;
-
+    freeArrows: Arrow[] = [];
 
     private _maxSectionWidths: number[] = [];  // Section widths
     get maxColumnWidths() { return this._maxSectionWidths }
@@ -55,7 +55,7 @@ export default class Sequence extends Collection {
 
     elementMatrix: OccupancyStatus[][] = [];
 
-    get allElements(): Visual[] {
+    get allPulseElements(): Visual[] {
         var elements: Visual[] = [];
         this.channels.forEach((c) => {
             elements.push(...c.mountedElements)
@@ -104,11 +104,11 @@ export default class Sequence extends Collection {
         this.channelsDic = {};
     }
 
-    draw(surface: Svg): void {
-        this.channels.forEach((channel) => {
-            channel.draw(surface);
-        })
-    }
+    // draw(surface: Svg): void {
+    //     this.channels.forEach((channel) => {
+    //         channel.draw(surface);
+    //     })
+    // }
     
     clearEmptyColumns() {
         this.pulseColumns.children.forEach((c) => {
@@ -385,5 +385,9 @@ export default class Sequence extends Collection {
         }
 
         return removed;
+    }
+
+    addFreeArrow(arrow: Arrow) {
+        this.add(arrow);
     }
 }

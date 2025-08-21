@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore, DOMElement, useMemo} from 'react'
+import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore, DOMElement, useMemo, MouseEvent} from 'react'
 import DropField from './dnd/DropField';
 import { Visual } from './vanilla/visual';
 import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
@@ -7,9 +7,12 @@ import { CanvasDropContainer } from './dnd/CanvasDropContainer';
 import CanvasDraggableElement from './dnd/CanvasDraggableElement';
 import ENGINE from './vanilla/engine';
 import Debug from './Debug';
-import { Checkbox, Dialog, DialogBody, Divider, EditableText, EntityTitle, HotkeyConfig, Label, useHotkeys } from '@blueprintjs/core';
+import { Checkbox, Colors, Dialog, DialogBody, Divider, EditableText, EntityTitle, HotkeyConfig, Label, Text, useHotkeys } from '@blueprintjs/core';
 import { ObjectInspector } from 'react-inspector';
 import { Tick } from '@blueprintjs/icons';
+import { SelectionMode } from './App';
+import BindingsDebug from './debug/Bindings';
+import BindingsSelector, { PointBind } from './BindingsSelector';
 
  
 export type ImageComponent = "element" | "pulse columns"| "channels" | "label column" | "upper aligner" | "lower aligner" | "sequence"
@@ -23,15 +26,24 @@ const DefaultDebugSelection: Record<ImageComponent, boolean> = {
     "sequence": false
 }
 
+
+
+
 interface ICanvasProps {
     select: (element?: Visual) => void
     selectedElement: Visual | undefined,
+    selectionMode: SelectionMode
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
     const [debugDialogOpen, setDebugDialogOpen] = useState(false);
     const [debugElements, setDebugElements] = useState<Visual[]>([]);
     const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<ImageComponent, boolean>>(DefaultDebugSelection);
+    const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
+
+    const [start, setStart] = useState<PointBind | undefined>(undefined);
+    const [end, setEnd] = useState<PointBind | undefined>(undefined);
+
     const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
         () => [
             {
@@ -98,7 +110,32 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     }
 
     function singleClick(click: React.MouseEvent<HTMLDivElement>) {
-        deselect();
+        switch (props.selectionMode) {
+            case "select":
+                deselect();
+                break;
+            case "draw":
+
+        }
+        
+    }
+
+    function mouseOver(over: React.MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
+        var targetSVGId: string | undefined;
+        targetSVGId = (over.target as HTMLElement).id;
+        
+        // If target is path
+        // if (targetSVGId === "") {
+        //     targetSVGId = (over.target as HTMLElement).parentElement?.id
+        // }    
+
+        var element: Visual | undefined;
+        if (targetSVGId !== undefined) {
+            console.log(`id: ${targetSVGId}`)
+            element = ENGINE.handler.identifyElement(targetSVGId);
+            console.log(element)
+        }
+        setHoveredElement(element);
     }
 
     function handleFileNameChange(newFileName: string) {
@@ -120,9 +157,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     return (
         <>
         <div style={{width: "100%", height: "100%",  display: "flex", position: "relative"}} 
-                onDoubleClick={(e) => {doubleClick(e); }}
-                onMouseUp={(e) => {singleClick(e); setDragging(false)}} 
-                onDragEnd={() => {setDragging(false)}}>
+             onDoubleClick={(e) => {doubleClick(e); }}
+             onMouseUp={(e) => {singleClick(e); setDragging(false)}} 
+             onDragEnd={() => {setDragging(false)}}
+             onMouseOver={(e) => {mouseOver(e)}}>
 
             {/* Image name display text box - positioned outside TransformWrapper */}
             <div style={{
@@ -130,11 +168,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                 top: "5px",
                 left: "10px",
                 zIndex: 100,
-            }}>
+                }}>
                 <Label style={{ fontSize: "10px", marginBottom: "0px" }}>
                     filename
                 </Label>
-                                 <EditableText
+                    <EditableText
                       value={fileName}
                       onChange={handleFileNameChange}
                       onConfirm={handleFileNameBlur}
@@ -143,17 +181,28 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                   />
             </div>
 
+            <div style={{
+                position: "absolute",
+                bottom: "5px",
+                right: "10px",
+                zIndex: 100,
+                }}>
+
+                {hoveredElement ? <Text>{hoveredElement.ref}</Text> : <Text>none</Text>}
+            </div>
+
             <CanvasDropContainer >
-                <TransformWrapper initialScale={zoom} onZoomStop={(z) => {setZoom(z.state.scale)}}
-                                centerOnInit={true} 
-                                limitToBounds={false} 
-                                centerZoomedOut={true}
-                                disabled={dragging}
-                                onPanningStart={() => {setPanning(true)}}
-                                onPanningStop={() => {setPanning(false)}}
-                                doubleClick={{disabled: true}}
-                                >
-                        <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
+                <TransformWrapper initialScale={zoom} 
+                                  onZoomStop={(z) => {setZoom(z.state.scale)}}
+                                  centerOnInit={true} 
+                                  limitToBounds={false} 
+                                  centerZoomedOut={true}
+                                  disabled={dragging}
+                                  onPanningStart={() => {setPanning(true)}}
+                                  onPanningStop={() => {setPanning(false)}}
+                                  doubleClick={{disabled: true}}>
+
+                    <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
                         {/* Large background grid that moves with transform */}
                         <div style={{
                             position: "absolute",
@@ -178,11 +227,35 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                      borderColor: "#0000003d"
                                 }}>
 
-                                <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv">
-                                    
-                                </div>
+                                {/* Hover highlight */}
+                                { hoveredElement !== undefined ? 
+                                <>
+                                    <svg style={{width: `${hoveredElement.width}px`, height: `${hoveredElement.height}`, position: "absolute", 
+                                top: `${hoveredElement.y}px`, left: `${hoveredElement.x}px`, zIndex: 100, vectorEffect: "non-scaling-stroke"}} pointerEvents={"none"} >
+                                    <rect width={"100%"} height={"100%"}
+                                    style={{stroke: `${Colors.BLUE3}`,
+                                    strokeWidth: "1px", fill: `none`, strokeDasharray: "1 1",}} ></rect>
+                                </svg> 
+                                {props.selectionMode === "draw" ? 
+                                <BindingsSelector element={hoveredElement} 
+                                    selectedStart={start} setStart={setStart}
+                                    selectedEnd={end} setEnd={setEnd}></BindingsSelector> : <></>}
+
+                                </>
+      
+                                : <></>}
+
+                                
+                                {/* Image */}
+                                <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv"></div>
+
+                                {/* Drop field */}
                                 <DropField></DropField>
+
+                                {/* Debug layers */}
                                 <Debug debugGroupSelection={debugSelectionTypes} debugSelection={debugElements}></Debug>
+
+                                {/* Draggable elements */}
                                 {
                                     selectedElement !== undefined ?
                                     <div style={{position: "absolute", 
@@ -213,11 +286,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         <Dialog style={{width: "400px"}}
             isOpen={debugDialogOpen}
             onClose={() => {setDebugDialogOpen(false)}}
-            title="Debug"
+            title="Debug Layers"
             canOutsideClickClose={true}
             canEscapeKeyClose={true} icon="wrench"
         >
-            <DialogBody style={{overflowY: "scroll"}}>
+            <DialogBody style={{}}>
                 <div style={{display: "flex", flexDirection: "column"}}>
                    <Checkbox label='Pulse columns' alignIndicator='end' checked={debugSelectionTypes['pulse columns']}
                             onChange={() => {handleSetDebugSelection("pulse columns")}}></Checkbox>

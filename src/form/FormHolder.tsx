@@ -326,6 +326,11 @@ export function FormHolder(props: FormHolderProps) {
                     <EntityTitle title={"Binds to this"} icon="bring-forward"></EntityTitle>
                     
                     <ObjectInspector data={props.target?.bindingsToThis.map((b) => b)}></ObjectInspector>
+
+                    <Divider style={{ marginBottom: "8px"}}></Divider>
+                    <EntityTitle title={"All elements"} icon="zoom-in"></EntityTitle>
+                    
+                    <ObjectInspector data={ENGINE.handler.allElements}></ObjectInspector>
                 </div>
             </DialogBody>
         </Dialog>

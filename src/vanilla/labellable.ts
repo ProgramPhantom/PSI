@@ -78,9 +78,9 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
 
     }
 
-    get id(): string {
-        return this.parentElement.id;
-    }
+    // get id(): string {
+    //     return this.parentElement.id;
+    // }
 
     bindLabel(label: Label) {
         if (this.labelDict[label.labelConfig.labelPosition] !== undefined) {

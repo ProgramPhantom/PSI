@@ -1,7 +1,7 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { Visual, IVisual, Offset, IDraw, doesDraw } from "./visual";
 import PaddedBox from "./paddedBox";
-import Point, { Place } from "./point";
+import Point, { ID, Place } from "./point";
 import Spacial, { Bounds, Dimensions } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS } from "react";
@@ -249,5 +249,16 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
 
     override get hasDimensions(): boolean {
         return true;
+    }
+
+    override get allElements(): Record<ID, Visual> {
+        var elements: Record<ID, Visual> = {[this.id]: this};
+
+        this.children.forEach((c) => {
+            if (c instanceof Visual) {
+                elements = {...elements, ...c.allElements}
+            }
+        })
+        return elements;
     }
 }

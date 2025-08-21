@@ -18,27 +18,33 @@ export interface Size {
 }
 
 export type SizeMethod = "given" | "inherited"
+export type SiteNames = "here" | "centre" | "far"
 
 export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
 export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number | undefined;
 
-export interface BindingRule {
+export interface IBindingRule {
     anchorSiteGetter?: BinderGetFunction,
     targetSiteSetter?: BinderSetFunction,
 
-    anchorSiteName: string,
-    targetSiteName: string,
+    anchorSiteName: SiteNames,
+    targetSiteName: SiteNames,
 
     dimension: Dimensions,
 }
 
-export interface Binding {
-    bindingRule: BindingRule,
+export interface IBinding {
+    bindingRule: IBindingRule,
     targetObject: Spacial,
     anchorObject: Spacial,
     offset?: number,
     bindToContent: boolean,
     hint?: string
+}
+
+export interface IBindingPayload {
+    anchorObject: Spacial,
+    bindingRule: IBindingRule
 }
 
 export type Dimensions = "x" | "y"
@@ -89,8 +95,8 @@ export default class Spacial extends Point implements ISpacial {
     protected _contentWidth?: number;
     protected _contentHeight?: number;
     
-    override bindings: Binding[] = [];
-    override bindingsToThis: Binding[] = [];
+    override bindings: IBinding[] = [];
+    override bindingsToThis: IBinding[] = [];
 
     constructor(x?: number, y?: number, width?: number, height?: number, ref: string="spacial") {
         super(x, y, ref);
@@ -192,7 +198,7 @@ export default class Spacial extends Point implements ISpacial {
     public sizeSource: Record<Dimensions, SizeMethod> = {"x": "given", "y": "given"};
 
     public clearBindings(dimension: Dimensions) {
-        var toRemove: Binding[] = [];
+        var toRemove: IBinding[] = [];
         for (var bind of this.bindings) {
             if (bind.bindingRule.dimension === dimension) {
                 toRemove.push(bind);
@@ -205,7 +211,7 @@ export default class Spacial extends Point implements ISpacial {
     }
 
     public clearBindsTo(target: Spacial, dimension?: Dimensions) {
-        var toRemove: Binding[] = [];
+        var toRemove: IBinding[] = [];
         for (var bind of this.bindings) {
             if (bind.targetObject === target && ((bind.bindingRule.dimension === dimension) || dimension === undefined)) {
                 toRemove.push(bind);
@@ -239,14 +245,14 @@ export default class Spacial extends Point implements ISpacial {
                     b.bindToContent = bindToContent;
                     b.offset = offset;
                 } else {  // Stretchy === true
-                    var newBindingRule: BindingRule = {
+                    var newBindingRule: IBindingRule = {
                         anchorSiteName: anchorBindSide,
                         targetSiteName: targetBindSide,
                         dimension: dimension,
                     };
                     hint += " (stretch)";
 
-                    var newBinding: Binding = {targetObject: target, anchorObject: this, 
+                    var newBinding: IBinding = {targetObject: target, anchorObject: this, 
                         bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint}
                     this.bindings.push(newBinding);
                     target.bindingsToThis.push(newBinding);
@@ -255,13 +261,13 @@ export default class Spacial extends Point implements ISpacial {
 
 
         if (!found) {
-            var newBindingRule: BindingRule = {
+            var newBindingRule: IBindingRule = {
                 anchorSiteName: anchorBindSide,
                 targetSiteName: targetBindSide,
                 dimension: dimension,
             };
 
-            var newBinding: Binding = {targetObject: target, anchorObject: this, 
+            var newBinding: IBinding = {targetObject: target, anchorObject: this, 
                 bindingRule: newBindingRule, offset: offset, bindToContent: bindToContent, hint: hint}
 
             this.bindings.push(newBinding);

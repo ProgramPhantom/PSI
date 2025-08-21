@@ -18,6 +18,9 @@ import { ILabel } from "./label";
 import { ElementTypes, ID } from "./point";
 import { ElementType } from "react";
 import { IMountConfig } from "./mountable";
+import { IBinding, IBindingPayload } from "./spacial";
+import Arrow from "./arrow";
+import { PointBind } from "../BindingsSelector";
 
 
 export type ElementBundle = IVisual & Partial<ILabellable>
@@ -49,7 +52,6 @@ export default class SequenceHandler {
  
     sequence: Sequence;
     // parser: Parser;
-
     surface?: Svg;
 
     get id(): string {
@@ -65,6 +67,10 @@ export default class SequenceHandler {
 
     get channels(): Channel[] {return this.sequence.channels}
     hasChannel(name: string): boolean {return this.sequence.channelIDs.includes(name)}
+
+    get allElements(): Record<ID, Visual> {
+        return this.sequence.allElements
+    }
 
     constructor(surface: Svg, emitChange: () => void) {
         this.syncExternal = emitChange;
@@ -241,14 +247,7 @@ export default class SequenceHandler {
     public identifyElement(id: string): Visual | undefined {
         var element: Visual | undefined = undefined;
 
-        // Search for element:
-        this.channels.forEach((c) => {
-            c.mountedElements.forEach((p) => {
-                if (p.id === id) {
-                    element = p;
-                }
-            })
-        })
+        element = this.allElements[id]
 
         if (element === undefined) {
             console.warn(`Cannot find element "${id}"`);
@@ -266,7 +265,20 @@ export default class SequenceHandler {
         }
     }
 
+    public createArrow(startBinds: PointBind, endBinds: PointBind) {
+        var newArrow: Arrow = new Arrow({});
 
+        startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here");
+        startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here");
+        startBinds["x"].anchorObject.enforceBinding();
+
+        endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far");
+        endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far");
+        endBinds["x"].anchorObject.enforceBinding()
+
+        this.sequence.addFreeArrow(newArrow);
+        this.draw()
+    }
     /* Interaction commands:
     Add a positional element by providing elementName, channel name, and partial positional interface.
     Function uses element name to lookup default parameters and replaces with those provided */

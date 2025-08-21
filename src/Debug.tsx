@@ -24,7 +24,7 @@ const Debug: React.FC<IDebug> = (props) => {
             if (!visible) {return}
             switch (componentType) {
                 case "element":
-                    return ENGINE.handler.sequence.allElements.map((e) => {
+                    return ENGINE.handler.sequence.allPulseElements.map((e) => {
                         return <PaddedBoxDebug element={e}></PaddedBoxDebug>
                     })
                     break;

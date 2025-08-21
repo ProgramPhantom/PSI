@@ -7,6 +7,7 @@ import VisualForm from '../form/VisualForm'
 import Labellable from './labellable'
 import PaddedBox from './paddedBox'
 import Mountable from './mountable'
+import { ID } from './point'
 
 
 type Padding = number | [number, number] | [number, number, number, number]
@@ -45,6 +46,9 @@ export abstract class Visual extends Mountable implements IVisual {
         offset: this.offset,
         ref: this.ref
     }}
+    get allElements(): Record<ID, Visual> {
+        return {[this.id]: this};
+    }
 
     offset: [number, number];
 
@@ -176,4 +180,6 @@ export abstract class Visual extends Mountable implements IVisual {
     static isLabellable(val: Visual): val is Labellable {
         return (val as Labellable).labels !== undefined
     }
+
+
 }

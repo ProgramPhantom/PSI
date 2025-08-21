@@ -2,7 +2,7 @@ import { Visual, IVisual as IVisual, Display } from "./visual";
 import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import TeXToSVG from "tex-to-svg";
 import defaultText from "./default/data/text.json";
-import { FillObject, posPrecision, RecursivePartial, sizePrecision, UpdateObj } from "./util";
+import { cascadeID, FillObject, posPrecision, RecursivePartial, sizePrecision, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 
 export const EXTOPX = 38.314;
@@ -121,6 +121,8 @@ export default class Text extends Visual implements IText {
         if (this.style.background) {
             group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
         }
+
+        cascadeID(this.svg, this.id)
      }
     
     // TODO: investigate this

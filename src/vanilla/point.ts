@@ -1,6 +1,6 @@
 import Aligner from "./aligner";
 import logger, { Operations } from "./log";
-import Spacial, { Binding, Dimensions } from "./spacial";
+import Spacial, { IBinding, Dimensions } from "./spacial";
 import { posPrecision } from "./util";
 
 export type ElementTypes = "abstract" | "visual" | "channel" | "labelled" | "svg" | "rect"
@@ -61,8 +61,8 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
 
     ref: string;
 
-    bindings: Binding[] = [];  // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
-    bindingsToThis: Binding[] = [];
+    bindings: IBinding[] = [];  // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
+    bindingsToThis: IBinding[] = [];
 
     displaced: boolean=false;
 
@@ -125,4 +125,6 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
             return this._y;
         }
     }
+
+
 }

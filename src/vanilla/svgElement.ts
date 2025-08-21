@@ -1,6 +1,6 @@
 import { Visual, IVisual, IDraw } from "./visual";
 import { svgPulses } from "./default/data/svgPulse";
-import { FillObject, RecursivePartial } from "./util";
+import { cascadeID, FillObject, RecursivePartial } from "./util";
 import { Element, Svg } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
@@ -97,6 +97,7 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 		this.svg.children().forEach((c) => {
 			c.attr({"vector-effect": "non-scaling-stroke"})
 		})
+		cascadeID(this.svg, this.id);
 	}
 
 	override getInternalRepresentation(): Element | undefined {

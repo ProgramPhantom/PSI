@@ -1,4 +1,6 @@
+import { Element } from "@svgdotjs/svg.js";
 import { Visual } from "./visual";
+import { ID } from "./point";
 
 function isEmpty(obj: any) {
   for (var prop in obj) {
@@ -67,4 +69,11 @@ export function posPrecision(val: number): number {
 
 export function sizePrecision(val: number) : number {
   return Math.round(val);
+}
+
+export function cascadeID(el: Element, id: ID) {
+    el.children().forEach((e) => {
+      e.attr({"id": id})
+      cascadeID(e, id);
+    })
 }

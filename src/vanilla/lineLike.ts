@@ -4,7 +4,7 @@ import defaultLineLike from "./default/data/lineLike.json";
 import { Svg } from "@svgdotjs/svg.js";
 import Text from "./text";
 import PaddedBox from "./paddedBox";
-import Spacial, { BindingRule, Dimensions } from "./spacial";
+import Spacial, { IBindingRule, Dimensions } from "./spacial";
 
 enum Orientation {
     horizontal="horizontal",

@@ -28,13 +28,8 @@ ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 export const myToaster: Toaster = await OverlayToaster.create({ position: "bottom",  });
 
 
-const style = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  border: "solid 1px #ddd",
-  background: "#f0f0f0"
-};
+export type SelectionMode = "select" | "draw";
+
 
 function App() {
   console.log("CREATING APP")
@@ -45,8 +40,9 @@ function App() {
   const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>("select");
 
-  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement}></Canvas>
+  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectionMode={selectionMode}></Canvas>
 
   function SaveSVG() {
     throw new Error("Not implemented")
@@ -79,12 +75,13 @@ function App() {
 
       <div style={{display: "flex", height: "100%", width: "100%", flexDirection: "column"}}>
         <div style={{width: "100%"}}>
-          <Banner saveSVG={SaveSVG} saveScript={SaveScript} openConsole={openConsole}></Banner>
+          <Banner saveSVG={SaveSVG} saveScript={SaveScript} openConsole={openConsole} 
+          selection={{selectionMode: selectionMode, setSelectionMode: setSelectionMode}}></Banner>
         </div>
         
         <div style={{display: "flex", height: "100%", width: "100%"}}>
           <div style={{flex: "1 1", height: "100%", display: "flex", flexDirection: "column"}}>
-            <div style={{height: "100%", position: "relative"}} >
+            <div style={{height: "100%", position: "relative", cursor: selectionMode === "select" ? "default" : "crosshair"}} >
               {canvas}
             </div>
             
@@ -94,8 +91,6 @@ function App() {
                   <ElementsDraw></ElementsDraw>
                 </ComponentResizer>
               </div>
-            
-
           </div>
 
 

@@ -1,9 +1,16 @@
-import { Alignment, Button, ButtonGroup, Icon, Navbar } from '@blueprintjs/core'
+import { Alignment, Button, ButtonGroup, Checkbox, Classes, EntityTitle, Icon, Navbar, Popover } from '@blueprintjs/core'
 import React, { useEffect, useRef, useState } from 'react'
 import DraggableElement from './dnd/DraggableElement'
+import { SelectionMode } from './App'
 
+export interface IBannerProps {
+    saveSVG: () => void, 
+    saveScript: () => void, 
+    openConsole: () => void,
+    selection: {selectionMode: SelectionMode, setSelectionMode: React.Dispatch<React.SetStateAction<SelectionMode>>}
+}
 
-export default function Banner(props: {saveSVG: () => void, saveScript: () => void, openConsole: () => void}) {
+export default function Banner(props: IBannerProps) {
     return (
         <>
         <Navbar>
@@ -16,10 +23,20 @@ export default function Banner(props: {saveSVG: () => void, saveScript: () => vo
                 <Button size="small" variant="minimal" icon="cloud-download" text="Save SVG" onClick={props.saveSVG} disabled={true}/>
                 <Navbar.Divider />
                 <Button size="small" variant="minimal" icon="media" text="Save JPG" onClick={props.saveScript} disabled={true}/>
+
+                <Navbar.Divider />
+                <Popover renderTarget={({isOpen, ...targetProps}) => (
+                    <Button {...targetProps} size="small" variant="minimal" icon="new-link" text="Annotate" />
+                )} interactionKind='click' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
+                content={<div>
+                    
+                    <Checkbox label='Draw Line' onClick={() => props.selection.setSelectionMode(props.selection.selectionMode === "select" ? "draw" : "select")} 
+                    checked={props.selection.selectionMode === "select" ? false : true}></Checkbox>
+                </div>} onClose={() => {}}></Popover>
                 
             </Navbar.Group>
             
-            <Navbar.Group align={Alignment.RIGHT}>
+            <Navbar.Group align={"right"}>
                 <Button 
                     size="small" 
                     variant="minimal" 
