@@ -323,12 +323,9 @@ export default class SequenceHandler {
 
         var columnRemoved: boolean = false;
         // Find which channel owns this element:
-        try {
-            columnRemoved = this.sequence.deleteMountedElement(target, removeColumn);
-        } catch (e) {
-            console.error(e)
-            return false;
-        }
+        
+        columnRemoved = this.sequence.deleteMountedElement(target, removeColumn);
+
 
         this.draw();
         return columnRemoved;

@@ -157,7 +157,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         var index: number | -1 = this.children.indexOf(target);
 
         if (index === -1) {
-            console.warn(`Failed to remove child ${target.ref} from aligner ${this.ref}`)
+            throw new Error(`Failed to remove child ${target.ref} from aligner ${this.ref}`)
             return false
         }
 

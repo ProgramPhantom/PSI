@@ -178,7 +178,7 @@ export default class Sequence extends Collection {
 
         targets.forEach((t, i) => {
             if (t && ((ifEmpty && t.children.length === 0) || !ifEmpty)) {
-                var INDEX = this.pulseColumns.children.indexOf(t);
+                var INDEX: number = this.pulseColumns.children.indexOf(t);
                 this.pulseColumns.remove(t);
                 columnsRemoved += 1
                 
@@ -271,10 +271,6 @@ export default class Sequence extends Collection {
                 throw new Error(`Cannot place element ${element.ref} at index ${element.mountConfig.index} as it is already occupied.`)
             }
         }
-        
-        
-        
-   
 
         if (element.mountConfig.noSections > 1) {
             // Add dummies

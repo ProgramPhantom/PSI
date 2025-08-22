@@ -88,10 +88,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         var targetSVGId: string | undefined;
         targetSVGId = (click.target as HTMLElement).id;
         
-        // If target is path
-        if (targetSVGId === "") {
-            targetSVGId = (click.target as HTMLElement).parentElement?.id
-        }
+        // // If target is path
+        // if (targetSVGId === "") {
+        //     targetSVGId = (click.target as HTMLElement).parentElement?.id
+        // }
         
         if (targetSVGId === undefined) { 
             console.warn(`Cannot find id for ${click}`);

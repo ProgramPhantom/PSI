@@ -174,7 +174,10 @@ export default class Channel extends Collection {
                 this.upperAligner.add(element);
                 break;
             case Orientation.both:
-                throw new Error("Not implemented");
+                this.bar.bind(element, "y", "centre", "centre")
+                this.add(element);
+                this.bar.enforceBinding()
+                break;
             case Orientation.bottom:
                 this.lowerAligner.add(element);
                 break;
@@ -199,7 +202,8 @@ export default class Channel extends Collection {
                 this.lowerAligner.remove(element);
                 break;
             case Orientation.both:
-                throw new Error(`Not implemented`)
+                this.bar.clearBindsTo(element);
+                break;
             default:
                 throw new Error(`Unknown element orientation '${element.mountConfig?.orientation}`);
         }

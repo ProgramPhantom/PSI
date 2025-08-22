@@ -60,10 +60,18 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
         this._contentHeight = parent.contentHeight!;
         this._contentWidth = parent.contentWidth!;
 
-        this.mountConfig = parent.mountConfig;
-        this.ref = parent.ref + "(parent)";
+        this.mountConfig = {...parent.mountConfig!};
+        // parent.mountConfig = undefined;
+
+        var ref = parent.ref;
+        parent.ref = parent.ref + "-child"
+        this.ref = ref;
+
+        this.id = parent.id;
+        parent.id = parent.id + "-child"
 
         this.parentElement = parent;
+
         this.add(parent, undefined, true);
 
         fullParams.labels?.forEach((label) => {
