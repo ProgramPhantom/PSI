@@ -8,29 +8,17 @@ import Annotation from "./annotation";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 import Collection, { ICollection } from "./collection";
-import Point, { ElementTypes } from "./point";
 import Spacial, { Dimensions } from "./spacial";
 import RectElement, { IRectStyle } from "./rectElement";
 import Aligner from "./aligner";
 import { Alignment, IMountable, IMountConfig, Orientation } from "./mountable";
 import Labellable from "./labellable";
 import { OccupancyStatus } from "./sequence";
+import { DiagramComponent, IHaveStructure } from "./sequenceHandler";
+import ChannelForm from "../form/ChannelForm";
  
-interface Dim {
-    width: number,
-    height: number
-}
 
-interface Bounds {
-    top: number,
-    bottom: number,
-    left: number,
-    right: number
-
-    width: number,
-    height: number,
-}
-
+export type ChannelStructure = "top aligner" | "bottom aligner"
 
 export interface IChannel extends ICollection {
     positionalElements: IVisual[],
@@ -53,16 +41,19 @@ export interface channelAnnotation {
 }
 
 
-export default class Channel extends Collection {
+export default class Channel extends Collection implements IHaveStructure {
     static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
-    static ElementType: ElementTypes = "channel"; 
+    static ElementType: DiagramComponent = "channel";
+    static form: React.FC = ChannelForm;
+    
+    structure: Record<ChannelStructure, Visual>;
 
     style: IChannelStyle;
 
     // Upper and Lower aligners are responsible for binding the elements to the bar,
     // and carrying a height used to structure the channel.
-    public upperAligner: Aligner<Visual>;
-    public lowerAligner: Aligner<Visual>;
+    public topAligner: Aligner<Visual>;
+    public bottomAligner: Aligner<Visual>;
 
     bar: RectElement;
 
@@ -75,8 +66,8 @@ export default class Channel extends Collection {
 
         this._labelColumn.bind(this.bar, "x", "far", "here");  // Bind X of bar
 
-        this.labelColumn.bind(this.upperAligner, "x", "here", "here", undefined);
-        this.labelColumn.bind(this.lowerAligner, "x", "here", "here", undefined);
+        this.labelColumn.bind(this.topAligner, "x", "here", "here", undefined);
+        this.labelColumn.bind(this.bottomAligner, "x", "here", "here", undefined);
 
         if (this.label) {
             this._labelColumn.add(this.label)
@@ -132,17 +123,17 @@ export default class Channel extends Collection {
         this.padding = fullParams.padding;
         // SIDE PADDING is not permitted for channels as it would break alignment
 
-        this.upperAligner = new Aligner({axis: "x", alignment: Alignment.far, minCrossAxis: 30, ref: `top aligner`}, "default");
-        this.add(this.upperAligner, undefined, true)
+        this.topAligner = new Aligner({axis: "x", alignment: Alignment.far, minCrossAxis: 30, ref: `top aligner`}, "default");
+        this.add(this.topAligner, undefined, true)
         
         this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle, ref: "bar"}, "bar");
-        this.upperAligner.bind(this.bar, "y", "far", "here");
+        this.topAligner.bind(this.bar, "y", "far", "here");
         this.bar.sizeSource.x = "inherited";
         this.add(this.bar);
 
-        this.lowerAligner = new Aligner({axis: "x", alignment: Alignment.here, minCrossAxis: 20, ref: "bottom aligner"}, "default");
-        this.bar.bind(this.lowerAligner, "y", "far", "here");
-        this.add(this.lowerAligner);
+        this.bottomAligner = new Aligner({axis: "x", alignment: Alignment.here, minCrossAxis: 20, ref: "bottom aligner"}, "default");
+        this.bar.bind(this.bottomAligner, "y", "far", "here");
+        this.add(this.bottomAligner);
         
         
         // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
@@ -153,6 +144,11 @@ export default class Channel extends Collection {
             this.bar.bind(this.label, "y", "centre", "centre");
 
             this.add(this.label);
+        }
+
+        this.structure = {
+            "top aligner": this.topAligner,
+            "bottom aligner": this.bottomAligner
         }
     }
 
@@ -171,7 +167,7 @@ export default class Channel extends Collection {
         // ---- Bind to the upper and lower aligners for Y ONLY
         switch (config.orientation) {
             case Orientation.top:
-                this.upperAligner.add(element);
+                this.topAligner.add(element);
                 break;
             case Orientation.both:
                 this.bar.bind(element, "y", "centre", "centre")
@@ -179,7 +175,7 @@ export default class Channel extends Collection {
                 this.bar.enforceBinding()
                 break;
             case Orientation.bottom:
-                this.lowerAligner.add(element);
+                this.bottomAligner.add(element);
                 break;
         }
     }
@@ -196,10 +192,10 @@ export default class Channel extends Collection {
         // Remove from aligner (yes one of these is redundant)
         switch (element.mountConfig?.orientation) {
             case Orientation.top:
-                this.upperAligner.remove(element);
+                this.topAligner.remove(element);
                 break;
             case Orientation.bottom:
-                this.lowerAligner.remove(element);
+                this.bottomAligner.remove(element);
                 break;
             case Orientation.both:
                 this.bar.clearBindsTo(element);

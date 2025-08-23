@@ -13,20 +13,58 @@ import { Tick } from '@blueprintjs/icons';
 import { SelectionMode } from './App';
 import BindingsDebug from './debug/Bindings';
 import BindingsSelector, { PointBind } from './BindingsSelector';
+import Labellable from './vanilla/labellable';
+import Collection from './vanilla/collection';
+import { ID } from './vanilla/point';
+import { DiagramComponent, DiagramStructure, DrawComponent } from './vanilla/sequenceHandler';
 
  
-export type ImageComponent = "element" | "pulse columns"| "channels" | "label column" | "upper aligner" | "lower aligner" | "sequence"
-const DefaultDebugSelection: Record<ImageComponent, boolean> = {
-    "element": false,
+
+
+const DefaultDebugSelection: Record<DiagramComponent, boolean> = {
+    "abstract": false,
+    "svg": false,
+    "text": false,
+    "arrow": false,
+    "rect": false,
     "pulse columns": false,
-    "channels": false,
+    "channel": false,
     "label column": false,
-    "upper aligner": false,
-    "lower aligner": false,
-    "sequence": false
+    "top aligner": false,
+    "bottom aligner": false,
+    "sequence": false,
+
+    "label col | pulse columns": false,
+    "channel column": false,
+    "labellable": false,
+    "label": false,
 }
 
-
+type HoverBehaviour = "terminate" | "carry" | "conditional"
+// Terminate: return this object immediately
+// Carry: always pass to parent
+// Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
+const FocusLevels: Record<number, Record<HoverBehaviour, DiagramComponent[]>> = {
+    0: {
+        terminate: [
+            "labellable",
+            "channel"
+        ],
+        carry: [
+            "label",
+            "text"
+        ],
+        conditional: [
+            "svg",
+            "rect"
+        ]
+    },
+    1: {
+        terminate: [],
+        carry: [],
+        conditional: []
+    }
+}
 
 
 interface ICanvasProps {
@@ -38,11 +76,14 @@ interface ICanvasProps {
 const Canvas: React.FC<ICanvasProps> = (props) => {
     const [debugDialogOpen, setDebugDialogOpen] = useState(false);
     const [debugElements, setDebugElements] = useState<Visual[]>([]);
-    const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<ImageComponent, boolean>>(DefaultDebugSelection);
+    const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<DiagramComponent, boolean>>(DefaultDebugSelection);
     const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 
     const [start, setStart] = useState<PointBind | undefined>(undefined);
     const [end, setEnd] = useState<PointBind | undefined>(undefined);
+
+    var structuralElements: Record<ID, Visual> = ENGINE.handler.structuralElements;
+    const [focusLevel, setFocusLevel] = useState(0);
 
     const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
         () => [
@@ -57,8 +98,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         [debugDialogOpen],
     );
     const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
-    function handleSetDebugSelection(type: ImageComponent) {
-        var newDebugSelection: Record<ImageComponent, boolean> = {...debugSelectionTypes}
+    function handleSetDebugSelection(type: DiagramComponent) {
+        var newDebugSelection: Record<DiagramComponent, boolean> = {...debugSelectionTypes}
         newDebugSelection[type] = !newDebugSelection[type]
         setDebugSelectionTypes(newDebugSelection);
     }
@@ -76,35 +117,25 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
     function deselect() {
         selectedElement?.svg?.show();
+        setFocusLevel(0);
         props.select(undefined);
     }
 
     function select(e: Visual) {
         props.select(e);
+        setFocusLevel(focusLevel + 1)
         e.svg?.hide();
     }
 
     function doubleClick(click: React.MouseEvent<HTMLDivElement>) {
         var targetSVGId: string | undefined;
         targetSVGId = (click.target as HTMLElement).id;
-        
-        // // If target is path
-        // if (targetSVGId === "") {
-        //     targetSVGId = (click.target as HTMLElement).parentElement?.id
-        // }
-        
-        if (targetSVGId === undefined) { 
-            console.warn(`Cannot find id for ${click}`);
-            deselect()
-            return
-        } else {
-            var element: Visual | undefined = ENGINE.handler.identifyElement(targetSVGId);
 
-            if (element === undefined) {
-                console.warn(`Cannot find element with id: ${targetSVGId}`)
-                deselect()
-                return
-            }
+        var element: Visual | undefined = getMouseElement(targetSVGId)
+        
+        if (element === undefined) { 
+            deselect()
+        } else {
             select(element)
         }
     }
@@ -124,18 +155,49 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         var targetSVGId: string | undefined;
         targetSVGId = (over.target as HTMLElement).id;
         
-        // If target is path
-        // if (targetSVGId === "") {
-        //     targetSVGId = (over.target as HTMLElement).parentElement?.id
-        // }    
-
-        var element: Visual | undefined;
-        if (targetSVGId !== undefined) {
-            console.log(`id: ${targetSVGId}`)
-            element = ENGINE.handler.identifyElement(targetSVGId);
-            console.log(element)
-        }
+        var element: Visual | undefined = getMouseElement(targetSVGId)
+        
         setHoveredElement(element);
+    }
+
+    function getMouseElement(id: ID | undefined): Visual | undefined {
+        if (id === undefined) {return undefined}
+        var initialElement: Visual | undefined = ENGINE.handler.identifyElement(id);
+        if (initialElement === undefined) {return undefined}
+
+        var terminators: DiagramComponent[] = FocusLevels[focusLevel].terminate;
+        var carry: DiagramComponent[] = FocusLevels[focusLevel].carry;
+        var conditional: DiagramComponent[] = FocusLevels[focusLevel].conditional;
+
+        function walkUp(currElement: Visual): Visual | undefined {
+            if (currElement.parentId !== undefined) {
+                var elementUp: Visual | undefined = ENGINE.handler.identifyElement(currElement.parentId);
+            } else {
+                return currElement
+            }
+            
+            if (elementUp === undefined) { return currElement }
+            
+            var currElementType: DiagramComponent = (currElement.constructor as typeof Visual).ElementType;
+            var elementUpType: DiagramComponent = (elementUp.constructor as typeof Visual).ElementType;
+            if (currElementType === "text") {
+                console.log()
+            }
+
+            if (terminators.includes(currElementType)) {
+                return currElement
+            }
+            if (conditional.includes(currElementType) && !terminators.includes(elementUpType)) {
+                return currElement;
+            }
+            
+            elementUp = walkUp(elementUp);
+            
+            
+            return elementUp
+        }
+
+        return walkUp(initialElement);
     }
 
     function handleFileNameChange(newFileName: string) {
@@ -294,20 +356,20 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                 <div style={{display: "flex", flexDirection: "column"}}>
                    <Checkbox label='Pulse columns' alignIndicator='end' checked={debugSelectionTypes['pulse columns']}
                             onChange={() => {handleSetDebugSelection("pulse columns")}}></Checkbox>
-                   <Checkbox label='Elements' alignIndicator='end' checked={debugSelectionTypes['element']} 
-                             onChange={() => {handleSetDebugSelection("element")}}></Checkbox>
+                   <Checkbox label='Elements' alignIndicator='end' checked={debugSelectionTypes['rect']} 
+                             onChange={() => {handleSetDebugSelection("svg")}}></Checkbox>
 
                    <Checkbox label='Label Column' alignIndicator='end' checked={debugSelectionTypes['label column']} 
                              onChange={() => {handleSetDebugSelection("label column")}}></Checkbox>
 
-                   <Checkbox label='Channels' alignIndicator='end' checked={debugSelectionTypes['channels']} 
-                             onChange={() => {handleSetDebugSelection("channels")}}></Checkbox>
+                   <Checkbox label='Channels' alignIndicator='end' checked={debugSelectionTypes['channel']} 
+                             onChange={() => {handleSetDebugSelection("channel")}}></Checkbox>
 
-                    <Checkbox label='Upper aligners' alignIndicator='end' checked={debugSelectionTypes['upper aligner']} 
-                             onChange={() => {handleSetDebugSelection('upper aligner')}}></Checkbox>
+                    <Checkbox label='Upper aligners' alignIndicator='end' checked={debugSelectionTypes['top aligner']} 
+                             onChange={() => {handleSetDebugSelection('top aligner')}}></Checkbox>
 
-                    <Checkbox label='Lower aligners' alignIndicator='end' checked={debugSelectionTypes['lower aligner']} 
-                             onChange={() => {handleSetDebugSelection("lower aligner")}}></Checkbox>
+                    <Checkbox label='Lower aligners' alignIndicator='end' checked={debugSelectionTypes['bottom aligner']} 
+                             onChange={() => {handleSetDebugSelection("bottom aligner")}}></Checkbox>
 
                     <Checkbox label='Sequence' alignIndicator='end' checked={debugSelectionTypes['sequence']} 
                              onChange={() => {handleSetDebugSelection("sequence")}}></Checkbox>

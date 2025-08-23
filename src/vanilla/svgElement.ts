@@ -6,8 +6,9 @@ import { SVG } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
 import { Orientation } from "./mountable";
 import Labellable, { ILabellable } from "./labellable";
-import { ElementTypes } from "./point";
 import SVGElementForm from "../form/SVGElementForm";
+import { Rect } from "@svgdotjs/svg.js";
+import { VisualComponent } from "./sequenceHandler";
 
 // ----------- TEMPORARY ---------------
 const svgContent: {[path: string]: string} = {}
@@ -58,7 +59,7 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 		mountConfig: this.mountConfig,
 		ref: this.ref
     }}
-	static ElementType: ElementTypes = "svg"; 
+	static ElementType: VisualComponent = "svg"; 
 	static form: React.FC = SVGElementForm;
 
 	elementGroup: G = new G();
@@ -146,6 +147,14 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 			// Position, size and draw svg.
 			this.svg.move(this.drawX, this.drawY);
 			this.svg.size(this.contentWidth, this.contentHeight);
+
+			var hitbox = new Rect().attr({"data-editor": "hitbox", "zIndex": -1}).x(0).y(0)
+								   .width("100%").height("100%").fill("transparent").id(this.id)
+								   .stroke("none")
+								   
+			this.svg.add(hitbox);
+			
+					
 
 			surface.add(this.svg);
 		}

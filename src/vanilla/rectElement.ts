@@ -6,8 +6,8 @@ import defaultBar from "./default/data/bar.json";
 import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
 import { Element } from "@svgdotjs/svg.js";
-import { ElementTypes } from "./point";
 import RectElementForm from "../form/RectForm";
+import { DiagramComponent } from "./sequenceHandler";
 
 export interface IRectStyle {
 	fill: string,
@@ -34,7 +34,7 @@ export default class RectElement extends Visual implements IRect, IDraw {
         ref: this.ref,
         mountConfig: this.mountConfig
     }}
-    static ElementType: ElementTypes = "rect";
+    static ElementType: DiagramComponent = "rect";
     static form: React.FC = RectElementForm;
 
 	style: IRectStyle;	

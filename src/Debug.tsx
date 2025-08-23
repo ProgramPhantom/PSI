@@ -7,12 +7,12 @@ import BindingsDebug from "./debug/Bindings"
 import PaddedBox from "./vanilla/paddedBox"
 import Labellable from "./vanilla/labellable"
 import { Visual } from "./vanilla/visual"
-import { ImageComponent } from "./Canvas"
+import { DiagramComponent } from "./Canvas"
 import ENGINE from "./vanilla/engine"
 import { Colors } from "@blueprintjs/core"
 
 interface IDebug {
-    debugGroupSelection: Record<ImageComponent, boolean>;
+    debugGroupSelection: Record<DiagramComponent, boolean>;
     debugSelection: Visual[];
 }
 
@@ -38,11 +38,11 @@ const Debug: React.FC<IDebug> = (props) => {
                     })
                 case "upper aligner":
                     return ENGINE.handler.sequence.channels.map((c) => {
-                        return <PaddedBoxDebug element={c.upperAligner} contentColour={Colors.VIOLET3}></PaddedBoxDebug>
+                        return <PaddedBoxDebug element={c.topAligner} contentColour={Colors.VIOLET3}></PaddedBoxDebug>
                     })
                 case "lower aligner":
                     return ENGINE.handler.sequence.channels.map((c) => {
-                        return <PaddedBoxDebug element={c.lowerAligner} contentColour={Colors.GREEN5}></PaddedBoxDebug>
+                        return <PaddedBoxDebug element={c.bottomAligner} contentColour={Colors.GREEN5}></PaddedBoxDebug>
                     })
                 case "sequence":
                     return <PaddedBoxDebug element={ENGINE.handler.sequence} contentColour={Colors.LIME2}></PaddedBoxDebug>

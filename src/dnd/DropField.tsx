@@ -67,7 +67,7 @@ class SequenceDropInterpreter {
                         area: {x: column.x - this.slitherWidth/2, 
                             y: channel.y, 
                             width: this.slitherWidth, 
-                            height: channel.upperAligner.contentHeight! + channel.padding[0]},
+                            height: channel.topAligner.contentHeight! + channel.padding[0]},
                         index: columnIndex, orientation: Orientation.top, channelID: name, insert: true,
                     };
                     this.insertAreas.push(newSlither)
@@ -75,9 +75,9 @@ class SequenceDropInterpreter {
                     // bottom slither
                     newSlither = {
                         area: {x: column.x - this.slitherWidth/2, 
-                            y: channel.lowerAligner.y, 
+                            y: channel.bottomAligner.y, 
                             width: this.slitherWidth, 
-                            height: channel.lowerAligner.contentHeight! + channel.padding[2]},
+                            height: channel.bottomAligner.contentHeight! + channel.padding[2]},
                         index: columnIndex, orientation: Orientation.bottom, channelID: name, insert: true
                     };
                     this.insertAreas.push(newSlither)
@@ -85,8 +85,8 @@ class SequenceDropInterpreter {
 
                 if (!occupied) {  // Top block
                     var columnWidth = column.contentWidth === undefined ? 0 : column.contentWidth;
-                    var upperAlignerHeight = channel.upperAligner.contentHeight === undefined ? 0 : channel.upperAligner.contentHeight;
-                    var lowerAlignerHeight = channel.lowerAligner.contentHeight === undefined ? 0 : channel.lowerAligner.contentHeight;
+                    var upperAlignerHeight = channel.topAligner.contentHeight === undefined ? 0 : channel.topAligner.contentHeight;
+                    var lowerAlignerHeight = channel.bottomAligner.contentHeight === undefined ? 0 : channel.bottomAligner.contentHeight;
 
                     let newBlock: AddSpec = {
                         area: {x: column.x + this.slitherWidth / 2, 
@@ -99,7 +99,7 @@ class SequenceDropInterpreter {
                     // Bottom block
                     newBlock = {
                         area: {x: column.x + this.slitherWidth / 2, 
-                               y: channel.lowerAligner.y, 
+                               y: channel.bottomAligner.y, 
                                width: columnWidth - this.slitherWidth, 
                                height: lowerAlignerHeight}, 
                         index: columnIndex, orientation: Orientation.bottom, channelID: name, insert: false}
@@ -117,8 +117,8 @@ class SequenceDropInterpreter {
         // insert end slithers:
         Object.entries(sequence.channelsDic).forEach(([name, channel]) => {
                 // insert end slithers
-                var upperAlignerHeight = channel.upperAligner.contentHeight === undefined ? 0 : channel.upperAligner.contentHeight;
-                var lowerAlignerHeight = channel.lowerAligner.contentHeight === undefined ? 0 : channel.lowerAligner.contentHeight;
+                var upperAlignerHeight = channel.topAligner.contentHeight === undefined ? 0 : channel.topAligner.contentHeight;
+                var lowerAlignerHeight = channel.bottomAligner.contentHeight === undefined ? 0 : channel.bottomAligner.contentHeight;
 
                 
                 // Top slither
@@ -134,7 +134,7 @@ class SequenceDropInterpreter {
                 // bottom slither
                 newSlither = {
                     area: {x: column.getFar("x") ?? 0 - this.slitherWidth/2, 
-                           y: channel.lowerAligner.y, 
+                           y: channel.bottomAligner.y, 
                            width: this.slitherWidth, 
                            height: lowerAlignerHeight + channel.padding[2]},
                     index: i+1, orientation: Orientation.bottom, channelID: name, insert: true

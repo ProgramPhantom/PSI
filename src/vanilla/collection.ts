@@ -9,6 +9,8 @@ import logger, { Operations, Processes } from "./log";
 import { SVG } from "@svgdotjs/svg.js";
 import { Element } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
+import { Rect } from "@svgdotjs/svg.js";
+import Labellable from "./labellable";
 
 
 export interface ICollection extends IVisual {
@@ -27,6 +29,10 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         },
     }
 
+    static structure = {
+
+    }
+
     _parentElement?: T;
     children: T[] = [];
     childBounds: Bounds = {top: 0, bottom: 0, left: 0, right: 0};
@@ -43,6 +49,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
 
         var group = new G().id(this.id).attr({"title": this.ref});
 
+
         this.children.forEach((c) => {
             if (doesDraw(c)) {
                 c.draw(group);
@@ -51,10 +58,12 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
 
         // group.move(this.x, this.y).size(this.width, this.height)
         this.svg = group;
+
         surface.add(this.svg);
     }
  
     add(child: T, index?: number, bindHere: boolean = false) {
+        child.parentId = this.id;
         this.children.splice(index !== undefined ? index : this.children.length-1, 0, child);
         
         child.subscribe(this.computeBoundary.bind(this));

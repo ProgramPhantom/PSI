@@ -1,6 +1,6 @@
 import { Controller, DefaultValues, FormProvider, useForm } from "react-hook-form";
 import IForm, { FormDescriptor } from "./FormBase";
-import { ElementTypes, IElement } from "../vanilla/point";
+import { IElement } from "../vanilla/point";
 import { IVisual, Visual } from "../vanilla/visual";
 import Channel, { IChannel } from "../vanilla/channel";
 import { defaultChannel } from "../vanilla/default/data";
@@ -10,7 +10,7 @@ import { Button, Card, Dialog, DialogBody, Divider, EditableText, EntityTitle, F
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import Labellable, { ILabellable } from "../vanilla/labellable";
-import { ElementBundle } from "../vanilla/sequenceHandler";
+import { DiagramComponent, ElementBundle } from "../vanilla/sequenceHandler";
 import { myToaster } from "../App";
 import { inspect } from "util"
 import ReactJson from "react18-json-view"
@@ -31,9 +31,9 @@ interface FormActions {
     delete: (data: any) => void
 }
 
-type SubmissionType = (data: any, type: ElementTypes) => void
+type SubmissionType = (data: any, type: DiagramComponent) => void
 type DeleteType = (val: Visual) => void
-type ModifyType = (data: any, type: ElementTypes, target: Visual) => Visual
+type ModifyType = (data: any, type: DiagramComponent, target: Visual) => Visual
 
 
 function getCoreDefaults(target: Visual): IVisual {
@@ -48,7 +48,7 @@ export function FormHolder(props: FormHolderProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     var isLabellable: boolean;
-    var elementType: ElementTypes;
+    var elementType: DiagramComponent;
     var coreDefaults: IVisual;
     var labelDefaults: ILabellable = Labellable.defaults["default"];
     var ElementForm: React.FC<FormRequirements> | undefined;

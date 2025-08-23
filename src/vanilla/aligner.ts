@@ -59,6 +59,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
     }
 
     add(child: T, index?: number, bindHere: boolean = false, alignItem: Alignment=Alignment.none) {
+        child.parentId = this.id;
         // AlignItem takes precedence
         var alignChild: Alignment = alignItem !== Alignment.none ? alignItem : this.alignment;
         const INDEX = index !== undefined ? index : this.children.length;

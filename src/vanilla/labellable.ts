@@ -4,8 +4,8 @@ import { FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
 import { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
-import { ElementTypes } from "./point";
 import { Position } from "./text";
+import { DiagramComponent } from "./sequenceHandler";
 
 
 
@@ -31,7 +31,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             ref: "default-labellable"
         },
     }
-    static ElementType: ElementTypes = "labelled";
+    static ElementType: DiagramComponent = "labellable";
     get state(): ILabellable { 
         return {
         x: this._x,
@@ -53,26 +53,21 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
     public labelDict: {[key in Position]?: Label} = {};
     labels: Label[] = [];
     
-    constructor(params: RecursivePartial<ILabellable>, parent: T, templateName: string="default") {
+    constructor(params: RecursivePartial<ILabellable>, coreChild: T, templateName: string="default") {
         var fullParams: ILabellable = FillObject<ILabellable>(params, Labellable.defaults[templateName]);
         super(fullParams, templateName);
 
-        this._contentHeight = parent.contentHeight!;
-        this._contentWidth = parent.contentWidth!;
+        this._contentHeight = coreChild.contentHeight!;
+        this._contentWidth = coreChild.contentWidth!;
 
-        this.mountConfig = {...parent.mountConfig!};
+        this.mountConfig = {...coreChild.mountConfig!};
         // parent.mountConfig = undefined;
 
-        var ref = parent.ref;
-        parent.ref = parent.ref + "-child"
-        this.ref = ref;
+        this.ref = "labelled-" + coreChild.ref;
 
-        this.id = parent.id;
-        parent.id = parent.id + "-child"
+        this.parentElement = coreChild;
 
-        this.parentElement = parent;
-
-        this.add(parent, undefined, true);
+        this.add(coreChild, undefined, true);
 
         fullParams.labels?.forEach((label) => {
             var newLabel = new Label(label);

@@ -1,3 +1,4 @@
+import { Element } from "@svgdotjs/svg.js";
 import Arrow, { IArrow } from "./arrow";
 import Collection, { ICollection } from "./collection";
 import { ILine, Line } from "./line";
@@ -6,6 +7,7 @@ import { Dimensions } from "./spacial";
 import Text, { IText, Position } from "./text";
 import { FillObject } from "./util";
 import { Visual } from "./visual";
+import { Rect } from "@svgdotjs/svg.js";
 
 
 export type LabelTextPosition = "top" | "bottom" | "inline"
@@ -100,6 +102,14 @@ export default class Label extends Collection implements ILabel {
 
             this.add(this.line)
         }
+    }
+ 
+    draw(surface: Element) {
+        var hitbox = new Rect().attr({"data-editor": "hitbox", "zIndex": -1}).x(this.x).y(this.y)
+                                .width(this.width).height(this.height).fill("transparent").id(this.id)
+                                .stroke("none")
+        surface.add(hitbox);
+        super.draw(surface);
     }
 
     private arrangeContent(orientation: Dimensions) {

@@ -7,7 +7,7 @@ import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
 import Abstract from "./abstract";
 import defaultSequence from "./default/data/sequence.json"
-import SequenceHandler from "./sequenceHandler";
+import SequenceHandler, { DiagramComponent, IHaveStructure } from "./sequenceHandler";
 import { NumberAlias, select } from "svg.js";
 import { FillObject, PartialConstruct, RecursivePartial } from "./util";
 import { ILine, Line } from "./line";
@@ -28,14 +28,18 @@ interface ISequence extends ICollection {
 
 export type OccupancyStatus = Visual | "." | undefined
 
+export type SequenceStructures =  "channel column" | "label column" | "label col | pulse columns"| "pulse columns"
 
-export default class Sequence extends Collection {
+
+export default class Sequence extends Collection implements IHaveStructure {
     static defaults: {[key: string]: ISequence} = {"default": {...<any>defaultSequence}}
+    static ElementType: DiagramComponent = "sequence";
 
     channelsDic: {[name: string]: Channel;} = {};
     get channels(): Channel[] {return Object.values(this.channelsDic)}
     get channelIDs(): string[] {return Object.keys(this.channelsDic)}
 
+    structure: Record<SequenceStructures, Visual>;
 
     grid: Grid;
     freeArrows: Arrow[] = [];
@@ -97,6 +101,14 @@ export default class Sequence extends Collection {
         // |p|p|p|p|
         this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: "x", y: 0, ref: "pulse columns"}, "default", );
         this.columns.add(this.pulseColumns);
+
+        this.structure = {
+            "channel column": this.channelColumn,
+            "label col | pulse columns": this.columns,
+            "label column": this.labelColumn,
+            "pulse columns": this.pulseColumns,
+        }
+        
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
 

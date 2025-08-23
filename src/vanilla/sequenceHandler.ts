@@ -1,10 +1,10 @@
 import Abstract, { IAbstract } from "./abstract";
-import Sequence from "./sequence";
+import Sequence, { SequenceStructures } from "./sequence";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
 import Text, { Position } from "./text";
 import { Display, IVisual, Visual } from "./visual";
-import Channel, { IChannel } from "./channel";
+import Channel, { ChannelStructure, IChannel } from "./channel";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import { Script } from "vm";
 import { mountableElements } from "./default/data";
@@ -15,7 +15,7 @@ import logger, { Operations } from "./log";
 import { error } from "console";
 import Labellable, { ILabellable } from "./labellable";
 import { ILabel } from "./label";
-import { ElementTypes, ID } from "./point";
+import { ID } from "./point";
 import { ElementType } from "react";
 import { IMountConfig } from "./mountable";
 import { IBinding, IBindingPayload } from "./spacial";
@@ -24,6 +24,20 @@ import { PointBind } from "../BindingsSelector";
 
 
 export type ElementBundle = IVisual & Partial<ILabellable>
+
+
+export type DiagramStructure = SequenceStructures | ChannelStructure | "abstract"
+
+
+export type DiagramComponent = DiagramStructure | VisualComponent
+
+export type VisualComponent = DrawComponent | "labellable" | "label" | "text" | "arrow" | "channel" | "sequence";
+export type DrawComponent = "svg" | "rect"
+
+
+export interface IHaveStructure {
+    structure: Partial<Record<DiagramStructure, Visual>>
+}
 
 
 export default class SequenceHandler {
@@ -71,6 +85,21 @@ export default class SequenceHandler {
     get allElements(): Record<ID, Visual> {
         return this.sequence.allElements
     }
+    get structuralElements(): Record<ID, Visual> {
+        var structuralElements: Record<ID, Visual> = {};
+
+        Object.values(this.sequence.structure).forEach((o) => {
+            structuralElements[o.id] = o
+        })
+
+        this.sequence.channels.forEach((c) => {
+            Object.values(c.structure).forEach((structure) => {
+                structuralElements[structure.id] = structure;
+            })
+        })
+
+        return structuralElements;
+    }
 
     constructor(surface: Svg, emitChange: () => void) {
         this.syncExternal = emitChange;
@@ -101,7 +130,7 @@ export default class SequenceHandler {
 
 
     // ---- Form interfaces ----
-    public submitElement(parameters: ElementBundle, type: ElementTypes): Visual {
+    public submitElement(parameters: ElementBundle, type: DiagramComponent): Visual {
 
         var element: Visual | undefined;
         switch (type) {
@@ -113,7 +142,7 @@ export default class SequenceHandler {
                 break;
             case "rect":
             case "svg":
-            case "labelled":
+            case "labellable":
                 element = this.createElement(parameters, type)
                 return element
                 break;
@@ -127,7 +156,7 @@ export default class SequenceHandler {
         return element
     }
 
-    public submitModifyElement(parameters: IVisual, type: ElementTypes, target: Visual): Visual {
+    public submitModifyElement(parameters: IVisual, type: DiagramComponent, target: Visual): Visual {
         var mountConfigCopy: IMountConfig | undefined = target.mountConfig;
         // Delete element
         this.deleteElement(target, false)
@@ -180,7 +209,7 @@ export default class SequenceHandler {
         this.sequence.addElement(element);
     }
 
-    public createElement(parameters: ElementBundle, type: ElementTypes): Visual {
+    public createElement(parameters: ElementBundle, type: DiagramComponent): Visual {
         var element: Visual;
 
         parameters.x = undefined;

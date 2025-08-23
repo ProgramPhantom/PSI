@@ -1,9 +1,9 @@
 import Aligner from "./aligner";
 import logger, { Operations } from "./log";
+import { DiagramComponent } from "./sequenceHandler";
 import Spacial, { IBinding, Dimensions } from "./spacial";
 import { posPrecision } from "./util";
 
-export type ElementTypes = "abstract" | "visual" | "channel" | "labelled" | "svg" | "rect"
 export type ID = string;
 
 interface Shift {
@@ -39,7 +39,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
             ref: "default"
         },
     }
-    static ElementType: ElementTypes = "abstract"; 
+    static ElementType: DiagramComponent = "abstract"; 
 
     get state(): IPoint {
         return {
@@ -58,6 +58,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
     public set id(value: ID) {
         this._id = value;
     }
+    public parentId: ID | undefined;
 
     ref: string;
 
