@@ -11,5 +11,7 @@
     "offset": [0, 1],
     "path": "\\src\\assets\\ampseries.svg",
     "contentWidth": 15,
-    "contentHeight": 40
+    "contentHeight": 40,
+
+    "ref": "amp"
 }

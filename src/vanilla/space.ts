@@ -8,6 +8,7 @@ import Mountable, { IMountable } from "./mountable";
 import { defaultSpace } from "./default/data";
 import { DiagramComponent } from "./sequenceHandler";
 import { Svg } from "@svgdotjs/svg.js";
+import { FormRequirements } from "../form/FormHolder";
 
 
 export interface ISpace extends IVisual {
@@ -27,7 +28,7 @@ export default class Space extends Visual implements ISpace, IDraw {
         mountConfig: this.mountConfig
     }}
     static ElementType: DiagramComponent = "rect";
-    static form: React.FC = VisualForm;
+    static form: React.FC<FormRequirements> = VisualForm;
 
 
     constructor(params: RecursivePartial<ISpace>, templateName: string="default") {

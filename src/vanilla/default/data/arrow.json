@@ -11,6 +11,6 @@
     "style": {
         "stroke": "black",
         "thickness": 1,
-        "dashing": [7, 7]
+        "dashing": [0, 0]
     }
 }

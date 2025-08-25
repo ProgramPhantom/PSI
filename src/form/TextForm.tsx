@@ -13,7 +13,7 @@ function TextForm() {
         <div style={{width: "100%"}}>
             <ControlGroup vertical={true}>
             {/* Text */}
-            <FormGroup
+            <FormGroup style={{padding: "4px 8px", margin: 0}}
               fill={false}
               inline={true}
               label="Text"
@@ -29,15 +29,15 @@ function TextForm() {
 
 
             {/* Visual form */}
-            <VisualForm></VisualForm>
+            <VisualForm widthDisplay={false} heightDisplay={false}></VisualForm>
 
             {/* Style */}
-            <Section
+            <Section 
               collapseProps={{defaultIsOpen: false}}
               compact={true}
               title={"Style"}
               collapsible={true}>
-              <FormGroup
+              <FormGroup style={{padding: "4px 8px", margin: 0}}
                   inline={true}
                   label="Font Size"
                   labelFor="text-input">
@@ -46,7 +46,7 @@ function TextForm() {
                   </Controller>
               </FormGroup>
 
-              <FormGroup
+              <FormGroup style={{padding: "4px 8px", margin: 0}}
                   inline={true}
                   label="Colour"
                   labelFor="text-input">
@@ -55,7 +55,7 @@ function TextForm() {
                   </Controller>
               </FormGroup>
 
-              <FormGroup
+              <FormGroup style={{padding: "4px 8px", margin: 0}}
                   inline={true}
                   label="Background"
                   labelFor="text-input">

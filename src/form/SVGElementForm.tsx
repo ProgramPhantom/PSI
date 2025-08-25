@@ -16,9 +16,12 @@ import Labellable from '../vanilla/labellable';
 import VisualForm from './VisualForm';
 import { FormRequirements } from './FormHolder';
 
+interface ISVGElementFormProps extends FormRequirements {
+
+}
 
 
-const SVGElementForm: React.FC<FormRequirements> = (props) => {
+const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
     const formControls = useFormContext<ISVG>();
 
     return (
@@ -47,7 +50,7 @@ const SVGElementForm: React.FC<FormRequirements> = (props) => {
             </Controller>
         </FormGroup>
         
-        <VisualForm></VisualForm>
+        <VisualForm target={props.target} heightDisplay={true} widthDisplay={true}></VisualForm>
     </>
     );
 }

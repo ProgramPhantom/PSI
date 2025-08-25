@@ -5,7 +5,7 @@ import { ILabellable } from '../vanilla/labellable';
 import { ILabel } from '../vanilla/label';
 import VisualForm from './VisualForm';
 import TextForm from './TextForm';
-import { ChangeEventHandler, useState } from 'react';
+import { ChangeEventHandler, useEffect, useState } from 'react';
 import ArrowForm from './ArrowForm';
 
 
@@ -16,12 +16,21 @@ function LabelForm() {
   const [textOn, setTextOn] = useState<boolean>(formVals.text === undefined ? false : true)
   const [lineOn, setLineOn] = useState<boolean>(formVals.line === undefined ? false : true)
 
+  // const hasText = useWatch({ name: "label", control: formControls.control})
 
+  useEffect(() => {
+    if (textOn === false) {
+      formControls.setValue("text", undefined)
+    }
+    if (lineOn === false) {
+      formControls.setValue("line", undefined)
+    }
+  })
 
   return (
     <>
       {/* Position */}
-      <FormGroup
+      <FormGroup style={{padding: "4px 8px", margin: 0}}
         fill={false}
         inline={true}
         label="Position"
@@ -40,7 +49,7 @@ function LabelForm() {
       </FormGroup>
       
       {/* Text position */}
-      <FormGroup
+      <FormGroup style={{padding: "4px 8px", margin: 0}}
         fill={false}
         inline={true}
         label="Text Position"
@@ -56,7 +65,7 @@ function LabelForm() {
       </FormGroup>
 
       {/* Text form */}
-      <Section collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true}  title={
+      <Section style={{padding: 0}} collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true}  title={
         <div style={{display: "flex", flexDirection: "row", alignSelf: "center"}}>
           <Switch style={{margin: "0px"}} type='checkbox' checked={textOn}
              size="medium" onChange={(e) => {setTextOn(e.target.checked)}}></Switch>
@@ -64,13 +73,13 @@ function LabelForm() {
         </div>
       }>
 
-        <SectionCard style={{padding: "8px"}}>
+        <SectionCard style={{padding: "0px"}}>
           <TextForm></TextForm>
         </SectionCard>
       </Section>
 
       {/* Arrow form */}
-      <Section collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={
+      <Section style={{padding: 0}} collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={
         <div style={{display: "flex", flexDirection: "row", alignSelf: "center"}}>
           <Switch style={{margin: "0px"}} checked={lineOn}
                id="switch" size="medium" onChange={(e) => {setLineOn(e.target.checked)}}></Switch>
@@ -78,7 +87,7 @@ function LabelForm() {
         </div>
       }>
 
-        <SectionCard style={{padding: "4px"}}>
+        <SectionCard style={{padding: "0px"}}>
           <ArrowForm></ArrowForm>
         </SectionCard>
       </Section>

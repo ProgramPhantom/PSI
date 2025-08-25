@@ -48,7 +48,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
     }}
 
 
-    parentElement: T;
+    coreChild: T;
 
     public labelDict: {[key in Position]?: Label} = {};
     labels: Label[] = [];
@@ -65,7 +65,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
 
         this.ref = "labelled-" + coreChild.ref;
 
-        this.parentElement = coreChild;
+        this.coreChild = coreChild;
 
         this.add(coreChild, undefined, true);
 
@@ -74,6 +74,10 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             this.labels.push(newLabel);
             this.bindLabel(newLabel);
         })
+
+        // Currently no way to select coreChild, so to stop padding being applied to child and labellable, for now
+        // we'll just set the child padding to 0
+        this.coreChild.padding = [0, 0, 0, 0]
     }
 
     draw(surface: Element) {
@@ -93,13 +97,13 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             case Position.top:
                 // X
                 label.sizeSource.x = "inherited"
-                this.parentElement.bind(label, "x", "here", "here");
-                this.parentElement.bind(label, "x", "far", "far");
+                this.coreChild.bind(label, "x", "here", "here");
+                this.coreChild.bind(label, "x", "far", "far");
                 
                 // Y
-                this.clearBindsTo(this.parentElement, "y");
+                this.clearBindsTo(this.coreChild, "y");
                 this.bind(label, "y", "here", "here", undefined, undefined, false);
-                label.bind(this.parentElement, "y", "far", "here", undefined, undefined, false)
+                label.bind(this.coreChild, "y", "far", "here", undefined, undefined, false);
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
@@ -107,23 +111,23 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             case Position.right:
                 // Y
                 label.sizeSource.y = "inherited"
-                this.parentElement.bind(label, "y", "here", "here", undefined)
-                this.parentElement.bind(label, "y", "far", "far")
+                this.coreChild.bind(label, "y", "here", "here", undefined)
+                this.coreChild.bind(label, "y", "far", "far")
 
                 // X
-                this.parentElement.bind(label, "x", "far", "here", undefined, undefined, false)
+                this.coreChild.bind(label, "x", "far", "here", undefined, undefined, false)
 
                 this.add(label)
                 this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
                 break;
             case Position.bottom:
                 // Y
-                this.parentElement.bind(label, "y", "far", "here")
+                this.coreChild.bind(label, "y", "far", "here")
                 
                 // X
                 label.sizeSource.x = "inherited"
-                this.parentElement.bind(label, "x", "here", "here")
-                this.parentElement.bind(label, "x", "far", "far")
+                this.coreChild.bind(label, "x", "here", "here")
+                this.coreChild.bind(label, "x", "far", "far")
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
@@ -131,13 +135,13 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             case Position.left:
                 // Y
                 label.sizeSource.y = "inherited"
-                this.parentElement.bind(label, "y", "here", "here")
-                this.parentElement.bind(label, "y", "far", "far")
+                this.coreChild.bind(label, "y", "here", "here")
+                this.coreChild.bind(label, "y", "far", "far")
 
                 // X
-                this.clearBindsTo(this.parentElement, "x");
+                this.clearBindsTo(this.coreChild, "x");
                 this.bind(label, "x", "here", "here")
-                label.bind(this.parentElement, "x", "far", "here", undefined, undefined, false)
+                label.bind(this.coreChild, "x", "far", "here", undefined, undefined, false)
 
                 this.add(label);
                 this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
@@ -185,7 +189,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             this._contentWidth = v;
 
             if (this.sizeSource.x === "inherited") {
-                this.parentElement.contentWidth = v - this.getTotalLabelWidth();
+                this.coreChild.contentWidth = v - this.getTotalLabelWidth();
             }
 
             this.enforceBinding();
@@ -207,7 +211,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             this._contentHeight = v;
 
             if (this.sizeSource.y === "inherited") {
-                this.parentElement.contentHeight = v - this.getTotalLabelHeight();
+                this.coreChild.contentHeight = v - this.getTotalLabelHeight();
             }
             
 

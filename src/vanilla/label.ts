@@ -70,17 +70,16 @@ export default class Label extends Collection implements ILabel {
     constructor(params: ILabel, templateName="default") {
         var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
         super(fullParams, templateName)
-
         this.labelConfig = fullParams.labelConfig;
         
         if (fullParams.text !== undefined) {
             // Create text
             this.text = new Text(fullParams.text, undefined);
 
-            this.bind(this.text, "x", "centre", "centre", undefined);
-            this.bind(this.text, "y", "centre", "centre", undefined);
+            this.bind(this.text, "x", "centre", "centre");
+            this.bind(this.text, "y", "centre", "centre");
             this.add(this.text);
-        } 
+        }
         
         if (fullParams.line !== undefined) {
             // Create line
@@ -155,8 +154,11 @@ export default class Label extends Collection implements ILabel {
     }
 
     private arrangeContent(orientation: Dimensions) {
-        if (this.line === undefined || this.text === undefined) {
-            throw new Error("Only for use when text and line are present.")
+        // if (this.line === undefined || this.text === undefined) {
+        //     throw new Error("Only for use when text and line are present.")
+        // }
+        if (this.line === undefined) {
+            return 
         }
 
         switch (this.labelConfig.textPosition) {

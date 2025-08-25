@@ -13,9 +13,9 @@ function ArrowForm() {
 
   return (
     <>
-      <ControlGroup vertical={true}>
+      <ControlGroup vertical={true} style={{width: "100%"}}>
         {/* Arrowhead style */}
-        <FormGroup
+        <FormGroup style={{padding: "4px 8px", margin: 0}}
           fill={false}
           inline={true}
           label="Arrowhead style"
@@ -30,15 +30,15 @@ function ArrowForm() {
           </Controller>
         </FormGroup>
 
-        {/* PADDING */}
-        <VisualForm></VisualForm>
+        {/* Visual form */}
+        <VisualForm widthDisplay={false} heightDisplay={false}></VisualForm>
 
-        <Section style={{padding: "4px"}}
+        <Section 
           collapseProps={{defaultIsOpen: false}}
           compact={true}
           title={"Style"}
           collapsible={true}>
-          <FormGroup
+          <FormGroup style={{padding: "4px 8px", margin: 0}}
               inline={true}
               label="Stroke thickness"
               labelFor="text-input">
@@ -48,7 +48,7 @@ function ArrowForm() {
           </FormGroup>
 
 
-          <FormGroup
+          <FormGroup style={{padding: "4px 8px", margin: 0}}
               inline={true}
               label="Stroke"
               labelFor="text-input">
@@ -58,7 +58,7 @@ function ArrowForm() {
               </Controller>
           </FormGroup>
 
-          <FormGroup
+          <FormGroup style={{padding: "4px 8px", margin: 0}}
               inline={true}
               label="Dashing"
               labelFor="text-input">
@@ -76,7 +76,7 @@ function ArrowForm() {
         </Section>
         
         {/* Adjustment */}
-        <FormGroup 
+        <FormGroup  style={{padding: "4px 8px", margin: 0}}
             inline={true}
             label="Adjustment"
             labelFor="text-input">

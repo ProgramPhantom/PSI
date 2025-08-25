@@ -186,12 +186,12 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         
 
 
-        if (width !== -Infinity) {
+        if (width !== -Infinity && this.sizeSource.x !== "inherited") {
             this.contentWidth = width;
         } else {
             // this.contentWidth = 0;
         }
-        if (height !== -Infinity) {
+        if (height !== -Infinity && this.sizeSource.y !== "inherited") {
             this.contentHeight = height;
         } else {
             // this.contentHeight = 0;
@@ -225,9 +225,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         return this._contentHeight;
     }
     protected set contentWidth(v: number) {
-        if (this.ref === "pulse columns") {
-            console.log()
-        }
         if (v !== this._contentWidth) {
             this._contentWidth = v;
             this.enforceBinding();

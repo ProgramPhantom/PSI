@@ -289,7 +289,7 @@ export default class Spacial extends Point implements ISpacial {
             var targetPosChecker: BinderGetFunction = targetElement.AnchorFunctions[binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions].get
             var dimension: Dimensions = binding.bindingRule.dimension;
 
-            if (this.ref === "acquire(parent)") {
+            if (binding.hint === "'acquire' [far] x> 'default-label' [far] (stretch)") {
                 console.log()
             }
             
@@ -309,10 +309,6 @@ export default class Spacial extends Point implements ISpacial {
             // This must happen BEFORE the element is positioned so the last element moved in the collection 
             // triggers the compute boundary
             targetElement.displaced = false;
-
-            if (targetElement.ref === "LINE") {
-                console.log()
-            }
 
             // Only go into the setter if it will change a value, massively reduces function calls.
             // Alternative was doing the check inside the setter which still works but requires a function call

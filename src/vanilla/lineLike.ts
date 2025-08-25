@@ -53,14 +53,26 @@ export default abstract class LineLike extends Visual {
         this.adjustment = fullParams.adjustment;
         this.orientation = fullParams.orientation;
 
-        this.sizeSource.x = "inherited"; this.sizeSource.y = "inherited"
+        this.sizeSource.x = "inherited"; this.sizeSource.y = "inherited";
     }
 
     resolveDimensions(): void {
+        if (this.hasPosition === false) {
+            return 
+        }
+
         var width = this.x2 - this.x;
         var height = this.y2 - this.y;
+
+        if (width === 0) {
+            width = 1
+        }
+        if (height === 0) {
+            height = 1;
+        }
     
-        this.contentDim = {height: height, width: width}
+        this.width = width;
+        this.height = height;
     }
 
     public set(x1: number, y1: number, x2: number, y2: number) {
@@ -128,14 +140,46 @@ export default abstract class LineLike extends Visual {
         }
     }
 
+    get hasPosition(): boolean {
+        if (this._x === undefined || this._y === undefined || this._x2 === undefined || this._y2 === undefined) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    get x(): number {
+        if (this._x !== undefined) {
+            return this._x;
+        }
+        throw new Error("x unset");
+    }
+    get y(): number {
+        if (this._y !== undefined) {
+            return this._y;
+        }
+        throw new Error("y unset");
+    }
+    set x(val: number | undefined) {
+        if (val !== this._x) {
+            this._x = val !== undefined ? posPrecision(val) : undefined;
+            this.enforceBinding();
+            // this.resolveDimensions();
+        }
+    }
+    set y(val: number | undefined) {
+        if (val !== this._y) {
+            this._y = val !== undefined ? posPrecision(val) : undefined;
+            this.enforceBinding();
+            // this.resolveDimensions();  Removing this fixes stuff? Don't know why lol
+        }
+    }
+
     public get x2() : number {
         if (this._x2 !== undefined) {
             return this._x2;
         }
         throw new Error("x2 unset");
-    }
-    public set x2(v : number) {
-        this._x2 = v;
     }
     public get y2() : number {
         if (this._y2 !== undefined) {
@@ -143,8 +187,19 @@ export default abstract class LineLike extends Visual {
         }
         throw new Error("y2 unset");
     }
+    public set x2(v : number) {
+        if (v !== this._x2) {
+            this._x2 = v;
+            this.enforceBinding();
+            this.resolveDimensions()
+        }
+    }
     public set y2(v : number) {
-        this._y2 = v;
+        if (v !== this._y2) {
+            this._y2 = v;
+            this.enforceBinding();
+            this.resolveDimensions()
+        }
     }
 
     // Anchors:

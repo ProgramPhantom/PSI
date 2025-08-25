@@ -90,9 +90,9 @@ function LabelMapForm(props: ILabelMapProps) {
 
       <Divider></Divider>
 
-      <Card compact={true} style={{padding: "0px 8px 8px 8px"}}>
-        <div style={{width: "100%", margin: "0px 4px", display: "flex", flexDirection: "row", alignItems: "center"}}>
-          <Icon icon="build" style={{margin: "0px 9px 0px 0px"}} size={15}></Icon>
+      <Card compact={true} style={{padding: "0px 0px 8px 0px"}}>
+        <div style={{width: "100%", padding: "4px 4px", display: "flex", flexDirection: "row", alignItems: "center"}}>
+          <Icon icon="build" style={{margin: "0px 8px 0px 8px"}} size={15}></Icon>
           <h5 style={{ textDecoration: "underline"}}>Create Label</h5>
 
           <Button style={{margin: "4px", height: "30px", marginLeft: "auto", justifySelf: "center"}} 

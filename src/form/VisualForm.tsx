@@ -4,36 +4,46 @@ import { Control, Controller, FieldValue, FieldValues, useForm, useFormContext, 
 import { IText } from '../vanilla/text';
 import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
 import { IVisual, Visual } from '../vanilla/visual';
+import { FormRequirements } from './FormHolder';
+
+interface IVisualFormProps extends FormRequirements {
+  widthDisplay?: boolean,
+  heightDisplay?: boolean,
+}
 
 
-const VisualForm: React.FC = () => {
+const VisualForm: React.FC<IVisualFormProps> = (props) => {
   const formControls = useFormContext<IVisual>();
+
+  var widthActive = props.target ? (props.target.sizeSource.x === "inherited" ? false : true) : true;
+  var heightActive = props.target ? (props.target.sizeSource.y === "inherited" ? false : true) : true;
 
   var vals = formControls.getValues();
   return (
       <ControlGroup vertical={true}>
         { /* Width and height */ }
         {/* Content Width */}
-        { vals.contentWidth !== undefined ? <>
-          
+        { vals.contentWidth !== undefined && props.widthDisplay ? <>
           <FormGroup
               inline={true}
               label="Width"
               labelFor="text-input">
                   <Controller control={formControls.control} name="contentWidth" render={({field}) => (
-                      <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"></NumericInput>)}>
+                      <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"
+                      disabled={!widthActive} title={!widthActive ? "Width inherited" : ""}></NumericInput>)}>
                   </Controller>
           </FormGroup>
         </> : <></>}
         
         {/* Content Height */}
-        { vals.contentHeight !== undefined ? <> 
+        { vals.contentHeight !== undefined && props.heightDisplay ? <> 
         <FormGroup
             inline={true}
             label="Height"
             labelFor="text-input">
             <Controller control={formControls.control} name="contentHeight" render={({field}) => (
-                <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"></NumericInput>)}>
+                <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"
+                disabled={!heightActive} title={!widthActive ? "Height inherited" : ""}></NumericInput>)}>
             </Controller>
         </FormGroup>
         </> : <></>}
@@ -42,7 +52,7 @@ const VisualForm: React.FC = () => {
         { vals.mountConfig !== undefined ? 
           <>
           
-          <Section style={{borderRadius: 0}}
+          <Section style={{borderRadius: 0, }}
             collapseProps={{defaultIsOpen: false}}
             compact={true}
             title={"Config"}
@@ -52,7 +62,7 @@ const VisualForm: React.FC = () => {
               vertical={true}
               >
               {/* Orientation */}
-              <FormGroup
+              <FormGroup style={{padding: "4px 8px"}}
                   fill={false}
                   inline={true}
                   label="Orientation"
@@ -69,7 +79,7 @@ const VisualForm: React.FC = () => {
               </FormGroup>
               
               {/* Alignment */}
-              <FormGroup
+              <FormGroup style={{padding: "4px 8px"}}
                   fill={false}
                   inline={true}
                   label="Alignment"
@@ -87,7 +97,7 @@ const VisualForm: React.FC = () => {
               </FormGroup>
 
               {/* No Sections */}
-              <FormGroup
+              <FormGroup style={{padding: "4px 8px", margin: 0}}
                 fill={false}
                 inline={true}
                 label="No Sections"
@@ -114,9 +124,8 @@ const VisualForm: React.FC = () => {
             vertical={true}
             style={{gap: 10}}
             >
-            <FormGroup
+            <FormGroup style={{padding: "4px 16px"}}
               fill={false}
-              inline={true}
               label="Padding top"
               labelFor="text-input">
               <Controller control={formControls.control} name="padding.0" render={({field}) => (
@@ -124,9 +133,8 @@ const VisualForm: React.FC = () => {
               </Controller>
             </FormGroup>
 
-            <FormGroup
+            <FormGroup style={{padding: "4px 16px"}}
               fill={false}
-              inline={true}
               label="Padding right"
               labelFor="text-input">
               <Controller control={formControls.control} name="padding.1" render={({field}) => (
@@ -134,9 +142,8 @@ const VisualForm: React.FC = () => {
               </Controller>
             </FormGroup>
 
-            <FormGroup
+            <FormGroup style={{padding: "4px 16px"}}
               fill={false}
-              inline={true}
               label="Padding bottom"
               labelFor="text-input">
               <Controller control={formControls.control} name="padding.2" render={({field}) => (
@@ -144,13 +151,12 @@ const VisualForm: React.FC = () => {
               </Controller>
             </FormGroup>
 
-            <FormGroup
+            <FormGroup style={{padding: "4px 16px", margin: 0}}
               fill={false}
-              inline={true}
               label="Padding left"
-              labelFor="text-input">
-              <Controller control={formControls.control} name="padding.3" render={({field}) => (
-                <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
+              labelFor="slider3">
+              <Controller  control={formControls.control} name="padding.3" render={({field}) => (
+                <Slider  {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
           </ControlGroup>
@@ -165,7 +171,7 @@ const VisualForm: React.FC = () => {
           <ControlGroup
               vertical={true}
               >
-              <FormGroup
+              <FormGroup style={{padding: "4px 8px", margin: 0}}
                   fill={false}
                   inline={true}
                   label="Offset X"
@@ -175,7 +181,7 @@ const VisualForm: React.FC = () => {
                   </Controller>
               </FormGroup>
                     
-              <FormGroup
+              <FormGroup style={{padding: "4px 8px",  margin: 0}}
               fill={false}
               inline={true}
               label="Offset Y"

@@ -113,8 +113,8 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 			deltaY = 0
 		}
 
-        var internalSVG = this.svg?.clone(true, true).attr({"transform": `translate(${deltaX}, ${deltaY})`});
-        internalSVG?.attr({"style": "display: block;"})
+        var internalSVG = this.svg?.clone(true, true)
+        internalSVG?.attr({"style": "display: block;"}).move(this.offset[0], this.offset[1])
 
         return internalSVG;
     }

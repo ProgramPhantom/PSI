@@ -85,7 +85,9 @@ export default class Arrow extends Line {
                             strokeLinecap: "butt",
                             d: pathData,
                             "marker-start": 'url(#head)',
-                            "marker-end": 'url(#head)',})
+                            "marker-end": 'url(#head)',
+                            "stroke-dasharray": `${this.style.dashing[0]} ${this.style.dashing[1]}`,
+                            "stroke-width": `${this.style.thickness}`})
                       
       
       this.svg = newArrow;
