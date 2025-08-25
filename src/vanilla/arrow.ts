@@ -4,6 +4,10 @@ import defaultArrow from "./default/data/arrow.json"
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import { ILine, Line } from "./line";
 import { Element } from "@svgdotjs/svg.js";
+import { Defs } from "@svgdotjs/svg.js";
+import { Marker } from "@svgdotjs/svg.js";
+import { CoreAttr } from "@svgdotjs/svg.js";
+import { Path } from "@svgdotjs/svg.js";
 
 
 export enum HeadStyle {
@@ -23,20 +27,7 @@ export interface IArrow extends ILine {
 
 export default class Arrow extends Line {
   static defaults: {[key: string]: IArrow} = {"default": {...<any>defaultArrow}}
-  static def: string = `
-    <defs>
-        <marker 
-          id='head' 
-          viewBox="0 0 20 20"
-          refX="4"
-          refY="4"
-          markerWidth="6"
-          markerHeight="6"
-          orient="auto-start-reverse">
-          <path d="M 0 0 L 8 4 L 0 8 z" />
-        </marker>
-      </defs>
-    `
+
   static arbitraryAdjustment: number = 1;
   get state(): IArrow { return {
     x: this._x,
@@ -70,19 +61,38 @@ export default class Arrow extends Line {
           this.svg.remove();
       }
 
-      this.svg = SVG(`<svg>
-          ${Arrow.def}
-        <path
-          id='arrow-line'
-          ${ this.arrowStyle.headStyle !== HeadStyle.none ? "marker-start='url(#head)' marker-end='url(#head)'" : ''}
-          stroke-width='${this.style.thickness}'
-          stroke='${this.style.stroke}'
-          stroke-linecap="butt"
-          d='M${this.x}, ${this.y}, ${this.x2} ${this.y2}'
-        />
-      </svg>`)
+      var markerLength = 3;
+      var markerWidth = 3;
+      var markerPath = new Path().attr({"d": `M 0 0 L ${markerLength} ${markerWidth/2} L 0 ${markerWidth} z`})
+      var marker = new Marker().id("head").attr({
+              "refX": "0",
+              "refY": markerWidth/2,
+              "markerWidth": markerLength,
+              "markerHeight": markerLength,
+              "orient": "auto-start-reverse",
+      }).add(markerPath);
+      var markerDefs = new Defs().add(marker);
+
+      
+      var dy = Math.sin(this.angle!) * markerLength
+      var dx = Math.cos(this.angle!) * markerLength
+
+      var pathData: string = `M${this.x + dx}, ${this.y + dy}, ${this.x2 - dx} ${this.y2 - dy}`;
+
+      var newArrow = SVG().path().id("arrow-line")
+                     .attr({strokeWidth: `${this.style.thickness}`,
+                            stroke: `${this.style.stroke}`,
+                            strokeLinecap: "butt",
+                            d: pathData,
+                            "marker-start": 'url(#head)',
+                            "marker-end": 'url(#head)',})
+                      
+      
+      this.svg = newArrow;
+
       
       surface.add(this.svg)
+      surface.add(markerDefs)
     }
   }
 }

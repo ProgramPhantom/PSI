@@ -74,6 +74,7 @@ export default class Label extends Collection implements ILabel {
         this.labelConfig = fullParams.labelConfig;
         
         if (fullParams.text !== undefined) {
+            // Create text
             this.text = new Text(fullParams.text, undefined);
 
             this.bind(this.text, "x", "centre", "centre", undefined);
@@ -82,6 +83,7 @@ export default class Label extends Collection implements ILabel {
         } 
         
         if (fullParams.line !== undefined) {
+            // Create line
             this.line = new Arrow(fullParams.line);
 
             var orientationSelect: Dimensions;
@@ -125,32 +127,20 @@ export default class Label extends Collection implements ILabel {
         
         // Clip
 
-        var text = this.text;
-        var arrow = this.line;
-
-        this.svg = SVG();
-
-        var area = SVG().rect(10, 10).move(this.getCentre("x") ?? 0, this.getCentre("y") ?? 0)
-        this.svg.add(area)
-        var clippingRect = SVG().clip()
-
-        if (arrow) {
-
-            
-
-            arrow.draw(surface);
+        if (this.line) {
+            this.line.draw(surface);
         }
-        if (text) {
-            text.draw(surface)
+        if (this.text) {
+            this.text.draw(surface)
 
             const SPILL_PADDING = 4;
             const TEXT_PADDING = 1;
 
-            if (text.svg && arrow && arrow.svg) {
+            if (this.line && this.line.svg !== undefined && this.text.svg) {
                 var maskID: string = this.id + "-MASK";
                 var visibleArea = new Rect().move(this.x-SPILL_PADDING, this.y-SPILL_PADDING).size(this.width+2*SPILL_PADDING, this.height+2*SPILL_PADDING).fill("white");
-                var blockedArea = new Rect().move(text.x-TEXT_PADDING, text.y-TEXT_PADDING)
-                    .size((text.contentWidth ?? 0) +2*TEXT_PADDING, (text.contentHeight ?? 0) + 2*TEXT_PADDING).fill("black");
+                var blockedArea = new Rect().move(this.text.x-TEXT_PADDING, this.text.y-TEXT_PADDING)
+                    .size((this.text.contentWidth ?? 0) +2*TEXT_PADDING, (this.text.contentHeight ?? 0) + 2*TEXT_PADDING).fill("black");
 
                 var newMask = new Mask().add(visibleArea).add(blockedArea)
                 .id(maskID).attr({"mask-type": "luminance", "maskUnits": "userSpaceOnUse"});
@@ -159,7 +149,7 @@ export default class Label extends Collection implements ILabel {
 
                 surface.add(newMask)
 
-                arrow.svg.attr({"mask": `url(#${maskID})`})
+                this.line.svg.attr({"mask": `url(#${maskID})`})
             }
         }
     }

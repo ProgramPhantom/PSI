@@ -108,7 +108,7 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
         if (v === undefined) {
             this.contentWidth = undefined
         } else {
-            var newContentWidth: number = v - this.padding[0] - this.padding[2];
+            var newContentWidth: number = v - this.padding[1] - this.padding[3];
 
             if (newContentWidth < 0) {  // Don't allow content height to go below 0
                 this.contentWidth = 0
@@ -128,7 +128,7 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
         if (v === undefined) {
             this.contentHeight = undefined
         } else {
-            var newContentHeight: number = v - this.padding[3] - this.padding[1];
+            var newContentHeight: number = v - this.padding[0] - this.padding[2];
 
             if (newContentHeight < 0) {  // Don't allow content height to go below 0
                 this.contentHeight = 0

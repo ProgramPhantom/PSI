@@ -18,6 +18,8 @@ export interface ILineLike extends IVisual {
     orientation: Orientation
 }
 
+
+
 export default abstract class LineLike extends Visual {
     static defaults: {[key: string]: ILineLike} = {"default": <any>defaultLineLike}
 
@@ -90,6 +92,41 @@ export default abstract class LineLike extends Visual {
 
     abstract draw(surface: Element): void;
 
+    public get length(): number | undefined {
+        if (this.x === undefined || this.y === undefined || this.y2 === undefined || this.x2 === undefined) {
+            return undefined
+        }
+
+        return Math.sqrt(Math.pow((this.x2 - this.x), 2) + Math.pow((this.y2 - this.y), 2))
+    }
+
+    public get angle(): number | undefined {
+        if (this.x === undefined || this.y === undefined || this.y2 === undefined || this.x2 === undefined) {
+            return undefined
+        }
+
+        var dx = this.x2 - this.x
+        var dy = this.y2 - this.y
+
+        var angle = Math.atan2(dy, dx);
+        return angle;
+    }
+
+    public get quadrant(): 0 | 1 | 2 | 3 | undefined {
+        if (this.x === undefined || this.y === undefined || this.y2 === undefined || this.x2 === undefined) {
+            return undefined
+        }
+
+        if (this.x2 >= this.x && this.y2 >= this.y) {
+            return 0
+        } else if (this.x2 < this.x && this.y2 >= this.y) {
+            return 1
+        } else if (this.x2 < this.x && this.y2 < this.y) {
+            return 2
+        } else if (this.x2 >= this.x && this.y2 < this.y) {
+            return 3
+        }
+    }
 
     public get x2() : number {
         if (this._x2 !== undefined) {

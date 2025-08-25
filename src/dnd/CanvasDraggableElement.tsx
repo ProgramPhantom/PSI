@@ -144,6 +144,12 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
     preview(getEmptyImage(), { captureDraggingState: true })
   }, [])
 
+  function refreshElement() {
+    props.element.bindingsToThis.forEach((b) => {
+      b.anchorObject.enforceBinding()
+    })
+  }
+
   return (
     <>
     
@@ -154,8 +160,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
       </Rnd> */}
       <div style={{ opacity: isDragging ? 0.4 : 1, position: "relative"}}>
         
-        {/* Pin Button - positioned in top left, slightly outside */}
-          <Button type='button'
+        {/* Pin Button - positioned in top left */}
+        <Button type='button'
              variant='minimal' 
              icon={<Icon icon="lock" size={5} style={{opacity: 0.6}}/>}
              style={{transition: "all 0.2s ease",
@@ -175,8 +181,32 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
             e.currentTarget.style.transform = "scale(1.1)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.transform = "scale(1)"; }}
+        />
+
+        {/* Refresh button */}
+        <Button type='button'
+             variant='minimal' 
+             icon={<Icon icon="refresh" size={5} style={{opacity: 0.6}}/>}
+             style={{transition: "all 0.2s ease",
+             position: "absolute",
+             minHeight: 0, minWidth: 0,
+             top: "-8px",
+             left: "6px",
+             zIndex: 10,
+             width: "6px",
+             height: "8px",
+             padding: 0,
+             outline: "none",
+             background: "transparent"
+             
+          }}        
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
           }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)"; }}
+          onClick={() => refreshElement()}
          />
         
         <div ref={drag} style={{  height: props.element.contentHeight, width: props.element.contentWidth}}>
