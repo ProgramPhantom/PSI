@@ -89,6 +89,95 @@ function App() {
     }
   }
 
+  function SavePNG(width: number, height: number, filename: string) {
+    try {
+      // Get the current SVG surface from the ENGINE
+      const surface = ENGINE.surface;
+      
+      // Create a clone of the surface to avoid modifying the original
+      const svgClone = surface.clone(true, false);
+      
+      // Remove all elements with data-editor="hitbox" attribute
+      const hitboxElements = svgClone.find('[data-editor="hitbox"]');
+      hitboxElements.forEach(element => {
+        element.remove();
+      });
+      
+      // Get the SVG as a string
+      const svgString = svgClone.svg();
+      
+      // Create a canvas element to convert SVG to PNG
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Could not get canvas context');
+      }
+      
+      // Set canvas dimensions
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Create an image from the SVG
+      const img = new Image();
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      
+      img.onload = () => {
+        try {
+          // Clear canvas and draw the image
+          ctx.clearRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert canvas to blob and save
+          canvas.toBlob((blob) => {
+            if (blob) {
+              saveAs(blob, filename);
+              
+              // Show success message
+              myToaster.show({
+                message: `PNG saved successfully as ${filename}`,
+                intent: "success",
+                icon: "tick-circle"
+              });
+            } else {
+              throw new Error('Failed to create PNG blob');
+            }
+          }, 'image/png');
+          
+          // Clean up
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Error in PNG conversion:', error);
+          URL.revokeObjectURL(url);
+          
+          myToaster.show({
+            message: `Failed to save PNG: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            intent: "danger",
+            icon: "error"
+          });
+        }
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        throw new Error('Failed to load SVG image');
+      };
+      
+      img.src = url;
+      
+    } catch (error) {
+      console.error('Error saving PNG:', error);
+      
+      // Show error message
+      myToaster.show({
+        message: `Failed to save PNG: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        intent: "danger",
+        icon: "error"
+      });
+    }
+  }
+
   function SelectElement(element: Visual | undefined) {
     if (element === undefined) {
       setSelectedElement(undefined);
@@ -109,7 +198,7 @@ function App() {
 
       <div style={{display: "flex", height: "100%", width: "100%", flexDirection: "column"}}>
         <div style={{width: "100%"}}>
-          <Banner saveSVG={SaveSVG} openConsole={openConsole} 
+          <Banner saveSVG={SaveSVG} savePNG={SavePNG} openConsole={openConsole} 
           selection={{selectionMode: selectionMode, setSelectionMode: setSelectionMode}}></Banner>
         </div>
         
