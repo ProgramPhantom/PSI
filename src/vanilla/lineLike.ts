@@ -5,6 +5,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import Text from "./text";
 import PaddedBox from "./paddedBox";
 import Spacial, { IBindingRule, Dimensions } from "./spacial";
+import { Element } from "@svgdotjs/svg.js";
 
 enum Orientation {
     horizontal="horizontal",
@@ -87,7 +88,7 @@ export default abstract class LineLike extends Visual {
         }
     }
 
-    abstract draw(surface: Svg): void;
+    abstract draw(surface: Element): void;
 
 
     public get x2() : number {

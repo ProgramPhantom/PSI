@@ -148,10 +148,9 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 			this.svg.move(this.drawX, this.drawY);
 			this.svg.size(this.contentWidth, this.contentHeight);
 
-			var hitbox = new Rect().attr({"data-editor": "hitbox", "zIndex": -1}).x(0).y(0)
+			var hitbox = SVG().rect().attr({"data-editor": "hitbox", "zIndex": -1}).x(0).y(0)
 								   .width("100%").height("100%").fill("transparent").id(this.id)
-								   .stroke("none")
-								   
+								   .stroke("none");
 			this.svg.add(hitbox);
 			
 					

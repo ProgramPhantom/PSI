@@ -37,7 +37,6 @@ class ENGINE {
         return ENGINE.handler.id;
     }
     static emitChange() {
-        console.log("------- EMITTING CHANGE --------")
         ENGINE.listeners.forEach((l) => {
             l();
         })

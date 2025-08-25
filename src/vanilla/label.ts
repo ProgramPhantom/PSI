@@ -8,6 +8,10 @@ import Text, { IText, Position } from "./text";
 import { FillObject } from "./util";
 import { Visual } from "./visual";
 import { Rect } from "@svgdotjs/svg.js";
+import { G } from "@svgdotjs/svg.js";
+import { SVG } from "@svgdotjs/svg.js";
+import { Mask } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 
 
 export type LabelTextPosition = "top" | "bottom" | "inline"
@@ -104,12 +108,60 @@ export default class Label extends Collection implements ILabel {
         }
     }
  
-    draw(surface: Element) {
+    draw(surface: Svg) {
+        if (this.svg) {
+            this.svg.remove();
+        }
+        
+        var group = new G().id(this.id).attr({"title": this.ref});
+
         var hitbox = new Rect().attr({"data-editor": "hitbox", "zIndex": -1}).x(this.x).y(this.y)
                                 .width(this.width).height(this.height).fill("transparent").id(this.id)
                                 .stroke("none")
+
+
+        
         surface.add(hitbox);
-        super.draw(surface);
+        
+        // Clip
+
+        var text = this.text;
+        var arrow = this.line;
+
+        this.svg = SVG();
+
+        var area = SVG().rect(10, 10).move(this.getCentre("x") ?? 0, this.getCentre("y") ?? 0)
+        this.svg.add(area)
+        var clippingRect = SVG().clip()
+
+        if (arrow) {
+
+            
+
+            arrow.draw(surface);
+        }
+        if (text) {
+            text.draw(surface)
+
+            const SPILL_PADDING = 4;
+            const TEXT_PADDING = 1;
+
+            if (text.svg && arrow && arrow.svg) {
+                var maskID: string = this.id + "-MASK";
+                var visibleArea = new Rect().move(this.x-SPILL_PADDING, this.y-SPILL_PADDING).size(this.width+2*SPILL_PADDING, this.height+2*SPILL_PADDING).fill("white");
+                var blockedArea = new Rect().move(text.x-TEXT_PADDING, text.y-TEXT_PADDING)
+                    .size((text.contentWidth ?? 0) +2*TEXT_PADDING, (text.contentHeight ?? 0) + 2*TEXT_PADDING).fill("black");
+
+                var newMask = new Mask().add(visibleArea).add(blockedArea)
+                .id(maskID).attr({"mask-type": "luminance", "maskUnits": "userSpaceOnUse"});
+
+                // VERY IMPORTANT: use "useSpaceOnUse" to follow the user coordinates not some random bs coord system
+
+                surface.add(newMask)
+
+                arrow.svg.attr({"mask": `url(#${maskID})`})
+            }
+        }
     }
 
     private arrangeContent(orientation: Dimensions) {

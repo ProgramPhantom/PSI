@@ -59,6 +59,10 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         // group.move(this.x, this.y).size(this.width, this.height)
         this.svg = group;
 
+        // var hitbox = new Rect().attr({"data-editor": "hitbox", "zIndex": -1, "pointer-events": "bounding-box"}).x(0).y(0)
+        //                                    .width("100%").height("100%").fill("transparent").id(this.id)
+        //                                    .stroke("none");
+        // this.svg.add(hitbox)
         surface.add(this.svg);
     }
  

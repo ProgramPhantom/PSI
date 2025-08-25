@@ -1,13 +1,12 @@
 import { debug } from "console"
 import Sequence from "./vanilla/sequence"
-import SequenceHandler from "./vanilla/sequenceHandler"
+import SequenceHandler, { DiagramComponent } from "./vanilla/sequenceHandler"
 import PaddedBoxDebug from "./debug/PaddedBox"
 import CollectionDebug from "./debug/Collection"
 import BindingsDebug from "./debug/Bindings"
 import PaddedBox from "./vanilla/paddedBox"
 import Labellable from "./vanilla/labellable"
 import { Visual } from "./vanilla/visual"
-import { DiagramComponent } from "./Canvas"
 import ENGINE from "./vanilla/engine"
 import { Colors } from "@blueprintjs/core"
 
@@ -32,7 +31,7 @@ const Debug: React.FC<IDebug> = (props) => {
                     return <CollectionDebug element={ENGINE.handler.sequence.pulseColumns}></CollectionDebug>
                 case "label column":
                     return <CollectionDebug element={ENGINE.handler.sequence.labelColumn}></CollectionDebug>
-                case "channels":
+                case "channel":
                     return ENGINE.handler.sequence.channels.map((c) => {
                         return <PaddedBoxDebug element={c} contentColour={Colors.BLUE4}></PaddedBoxDebug>
                     })

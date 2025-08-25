@@ -4,6 +4,8 @@ import { FillObject, RecursivePartial } from "./util";
 import { ILineLike } from "./lineLike";
 import { Svg } from "@svgdotjs/svg.js";
 import LineLike from "./lineLike";
+import { Element } from "svg.js";
+
 
 
 export interface ILine extends ILineLike {

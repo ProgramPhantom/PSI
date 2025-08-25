@@ -69,7 +69,7 @@ export abstract class Visual extends Mountable implements IVisual {
     }
 
 
-    abstract draw(surface: Svg): void 
+    abstract draw(surface: Element): void 
     erase(): void {
         this.svg?.remove();
     }

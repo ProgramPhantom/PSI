@@ -3,10 +3,11 @@ import { FillObject, RecursivePartial } from "./util";
 import { simplePulses } from "./default/data/simplePulse";
 import defaultBar from "./default/data/bar.json";
 import { Element } from "@svgdotjs/svg.js";
-import { ElementTypes } from "./point";
 import VisualForm from "../form/VisualForm";
 import Mountable, { IMountable } from "./mountable"; 
 import { defaultSpace } from "./default/data";
+import { DiagramComponent } from "./sequenceHandler";
+import { Svg } from "@svgdotjs/svg.js";
 
 
 export interface ISpace extends IVisual {
@@ -25,7 +26,7 @@ export default class Space extends Visual implements ISpace, IDraw {
         offset: this.offset,
         mountConfig: this.mountConfig
     }}
-    static ElementType: ElementTypes = "rect";
+    static ElementType: DiagramComponent = "rect";
     static form: React.FC = VisualForm;
 
 

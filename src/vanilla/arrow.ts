@@ -3,6 +3,7 @@ import { Visual, IVisual } from "./visual";
 import defaultArrow from "./default/data/arrow.json"
 import { FillObject, RecursivePartial, UpdateObj } from "./util";
 import { ILine, Line } from "./line";
+import { Element } from "@svgdotjs/svg.js";
 
 
 export enum HeadStyle {
@@ -62,7 +63,7 @@ export default class Arrow extends Line {
   }
 
 
-  public override draw(surface: Svg): void {
+  public override draw(surface: Element): void {
     if (this.dirty) {
       // Clear old svg
       if (this.svg) {

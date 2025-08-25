@@ -78,7 +78,6 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
 
     draw(surface: Element) {
         super.draw(surface);
-
     }
 
     // get id(): string {

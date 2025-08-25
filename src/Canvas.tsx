@@ -154,7 +154,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     function mouseOver(over: React.MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
         var targetSVGId: string | undefined;
         targetSVGId = (over.target as HTMLElement).id;
-        
+        console.log(targetSVGId);
         var element: Visual | undefined = getMouseElement(targetSVGId)
         
         setHoveredElement(element);
