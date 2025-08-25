@@ -5,7 +5,6 @@ import { SelectionMode } from './App'
 
 export interface IBannerProps {
     saveSVG: () => void, 
-    saveScript: () => void, 
     openConsole: () => void,
     selection: {selectionMode: SelectionMode, setSelectionMode: React.Dispatch<React.SetStateAction<SelectionMode>>}
 }
@@ -20,9 +19,9 @@ export default function Banner(props: IBannerProps) {
                 <Navbar.Divider />
 
                 
-                <Button size="small" variant="minimal" icon="cloud-download" text="Save SVG" onClick={props.saveSVG} disabled={true}/>
+                <Button size="small" variant="minimal" icon="cloud-download" text="Save SVG" onClick={props.saveSVG}/>
                 <Navbar.Divider />
-                <Button size="small" variant="minimal" icon="media" text="Save JPG" onClick={props.saveScript} disabled={true}/>
+                <Button size="small" variant="minimal" icon="media" text="Save JPG" disabled={true}/>
 
                 <Navbar.Divider />
                 <Popover renderTarget={({isOpen, ...targetProps}) => (

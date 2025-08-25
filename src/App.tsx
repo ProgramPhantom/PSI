@@ -45,14 +45,48 @@ function App() {
   const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectionMode={selectionMode}></Canvas>
 
   function SaveSVG() {
-    throw new Error("Not implemented")
-  }
-
-  function SaveScript() {
-    // var script = ENGINE.handler.parser.script;
-// 
-    // var blob = new Blob([script], {type: "text/plain;charset=utf-8"});
-    // FileSaver.saveAs(blob, "sequence.nmpd");
+    try {
+      // Get the current SVG surface from the ENGINE
+      const surface = ENGINE.surface;
+      
+      // Create a clone of the surface to avoid modifying the original
+      const svgClone = surface.clone(true, false);
+      
+      // Remove all elements with data-editor="hitbox" attribute
+      const hitboxElements = svgClone.find('[data-editor="hitbox"]');
+      hitboxElements.forEach(element => {
+        element.remove();
+      });
+      
+      // Get the SVG as a string
+      const svgString = svgClone.svg();
+      
+      // Create a blob with the SVG content
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      
+      // Use the current image name from ENGINE or default to a timestamp
+      const fileName = ENGINE.currentImageName || `pulse-diagram-${Date.now()}.svg`;
+      
+      // Save the file using file-saver
+      saveAs(blob, fileName);
+      
+      // Show success message
+      myToaster.show({
+        message: `SVG saved successfully as ${fileName}`,
+        intent: "success",
+        icon: "tick-circle"
+      });
+      
+    } catch (error) {
+      console.error('Error saving SVG:', error);
+      
+      // Show error message
+      myToaster.show({
+        message: `Failed to save SVG: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        intent: "danger",
+        icon: "error"
+      });
+    }
   }
 
   function SelectElement(element: Visual | undefined) {
@@ -75,7 +109,7 @@ function App() {
 
       <div style={{display: "flex", height: "100%", width: "100%", flexDirection: "column"}}>
         <div style={{width: "100%"}}>
-          <Banner saveSVG={SaveSVG} saveScript={SaveScript} openConsole={openConsole} 
+          <Banner saveSVG={SaveSVG} openConsole={openConsole} 
           selection={{selectionMode: selectionMode, setSelectionMode: setSelectionMode}}></Banner>
         </div>
         
