@@ -14,7 +14,7 @@
     },
 
     "channelSymbol": {
-        "text": "_{1}\\mathrm{H}",
+        "text": "^{1}\\mathrm{H}",
         "style": {
             "fontSize": 50,
             "colour": "black",

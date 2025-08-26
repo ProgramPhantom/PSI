@@ -37,13 +37,8 @@ export abstract class Visual extends Mountable implements IVisual {
     static form: React.FC = VisualForm;
 
     get state(): IVisual { return {
-        x: this._x,
-        y: this._y,
-        contentWidth: this._contentWidth,
-        contentHeight: this._contentHeight,
-        padding: this.padding,
         offset: this.offset,
-        ref: this.ref
+        ...super.state
     }}
     get allElements(): Record<ID, Visual> {
         return {[this.id]: this};

@@ -32,7 +32,7 @@ class DiagramDropInterpreter {
         var columnSets: Aligner<Visual>[] = sequences.map((s) => s.pulseColumns);
         var newSlither: AddSpec;
 
-        Object.entries(diagram.sequences).forEach(([seqID, sequence]) => {
+        Object.entries(diagram.sequenceDict).forEach(([seqID, sequence]) => {
             var channels = sequence.channels;
             var columns: Aligner<Visual>[] = sequence.pulseColumns.children;
             var noColumns = columns.length;

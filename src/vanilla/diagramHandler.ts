@@ -20,7 +20,7 @@ import { IMountConfig } from "./mountable";
 import { IBinding, IBindingPayload } from "./spacial";
 import Arrow from "./arrow";
 import { PointBind } from "../BindingsSelector";
-import Diagram, { DiagramStructure } from "./diagram";
+import Diagram, { DiagramStructure, IDiagram } from "./diagram";
 import { Rect } from "@svgdotjs/svg.js";
 
 
@@ -53,8 +53,8 @@ export default class DiagramHandler {
         "chirplohi": SVGElement,
         "element": SVGElement,
 
-        "pulse90": RectElement,
-        "pulse180": RectElement,
+        "90-pulse": RectElement,
+        "180-pulse": RectElement,
     }
     isPositional(elementName: string): boolean {return Object.keys(DiagramHandler.positionalTypes).includes(elementName)}
 
@@ -94,10 +94,13 @@ export default class DiagramHandler {
         return structuralElements;
     }
 
-    constructor(surface: Svg, emitChange: () => void) {
+    constructor(surface: Svg, emitChange: () => void,) {
         this.syncExternal = emitChange;
 
-        this.diagram = new Diagram({ref: "diagram"});
+
+        this.diagram = new Diagram({});
+        
+        
 
         this.surface = surface;
     }
@@ -130,6 +133,21 @@ export default class DiagramHandler {
         this.syncExternal();
     }
 
+    // ----- Construct diagram from state ------
+    public constructDiagram(state: IDiagram): Diagram {
+        var newDiagram: Diagram = new Diagram(state);
+        this.diagram = newDiagram;
+        state.sequences.forEach((s) => {
+            s.channels.forEach((c) => {
+                c.mountedElements.forEach((m) => {
+                    this.mountElementFromTemplate(m, m.ref);
+                })
+            })
+        })
+
+        this.draw();
+        return newDiagram
+    }
 
     // ---- Form interfaces ----
     public submitElement(parameters: ElementBundle, type: Component): Visual {

@@ -34,17 +34,12 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
     static ElementType: Component = "labellable";
     get state(): ILabellable { 
         return {
-        x: this._x,
-        y: this._y,
-        contentWidth: this._contentWidth,
-        contentHeight: this._contentHeight,
-        padding: this.padding,
-        offset: this.offset,
         labels: this.labels.map((l) => {
             return l.state
         }),
-        mountConfig: this.mountConfig,
-        ref: this.ref
+        ...super.state,
+        contentWidth: this.coreChild.contentWidth,
+        contentHeight: this.coreChild.contentHeight,
     }}
 
 
@@ -63,7 +58,8 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
         this.mountConfig = {...coreChild.mountConfig!};
         // parent.mountConfig = undefined;
 
-        this.ref = "labelled-" + coreChild.ref;
+        // this.ref = "labelled-" + coreChild.ref;
+        this.ref = coreChild.ref;
 
         this.coreChild = coreChild;
 

@@ -112,7 +112,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
     let selectedElement = props.selectedElement;
     
-    const [zoom, setZoom] = useState(1);
+    const [zoom, setZoom] = useState(2);
     const [dragging, setDragging] = useState(false);
     const [panning, setPanning] = useState(false);
     const [fileName, setFileName] = useState(ENGINE.currentImageName);
@@ -252,7 +252,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                 zIndex: 100,
                 }}>
 
-                {hoveredElement ? <Text>{hoveredElement.ref}</Text> : <Text>none</Text>}
+                {hoveredElement ? <Text>{hoveredElement.ref}: {hoveredElement.id}</Text> : <Text>none</Text>}
             </div>
             <p>{zoom}</p>
             <CanvasDropContainer scale={zoom} >

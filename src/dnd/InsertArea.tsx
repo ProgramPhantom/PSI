@@ -39,6 +39,7 @@ function InsertArea(props: {areaSpec: AddSpec, key: string}) {
         drop: () => ({ 
             index: props.areaSpec.index, 
             channelID: props.areaSpec.channelID,
+            sequenceID: props.areaSpec.sequenceID,
             insert: props.areaSpec.insert,
             orientation: props.areaSpec.orientation,
             dropEffect: "insert"} as IMountAreaResult),

@@ -18,7 +18,8 @@ export interface Place {
 
 
 export interface IElement {
-    ref: string
+    ref: string,
+    id?: ID
 }
 
 export interface IPoint extends IElement {
@@ -36,7 +37,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
         "default": {
             x: undefined,
             y: undefined,
-            ref: "default"
+            ref: "default",
         },
     }
     static ElementType: Component = "abstract"; 
@@ -45,7 +46,8 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
         return {
         x: this._x,
         y: this._y,
-        ref: this.ref
+        ref: this.ref,
+        id: this.id,
     }}
 
     protected _x?: number;
@@ -67,13 +69,17 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
 
     displaced: boolean=false;
 
-    constructor(x?: number, y?: number, ref: string = "point") {
+    constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined=undefined) {
         this.x = x;
         this.y = y;
 
         this.ref = ref;
 
-        this._id = Math.random().toString(16).slice(2);
+        if (id === undefined) {
+            this._id = Math.random().toString(16).slice(2);
+        } else {
+            this._id = id
+        }
     }
 
     get x(): number {

@@ -1,5 +1,5 @@
 import { Svg, Element } from "@svgdotjs/svg.js";
-import Point, { IPoint } from "./point";
+import Point, { ID, IPoint } from "./point";
 import { SVG } from "@svgdotjs/svg.js";
 import logger, { Operations } from "./log";
 import { posPrecision } from "./util";
@@ -67,14 +67,12 @@ export default class Spacial extends Point implements ISpacial {
             ref: "default-spacial"
         },
     }
-
     get state(): ISpacial {
         return {
-            x: this._x,
-            y: this._y,
             contentWidth: this._contentWidth,
             contentHeight: this._contentHeight,
-            ref: this.ref
+            
+            ...super.state
     }}
 
     public AnchorFunctions = {
@@ -98,8 +96,8 @@ export default class Spacial extends Point implements ISpacial {
     override bindings: IBinding[] = [];
     override bindingsToThis: IBinding[] = [];
 
-    constructor(x?: number, y?: number, width?: number, height?: number, ref: string="spacial") {
-        super(x, y, ref);
+    constructor(x?: number, y?: number, width?: number, height?: number, ref: string="spacial", id: ID|undefined=undefined) {
+        super(x, y, ref, id);
         
         width !== undefined ? this._contentWidth = width : null;
         height !== undefined ? this._contentHeight = height : null;
@@ -322,32 +320,6 @@ export default class Spacial extends Point implements ISpacial {
             }
         }
     }
-    
-
-    // removeBind(el: Point, dimension?: Dimensions) {
-    //     // Remove all bindings associated with el
-    //     // this.bindings.forEach((b, i) => {
-    //     //     if (b.targetObject === el) {
-    //     //         this.bindings.splice(i, 1);
-    //     //     }
-    //     // })
-    //     this.bindings = this.bindings.filter(function(binding) {
-    //         if (binding.targetObject == el) {
-    //             if (dimension !== undefined) {
-    //                 if (binding.bindingRule.dimension === dimension) {
-    //                     return false
-    //                 } else {
-    //                     return true
-    //                 }
-    //             } else {
-    //                 return false;
-    //             }
-    //         } else {
-    //             return true;
-    //         }
-    //         
-    //     });
-    // }
 
     subscribers: UpdateNotification[] = [];
 

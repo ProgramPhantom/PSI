@@ -99,9 +99,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
       if (dropResult === null) {return}
 
       if (isCanvasDrop(dropResult)) {
-
         ENGINE.handler.moveElement(item.element, dropResult.x, dropResult.y);
-
       } else if (isMountDrop(dropResult)) {
         var result = dropResult as IMountAreaResult
         var targetChannel = ENGINE.handler.diagram.channelsDict[result.channelID];

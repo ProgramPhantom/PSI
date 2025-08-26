@@ -19,7 +19,7 @@ import { defaultNewIndexGetter } from "@dnd-kit/sortable";
 import { Alignment } from "./mountable";
 import Space from "./space";
 
-interface ISequence extends ICollection {
+export interface ISequence extends ICollection {
     channels: IChannel[]
 }
 
@@ -31,6 +31,14 @@ export type SequenceStructures =  "channel column" | "label column" | "label col
 export default class Sequence extends Collection implements IHaveStructure {
     static defaults: {[key: string]: ISequence} = {"default": {...<any>defaultSequence}}
     static ElementType: Component = "sequence";
+    
+    get state(): ISequence {
+        return {
+            channels: this.channels.map((c) => c.state),
+
+            ...super.state
+        }
+    }
 
     channelsDict: {[name: string]: Channel;} = {};
     get channels(): Channel[] {return Object.values(this.channelsDict)}
@@ -55,12 +63,11 @@ export default class Sequence extends Collection implements IHaveStructure {
         return elements;
     }
 
-    constructor(params: RecursivePartial<ISequence>, templateName: string="default") {
-        var fullParams: ISequence = FillObject(params, Sequence.defaults[templateName]);
+    constructor(pParams: RecursivePartial<ISequence>, templateName: string="default") {
+        var fullParams: ISequence = FillObject(pParams, Sequence.defaults[templateName]);
         super(fullParams, templateName);
         logger.processStart(Processes.INSTANTIATE, ``, this);
 
-        this.channelsDict = {};  // Wierdest bug ever happening here
 
         // c
         // c
@@ -95,6 +102,13 @@ export default class Sequence extends Collection implements IHaveStructure {
             "label column": this.labelColumn,
             "pulse columns": this.pulseColumns,
         }
+
+
+        this.channelsDict = {};  
+        fullParams.channels.forEach((c) => {
+            var newChan = new Channel(c);
+            this.addChannel(newChan);
+        })
         
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
@@ -250,6 +264,10 @@ export default class Sequence extends Collection implements IHaveStructure {
         element.mountConfig.mountOn = true;
 
         var targetChannel: Channel = this.channelsDict[element.mountConfig.channelID];
+        if (targetChannel === undefined) {
+            throw new Error(`Cannot find channel width ID ${element.mountConfig.channelID}`)
+        }
+
         var numColumns = this.pulseColumns.children.length;
         
         var INDEX = element.mountConfig.index;
@@ -261,7 +279,12 @@ export default class Sequence extends Collection implements IHaveStructure {
         if (insert) {
             INDEX = Math.min(INDEX, numColumns)
         } else {
-            INDEX = Math.max(Math.min(INDEX, numColumns-1), 0)  // Max stops going below 0
+            // Trying to place on non-existant column, behaviour is to insert at end
+            if (INDEX > numColumns-1) {  
+                INDEX = numColumns;
+                insert = true
+            }
+            // INDEX = Math.max(Math.min(INDEX, numColumns-1), 0)  // Max stops going below 0
         }
         element.mountConfig.index = INDEX;
         var endINDEX: number = INDEX + element.mountConfig.noSections - 1;

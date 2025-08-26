@@ -25,6 +25,8 @@ import Console from './Console';
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
+ENGINE.load()
+
 export const myToaster: Toaster = await OverlayToaster.create({ position: "bottom",  });
 
 
@@ -41,6 +43,16 @@ function App() {
   const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("select");
+
+  // Set up automatic saving every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      ENGINE.save();
+    }, 2000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
 
   const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectionMode={selectionMode}></Canvas>
 

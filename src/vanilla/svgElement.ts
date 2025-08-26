@@ -48,16 +48,9 @@ export interface ISVG extends IVisual {
 export default class SVGElement extends Visual implements ISVG, IDraw {
     static override defaults: {[key: string]: ISVG} = {...<any>svgPulses, "default": svgPulses[180]};
 	get state(): ISVG { return {
-        x: this._x,
-        y: this._y,
-        contentWidth: this.contentWidth,
-        contentHeight: this.contentHeight,
-        padding: this.padding,
-        offset: this.offset,
 		path: this.path,
 		style: this.style,
-		mountConfig: this.mountConfig,
-		ref: this.ref
+		...super.state
     }}
 	static ElementType: VisualComponent = "svg"; 
 	static form: React.FC = SVGElementForm;

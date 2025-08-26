@@ -18,12 +18,12 @@ import logger, { Operations, Processes } from "./log";
 import { defaultNewIndexGetter } from "@dnd-kit/sortable";
 import { Alignment } from "./mountable";
 import Space from "./space";
-import Sequence, { SequenceStructures } from "./sequence";
+import Sequence, { ISequence, SequenceStructures } from "./sequence";
 import Point from "./point";
 
 
-interface IDiagram extends ICollection {
-    channels: IChannel[]
+export interface IDiagram extends ICollection {
+    sequences: ISequence[]
 }
 
 type DiagramComponent = "sequence column" 
@@ -34,6 +34,14 @@ export type DiagramStructure = SequenceStructures | ChannelStructure | "abstract
 export default class Diagram extends Collection implements IHaveStructure {
     static defaults: {[key: string]: IDiagram} = {"default": {...<any>defaultDiagram}}
     static ElementType: Component = "diagram";
+
+    get state(): IDiagram {
+        return {
+            sequences: this.sequences.map((s) => s.state),
+            
+            ...super.state
+        }
+    }
 
     sequenceDict: {[name: string]: Sequence;} = {};
     get sequences(): Sequence[] {return Object.values(this.sequenceDict)}
@@ -68,8 +76,9 @@ export default class Diagram extends Collection implements IHaveStructure {
         return elements;
     }
 
-    constructor(params: RecursivePartial<IDiagram>, templateName: string="default") {
-        var fullParams: IDiagram = FillObject(params, Diagram.defaults[templateName]);
+
+    constructor(pParams: RecursivePartial<IDiagram>, templateName: string="default") {
+        var fullParams: IDiagram = FillObject(pParams, Diagram.defaults[templateName]);
         super(fullParams, templateName);
 
         logger.processStart(Processes.INSTANTIATE, ``, this);
@@ -78,7 +87,7 @@ export default class Diagram extends Collection implements IHaveStructure {
 
         // Root 
         this.root = new Spacial(0, 0, 0, 0, "root");
-        
+
 
         this.sequenceColumn = new Aligner<Sequence>(
             {bindMainAxis: true, axis: "y", alignment: Alignment.here, ref: "sequence column", x:0, y:0}, "default", );
@@ -87,9 +96,15 @@ export default class Diagram extends Collection implements IHaveStructure {
         this.add(this.sequenceColumn);
         
         // Initial sequence:
-        var startSequence = new Sequence({}, "default");
-        this.addSequence(startSequence);
+        if (fullParams.sequences.length === 0) {
+            var startSequence = new Sequence({});
+            this.addSequence(startSequence);
+        }
 
+        fullParams.sequences.forEach((s) => {
+            var newSeq = new Sequence(s);
+            this.addSequence(newSeq);
+        })
         
 
         this.structure = {

@@ -1,0 +1,388 @@
+{
+    "sequences": [
+      {
+        "channels": [
+          {
+            "mountedElements": [
+              {
+                "style": {
+                  "fill": "#ffffff",
+                  "stroke": "black",
+                  "strokeWidth": 1
+                },
+                "offset": [
+                  0,
+                  0
+                ],
+                "mountConfig": {
+                  "orientation": "top",
+                  "alignment": "centre",
+                  "noSections": 1,
+                  "channelID": "c57be851915a38",
+                  "index": 0,
+                  "dropEffect": "insert",
+                  "sequenceID": "d031b975e49538",
+                  "insert": true,
+                  "mountOn": true
+                },
+                "padding": [
+                  0,
+                  4,
+                  0,
+                  4
+                ],
+                "contentWidth": 10,
+                "contentHeight": 40,
+                "x": 32,
+                "y": 40,
+                "ref": "180-pulse",
+                "id": "SvgjsRect1656"
+              },
+              {
+                "path": "\\src\\assets\\acquire2.svg",
+                "offset": [
+                  0,
+                  0
+                ],
+                "mountConfig": {
+                  "orientation": "top",
+                  "alignment": "centre",
+                  "noSections": 1,
+                  "channelID": "c57be851915a38",
+                  "index": 1,
+                  "dropEffect": "insert",
+                  "sequenceID": "d031b975e49538",
+                  "insert": true,
+                  "mountOn": true
+                },
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "contentWidth": 150,
+                "contentHeight": 75,
+                "x": 50,
+                "y": 5,
+                "ref": "acquire",
+                "id": "SvgjsSvg1218"
+              },
+              {
+                "path": "\\src\\assets\\180.svg",
+                "offset": [
+                  0,
+                  0
+                ],
+                "mountConfig": {
+                  "orientation": "top",
+                  "alignment": "centre",
+                  "noSections": 1,
+                  "channelID": "c57be851915a38",
+                  "index": 2,
+                  "dropEffect": "insert",
+                  "sequenceID": "d031b975e49538",
+                  "insert": false,
+                  "mountOn": true
+                },
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "contentWidth": 50,
+                "contentHeight": 50,
+                "x": 201,
+                "y": 30,
+                "ref": "180",
+                "id": "SvgjsSvg1428"
+              },
+              {
+                "path": "\\src\\assets\\chirphilo.svg",
+                "offset": [
+                  0,
+                  1
+                ],
+                "mountConfig": {
+                  "orientation": "top",
+                  "alignment": "centre",
+                  "noSections": 1,
+                  "channelID": "c57be851915a38",
+                  "index": 3,
+                  "dropEffect": "insert",
+                  "sequenceID": "d031b975e49538",
+                  "insert": true,
+                  "mountOn": true
+                },
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "contentWidth": 50,
+                "contentHeight": 20,
+                "x": 252,
+                "y": 60,
+                "ref": "chirphilo",
+                "id": "SvgjsSvg1483"
+              }
+            ],
+            "sequenceID": "d031b975e49538",
+            "style": {
+              "thickness": 3,
+              "barStyle": {
+                "fill": "#000000",
+                "stroke": null,
+                "strokeWidth": null
+              }
+            },
+            "channelSymbol": {
+              "x": 5,
+              "y": 71,
+              "contentHeight": 19,
+              "contentWidth": 27,
+              "text": "_{1}\\mathrm{H}",
+              "offset": [
+                0,
+                0
+              ],
+              "padding": [
+                0,
+                0,
+                2,
+                0
+              ],
+              "style": {
+                "fontSize": 50,
+                "colour": "black",
+                "display": "block"
+              },
+              "ref": "TEXT"
+            },
+            "offset": [
+              0,
+              0
+            ],
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "contentWidth": 297,
+            "contentHeight": 98,
+            "x": 5,
+            "y": 5,
+            "ref": "my-channel",
+            "id": "c57be851915a38"
+          },
+          {
+            "mountedElements": [
+              {
+                "path": "\\src\\assets\\ampseries.svg",
+                "offset": [
+                  0,
+                  1
+                ],
+                "mountConfig": {
+                  "orientation": "top",
+                  "alignment": "centre",
+                  "noSections": 1,
+                  "channelID": "75b2511d328f58",
+                  "index": 0,
+                  "dropEffect": "insert",
+                  "sequenceID": "d031b975e49538",
+                  "insert": false,
+                  "mountOn": true
+                },
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "contentWidth": 15,
+                "contentHeight": 40,
+                "x": 33.5,
+                "y": 103,
+                "ref": "amp",
+                "id": "SvgjsSvg1653"
+              },
+              {
+                "path": "\\src\\assets\\chirphilo.svg",
+                "offset": [
+                  0,
+                  1
+                ],
+                "mountConfig": {
+                  "orientation": "top",
+                  "alignment": "centre",
+                  "noSections": 1,
+                  "channelID": "75b2511d328f58",
+                  "index": 1,
+                  "dropEffect": "insert",
+                  "sequenceID": "d031b975e49538",
+                  "insert": false,
+                  "mountOn": true
+                },
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "contentWidth": 50,
+                "contentHeight": 20,
+                "x": 100,
+                "y": 123,
+                "ref": "chirphilo",
+                "id": "SvgjsSvg1314"
+              },
+              {
+                "path": "\\src\\assets\\chirplohi.svg",
+                "offset": [
+                  0,
+                  1
+                ],
+                "mountConfig": {
+                  "orientation": "top",
+                  "alignment": "centre",
+                  "noSections": 1,
+                  "channelID": "75b2511d328f58",
+                  "index": 2,
+                  "dropEffect": "insert",
+                  "sequenceID": "d031b975e49538",
+                  "insert": true,
+                  "mountOn": true
+                },
+                "padding": [
+                  0,
+                  1,
+                  0,
+                  1
+                ],
+                "contentWidth": 50,
+                "contentHeight": 20,
+                "x": 200,
+                "y": 123,
+                "ref": "chirplohi",
+                "id": "SvgjsSvg1373"
+              },
+              {
+                "path": "\\src\\assets\\chirphilo.svg",
+                "offset": [
+                  0,
+                  1
+                ],
+                "mountConfig": {
+                  "orientation": "top",
+                  "alignment": "centre",
+                  "noSections": 1,
+                  "channelID": "75b2511d328f58",
+                  "index": 3,
+                  "dropEffect": "insert",
+                  "sequenceID": "d031b975e49538",
+                  "insert": false,
+                  "mountOn": true
+                },
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "contentWidth": 50,
+                "contentHeight": 20,
+                "x": 252,
+                "y": 123,
+                "ref": "chirphilo",
+                "id": "SvgjsSvg1538"
+              }
+            ],
+            "sequenceID": "d031b975e49538",
+            "style": {
+              "thickness": 3,
+              "barStyle": {
+                "fill": "#000000",
+                "stroke": null,
+                "strokeWidth": null
+              }
+            },
+            "channelSymbol": {
+              "x": 5,
+              "y": 134,
+              "contentHeight": 19,
+              "contentWidth": 27,
+              "text": "_{1}\\mathrm{H}",
+              "offset": [
+                0,
+                0
+              ],
+              "padding": [
+                0,
+                0,
+                2,
+                0
+              ],
+              "style": {
+                "fontSize": 50,
+                "colour": "black",
+                "display": "block"
+              },
+              "ref": "TEXT"
+            },
+            "offset": [
+              0,
+              0
+            ],
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "contentWidth": 297,
+            "contentHeight": 63,
+            "x": 5,
+            "y": 103,
+            "ref": "my-channel",
+            "id": "75b2511d328f58"
+          }
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "padding": [
+          5,
+          5,
+          5,
+          5
+        ],
+        "contentWidth": 297,
+        "contentHeight": 161,
+        "x": 0,
+        "y": 0,
+        "ref": "sequence",
+        "id": "d031b975e49538"
+      }
+    ],
+    "offset": [
+      0,
+      0
+    ],
+    "padding": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "contentWidth": 307,
+    "contentHeight": 171,
+    "x": 0,
+    "y": 0,
+    "ref": "diagram",
+    "id": "92fadf2ee82c48"
+  }

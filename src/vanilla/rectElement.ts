@@ -24,23 +24,16 @@ export default class RectElement extends Visual implements IRect, IDraw {
         "bar": <any>defaultBar
     };
     get state(): IRect { return {
-        x: this._x,
-        y: this._y,
-        contentWidth: this.contentWidth,
-        contentHeight: this.contentHeight,
-        padding: this.padding,
-        offset: this.offset,
         style: this.style,
-        ref: this.ref,
-        mountConfig: this.mountConfig
+        ...super.state
     }}
     static ElementType: Component = "rect";
     static form: React.FC = RectElementForm;
 
 	style: IRectStyle;	
 
-    constructor(params: RecursivePartial<IRect>, templateName: string="pulse90") {
-		var fullParams: IRect = FillObject(params, RectElement.defaults[templateName])
+    constructor(params: RecursivePartial<IRect>, templateName: string="90-pulse") {
+		var fullParams: IRect = FillObject<IRect>(params, RectElement.defaults[templateName])
 		super(fullParams);
 
 		this.style = fullParams.style;

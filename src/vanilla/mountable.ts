@@ -27,13 +27,19 @@ export interface IMountable extends IPaddedBox {
 
 class Mountable extends PaddedBox implements IMountable {
     static override defaults: {[name: string]: IMountable} = {"default": <any>defaultMountable}
+    get state(): IMountable {
+        return {
+            mountConfig: this.mountConfig,
+            ...super.state
+        }
+    }
 
     protected _mountConfig?: IMountConfig;
     public flipped: boolean = false;
     public dummies: Space[] = [];
 
     constructor(params: IMountable) {
-        super(params.padding, params.x, params.y, params.contentWidth, params.contentHeight, params.ref)
+        super(params.padding, params.x, params.y, params.contentWidth, params.contentHeight, params.ref, params.id)
 
         this.mountConfig = params.mountConfig;
 

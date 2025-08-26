@@ -1,6 +1,7 @@
 import { Visual, IVisual } from "./visual";
 import { IRect } from "./rectElement";
 import Spacial, { ISpacial } from "./spacial";
+import { ID } from "./point";
 
 type Padding = number | [number, number] | [number, number, number, number]
 type Offset = [number, number]
@@ -39,19 +40,16 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
     }
 
     get state(): IPaddedBox { return {
-        x: this._x,
-        y: this._y,
-        contentWidth: this._contentWidth,
-        contentHeight: this._contentHeight,
         padding: this.padding,
-        ref: this.ref
+        
+        ...super.state
     }}
 
     padding: [number, number, number, number] = [0, 0, 0, 0];
 
     constructor(padding: Padding=0, x?: number, y?: number, width?: number, height?: number, 
-                ref: string=PaddedBox.defaults["default"].ref) {
-        super(x, y, width, height, ref);
+                ref: string=PaddedBox.defaults["default"].ref, id: ID | undefined=undefined) {
+        super(x, y, width, height, ref, id);
 
         if (typeof padding === "number") {
             this.padding = [padding, padding, padding, padding]

@@ -25,18 +25,11 @@ export interface IChannel extends ICollection {
     style: IChannelStyle;
 
     channelSymbol: IText;
-    
-    annotationStyle: channelAnnotation,
 }
-
 
 export interface IChannelStyle {
     thickness: number,
     barStyle: IRectStyle
-}
-
-export interface channelAnnotation {
-    padding: [number, number, number, number]
 }
 
 
@@ -44,6 +37,16 @@ export default class Channel extends Collection implements IHaveStructure {
     static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
     static ElementType: Component = "channel";
     static form: React.FC = ChannelForm;
+    get state(): IChannel {
+        return {
+            mountedElements: this.mountedElements.map((m) => m.state),
+            sequenceID: this.sequenceID,
+            style: this.style,
+            channelSymbol: this.label.state,
+
+            ...super.state
+        }
+    }
     
     structure: Record<ChannelStructure, Visual>;
 
@@ -105,7 +108,7 @@ export default class Channel extends Collection implements IHaveStructure {
         this._mountOccupancy = val;
     }
 
-    label?: Text;
+    label: Text;
 
     public get mountedElements(): Visual[]  { // All positional elements on this channel
         return this.mountOccupancy.filter(p => (p !== undefined) && (p !== "."));
@@ -113,9 +116,8 @@ export default class Channel extends Collection implements IHaveStructure {
 
     sequenceID: ID;
 
-    constructor(params: IChannel)
-    constructor(params: RecursivePartial<IChannel>, templateName: string="default") {
-        var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
+    constructor(pParams: RecursivePartial<IChannel>, templateName: string="default") {
+        var fullParams: IChannel = pParams ? UpdateObj(Channel.defaults[templateName], pParams) : Channel.defaults[templateName];
         super(fullParams, templateName);
 
         this.style = fullParams.style;
@@ -137,13 +139,14 @@ export default class Channel extends Collection implements IHaveStructure {
         this.sequenceID = fullParams.sequenceID;
         // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
-        if (fullParams.channelSymbol !== undefined) {
-            this.label = new Text(fullParams.channelSymbol);
+        
+        this.label = new Text(fullParams.channelSymbol);
 
-            this.bar.bind(this.label, "y", "centre", "centre");
+        this.bar.bind(this.label, "y", "centre", "centre");
 
-            this.add(this.label);
-        }
+        this.add(this.label);
+        
+
 
         this.structure = {
             "top aligner": this.topAligner,
