@@ -12,6 +12,7 @@ export enum Alignment { here=<any>"here", centre=<any>"centre", far=<any>"far", 
 export interface IMountConfig {
     index: number,
     channelID: ID,
+    sequenceID: ID,
 
     orientation: Orientation,
     alignment: Alignment,

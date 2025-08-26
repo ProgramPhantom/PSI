@@ -3,7 +3,7 @@ import { Control, Controller, FieldValue, FieldValues, useForm, useFormContext, 
 import { IText } from '../vanilla/text';
 import { Button, ControlGroup, Divider, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
 import LabelForm from './LabelForm';
-import SequenceHandler from '../vanilla/sequenceHandler';
+import DiagramHandler from '../vanilla/diagramHandler';
 import { IChannel } from '../vanilla/channel';
 import { defaultChannel } from '../vanilla/default/data';
 import ENGINE from '../vanilla/engine';
@@ -39,85 +39,81 @@ const ChannelForm: React.FC = () => {
 
 
                 {/* Padding */}
-                <Section
+                <Section style={{borderRadius: 0}}
                     collapseProps={{defaultIsOpen: false}}
                     compact={true}
                     title={"Padding"}
-                    collapsible={true}>
+                    collapsible={true}
+                    >
                     <ControlGroup
-                        vertical={true}>
-
-                        <FormGroup
-                            fill={false}
-                            inline={true}
-                            label="Padding top"
-                            labelFor="text-input">
-                            <Controller control={formControls.control} name="padding.0" render={({field: { onChange, onBlur, value, name, ref },}) => (
-                                <Slider value={value} onChange={onChange} max={30} min={0} labelStepSize={10}></Slider>)}>
-                            </Controller>
-                        </FormGroup>
-            
-                        <FormGroup
-                            fill={false}
-                            inline={true}
-                            label="Padding right"
-                            labelFor="text-input">
-                            <Controller control={formControls.control} name="padding.1" render={({field}) => (
-                                <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
-                            </Controller>
-                        </FormGroup>
-            
-                        <FormGroup
-                            fill={false}
-                            inline={true}
-                            label="Padding bottom"
-                            labelFor="text-input">
-                            <Controller control={formControls.control} name="padding.2" render={({field}) => (
-                                <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
-                            </Controller>
-                        </FormGroup>
-            
-                        <FormGroup
-                            fill={false}
-                            inline={true}
-                            label="Padding left"
-                            labelFor="text-input">
-                            <Controller control={formControls.control} name="padding.3" render={({field}) => (
-                                <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
-                            </Controller>
-                        </FormGroup>
-            
-            
+                    vertical={true}
+                    style={{gap: 10}}
+                    >
+                    <FormGroup style={{padding: "4px 16px"}}
+                        fill={false}
+                        label="Padding top"
+                        labelFor="text-input">
+                        <Controller control={formControls.control} name="padding.0" render={({field}) => (
+                        <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
+                        </Controller>
+                    </FormGroup>
+        
+                    <FormGroup style={{padding: "4px 16px"}}
+                        fill={false}
+                        label="Padding right"
+                        labelFor="text-input">
+                        <Controller control={formControls.control} name="padding.1" render={({field}) => (
+                        <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
+                        </Controller>
+                    </FormGroup>
+        
+                    <FormGroup style={{padding: "4px 16px"}}
+                        fill={false}
+                        label="Padding bottom"
+                        labelFor="text-input">
+                        <Controller control={formControls.control} name="padding.2" render={({field}) => (
+                        <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
+                        </Controller>
+                    </FormGroup>
+        
+                    <FormGroup style={{padding: "4px 16px", margin: 0}}
+                        fill={false}
+                        label="Padding left"
+                        labelFor="slider3">
+                        <Controller  control={formControls.control} name="padding.3" render={({field}) => (
+                        <Slider  {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
+                        </Controller>
+                    </FormGroup>
                     </ControlGroup>
                 </Section>
+                
 
                 {/* Offset */}
                 <Section style={{borderRadius: 0}}
                 collapseProps={{defaultIsOpen: false}}
                 compact={true}
                 title={"Offset"}
-                collapsible={true}
-                >
+                collapsible={true}>
                 <ControlGroup
                     vertical={true}
                     >
-                    <FormGroup
+                    <FormGroup style={{padding: "4px 8px", margin: 0}}
                         fill={false}
                         inline={true}
                         label="Offset X"
                         labelFor="text-input">
                         <Controller control={formControls.control} name="offset.0" render={({field}) => (
-                            <NumericInput {...field} onValueChange={field.onChange} min={-50} max={50} small={true}></NumericInput>)}>
+                            <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small"></NumericInput>)}>
                         </Controller>
                     </FormGroup>
-
-                    <FormGroup
+                            
+                    <FormGroup style={{padding: "4px 8px",  margin: 0}}
                     fill={false}
                     inline={true}
                     label="Offset Y"
                     labelFor="text-input">
                     <Controller control={formControls.control} name="offset.1" render={({field}) => (
-                        <NumericInput {...field} onValueChange={field.onChange} min={-50} max={50} small={true}></NumericInput>)}>
+                        <NumericInput {...field}  min={-50} max={50} onValueChange={field.onChange} size="small"></NumericInput>)}>
                     </Controller>
                     </FormGroup>
                 </ControlGroup>

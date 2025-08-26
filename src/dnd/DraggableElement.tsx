@@ -21,7 +21,7 @@ import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import SortableItem from './SortableItem';
 import { Item } from './Item';
 import { useDrag } from 'react-dnd';
-import SequenceHandler from '../vanilla/sequenceHandler';
+import DiagramHandler from '../vanilla/diagramHandler';
 import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
@@ -61,7 +61,7 @@ export const ElementTypes = {
 
 interface IDraggableElementProps {
   element: Visual,
-  handler: SequenceHandler,
+  handler: DiagramHandler,
   onDoubleClick?: (element: Visual) => void
 }
 

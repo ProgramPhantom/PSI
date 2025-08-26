@@ -1,6 +1,6 @@
 import { Svg } from "@svgdotjs/svg.js";
 import RectElement from "./rectElement";
-import SequenceHandler from "./sequenceHandler";
+import DiagramHandler from "./diagramHandler";
 import SVGElement from "./svgElement";
 
 
@@ -9,7 +9,7 @@ class ENGINE {
     static currentImageName: string = "newPulseImage.svg"
 
     static set surface(s: Svg) {
-        ENGINE._handler = new SequenceHandler(s, ENGINE.emitChange)
+        ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange)
         ENGINE._surface = s;
         console.log("SURFACE ATTACHED")
     }
@@ -19,13 +19,13 @@ class ENGINE {
     private static _surface: Svg;
 
 
-    static get handler(): SequenceHandler {
+    static get handler(): DiagramHandler {
         if (ENGINE._handler === undefined) {
             throw new Error("Handler has not been created")
         }
         return ENGINE._handler;
     }
-    private static _handler: SequenceHandler;
+    private static _handler: DiagramHandler;
 
     static subscribe(listener: () => void) {
         ENGINE.listeners = [...ENGINE.listeners, listener];

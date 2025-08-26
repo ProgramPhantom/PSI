@@ -8,7 +8,7 @@ import { Orientation } from "./mountable";
 import Labellable, { ILabellable } from "./labellable";
 import SVGElementForm from "../form/SVGElementForm";
 import { Rect } from "@svgdotjs/svg.js";
-import { VisualComponent } from "./sequenceHandler";
+import { VisualComponent } from "./diagramHandler";
 
 // ----------- TEMPORARY ---------------
 const svgContent: {[path: string]: string} = {}

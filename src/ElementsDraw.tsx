@@ -2,7 +2,7 @@ import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dia
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import Errors, { errorState } from './Errors';
 import DraggableElement from './dnd/DraggableElement';
-import SequenceHandler from './vanilla/sequenceHandler';
+import DiagramHandler from './vanilla/diagramHandler';
 import ENGINE from "./vanilla/engine";
 import { Visual } from './vanilla/visual';
 

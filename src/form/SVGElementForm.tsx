@@ -5,7 +5,7 @@ import { IText } from '../vanilla/text';
 import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
 import LabelForm from './LabelForm';
 import ArrowForm from './ArrowForm';
-import SequenceHandler from '../vanilla/sequenceHandler';
+import DiagramHandler from '../vanilla/diagramHandler';
 import SVGElement, { ISVG } from '../vanilla/svgElement';
 import { svgPulses } from '../vanilla/default/data/svgPulse';
 import { dataTypes } from '@data-driven-forms/react-form-renderer';

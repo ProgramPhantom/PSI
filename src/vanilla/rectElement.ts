@@ -7,12 +7,12 @@ import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
 import { Element } from "@svgdotjs/svg.js";
 import RectElementForm from "../form/RectForm";
-import { DiagramComponent } from "./sequenceHandler";
+import { Component } from "./diagramHandler";
 
 export interface IRectStyle {
 	fill: string,
-	stroke: string | null,
-	strokeWidth: number | null
+	stroke: string,
+	strokeWidth: number 
 }
 
 export interface IRect extends IVisual {
@@ -34,7 +34,7 @@ export default class RectElement extends Visual implements IRect, IDraw {
         ref: this.ref,
         mountConfig: this.mountConfig
     }}
-    static ElementType: DiagramComponent = "rect";
+    static ElementType: Component = "rect";
     static form: React.FC = RectElementForm;
 
 	style: IRectStyle;	

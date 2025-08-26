@@ -16,12 +16,12 @@ import BindingsSelector, { PointBind } from './BindingsSelector';
 import Labellable from './vanilla/labellable';
 import Collection from './vanilla/collection';
 import { ID } from './vanilla/point';
-import { DiagramComponent, DiagramStructure, DrawComponent } from './vanilla/sequenceHandler';
+import { Component, DrawComponent } from './vanilla/diagramHandler';
 
  
 
 
-const DefaultDebugSelection: Record<DiagramComponent, boolean> = {
+const DefaultDebugSelection: Record<Component, boolean> = {
     "abstract": false,
     "svg": false,
     "text": false,
@@ -38,13 +38,15 @@ const DefaultDebugSelection: Record<DiagramComponent, boolean> = {
     "channel column": false,
     "labellable": false,
     "label": false,
+    "sequence column": false,
+    "diagram": false
 }
 
 type HoverBehaviour = "terminate" | "carry" | "conditional"
 // Terminate: return this object immediately
 // Carry: always pass to parent
 // Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
-const FocusLevels: Record<number, Record<HoverBehaviour, DiagramComponent[]>> = {
+const FocusLevels: Record<number, Record<HoverBehaviour, Component[]>> = {
     0: {
         terminate: [
             "labellable",
@@ -76,7 +78,7 @@ interface ICanvasProps {
 const Canvas: React.FC<ICanvasProps> = (props) => {
     const [debugDialogOpen, setDebugDialogOpen] = useState(false);
     const [debugElements, setDebugElements] = useState<Visual[]>([]);
-    const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<DiagramComponent, boolean>>(DefaultDebugSelection);
+    const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<Component, boolean>>(DefaultDebugSelection);
     const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 
     const [start, setStart] = useState<PointBind | undefined>(undefined);
@@ -98,8 +100,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         [debugDialogOpen],
     );
     const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
-    function handleSetDebugSelection(type: DiagramComponent) {
-        var newDebugSelection: Record<DiagramComponent, boolean> = {...debugSelectionTypes}
+    function handleSetDebugSelection(type: Component) {
+        var newDebugSelection: Record<Component, boolean> = {...debugSelectionTypes}
         newDebugSelection[type] = !newDebugSelection[type]
         setDebugSelectionTypes(newDebugSelection);
     }
@@ -165,9 +167,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         var initialElement: Visual | undefined = ENGINE.handler.identifyElement(id);
         if (initialElement === undefined) {return undefined}
 
-        var terminators: DiagramComponent[] = FocusLevels[focusLevel].terminate;
-        var carry: DiagramComponent[] = FocusLevels[focusLevel].carry;
-        var conditional: DiagramComponent[] = FocusLevels[focusLevel].conditional;
+        var terminators: Component[] = FocusLevels[focusLevel].terminate;
+        var carry: Component[] = FocusLevels[focusLevel].carry;
+        var conditional: Component[] = FocusLevels[focusLevel].conditional;
 
         function walkUp(currElement: Visual): Visual | undefined {
             if (currElement.parentId !== undefined) {
@@ -178,8 +180,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             
             if (elementUp === undefined) { return currElement }
             
-            var currElementType: DiagramComponent = (currElement.constructor as typeof Visual).ElementType;
-            var elementUpType: DiagramComponent = (elementUp.constructor as typeof Visual).ElementType;
+            var currElementType: Component = (currElement.constructor as typeof Visual).ElementType;
+            var elementUpType: Component = (elementUp.constructor as typeof Visual).ElementType;
             if (currElementType === "text") {
                 console.log()
             }
@@ -371,8 +373,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                     <Checkbox label='Lower aligners' alignIndicator='end' checked={debugSelectionTypes['bottom aligner']} 
                              onChange={() => {handleSetDebugSelection("bottom aligner")}}></Checkbox>
 
-                    <Checkbox label='Sequence' alignIndicator='end' checked={debugSelectionTypes['sequence']} 
+                    <Checkbox label='Sequences' alignIndicator='end' checked={debugSelectionTypes['sequence']} 
                              onChange={() => {handleSetDebugSelection("sequence")}}></Checkbox>
+
+                    <Checkbox label='Diagram' alignIndicator='end' checked={debugSelectionTypes['diagram']} 
+                             onChange={() => {handleSetDebugSelection("diagram")}}></Checkbox>
                 </div>
             </DialogBody>
         </Dialog>

@@ -1,4 +1,3 @@
-import Abstract, { IAbstract } from "./abstract";
 import Sequence, { SequenceStructures } from "./sequence";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
@@ -21,17 +20,16 @@ import { IMountConfig } from "./mountable";
 import { IBinding, IBindingPayload } from "./spacial";
 import Arrow from "./arrow";
 import { PointBind } from "../BindingsSelector";
+import Diagram, { DiagramStructure } from "./diagram";
 
 
 export type ElementBundle = IVisual & Partial<ILabellable>
 
 
-export type DiagramStructure = SequenceStructures | ChannelStructure | "abstract"
 
+export type Component = DiagramStructure | VisualComponent
 
-export type DiagramComponent = DiagramStructure | VisualComponent
-
-export type VisualComponent = DrawComponent | "labellable" | "label" | "text" | "arrow" | "channel" | "sequence";
+export type VisualComponent = DrawComponent | "labellable" | "label" | "text" | "arrow" | "channel" | "sequence" | "diagram";
 export type DrawComponent = "svg" | "rect"
 
 
@@ -40,7 +38,7 @@ export interface IHaveStructure {
 }
 
 
-export default class SequenceHandler {
+export default class DiagramHandler {
     static positionalTypes: {[name: string]: typeof Visual} = {
         "acquire": SVGElement,
         "halfsine": SVGElement,
@@ -57,42 +55,36 @@ export default class SequenceHandler {
         "pulse90": RectElement,
         "pulse180": RectElement,
     }
-    isPositional(elementName: string): boolean {return Object.keys(SequenceHandler.positionalTypes).includes(elementName)}
+    isPositional(elementName: string): boolean {return Object.keys(DiagramHandler.positionalTypes).includes(elementName)}
 
-   //static annotationTypes: {[name: string]: typeof Section} = {
-   //    "section": Section
-   //}
-   //isAnnotation(name: string): boolean {return Object.keys(SequenceHandler.annotationTypes).includes(name)}
- 
-    sequence: Sequence;
-    // parser: Parser;
+    diagram: Diagram;
     surface?: Svg;
 
     get id(): string {
         var id: string = "";
-        this.sequence.channels.forEach((c) => {
-            c.children.forEach((p) => {
-                id += p.id;
+        this.diagram.sequences.forEach((s) => {
+            Object.keys(s.allElements).forEach((k) => {
+                id += k;
             })
         })
         return id;
     }
     syncExternal: () => void;
 
-    get channels(): Channel[] {return this.sequence.channels}
-    hasChannel(name: string): boolean {return this.sequence.channelIDs.includes(name)}
+    get sequences(): Sequence[] {return this.diagram.sequences}
+    hasSequence(name: string): boolean {return this.diagram.sequenceIDs.includes(name)}
 
     get allElements(): Record<ID, Visual> {
-        return this.sequence.allElements
+        return this.diagram.allElements
     }
     get structuralElements(): Record<ID, Visual> {
         var structuralElements: Record<ID, Visual> = {};
 
-        Object.values(this.sequence.structure).forEach((o) => {
+        Object.values(this.diagram.structure).forEach((o) => {
             structuralElements[o.id] = o
         })
 
-        this.sequence.channels.forEach((c) => {
+        this.diagram.sequences.forEach((c) => {
             Object.values(c.structure).forEach((structure) => {
                 structuralElements[structure.id] = structure;
             })
@@ -104,15 +96,22 @@ export default class SequenceHandler {
     constructor(surface: Svg, emitChange: () => void) {
         this.syncExternal = emitChange;
 
-        this.sequence = new Sequence({ref: "sequence"});
+        this.diagram = new Diagram({ref: "diagram"});
 
         this.surface = surface;
     }
 
     // TODO: forced index for channel addition
-    channel(pParameters: RecursivePartial<IChannel>, index?: number): Visual {
-        var newChannel = new Channel(pParameters);
-        this.sequence.addChannel(newChannel);
+    channel(parameters: IChannel,  index?: number): Visual {
+        var newChannel = new Channel(parameters);
+        
+        var sequence: Sequence | undefined = this.diagram.sequenceDict[parameters.sequenceID];
+
+        if (sequence === undefined) {
+            throw new Error(`Cannot find sequence of ID ${parameters.sequenceID}`)
+        }
+
+        sequence.addChannel(newChannel);
         this.draw()
 
         return newChannel
@@ -123,14 +122,14 @@ export default class SequenceHandler {
             throw new Error("Svg surface not attached!")
         }
 
-        this.surface.size(`${this.sequence.width}px`, `${this.sequence.height}px`)
-        this.sequence.draw(this.surface);
+        this.surface.size(`${this.diagram.width}px`, `${this.diagram.height}px`)
+        this.diagram.draw(this.surface);
         this.syncExternal();
     }
 
 
     // ---- Form interfaces ----
-    public submitElement(parameters: ElementBundle, type: DiagramComponent): Visual {
+    public submitElement(parameters: ElementBundle, type: Component): Visual {
 
         var element: Visual | undefined;
         switch (type) {
@@ -138,11 +137,16 @@ export default class SequenceHandler {
                 throw new Error("Cannot instantiate abstract object")
                 break;
             case "channel":
-                element = this.channel(parameters)
+                (parameters as IChannel).sequenceID = this.diagram.sequenceIDs[0];
+                element = this.channel(parameters as IChannel);
                 break;
             case "rect":
             case "svg":
             case "labellable":
+                if (parameters.mountConfig !== undefined) {
+                    parameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
+                }
+                
                 element = this.createElement(parameters, type)
                 return element
                 break;
@@ -156,7 +160,7 @@ export default class SequenceHandler {
         return element
     }
 
-    public submitModifyElement(parameters: IVisual, type: DiagramComponent, target: Visual): Visual {
+    public submitModifyElement(parameters: IVisual, type: Component, target: Visual): Visual {
         var mountConfigCopy: IMountConfig | undefined = target.mountConfig;
         // Delete element
         this.deleteElement(target, false)
@@ -179,7 +183,7 @@ export default class SequenceHandler {
     // ------------------------
 
     public addElementFromTemplate(pParameters: RecursivePartial<ElementBundle>, elementRef: string) {
-        var positionalType = SequenceHandler.positionalTypes[elementRef];
+        var positionalType = DiagramHandler.positionalTypes[elementRef];
 
         var element: Visual;
 
@@ -206,10 +210,10 @@ export default class SequenceHandler {
         //     this.mountElement(element, element.mountConfig)
         // }
 
-        this.sequence.addElement(element);
+        this.diagram.addElement(element);
     }
 
-    public createElement(parameters: ElementBundle, type: DiagramComponent): Visual {
+    public createElement(parameters: ElementBundle, type: Component): Visual {
         var element: Visual;
 
         parameters.x = undefined;
@@ -239,7 +243,7 @@ export default class SequenceHandler {
         if (element.mountConfig !== undefined) {
             this.mountElement(element, false)
         } else {
-            this.sequence.addElement(element);
+            this.diagram.addElement(element);
         }
 
         return element;
@@ -305,17 +309,24 @@ export default class SequenceHandler {
         endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far");
         endBinds["x"].anchorObject.enforceBinding()
 
-        this.sequence.addFreeArrow(newArrow);
+        this.diagram.addFreeArrow(newArrow);
         this.draw()
     }
+
+    
     /* Interaction commands:
     Add a positional element by providing elementName, channel name, and partial positional interface.
     Function uses element name to lookup default parameters and replaces with those provided */
     
     public mountElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string, insert: boolean=false) {
-        var positionalType = SequenceHandler.positionalTypes[elementRef];
+        var positionalType = DiagramHandler.positionalTypes[elementRef];
 
         var element: Visual;
+
+        // Temporary
+        if (pParameters.mountConfig !== undefined) {
+            pParameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
+        }
 
 
         switch (positionalType.name) {
@@ -338,12 +349,12 @@ export default class SequenceHandler {
         }
 
         
-        this.sequence.mountElement(element, insert);
+        this.diagram.mountElement(element, insert);
     }
 
     // @isMountable
     private mountElement(target: Visual, insert: boolean=true) {
-        this.sequence.mountElement(target, insert);
+        this.diagram.mountElement(target, insert);
         this.draw();
     }
 
@@ -353,7 +364,7 @@ export default class SequenceHandler {
         var columnRemoved: boolean = false;
         // Find which channel owns this element:
         
-        columnRemoved = this.sequence.deleteMountedElement(target, removeColumn);
+        columnRemoved = this.diagram.deleteMountedElement(target, removeColumn);
 
 
         this.draw();
@@ -365,7 +376,7 @@ export default class SequenceHandler {
 
         this.deleteMountedElement(target, false);
 
-        this.sequence.mountElement(newElement, false);
+        this.diagram.mountElement(newElement, false);
      
         this.draw();
     }

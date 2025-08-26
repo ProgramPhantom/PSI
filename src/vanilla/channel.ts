@@ -2,9 +2,6 @@ import defaultChannel from "./default/data/channel.json"
 import { Visual, IVisual } from "./visual";
 import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import Text, { IText, Position } from "./text";
-import Abstract from "./abstract";
-import AnnotationLayer from "./annotationLayer";
-import Annotation from "./annotation";
 import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
 import Collection, { ICollection } from "./collection";
@@ -14,14 +11,16 @@ import Aligner from "./aligner";
 import { Alignment, IMountable, IMountConfig, Orientation } from "./mountable";
 import Labellable from "./labellable";
 import { OccupancyStatus } from "./sequence";
-import { DiagramComponent, IHaveStructure } from "./sequenceHandler";
+import { Component, IHaveStructure } from "./diagramHandler";
 import ChannelForm from "../form/ChannelForm";
+import { ID } from "./point";
  
 
 export type ChannelStructure = "top aligner" | "bottom aligner"
 
 export interface IChannel extends ICollection {
-    positionalElements: IVisual[],
+    mountedElements: IVisual[],
+    sequenceID: ID,
 
     style: IChannelStyle;
 
@@ -43,7 +42,7 @@ export interface channelAnnotation {
 
 export default class Channel extends Collection implements IHaveStructure {
     static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
-    static ElementType: DiagramComponent = "channel";
+    static ElementType: Component = "channel";
     static form: React.FC = ChannelForm;
     
     structure: Record<ChannelStructure, Visual>;
@@ -56,8 +55,6 @@ export default class Channel extends Collection implements IHaveStructure {
     public bottomAligner: Aligner<Visual>;
 
     bar: RectElement;
-
-    annotationLayer?: AnnotationLayer;
 
     // A column for containing the channel label and binding the bar and positional columns
     private _labelColumn?: Aligner<Visual>;

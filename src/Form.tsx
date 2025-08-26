@@ -3,7 +3,7 @@ import ChannelForm from './form/ChannelForm';
 import { FieldValue, FieldValues, useForm } from 'react-hook-form';
 import { IChannel } from './vanilla/channel';
 import { defaultChannel } from './vanilla/default/data';
-import SequenceHandler from './vanilla/sequenceHandler';
+import DiagramHandler from './vanilla/diagramHandler';
 import SVGElementForm from './form/SVGElementForm';
 import { FormHolder } from './form/FormHolder';
 import { Visual } from './vanilla/visual';

@@ -4,7 +4,7 @@ import TeXToSVG from "tex-to-svg";
 import defaultText from "./default/data/text.json";
 import { cascadeID, FillObject, posPrecision, RecursivePartial, sizePrecision, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
-import { VisualComponent } from "./sequenceHandler";
+import { VisualComponent } from "./diagramHandler";
 import { Element } from "@svgdotjs/svg.js";
 
 export const EXTOPX = 38.314;

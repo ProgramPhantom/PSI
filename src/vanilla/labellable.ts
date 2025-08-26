@@ -5,7 +5,7 @@ import { IVisual, Visual } from "./visual";
 import { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
 import { Position } from "./text";
-import { DiagramComponent } from "./sequenceHandler";
+import { Component } from "./diagramHandler";
 
 
 
@@ -31,7 +31,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             ref: "default-labellable"
         },
     }
-    static ElementType: DiagramComponent = "labellable";
+    static ElementType: Component = "labellable";
     get state(): ILabellable { 
         return {
         x: this._x,

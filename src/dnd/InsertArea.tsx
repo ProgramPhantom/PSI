@@ -15,6 +15,7 @@ interface Rect {
 export interface AddSpec {
     area: Rect,
     channelID: ID,
+    sequenceID: ID,
     index: number,
     orientation: Orientation,
     insert: boolean,
@@ -23,6 +24,7 @@ export interface AddSpec {
 export interface IInsertAreaResult extends IDrop {
   index: number,
   channelID: ID,
+  sequenceID: ID,
   orientation: Orientation,
   insert: boolean,
 }

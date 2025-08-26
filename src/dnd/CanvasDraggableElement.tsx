@@ -21,7 +21,7 @@ import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import SortableItem from './SortableItem';
 import { Item } from './Item';
 import { useDrag } from 'react-dnd';
-import SequenceHandler from '../vanilla/sequenceHandler';
+import DiagramHandler from '../vanilla/diagramHandler';
 import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
@@ -109,12 +109,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
 
       } else if (dropResult.dropEffect === "insert") {
         var result = dropResult as IInsertAreaResult
-        var targetChannel = ENGINE.handler.sequence.channelsDic[result.channelID];
+        var targetChannel = ENGINE.handler.diagram.channelsDict[result.channelID];
+        var targetSequence = ENGINE.handler.diagram.sequenceDict[result.sequenceID];
 
         var positionalElement;
         if (item.element.hasMountConfig) {
           var newMountConfig: IMountConfig = {...item.element.mountConfig!, 
-            orientation: result.orientation, channelID: result.channelID, index: result.index};
+            orientation: result.orientation, channelID: result.channelID, sequenceID: result.sequenceID, index: result.index};
 
           if (result.insert) {
             ENGINE.handler.shiftMountedElement(item.element, newMountConfig);

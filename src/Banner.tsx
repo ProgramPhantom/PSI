@@ -13,8 +13,8 @@ export interface IBannerProps {
 
 export default function Banner(props: IBannerProps) {
     const [isPNGDialogOpen, setIsPNGDialogOpen] = useState(false);
-    const [pngWidth, setPngWidth] = useState(ENGINE.handler.sequence.width);
-    const [pngHeight, setPngHeight] = useState(ENGINE.handler.sequence.height);
+    const [pngWidth, setPngWidth] = useState(ENGINE.handler.diagram.width);
+    const [pngHeight, setPngHeight] = useState(ENGINE.handler.diagram.height);
     const [pngFilename, setPngFilename] = useState("pulse-diagram.png");
 
     const handleSavePNG = () => {
@@ -87,7 +87,7 @@ export default function Banner(props: IBannerProps) {
                     <NumericInput
                         id="width-input"
                         value={pngWidth}
-                        onValueChange={(value) => setPngWidth(value || ENGINE.handler.sequence.width)}
+                        onValueChange={(value) => setPngWidth(value || ENGINE.handler.diagram.width)}
                         min={100}
                         max={4000}
                         stepSize={50}
@@ -102,7 +102,7 @@ export default function Banner(props: IBannerProps) {
                     <NumericInput
                         id="height-input"
                         value={pngHeight}
-                        onValueChange={(value) => setPngHeight(value || ENGINE.handler.sequence.height)}
+                        onValueChange={(value) => setPngHeight(value || ENGINE.handler.diagram.height)}
                         min={100}
                         max={4000}
                         stepSize={50}

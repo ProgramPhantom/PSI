@@ -5,13 +5,11 @@ import Channel, { IChannel } from "./channel"
 import Text from "./text";
 import { json } from "stream/consumers";
 import Arrow, { HeadStyle } from "./arrow";
-import Abstract from "./abstract";
 import defaultSequence from "./default/data/sequence.json"
-import SequenceHandler, { DiagramComponent, IHaveStructure } from "./sequenceHandler";
+import DiagramHandler, { Component, IHaveStructure } from "./diagramHandler";
 import { NumberAlias, select } from "svg.js";
 import { FillObject, PartialConstruct, RecursivePartial } from "./util";
 import { ILine, Line } from "./line";
-import { Grid, IGrid } from "./grid";
 import Spacial, { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
 import PaddedBox from "./paddedBox";
@@ -22,8 +20,7 @@ import { Alignment } from "./mountable";
 import Space from "./space";
 
 interface ISequence extends ICollection {
-    grid: IGrid,
-    bracket: undefined
+    channels: IChannel[]
 }
 
 export type OccupancyStatus = Visual | "." | undefined
@@ -33,22 +30,13 @@ export type SequenceStructures =  "channel column" | "label column" | "label col
 
 export default class Sequence extends Collection implements IHaveStructure {
     static defaults: {[key: string]: ISequence} = {"default": {...<any>defaultSequence}}
-    static ElementType: DiagramComponent = "sequence";
+    static ElementType: Component = "sequence";
 
-    channelsDic: {[name: string]: Channel;} = {};
-    get channels(): Channel[] {return Object.values(this.channelsDic)}
-    get channelIDs(): string[] {return Object.keys(this.channelsDic)}
+    channelsDict: {[name: string]: Channel;} = {};
+    get channels(): Channel[] {return Object.values(this.channelsDict)}
+    get channelIDs(): string[] {return Object.keys(this.channelsDict)}
 
     structure: Record<SequenceStructures, Visual>;
-
-    grid: Grid;
-    freeArrows: Arrow[] = [];
-
-    private _maxSectionWidths: number[] = [];  // Section widths
-    get maxColumnWidths() { return this._maxSectionWidths }
-    set maxColumnWidths(w: number[]) {
-        this._maxSectionWidths = w;
-    }
 
     channelColumn: Aligner<Channel>;
 
@@ -72,8 +60,7 @@ export default class Sequence extends Collection implements IHaveStructure {
         super(fullParams, templateName);
         logger.processStart(Processes.INSTANTIATE, ``, this);
 
-        this.grid = new Grid(fullParams.grid);
-        this.channelsDic = {};  // Wierdest bug ever happening here
+        this.channelsDict = {};  // Wierdest bug ever happening here
 
         // c
         // c
@@ -113,7 +100,7 @@ export default class Sequence extends Collection implements IHaveStructure {
     }
 
     reset() {
-        this.channelsDic = {};
+        this.channelsDict = {};
     }
 
     // draw(surface: Svg): void {
@@ -213,7 +200,7 @@ export default class Sequence extends Collection implements IHaveStructure {
         this.channelColumn.add(channel);
         
         // Set and initialise channel
-        this.channelsDic[channel.id] = channel; 
+        this.channelsDict[channel.id] = channel; 
 
         var index = this.channels.length - 1;
         channel.mountColumns = this.pulseColumns;  // And apply the column ref
@@ -241,7 +228,7 @@ export default class Sequence extends Collection implements IHaveStructure {
         }
         element.mountConfig.mountOn = true;
 
-        var targetChannel: Channel = this.channelsDic[element.mountConfig.channelID];
+        var targetChannel: Channel = this.channelsDict[element.mountConfig.channelID];
         var numColumns = this.pulseColumns.children.length;
         
         var INDEX = element.mountConfig.index;
@@ -332,7 +319,7 @@ export default class Sequence extends Collection implements IHaveStructure {
     // Remove column is set to false when modifyPositional is called.
     deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
         var channelID: string = target.mountConfig!.channelID;
-        var channel: Channel | undefined = this.channelsDic[channelID]
+        var channel: Channel | undefined = this.channelsDict[channelID]
         var channelIndex: number = this.channels.indexOf(channel);
         var INDEX: number;
         var endINDEX: number
@@ -393,9 +380,5 @@ export default class Sequence extends Collection implements IHaveStructure {
         }
 
         return removed;
-    }
-
-    addFreeArrow(arrow: Arrow) {
-        this.add(arrow);
     }
 }

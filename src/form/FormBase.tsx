@@ -1,5 +1,5 @@
 import { Control } from "react-hook-form";
-import SequenceHandler from "../vanilla/sequenceHandler";
+import DiagramHandler from "../vanilla/diagramHandler";
 import Point from "../vanilla/point";
 import { IVisual, Visual } from "../vanilla/visual";
 
