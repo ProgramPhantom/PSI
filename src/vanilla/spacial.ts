@@ -314,7 +314,8 @@ export default class Spacial extends Point implements ISpacial {
             // Alternative was doing the check inside the setter which still works but requires a function call
             if (anchorBindCoord !== currentTargetPointPosition) {
                 // Use the correct setter on the target with this value
-                logger.operation(Operations.BIND, `(${this.ref})[${anchorBindCoord}] ${dimension}> (${targetElement.ref})[${currentTargetPointPosition}]`, this);
+                logger.operation(Operations.BIND, 
+                `(${this.ref})[${anchorBindCoord}, ${binding.bindingRule.anchorSiteName}] ${dimension}> (${targetElement.ref})[${currentTargetPointPosition}, ${binding.bindingRule.targetSiteName}]`, this);
                 
 
                 setter(dimension, anchorBindCoord!);  // SETTER MAY NEED INTERNAL BINDING FLAG?

@@ -116,6 +116,12 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         this.enforceBinding();
     }
 
+    removeAll() {
+        this.children.forEach((c) => {
+            this.remove(c);
+        })
+    }
+
     setParent(element: T) {
         var found = false;
         this.children.forEach((c) => {

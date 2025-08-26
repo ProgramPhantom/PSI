@@ -1,5 +1,4 @@
 import { Element, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import { IAnnotation } from './annotation'
 import { posPrecision, RecursivePartial } from './util'
 import { IMountable } from './mountable'
 import { defaultVisual } from './default/data'

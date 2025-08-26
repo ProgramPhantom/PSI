@@ -177,8 +177,19 @@ export default class DiagramHandler {
         return element;
     }
 
-    public submitDeleteElement(target: Visual) {
-        this.deleteElement(target, true);
+    public submitDeleteElement(target: Visual, type: Component) {
+        switch (type) {
+            case "rect":
+            case "svg":
+            case "labellable":
+                this.deleteElement(target);
+                break;
+            case "channel":
+                this.deleteChannel(target as Channel);
+                break;
+            default:
+                throw new Error(`Cannot delete component of type ${type}`);
+        }
     }
     // ------------------------
 
@@ -277,6 +288,17 @@ export default class DiagramHandler {
         this.deleteElement(target);
     }
 
+    public deleteChannel(target: Channel) {
+        var sequence: Sequence | undefined = this.diagram.sequenceDict[target.sequenceID];
+
+        if (sequence === undefined) {
+            throw new Error(`Cannot find channel with ID: ${target.sequenceID}`);
+        }
+
+        sequence.deleteChannel(target);
+        this.draw();
+    }
+
     public identifyElement(id: string): Visual | undefined {
         var element: Visual | undefined = undefined;
 
@@ -313,7 +335,7 @@ export default class DiagramHandler {
         this.draw()
     }
 
-    
+
     /* Interaction commands:
     Add a positional element by providing elementName, channel name, and partial positional interface.
     Function uses element name to lookup default parameters and replaces with those provided */

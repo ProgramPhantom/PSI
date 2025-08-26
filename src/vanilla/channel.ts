@@ -111,13 +111,15 @@ export default class Channel extends Collection implements IHaveStructure {
         return this.mountOccupancy.filter(p => (p !== undefined) && (p !== "."));
     };  
 
+    sequenceID: ID;
 
+    constructor(params: IChannel)
     constructor(params: RecursivePartial<IChannel>, templateName: string="default") {
         var fullParams: IChannel = params ? UpdateObj(Channel.defaults[templateName], params) : Channel.defaults[templateName];
         super(fullParams, templateName);
 
         this.style = fullParams.style;
-        this.padding = fullParams.padding;
+        this.padding = [...fullParams.padding];
         // SIDE PADDING is not permitted for channels as it would break alignment
 
         this.topAligner = new Aligner({axis: "x", alignment: Alignment.far, minCrossAxis: 30, ref: `top aligner`}, "default");
@@ -132,7 +134,7 @@ export default class Channel extends Collection implements IHaveStructure {
         this.bar.bind(this.bottomAligner, "y", "far", "here");
         this.add(this.bottomAligner);
         
-        
+        this.sequenceID = fullParams.sequenceID;
         // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
         if (fullParams.channelSymbol !== undefined) {

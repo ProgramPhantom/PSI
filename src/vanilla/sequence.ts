@@ -103,11 +103,6 @@ export default class Sequence extends Collection implements IHaveStructure {
         this.channelsDict = {};
     }
 
-    // draw(surface: Svg): void {
-    //     this.channels.forEach((channel) => {
-    //         channel.draw(surface);
-    //     })
-    // }
     
     clearEmptyColumns() {
         this.pulseColumns.children.forEach((c) => {
@@ -210,6 +205,32 @@ export default class Sequence extends Collection implements IHaveStructure {
         this.elementMatrix.splice(this.elementMatrix.length, 0, []);
 
         channel.mountOccupancy = this.elementMatrix[index];
+    }
+
+    deleteChannel(channel: Channel) {
+        if (!this.channels.includes(channel)) {
+            throw new Error(`Channel '${channel.ref}' does not belong to ${this.ref}`);
+        }
+        // The order is very important here
+        var index = this.channels.indexOf(channel);
+        
+
+        if (channel.label) {
+            this.labelColumn.remove(channel.label)
+        }
+
+        channel.remove(channel.bar);
+
+        for (var element of channel.mountedElements) {
+            if (element.mountConfig) {
+                this.deleteMountedElement(element);
+            }
+        }
+
+        this.channelColumn.remove(channel);
+
+        this.elementMatrix.splice(index, 1);
+        delete this.channelsDict[channel.id];
     }
 
     public addElement(element: Visual) {
@@ -317,7 +338,7 @@ export default class Sequence extends Collection implements IHaveStructure {
 
     // @isMounted
     // Remove column is set to false when modifyPositional is called.
-    deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
+    public deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
         var channelID: string = target.mountConfig!.channelID;
         var channel: Channel | undefined = this.channelsDict[channelID]
         var channelIndex: number = this.channels.indexOf(channel);

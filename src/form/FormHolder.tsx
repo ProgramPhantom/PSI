@@ -32,7 +32,7 @@ interface FormActions {
 }
 
 type SubmissionType = (data: any, type: Component) => void
-type DeleteType = (val: Visual) => void
+type DeleteType = (val: Visual, type: Component) => void
 type ModifyType = (data: any, type: Component, target: Visual) => Visual
 
 
@@ -155,7 +155,7 @@ export function FormHolder(props: FormHolderProps) {
 
                     {props.target !== undefined ? (
                     <Button style={{height: "30px", alignSelf: "center", marginLeft: "auto"}} icon="trash" intent="danger"
-                        onClick={() => {deleteFunction(props.target!); props.changeTarget(undefined); 
+                        onClick={() => {deleteFunction(props.target!, elementType); props.changeTarget(undefined); 
                         myToaster.show({message: `Deleted element '${props.target?.ref}'`, intent: "danger", timeout: 1000})}}>
                     </Button>
                     ) : <></>}
