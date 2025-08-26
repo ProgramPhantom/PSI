@@ -112,7 +112,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
     let selectedElement = props.selectedElement;
     
-    const [zoom, setZoom] = useState(3);
+    const [zoom, setZoom] = useState(1);
     const [dragging, setDragging] = useState(false);
     const [panning, setPanning] = useState(false);
     const [fileName, setFileName] = useState(ENGINE.currentImageName);
@@ -254,8 +254,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
                 {hoveredElement ? <Text>{hoveredElement.ref}</Text> : <Text>none</Text>}
             </div>
-
-            <CanvasDropContainer >
+            <p>{zoom}</p>
+            <CanvasDropContainer scale={zoom} >
                 <TransformWrapper initialScale={zoom} 
                                   onZoomStop={(z) => {setZoom(z.state.scale)}}
                                   centerOnInit={true} 
@@ -265,8 +265,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                   onPanningStart={() => {setPanning(true)}}
                                   onPanningStop={() => {setPanning(false)}}
                                   doubleClick={{disabled: true}}>
-
+                    
+                    
+                        
                     <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
+                        
+
                         {/* Large background grid that moves with transform */}
                         <div style={{
                             position: "absolute",
@@ -341,6 +345,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 }   
                         </div>
                     </TransformComponent>
+                    
                 </TransformWrapper>
 
                 <CanvasDragLayer scale={zoom} />

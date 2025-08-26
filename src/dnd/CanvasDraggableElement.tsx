@@ -27,9 +27,9 @@ import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { ElementTypes } from './DraggableElement';
-import { ICanvasDropResult, IDrop } from './CanvasDropContainer';
+import { ICanvasDropResult, IDrop, isCanvasDrop } from './CanvasDropContainer';
 import { HandleStyles, Rnd } from 'react-rnd';
-import { IInsertAreaResult } from './InsertArea';
+import { IMountAreaResult, isMountDrop } from './InsertArea';
 import ENGINE from '../vanilla/engine';
 import { hasMountConfig } from '../vanilla/util';
 import { IMountConfig, Orientation } from '../vanilla/mountable';
@@ -76,13 +76,6 @@ const hStyle: HandleStyles = {
 }
 
 
-export interface DropResult {
-  index: number,
-  channelID: ID,
-  orientation: Orientation,
-  insert: boolean,
-}
-
 interface IDraggableElementProps {
   name: string, 
   element: Visual,
@@ -104,11 +97,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
     end: (item, monitor) => {
       const dropResult = monitor.getDropResult<IDrop>();
       if (dropResult === null) {return}
-      
-      if (dropResult && dropResult.dropEffect === "move") {
 
-      } else if (dropResult.dropEffect === "insert") {
-        var result = dropResult as IInsertAreaResult
+      if (isCanvasDrop(dropResult)) {
+
+        ENGINE.handler.moveElement(item.element, dropResult.x, dropResult.y);
+
+      } else if (isMountDrop(dropResult)) {
+        var result = dropResult as IMountAreaResult
         var targetChannel = ENGINE.handler.diagram.channelsDict[result.channelID];
         var targetSequence = ENGINE.handler.diagram.sequenceDict[result.sequenceID];
 

@@ -1,35 +1,14 @@
-import React, { CSSProperties, ChangeEvent, useEffect, useState } from 'react'
-import {
-  DndContext, 
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  DragStartEvent,
-  DragOverlay,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import Draggable from './SortableItem';
-import { snapCenterToCursor } from '@dnd-kit/modifiers';
-import SortableItem from './SortableItem';
-import { Item } from './Item';
+import React, { CSSProperties, useEffect } from 'react'
 import { useDrag } from 'react-dnd';
-import DiagramHandler from '../vanilla/diagramHandler';
 import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
-import { IInsertAreaResult } from './InsertArea';
+import { IMountAreaResult, isMountDrop } from './InsertArea';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import '@svgdotjs/svg.draggable.js'
 import { title } from 'process';
-
+import ENGINE from '../vanilla/engine';
+import { ICanvasDropResult, IDrop, isCanvasDrop } from './CanvasDropContainer';
 
 const style: CSSProperties = {
   border: '1px solid #d3d8de',
@@ -61,7 +40,6 @@ export const ElementTypes = {
 
 interface IDraggableElementProps {
   element: Visual,
-  handler: DiagramHandler,
   onDoubleClick?: (element: Visual) => void
 }
 
@@ -76,27 +54,38 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
     type: ElementTypes.PREFAB,
     item: { element: props.element } as IDraggableElementDropItem,
     end: (item, monitor) => {
-      const dropResult = monitor.getDropResult<IInsertAreaResult>();
+      const dropResult = monitor.getDropResult<IDrop>();
 
-      if (item && dropResult) {
-        props.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert)
-        props.handler.draw();
+      if (dropResult === null) {
+        return
       }
+
+      if (isCanvasDrop(dropResult)) {
+        console.log(`Adding element at ${dropResult.x}, ${dropResult.y}`)
+
+        ENGINE.handler.addElementFromTemplate({x: dropResult.x, y: dropResult.y}, props.element.ref);
+      } else if (isMountDrop(dropResult)) {
+        ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
+      }
+
+
+      ENGINE.handler.draw();
     },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
       handlerId: monitor.getHandlerId(),
+      
     })
   }))
 
   if (props.element) {
     var copy = props.element.getInternalRepresentation()
-    copy?.x(0);
-    copy?.y(0);
-    copy?.show();
-    if (copy) {
-      copy.draggable(true)
-    }
+    // copy?.x(0);
+    // copy?.y(0);
+    // copy?.show();
+    // if (copy) {
+    //   copy.draggable(true)
+    // }
     
   }
 

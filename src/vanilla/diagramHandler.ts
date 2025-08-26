@@ -21,6 +21,7 @@ import { IBinding, IBindingPayload } from "./spacial";
 import Arrow from "./arrow";
 import { PointBind } from "../BindingsSelector";
 import Diagram, { DiagramStructure } from "./diagram";
+import { Rect } from "@svgdotjs/svg.js";
 
 
 export type ElementBundle = IVisual & Partial<ILabellable>
@@ -122,6 +123,8 @@ export default class DiagramHandler {
             throw new Error("Svg surface not attached!")
         }
 
+        this.surface.add(new Rect().move(0, 0).id("diagram-root"))
+
         this.surface.size(`${this.diagram.width}px`, `${this.diagram.height}px`)
         this.diagram.draw(this.surface);
         this.syncExternal();
@@ -193,42 +196,12 @@ export default class DiagramHandler {
     }
     // ------------------------
 
-    public addElementFromTemplate(pParameters: RecursivePartial<ElementBundle>, elementRef: string) {
-        var positionalType = DiagramHandler.positionalTypes[elementRef];
-
-        var element: Visual;
-
-        switch (positionalType.name) {
-            case (SVGElement.name):
-                element = new SVGElement(pParameters, elementRef)
-                
-                if (pParameters.labels !== undefined) {
-                    element = new Labellable<SVGElement>(pParameters, element as SVGElement) 
-                }
-
-                break;
-            case (RectElement.name):
-                element = new RectElement(pParameters, elementRef)
-                if (pParameters.labels !== undefined) {
-                    element = new Labellable<RectElement>(pParameters, element as RectElement) 
-                }
-                break;
-            default:
-                throw new Error("error 1")
-        }
-
-        // if (element.mountConfig !== undefined) {
-        //     this.mountElement(element, element.mountConfig)
-        // }
-
-        this.diagram.addElement(element);
-    }
 
     public createElement(parameters: ElementBundle, type: Component): Visual {
         var element: Visual;
 
-        parameters.x = undefined;
-        parameters.y = undefined;
+        // parameters.x = undefined;
+        // parameters.y = undefined;
 
         switch (type) {
             case "svg":
@@ -260,10 +233,46 @@ export default class DiagramHandler {
         return element;
     }
 
-    public moveElement(element: Visual) {
-        throw new Error("not implemented")
+    public addElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string) {
+        var positionalType = DiagramHandler.positionalTypes[elementRef];
+
+        var element: Visual;
+
+        // Temporary
+        if (pParameters.mountConfig !== undefined) {
+            pParameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
+        }
+
+
+        switch (positionalType.name) {
+            case (SVGElement.name):
+                element = new SVGElement(pParameters, elementRef)
+                
+                if (pParameters.labels !== undefined) {
+                    element = new Labellable<SVGElement>(pParameters, element as SVGElement) 
+                }
+
+                break;
+            case (RectElement.name):
+                element = new RectElement(pParameters, elementRef)
+                if (pParameters.labels !== undefined) {
+                    element = new Labellable<RectElement>(pParameters, element as RectElement) 
+                }
+                break;
+            default:
+                throw new Error("error 1")
+        }
+
         
-        // Move element
+        this.addElement(element);
+    }
+
+    public moveElement(element: Visual, x: number, y: number) {
+        element.x = x;
+        element.y = y;
+
+        this.diagram.computeBoundary();
+        this.draw();
     }
 
     public replaceElement(target: Visual, newElement: Visual): void {
@@ -315,9 +324,13 @@ export default class DiagramHandler {
     public addElement(element: Visual) {
         if (element.isMountable === true) {
             this.mountElement(element, false);
-        } else {
-            throw new Error("Not implemented")
-        }
+            return
+        } 
+
+
+        this.diagram.add(element);
+        this.diagram.computeBoundary();
+        this.draw();
     }
 
     public createArrow(startBinds: PointBind, endBinds: PointBind) {

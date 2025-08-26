@@ -24,8 +24,8 @@ export default class RectElement extends Visual implements IRect, IDraw {
         "bar": <any>defaultBar
     };
     get state(): IRect { return {
-        x: this.x,
-        y: this.y,
+        x: this._x,
+        y: this._y,
         contentWidth: this.contentWidth,
         contentHeight: this.contentHeight,
         padding: this.padding,

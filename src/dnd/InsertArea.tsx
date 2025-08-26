@@ -21,12 +21,16 @@ export interface AddSpec {
     insert: boolean,
 }
 
-export interface IInsertAreaResult extends IDrop {
+export interface IMountAreaResult extends IDrop {
   index: number,
   channelID: ID,
   sequenceID: ID,
   orientation: Orientation,
   insert: boolean,
+}
+
+export function isMountDrop(object: IDrop): object is IMountAreaResult {
+    return object.dropEffect === "insert";
 }
 
 function InsertArea(props: {areaSpec: AddSpec, key: string}) {
@@ -37,7 +41,7 @@ function InsertArea(props: {areaSpec: AddSpec, key: string}) {
             channelID: props.areaSpec.channelID,
             insert: props.areaSpec.insert,
             orientation: props.areaSpec.orientation,
-            dropEffect: "insert"} as IInsertAreaResult),
+            dropEffect: "insert"} as IMountAreaResult),
         collect: (monitor) => ({
             isOver: monitor.isOver(),
             isOverCurrent: monitor.isOver({shallow: true}),

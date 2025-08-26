@@ -55,7 +55,7 @@ export default class Diagram extends Collection implements IHaveStructure {
 
     freeArrows: Arrow[] = [];
 
-    root: Spacial = new Spacial(0, 0, 0, 0, "root");
+    root: Spacial;
 
     sequenceColumn: Aligner<Sequence>;
 
@@ -76,6 +76,9 @@ export default class Diagram extends Collection implements IHaveStructure {
 
         this.sequenceDict = {};
 
+        // Root 
+        this.root = new Spacial(0, 0, 0, 0, "root");
+        
 
         this.sequenceColumn = new Aligner<Sequence>(
             {bindMainAxis: true, axis: "y", alignment: Alignment.here, ref: "sequence column", x:0, y:0}, "default", );
@@ -86,6 +89,8 @@ export default class Diagram extends Collection implements IHaveStructure {
         // Initial sequence:
         var startSequence = new Sequence({}, "default");
         this.addSequence(startSequence);
+
+        
 
         this.structure = {
             "sequence column": this.sequenceColumn
