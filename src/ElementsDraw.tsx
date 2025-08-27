@@ -1,4 +1,4 @@
-import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dialog, Button, DialogFooter, DialogBody, EntityTitle } from '@blueprintjs/core';
+import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dialog, Button, DialogFooter, DialogBody, EntityTitle, Tabs, Tab } from '@blueprintjs/core';
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import Errors, { errorState } from './Errors';
 import DraggableElement from './dnd/DraggableElement';
@@ -14,6 +14,7 @@ interface IElementDrawProps {
 const ElementsDraw: React.FC<IElementDrawProps> = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
+    const [isNewElementDialogOpen, setIsNewElementDialogOpen] = useState(false);
 
     const handleElementDoubleClick = (element: Visual) => {
         setSelectedElement(element);
@@ -29,6 +30,16 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
         // Handle form submission here
         console.log('Editing element:', selectedElement?.ref);
         handleDialogClose();
+    };
+
+    const handleNewElementDialogClose = () => {
+        setIsNewElementDialogOpen(false);
+    };
+
+    const handleNewElementSubmit = () => {
+        // Handle new element form submission here
+        console.log('Creating new element');
+        handleNewElementDialogClose();
     };
 
     return (
@@ -69,6 +80,53 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                             gap: "12px",
                             padding: "4px"
                         }}>
+                             {/* Plus button for adding new elements */}
+                            <div 
+                                style={{
+                                    width: "120px",
+                                    height: "120px", 
+                                    padding: "12px 8px",
+                                    border: "1px solid #d3d8de",
+                                    borderRadius: "4px",
+                                    backgroundColor: "white",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                    transition: "all 0.2s ease",
+                                    userSelect: "none"
+                                }} 
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+                                    e.currentTarget.style.transform = "translateY(-1px)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                }}
+                                onClick={() => setIsNewElementDialogOpen(true)}
+                                title="Add new template element"
+                            >
+                                <div style={{
+                                    fontSize: "32px",
+                                    color: "#5c7080",
+                                    marginBottom: "8px"
+                                }}>
+                                    +
+                                </div>
+                                <span style={{
+                                    fontSize: "12px",
+                                    color: "#5c7080",
+                                    fontWeight: "600",
+                                    textAlign: "center",
+                                    lineHeight: "1.4"
+                                }}>
+                                    Add New
+                                </span>
+                            </div>
+
                             {ENGINE.RECTSINGLETONS.map((s) => {
                                 return <DraggableElement element={s} onDoubleClick={handleElementDoubleClick} />
                             })}
@@ -106,6 +164,48 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                             text="Submit" 
                             intent="primary"
                             onClick={handleSubmit}/>
+                    </>
+                }></DialogFooter>
+            </Dialog>
+
+            {/* New Element Dialog */}
+            <Dialog
+                isOpen={isNewElementDialogOpen}
+                onClose={handleNewElementDialogClose}
+                title="Add New Template Element"
+                canOutsideClickClose={true}
+                canEscapeKeyClose={true}
+            >
+                <DialogBody>
+                    <Tabs id="newElementTabs" defaultSelectedTabId="rect">
+                        <Tab id="rect" title="Rect" panel={
+                            <div style={{ padding: "16px 0" }}>
+                                <Text>Rect element form will go here</Text>
+                            </div>
+                        } />
+                        <Tab id="svg" title="SVG" panel={
+                            <div style={{ padding: "16px 0" }}>
+                                <Text>SVG element form will go here</Text>
+                            </div>
+                        } />
+                        <Tab id="labellable" title="Labellable" panel={
+                            <div style={{ padding: "16px 0" }}>
+                                <Text>Labellable element form will go here</Text>
+                            </div>
+                        } />
+                    </Tabs>
+                </DialogBody>
+
+                <DialogFooter actions={
+                    <>
+                    <Button 
+                            text="Cancel" 
+                            onClick={handleNewElementDialogClose}
+                            variant="minimal"/>
+                    <Button 
+                            text="Submit" 
+                            intent="primary"
+                            onClick={handleNewElementSubmit}/>
                     </>
                 }></DialogFooter>
             </Dialog>
