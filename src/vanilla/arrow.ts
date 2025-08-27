@@ -30,17 +30,8 @@ export default class Arrow extends Line {
 
   static arbitraryAdjustment: number = 1;
   get state(): IArrow { return {
-    x: this._x,
-    y: this._y,
-    contentWidth: this._contentWidth,
-    contentHeight: this._contentHeight,
-    padding: this.padding,
-    offset: this.offset,
-    ref: this.ref,
-    style: this.style,
-    adjustment: this.adjustment,
-    orientation: this.orientation,
-    arrowStyle: this.arrowStyle
+    arrowStyle: this.arrowStyle,
+    ...super.state
   }}
 
   arrowStyle: IArrowStyle;

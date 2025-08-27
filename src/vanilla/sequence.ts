@@ -127,7 +127,7 @@ export default class Sequence extends Collection implements IHaveStructure {
         })
     }
 
-    insertColumns(index: number, quantity: number=1) {
+    checkMultiElementSplit(index: number): boolean {
         var split: boolean = false;
         var splitElements: Visual[] = [];
         for (var channel of this.elementMatrix) {
@@ -150,32 +150,52 @@ export default class Sequence extends Collection implements IHaveStructure {
                 splitElements.push(elementSearch as Visual)
             }
         }
-        if (split) {
-            console.warn(`Splitting elements ${splitElements}`);
-        }
+        return split;
+    }
+
+
+    addColumns(index: number, quantity: number=1) {
+        // Check if addition of column will split a multi-column element (not allowed currently)
+        var split: boolean = this.checkMultiElementSplit(index);
+        if (split) {console.warn(`Splitting element`);}
+
+        // Calculate gap from index to leftmost column
+        var numColumns: number = this.pulseColumns.children.length;
+        var diff: number = Math.max(index - numColumns, 0);
 
         var columnsToAdd: Aligner<Visual>[] = [];
-        
-        for (var i=0; i<quantity; i++) {
-            var INDEX: number = index + i;
 
-            var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, alignment: Alignment.centre,
-                                                              ref: `column at ${index+i}`, minCrossAxis: 10}, "default", );
-
-            // Add to positional columns
-            this.pulseColumns.add(newColumn, INDEX);
-
+        // ----- Catch up columns to index -----
+        for (var i=0; i<diff; i++) {
+            this.addColumn(numColumns + i);
         }
+        
+        // ----- Add additional columns defined by quantity (this adds index column) ----- 
+        for (var i=0; i<quantity; i++) {
+            this.addColumn(index + i)
+        }
+
+
+    }
+
+    addColumn(index: number) {
+        var INDEX: number = index;
+
+        var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, alignment: Alignment.centre,
+                                                          ref: `column at ${INDEX}`, minCrossAxis: 10}, "default", );
+
+        // Add to positional columns
+        this.pulseColumns.add(newColumn, INDEX);
 
         // Update indices after this new column:
         // Update internal indexes of Positional elements in pos col:
         this.channels.forEach((channel) => {
-            channel.shiftIndices(index, quantity);
+            channel.shiftIndices(index, 1);
         })
 
         // Update element matrix
         this.elementMatrix.forEach((c) => {
-            c.splice(index, 0, ...Array<Visual | undefined>(quantity).fill(undefined))
+            c.splice(index, 0, ...Array<Visual | undefined>(1).fill(undefined))
         })
     }
 
@@ -280,10 +300,10 @@ export default class Sequence extends Collection implements IHaveStructure {
             INDEX = Math.min(INDEX, numColumns)
         } else {
             // Trying to place on non-existant column, behaviour is to insert at end
-            if (INDEX > numColumns-1) {  
-                INDEX = numColumns;
-                insert = true
-            }
+            // if (INDEX > numColumns-1) {  
+            //     INDEX = numColumns;
+            //     insert = true
+            // }
             // INDEX = Math.max(Math.min(INDEX, numColumns-1), 0)  // Max stops going below 0
         }
         element.mountConfig.index = INDEX;
@@ -305,9 +325,12 @@ export default class Sequence extends Collection implements IHaveStructure {
         }
         if (insert && columnsToAdd === 0) {columnsToAdd += 1}
 
+        if (element.ref === "180") {
+            console.log()
+        }
         // Insert columns
         if (columnsToAdd > 0 || insert) {
-            this.insertColumns(INDEX, columnsToAdd);
+            this.addColumns(INDEX, columnsToAdd);
         } else if (insert === false) {
             // Check element is already there
             if (targetChannel.mountOccupancy[INDEX] !== undefined) {

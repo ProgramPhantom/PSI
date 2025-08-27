@@ -22,16 +22,8 @@ interface lineStyle {
 export class Line extends LineLike {
     static defaults: {[name: string]: ILine} = {"default": <ILine>defaultLine}
     get state(): ILine { return {
-        x: this._x,
-        y: this._y,
-        contentWidth: this._contentWidth,
-        contentHeight: this._contentHeight,
-        padding: this.padding,
-        offset: this.offset,
-        ref: this.ref,
         style: this.style,
-        adjustment: this.adjustment,
-        orientation: this.orientation
+        ...super.state
     }}
 
     style: lineStyle;

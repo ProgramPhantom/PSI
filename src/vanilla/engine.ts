@@ -60,7 +60,11 @@ class ENGINE {
         }
 
         if (stateObj !== undefined) {
-            this.handler.constructDiagram(stateObj);
+            try {
+                this.handler.constructDiagram(stateObj);
+            } catch(error) {
+                console.warn(error)
+            }
         }
     }
     static save() {

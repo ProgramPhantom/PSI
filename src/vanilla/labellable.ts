@@ -64,7 +64,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
         this.coreChild = coreChild;
 
         this.add(coreChild, undefined, true);
-
+    
         fullParams.labels?.forEach((label) => {
             var newLabel = new Label(label);
             this.labels.push(newLabel);
@@ -95,6 +95,9 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 label.sizeSource.x = "inherited"
                 this.coreChild.bind(label, "x", "here", "here");
                 this.coreChild.bind(label, "x", "far", "far");
+
+                this.clearBindsTo(this.coreChild, "x");
+                this.bind(this.coreChild, "x", "centre", "centre");
                 
                 // Y
                 this.clearBindsTo(this.coreChild, "y");
@@ -124,6 +127,9 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
                 label.sizeSource.x = "inherited"
                 this.coreChild.bind(label, "x", "here", "here")
                 this.coreChild.bind(label, "x", "far", "far")
+
+                this.clearBindsTo(this.coreChild, "x");
+                this.bind(this.coreChild, "x", "centre", "centre");
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION

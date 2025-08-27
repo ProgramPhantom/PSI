@@ -48,17 +48,10 @@ export default class Label extends Collection implements ILabel {
     }
     get state(): ILabel {
         return {
-            x: this.x,
-            y: this.y,
-            contentHeight: this.contentHeight,
-            contentWidth: this.contentWidth,
             text: this.text?.state,
             line: this.line?.state,
-            offset: this.offset,
-            padding: this.padding,
-            ref: this.ref,
-
-            labelConfig: this.labelConfig
+            labelConfig: this.labelConfig,
+            ...super.state
         }
     }
 
@@ -68,7 +61,9 @@ export default class Label extends Collection implements ILabel {
     labelConfig: ILabelConfig
 
     constructor(params: ILabel, templateName="default") {
-        var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
+        // When arrow is undefined, this was filling it with the default arrow. Maybe null is preferable?
+        // var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
+        var fullParams: ILabel = params;
         super(fullParams, templateName)
         this.labelConfig = fullParams.labelConfig;
         

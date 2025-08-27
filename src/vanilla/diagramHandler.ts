@@ -218,8 +218,10 @@ export default class DiagramHandler {
     public createElement(parameters: ElementBundle, type: Component): Visual {
         var element: Visual;
 
-        // parameters.x = undefined;
-        // parameters.y = undefined;
+        // NECESSARY to make element accept binding changes. X, Y persists when changing into a label
+        // so if this isn't done, element might not carry changes and update label position.
+        parameters.x = undefined;
+        parameters.y = undefined;
 
         switch (type) {
             case "svg":
@@ -376,6 +378,9 @@ export default class DiagramHandler {
 
         var element: Visual;
 
+        pParameters.x = undefined;
+        pParameters.y = undefined;
+
         // Temporary
         if (pParameters.mountConfig !== undefined) {
             pParameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
@@ -419,7 +424,7 @@ export default class DiagramHandler {
         
         columnRemoved = this.diagram.deleteMountedElement(target, removeColumn);
 
-
+        logger.operation(Operations.DELETE, `COMPLETE DELETE`);
         this.draw();
         return columnRemoved;
     }

@@ -22,7 +22,13 @@ export interface ILineLike extends IVisual {
 
 export default abstract class LineLike extends Visual {
     static defaults: {[key: string]: ILineLike} = {"default": <any>defaultLineLike}
-
+    get state(): ILineLike {
+        return {
+            adjustment: this.adjustment,
+            orientation: this.orientation,
+            ...super.state
+        }
+    }
     public AnchorFunctions = {
         "here": {
             get: this.getNear.bind(this),

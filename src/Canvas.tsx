@@ -254,7 +254,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
                 {hoveredElement ? <Text>{hoveredElement.ref}: {hoveredElement.id}</Text> : <Text>none</Text>}
             </div>
-            <p>{zoom}</p>
             <CanvasDropContainer scale={zoom} >
                 <TransformWrapper initialScale={zoom} 
                                   onZoomStop={(z) => {setZoom(z.state.scale)}}
