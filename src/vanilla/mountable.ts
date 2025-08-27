@@ -25,7 +25,6 @@ export interface IMountable extends IPaddedBox {
 
 
 class Mountable extends PaddedBox implements IMountable {
-    static override defaults: {[name: string]: IMountable} = {"default": <any>defaultMountable}
     get state(): IMountable {
         return {
             mountConfig: this.mountConfig,

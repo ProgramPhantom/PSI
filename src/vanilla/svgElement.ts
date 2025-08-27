@@ -1,6 +1,6 @@
 import { Visual, IVisual, IDraw } from "./visual";
 import { svgPulses } from "./default/data/svgPulse";
-import { cascadeID, FillObject, RecursivePartial } from "./util";
+import { cascadeID, FillObject, RecursivePartial, createWithTemplate } from "./util";
 import { Element, Svg } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
@@ -46,7 +46,7 @@ export interface ISVGElement extends IVisual {
 
 
 export default class SVGElement extends Visual implements ISVGElement, IDraw {
-    static override defaults: {[key: string]: ISVGElement} = {...<any>svgPulses, "default": svgPulses[180]};
+    static override namedElements: {[key: string]: ISVGElement} = {...<any>svgPulses, "default": svgPulses[180]};
 	get state(): ISVGElement { return {
 		path: this.path,
 		style: this.style,
@@ -60,8 +60,10 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
     path: string;
 	override svg: Element;
 
-    constructor(params: RecursivePartial<ISVGElement>, templateName: string="default") {
-		var fullParams: ISVGElement = FillObject(params, SVGElement.defaults[templateName])
+    constructor(params: ISVGElement);
+    constructor(params: RecursivePartial<ISVGElement>, templateName: string);
+    constructor(params: RecursivePartial<ISVGElement> | ISVGElement, templateName?: string) {
+		const fullParams = createWithTemplate<ISVGElement>(SVGElement.namedElements)(params, templateName);
 		super(fullParams);
 
 		this.style = fullParams.style;

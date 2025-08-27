@@ -1,6 +1,6 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { Visual, IVisual, IDraw } from "./visual";
-import { FillObject, RecursivePartial } from "./util";
+import { FillObject, RecursivePartial, createWithTemplate } from "./util";
 import { simplePulses } from "./default/data/simplePulse";
 import defaultBar from "./default/data/bar.json";
 import { SVG } from "@svgdotjs/svg.js";
@@ -20,8 +20,19 @@ export interface IRectElement extends IVisual {
 }
 
 export default class RectElement extends Visual implements IRectElement, IDraw {
-	static defaults: {[key: string]: IRectElement } = {...<any>simplePulses,
-        "bar": <any>defaultBar
+	static namedElements: {[key: string]: IRectElement } = {
+        "bar": {
+            "ref": "bar",
+            "contentWidth": 10,
+            "contentHeight": 10,
+            "padding": [0, 0, 0, 0],
+            "offset": [0, 0],
+            "style": {
+                "fill": "#000000",
+                "stroke": "black",
+                "strokeWidth": null
+            }
+        }
     };
     get state(): IRectElement { return {
         style: this.style,
@@ -32,8 +43,10 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 
 	style: IRectStyle;	
 
-    constructor(params: RecursivePartial<IRectElement>, templateName: string="90-pulse") {
-		var fullParams: IRectElement = FillObject<IRectElement>(params, RectElement.defaults[templateName])
+    constructor(params: IRectElement);
+    constructor(params: RecursivePartial<IRectElement>, templateName: string);
+    constructor(params: RecursivePartial<IRectElement> | IRectElement, templateName?: string) {
+		const fullParams = createWithTemplate<IRectElement>(RectElement.namedElements)(params, templateName);
 		super(fullParams);
 
 		this.style = fullParams.style;

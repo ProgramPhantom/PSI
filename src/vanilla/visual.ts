@@ -32,7 +32,7 @@ export function doesDraw(object: any): object is IDraw {
 
 
 export abstract class Visual extends Mountable implements IVisual {
-    static override defaults: {[name: string]: IVisual} = {"default": <any>defaultVisual}
+    static namedElements: {[name: string]: IVisual} = {"default": <any>defaultVisual}
     static form: React.FC = VisualForm;
 
     get state(): IVisual { return {

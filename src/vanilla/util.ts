@@ -77,3 +77,13 @@ export function cascadeID(el: Element, id: ID) {
       cascadeID(e, id);
     })
 }
+
+export function createWithTemplate<T>(templateSource: { [key: string]: T }) {
+    return function (params: T | RecursivePartial<T>, templateName?: string): T {
+        if (templateName && templateSource[templateName]) {
+            return FillObject<T>(params as RecursivePartial<T>, templateSource[templateName]);
+        } else {
+            return params as T;
+        }
+    };
+}

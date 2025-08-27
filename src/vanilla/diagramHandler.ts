@@ -236,7 +236,7 @@ export default class DiagramHandler {
 
         switch (type) {
             case "svg":
-                element = new SVGElement(parameters)
+                element = new SVGElement(parameters as ISVGElement)
                 
                 if (parameters.labels !== undefined) {
                     element = new Labellable<SVGElement>(parameters, element as SVGElement) 
@@ -244,7 +244,7 @@ export default class DiagramHandler {
 
                 break;
             case "rect":
-                element = new RectElement(parameters)
+                element = new RectElement(parameters as IRectElement)
                 if (parameters.labels !== undefined) {
                     element = new Labellable<RectElement>(parameters, element as RectElement) 
                 }
@@ -414,7 +414,7 @@ export default class DiagramHandler {
                 break;
             case "rect":
                 parameters = FillObject(pParameters as IVisual, this.scheme.rectElements[elementRef])
-                element = new RectElement(pParameters);
+                element = new RectElement(parameters);
 
                 if (pParameters.labels !== undefined) {
                     element = new Labellable<RectElement>(parameters, element as RectElement) 

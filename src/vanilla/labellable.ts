@@ -31,7 +31,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
 
             labels: [],
             ref: "default-labellable",
-            coreChild: SVGElement.defaults["180"]
+            coreChild: SVGElement.namedElements["180"]
         },
     }
     static ElementType: UserComponentType = "labellable";
