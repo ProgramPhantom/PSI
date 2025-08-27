@@ -1,65 +1,75 @@
-import Sequence, { SequenceStructures } from "./sequence";
+import Sequence, { SequenceNamedStructures } from "./sequence";
 import { S } from "memfs/lib/constants";
 import { Svg } from "@svgdotjs/svg.js";
 import Text, { Position } from "./text";
 import { Display, IVisual, Visual } from "./visual";
-import Channel, { ChannelStructure, IChannel } from "./channel";
-import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
+import Channel, { ChannelNamedStructure, IChannel } from "./channel";
+import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
 import { Script } from "vm";
 import { mountableElements } from "./default/data";
 import { ILine, Line } from "./line";
-import RectElement, { IRect, } from "./rectElement";
-import SVGElement, { ISVG, } from "./svgElement";
+import RectElement, { IRectElement, } from "./rectElement";
+import SVGElement, { ISVGElement, } from "./svgElement";
 import logger, { Operations } from "./log";
 import { error } from "console";
 import Labellable, { ILabellable } from "./labellable";
 import { ILabel } from "./label";
-import { ID } from "./point";
+import Point, { ID } from "./point";
 import { ElementType } from "react";
 import { IMountConfig } from "./mountable";
 import { IBinding, IBindingPayload } from "./spacial";
 import Arrow from "./arrow";
 import { PointBind } from "../BindingsSelector";
-import Diagram, { DiagramStructure, IDiagram } from "./diagram";
+import Diagram, { AllStructures, IDiagram } from "./diagram";
 import { Rect } from "@svgdotjs/svg.js";
+import { IScheme } from "./default";
+import ENGINE from "./engine";
 
 
 export type ElementBundle = IVisual & Partial<ILabellable>
 
 
 
-export type Component = DiagramStructure | VisualComponent
 
-export type VisualComponent = DrawComponent | "labellable" | "label" | "text" | "arrow" | "channel" | "sequence" | "diagram";
-export type DrawComponent = "svg" | "rect"
+// All component types
+export type AllComponentTypes = UserComponentType | AbstractComponentTypes 
+
+// The types of component 
+export type UserComponentType = DrawComponent | "labellable" | "label" | "text" | "arrow" | "line" | "channel" | "sequence" | "diagram"; 
+export type DrawComponent = "svg" | "rect" | "space"
+
+// Abstract component types (have no visual content)
+export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract" | "visual"
+
+
+// All
+export type AllElementIdentifiers = AllStructures | AllComponentTypes
 
 
 export interface IHaveStructure {
-    structure: Partial<Record<DiagramStructure, Visual>>
+    structure: Partial<Record<AllStructures, Point>>
 }
 
 
 export default class DiagramHandler {
-    static positionalTypes: {[name: string]: typeof Visual} = {
-        "acquire": SVGElement,
-        "halfsine": SVGElement,
-        "amp": SVGElement,
-        "180": SVGElement,
-        "trap": SVGElement,
-        "talltrap": SVGElement,
-        "saltirehilo": SVGElement,
-        "saltirelohi": SVGElement,
-        "chirphilo": SVGElement,
-        "chirplohi": SVGElement,
-        "element": SVGElement,
-
-        "90-pulse": RectElement,
-        "180-pulse": RectElement,
+    get templateTypes(): Record<string, UserComponentType> {
+        var types: Record<string, UserComponentType> = {};
+        Object.keys(this.scheme.svgElements).forEach((r) => {
+            types[r] = "svg";
+        })
+        Object.keys(this.scheme.rectElements).forEach((r) => {
+            types[r] = "rect";
+        })
+        Object.keys(this.scheme.labellableElements).forEach((r) => {
+            types[r] = "labellable";
+        })
+        return types;
     }
-    isPositional(elementName: string): boolean {return Object.keys(DiagramHandler.positionalTypes).includes(elementName)}
+
 
     diagram: Diagram;
     surface?: Svg;
+    scheme: IScheme;
 
     get id(): string {
         var id: string = "";
@@ -78,8 +88,8 @@ export default class DiagramHandler {
     get allElements(): Record<ID, Visual> {
         return this.diagram.allElements
     }
-    get structuralElements(): Record<ID, Visual> {
-        var structuralElements: Record<ID, Visual> = {};
+    get structuralElements(): Record<ID, Point> {
+        var structuralElements: Record<ID, Point> = {};
 
         Object.values(this.diagram.structure).forEach((o) => {
             structuralElements[o.id] = o
@@ -94,19 +104,23 @@ export default class DiagramHandler {
         return structuralElements;
     }
 
-    constructor(surface: Svg, emitChange: () => void,) {
+    constructor(surface: Svg, emitChange: () => void, scheme: IScheme) {
         this.syncExternal = emitChange;
 
 
         this.diagram = new Diagram({});
         
         
-
+        this.scheme = scheme;
         this.surface = surface;
     }
 
     // TODO: forced index for channel addition
     channel(parameters: IChannel,  index?: number): Visual {
+        if (parameters.sequenceID === undefined) {
+            throw new Error(`No sequence id on channel ${parameters.ref}`)
+        }
+        
         var newChannel = new Channel(parameters);
         
         var sequence: Sequence | undefined = this.diagram.sequenceDict[parameters.sequenceID];
@@ -150,13 +164,10 @@ export default class DiagramHandler {
     }
 
     // ---- Form interfaces ----
-    public submitElement(parameters: ElementBundle, type: Component): Visual {
+    public submitElement(parameters: ElementBundle, type: UserComponentType): Visual {
 
         var element: Visual | undefined;
         switch (type) {
-            case "abstract":
-                throw new Error("Cannot instantiate abstract object")
-                break;
             case "channel":
                 (parameters as IChannel).sequenceID = this.diagram.sequenceIDs[0];
                 element = this.channel(parameters as IChannel);
@@ -181,7 +192,7 @@ export default class DiagramHandler {
         return element
     }
 
-    public submitModifyElement(parameters: IVisual, type: Component, target: Visual): Visual {
+    public submitModifyElement(parameters: IVisual, type: UserComponentType, target: Visual): Visual {
         var mountConfigCopy: IMountConfig | undefined = target.mountConfig;
         // Delete element
         this.deleteElement(target, false)
@@ -198,7 +209,7 @@ export default class DiagramHandler {
         return element;
     }
 
-    public submitDeleteElement(target: Visual, type: Component) {
+    public submitDeleteElement(target: Visual, type: UserComponentType) {
         switch (type) {
             case "rect":
             case "svg":
@@ -215,7 +226,7 @@ export default class DiagramHandler {
     // ------------------------
 
 
-    public createElement(parameters: ElementBundle, type: Component): Visual {
+    public createElement(parameters: ElementBundle, type: UserComponentType): Visual {
         var element: Visual;
 
         // NECESSARY to make element accept binding changes. X, Y persists when changing into a label
@@ -254,7 +265,7 @@ export default class DiagramHandler {
     }
 
     public addElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string) {
-        var positionalType = DiagramHandler.positionalTypes[elementRef];
+        var elementType: UserComponentType = this.templateTypes[elementRef];
 
         var element: Visual;
 
@@ -264,8 +275,8 @@ export default class DiagramHandler {
         }
 
 
-        switch (positionalType.name) {
-            case (SVGElement.name):
+        switch (elementType) {
+            case "svg":
                 element = new SVGElement(pParameters, elementRef)
                 
                 if (pParameters.labels !== undefined) {
@@ -273,14 +284,14 @@ export default class DiagramHandler {
                 }
 
                 break;
-            case (RectElement.name):
+            case "rect":
                 element = new RectElement(pParameters, elementRef)
                 if (pParameters.labels !== undefined) {
                     element = new Labellable<RectElement>(pParameters, element as RectElement) 
                 }
                 break;
             default:
-                throw new Error("error 1")
+                throw new Error(`Not added ability to add ${elementType} via template`)
         }
 
         
@@ -374,7 +385,11 @@ export default class DiagramHandler {
     Function uses element name to lookup default parameters and replaces with those provided */
     
     public mountElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string, insert: boolean=false) {
-        var positionalType = DiagramHandler.positionalTypes[elementRef];
+        var positionalType: UserComponentType | undefined = this.templateTypes[elementRef];
+
+        if (positionalType === undefined) {
+            throw new Error(`Template for element ${elementRef} not found`)
+        }
 
         var element: Visual;
 
@@ -386,24 +401,27 @@ export default class DiagramHandler {
             pParameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
         }
 
+        var parameters;
 
-        switch (positionalType.name) {
-            case (SVGElement.name):
-                element = new SVGElement(pParameters, elementRef)
+        switch (positionalType) {
+            case "svg":
+                parameters = FillObject(pParameters as IVisual, this.scheme.svgElements[elementRef])
+                element = new SVGElement(parameters)
                 
                 if (pParameters.labels !== undefined) {
-                    element = new Labellable<SVGElement>(pParameters, element as SVGElement) 
+                    element = new Labellable<SVGElement>(parameters, element as SVGElement) 
                 }
-
                 break;
-            case (RectElement.name):
-                element = new RectElement(pParameters, elementRef)
+            case "rect":
+                parameters = FillObject(pParameters as IVisual, this.scheme.rectElements[elementRef])
+                element = new RectElement(pParameters);
+
                 if (pParameters.labels !== undefined) {
-                    element = new Labellable<RectElement>(pParameters, element as RectElement) 
+                    element = new Labellable<RectElement>(parameters, element as RectElement) 
                 }
                 break;
             default:
-                throw new Error("error 1")
+                throw new Error(`Not added ability to add component of type ${positionalType} via template`)
         }
 
         

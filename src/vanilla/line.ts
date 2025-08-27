@@ -5,6 +5,7 @@ import { ILineLike } from "./lineLike";
 import { Svg } from "@svgdotjs/svg.js";
 import LineLike from "./lineLike";
 import { Element } from "svg.js";
+import { UserComponentType } from "./diagramHandler";
 
 
 
@@ -21,6 +22,7 @@ interface lineStyle {
 
 export class Line extends LineLike {
     static defaults: {[name: string]: ILine} = {"default": <ILine>defaultLine}
+    static ElementType: UserComponentType = "line"
     get state(): ILine { return {
         style: this.style,
         ...super.state

@@ -8,13 +8,10 @@ import { Defs } from "@svgdotjs/svg.js";
 import { Marker } from "@svgdotjs/svg.js";
 import { CoreAttr } from "@svgdotjs/svg.js";
 import { Path } from "@svgdotjs/svg.js";
+import { UserComponentType } from "./diagramHandler";
 
 
-export enum HeadStyle {
-    default="default",
-    thin="thin",
-    none="none"
-}
+type HeadStyle = "default" | "thin" |"none"
 
 export interface IArrowStyle {
     headStyle: HeadStyle,
@@ -27,6 +24,7 @@ export interface IArrow extends ILine {
 
 export default class Arrow extends Line {
   static defaults: {[key: string]: IArrow} = {"default": {...<any>defaultArrow}}
+  static ElementType: UserComponentType = "arrow";
 
   static arbitraryAdjustment: number = 1;
   get state(): IArrow { return {

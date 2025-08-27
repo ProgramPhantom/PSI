@@ -4,9 +4,9 @@ import { Position, IText } from "./text";
 import Channel, { IChannel } from "./channel"
 import Text from "./text";
 import { json } from "stream/consumers";
-import Arrow, { HeadStyle } from "./arrow";
+import Arrow from "./arrow";
 import defaultSequence from "./default/data/sequence.json"
-import DiagramHandler, { Component, IHaveStructure } from "./diagramHandler";
+import DiagramHandler, { IHaveStructure } from "./diagramHandler";
 import { NumberAlias, select } from "svg.js";
 import { FillObject, PartialConstruct, RecursivePartial } from "./util";
 import { ILine, Line } from "./line";
@@ -18,6 +18,7 @@ import logger, { Operations, Processes } from "./log";
 import { defaultNewIndexGetter } from "@dnd-kit/sortable";
 import { Alignment } from "./mountable";
 import Space from "./space";
+import Point from "./point";
 
 export interface ISequence extends ICollection {
     channels: IChannel[]
@@ -25,12 +26,12 @@ export interface ISequence extends ICollection {
 
 export type OccupancyStatus = Visual | "." | undefined
 
-export type SequenceStructures =  "channel column" | "label column" | "label col | pulse columns"| "pulse columns"
+
+export type SequenceNamedStructures =  "channel column" | "label column" | "label col | pulse columns"| "pulse columns"
 
 
 export default class Sequence extends Collection implements IHaveStructure {
     static defaults: {[key: string]: ISequence} = {"default": {...<any>defaultSequence}}
-    static ElementType: Component = "sequence";
     
     get state(): ISequence {
         return {
@@ -44,7 +45,7 @@ export default class Sequence extends Collection implements IHaveStructure {
     get channels(): Channel[] {return Object.values(this.channelsDict)}
     get channelIDs(): string[] {return Object.keys(this.channelsDict)}
 
-    structure: Record<SequenceStructures, Visual>;
+    structure: Record<SequenceNamedStructures, Point>;
 
     channelColumn: Aligner<Channel>;
 
@@ -68,31 +69,22 @@ export default class Sequence extends Collection implements IHaveStructure {
         super(fullParams, templateName);
         logger.processStart(Processes.INSTANTIATE, ``, this);
 
-
-        // c
-        // c
-        // c
+        // ----- Create structure ----
+        // Channel column
         this.channelColumn = new Aligner<Channel>(
-            {bindMainAxis: true, axis: "y", alignment: Alignment.here, ref: "channel column"}, "default", );
-        // this.bind(this.channelColumn, "y", "here", "here", undefined, "SEQ Y-> CHAN COL");
-        // this.bind(this.channelColumn, "x", "here", "here", undefined, "SEQ X-> CHAN COL");
+            {bindMainAxis: true, axis: "y", alignment: "here", ref: "channel column"}, "default", );
         this.add(this.channelColumn, undefined, true);
 
-        // | h | |p|p|p|p|
-        this.columns = new Aligner({axis: "x", bindMainAxis: true, alignment: Alignment.here, ref: "label col | pulse columns"}, "default");
-        // this.bind(this.columns, "y", "here", "here", undefined, "SEQ Y-> COL");
-        // this.bind(this.columns, "x", "here", "here", undefined, "SEQ X-> COL");
+        // All columns
+        this.columns = new Aligner({axis: "x", bindMainAxis: true, alignment: "here", ref: "label col | pulse columns"}, "default");
         this.add(this.columns, undefined, true);
         
-
-
-        // | h |
+        // Label column
         this.labelColumn = new Aligner<Visual>({axis: "y", bindMainAxis: false, 
-                                                        alignment: Alignment.centre, y: 0, ref: "label column"}, "default",);
+                                                        alignment: "here", y: 0, ref: "label column"}, "default",);
         this.columns.add(this.labelColumn);
 
-
-        // |p|p|p|p|
+        // Pulse columns
         this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: "x", y: 0, ref: "pulse columns"}, "default", );
         this.columns.add(this.pulseColumns);
 
@@ -102,6 +94,7 @@ export default class Sequence extends Collection implements IHaveStructure {
             "label column": this.labelColumn,
             "pulse columns": this.pulseColumns,
         }
+        // --------------------------
 
 
         this.channelsDict = {};  
@@ -181,7 +174,7 @@ export default class Sequence extends Collection implements IHaveStructure {
     addColumn(index: number) {
         var INDEX: number = index;
 
-        var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, alignment: Alignment.centre,
+        var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, alignment: "centre",
                                                           ref: `column at ${INDEX}`, minCrossAxis: 10}, "default", );
 
         // Add to positional columns
@@ -283,7 +276,7 @@ export default class Sequence extends Collection implements IHaveStructure {
         }
         element.mountConfig.mountOn = true;
 
-        var targetChannel: Channel = this.channelsDict[element.mountConfig.channelID];
+        var targetChannel: Channel = this.channelsDict[element.mountConfig?.channelID!];
         if (targetChannel === undefined) {
             throw new Error(`Cannot find channel width ID ${element.mountConfig.channelID}`)
         }
@@ -385,7 +378,7 @@ export default class Sequence extends Collection implements IHaveStructure {
     // @isMounted
     // Remove column is set to false when modifyPositional is called.
     public deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
-        var channelID: string = target.mountConfig!.channelID;
+        var channelID: string = target.mountConfig?.channelID!;
         var channel: Channel | undefined = this.channelsDict[channelID]
         var channelIndex: number = this.channels.indexOf(channel);
         var INDEX: number;
@@ -397,7 +390,7 @@ export default class Sequence extends Collection implements IHaveStructure {
         if (target.mountConfig!.index === undefined ) {
             throw new Error("Index not initialised");
         }
-        if (channelID === undefined) {
+        if (channelID === undefined || channelID === null) {
             throw new Error(`No channel owner found when deleting ${target.ref}`)
         }
 

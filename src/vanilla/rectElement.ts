@@ -7,33 +7,33 @@ import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
 import { Element } from "@svgdotjs/svg.js";
 import RectElementForm from "../form/RectForm";
-import { Component } from "./diagramHandler";
+import { UserComponentType } from "./diagramHandler";
 
 export interface IRectStyle {
 	fill: string,
-	stroke: string,
-	strokeWidth: number 
+	stroke: string | null,
+	strokeWidth: number | null
 }
 
-export interface IRect extends IVisual {
+export interface IRectElement extends IVisual {
 	style: IRectStyle,
 }
 
-export default class RectElement extends Visual implements IRect, IDraw {
-	static defaults: {[key: string]: IRect } = {...<any>simplePulses,
+export default class RectElement extends Visual implements IRectElement, IDraw {
+	static defaults: {[key: string]: IRectElement } = {...<any>simplePulses,
         "bar": <any>defaultBar
     };
-    get state(): IRect { return {
+    get state(): IRectElement { return {
         style: this.style,
         ...super.state
     }}
-    static ElementType: Component = "rect";
+    static ElementType: UserComponentType = "rect";
     static form: React.FC = RectElementForm;
 
 	style: IRectStyle;	
 
-    constructor(params: RecursivePartial<IRect>, templateName: string="90-pulse") {
-		var fullParams: IRect = FillObject<IRect>(params, RectElement.defaults[templateName])
+    constructor(params: RecursivePartial<IRectElement>, templateName: string="90-pulse") {
+		var fullParams: IRectElement = FillObject<IRectElement>(params, RectElement.defaults[templateName])
 		super(fullParams);
 
 		this.style = fullParams.style;
@@ -70,7 +70,7 @@ export default class RectElement extends Visual implements IRect, IDraw {
         }
     }
 
-    public restructure(data: Partial<IRect>): void {
+    public restructure(data: Partial<IRectElement>): void {
         // Style:
         this.style = data.style ?? this.style;
 

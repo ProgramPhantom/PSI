@@ -4,7 +4,7 @@ import TeXToSVG from "tex-to-svg";
 import defaultText from "./default/data/text.json";
 import { cascadeID, FillObject, posPrecision, RecursivePartial, sizePrecision, UpdateObj } from "./util";
 import PaddedBox from "./paddedBox";
-import { VisualComponent } from "./diagramHandler";
+import { UserComponentType } from "./diagramHandler";
 import { Element } from "@svgdotjs/svg.js";
 
 export const EXTOPX = 38.314;
@@ -18,8 +18,8 @@ export interface IText extends IVisual {
 export interface ITextStyle {
     fontSize: number,
     colour: string,
-    background?: string,
-    display: Display
+    background: string | null,
+    display: Display 
 }
 
 export enum Position {top="top",
@@ -44,7 +44,6 @@ export default class Text extends Visual implements IText {
             ref: this.ref
         }
     }
-    static ElementType: VisualComponent = "text"; 
 
     intrinsicSize: {width: number, height: number}
     wHRatio: number

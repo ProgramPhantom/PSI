@@ -4,15 +4,14 @@ import { ID } from "./point";
 import Space from "./space";
 
 
-export enum Orientation { top=<any>"top", bottom=<any>"bottom", both=<any>"both" }
-
-export enum Alignment { here=<any>"here", centre=<any>"centre", far=<any>"far", none=<any>"none", stretch="stretch" }
+export type Orientation = "top" | "bottom" | "both";
+export type Alignment = "here" | "centre" | "far" | "stretch" | "none";
 
 
 export interface IMountConfig {
     index: number,
-    channelID: ID,
-    sequenceID: ID,
+    channelID: ID | null,
+    sequenceID: ID | null,
 
     orientation: Orientation,
     alignment: Alignment,
@@ -43,12 +42,12 @@ class Mountable extends PaddedBox implements IMountable {
 
         this.mountConfig = params.mountConfig;
 
-        if (this.mountConfig?.alignment === Alignment.stretch) {
+        if (this.mountConfig?.alignment === "stretch") {
             this.sizeSource.x = "inherited"
         }
 
         if (this.mountConfig !== undefined && this.mountConfig.noSections > 1) {
-            this.mountConfig.alignment = Alignment.stretch;
+            this.mountConfig.alignment = "stretch";
             this.sizeSource.x = "inherited";
         }
     }

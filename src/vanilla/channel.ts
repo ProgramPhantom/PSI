@@ -11,12 +11,12 @@ import Aligner from "./aligner";
 import { Alignment, IMountable, IMountConfig, Orientation } from "./mountable";
 import Labellable from "./labellable";
 import { OccupancyStatus } from "./sequence";
-import { Component, IHaveStructure } from "./diagramHandler";
+import { UserComponentType, IHaveStructure } from "./diagramHandler";
 import ChannelForm from "../form/ChannelForm";
 import { ID } from "./point";
  
 
-export type ChannelStructure = "top aligner" | "bottom aligner"
+export type ChannelNamedStructure = "top aligner" | "bottom aligner" | "bar"
 
 export interface IChannel extends ICollection {
     mountedElements: IVisual[],
@@ -35,7 +35,7 @@ export interface IChannelStyle {
 
 export default class Channel extends Collection implements IHaveStructure {
     static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
-    static ElementType: Component = "channel";
+    static ElementType: UserComponentType = "channel";
     static form: React.FC = ChannelForm;
     get state(): IChannel {
         return {
@@ -43,12 +43,11 @@ export default class Channel extends Collection implements IHaveStructure {
             sequenceID: this.sequenceID,
             style: this.style,
             channelSymbol: this.label.state,
-
             ...super.state
         }
     }
     
-    structure: Record<ChannelStructure, Visual>;
+    structure: Record<ChannelNamedStructure, Visual>;
 
     style: IChannelStyle;
 
@@ -124,17 +123,30 @@ export default class Channel extends Collection implements IHaveStructure {
         this.padding = [...fullParams.padding];
         // SIDE PADDING is not permitted for channels as it would break alignment
 
-        this.topAligner = new Aligner({axis: "x", alignment: Alignment.far, minCrossAxis: 30, ref: `top aligner`}, "default");
+
+        // ----- Create structure -----
+        // Top aligner
+        this.topAligner = new Aligner({axis: "x", alignment: "far", minCrossAxis: 30, ref: `top aligner`}, "default");
         this.add(this.topAligner, undefined, true)
         
+        // Bar
         this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle, ref: "bar"}, "bar");
         this.topAligner.bind(this.bar, "y", "far", "here");
         this.bar.sizeSource.x = "inherited";
         this.add(this.bar);
 
-        this.bottomAligner = new Aligner({axis: "x", alignment: Alignment.here, minCrossAxis: 20, ref: "bottom aligner"}, "default");
+        // Bottom aligner
+        this.bottomAligner = new Aligner({axis: "x", alignment: "here", minCrossAxis: 20, ref: "bottom aligner"}, "default");
         this.bar.bind(this.bottomAligner, "y", "far", "here");
         this.add(this.bottomAligner);
+
+        this.structure = {
+            "top aligner": this.topAligner,
+            "bottom aligner": this.bottomAligner,
+            "bar": this.bar
+        }
+        // ----------------------------
+
         
         this.sequenceID = fullParams.sequenceID;
         // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
@@ -148,10 +160,7 @@ export default class Channel extends Collection implements IHaveStructure {
         
 
 
-        this.structure = {
-            "top aligner": this.topAligner,
-            "bottom aligner": this.bottomAligner
-        }
+
     }
 
 
@@ -168,15 +177,15 @@ export default class Channel extends Collection implements IHaveStructure {
 
         // ---- Bind to the upper and lower aligners for Y ONLY
         switch (config.orientation) {
-            case Orientation.top:
+            case "top":
                 this.topAligner.add(element);
                 break;
-            case Orientation.both:
+            case "both":
                 this.bar.bind(element, "y", "centre", "centre")
                 this.add(element);
                 this.bar.enforceBinding()
                 break;
-            case Orientation.bottom:
+            case "bottom":
                 this.bottomAligner.add(element);
                 break;
         }
@@ -193,13 +202,13 @@ export default class Channel extends Collection implements IHaveStructure {
 
         // Remove from aligner (yes one of these is redundant)
         switch (element.mountConfig?.orientation) {
-            case Orientation.top:
+            case "top":
                 this.topAligner.remove(element);
                 break;
-            case Orientation.bottom:
+            case "bottom":
                 this.bottomAligner.remove(element);
                 break;
-            case Orientation.both:
+            case "both":
                 this.bar.clearBindsTo(element);
                 break;
             default:

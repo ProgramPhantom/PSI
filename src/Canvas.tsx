@@ -15,38 +15,48 @@ import BindingsDebug from './debug/Bindings';
 import BindingsSelector, { PointBind } from './BindingsSelector';
 import Labellable from './vanilla/labellable';
 import Collection from './vanilla/collection';
-import { ID } from './vanilla/point';
-import { Component, DrawComponent } from './vanilla/diagramHandler';
+import Point, { ID } from './vanilla/point';
+import { DrawComponent, AllComponentTypes, AllElementIdentifiers } from './vanilla/diagramHandler';
+import { AllStructures } from './vanilla/diagram';
 
  
 
 
-const DefaultDebugSelection: Record<Component, boolean> = {
-    "abstract": false,
+const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
+    // Types
     "svg": false,
     "text": false,
     "arrow": false,
     "rect": false,
-    "pulse columns": false,
+    "space": false,
+    "line": false,
+    "aligner": false,
+    "collection": false,
     "channel": false,
-    "label column": false,
-    "top aligner": false,
-    "bottom aligner": false,
+    "lower-abstract": false,
+    "visual": false,
     "sequence": false,
+    "label": false,
+    "diagram": false,
+    "labellable": false,
 
+    // Named elements
     "label col | pulse columns": false,
     "channel column": false,
-    "labellable": false,
-    "label": false,
+    "pulse columns": false,
     "sequence column": false,
-    "diagram": false
+    "label column": false,
+    "bar": false,
+    "root": false,
+    "top aligner": false,
+    "bottom aligner": false,
 }
 
 type HoverBehaviour = "terminate" | "carry" | "conditional"
 // Terminate: return this object immediately
 // Carry: always pass to parent
 // Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
-const FocusLevels: Record<number, Record<HoverBehaviour, Component[]>> = {
+const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> = {
     0: {
         terminate: [
             "labellable",
@@ -78,13 +88,12 @@ interface ICanvasProps {
 const Canvas: React.FC<ICanvasProps> = (props) => {
     const [debugDialogOpen, setDebugDialogOpen] = useState(false);
     const [debugElements, setDebugElements] = useState<Visual[]>([]);
-    const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<Component, boolean>>(DefaultDebugSelection);
+    const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<AllElementIdentifiers, boolean>>(DefaultDebugSelection);
     const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 
     const [start, setStart] = useState<PointBind | undefined>(undefined);
     const [end, setEnd] = useState<PointBind | undefined>(undefined);
 
-    var structuralElements: Record<ID, Visual> = ENGINE.handler.structuralElements;
     const [focusLevel, setFocusLevel] = useState(0);
 
     const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
@@ -100,8 +109,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         [debugDialogOpen],
     );
     const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
-    function handleSetDebugSelection(type: Component) {
-        var newDebugSelection: Record<Component, boolean> = {...debugSelectionTypes}
+    function handleSetDebugSelection(type: AllElementIdentifiers) {
+        var newDebugSelection: Record<AllElementIdentifiers, boolean> = {...debugSelectionTypes}
         newDebugSelection[type] = !newDebugSelection[type]
         setDebugSelectionTypes(newDebugSelection);
     }
@@ -167,9 +176,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         var initialElement: Visual | undefined = ENGINE.handler.identifyElement(id);
         if (initialElement === undefined) {return undefined}
 
-        var terminators: Component[] = FocusLevels[focusLevel].terminate;
-        var carry: Component[] = FocusLevels[focusLevel].carry;
-        var conditional: Component[] = FocusLevels[focusLevel].conditional;
+        var terminators: AllComponentTypes[] = FocusLevels[focusLevel].terminate;
+        var carry: AllComponentTypes[] = FocusLevels[focusLevel].carry;
+        var conditional: AllComponentTypes[] = FocusLevels[focusLevel].conditional;
 
         function walkUp(currElement: Visual): Visual | undefined {
             if (currElement.parentId !== undefined) {
@@ -180,8 +189,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             
             if (elementUp === undefined) { return currElement }
             
-            var currElementType: Component = (currElement.constructor as typeof Visual).ElementType;
-            var elementUpType: Component = (elementUp.constructor as typeof Visual).ElementType;
+            var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual).ElementType;
+            var elementUpType: AllComponentTypes = (elementUp.constructor as typeof Visual).ElementType;
             if (currElementType === "text") {
                 console.log()
             }

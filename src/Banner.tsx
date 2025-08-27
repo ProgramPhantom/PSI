@@ -120,7 +120,7 @@ export default function Banner(props: IBannerProps) {
     return (
         <>
         <Navbar>
-            <Navbar.Group align={Alignment.LEFT}>
+            <Navbar.Group>
                 <Icon icon="pulse" size={20} style={{marginRight: "10px"}}></Icon>
                 <Navbar.Heading>Pulse Planner v0.2.3 (BETA)</Navbar.Heading>
                 <Navbar.Divider />

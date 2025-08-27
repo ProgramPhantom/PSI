@@ -73,7 +73,7 @@ class DiagramDropInterpreter {
                                 y: channel.y, 
                                 width: this.slitherWidth, 
                                 height: channel.topAligner.contentHeight! + channel.padding[0]},
-                            index: columnIndex, orientation: Orientation.top, channelID: chanID, insert: true,
+                            index: columnIndex, orientation: "top", channelID: chanID, insert: true,
                             sequenceID: sequence.id
                         };
                         this.insertAreas.push(newSlither)
@@ -84,7 +84,7 @@ class DiagramDropInterpreter {
                                 y: channel.bottomAligner.y, 
                                 width: this.slitherWidth, 
                                 height: channel.bottomAligner.contentHeight! + channel.padding[2]},
-                            index: columnIndex, orientation: Orientation.bottom, channelID: chanID, insert: true,
+                            index: columnIndex, orientation: "bottom", channelID: chanID, insert: true,
                             sequenceID: sequence.id
                         };
                         this.insertAreas.push(newSlither)
@@ -100,7 +100,7 @@ class DiagramDropInterpreter {
                                 y: channel.contentY, 
                                 width: columnWidth - this.slitherWidth, 
                                 height: upperAlignerHeight}, 
-                            index: columnIndex, orientation: Orientation.top, channelID: chanID, sequenceID: seqID, insert: false}
+                            index: columnIndex, orientation: "top", channelID: chanID, sequenceID: seqID, insert: false}
                         this.insertAreas.push(newBlock);
 
                         // Bottom block
@@ -109,7 +109,7 @@ class DiagramDropInterpreter {
                                 y: channel.bottomAligner.y, 
                                 width: columnWidth - this.slitherWidth, 
                                 height: lowerAlignerHeight}, 
-                            index: columnIndex, orientation: Orientation.bottom, channelID: chanID, sequenceID: seqID, insert: false}
+                            index: columnIndex, orientation: "bottom", channelID: chanID, sequenceID: seqID, insert: false}
                         this.insertAreas.push(newBlock);
                     } 
                 })
@@ -134,7 +134,7 @@ class DiagramDropInterpreter {
                             y: channel.y, 
                             width: this.slitherWidth, 
                             height: upperAlignerHeight},
-                        index: i+1, orientation: Orientation.top, channelID: name, insert: true,
+                        index: i+1, orientation: "top", channelID: name, insert: true,
                         sequenceID: seqID
                     };
                     this.insertAreas.push(newSlither)
@@ -145,7 +145,7 @@ class DiagramDropInterpreter {
                             y: channel.bottomAligner.y, 
                             width: this.slitherWidth, 
                             height: lowerAlignerHeight + channel.padding[2]},
-                        index: i+1, orientation: Orientation.bottom, channelID: name, insert: true,
+                        index: i+1, orientation: "bottom", channelID: name, insert: true,
                         sequenceID: seqID
                     };
                     this.insertAreas.push(newSlither)

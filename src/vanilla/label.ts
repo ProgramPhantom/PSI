@@ -12,6 +12,7 @@ import { G } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { Mask } from "@svgdotjs/svg.js";
 import { Svg } from "@svgdotjs/svg.js";
+import { AllComponentTypes, UserComponentType } from "./diagramHandler";
 
 
 export type LabelTextPosition = "top" | "bottom" | "inline"
@@ -54,6 +55,7 @@ export default class Label extends Collection implements ILabel {
             ...super.state
         }
     }
+    static ElementType: AllComponentTypes = "label";
 
     text?: Text;
     line?: Arrow;

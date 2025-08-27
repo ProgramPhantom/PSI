@@ -1,6 +1,6 @@
 import Aligner from "./aligner";
 import logger, { Operations } from "./log";
-import { Component } from "./diagramHandler";
+import { AllComponentTypes } from "./diagramHandler";
 import Spacial, { IBinding, Dimensions } from "./spacial";
 import { posPrecision } from "./util";
 
@@ -40,7 +40,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
             ref: "default",
         },
     }
-    static ElementType: Component = "abstract"; 
+    static ElementType: AllComponentTypes = "lower-abstract"; 
 
     get state(): IPoint {
         return {

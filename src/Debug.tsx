@@ -1,6 +1,6 @@
 import { debug } from "console"
 import Sequence from "./vanilla/sequence"
-import DiagramHandler, { Component } from "./vanilla/diagramHandler"
+import DiagramHandler, { AllElementIdentifiers } from "./vanilla/diagramHandler"
 import PaddedBoxDebug from "./debug/PaddedBox"
 import CollectionDebug from "./debug/Collection"
 import BindingsDebug from "./debug/Bindings"
@@ -11,7 +11,7 @@ import ENGINE from "./vanilla/engine"
 import { Colors } from "@blueprintjs/core"
 
 interface IDebug {
-    debugGroupSelection: Record<Component, boolean>;
+    debugGroupSelection: Record<AllElementIdentifiers, boolean>;
     debugSelection: Visual[];
 }
 

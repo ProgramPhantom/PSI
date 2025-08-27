@@ -4,6 +4,9 @@ import DiagramHandler from "./diagramHandler";
 import SVGElement from "./svgElement";
 import { myToaster } from "../App";
 import { IDiagram } from "./diagram";
+import { IScheme, schemeData } from "./default";
+import { defaults } from "@svgdotjs/svg.js";
+import Labellable from "./labellable";
 
 
 class ENGINE {
@@ -11,10 +14,14 @@ class ENGINE {
     static currentImageName: string = "newPulseImage.svg"
     static StateName: string = "diagram-state";
     static STATE: string | null = localStorage.getItem(ENGINE.StateName);
+    static Scheme: IScheme;
 
     static set surface(s: Svg) {
+        this.Scheme = schemeData["default"];
+        this.loadTemplates()
+        
         ENGINE._surface = s;
-        ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange)
+        ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.Scheme)
         console.log("SURFACE ATTACHED")
     }
     static get surface(): Svg {
@@ -41,7 +48,6 @@ class ENGINE {
         return ENGINE.handler.id;
     }
     static emitChange() {
-        // localStorage.setItem("diagram-state", JSON.stringify(this.handler.diagram.state));
         ENGINE.listeners.forEach((l) => {
             l();
         })
@@ -73,14 +79,22 @@ class ENGINE {
         localStorage.setItem(ENGINE.StateName, stateString);
     }
 
-    static PULSE90 = new RectElement({ref: "90-pulse"}, "90-pulse");
-    static PULSE180 = new RectElement({ref: "180-pulse"}, "180-pulse");
+    static loadTemplates() {
+        Object.values(this.Scheme.rectElements).forEach((t) => {
+            this.RECTSINGLETONS.push(new RectElement(t))
+        })
+        Object.values(this.Scheme.svgElements).forEach((t) => {
+            this.SVGSINGLETONS.push(new SVGElement(t));
+        })
+        Object.values(this.Scheme.labellableElements).forEach((t) => {
+            this.LABELLABLESINGLETONS.push()
+            // TODO: implement
+        })
+    }
 
-    static P180 = new SVGElement({ref: "180"}, "180");
-    static AMP = new SVGElement({ref: "amp"}, "amp");
-    static ACQUIRE = new SVGElement({ref: "acquire"}, "acquire");
-    static CHIRPHILO = new SVGElement({ref: "chirphilo"}, "chirphilo");
-    static CHIRPLOHI = new SVGElement({ref: "chirplohi"}, "chirplohi");
+    static RECTSINGLETONS: RectElement[] = [];
+    static SVGSINGLETONS: SVGElement[] = [];
+    static LABELLABLESINGLETONS: Labellable[] = [];
 }
 
 

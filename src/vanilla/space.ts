@@ -6,7 +6,7 @@ import { Element } from "@svgdotjs/svg.js";
 import VisualForm from "../form/VisualForm";
 import Mountable, { IMountable } from "./mountable"; 
 import { defaultSpace } from "./default/data";
-import { Component } from "./diagramHandler";
+import { UserComponentType } from "./diagramHandler";
 import { Svg } from "@svgdotjs/svg.js";
 import { FormRequirements } from "../form/FormHolder";
 
@@ -27,7 +27,7 @@ export default class Space extends Visual implements ISpace, IDraw {
         offset: this.offset,
         mountConfig: this.mountConfig
     }}
-    static ElementType: Component = "rect";
+    static ElementType: UserComponentType = "space";
     static form: React.FC<FormRequirements> = VisualForm;
 
 

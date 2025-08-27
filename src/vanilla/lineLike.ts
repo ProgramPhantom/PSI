@@ -7,11 +7,8 @@ import PaddedBox from "./paddedBox";
 import Spacial, { IBindingRule, Dimensions } from "./spacial";
 import { Element } from "@svgdotjs/svg.js";
 
-enum Orientation {
-    horizontal="horizontal",
-    vertical="vertical",
-    angled="angled"
-}
+type Orientation ="horizontal" | "vertical" | "angled"
+
 
 export interface ILineLike extends IVisual {
     adjustment: [number, number],
@@ -94,15 +91,15 @@ export default abstract class LineLike extends Visual {
 
     adjust() {
         switch (this.orientation) {
-            case Orientation.vertical:
+            case "vertical":
                 this.y -= this.adjustment[0];
                 this.y2 += this.adjustment[1];
                 break;
-            case Orientation.horizontal:
+            case "horizontal":
                 this.x -= this.adjustment[0];
                 this.x2 += this.adjustment[1];
                 break;
-            case Orientation.angled:
+            case "angled":
                 throw new Error("Not implementated");  // TODO: implement this
                 break;
         }

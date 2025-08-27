@@ -10,7 +10,7 @@ import { Button, Card, Dialog, DialogBody, Divider, EditableText, EntityTitle, F
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import Labellable, { ILabellable } from "../vanilla/labellable";
-import { Component, ElementBundle } from "../vanilla/diagramHandler";
+import { NamedStructureComponents, ElementBundle } from "../vanilla/diagramHandler";
 import { myToaster } from "../App";
 import { inspect } from "util"
 import ReactJson from "react18-json-view"
@@ -31,9 +31,9 @@ interface FormActions {
     delete: (data: any) => void
 }
 
-type SubmissionType = (data: any, type: Component) => void
-type DeleteType = (val: Visual, type: Component) => void
-type ModifyType = (data: any, type: Component, target: Visual) => Visual
+type SubmissionType = (data: any, type: NamedStructureComponents) => void
+type DeleteType = (val: Visual, type: NamedStructureComponents) => void
+type ModifyType = (data: any, type: NamedStructureComponents, target: Visual) => Visual
 
 
 function getCoreDefaults(target: Visual): IVisual {
@@ -48,7 +48,7 @@ export function FormHolder(props: FormHolderProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     var isLabellable: boolean;
-    var elementType: Component;
+    var elementType: NamedStructureComponents;
     var coreDefaults: IVisual;
     var labelDefaults: ILabellable = Labellable.defaults["default"];
     var ElementForm: React.FC<FormRequirements> | undefined;

@@ -5,7 +5,8 @@ import { IVisual, Visual } from "./visual";
 import { Dimensions } from "./spacial";
 import Collection, { ICollection } from "./collection";
 import { Position } from "./text";
-import { Component } from "./diagramHandler";
+import { UserComponentType } from "./diagramHandler";
+import SVGElement from "./svgElement";
 
 
 
@@ -14,6 +15,7 @@ type ILabels = {[key in Position]?: ILabel}
 
 export interface ILabellable extends ICollection {
     labels?: ILabel[],
+    coreChild: IVisual,
 }
 
 
@@ -28,15 +30,17 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             padding: [0, 0, 0, 0],
 
             labels: [],
-            ref: "default-labellable"
+            ref: "default-labellable",
+            coreChild: SVGElement.defaults["180"]
         },
     }
-    static ElementType: Component = "labellable";
+    static ElementType: UserComponentType = "labellable";
     get state(): ILabellable { 
         return {
         labels: this.labels.map((l) => {
             return l.state
         }),
+        coreChild: this.coreChild,
         ...super.state,
         contentWidth: this.coreChild.contentWidth,
         contentHeight: this.coreChild.contentHeight,

@@ -1,5 +1,5 @@
 import { Visual, IVisual } from "./visual";
-import { IRect } from "./rectElement";
+import { IRectElement } from "./rectElement";
 import Spacial, { ISpacial } from "./spacial";
 import { ID } from "./point";
 

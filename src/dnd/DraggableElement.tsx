@@ -61,9 +61,10 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
       }
 
       if (isCanvasDrop(dropResult)) {
-        console.log(`Adding element at ${dropResult.x}, ${dropResult.y}`)
-
-        ENGINE.handler.addElementFromTemplate({x: dropResult.x, y: dropResult.y}, props.element.ref);
+        return
+        // console.log(`Adding element at ${dropResult.x}, ${dropResult.y}`)
+// 
+        // ENGINE.handler.addElementFromTemplate({x: dropResult.x, y: dropResult.y}, props.element.ref);
       } else if (isMountDrop(dropResult)) {
         ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
       }

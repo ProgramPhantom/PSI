@@ -1,12 +1,12 @@
 import { Visual, IVisual } from "./visual";
 import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
 import { Position, IText } from "./text";
-import Channel, { ChannelStructure, IChannel } from "./channel"
+import Channel, { ChannelNamedStructure, IChannel } from "./channel"
 import Text from "./text";
 import { json } from "stream/consumers";
-import Arrow, { HeadStyle } from "./arrow";
+import Arrow from "./arrow";
 import defaultDiagram from "./default/data/diagram.json"
-import DiagramHandler, { Component, IHaveStructure } from "./diagramHandler";
+import DiagramHandler, { IHaveStructure, UserComponentType } from "./diagramHandler";
 import { NumberAlias, select } from "svg.js";
 import { FillObject, PartialConstruct, RecursivePartial } from "./util";
 import { ILine, Line } from "./line";
@@ -18,7 +18,7 @@ import logger, { Operations, Processes } from "./log";
 import { defaultNewIndexGetter } from "@dnd-kit/sortable";
 import { Alignment } from "./mountable";
 import Space from "./space";
-import Sequence, { ISequence, SequenceStructures } from "./sequence";
+import Sequence, { ISequence, SequenceNamedStructures as SequenceNamedStructure } from "./sequence";
 import Point from "./point";
 
 
@@ -26,19 +26,21 @@ export interface IDiagram extends ICollection {
     sequences: ISequence[]
 }
 
-type DiagramComponent = "sequence column" 
+type DiagramNamedStructure = "sequence column" | "root"
  
-export type DiagramStructure = SequenceStructures | ChannelStructure | "abstract" | DiagramComponent
+export type AllStructures = SequenceNamedStructure | ChannelNamedStructure | DiagramNamedStructure
+// "Structure" are objects that are created as decendants of components which are used to arrange the their
+// content. Currently all structures are abstract (as in, have no visual, they are only used for positioning)
+// except for the BAR in the channel component (these might need differentiating)
 
 
 export default class Diagram extends Collection implements IHaveStructure {
     static defaults: {[key: string]: IDiagram} = {"default": {...<any>defaultDiagram}}
-    static ElementType: Component = "diagram";
+    static ElementType: UserComponentType = "diagram";
 
     get state(): IDiagram {
         return {
             sequences: this.sequences.map((s) => s.state),
-            
             ...super.state
         }
     }
@@ -59,7 +61,7 @@ export default class Diagram extends Collection implements IHaveStructure {
     get channels(): Channel[] {return this.sequences.map((s) => s.channels).flat()}
     get channelIDs(): string[] {return this.sequences.map((s) => s.channelIDs).flat()}
 
-    structure: Record<DiagramComponent, Visual>;
+    structure: Record<DiagramNamedStructure, Point>;
 
     freeArrows: Arrow[] = [];
 
@@ -85,16 +87,24 @@ export default class Diagram extends Collection implements IHaveStructure {
 
         this.sequenceDict = {};
 
+        // ----- Create structure ---- 
         // Root 
         this.root = new Spacial(0, 0, 0, 0, "root");
 
-
+        // Sequence column
         this.sequenceColumn = new Aligner<Sequence>(
-            {bindMainAxis: true, axis: "y", alignment: Alignment.here, ref: "sequence column", x:0, y:0}, "default", );
+            {bindMainAxis: true, axis: "y", alignment: "here", ref: "sequence column", x:0, y:0}, "default", );
         this.root.bind(this.sequenceColumn, "x", "here", "here");
         this.root.bind(this.sequenceColumn, "y", "here", "here");
         this.add(this.sequenceColumn);
-        
+
+        this.structure = {
+            "sequence column": this.sequenceColumn,
+            "root": this.root
+        }
+        // --------------------------
+
+
         // Initial sequence:
         if (fullParams.sequences.length === 0) {
             var startSequence = new Sequence({});
@@ -105,11 +115,7 @@ export default class Diagram extends Collection implements IHaveStructure {
             var newSeq = new Sequence(s);
             this.addSequence(newSeq);
         })
-        
-
-        this.structure = {
-            "sequence column": this.sequenceColumn
-        }
+    
 
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
@@ -135,7 +141,7 @@ export default class Diagram extends Collection implements IHaveStructure {
 
     // Mounting 
     public mountElement(target: Visual, insert: boolean=true) {
-        var sequence: Sequence | undefined = this.sequenceDict[target.mountConfig!.sequenceID];
+        var sequence: Sequence | undefined = this.sequenceDict[target.mountConfig?.sequenceID!];
 
         if (sequence === undefined) {
             throw new Error(`Cannot find sequence with ID: ${target.mountConfig!.sequenceID}`)
@@ -145,7 +151,7 @@ export default class Diagram extends Collection implements IHaveStructure {
     }
 
     public deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
-        var sequence: Sequence | undefined = this.sequenceDict[target.mountConfig!.sequenceID];
+        var sequence: Sequence | undefined = this.sequenceDict[target.mountConfig?.sequenceID!];
 
         if (sequence === undefined) {
             throw new Error(`Cannot find sequence with ID: ${target.mountConfig?.sequenceID}`);

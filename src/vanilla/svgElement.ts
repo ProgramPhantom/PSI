@@ -8,7 +8,7 @@ import { Orientation } from "./mountable";
 import Labellable, { ILabellable } from "./labellable";
 import SVGElementForm from "../form/SVGElementForm";
 import { Rect } from "@svgdotjs/svg.js";
-import { VisualComponent } from "./diagramHandler";
+import { UserComponentType } from "./diagramHandler";
 
 // ----------- TEMPORARY ---------------
 const svgContent: {[path: string]: string} = {}
@@ -39,20 +39,20 @@ interface ISVGStyle {
 
 }
 
-export interface ISVG extends IVisual {
+export interface ISVGElement extends IVisual {
     path: string,
     style: ISVGStyle
 }
 
 
-export default class SVGElement extends Visual implements ISVG, IDraw {
-    static override defaults: {[key: string]: ISVG} = {...<any>svgPulses, "default": svgPulses[180]};
-	get state(): ISVG { return {
+export default class SVGElement extends Visual implements ISVGElement, IDraw {
+    static override defaults: {[key: string]: ISVGElement} = {...<any>svgPulses, "default": svgPulses[180]};
+	get state(): ISVGElement { return {
 		path: this.path,
 		style: this.style,
 		...super.state
     }}
-	static ElementType: VisualComponent = "svg"; 
+	static ElementType: UserComponentType = "svg";
 	static form: React.FC = SVGElementForm;
 
 	elementGroup: G = new G();
@@ -60,8 +60,8 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
     path: string;
 	override svg: Element;
 
-    constructor(params: RecursivePartial<ISVG>, templateName: string="default") {
-		var fullParams: ISVG = FillObject(params, SVGElement.defaults[templateName])
+    constructor(params: RecursivePartial<ISVGElement>, templateName: string="default") {
+		var fullParams: ISVGElement = FillObject(params, SVGElement.defaults[templateName])
 		super(fullParams);
 
 		this.style = fullParams.style;
@@ -122,8 +122,8 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
 
 			// Flip svg depending on orientation.
 			if (this.isMountable) {
-				if (!this.flipped && this.mountConfig?.orientation === Orientation.bottom
-					|| this.flipped && this.mountConfig?.orientation === Orientation.top
+				if (!this.flipped && this.mountConfig?.orientation === "bottom"
+					|| this.flipped && this.mountConfig?.orientation === "top"
 				) {
 					this.flipped = !this.flipped;
 					this.verticalFlip();
@@ -162,7 +162,7 @@ export default class SVGElement extends Visual implements ISVG, IDraw {
     }
 
 	// Wtf does this do
-	public restructure(data: Partial<ISVG>): void {
+	public restructure(data: Partial<ISVGElement>): void {
 		// Path
 		this.path = data.path ?? this.path;
 		

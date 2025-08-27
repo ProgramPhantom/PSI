@@ -23,7 +23,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         "default": {
             axis: "x",
             bindMainAxis: false,
-            alignment: Alignment.here,
+            alignment: "here",
             minCrossAxis: 0,
             contentWidth: 0,
             contentHeight: 0,
@@ -58,10 +58,10 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
     }
 
-    add(child: T, index?: number, bindHere: boolean = false, alignItem: Alignment=Alignment.none) {
+    add(child: T, index?: number, bindHere: boolean = false, alignItem: Alignment="none") {
         child.parentId = this.id;
         // AlignItem takes precedence
-        var alignChild: Alignment = alignItem !== Alignment.none ? alignItem : this.alignment;
+        var alignChild: Alignment = alignItem !== "none" ? alignItem : this.alignment;
         const INDEX = index !== undefined ? index : this.children.length;
 
         // MAIN AXIS COMPUTE
@@ -97,18 +97,18 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
         
         // Cross axis
         switch (alignChild) {
-            case Alignment.none:
+            case "none":
                 break;
-            case Alignment.here:
+            case "here":
                 this.bind(child, this.crossAxis, "here", "here", undefined);
                 break;
-            case Alignment.centre:
+            case "centre":
                 this.bind(child, this.crossAxis, "centre", "centre", undefined);
                 break;
-            case Alignment.far:
+            case "far":
                 this.bind(child, this.crossAxis, "far", "far", undefined);
                 break;
-            case Alignment.stretch:
+            case "stretch":
                 // child.sizeSource[this.crossAxis] = "inherited";
                 this.bind(child, this.crossAxis, "here", "here", undefined);
                 this.bind(child, this.crossAxis, "far", "far", undefined)
@@ -214,7 +214,7 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
 
         // Non aligned elements would break the following code,
         // Currently, an element can only be non-aligned if the aligner is non-aligned.
-        if (this.alignment === Alignment.none) {
+        if (this.alignment === "none") {
             return 
         }
 

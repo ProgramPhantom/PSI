@@ -7,16 +7,15 @@ import Labellable from './labellable'
 import PaddedBox from './paddedBox'
 import Mountable from './mountable'
 import { ID } from './point'
+import { AbstractComponentTypes, AllComponentTypes } from './diagramHandler'
 
 
 type Padding = number | [number, number] | [number, number, number, number]
 export type Offset = [number, number]
 
 
-export enum Display {
-    None="none",
-    Block="block"
-}
+export type Display = "none" | "block"
+
 
 export interface IVisual extends IMountable {
     offset: [number, number],

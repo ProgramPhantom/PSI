@@ -6,7 +6,7 @@ import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, 
 import LabelForm from './LabelForm';
 import ArrowForm from './ArrowForm';
 import DiagramHandler from '../vanilla/diagramHandler';
-import SVGElement, { ISVG } from '../vanilla/svgElement';
+import SVGElement, { ISVGElement } from '../vanilla/svgElement';
 import { svgPulses } from '../vanilla/default/data/svgPulse';
 import { dataTypes } from '@data-driven-forms/react-form-renderer';
 import { ClassProperties, UpdateObj } from '../vanilla/util';
@@ -22,7 +22,7 @@ interface ISVGElementFormProps extends FormRequirements {
 
 
 const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
-    const formControls = useFormContext<ISVG>();
+    const formControls = useFormContext<ISVGElement>();
 
     return (
     <>

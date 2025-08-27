@@ -9,6 +9,7 @@
     
     "style": {
         "fontSize": 15,
-        "colour": "black"
+        "colour": "black",
+        "background": null
     }
 }

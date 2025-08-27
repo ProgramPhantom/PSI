@@ -69,13 +69,12 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                             gap: "12px",
                             padding: "4px"
                         }}>
-                            <DraggableElement element={ENGINE.PULSE90} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
-                            <DraggableElement element={ENGINE.PULSE180} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
-                            <DraggableElement element={ENGINE.P180} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
-                            <DraggableElement element={ENGINE.AMP} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
-                            <DraggableElement element={ENGINE.ACQUIRE} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
-                            <DraggableElement element={ENGINE.CHIRPHILO} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
-                            <DraggableElement element={ENGINE.CHIRPLOHI} handler={ENGINE.handler} onDoubleClick={handleElementDoubleClick} />
+                            {ENGINE.RECTSINGLETONS.map((s) => {
+                                return <DraggableElement element={s} onDoubleClick={handleElementDoubleClick} />
+                            })}
+                            {ENGINE.SVGSINGLETONS.map((s) => {
+                                return <DraggableElement element={s} onDoubleClick={handleElementDoubleClick} />
+                            })}
                         </div>
                     </div>
                 </SectionCard>
