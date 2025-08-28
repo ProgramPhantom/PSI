@@ -10,6 +10,7 @@ import { ISVGElement } from "./svgElement"
 import { IText } from "./text"
 
 
+const svgPath: string = "\\src\\assets\\"
 var schemes: string[] = ["default"]
 
 
@@ -20,6 +21,8 @@ export interface IScheme {
     channel: IChannel,
 
     svgElements: Record<string, ISVGElement>
+    svgStrings: Record<string, string>;
+
     rectElements: Record<string, IRectElement>,
     labellableElements: Record<string, ILabellable>
 
@@ -232,6 +235,10 @@ export var svgElements: Record<string, ISVGElement> = {
     }
 }
 
+
+const svgStrings: Record<string, string> = await loadDefaultSVGs()
+
+
 export var rectElements: Record<string, IRectElement> = {
     "90-pulse": {
         "padding": [0, 4, 0, 4],
@@ -333,6 +340,7 @@ export var schemeData: Record<string, IScheme> = {
         },
 
         "svgElements": svgElements,
+        "svgStrings": svgStrings,
         "rectElements": rectElements,
         "labellableElements": {},
 
@@ -383,4 +391,26 @@ export var schemeData: Record<string, IScheme> = {
             }
         }
     }
+}
+
+
+async function loadDefaultSVGs(): Promise<Record<string, string>> {
+
+    const svgStrings: Record<string, string> = {};
+    for (const p of Object.keys(svgElements)) {
+        var svg = await fetch(svgPath + p + ".svg").then(
+            (response) => response.text()
+        ).then(
+            (response) => {return response}
+        ).catch(
+            (error) => {console.error(`Cannot find svg for element ${p}`)}
+        )
+
+        if (svg) {
+            svgStrings[p] = svg;
+        }
+        
+    }
+
+    return svgStrings;
 }

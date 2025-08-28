@@ -18,7 +18,7 @@ class ENGINE {
 
     static set surface(s: Svg) {
         this.Scheme = schemeData["default"];
-        this.loadTemplates()
+        this.loadTemplates();
         
         ENGINE._surface = s;
         ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.Scheme)
@@ -80,21 +80,43 @@ class ENGINE {
     }
 
     static loadTemplates() {
+        this.SVG_STRINGS = this.Scheme.svgStrings;
+
+        // Get local svg string too
+        var localSVGString: string | null = localStorage.getItem("svgData");
+        if (localSVGString !== null) {
+            var localSVGDict: Record<string, string> = JSON.parse(localSVGString);
+
+            Object.entries(localSVGDict).forEach(([ref, str]) => {
+                this.Scheme.svgStrings[ref] = str
+            })
+        }
+
         Object.values(this.Scheme.rectElements).forEach((t) => {
-            this.RECTSINGLETONS.push(new RectElement(t))
+            this.RECT_TEMPLATES.push(new RectElement(t))
         })
         Object.values(this.Scheme.svgElements).forEach((t) => {
-            this.SVGSINGLETONS.push(new SVGElement(t));
+            this.SVG_TEMPLATES.push(new SVGElement(t));
         })
         Object.values(this.Scheme.labellableElements).forEach((t) => {
-            this.LABELLABLESINGLETONS.push()
+            this.LABELLABLE_TEMPLATES.push()
             // TODO: implement
         })
+
+        localStorage.setItem("svgData", JSON.stringify(this.Scheme.svgStrings));
     }
 
-    static RECTSINGLETONS: RectElement[] = [];
-    static SVGSINGLETONS: SVGElement[] = [];
-    static LABELLABLESINGLETONS: Labellable[] = [];
+    static addSvgData(ref: string, svg: string) {
+        this.Scheme.svgStrings[ref] = svg;
+
+        localStorage.setItem("svgData", JSON.stringify(this.Scheme.svgStrings));
+    }
+
+    static RECT_TEMPLATES: RectElement[] = [];
+    static SVG_TEMPLATES: SVGElement[] = [];
+    static LABELLABLE_TEMPLATES: Labellable[] = [];
+
+    static SVG_STRINGS: Record<string, string> = {}
 }
 
 

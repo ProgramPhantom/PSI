@@ -9,30 +9,7 @@ import Labellable, { ILabellable } from "./labellable";
 import SVGElementForm from "../form/SVGElementForm";
 import { Rect } from "@svgdotjs/svg.js";
 import { UserComponentType } from "./diagramHandler";
-
-// ----------- TEMPORARY ---------------
-const svgContent: {[path: string]: string} = {}
-const svgPaths = ["\\src\\assets\\acquire2.svg",
-				  "\\src\\assets\\saltirelohi.svg",
-				  "\\src\\assets\\saltirehilo.svg",
-				  "\\src\\assets\\halfsine.svg",
-				  "\\src\\assets\\chirplohi.svg",
-				  "\\src\\assets\\chirphilo.svg",
-				  "\\src\\assets\\ampseries.svg",
-				  "\\src\\assets\\180.svg",
-				  "\\src\\assets\\trapezium.svg",
-				  "\\src\\assets\\talltrapezium.svg"]
-
-for (const p of svgPaths) {
-	var svg = await fetch(p).then(
-		(response) => response.text()
-	).then(
-		(response) => {return response}
-	)
-
-	svgContent[p] = svg;
-}
-// ---------------------------------------
+import ENGINE from "./engine";
 
 
 interface ISVGStyle {
@@ -68,11 +45,18 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 
 		this.style = fullParams.style;
         this.path = fullParams.path;
-		
+
+		if (this.ref === "s") {
+			console.log()
+		}
+		var svgString: string = ENGINE.SVG_STRINGS[this.ref];
+		if (svgString === undefined) {
+			throw new Error(`Cannot find svg for ${this.ref}`)
+		}
 		try {
-			var rawSVG: Element = SVG(svgContent[this.path])
+			var rawSVG: Element = SVG(svgString)
 		} catch {
-			throw new Error(`Cannot find path ${this.path}`)
+			throw new Error(`Cannot parse svg for ${this.ref}`)
 		}
 
 		// Wrap svg contents inside a group for translation. 

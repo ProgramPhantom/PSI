@@ -40,7 +40,7 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
         labels: this.labels.map((l) => {
             return l.state
         }),
-        coreChild: this.coreChild,
+        coreChild: this.coreChild.state,
         ...super.state,
         contentWidth: this.coreChild.contentWidth,
         contentHeight: this.coreChild.contentHeight,

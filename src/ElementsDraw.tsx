@@ -5,6 +5,8 @@ import DraggableElement from './dnd/DraggableElement';
 import DiagramHandler from './vanilla/diagramHandler';
 import ENGINE from "./vanilla/engine";
 import { Visual } from './vanilla/visual';
+import RectElementForm from './form/RectForm';
+import NewElementDialog from './NewElementDialog';
 
 
 interface IElementDrawProps {
@@ -127,11 +129,11 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                                 </span>
                             </div>
 
-                            {ENGINE.RECTSINGLETONS.map((s) => {
-                                return <DraggableElement element={s} onDoubleClick={handleElementDoubleClick} />
+                            {ENGINE.RECT_TEMPLATES.map((s) => {
+                                return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
                             })}
-                            {ENGINE.SVGSINGLETONS.map((s) => {
-                                return <DraggableElement element={s} onDoubleClick={handleElementDoubleClick} />
+                            {ENGINE.SVG_TEMPLATES.map((s) => {
+                                return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
                             })}
                         </div>
                     </div>
@@ -167,65 +169,8 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                     </>
                 }></DialogFooter>
             </Dialog>
-
-            {/* New Element Dialog */}
-            <Dialog
-                isOpen={isNewElementDialogOpen}
-                onClose={handleNewElementDialogClose}
-                title="Add New Template Element"
-                canOutsideClickClose={true}
-                canEscapeKeyClose={true}
-            >
-                <DialogBody>
-                    <Tabs id="newElementTabs" defaultSelectedTabId="rect">
-                        <Tab id="rect" title="Rect" panel={
-                            <div style={{ padding: "16px 0" }}>
-                                <Text>Rect element form will go here</Text>
-                            </div>
-                        } />
-                        <Tab id="svg" title="SVG" panel={
-                            <div style={{ padding: "16px 0" }}>
-                                <Text>SVG element form will go here</Text>
-                            </div>
-                        } />
-                        <Tab id="labellable" title="Labellable" panel={
-                            <div style={{ padding: "16px 0" }}>
-                                <Text>Labellable element form will go here</Text>
-                            </div>
-                        } />
-                    </Tabs>
-                </DialogBody>
-
-                <DialogFooter actions={
-                    <>
-                    <Button 
-                            text="Cancel" 
-                            onClick={handleNewElementDialogClose}
-                            variant="minimal"/>
-                    <Button 
-                            text="Submit" 
-                            intent="primary"
-                            onClick={handleNewElementSubmit}/>
-                    </>
-                }></DialogFooter>
-            </Dialog>
-
-            {/*
-            <Section collapsible={true} title={"Script"} icon={"code"} collapseProps={{defaultIsOpen: false}} compact={true}>
-                <SectionCard>
-                    <TextArea
-                        onChange={(e: InputEvent) => {props.Parse(e.target.value)}}
-                        
-                        style={{width: "100%", resize: "vertical", minHeight: 100}}
-                        value={props.editorText}
-                    ></TextArea >
-                </SectionCard>
-
-                <SectionCard>
-                    <Errors parseError={props.errorStatus.parseError} drawError={props.errorStatus.drawError}></Errors>
-                </SectionCard>
-            </Section> */}
-
+            
+            <NewElementDialog isOpen={isNewElementDialogOpen} close={handleNewElementDialogClose}></NewElementDialog>
         </div>
 
         
