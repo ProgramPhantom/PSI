@@ -49,7 +49,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		if (this.ref === "s") {
 			console.log()
 		}
-		var svgString: string = ENGINE.SVG_STRINGS[this.ref];
+		var svgString: string = ENGINE.AllSvgStrings[this.ref];
 		if (svgString === undefined) {
 			throw new Error(`Cannot find svg for ${this.ref}`)
 		}

@@ -26,6 +26,8 @@ import Console from './Console';
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
 ENGINE.load()
+await ENGINE.loadSVGData();
+ENGINE.createSingletons();
 
 export const myToaster: Toaster = await OverlayToaster.create({ position: "bottom",  });
 

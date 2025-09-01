@@ -10,11 +10,12 @@ import { Button, Card, Dialog, DialogBody, Divider, EditableText, EntityTitle, F
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
 import Labellable, { ILabellable } from "../vanilla/labellable";
-import { NamedStructureComponents, ElementBundle } from "../vanilla/diagramHandler";
+import { AllComponentTypes, ElementBundle, UserComponentType } from "../vanilla/diagramHandler";
 import { myToaster } from "../App";
 import { inspect } from "util"
 import ReactJson from "react18-json-view"
 import { Inspector, ObjectInspector } from "react-inspector"
+import { AllStructures } from "../vanilla/diagram";
 
 
 interface FormHolderProps {
@@ -31,9 +32,9 @@ interface FormActions {
     delete: (data: any) => void
 }
 
-type SubmissionType = (data: any, type: NamedStructureComponents) => void
-type DeleteType = (val: Visual, type: NamedStructureComponents) => void
-type ModifyType = (data: any, type: NamedStructureComponents, target: Visual) => Visual
+type SubmissionType = (data: any, type: AllComponentTypes) => void
+type DeleteType = (val: Visual, type: AllComponentTypes) => void
+type ModifyType = (data: any, type: AllComponentTypes, target: Visual) => Visual
 
 
 function getCoreDefaults(target: Visual): IVisual {
@@ -48,7 +49,7 @@ export function FormHolder(props: FormHolderProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     var isLabellable: boolean;
-    var elementType: NamedStructureComponents;
+    var elementType: AllComponentTypes;
     var coreDefaults: IVisual;
     var labelDefaults: ILabellable = Labellable.defaults["default"];
     var ElementForm: React.FC<FormRequirements> | undefined;

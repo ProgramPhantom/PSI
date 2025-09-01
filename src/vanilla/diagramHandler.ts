@@ -22,7 +22,7 @@ import Arrow from "./arrow";
 import { PointBind } from "../BindingsSelector";
 import Diagram, { AllStructures, IDiagram } from "./diagram";
 import { Rect } from "@svgdotjs/svg.js";
-import { IScheme } from "./default";
+import SchemeManager, { ISchemeData, SchemeSet } from "./default";
 import ENGINE from "./engine";
 
 
@@ -52,24 +52,11 @@ export interface IHaveStructure {
 
 
 export default class DiagramHandler {
-    get templateTypes(): Record<string, UserComponentType> {
-        var types: Record<string, UserComponentType> = {};
-        Object.keys(this.scheme.svgElements).forEach((r) => {
-            types[r] = "svg";
-        })
-        Object.keys(this.scheme.rectElements).forEach((r) => {
-            types[r] = "rect";
-        })
-        Object.keys(this.scheme.labellableElements).forEach((r) => {
-            types[r] = "labellable";
-        })
-        return types;
-    }
-
+    
 
     diagram: Diagram;
     surface?: Svg;
-    scheme: IScheme;
+    schemeManager: SchemeManager;
 
     get id(): string {
         var id: string = "";
@@ -104,14 +91,14 @@ export default class DiagramHandler {
         return structuralElements;
     }
 
-    constructor(surface: Svg, emitChange: () => void, scheme: IScheme) {
+    constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager) {
         this.syncExternal = emitChange;
 
 
         this.diagram = new Diagram({});
         
         
-        this.scheme = scheme;
+        this.schemeManager = schemeManager;
         this.surface = surface;
     }
 
@@ -164,7 +151,7 @@ export default class DiagramHandler {
     }
 
     // ---- Form interfaces ----
-    public submitElement(parameters: ElementBundle, type: UserComponentType): Visual {
+    public submitElement(parameters: ElementBundle, type: AllComponentTypes): Visual {
 
         var element: Visual | undefined;
         switch (type) {
@@ -192,7 +179,7 @@ export default class DiagramHandler {
         return element
     }
 
-    public submitModifyElement(parameters: IVisual, type: UserComponentType, target: Visual): Visual {
+    public submitModifyElement(parameters: IVisual, type: AllComponentTypes, target: Visual): Visual {
         var mountConfigCopy: IMountConfig | undefined = target.mountConfig;
         // Delete element
         this.deleteElement(target, false)
@@ -209,7 +196,7 @@ export default class DiagramHandler {
         return element;
     }
 
-    public submitDeleteElement(target: Visual, type: UserComponentType) {
+    public submitDeleteElement(target: Visual, type: AllComponentTypes) {
         switch (type) {
             case "rect":
             case "svg":
@@ -265,7 +252,7 @@ export default class DiagramHandler {
     }
 
     public addElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string) {
-        var elementType: UserComponentType = this.templateTypes[elementRef];
+        var elementType: UserComponentType = this.schemeManager.elementTypes[elementRef];
 
         var element: Visual;
 
@@ -385,9 +372,9 @@ export default class DiagramHandler {
     Function uses element name to lookup default parameters and replaces with those provided */
     
     public mountElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string, insert: boolean=false) {
-        var positionalType: UserComponentType | undefined = this.templateTypes[elementRef];
+        var elementType: UserComponentType | undefined = this.schemeManager.elementTypes[elementRef];
 
-        if (positionalType === undefined) {
+        if (elementType === undefined) {
             throw new Error(`Template for element ${elementRef} not found`)
         }
 
@@ -400,12 +387,14 @@ export default class DiagramHandler {
         if (pParameters.mountConfig !== undefined) {
             pParameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
         }
+        // Temporary:
+        var schemeName: string = "default"
 
         var parameters;
 
-        switch (positionalType) {
+        switch (elementType) {
             case "svg":
-                parameters = FillObject(pParameters as IVisual, this.scheme.svgElements[elementRef])
+                parameters = FillObject(pParameters as IVisual, this.schemeManager.defaultScheme.svgElements[elementRef])
                 element = new SVGElement(parameters)
                 
                 if (pParameters.labels !== undefined) {
@@ -413,7 +402,7 @@ export default class DiagramHandler {
                 }
                 break;
             case "rect":
-                parameters = FillObject(pParameters as IVisual, this.scheme.rectElements[elementRef])
+                parameters = FillObject(pParameters as IVisual, this.schemeManager.defaultScheme.rectElements[elementRef])
                 element = new RectElement(parameters);
 
                 if (pParameters.labels !== undefined) {
@@ -421,7 +410,7 @@ export default class DiagramHandler {
                 }
                 break;
             default:
-                throw new Error(`Not added ability to add component of type ${positionalType} via template`)
+                throw new Error(`Not added ability to add component of type ${elementType} via template`)
         }
 
         

@@ -1,3 +1,4 @@
+import { publicDecrypt } from "crypto"
 import { IArrow } from "./arrow"
 import { IChannel } from "./channel"
 import { IDiagram } from "./diagram"
@@ -8,20 +9,24 @@ import { IRectElement } from "./rectElement"
 import { ISequence } from "./sequence"
 import { ISVGElement } from "./svgElement"
 import { IText } from "./text"
+import defaultScheme from "./default/data/schemeSet.json"
+import { UserComponentType } from "./diagramHandler"
 
 
 const svgPath: string = "\\src\\assets\\"
 var schemes: string[] = ["default"]
 
 
-
-export interface IScheme {
+// A "scheme" will be the name for a configuration for a package of defaults for the application 
+// to use. It includes prefabs for elements, defaults for sequences etc. The application can 
+// contain multiple 
+export interface ISchemeData {
     diagram: IDiagram,
     sequence: ISequence,
     channel: IChannel,
 
     svgElements: Record<string, ISVGElement>
-    svgStrings: Record<string, string>;
+    svgStrings: SVGDict | undefined;
 
     rectElements: Record<string, IRectElement>,
     labellableElements: Record<string, ILabellable>
@@ -31,386 +36,227 @@ export interface IScheme {
     text: IText,
 }
 
-export var svgElements: Record<string, ISVGElement> = {
-    "180": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 0],
-        "path": "\\src\\assets\\180.svg",
-        "contentWidth": 50,
-        "contentHeight": 50,
-    
-        "ref": "180",
-        "style": {}
-    },
-    "acquire": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 0],
-        "path": "\\src\\assets\\acquire2.svg",
-        "contentWidth": 150,
-        "contentHeight": 75,
-        
-        "ref": "acquire",
-        "style": {}
-    },
-    "amp": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 1],
-        "path": "\\src\\assets\\ampseries.svg",
-        "contentWidth": 15,
-        "contentHeight": 40,
-    
-        "ref": "amp",
-        "style": {}
-    },
-    "chirphilo": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 1],
-        "path": "\\src\\assets\\chirphilo.svg",
-        "contentWidth": 50,
-        "contentHeight": 20,
-    
-        "ref": "chirphilo",
-        "style": {}
-    },
-    "chirplohi": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 1, 0, 1],
-        "offset": [0, 1],
-        "path": "\\src\\assets\\chirplohi.svg",
-        "contentWidth": 50,
-        "contentHeight": 20,
-        
-        "ref": "chirplohi",
-        "style": {}
-    },
-    "halfsine": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 0],
-        "path": "\\src\\assets\\halfsine.svg",
-        
-        "contentWidth": 15,
-        "contentHeight": 20,
-        
-        "ref": "halfsine",
-        "style": {}
-    },
-    "saltirehilo": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 1, 0, 1],
-        "offset": [0, 1],
-        "path": "\\src\\assets\\saltirehilo.svg",
-        "contentWidth": 50,
-        "contentHeight": 20,
-        
-        "ref": "saltirehilo",
-        "style": {}
-    },
-    "saltirelohi": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 1, 0, 1],
-        "offset": [0, 1],
-        "path": "\\src\\assets\\saltirelohi.svg",
-        "contentWidth": 50,
-        "contentHeight": 20,
-    
-        "ref": "saltirelohi",
-        "style": {}
-    },
-    "tall-trapezium": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 1],
-        "path": "\\src\\assets\\talltrapezium.svg",
-        "contentWidth": 15,
-        "contentHeight": 25,
-        
-        "ref": "tall-trapezium",
-        "style": {}
-    },
-    "trapezium": {
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 1],
-        "path": "\\src\\assets\\trapezium.svg",
-        "contentWidth": 60,
-        "contentHeight": 10,
-        
-        "ref": "trapezium",
-        "style": {}
+// A scheme set is a collection of schemes with names. This object is used to store all the default
+// values the application can have.
+export type SchemeSet = Record<string, Partial<ISchemeData>>;
+export type SVGDict = Record<string, string>;
+
+export default class SchemeManager {
+    static DefaultSchemeName: string = "default"
+    static StorageName: string = "schemeSet"
+    static SVGAssetPath: string = "\\src\\assets\\"
+
+    public get defaultScheme(): ISchemeData {
+        if (this._schemes[SchemeManager.DefaultSchemeName] === undefined) {
+            throw new Error(`Scheme manager contains no default scheme`);
+        }
+        // TODO: is there a way to validate this?
+        return this._schemes[SchemeManager.DefaultSchemeName] as ISchemeData
+    };
+
+    private _schemes: SchemeSet = {};
+    public get schemeData(): Partial<ISchemeData>[] {return Object.values(this.schemeSet)}
+    public get schemeSet(): SchemeSet {
+        return this._schemes;
+    };
+    public set schemeSet(v: SchemeSet) {
+        this._schemes = v;
     }
-}
-
-
-const svgStrings: Record<string, string> = await loadDefaultSVGs()
-
-
-export var rectElements: Record<string, IRectElement> = {
-    "90-pulse": {
-        "padding": [0, 4, 0, 4],
-        "offset": [0, 0],
-    
-        "contentWidth": 7,
-        "contentHeight": 50,
-    
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "style": {
-            "fill": "#000000",
-            "stroke": "black",
-            "strokeWidth": 0
-        },
-    
-        "ref": "90-pulse"
-    },
-    "180-pulse": {
-        "padding": [0, 4, 0, 4],
-        "offset": [0, 0],
-    
-        "contentWidth": 10,
-        "contentHeight": 40,
-    
-        "mountConfig": {
-            "orientation": "top",
-            "alignment": "centre",
-            "noSections": 1,
-            "channelID": null,
-            "sequenceID": null,
-            "index": 0,
-            "mountOn": true
-        },
-    
-        "style": {
-            "fill": "#ffffff",
-            "stroke": "black",
-            "strokeWidth": 1
-        },
-    
-        "ref": "180-pulse"
+    public get SVGData(): Record<string, SVGDict> {
+        var svgData: Record<string, SVGDict> = {}
+        for (var [schemeName, schemeData] of Object.entries(this.schemeSet)) {
+            svgData[schemeName] = schemeData.svgStrings ?? {};
+        } 
+        return svgData;
     }
-}
+    public setScheme(name: string, scheme: Partial<ISchemeData>) {
+        if (name === "default") {
+            throw new Error(`Cannot override default scheme`);
+        }
+        this.schemeSet[name] = scheme;
+    }
+    get schemeNames(): string[] {
+        return Object.keys(this.schemeSet);
+    }
 
-export var schemeData: Record<string, IScheme> = {
-    "default": {
-        "diagram": {
-            "ref": "diagram",
-            "padding": [0, 0, 0, 0],
-            "offset": [0, 0],
-            "sequences": []
-        },
-        "sequence": {
-            "ref": "sequence",
-            "padding": [5, 5, 5, 5],
-            "offset": [0, 0],
-
-            "channels": []
-        },
-        "channel": {
-            "mountedElements": [],
-            "padding": [0, 0, 0, 0], 
-            "offset": [0, 0],
-            "ref": "my-channel",
-            "sequenceID": "",
+    get elementTypes(): Record<string, UserComponentType> {
+        var types: Record<string, UserComponentType> = {};
         
-            "style": {
-                "thickness": 3,
-                "barStyle": {
-                    "fill": "#000000",
-                    "stroke": null,
-                    "strokeWidth": null
-                }
-            },
+        for (var scheme of this.schemeData) {
+            Object.keys(scheme.svgElements ?? {}).forEach((r) => {
+                types[r] = "svg";
+            })
+            Object.keys(scheme.rectElements ?? {}).forEach((r) => {
+                types[r] = "rect";
+            })
+            Object.keys(scheme.labellableElements ?? {}).forEach((r) => {
+                types[r] = "labellable";
+            })
+        }
+
+        return types;
+    }
+
+
+    constructor() {
+        var initialScheme: Record<string, ISchemeData> = JSON.parse(JSON.stringify(defaultScheme));
+
+        this.schemeSet = this.getLocalSchemes();
+        this.schemeSet = {...initialScheme, ...this.schemeSet}; 
+    
+        this.saveToLocalStore();
+    }
+
+    
+    // Goes through all schemes and makes sure they have their associated svg data.
+    public async loadSVGs() {
+        // Get all svg data, from the assets and from internal storage:
+
+        var allSvgData: Record<string, Record<string, string>> = {};
         
-            "channelSymbol": {
-                "text": "^{1}\\mathrm{H}",
-                "offset": [0, 0],
-                "padding": [0, 0, 0, 0],
-                "ref": "channel-label",
+        // Try to load from assets:
+        try {
+            var assetData = await this.getAssetSVGs();
+            allSvgData = {...assetData};
+        } catch {
+            console.warn(`Failed to load asset svg data`)
+        }
 
-                "style": {
-                    "fontSize": 20,
-                    "colour": "black",
-                    "background": null,
-                    "display": "none"
-                }
+        try {
+            var localSvgData = this.getLocalSVGs();
+            // TODO: sort this shit out
+            allSvgData = {"default": {...allSvgData["default"], ...localSvgData["default"]}};
+        } catch {
+            console.warn(`Failed to load local svg data`);
+        }
 
+
+        // Confirm that every svg in each scheme has a corresponding svg data collected above
+
+        var svgsWithMissing: ISVGElement[] = [];
+        for (var [schemeName, scheme] of Object.entries(this.schemeSet)) {
+            if (!scheme.svgElements) {continue}
+
+            for (var [name, svgElement] of Object.entries(scheme.svgElements)) {
+                if (allSvgData[schemeName][name] === undefined) { svgsWithMissing.push(svgElement) }
             }
-        },
+        }
 
-        "svgElements": svgElements,
-        "svgStrings": svgStrings,
-        "rectElements": rectElements,
-        "labellableElements": {},
-
-        "arrow": {
-            "ref": "arrow",
-            "padding": [0, 0, 0, 0],
-            "offset": [0, 0],
-            
-            "adjustment": [0, 0],
-            "orientation": "horizontal",
-
-            "arrowStyle": {
-                "headStyle": "default"
-            },
-        
-            "style": {
-                "stroke": "black",
-                "thickness": 1,
-                "dashing": [0, 0]
-            }
-        },
-        "line": {
-            "padding": [0, 0, 0, 0],
-            "offset": [0, 0],
-            "adjustment": [0, 0],
-            "ref": "line",
-            "orientation": "angled",
-        
-            "style": {
-                "stroke": "black",
-                "thickness": 1,
-                "dashing": [7, 7]
-            }
-        },
-        "text": {
-            "ref": "text",
-        
-            "text": "\\textrm{H}",
-            "padding": [0, 0, 2, 0],
-            "offset": [0, 0],
-        
-            
-            "style": {
-                "fontSize": 15,
-                "colour": "black",
-                "background": null,
-                "display": "block"
+        if (svgsWithMissing.length > 0) {
+            // Perhaps instead, remove the svg?
+            throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
+        } else {
+            // Apply loaded svgs to scheme set
+            for (var [schemeName, scheme] of Object.entries(this.schemeSet)) {
+                this.schemeSet[schemeName].svgStrings = allSvgData[schemeName];
             }
         }
     }
-}
 
-
-async function loadDefaultSVGs(): Promise<Record<string, string>> {
-
-    const svgStrings: Record<string, string> = {};
-    for (const p of Object.keys(svgElements)) {
-        var svg = await fetch(svgPath + p + ".svg").then(
-            (response) => response.text()
-        ).then(
-            (response) => {return response}
-        ).catch(
-            (error) => {console.error(`Cannot find svg for element ${p}`)}
-        )
-
-        if (svg) {
-            svgStrings[p] = svg;
+    // Load scheme data from local storage
+    public getLocalSchemes(): SchemeSet {
+        var storedDataStr: string | null = localStorage.getItem(SchemeManager.StorageName);
+        if (storedDataStr === null) {
+            return {};
         }
-        
+
+        var storedData: SchemeSet = JSON.parse(storedDataStr);
+        // TODO: validate
+
+        return storedData;
     }
 
-    return svgStrings;
+    // Method for adding svg data to a scheme
+    public addSVGStrData(dataString: string, reference: string, schemeName: string) {
+        if (this.schemeSet[schemeName] === undefined) {
+            throw new Error(`Cannot add svg data to non-existent scheme ${schemeName}`)
+        }
+
+        if (this.schemeSet[schemeName].svgStrings === undefined) {this.schemeSet[schemeName].svgStrings = {}}
+        this.schemeSet[schemeName].svgStrings[reference] = dataString;
+        this.saveToLocalStore();
+    }
+
+    public addSVGData(data: ISVGElement, schemeName:string=SchemeManager.DefaultSchemeName) {
+        if (this.schemeSet[schemeName] === undefined) {
+            throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
+        }
+        
+        if (this.schemeSet[schemeName].svgElements === undefined) {this.schemeSet[schemeName].svgElements = {}}
+        this.schemeSet[schemeName].svgElements[data.ref] = data;
+        this.saveToLocalStore()
+    }
+
+    public addRectData(data: IRectElement, schemeName:string=SchemeManager.DefaultSchemeName) {
+        if (this.schemeSet[schemeName] === undefined) {
+            throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
+        }
+        
+        if (this.schemeSet[schemeName].rectElements === undefined) {this.schemeSet[schemeName].rectElements = {}}
+        this.schemeSet[schemeName].rectElements[data.ref] = data;
+        this.saveToLocalStore();
+    }
+
+    private saveToLocalStore() {
+        localStorage.setItem(SchemeManager.StorageName, JSON.stringify(this.schemeSet));
+    }
+
+    private async getAssetSVGs(): Promise<Record<string, SVGDict>> {
+        const svgStrings: Record<string, SVGDict> = {};
+
+
+        for (const [schemeName, scheme] of Object.entries(this.schemeSet)) {
+            if (scheme.svgElements === undefined) {continue}
+            var svgData: Record<string, string> = {};
+            for (var [name, el] of Object.entries(scheme.svgElements)) {
+                if (name === "tick") {
+                    console.log()
+                }
+                var fetchString = SchemeManager.SVGAssetPath + name + ".svg";
+
+                try {
+                    var svg = await fetch(fetchString, {cache: "no-store"}).then(
+                        (response) => {
+                            console.log(`STATUS ${response.status}`)
+                            if (!response.ok || response.status === 404) {
+                                throw new Error("asset not found");
+                            }
+
+                            return response.text()
+                        }
+                    ).catch(
+                        (error) => {console.error(`Cannot find svg for element ${el.ref}`)}
+                    )
+                } catch {continue}
+                
+            
+                if (svg) {
+                    svgData[name] = svg;
+                }
+            }
+
+            svgStrings[schemeName] = svgData;
+        }
+
+        return svgStrings;
+    }
+
+    private getLocalSVGs(): Record<string, SVGDict> {
+        // Try to load svg from internal storage:
+        var storedDataStr: string | null = localStorage.getItem(SchemeManager.StorageName);
+        if (storedDataStr === null) {
+            return {};
+        }
+
+        var storedData: SchemeSet = JSON.parse(storedDataStr);
+
+        var svgData: Record<string, Record<string, string>> = {};
+        for (var [schemeName, scheme] of Object.entries(storedData)) {
+            svgData[schemeName] = scheme.svgStrings ?? {}
+        }
+        
+        // TODO: add validation.
+
+        return svgData;
+    }
 }

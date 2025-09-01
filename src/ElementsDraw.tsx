@@ -1,4 +1,4 @@
-import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dialog, Button, DialogFooter, DialogBody, EntityTitle, Tabs, Tab } from '@blueprintjs/core';
+import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dialog, Button, DialogFooter, DialogBody, EntityTitle, Tabs, Tab, Classes } from '@blueprintjs/core';
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import Errors, { errorState } from './Errors';
 import DraggableElement from './dnd/DraggableElement';
@@ -7,6 +7,7 @@ import ENGINE from "./vanilla/engine";
 import { Visual } from './vanilla/visual';
 import RectElementForm from './form/RectForm';
 import NewElementDialog from './NewElementDialog';
+import SchemeManager from './vanilla/default';
 
 
 interface IElementDrawProps {
@@ -17,6 +18,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
     const [isNewElementDialogOpen, setIsNewElementDialogOpen] = useState(false);
+    const [selectedScheme, setSelectedScheme] = useState(SchemeManager.DefaultSchemeName);
 
     const handleElementDoubleClick = (element: Visual) => {
         setSelectedElement(element);
@@ -46,13 +48,12 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
     return (
 
-        <div style={{height: "100%", }}>
-            <Section style={{padding: "0px", overflow: "visible", boxShadow: "none"}}>
+        <div style={{height: "100%", overflow: "hidden"}}>
+            <Section style={{padding: "0px", overflow: "visible", boxShadow: "none", height: "100%"}}>
                 <SectionCard style={{
                     padding: "0px",
                     height: "100%",
-                    overflowY: "auto",
-                    overflow: "visible",
+                    overflow: "hidden",
                     display: "flex",
                     flexDirection: "column",
                 }}>
@@ -74,68 +75,92 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                     <Divider style={{margin: "4px 8px 0 8px"}} />
 
                     <div style={{
-                        padding: "8px 16px"
+                        padding: "8px 16px", width: "100%", height: "100%"
                     }}>
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                            gap: "12px",
-                            padding: "4px"
-                        }}>
-                             {/* Plus button for adding new elements */}
-                            <div 
-                                style={{
-                                    width: "120px",
-                                    height: "120px", 
-                                    padding: "12px 8px",
-                                    border: "1px solid #d3d8de",
-                                    borderRadius: "4px",
-                                    backgroundColor: "white",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    cursor: "pointer",
-                                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                                    transition: "all 0.2s ease",
-                                    userSelect: "none"
-                                }} 
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
-                                    e.currentTarget.style.transform = "translateY(-1px)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                }}
-                                onClick={() => setIsNewElementDialogOpen(true)}
-                                title="Add new template element"
-                            >
-                                <div style={{
-                                    fontSize: "32px",
-                                    color: "#5c7080",
-                                    marginBottom: "8px"
-                                }}>
-                                    +
-                                </div>
-                                <span style={{
-                                    fontSize: "12px",
-                                    color: "#5c7080",
-                                    fontWeight: "600",
-                                    textAlign: "center",
-                                    lineHeight: "1.4"
-                                }}>
-                                    Add New
-                                </span>
-                            </div>
+                        <style>{`.bp5-tabs { height: 100% }`}</style>
 
-                            {ENGINE.RECT_TEMPLATES.map((s) => {
-                                return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
+                        <Tabs vertical={true} defaultSelectedTabId={"default"} fill={true} selectedTabId={selectedScheme}>
+                            <style>{`.bp5-tab-panel { width: 100%; height: 100%; !important; max-width: 100% !important; box-sizing: border-box; display: block; 
+                                                      overflow: "auto" }`}</style>
+                            
+                            {Object.entries(ENGINE.singletons).map(([schemeName, singletonDict]) => {
+                                var noElements: number = singletonDict.SVG_TEMPLATES.length + singletonDict.RECT_TEMPLATES.length + 
+                                                         singletonDict.LABELLABLE_TEMPLATES.length;
+                                return (
+                                    <Tab style={{width: "100%", overflow: "auto"}} title={schemeName} tagProps={{round: true}} tagContent={noElements} id={schemeName} panel={
+                                        <div style={{width: "100%", display: "flex", flexDirection: "row", height: "100%"}}>
+                                            <Divider style={{}} ></Divider>
+                                            <div style={{width: "100%",
+                                                display: 'grid', overflow: "auto",
+                                                gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                                                gridTemplateRows: "repeat(auto-fill, 120px)",
+                                                gap: "12px",
+                                                padding: "4px",
+                                                }}>
+                                                    {/* Plus button for adding new elements */}
+                                                    <div 
+                                                        style={{
+                                                            width: "120px",
+                                                            height: "120px", 
+                                                            padding: "12px 8px",
+                                                            border: "1px solid #d3d8de",
+                                                            borderRadius: "4px",
+                                                            backgroundColor: "white",
+                                                            display: "flex",
+                                                            flexDirection: "column",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            cursor: "pointer",
+                                                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                                            transition: "all 0.2s ease",
+                                                            userSelect: "none"
+                                                        }} 
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+                                                            e.currentTarget.style.transform = "translateY(-1px)";
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
+                                                            e.currentTarget.style.transform = "translateY(0)";
+                                                        }}
+                                                        onClick={() => setIsNewElementDialogOpen(true)}
+                                                        title="Add new template element"
+                                                    >
+                                                        <div style={{
+                                                            fontSize: "32px",
+                                                            color: "#5c7080",
+                                                            marginBottom: "8px"
+                                                        }}>
+                                                            +
+                                                        </div>
+                                                        <span style={{
+                                                            fontSize: "12px",
+                                                            color: "#5c7080",
+                                                            fontWeight: "600",
+                                                            textAlign: "center",
+                                                            lineHeight: "1.4"
+                                                        }}>
+                                                            Add New
+                                                        </span>
+                                                    </div>
+
+                                                    {singletonDict.RECT_TEMPLATES.map((s) => {
+                                                        return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
+                                                    })}
+                                                    {singletonDict.SVG_TEMPLATES.map((s) => {
+                                                        return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
+                                                    })}
+                                            </div>
+                                        </div>             
+                                    }>
+
+                                    </Tab>)
+
                             })}
-                            {ENGINE.SVG_TEMPLATES.map((s) => {
-                                return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
-                            })}
-                        </div>
+
+                            
+                        </Tabs>
+
                     </div>
                 </SectionCard>
             </Section>
@@ -170,7 +195,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                 }></DialogFooter>
             </Dialog>
             
-            <NewElementDialog isOpen={isNewElementDialogOpen} close={handleNewElementDialogClose}></NewElementDialog>
+            <NewElementDialog isOpen={isNewElementDialogOpen} close={handleNewElementDialogClose} schemeName={selectedScheme}></NewElementDialog>
         </div>
 
         

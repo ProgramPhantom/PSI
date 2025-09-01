@@ -1,27 +1,31 @@
 import { Svg } from "@svgdotjs/svg.js";
-import RectElement from "./rectElement";
+import RectElement, { IRectElement } from "./rectElement";
 import DiagramHandler from "./diagramHandler";
-import SVGElement from "./svgElement";
+import SVGElement, { ISVGElement } from "./svgElement";
 import { myToaster } from "../App";
 import { IDiagram } from "./diagram";
-import { IScheme, schemeData } from "./default";
+import SchemeManager, { ISchemeData, SVGDict } from "./default";
 import { defaults } from "@svgdotjs/svg.js";
 import Labellable from "./labellable";
 
+interface SchemeSingletonStore {
+    RECT_TEMPLATES: RectElement[] 
+    SVG_TEMPLATES: SVGElement[]
+    LABELLABLE_TEMPLATES: Labellable[]
+}
+type SingletonStorage = Record<string, SchemeSingletonStore>
 
 class ENGINE {
     static listeners: (() => void)[] = []
     static currentImageName: string = "newPulseImage.svg"
     static StateName: string = "diagram-state";
     static STATE: string | null = localStorage.getItem(ENGINE.StateName);
-    static Scheme: IScheme;
+    static schemeManager: SchemeManager = new SchemeManager();
+    static singletons: SingletonStorage;
 
     static set surface(s: Svg) {
-        this.Scheme = schemeData["default"];
-        this.loadTemplates();
-        
         ENGINE._surface = s;
-        ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.Scheme)
+        ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager)
         console.log("SURFACE ATTACHED")
     }
     static get surface(): Svg {
@@ -73,50 +77,69 @@ class ENGINE {
             }
         }
     }
+    static async loadSVGData() {
+        await this.schemeManager.loadSVGs();
+    }
     static save() {
         var stateObject: IDiagram = ENGINE.handler.diagram.state
         var stateString = JSON.stringify(stateObject, undefined, 4);
         localStorage.setItem(ENGINE.StateName, stateString);
     }
 
-    static loadTemplates() {
-        this.SVG_STRINGS = this.Scheme.svgStrings;
+    static createSingletons() {
+        var singletonCollections: SingletonStorage = {};
+        
+        for (var [schemeName, scheme] of Object.entries(this.schemeManager.schemeSet)) {
+            var rectSingletons: RectElement[] = [];
+            var svgSingletons: SVGElement[] = [];
+            var labellableSingletons: Labellable[] = [];
 
-        // Get local svg string too
-        var localSVGString: string | null = localStorage.getItem("svgData");
-        if (localSVGString !== null) {
-            var localSVGDict: Record<string, string> = JSON.parse(localSVGString);
 
-            Object.entries(localSVGDict).forEach(([ref, str]) => {
-                this.Scheme.svgStrings[ref] = str
+            Object.values(scheme.rectElements ?? {}).forEach((t) => {
+                rectSingletons.push(new RectElement(t))
             })
+            Object.values(scheme.svgElements ?? {}).forEach((t) => {
+                svgSingletons.push(new SVGElement(t));
+            })
+            Object.values(scheme.labellableElements ?? {}).forEach((t) => {
+                labellableSingletons.push()
+                // TODO: implement
+            })
+
+            singletonCollections[schemeName] = {
+                RECT_TEMPLATES: rectSingletons,
+                SVG_TEMPLATES: svgSingletons,
+                LABELLABLE_TEMPLATES: labellableSingletons
+            }
         }
 
-        Object.values(this.Scheme.rectElements).forEach((t) => {
-            this.RECT_TEMPLATES.push(new RectElement(t))
-        })
-        Object.values(this.Scheme.svgElements).forEach((t) => {
-            this.SVG_TEMPLATES.push(new SVGElement(t));
-        })
-        Object.values(this.Scheme.labellableElements).forEach((t) => {
-            this.LABELLABLE_TEMPLATES.push()
-            // TODO: implement
-        })
-
-        localStorage.setItem("svgData", JSON.stringify(this.Scheme.svgStrings));
+        this.singletons = singletonCollections;
     }
 
-    static addSvgData(ref: string, svg: string) {
-        this.Scheme.svgStrings[ref] = svg;
+    static addSVGSingleton(data: ISVGElement, schemeName: string=SchemeManager.DefaultSchemeName) {
+        this.schemeManager.addSVGData(data, schemeName);
 
-        localStorage.setItem("svgData", JSON.stringify(this.Scheme.svgStrings));
+        this.singletons[schemeName].SVG_TEMPLATES.push(new SVGElement(data));
     }
 
-    static RECT_TEMPLATES: RectElement[] = [];
-    static SVG_TEMPLATES: SVGElement[] = [];
-    static LABELLABLE_TEMPLATES: Labellable[] = [];
+    static addRectSingleton(data: IRectElement, schemeName: string=SchemeManager.DefaultSchemeName) {
+        this.schemeManager.addRectData(data, schemeName)
 
-    static SVG_STRINGS: Record<string, string> = {}
+        this.singletons[schemeName].RECT_TEMPLATES.push(new RectElement(data));
+    }
+
+
+    static get SVG_STRINGS(): Record<string, SVGDict> {return this.schemeManager.SVGData}
+    // Temp
+    static get AllSvgStrings(): SVGDict {
+        var svgs: Record<string, string> = {};
+        for (var [schemeName, svgDict] of Object.entries(this.SVG_STRINGS)) {
+            for (var [svgRef, svgStr] of Object.entries(svgDict)) {
+                svgs[svgRef] = svgStr
+            }
+        }
+        return svgs
+    }   
 }
 
 

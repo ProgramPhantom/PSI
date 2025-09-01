@@ -17,6 +17,7 @@ import VisualForm from './VisualForm';
 import { FormRequirements } from './FormHolder';
 import ENGINE from '../vanilla/engine';
 import { myToaster } from '../App';
+import SchemeManager from '../vanilla/default';
 
 interface ISVGElementFormProps extends FormRequirements {
 
@@ -29,6 +30,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const [svgReference, setSvgReference] = useState("");
+    const [schemeName, setSchemeName] = useState(SchemeManager.DefaultSchemeName)
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (file: File) => {
@@ -82,7 +84,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
             reader.onload = (e) => {
                 try {
                     const svgString = e.target?.result as string;
-                    ENGINE.addSvgData(svgReference.trim(), svgString);
+                    ENGINE.schemeManager.addSVGStrData(svgString, svgReference.trim(), schemeName);
                     
                     myToaster.show({
                         message: "SVG uploaded successfully",
@@ -120,7 +122,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
             <ControlGroup>
                 <Controller control={formControls.control} name="ref" render={({field}) => (
                     <HTMLSelect {...field} iconName='caret-down'>
-                        {Object.keys(ENGINE.Scheme.svgStrings).map((ref) => {
+                        {Object.keys(ENGINE.AllSvgStrings).map((ref) => {
                             return <option key={ref} value={ref}>{ref}</option>
                         })}
                     </HTMLSelect>
@@ -158,6 +160,20 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
                         onChange={(e) => setSvgReference(e.target.value)}
                         placeholder="Enter reference name..."
                     />
+                </FormGroup>
+
+                <FormGroup
+                    label="Add to scheme"
+                    labelFor="scheme-input"
+                >
+                    <HTMLSelect
+                        id="scheme-input"
+                        value={svgReference}
+                        onChange={(e) => setSchemeName(e.target.value)}>
+                            {ENGINE.schemeManager.schemeNames.map((name) => {
+                                return <option key={name} value={name}>{name}</option>
+                            })}
+                        </HTMLSelect>
                 </FormGroup>
                 
                 <div

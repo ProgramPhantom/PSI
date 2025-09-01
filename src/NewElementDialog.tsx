@@ -9,7 +9,8 @@ import ENGINE from "./vanilla/engine"
 
 interface INewElementDialog {
     isOpen: boolean,
-    close: () => void
+    close: () => void,
+    schemeName: string,
 }
 
 export default function NewElementDialog(props: INewElementDialog) {
@@ -17,14 +18,20 @@ export default function NewElementDialog(props: INewElementDialog) {
     const svgFormControls = useForm<ISVGElement>({defaultValues: {
         contentHeight: 10,
         contentWidth: 10,
+        mountConfig: {
+            "alignment": "centre",
+            "index": 0,
+            "mountOn": true,
+            "noSections": 1,
+            "orientation": "top"
+        }
     }});
 
     function addNewTemplate() {
         var values: ISVGElement = svgFormControls.getValues();
         var newSVG: SVGElement = new SVGElement(values);
 
-        ENGINE.Scheme.svgElements[newSVG.ref] = newSVG;
-        ENGINE.SVG_TEMPLATES.push(newSVG);
+        ENGINE.addSVGSingleton(values, props.schemeName)
         props.close();
     }
 
