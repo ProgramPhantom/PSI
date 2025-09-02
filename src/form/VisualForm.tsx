@@ -21,6 +21,21 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
   var vals = formControls.getValues();
   return (
       <ControlGroup vertical={true}>
+        
+        {/* Text */}
+        <FormGroup style={{userSelect: "none"}}
+            fill={false}
+            inline={true}
+            label="Reference"
+            labelFor="text-input">
+        
+            <Controller control={formControls.control} name="ref" render={({field}) => (
+                <InputGroup {...field} id="text" size="small"/>
+                )}>
+            </Controller>
+        </FormGroup>
+
+
         { /* Width and height */ }
         {/* Content Width */}
         { vals.contentWidth !== undefined && props.widthDisplay ? <>

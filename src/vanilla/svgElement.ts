@@ -17,7 +17,7 @@ interface ISVGStyle {
 }
 
 export interface ISVGElement extends IVisual {
-    path: string,
+    svgDataRef: string,
     style: ISVGStyle
 }
 
@@ -25,7 +25,7 @@ export interface ISVGElement extends IVisual {
 export default class SVGElement extends Visual implements ISVGElement, IDraw {
     static override namedElements: {[key: string]: ISVGElement} = {...<any>svgPulses, "default": svgPulses[180]};
 	get state(): ISVGElement { return {
-		path: this.path,
+		svgDataRef: this.svgDataRef,
 		style: this.style,
 		...super.state
     }}
@@ -34,7 +34,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 
 	elementGroup: G = new G();
 	style: ISVGStyle;
-    path: string;
+    svgDataRef: string;
 	override svg: Element;
 
     constructor(params: ISVGElement);
@@ -44,12 +44,12 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		super(fullParams);
 
 		this.style = fullParams.style;
-        this.path = fullParams.path;
+        this.svgDataRef = fullParams.svgDataRef;
 
 		if (this.ref === "s") {
 			console.log()
 		}
-		var svgString: string = ENGINE.AllSvgStrings[this.ref];
+		var svgString: string = ENGINE.AllSvgStrings[this.svgDataRef];
 		if (svgString === undefined) {
 			throw new Error(`Cannot find svg for ${this.ref}`)
 		}
@@ -150,7 +150,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 	// Wtf does this do
 	public restructure(data: Partial<ISVGElement>): void {
 		// Path
-		this.path = data.path ?? this.path;
+		this.svgDataRef = data.svgDataRef ?? this.svgDataRef;
 		
 		// Style:
 		this.style = data.style ?? this.style;

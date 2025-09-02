@@ -164,20 +164,6 @@ export function FormHolder(props: FormHolderProps) {
 
                 <Divider style={{margin: "0 0 16px 0"}}></Divider>
 
-                {/* Text */}
-                <FormGroup style={{userSelect: "none"}}
-                    fill={false}
-                    inline={true}
-                    label="Reference"
-                    labelFor="text-input">
-                
-                    <Controller control={coreFormControls.control} name="ref" render={({field}) => (
-                        <InputGroup {...field} id="text" size="medium"/>
-                        )}>
-                    </Controller>
-                </FormGroup>
-
-
                 <Divider></Divider>
 
                 

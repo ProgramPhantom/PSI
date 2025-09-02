@@ -105,7 +105,7 @@
             
                 "padding": [0, 0, 0, 0],
                 "offset": [0, 0],
-                "path": "\\src\\assets\\180.svg",
+                "svgDataRef": "180",
                 "contentWidth": 50,
                 "contentHeight": 50,
             
@@ -125,7 +125,7 @@
             
                 "padding": [0, 0, 0, 0],
                 "offset": [0, 0],
-                "path": "\\src\\assets\\acquire2.svg",
+                "svgDataRef": "acquire",
                 "contentWidth": 150,
                 "contentHeight": 75,
                 
@@ -145,7 +145,7 @@
             
                 "padding": [0, 0, 0, 0],
                 "offset": [0, 1],
-                "path": "\\src\\assets\\ampseries.svg",
+                "svgDataRef": "amp",
                 "contentWidth": 15,
                 "contentHeight": 40,
             
@@ -165,7 +165,7 @@
             
                 "padding": [0, 0, 0, 0],
                 "offset": [0, 1],
-                "path": "\\src\\assets\\chirphilo.svg",
+                "svgDataRef": "chirphilo",
                 "contentWidth": 50,
                 "contentHeight": 20,
             
@@ -185,7 +185,7 @@
             
                 "padding": [0, 1, 0, 1],
                 "offset": [0, 1],
-                "path": "\\src\\assets\\chirplohi.svg",
+                "svgDataRef": "chirplohi",
                 "contentWidth": 50,
                 "contentHeight": 20,
                 
@@ -205,7 +205,7 @@
             
                 "padding": [0, 0, 0, 0],
                 "offset": [0, 0],
-                "path": "\\src\\assets\\halfsine.svg",
+                "svgDataRef": "halfsine",
                 
                 "contentWidth": 15,
                 "contentHeight": 20,
@@ -226,7 +226,7 @@
             
                 "padding": [0, 1, 0, 1],
                 "offset": [0, 1],
-                "path": "\\src\\assets\\saltirehilo.svg",
+                "svgDataRef": "saltirehilo",
                 "contentWidth": 50,
                 "contentHeight": 20,
                 
@@ -246,7 +246,7 @@
             
                 "padding": [0, 1, 0, 1],
                 "offset": [0, 1],
-                "path": "\\src\\assets\\saltirelohi.svg",
+                "svgDataRef": "saltirelohi",
                 "contentWidth": 50,
                 "contentHeight": 20,
             
@@ -266,7 +266,7 @@
             
                 "padding": [0, 0, 0, 0],
                 "offset": [0, 1],
-                "path": "\\src\\assets\\talltrapezium.svg",
+                "svgDataRef": "tall-trapezium",
                 "contentWidth": 15,
                 "contentHeight": 25,
                 
@@ -286,7 +286,7 @@
             
                 "padding": [0, 0, 0, 0],
                 "offset": [0, 1],
-                "path": "\\src\\assets\\trapezium.svg",
+                "svgDataRef": "trapezium",
                 "contentWidth": 60,
                 "contentHeight": 10,
                 
