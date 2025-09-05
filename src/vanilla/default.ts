@@ -212,7 +212,7 @@ export default class SchemeManager {
                 if (name === "tick") {
                     console.log()
                 }
-                var fetchString = SchemeManager.SVGAssetPath + name + ".svg";
+                var fetchString = SchemeManager.SVGAssetPath + el.svgDataRef + ".svg";
 
                 try {
                     var svg = await fetch(fetchString, {cache: "no-store"}).then(

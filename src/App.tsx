@@ -224,7 +224,7 @@ function App() {
             
             
               <div style={{position: "relative", bottom: "0px", display: "flex", flexDirection: "column", borderTop: "1px solid #c7c7c7"}}>
-                <ComponentResizer resizeDirection="vertical" defaultHeight={250} maxHeight={600} panelName="Elements">
+                <ComponentResizer resizeDirection="vertical" defaultHeight={330} maxHeight={600} panelName="Elements">
                   <ElementsDraw></ElementsDraw>
                 </ComponentResizer>
               </div>

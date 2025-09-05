@@ -108,14 +108,16 @@ export function FormHolder(props: FormHolderProps) {
 
     // Create form hook
     const coreFormControls = useForm<IVisual>({
-        defaultValues:  coreDefaults as DefaultValues<IVisual>
+        defaultValues:  coreDefaults as DefaultValues<IVisual>,
+        mode: "onChange"
     });
 
     // This stops some weird default value caching, don't remove it or code breaks.
 
     // Create label hook form
     const labelFormControls = useForm<ILabellable>({
-        defaultValues: labelDefaults as DefaultValues<ILabellable>
+        defaultValues: labelDefaults as DefaultValues<ILabellable>,
+        mode: "onChange"
     });
 
 

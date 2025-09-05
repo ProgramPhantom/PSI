@@ -27,11 +27,16 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
             fill={false}
             inline={true}
             label="Reference"
-            labelFor="text-input">
-        
+            labelFor="ref-input"
+            intent={formControls.formState.errors.ref ? "danger" : "none"}
+            helperText={formControls.formState.errors.ref?.message}>
             <Controller control={formControls.control} name="ref" render={({field}) => (
-                <InputGroup {...field} id="text" size="small"/>
-                )}>
+                <InputGroup defaultValue='reference' id="ref-input" {...field}  size="small" intent={formControls.formState.errors.ref ? "danger" : "none"}/>
+                )} 
+                rules={{
+                  required: "Reference is required", // message shown if empty
+                  validate: value => value.trim() !== "" || "Reference cannot be empty", // extra safeguard against only-spaces
+                }}>
             </Controller>
         </FormGroup>
 
@@ -40,12 +45,22 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
         {/* Content Width */}
         { vals.contentWidth !== undefined && props.widthDisplay ? <>
           <FormGroup
+              intent={formControls.formState.errors.contentWidth ? "danger" : "none"}
+              helperText={formControls.formState.errors.contentWidth?.message}
               inline={true}
               label="Width"
-              labelFor="text-input">
+              labelFor="width-input">
                   <Controller control={formControls.control} name="contentWidth" render={({field}) => (
-                      <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"
-                      disabled={!widthActive} title={!widthActive ? "Width inherited" : ""}></NumericInput>)}>
+                      <NumericInput defaultValue={50} {...field} id="width-input" onValueChange={field.onChange} min={1} max={400} size="small"
+                      disabled={!widthActive} title={!widthActive ? "Width inherited" : ""}
+                      intent={formControls.formState.errors.contentWidth ? "danger" : "none"}
+                      allowNumericCharactersOnly={true}></NumericInput>)}
+                      rules={{
+                        required: "Width is required",
+                        min: { value: 1, message: "Width must be at least 1" },
+                        max: { value: 400, message: "Width cannot exceed 400" },
+                      }}
+                      >
                   </Controller>
           </FormGroup>
         </> : <></>}
@@ -53,12 +68,22 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
         {/* Content Height */}
         { vals.contentHeight !== undefined && props.heightDisplay ? <> 
         <FormGroup
+            intent={formControls.formState.errors.contentHeight ? "danger" : "none"}
+            helperText={formControls.formState.errors.contentHeight?.message}
             inline={true}
             label="Height"
-            labelFor="text-input">
+            labelFor="height-input">
             <Controller control={formControls.control} name="contentHeight" render={({field}) => (
-                <NumericInput {...field} onValueChange={field.onChange} min={1} size="small"
-                disabled={!heightActive} title={!widthActive ? "Height inherited" : ""}></NumericInput>)}>
+              <NumericInput defaultValue={50} {...field} id="height-input" onValueChange={field.onChange} min={1} max={400} size="small"
+              disabled={!widthActive} title={!heightActive ? "Height inherited" : ""}
+              intent={formControls.formState.errors.contentHeight ? "danger" : "none"}
+              allowNumericCharactersOnly={true}></NumericInput>)}
+              rules={{
+                required: "Height is required",
+                min: { value: 1, message: "Height must be at least 1" },
+                max: { value: 400, message: "Height cannot exceed 400" },
+              }}
+              >
             </Controller>
         </FormGroup>
         </> : <></>}
@@ -66,7 +91,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
         {/* Config */}
         { vals.mountConfig !== undefined ? 
           <>
-          
+  
           <Section style={{borderRadius: 0, }}
             collapseProps={{defaultIsOpen: false}}
             compact={true}
@@ -78,13 +103,11 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
               >
               {/* Orientation */}
               <FormGroup style={{padding: "4px 8px"}}
-                  fill={false}
-                  inline={true}
-                  label="Orientation"
-                  labelFor="text-input">
-                  
+                inline={true}
+                label="Orientation"
+                labelFor="text-input">
                   <Controller control={formControls.control} name="mountConfig.orientation" render={({field}) => (
-                      <HTMLSelect {...field} iconName='caret-down'>
+                      <HTMLSelect defaultValue={"top"} {...field} iconName='caret-down'>
                           <option value={"top"}>Top</option>
                           <option value={"both"}>Both</option>
                           <option value={"bottom"}>Bottom</option>
@@ -95,30 +118,37 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
               
               {/* Alignment */}
               <FormGroup style={{padding: "4px 8px"}}
-                  fill={false}
-                  inline={true}
-                  label="Alignment"
-                  labelFor="text-input">
-                  
-                  <Controller control={formControls.control} name="mountConfig.alignment" render={({field}) => (
-                      <HTMLSelect {...field} iconName='caret-down'>
-                          <option value={"here"}>Left</option>
-                          <option value={"centre"}>Centre</option>
-                          <option value={"far"}>Right</option>
-                          <option value={"stretch"}>Stretch</option>
-                      </HTMLSelect>
-                      )}>
-                  </Controller>
+                inline={true}
+                label="Alignment"
+                labelFor="text-input">
+                <Controller control={formControls.control} name="mountConfig.alignment" render={({field}) => (
+                    <HTMLSelect defaultValue={"centre"} {...field} iconName='caret-down'>
+                        <option value={"here"}>Left</option>
+                        <option value={"centre"}>Centre</option>
+                        <option value={"far"}>Right</option>
+                        <option value={"stretch"}>Stretch</option>
+                    </HTMLSelect>
+                    )}>
+                </Controller>
               </FormGroup>
 
               {/* No Sections */}
               <FormGroup style={{padding: "4px 8px", margin: 0}}
-                fill={false}
+                intent={formControls.formState.errors.mountConfig?.noSections ? "danger" : "none"}
+                helperText={formControls.formState.errors.mountConfig?.noSections?.message}
                 inline={true}
-                label="No Sections"
-                labelFor="text-input">
+                label="No. Sections"
+                labelFor="sections-input">
                 <Controller control={formControls.control} name="mountConfig.noSections" render={({field}) => (
-                  <NumericInput {...field} onValueChange={field.onChange} size="small"></NumericInput>)}>
+                  <NumericInput defaultValue={1} {...field} id="sections-input" onValueChange={field.onChange} min={1} max={5} size="small"
+                    intent={formControls.formState.errors.mountConfig?.noSections ? "danger" : "none"}
+                    allowNumericCharactersOnly={true}></NumericInput>)}
+                    rules={{
+                      required: "No. sections is required",
+                      min: { value: 1, message: "No. Sections must be at least 1" },
+                      max: { value: 5, message: "No. Sections cannot exceed 5" },
+                    }}
+                    >
                 </Controller>
               </FormGroup>
 
@@ -140,38 +170,34 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
             style={{gap: 10}}
             >
             <FormGroup style={{padding: "4px 16px"}}
-              fill={false}
               label="Padding top"
               labelFor="text-input">
-              <Controller control={formControls.control} name="padding.0" render={({field}) => (
-                <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
+              <Controller defaultValue={0} control={formControls.control} name="padding.0" render={({field}) => (
+                  <Slider {...field} min={0} max={30} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
 
             <FormGroup style={{padding: "4px 16px"}}
-              fill={false}
               label="Padding right"
               labelFor="text-input">
-              <Controller control={formControls.control} name="padding.1" render={({field}) => (
+              <Controller defaultValue={0} control={formControls.control} name="padding.1" render={({field}) => (
                 <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
 
             <FormGroup style={{padding: "4px 16px"}}
-              fill={false}
               label="Padding bottom"
               labelFor="text-input">
-              <Controller control={formControls.control} name="padding.2" render={({field}) => (
+              <Controller defaultValue={0} control={formControls.control} name="padding.2" render={({field}) => (
                 <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
 
             <FormGroup style={{padding: "4px 16px", margin: 0}}
-              fill={false}
               label="Padding left"
               labelFor="slider3">
-              <Controller  control={formControls.control} name="padding.3" render={({field}) => (
-                <Slider  {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
+              <Controller defaultValue={0} control={formControls.control} name="padding.3" render={({field}) => (
+                <Slider {...field} max={30} min={0} labelStepSize={10}></Slider>)}>
               </Controller>
             </FormGroup>
           </ControlGroup>
@@ -187,22 +213,40 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
               vertical={true}
               >
               <FormGroup style={{padding: "4px 8px", margin: 0}}
-                  fill={false}
-                  inline={true}
-                  label="Offset X"
-                  labelFor="text-input">
-                  <Controller control={formControls.control} name="offset.0" render={({field}) => (
-                      <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small"></NumericInput>)}>
-                  </Controller>
+                intent={formControls.formState.errors.offset?.[0] ? "danger" : "none"}
+                helperText={formControls.formState.errors.offset?.[0]?.message}
+                inline={true}
+                label="Offset X"
+                labelFor="offset0">
+                <Controller control={formControls.control} name="offset.0" render={({field}) => (
+                  <NumericInput defaultValue={0} {...field} id="offset0" onBlur={field.onChange} onValueChange={field.onChange}  min={-2000} max={2000} size="small"
+                    intent={formControls.formState.errors.offset?.[1] ? "danger" : "none"}
+                    allowNumericCharactersOnly={true}></NumericInput>)}
+                  rules={{
+                    required: "Offset is required",
+                    min: { value: -2000, message: "Offset must be greater than -2000" },
+                    max: { value: 2000, message: "Offset cannot exceed 2000" },
+                  }}
+                  >
+                </Controller>
               </FormGroup>
                     
               <FormGroup style={{padding: "4px 8px",  margin: 0}}
-              fill={false}
-              inline={true}
-              label="Offset Y"
-              labelFor="text-input">
-              <Controller control={formControls.control} name="offset.1" render={({field}) => (
-                  <NumericInput {...field}  min={-50} max={50} onValueChange={field.onChange} size="small"></NumericInput>)}>
+                intent={formControls.formState.errors.offset?.[1] ? "danger" : "none"}
+                helperText={formControls.formState.errors.offset?.[1]?.message}
+                inline={true}
+                label="Offset Y"
+                labelFor="offset1">
+              <Controller defaultValue={0} control={formControls.control} name="offset.1" render={({field}) => (
+                  <NumericInput defaultValue={0} {...field} id="offset1" onBlur={field.onChange} onValueChange={field.onChange}  min={-2000} max={2000} size="small"
+                    intent={formControls.formState.errors.offset?.[1] ? "danger" : "none"}
+                    allowNumericCharactersOnly={true}></NumericInput>)}
+                  rules={{
+                      required: "Offset is required",
+                      min: { value: -2000, message: "Offset must be greater than -2000" },
+                      max: { value: 2000, message: "Offset cannot exceed 2000" },
+                    }}
+                  >
               </Controller>
               </FormGroup>
           </ControlGroup>

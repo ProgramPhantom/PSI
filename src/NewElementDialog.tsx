@@ -14,23 +14,24 @@ interface INewElementDialog {
 }
 
 export default function NewElementDialog(props: INewElementDialog) {
-    const rectFormControls = useForm<IRectElement>({})
-    const svgFormControls = useForm<ISVGElement>({defaultValues: {
-        contentHeight: 10,
-        contentWidth: 10,
-        mountConfig: {
-            "alignment": "centre",
-            "index": 0,
-            "mountOn": true,
-            "noSections": 1,
-            "orientation": "top"
-        }
-    }});
+    const rectFormControls = useForm<IRectElement>({
+        defaultValues: {contentWidth: 50, contentHeight: 50},
+        mode: "onChange",
+    })
+    const svgFormControls = useForm<ISVGElement>({
+        defaultValues: {contentWidth: 50, contentHeight: 50, mountConfig: {}},
+        mode: "onChange",
+    });
 
     function addNewTemplate() {
         var values: ISVGElement = svgFormControls.getValues();
         var newSVG: SVGElement = new SVGElement(values);
 
+        var error = svgFormControls.formState.errors
+        var refErrors = svgFormControls.getFieldState("ref")
+        var refState = svgFormControls.getValues("ref");
+        console.log(error)
+        console.log(refErrors)
         ENGINE.addSVGSingleton(values, props.schemeName)
         props.close();
     }

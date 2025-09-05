@@ -120,13 +120,14 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
             label="SVG"
             labelFor="text-input">
             <ControlGroup>
-                <Controller control={formControls.control} name="svgDataRef" render={({field}) => (
+                <Controller defaultValue='180' control={formControls.control} name="svgDataRef" render={({field}) => (
                     <HTMLSelect {...field} iconName='caret-down'>
                         {Object.keys(ENGINE.AllSvgStrings).map((ref) => {
                             return <option key={ref} value={ref}>{ref}</option>
                         })}
                     </HTMLSelect>
-                )}>
+                )} 
+                >
                 </Controller>
                 <Button 
                     icon="plus" 
