@@ -161,7 +161,7 @@ export default class DiagramHandler {
                 break;
             case "rect":
             case "svg":
-            case "labellable":
+            case "label-group":
                 if (parameters.mountConfig !== undefined) {
                     parameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
                 }
@@ -200,7 +200,7 @@ export default class DiagramHandler {
         switch (type) {
             case "rect":
             case "svg":
-            case "labellable":
+            case "label-group":
                 this.deleteElement(target);
                 break;
             case "channel":

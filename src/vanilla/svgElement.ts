@@ -23,7 +23,7 @@ export interface ISVGElement extends IVisual {
 
 
 export default class SVGElement extends Visual implements ISVGElement, IDraw {
-    static override namedElements: {[key: string]: ISVGElement} = {...<any>svgPulses, "default": svgPulses[180]};
+    static override namedElements: {[key: string]: ISVGElement} = {...<any>svgPulses, "default": svgPulses[180], "form-defaults": svgPulses[180]};
 	get state(): ISVGElement { return {
 		svgDataRef: this.svgDataRef,
 		style: this.style,
