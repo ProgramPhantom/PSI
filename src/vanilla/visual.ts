@@ -3,7 +3,7 @@ import { posPrecision, RecursivePartial } from './util'
 import { IMountable } from './mountable'
 import { defaultVisual } from './default/data'
 import VisualForm from '../form/VisualForm'
-import Labellable from './labellable'
+import LabelGroup from './labelGroup'
 import PaddedBox from './paddedBox'
 import Mountable from './mountable'
 import { ID } from './point'
@@ -170,8 +170,8 @@ export abstract class Visual extends Mountable implements IVisual {
         return this.contentY + this.offset[1];
     }
 
-    static isLabellable(val: Visual): val is Labellable {
-        return (val as Labellable).labels !== undefined
+    static isLabelGroup(val: Visual): val is LabelGroup {
+        return (val as LabelGroup).labels !== undefined
     }
 
 

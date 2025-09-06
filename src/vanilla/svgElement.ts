@@ -5,7 +5,7 @@ import { Element, Svg } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
 import { Orientation } from "./mountable";
-import Labellable, { ILabellable } from "./labellable";
+import LabelGroup, { ILabelGroup } from "./labelGroup";
 import SVGElementForm from "../form/SVGElementForm";
 import { Rect } from "@svgdotjs/svg.js";
 import { UserComponentType } from "./diagramHandler";

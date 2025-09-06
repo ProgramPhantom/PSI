@@ -27,11 +27,7 @@ export default function NewElementDialog(props: INewElementDialog) {
         var values: ISVGElement = svgFormControls.getValues();
         var newSVG: SVGElement = new SVGElement(values);
 
-        var error = svgFormControls.formState.errors
-        var refErrors = svgFormControls.getFieldState("ref")
-        var refState = svgFormControls.getValues("ref");
-        console.log(error)
-        console.log(refErrors)
+
         ENGINE.addSVGSingleton(values, props.schemeName)
         props.close();
     }
@@ -59,9 +55,9 @@ export default function NewElementDialog(props: INewElementDialog) {
                                 <SVGElementForm ></SVGElementForm>
                             </FormProvider>
                         } />
-                        <Tab id="labellable" title="Labellable" panel={
+                        <Tab id="label-group" title="Label Group" panel={
                             <div style={{ padding: "16px 0" }}>
-                                <Text>Labellable element form will go here</Text>
+                                <Text>Label group element form will go here</Text>
                             </div>
                         } />
                     </Tabs>

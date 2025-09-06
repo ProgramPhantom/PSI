@@ -9,7 +9,7 @@ import Spacial, { Dimensions } from "./spacial";
 import RectElement, { IRectStyle } from "./rectElement";
 import Aligner from "./aligner";
 import { Alignment, IMountable, IMountConfig, Orientation } from "./mountable";
-import Labellable from "./labellable";
+import LabelGroup from "./labelGroup";
 import { OccupancyStatus } from "./sequence";
 import { UserComponentType, IHaveStructure } from "./diagramHandler";
 import ChannelForm from "../form/ChannelForm";

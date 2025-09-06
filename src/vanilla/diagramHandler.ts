@@ -12,7 +12,7 @@ import RectElement, { IRectElement, } from "./rectElement";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import logger, { Operations } from "./log";
 import { error } from "console";
-import Labellable, { ILabellable } from "./labellable";
+import LabelGroup, { ILabelGroup } from "./labelGroup";
 import { ILabel } from "./label";
 import Point, { ID } from "./point";
 import { ElementType } from "react";
@@ -26,7 +26,7 @@ import SchemeManager, { ISchemeData, SchemeSet } from "./default";
 import ENGINE from "./engine";
 
 
-export type ElementBundle = IVisual & Partial<ILabellable>
+export type ElementBundle = IVisual & Partial<ILabelGroup>
 
 
 
@@ -35,7 +35,7 @@ export type ElementBundle = IVisual & Partial<ILabellable>
 export type AllComponentTypes = UserComponentType | AbstractComponentTypes 
 
 // The types of component 
-export type UserComponentType = DrawComponent | "labellable" | "label" | "text" | "arrow" | "line" | "channel" | "sequence" | "diagram"; 
+export type UserComponentType = DrawComponent | "label-group" | "label" | "text" | "arrow" | "line" | "channel" | "sequence" | "diagram"; 
 export type DrawComponent = "svg" | "rect" | "space"
 
 // Abstract component types (have no visual content)
@@ -226,14 +226,14 @@ export default class DiagramHandler {
                 element = new SVGElement(parameters as ISVGElement)
                 
                 if (parameters.labels !== undefined) {
-                    element = new Labellable<SVGElement>(parameters, element as SVGElement) 
+                    element = new LabelGroup<SVGElement>(parameters, element as SVGElement) 
                 }
 
                 break;
             case "rect":
                 element = new RectElement(parameters as IRectElement)
                 if (parameters.labels !== undefined) {
-                    element = new Labellable<RectElement>(parameters, element as RectElement) 
+                    element = new LabelGroup<RectElement>(parameters, element as RectElement) 
                 }
                 break;
             default:
@@ -251,7 +251,7 @@ export default class DiagramHandler {
         return element;
     }
 
-    public addElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string) {
+    public addElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabelGroup>, elementRef: string) {
         var elementType: UserComponentType = this.schemeManager.elementTypes[elementRef];
 
         var element: Visual;
@@ -267,14 +267,14 @@ export default class DiagramHandler {
                 element = new SVGElement(pParameters, elementRef)
                 
                 if (pParameters.labels !== undefined) {
-                    element = new Labellable<SVGElement>(pParameters, element as SVGElement) 
+                    element = new LabelGroup<SVGElement>(pParameters, element as SVGElement) 
                 }
 
                 break;
             case "rect":
                 element = new RectElement(pParameters, elementRef)
                 if (pParameters.labels !== undefined) {
-                    element = new Labellable<RectElement>(pParameters, element as RectElement) 
+                    element = new LabelGroup<RectElement>(pParameters, element as RectElement) 
                 }
                 break;
             default:
@@ -371,7 +371,7 @@ export default class DiagramHandler {
     Add a positional element by providing elementName, channel name, and partial positional interface.
     Function uses element name to lookup default parameters and replaces with those provided */
     
-    public mountElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabellable>, elementRef: string, insert: boolean=false) {
+    public mountElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabelGroup>, elementRef: string, insert: boolean=false) {
         var elementType: UserComponentType | undefined = this.schemeManager.elementTypes[elementRef];
 
         if (elementType === undefined) {
@@ -398,7 +398,7 @@ export default class DiagramHandler {
                 element = new SVGElement(parameters)
                 
                 if (pParameters.labels !== undefined) {
-                    element = new Labellable<SVGElement>(parameters, element as SVGElement) 
+                    element = new LabelGroup<SVGElement>(parameters, element as SVGElement) 
                 }
                 break;
             case "rect":
@@ -406,7 +406,7 @@ export default class DiagramHandler {
                 element = new RectElement(parameters);
 
                 if (pParameters.labels !== undefined) {
-                    element = new Labellable<RectElement>(parameters, element as RectElement) 
+                    element = new LabelGroup<RectElement>(parameters, element as RectElement) 
                 }
                 break;
             default:

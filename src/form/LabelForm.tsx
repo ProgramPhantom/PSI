@@ -1,7 +1,7 @@
 import { Control, Controller, ControllerRenderProps, FieldPath, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
 import { Button, Card, CheckboxCard, ControlGroup, FormGroup, HTMLSelect, InputGroup, Section, SectionCard, Slider, Switch, SwitchCard, Text, Tooltip } from "@blueprintjs/core";
 import { IVisual } from '../vanilla/visual';
-import { ILabellable } from '../vanilla/labellable';
+import { ILabelGroup } from '../vanilla/labelGroup';
 import { ILabel } from '../vanilla/label';
 import VisualForm from './VisualForm';
 import TextForm from './TextForm';

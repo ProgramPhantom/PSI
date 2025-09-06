@@ -1,7 +1,7 @@
 import { Control, Controller, FieldValue, FieldValues, FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form';
 import { Alert, Button, Card, CardList, ControlGroup, Divider, FormGroup, HTMLSelect, Icon, InputGroup, Section, Slider, Switch, Tooltip, Text } from "@blueprintjs/core";
 import { IVisual, Visual } from '../vanilla/visual';
-import { ILabellable } from '../vanilla/labellable';
+import { ILabelGroup } from '../vanilla/labelGroup';
 import LabelForm from './LabelForm';
 import Label, { ILabel } from '../vanilla/label';
 import { useEffect, useState } from 'react';
@@ -16,7 +16,7 @@ interface ILabelMapProps {
 
 function LabelMapForm(props: ILabelMapProps) {
 
-  const parentFormControls = useFormContext<ILabellable>();
+  const parentFormControls = useFormContext<ILabelGroup>();
   const [labels, setLabels] = useState<ILabel[]>(parentFormControls.getValues("labels") ?? [])
 
   const labelForm = useForm<ILabel>({

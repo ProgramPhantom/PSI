@@ -12,7 +12,7 @@ import { dataTypes } from '@data-driven-forms/react-form-renderer';
 import { ClassProperties, UpdateObj } from '../vanilla/util';
 import Channel from '../vanilla/channel';
 import { Visual } from '../vanilla/visual';
-import Labellable from '../vanilla/labellable';
+import LabelGroup from '../vanilla/labelGroup';
 import VisualForm from './VisualForm';
 import { FormRequirements } from './FormHolder';
 import ENGINE from '../vanilla/engine';

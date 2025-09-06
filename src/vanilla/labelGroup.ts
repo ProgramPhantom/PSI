@@ -13,14 +13,14 @@ import SVGElement from "./svgElement";
 type Labels = {[key in Position]?: Label} 
 type ILabels = {[key in Position]?: ILabel} 
 
-export interface ILabellable extends ICollection {
+export interface ILabelGroup extends ICollection {
     labels?: ILabel[],
     coreChild: IVisual,
 }
 
 
-export default class Labellable<T extends Visual=Visual> extends Collection implements ILabellable {
-    static defaults: {[name: string]: ILabellable} = {
+export default class LabelGroup<T extends Visual=Visual> extends Collection implements ILabelGroup {
+    static defaults: {[name: string]: ILabelGroup} = {
         "default": {
             contentWidth: 0,
             contentHeight: 0,
@@ -34,8 +34,8 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
             coreChild: SVGElement.namedElements["180"]
         },
     }
-    static ElementType: UserComponentType = "labellable";
-    get state(): ILabellable { 
+    static ElementType: UserComponentType = "label-group";
+    get state(): ILabelGroup { 
         return {
         labels: this.labels.map((l) => {
             return l.state
@@ -52,8 +52,8 @@ export default class Labellable<T extends Visual=Visual> extends Collection impl
     public labelDict: {[key in Position]?: Label} = {};
     labels: Label[] = [];
     
-    constructor(params: RecursivePartial<ILabellable>, coreChild: T, templateName: string="default") {
-        var fullParams: ILabellable = FillObject<ILabellable>(params, Labellable.defaults[templateName]);
+    constructor(params: RecursivePartial<ILabelGroup>, coreChild: T, templateName: string="default") {
+        var fullParams: ILabelGroup = FillObject<ILabelGroup>(params, LabelGroup.defaults[templateName]);
         super(fullParams, templateName);
 
         this._contentHeight = coreChild.contentHeight!;

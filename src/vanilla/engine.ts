@@ -6,12 +6,12 @@ import { myToaster } from "../App";
 import { IDiagram } from "./diagram";
 import SchemeManager, { ISchemeData, SVGDict } from "./default";
 import { defaults } from "@svgdotjs/svg.js";
-import Labellable from "./labellable";
+import LabelGroup from "./labelGroup";
 
 interface SchemeSingletonStore {
     RECT_TEMPLATES: RectElement[] 
     SVG_TEMPLATES: SVGElement[]
-    LABELLABLE_TEMPLATES: Labellable[]
+    LABELLABLE_TEMPLATES: LabelGroup[]
 }
 type SingletonStorage = Record<string, SchemeSingletonStore>
 
@@ -92,7 +92,7 @@ class ENGINE {
         for (var [schemeName, scheme] of Object.entries(this.schemeManager.schemeSet)) {
             var rectSingletons: RectElement[] = [];
             var svgSingletons: SVGElement[] = [];
-            var labellableSingletons: Labellable[] = [];
+            var labellableSingletons: LabelGroup[] = [];
 
 
             Object.values(scheme.rectElements ?? {}).forEach((t) => {

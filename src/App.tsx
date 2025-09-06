@@ -17,7 +17,7 @@ import { simplePulses } from './vanilla/default/data/simplePulse';
 import RectForm from './form/RectForm';
 import ENGINE from './vanilla/engine';
 import Channel from './vanilla/channel';
-import Labellable from './vanilla/labellable';
+import LabelGroup from './vanilla/labelGroup';
 import { OverlayToaster, Toaster, Drawer, Position } from '@blueprintjs/core';
 import ComponentResizer from './ComponentResizer';
 import Console from './Console';

@@ -9,7 +9,7 @@ import ENGINE from "../vanilla/engine";
 import { Button, Card, Dialog, DialogBody, Divider, EditableText, EntityTitle, FormGroup, H5, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
 import LabelMapForm from "./LabelMapForm";
 import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
-import Labellable, { ILabellable } from "../vanilla/labellable";
+import LabelGroup, { ILabelGroup } from "../vanilla/labelGroup";
 import { AllComponentTypes, ElementBundle, UserComponentType } from "../vanilla/diagramHandler";
 import { myToaster } from "../App";
 import { inspect } from "util"
@@ -38,7 +38,7 @@ type ModifyType = (data: any, type: AllComponentTypes, target: Visual) => Visual
 
 
 function getCoreDefaults(target: Visual): IVisual {
-    if (Visual.isLabellable(target)) {
+    if (Visual.isLabelGroup(target)) {
         return target.coreChild.state
     } else {
         return target.state
@@ -48,28 +48,28 @@ function getCoreDefaults(target: Visual): IVisual {
 export function FormHolder(props: FormHolderProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    var isLabellable: boolean;
+    var isLabelGroup: boolean;
     var elementType: AllComponentTypes;
     var coreDefaults: IVisual;
-    var labelDefaults: ILabellable = Labellable.defaults["default"];
+    var labelDefaults: ILabelGroup = LabelGroup.defaults["default"];
     var ElementForm: React.FC<FormRequirements> | undefined;
 
     // Target exists. Decide element type, form type and defaults
     if (props.target) {
-        if (Visual.isLabellable(props.target)) {
-            isLabellable = true;
+        if (Visual.isLabelGroup(props.target)) {
+            isLabelGroup = true;
             elementType =  (props.target.coreChild.constructor as typeof Visual).ElementType;
             ElementForm = (props.target?.coreChild.constructor as typeof Visual).form;
             coreDefaults = props.target.coreChild.state;
             labelDefaults = props.target.state;
         } else {
-            isLabellable = false;
+            isLabelGroup = false;
             elementType =  (props.target.constructor as typeof Visual).ElementType;
             ElementForm = (props.target.constructor as typeof Visual).form;
             coreDefaults = props.target.state;
         }
     } else {
-        isLabellable = false;
+        isLabelGroup = false;
         elementType = "channel";
         ElementForm = ChannelForm
         coreDefaults = Channel.defaults.default;
@@ -77,7 +77,7 @@ export function FormHolder(props: FormHolderProps) {
 
 
     const [labelType, setLabelType] = useState<boolean>(false);
-    useEffect(() => { setLabelType(isLabellable)}, [props.target])
+    useEffect(() => { setLabelType(isLabelGroup)}, [props.target])
 
 
     
@@ -103,7 +103,7 @@ export function FormHolder(props: FormHolderProps) {
         
         coreFormControls.reset(coreDefaults);
         
-    }, [props.target]); 
+    }, [props.target]);
     
 
     // Create form hook
@@ -115,8 +115,8 @@ export function FormHolder(props: FormHolderProps) {
     // This stops some weird default value caching, don't remove it or code breaks.
 
     // Create label hook form
-    const labelFormControls = useForm<ILabellable>({
-        defaultValues: labelDefaults as DefaultValues<ILabellable>,
+    const labelFormControls = useForm<ILabelGroup>({
+        defaultValues: labelDefaults as DefaultValues<ILabelGroup>,
         mode: "onChange"
     });
 

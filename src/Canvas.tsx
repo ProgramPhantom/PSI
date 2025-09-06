@@ -13,7 +13,7 @@ import { Tick } from '@blueprintjs/icons';
 import { SelectionMode } from './App';
 import BindingsDebug from './debug/Bindings';
 import BindingsSelector, { PointBind } from './BindingsSelector';
-import Labellable from './vanilla/labellable';
+import LabelGroup from './vanilla/labelGroup';
 import Collection from './vanilla/collection';
 import Point, { ID } from './vanilla/point';
 import { DrawComponent, AllComponentTypes, AllElementIdentifiers } from './vanilla/diagramHandler';

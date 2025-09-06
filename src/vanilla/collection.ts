@@ -10,7 +10,7 @@ import { SVG } from "@svgdotjs/svg.js";
 import { Element } from "@svgdotjs/svg.js";
 import { G } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
-import Labellable from "./labellable";
+import LabelGroup from "./labelGroup";
 
 
 export interface ICollection extends IVisual {

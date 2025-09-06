@@ -3,7 +3,7 @@ import { IArrow } from "./arrow"
 import { IChannel } from "./channel"
 import { IDiagram } from "./diagram"
 import { ILabel } from "./label"
-import { ILabellable } from "./labellable"
+import { ILabelGroup } from "./labelGroup"
 import { ILine } from "./line"
 import { IRectElement } from "./rectElement"
 import { ISequence } from "./sequence"
@@ -29,7 +29,7 @@ export interface ISchemeData {
     svgStrings: SVGDict | undefined;
 
     rectElements: Record<string, IRectElement>,
-    labellableElements: Record<string, ILabellable>
+    labellableElements: Record<string, ILabelGroup>
 
     arrow: IArrow,
     line: ILine,
@@ -90,7 +90,7 @@ export default class SchemeManager {
                 types[r] = "rect";
             })
             Object.keys(scheme.labellableElements ?? {}).forEach((r) => {
-                types[r] = "labellable";
+                types[r] = "label-group";
             })
         }
 
