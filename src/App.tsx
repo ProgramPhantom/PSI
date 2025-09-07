@@ -21,6 +21,7 @@ import LabelGroup from './vanilla/labelGroup';
 import { OverlayToaster, Toaster, Drawer, Position } from '@blueprintjs/core';
 import ComponentResizer from './ComponentResizer';
 import Console from './Console';
+import { Dialog, Button } from "@blueprintjs/core";
 
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
@@ -45,6 +46,23 @@ function App() {
   const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("select");
+
+  // Welcome dialog state
+const [isWelcomeOpen, setIsWelcomeOpen] = useState(true); // can change to false for local storage check
+
+// Check localStorage on first render
+useEffect(() => {
+  const hasSeen = localStorage.getItem("hasSeenWelcome");
+  if (!hasSeen) {
+    setIsWelcomeOpen(true);
+  }
+}, []);
+
+// Function to close welcome dialog
+function closeWelcomeDialog() {
+  localStorage.setItem("hasSeenWelcome", "true");
+  setIsWelcomeOpen(false);
+}
 
   // Set up automatic saving every 2 seconds
   // useEffect(() => {
@@ -256,7 +274,26 @@ function App() {
       >
         <Console isOpen={isConsoleOpen} />
       </Drawer>
-      </>
+      {/* Welcome Dialog */}
+      <Dialog
+      isOpen={isWelcomeOpen}
+      onClose={closeWelcomeDialog}
+      title="Welcome to PSI"
+      canEscapeKeyClose={true}
+      canOutsideClickClose={true}
+    >
+      <div className="bp3-dialog-body">
+        <p>Welcome to PSI! This application allows you to create and edit pulse sequence diagrams easily.</p>
+        <p>Use the toolbar at the top to save your diagrams as SVG or PNG. Create a channel on the right menu and select elements and drag them onto the channel. Edit idividual elements by clicking to select them and using the right menu. </p>
+        <p><strong>Credits:</strong> Developed by Henry Varley with contributions from: Gabriel Vilella Nilsson</p>
+      </div>
+      <div className="bp3-dialog-footer">
+        <div className="bp3-dialog-footer-actions">
+          <Button intent="primary" onClick={closeWelcomeDialog}>Got it!</Button>
+        </div>
+      </div>
+    </Dialog>
+  </>
     )
 }
 
