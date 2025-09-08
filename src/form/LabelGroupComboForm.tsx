@@ -22,7 +22,7 @@ interface LabelGroupComboForm {
     objectType: UserComponentType,
     callback: (val: IVisual | undefined, masterType: AllComponentTypes) => void
 
-     ref?: React.RefObject<MyFormRef>
+    ref?: React.RefObject<MyFormRef>
 }
 
 export type MyFormRef = {
@@ -160,7 +160,7 @@ export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboFo
     return (
         <>
         <form onSubmit={onSubmit}
-                style={{height: "100%", display: "flex", flexDirection: "column", overflow: "hidden",
+                style={{display: "flex", flexDirection: "column", overflow: "hidden",
                         padding: "0px"
                 }}>
             

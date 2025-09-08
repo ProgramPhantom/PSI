@@ -160,10 +160,6 @@ export function FormHolder(props: FormHolderProps) {
                 </div>
 
                 <Divider style={{margin: "0 0 16px 0"}}></Divider>
-
-                <Divider></Divider>
-
-                
             </div>
         </div>
         
@@ -183,15 +179,9 @@ export function FormHolder(props: FormHolderProps) {
 
                 <Tab style={{userSelect: "none"}} id={"label"} title={"Label"} panel={
                     <>
-                        <p style={{display: "inline-block"}}>Use Labels</p>
-                        <Switch onChange={() => {setLabelType(!labelType)}} checked={labelType} 
-                                style={{display: "inline-block", marginLeft: "10px"}}></Switch>
-                        
-                        { labelType ? 
                         <FormProvider {...labelFormControls}>
                             <LabelListForm target={props.target}></LabelListForm> 
                         </FormProvider>
-                        : <></>}
                     </>
                 }></Tab>
                 </Tabs>

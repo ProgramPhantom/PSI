@@ -28,7 +28,7 @@ function LabelForm(props: ILabelArrayFormProps) {
     if (lineOn === false) {
       formControls.setValue("line", undefined)
     }
-  })
+  }, [textOn, lineOn])
 
   return (
     <>
@@ -69,7 +69,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 
       {/* Text form */}
       <Section style={{padding: 0}} collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={"Text"} rightElement={
-            <Button icon={textOn ? "eye-off" : "eye-open"} intent="none" 
+            <Button icon={textOn ? "eye-open" : "eye-off"} intent="none" 
               onClick={(e) => {e.stopPropagation(); setTextOn(!textOn)}}></Button>
           }>
 
@@ -80,7 +80,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 
       {/* Arrow form */}
       <Section style={{padding: 0}} collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={"Arrow"} rightElement={
-            <Button icon={textOn ? "eye-off" : "eye-open"} intent="none" 
+            <Button icon={lineOn ? "eye-open" : "eye-off"} intent="none" 
               onClick={(e) => {e.stopPropagation(); setLineOn(!lineOn)}}></Button>
           }
       >
