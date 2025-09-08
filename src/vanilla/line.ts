@@ -1,11 +1,8 @@
-import { Visual, IVisual } from "./visual";
-import defaultLine from "./default/data/line.json";
-import { FillObject, RecursivePartial } from "./util";
-import { ILineLike } from "./lineLike";
 import { Svg } from "@svgdotjs/svg.js";
-import LineLike from "./lineLike";
-import { Element } from "svg.js";
+import defaultLine from "./default/data/line.json";
 import { UserComponentType } from "./diagramHandler";
+import LineLike, { ILineLike } from "./lineLike";
+import { FillObject, RecursivePartial } from "./util";
 
 
 

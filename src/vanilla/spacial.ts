@@ -1,9 +1,6 @@
-import { Svg, Element } from "@svgdotjs/svg.js";
-import Point, { ID, IPoint } from "./point";
-import { SVG } from "@svgdotjs/svg.js";
 import logger, { Operations } from "./log";
+import Point, { ID, IPoint } from "./point";
 import { posPrecision } from "./util";
-import { inspect } from "util";
 
 export interface Bounds {
     top: number,

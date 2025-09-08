@@ -1,16 +1,14 @@
-import { publicDecrypt } from "crypto"
 import { IArrow } from "./arrow"
 import { IChannel } from "./channel"
+import defaultScheme from "./default/data/schemeSet.json"
 import { IDiagram } from "./diagram"
-import { ILabel } from "./label"
+import { UserComponentType } from "./diagramHandler"
 import { ILabelGroup } from "./labelGroup"
 import { ILine } from "./line"
 import { IRectElement } from "./rectElement"
 import { ISequence } from "./sequence"
 import { ISVGElement } from "./svgElement"
 import { IText } from "./text"
-import defaultScheme from "./default/data/schemeSet.json"
-import { UserComponentType } from "./diagramHandler"
 
 
 const svgPath: string = "\\src\\assets\\"
@@ -29,7 +27,7 @@ export interface ISchemeData {
     svgStrings: SVGDict | undefined;
 
     rectElements: Record<string, IRectElement>,
-    labellableElements: Record<string, ILabelGroup>
+    labelGroupElements: Record<string, ILabelGroup>
 
     arrow: IArrow,
     line: ILine,
@@ -89,7 +87,7 @@ export default class SchemeManager {
             Object.keys(scheme.rectElements ?? {}).forEach((r) => {
                 types[r] = "rect";
             })
-            Object.keys(scheme.labellableElements ?? {}).forEach((r) => {
+            Object.keys(scheme.labelGroupElements ?? {}).forEach((r) => {
                 types[r] = "label-group";
             })
         }
@@ -144,7 +142,7 @@ export default class SchemeManager {
 
         if (svgsWithMissing.length > 0) {
             // Perhaps instead, remove the svg?
-            throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
+            // throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
         } else {
             // Apply loaded svgs to scheme set
             for (var [schemeName, scheme] of Object.entries(this.schemeSet)) {
@@ -194,6 +192,16 @@ export default class SchemeManager {
         
         if (this.schemeSet[schemeName].rectElements === undefined) {this.schemeSet[schemeName].rectElements = {}}
         this.schemeSet[schemeName].rectElements[data.ref] = data;
+        this.saveToLocalStore();
+    }
+
+    public addLabelGroupData(data: ILabelGroup, schemeName: string=SchemeManager.DefaultSchemeName) {
+        if (this.schemeSet[schemeName] === undefined) {
+            throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
+        }
+
+        if (this.schemeSet[schemeName].labelGroupElements === undefined) {this.schemeSet[schemeName].labelGroupElements = {}}
+        this.schemeSet[schemeName].labelGroupElements[data.ref] = data;
         this.saveToLocalStore();
     }
 

@@ -1,14 +1,7 @@
-import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
-import { Control, Controller, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
-import { IText } from '../vanilla/text';
-import { Button, ControlGroup, Divider, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip } from "@blueprintjs/core";
-import LabelForm from './LabelForm';
-import DiagramHandler from '../vanilla/diagramHandler';
+import { ControlGroup, Divider, FormGroup, InputGroup, NumericInput, Section, Slider } from "@blueprintjs/core";
+import React from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import { IChannel } from '../vanilla/channel';
-import { defaultChannel } from '../vanilla/default/data';
-import ENGINE from '../vanilla/engine';
-import { FormRequirements } from './FormHolder';
-import LabelMapForm from './LabelMapForm';
 
 
 

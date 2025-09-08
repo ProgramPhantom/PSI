@@ -1,19 +1,15 @@
-import defaultChannel from "./default/data/channel.json"
-import { Visual, IVisual } from "./visual";
-import { Number, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import Text, { IText, Position } from "./text";
-import { PartialConstruct, RecursivePartial, UpdateObj } from "./util";
-import PaddedBox from "./paddedBox";
-import Collection, { ICollection } from "./collection";
-import Spacial, { Dimensions } from "./spacial";
-import RectElement, { IRectStyle } from "./rectElement";
-import Aligner from "./aligner";
-import { Alignment, IMountable, IMountConfig, Orientation } from "./mountable";
-import LabelGroup from "./labelGroup";
-import { OccupancyStatus } from "./sequence";
-import { UserComponentType, IHaveStructure } from "./diagramHandler";
 import ChannelForm from "../form/ChannelForm";
+import Aligner from "./aligner";
+import Collection, { ICollection } from "./collection";
+import defaultChannel from "./default/data/channel.json";
+import { IHaveStructure, UserComponentType } from "./diagramHandler";
+import { IMountConfig } from "./mountable";
 import { ID } from "./point";
+import RectElement, { IRectStyle } from "./rectElement";
+import { OccupancyStatus } from "./sequence";
+import Text, { IText } from "./text";
+import { RecursivePartial, UpdateObj } from "./util";
+import { IVisual, Visual } from "./visual";
  
 
 export type ChannelNamedStructure = "top aligner" | "bottom aligner" | "bar"
@@ -110,7 +106,7 @@ export default class Channel extends Collection implements IHaveStructure {
     label: Text;
 
     public get mountedElements(): Visual[]  { // All positional elements on this channel
-        return this.mountOccupancy.filter(p => (p !== undefined) && (p !== "."));
+        return this.mountOccupancy.filter(p => (p !== undefined) && (p !== ".")) as Visual[];
     };  
 
     sequenceID: ID;

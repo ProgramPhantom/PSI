@@ -1,21 +1,15 @@
-import { Controller, DefaultValues, FormProvider, useForm } from "react-hook-form";
-import IForm, { FormDescriptor } from "./FormBase";
-import { IElement } from "../vanilla/point";
-import { IVisual, Visual } from "../vanilla/visual";
-import Channel, { IChannel } from "../vanilla/channel";
-import { defaultChannel } from "../vanilla/default/data";
-import ChannelForm from "./ChannelForm"
-import ENGINE from "../vanilla/engine";
-import { Button, Card, Dialog, DialogBody, Divider, EditableText, EntityTitle, FormGroup, H5, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
-import LabelMapForm from "./LabelMapForm";
-import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
-import LabelGroup, { ILabelGroup } from "../vanilla/labelGroup";
-import { AllComponentTypes, ElementBundle, UserComponentType } from "../vanilla/diagramHandler";
+import { Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon, Switch, Tab, Tabs } from "@blueprintjs/core";
+import { useEffect, useState } from "react";
+import { DefaultValues, FormProvider, useForm } from "react-hook-form";
+import { ObjectInspector } from "react-inspector";
 import { myToaster } from "../App";
-import { inspect } from "util"
-import ReactJson from "react18-json-view"
-import { Inspector, ObjectInspector } from "react-inspector"
-import { AllStructures } from "../vanilla/diagram";
+import Channel from "../vanilla/channel";
+import { AllComponentTypes, ElementBundle } from "../vanilla/diagramHandler";
+import ENGINE from "../vanilla/engine";
+import LabelGroup, { ILabelGroup } from "../vanilla/labelGroup";
+import { IVisual, Visual } from "../vanilla/visual";
+import ChannelForm from "./ChannelForm";
+import LabelListForm from "./LabelListForm";
 
 
 interface FormHolderProps {
@@ -24,7 +18,8 @@ interface FormHolderProps {
 }
 
 export interface FormRequirements {
-    target?: Visual
+    target?: Visual,
+    prefix?: string
 }
 
 interface FormActions {
@@ -59,13 +54,13 @@ export function FormHolder(props: FormHolderProps) {
         if (Visual.isLabelGroup(props.target)) {
             isLabelGroup = true;
             elementType =  (props.target.coreChild.constructor as typeof Visual).ElementType;
-            ElementForm = (props.target?.coreChild.constructor as typeof Visual).form;
+            ElementForm = (props.target?.coreChild.constructor as typeof Visual).formDataPair.form;
             coreDefaults = props.target.coreChild.state;
             labelDefaults = props.target.state;
         } else {
             isLabelGroup = false;
             elementType =  (props.target.constructor as typeof Visual).ElementType;
-            ElementForm = (props.target.constructor as typeof Visual).form;
+            ElementForm = (props.target.constructor as typeof Visual).formDataPair.form;
             coreDefaults = props.target.state;
         }
     } else {
@@ -194,7 +189,7 @@ export function FormHolder(props: FormHolderProps) {
                         
                         { labelType ? 
                         <FormProvider {...labelFormControls}>
-                            <LabelMapForm target={props.target}></LabelMapForm> 
+                            <LabelListForm target={props.target}></LabelListForm> 
                         </FormProvider>
                         : <></>}
                     </>

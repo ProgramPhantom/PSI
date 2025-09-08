@@ -1,25 +1,15 @@
-import { Visual, IVisual } from "./visual";
-import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import { Position, IText } from "./text";
-import Channel, { ChannelNamedStructure, IChannel } from "./channel"
-import Text from "./text";
-import { json } from "stream/consumers";
-import Arrow from "./arrow";
-import defaultDiagram from "./default/data/diagram.json"
-import DiagramHandler, { IHaveStructure, UserComponentType } from "./diagramHandler";
-import { NumberAlias, select } from "svg.js";
-import { FillObject, PartialConstruct, RecursivePartial } from "./util";
-import { ILine, Line } from "./line";
-import Spacial, { Dimensions } from "./spacial";
-import Collection, { ICollection } from "./collection";
-import PaddedBox from "./paddedBox";
 import Aligner from "./aligner";
-import logger, { Operations, Processes } from "./log";
-import { defaultNewIndexGetter } from "@dnd-kit/sortable";
-import { Alignment } from "./mountable";
-import Space from "./space";
-import Sequence, { ISequence, SequenceNamedStructures as SequenceNamedStructure } from "./sequence";
+import Arrow from "./arrow";
+import Channel, { ChannelNamedStructure } from "./channel";
+import Collection, { ICollection } from "./collection";
+import defaultDiagram from "./default/data/diagram.json";
+import { IHaveStructure, UserComponentType } from "./diagramHandler";
+import logger, { Processes } from "./log";
 import Point from "./point";
+import Sequence, { ISequence, SequenceNamedStructures as SequenceNamedStructure } from "./sequence";
+import Spacial from "./spacial";
+import { FillObject, RecursivePartial } from "./util";
+import { Visual } from "./visual";
 
 
 export interface IDiagram extends ICollection {

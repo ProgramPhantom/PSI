@@ -1,8 +1,6 @@
-import { DOMElement, ReactElement, useState } from "react"
+import { useState } from "react"
 import { Rnd } from "react-rnd"
 import { Visual } from "./vanilla/visual"
-import { SVG } from "@svgdotjs/svg.js"
-import { Svg } from "@svgdotjs/svg.js"
 
 interface IResizer {
     element: Visual

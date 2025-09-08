@@ -1,11 +1,8 @@
-import { Visual, IVisual } from "./visual";
-import { FillObject, posPrecision, RecursivePartial, UpdateObj } from "./util";
-import defaultLineLike from "./default/data/lineLike.json";
-import { Svg } from "@svgdotjs/svg.js";
-import Text from "./text";
-import PaddedBox from "./paddedBox";
-import Spacial, { IBindingRule, Dimensions } from "./spacial";
 import { Element } from "@svgdotjs/svg.js";
+import defaultLineLike from "./default/data/lineLike.json";
+import { Dimensions } from "./spacial";
+import { FillObject, posPrecision, RecursivePartial } from "./util";
+import { IVisual, Visual } from "./visual";
 
 type Orientation ="horizontal" | "vertical" | "angled"
 

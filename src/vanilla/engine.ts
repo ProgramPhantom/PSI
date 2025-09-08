@@ -1,17 +1,18 @@
 import { Svg } from "@svgdotjs/svg.js";
-import RectElement, { IRectElement } from "./rectElement";
-import DiagramHandler from "./diagramHandler";
-import SVGElement, { ISVGElement } from "./svgElement";
 import { myToaster } from "../App";
+import SchemeManager, { SVGDict } from "./default";
 import { IDiagram } from "./diagram";
-import SchemeManager, { ISchemeData, SVGDict } from "./default";
-import { defaults } from "@svgdotjs/svg.js";
-import LabelGroup from "./labelGroup";
+import DiagramHandler from "./diagramHandler";
+import LabelGroup, { ILabelGroup } from "./labelGroup";
+import RectElement, { IRectElement } from "./rectElement";
+import SVGElement, { ISVGElement } from "./svgElement";
+import { instantiateByType } from "./util";
+import { Visual } from "./visual";
 
 interface SchemeSingletonStore {
     RECT_TEMPLATES: RectElement[] 
     SVG_TEMPLATES: SVGElement[]
-    LABELLABLE_TEMPLATES: LabelGroup[]
+    LABELGROUP_TEMPLATES: LabelGroup[]
 }
 type SingletonStorage = Record<string, SchemeSingletonStore>
 
@@ -101,7 +102,7 @@ class ENGINE {
             Object.values(scheme.svgElements ?? {}).forEach((t) => {
                 svgSingletons.push(new SVGElement(t));
             })
-            Object.values(scheme.labellableElements ?? {}).forEach((t) => {
+            Object.values(scheme.labelGroupElements ?? {}).forEach((t) => {
                 labellableSingletons.push()
                 // TODO: implement
             })
@@ -109,7 +110,7 @@ class ENGINE {
             singletonCollections[schemeName] = {
                 RECT_TEMPLATES: rectSingletons,
                 SVG_TEMPLATES: svgSingletons,
-                LABELLABLE_TEMPLATES: labellableSingletons
+                LABELGROUP_TEMPLATES: labellableSingletons
             }
         }
 
@@ -126,6 +127,14 @@ class ENGINE {
         this.schemeManager.addRectData(data, schemeName)
 
         this.singletons[schemeName].RECT_TEMPLATES.push(new RectElement(data));
+    }
+    
+    static addLabelGroupSingleton(data: ILabelGroup, schemeName: string=SchemeManager.DefaultSchemeName) {
+        this.schemeManager.addLabelGroupData(data, schemeName);
+
+        var childSingleton: Visual = instantiateByType(data.coreChild, data.coreChildType);
+       
+        this.singletons[schemeName].LABELGROUP_TEMPLATES.push(new LabelGroup(data, childSingleton));
     }
 
 

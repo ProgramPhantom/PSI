@@ -1,9 +1,8 @@
 import React from 'react';
-import VisualForm from './VisualForm';
-import { FormRequirements } from './FormHolder';
 import { useFormContext } from 'react-hook-form';
 import { IRectElement } from '../vanilla/rectElement';
-import { Visual } from '../vanilla/visual';
+import { FormRequirements } from './FormHolder';
+import VisualForm from './VisualForm';
 
 interface IRectFormProps extends FormRequirements{
 

@@ -1,7 +1,5 @@
-import { Visual, IVisual } from "./visual";
-import { IRectElement } from "./rectElement";
-import Spacial, { ISpacial } from "./spacial";
 import { ID } from "./point";
+import Spacial, { ISpacial } from "./spacial";
 
 type Padding = number | [number, number] | [number, number, number, number]
 type Offset = [number, number]
@@ -18,9 +16,6 @@ interface Bounds {
     right: number
 }
 
-export interface IHaveDefault<T> {
-    new(params: Partial<any>, templateName?: string): T;
-}
 
 export interface IPaddedBox extends ISpacial {
     padding: [number, number, number, number]

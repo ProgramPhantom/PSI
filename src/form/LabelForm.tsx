@@ -1,20 +1,23 @@
-import { Control, Controller, ControllerRenderProps, FieldPath, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
-import { Button, Card, CheckboxCard, ControlGroup, FormGroup, HTMLSelect, InputGroup, Section, SectionCard, Slider, Switch, SwitchCard, Text, Tooltip } from "@blueprintjs/core";
-import { IVisual } from '../vanilla/visual';
-import { ILabelGroup } from '../vanilla/labelGroup';
-import { ILabel } from '../vanilla/label';
-import VisualForm from './VisualForm';
-import TextForm from './TextForm';
-import { ChangeEventHandler, useEffect, useState } from 'react';
+import { Button, FormGroup, HTMLSelect, Section, SectionCard } from "@blueprintjs/core";
+import { useEffect, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import ArrowForm from './ArrowForm';
+import { FormRequirements } from './FormHolder';
+import TextForm from './TextForm';
 
 
-function LabelForm() {
-  const formControls = useFormContext<ILabel>();
-  var formVals: ILabel = formControls.getValues()
 
-  const [textOn, setTextOn] = useState<boolean>(formVals.text === undefined ? false : true)
-  const [lineOn, setLineOn] = useState<boolean>(formVals.line === undefined ? false : true)
+interface ILabelArrayFormProps extends FormRequirements {
+
+}
+
+function LabelForm(props: ILabelArrayFormProps) {
+  var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : ""
+  const formControls = useFormContext();
+
+  var defVals = formControls.getValues();
+  const [textOn, setTextOn] = useState<boolean>(true);
+  const [lineOn, setLineOn] = useState<boolean>(true);
 
   // const hasText = useWatch({ name: "label", control: formControls.control})
 
@@ -37,7 +40,7 @@ function LabelForm() {
         helperText="Label position on parent"
         labelFor="text-input">
         
-        <Controller control={formControls.control} name={"labelConfig.labelPosition"} render={({field}) => (
+        <Controller control={formControls.control} name={`${fullPrefix}labelConfig.labelPosition`} render={({field}) => (
             <HTMLSelect {...field} iconName='caret-down'>
                 <option value={"top"}>Top</option>
                 <option value={"bottom"}>Bottom</option>
@@ -54,7 +57,7 @@ function LabelForm() {
         inline={true}
         label="Text Position"
         labelFor="text-input" helperText="Text position relative to arrow">
-        <Controller control={formControls.control} name="labelConfig.textPosition" render={({field}) => (
+        <Controller control={formControls.control} name={`${fullPrefix}labelConfig.textPosition`} render={({field}) => (
             <HTMLSelect {...field} iconName='caret-down' >
               <option value={"top"}>Top</option>
               <option value={"inline"}>Inline</option>
@@ -65,30 +68,25 @@ function LabelForm() {
       </FormGroup>
 
       {/* Text form */}
-      <Section style={{padding: 0}} collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true}  title={
-        <div style={{display: "flex", flexDirection: "row", alignSelf: "center"}}>
-          <Switch style={{margin: "0px"}} type='checkbox' checked={textOn}
-             size="medium" onChange={(e) => {setTextOn(e.target.checked)}}></Switch>
-          <Text style={{fontWeight: 600, marginLeft: "4px"}}>Text</Text>
-        </div>
-      }>
+      <Section style={{padding: 0}} collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={"Text"} rightElement={
+            <Button icon={textOn ? "eye-off" : "eye-open"} intent="none" 
+              onClick={(e) => {e.stopPropagation(); setTextOn(!textOn)}}></Button>
+          }>
 
         <SectionCard style={{padding: "0px"}}>
-          <TextForm></TextForm>
+          <TextForm prefix={fullPrefix + 'text'}></TextForm>
         </SectionCard>
       </Section>
 
       {/* Arrow form */}
-      <Section style={{padding: 0}} collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={
-        <div style={{display: "flex", flexDirection: "row", alignSelf: "center"}}>
-          <Switch style={{margin: "0px"}} checked={lineOn}
-               id="switch" size="medium" onChange={(e) => {setLineOn(e.target.checked)}}></Switch>
-          <Text style={{fontWeight: 600, marginLeft: "4px"}}>Arrow</Text>
-        </div>
-      }>
+      <Section style={{padding: 0}} collapseProps={{defaultIsOpen: false}} compact={true} collapsible={true} title={"Arrow"} rightElement={
+            <Button icon={textOn ? "eye-off" : "eye-open"} intent="none" 
+              onClick={(e) => {e.stopPropagation(); setLineOn(!lineOn)}}></Button>
+          }
+      >
 
         <SectionCard style={{padding: "0px"}}>
-          <ArrowForm></ArrowForm>
+          <ArrowForm prefix={fullPrefix + 'line'}></ArrowForm>
         </SectionCard>
       </Section>
     </>

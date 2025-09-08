@@ -1,15 +1,21 @@
-import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
-import * as ReactDOM from 'react-dom';
-import { Control, Controller, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
-import { IText } from '../vanilla/text';
+import { ControlGroup, FormGroup, HTMLSelect, NumericInput, Section } from "@blueprintjs/core";
+import { Controller, useFormContext } from 'react-hook-form';
 import { IArrow } from '../vanilla/arrow';
-import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tooltip } from "@blueprintjs/core";
-import { ILabel } from '../vanilla/label';
+import { getByPath } from '../vanilla/util';
+import { FormRequirements } from './FormHolder';
 import VisualForm from './VisualForm';
 
 
-function ArrowForm() {
-  const formControls = useFormContext<ILabel>();
+interface IArrowFormProps extends FormRequirements {
+
+}
+
+function ArrowForm(props: IArrowFormProps) {
+  var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : ""
+  const formControls = useFormContext();
+
+  var rawVals = formControls.getValues();
+  var values: Partial<IArrow> | undefined = getByPath(formControls.getValues(), props.prefix);
 
   return (
     <>
@@ -20,7 +26,7 @@ function ArrowForm() {
           inline={true}
           label="Arrowhead style"
           labelFor="text-input">
-          <Controller control={formControls.control} name="line.arrowStyle.headStyle" render={({field}) => (
+          <Controller control={formControls.control} name={`${fullPrefix}arrowStyle.headStyle`} render={({field}) => (
               <HTMLSelect {...field} iconName='caret-down' >
                 <option value={"default"}>Default</option>
                 <option value={"thin"}>Thin</option>
@@ -30,9 +36,27 @@ function ArrowForm() {
           </Controller>
         </FormGroup>
 
-        {/* Visual form */}
-        <VisualForm widthDisplay={false} heightDisplay={false}></VisualForm>
+        {/* Adjustment */}
+        <FormGroup  style={{padding: "4px 8px", margin: 0}}
+            inline={true}
+            label="Adjustment"
+            labelFor="text-input">
 
+            <div style={{display: "flex", flexDirection: "row"}}>
+              <Controller control={formControls.control} name={`${fullPrefix}adjustment.0`} render={({field}) => (
+                <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small" style={{width: "50%"}}></NumericInput>)}>
+              </Controller>
+              <Controller control={formControls.control} name={`${fullPrefix}adjustment.1`} render={({field}) => (
+                <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small" style={{width: "50%"}}></NumericInput>)}>
+              </Controller>
+            </div>
+        </FormGroup>
+
+        {/* Visual form */}
+        <VisualForm widthDisplay={false} heightDisplay={false} prefix={props.prefix}></VisualForm>
+
+
+        {/* Style */}
         <Section 
           collapseProps={{defaultIsOpen: false}}
           compact={true}
@@ -42,7 +66,7 @@ function ArrowForm() {
               inline={true}
               label="Stroke thickness"
               labelFor="text-input">
-              <Controller control={formControls.control} name="line.style.thickness" render={({field}) => (
+              <Controller control={formControls.control} name={`${fullPrefix}style.thickness`} render={({field}) => (
                 <NumericInput {...field} onValueChange={field.onChange} min={0} small={true}></NumericInput>)}>
               </Controller>
           </FormGroup>
@@ -53,7 +77,7 @@ function ArrowForm() {
               label="Stroke"
               labelFor="text-input">
 
-              <Controller control={formControls.control} name="line.style.stroke" render={({field}) => (
+              <Controller control={formControls.control} name={`${fullPrefix}style.stroke`} render={({field}) => (
                 <input type={"color"} {...field}></input>)}>
               </Controller>
           </FormGroup>
@@ -64,10 +88,10 @@ function ArrowForm() {
               labelFor="text-input">
 
               <div style={{display: "flex", flexDirection: "row"}}>
-                <Controller control={formControls.control} name="line.style.dashing.0" render={({field}) => (
+                <Controller control={formControls.control} name={`${fullPrefix}style.dashing.0`} render={({field}) => (
                   <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small" style={{width: "50%"}}></NumericInput>)}>
                 </Controller>
-                <Controller control={formControls.control} name="line.style.dashing.1" render={({field}) => (
+                <Controller control={formControls.control} name={`${fullPrefix}style.dashing.1`} render={({field}) => (
                   <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small" style={{width: "50%"}}></NumericInput>)}>
                 </Controller>
               </div>
@@ -75,21 +99,7 @@ function ArrowForm() {
 
         </Section>
         
-        {/* Adjustment */}
-        <FormGroup  style={{padding: "4px 8px", margin: 0}}
-            inline={true}
-            label="Adjustment"
-            labelFor="text-input">
-
-            <div style={{display: "flex", flexDirection: "row"}}>
-              <Controller control={formControls.control} name="line.adjustment.0" render={({field}) => (
-                <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small" style={{width: "50%"}}></NumericInput>)}>
-              </Controller>
-              <Controller control={formControls.control} name="line.adjustment.1" render={({field}) => (
-                <NumericInput {...field} min={-50} max={50} onValueChange={field.onChange} size="small" style={{width: "50%"}}></NumericInput>)}>
-              </Controller>
-            </div>
-        </FormGroup>
+        
       </ControlGroup>
     </>
   );

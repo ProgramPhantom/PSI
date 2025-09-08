@@ -1,5 +1,5 @@
+import { Button, Card, Colors, Icon, Intent, Text } from '@blueprintjs/core';
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Text, Button, Icon, Intent, Colors } from '@blueprintjs/core';
 
 interface ConsoleEntry {
   id: string;

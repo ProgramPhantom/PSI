@@ -1,14 +1,8 @@
-import { Svg, SVG } from "@svgdotjs/svg.js";
-import { Visual, IVisual } from "./visual";
-import defaultArrow from "./default/data/arrow.json"
-import { FillObject, RecursivePartial, UpdateObj } from "./util";
-import { ILine, Line } from "./line";
-import { Element } from "@svgdotjs/svg.js";
-import { Defs } from "@svgdotjs/svg.js";
-import { Marker } from "@svgdotjs/svg.js";
-import { CoreAttr } from "@svgdotjs/svg.js";
-import { Path } from "@svgdotjs/svg.js";
+import { Defs, Element, Marker, Path, SVG } from "@svgdotjs/svg.js";
+import defaultArrow from "./default/data/arrow.json";
 import { UserComponentType } from "./diagramHandler";
+import { ILine, Line } from "./line";
+import { FillObject, RecursivePartial } from "./util";
 
 
 type HeadStyle = "default" | "thin" |"none"

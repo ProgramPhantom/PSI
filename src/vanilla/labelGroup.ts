@@ -1,21 +1,17 @@
-import { Svg, Element } from "@svgdotjs/svg.js";
+import { Element } from "@svgdotjs/svg.js";
+import Collection, { ICollection } from "./collection";
+import { UserComponentType } from "./diagramHandler";
 import Label, { ILabel } from "./label";
+import SVGElement from "./svgElement";
+import { Position } from "./text";
 import { FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
-import { Dimensions } from "./spacial";
-import Collection, { ICollection } from "./collection";
-import { Position } from "./text";
-import { UserComponentType } from "./diagramHandler";
-import SVGElement from "./svgElement";
 
-
-
-type Labels = {[key in Position]?: Label} 
-type ILabels = {[key in Position]?: ILabel} 
 
 export interface ILabelGroup extends ICollection {
-    labels?: ILabel[],
+    labels: ILabel[],
     coreChild: IVisual,
+    coreChildType: UserComponentType
 }
 
 
@@ -31,7 +27,8 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
 
             labels: [],
             ref: "default-labellable",
-            coreChild: SVGElement.namedElements["180"]
+            coreChild: SVGElement.namedElements["180"],
+            coreChildType: "svg"
         },
     }
     static ElementType: UserComponentType = "label-group";
@@ -41,6 +38,7 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
             return l.state
         }),
         coreChild: this.coreChild.state,
+        coreChildType: this.coreChildType,
         ...super.state,
         contentWidth: this.coreChild.contentWidth,
         contentHeight: this.coreChild.contentHeight,
@@ -48,26 +46,28 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
 
 
     coreChild: T;
+    coreChildType: UserComponentType;
 
     public labelDict: {[key in Position]?: Label} = {};
     labels: Label[] = [];
     
-    constructor(params: RecursivePartial<ILabelGroup>, coreChild: T, templateName: string="default") {
+    constructor(params: RecursivePartial<ILabelGroup>, coreChild?: T, templateName: string="default") {
         var fullParams: ILabelGroup = FillObject<ILabelGroup>(params, LabelGroup.defaults[templateName]);
         super(fullParams, templateName);
 
-        this._contentHeight = coreChild.contentHeight!;
-        this._contentWidth = coreChild.contentWidth!;
+        this.coreChildType = params.coreChildType;
+        this.coreChild = coreChild;
 
-        this.mountConfig = {...coreChild.mountConfig!};
+        this._contentHeight = this.coreChild.contentHeight!;
+        this._contentWidth = this.coreChild.contentWidth!;
+
+        this.mountConfig = fullParams.mountConfig;
         // parent.mountConfig = undefined;
 
         // this.ref = "labelled-" + coreChild.ref;
-        this.ref = coreChild.ref;
+        this.ref = this.coreChild.ref;
 
-        this.coreChild = coreChild;
-
-        this.add(coreChild, undefined, true);
+        this.add(this.coreChild, undefined, true);
     
         fullParams.labels?.forEach((label) => {
             var newLabel = new Label(label);
@@ -84,9 +84,6 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
         super.draw(surface);
     }
 
-    // get id(): string {
-    //     return this.parentElement.id;
-    // }
 
     bindLabel(label: Label) {
         if (this.labelDict[label.labelConfig.labelPosition] !== undefined) {

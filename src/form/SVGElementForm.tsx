@@ -1,23 +1,12 @@
-import React, {useEffect, useState, useRef, useLayoutEffect} from 'react';
-import * as ReactDOM from 'react-dom';
-import { Control, Controller, FieldValue, FieldValues, useForm, useFormContext, useWatch } from 'react-hook-form';
-import { IText } from '../vanilla/text';
-import { Button, ControlGroup, FormGroup, HTMLSelect, InputGroup, NumericInput, Section, Slider, Switch, Tab, Tabs, Tooltip, Dialog, DialogFooter, Classes, Icon } from "@blueprintjs/core";
-import LabelForm from './LabelForm';
-import ArrowForm from './ArrowForm';
-import DiagramHandler from '../vanilla/diagramHandler';
-import SVGElement, { ISVGElement } from '../vanilla/svgElement';
-import { svgPulses } from '../vanilla/default/data/svgPulse';
-import { dataTypes } from '@data-driven-forms/react-form-renderer';
-import { ClassProperties, UpdateObj } from '../vanilla/util';
-import Channel from '../vanilla/channel';
-import { Visual } from '../vanilla/visual';
-import LabelGroup from '../vanilla/labelGroup';
-import VisualForm from './VisualForm';
-import { FormRequirements } from './FormHolder';
-import ENGINE from '../vanilla/engine';
+import { Button, Classes, ControlGroup, Dialog, DialogFooter, FormGroup, HTMLSelect, Icon, InputGroup } from "@blueprintjs/core";
+import React, { useRef, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import { myToaster } from '../App';
 import SchemeManager from '../vanilla/default';
+import ENGINE from '../vanilla/engine';
+import { ISVGElement } from '../vanilla/svgElement';
+import { FormRequirements } from './FormHolder';
+import VisualForm from './VisualForm';
 
 interface ISVGElementFormProps extends FormRequirements {
 
@@ -120,7 +109,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
             label="SVG"
             labelFor="text-input">
             <ControlGroup>
-                <Controller defaultValue='180' control={formControls.control} name="svgDataRef" render={({field}) => (
+                <Controller control={formControls.control} name="svgDataRef" render={({field}) => (
                     <HTMLSelect {...field} iconName='caret-down'>
                         {Object.keys(ENGINE.AllSvgStrings).map((ref) => {
                             return <option key={ref} value={ref}>{ref}</option>

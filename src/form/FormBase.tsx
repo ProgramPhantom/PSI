@@ -1,6 +1,4 @@
 import { Control } from "react-hook-form";
-import DiagramHandler from "../vanilla/diagramHandler";
-import Point from "../vanilla/point";
 import { IVisual, Visual } from "../vanilla/visual";
 
 

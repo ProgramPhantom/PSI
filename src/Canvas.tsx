@@ -1,23 +1,17 @@
-import React, {useEffect, useState, useRef, useLayoutEffect, ReactNode, ReactElement, useSyncExternalStore, DOMElement, useMemo, MouseEvent} from 'react'
-import DropField from './dnd/DropField';
-import { Visual } from './vanilla/visual';
-import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
+import { Checkbox, Colors, Dialog, DialogBody, EditableText, HotkeyConfig, Label, Text, useHotkeys } from '@blueprintjs/core';
+import React, { useMemo, useState, useSyncExternalStore } from 'react';
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { SelectionMode } from './App';
+import BindingsSelector, { PointBind } from './BindingsSelector';
+import Debug from './Debug';
+import CanvasDraggableElement from './dnd/CanvasDraggableElement';
 import { CanvasDragLayer } from './dnd/CanvasDragLayer';
 import { CanvasDropContainer } from './dnd/CanvasDropContainer';
-import CanvasDraggableElement from './dnd/CanvasDraggableElement';
+import DropField from './dnd/DropField';
+import { AllComponentTypes, AllElementIdentifiers } from './vanilla/diagramHandler';
 import ENGINE from './vanilla/engine';
-import Debug from './Debug';
-import { Checkbox, Colors, Dialog, DialogBody, Divider, EditableText, EntityTitle, HotkeyConfig, Label, Text, useHotkeys } from '@blueprintjs/core';
-import { ObjectInspector } from 'react-inspector';
-import { Tick } from '@blueprintjs/icons';
-import { SelectionMode } from './App';
-import BindingsDebug from './debug/Bindings';
-import BindingsSelector, { PointBind } from './BindingsSelector';
-import LabelGroup from './vanilla/labelGroup';
-import Collection from './vanilla/collection';
-import Point, { ID } from './vanilla/point';
-import { DrawComponent, AllComponentTypes, AllElementIdentifiers } from './vanilla/diagramHandler';
-import { AllStructures } from './vanilla/diagram';
+import { ID } from './vanilla/point';
+import { Visual } from './vanilla/visual';
 
  
 
@@ -38,7 +32,7 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
     "sequence": false,
     "label": false,
     "diagram": false,
-    "labellable": false,
+    "label-group": false,
 
     // Named elements
     "label col | pulse columns": false,
@@ -59,7 +53,7 @@ type HoverBehaviour = "terminate" | "carry" | "conditional"
 const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> = {
     0: {
         terminate: [
-            "labellable",
+            "label-group",
             "channel"
         ],
         carry: [

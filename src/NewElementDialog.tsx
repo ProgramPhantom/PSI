@@ -1,11 +1,18 @@
-import { Button, Dialog, DialogBody, DialogFooter, Tab, Tabs, Text } from "@blueprintjs/core"
-import RectElementForm from "./form/RectForm"
+import { Button, Dialog, DialogBody, DialogFooter, Tab, Tabs } from "@blueprintjs/core"
+import { useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
-import { IRectElement } from "./vanilla/rectElement"
-import SVGElement, { ISVGElement } from "./vanilla/svgElement"
-import SVGElementForm from "./form/SVGElementForm"
+import * as t from "ts-interface-checker"
+import { LabelGroupComboForm, MyFormRef } from "./form/LabelGroupComboForm"
+import RectElementForm from "./form/RectForm"
+import svgElementTypeSuite from "./typeCheckers/SVGElement-ti"
+import { AllComponentTypes, DrawComponent } from "./vanilla/diagramHandler"
 import ENGINE from "./vanilla/engine"
+import { ILabelGroup } from "./vanilla/labelGroup"
+import { IRectElement } from "./vanilla/rectElement"
+import { ISVGElement } from "./vanilla/svgElement"
+import { IVisual } from "./vanilla/visual"
 
+const checker = t.createCheckers(svgElementTypeSuite);
 
 interface INewElementDialog {
     isOpen: boolean,
@@ -14,6 +21,9 @@ interface INewElementDialog {
 }
 
 export default function NewElementDialog(props: INewElementDialog) {
+    const [tabId, setTabId] = useState<DrawComponent>("svg") 
+    const submitRef = useRef<MyFormRef>(null);
+
     const rectFormControls = useForm<IRectElement>({
         defaultValues: {contentWidth: 50, contentHeight: 50},
         mode: "onChange",
@@ -23,19 +33,28 @@ export default function NewElementDialog(props: INewElementDialog) {
         mode: "onChange",
     });
 
-    function addNewTemplate() {
-        var values: ISVGElement = svgFormControls.getValues();
-        var newSVG: SVGElement = new SVGElement(values);
+    function addNewTemplate(values: IVisual, masterType: AllComponentTypes) {
+        switch (masterType) {
+            case "svg":
+                ENGINE.addSVGSingleton(values as ISVGElement, props.schemeName);
+                break;
+            case "rect":
+                ENGINE.addRectSingleton(values as IRectElement, props.schemeName);
+                break;
+            case "label-group":
+                ENGINE.addLabelGroupSingleton(values as ILabelGroup, props.schemeName);
+                break;
+            default:
+                throw new Error(`Not implemented`)
+        }
 
-
-        ENGINE.addSVGSingleton(values, props.schemeName)
         props.close();
     }
 
     return (
         <>
             {/* New Element Dialog */}
-            <Dialog style={{width: "400px", height: "600px"}}
+            <Dialog style={{width: "600px", height: "700px"}}
                 isOpen={props.isOpen}
                 onClose={props.close}
                 title="Add New Template Element"
@@ -43,22 +62,17 @@ export default function NewElementDialog(props: INewElementDialog) {
                 canEscapeKeyClose={true}
             >
                 <DialogBody>
-                    <Tabs id="newElementTabs" defaultSelectedTabId="rect">
+                    <Tabs id="newElementTabs" defaultSelectedTabId="rect" selectedTabId={tabId} onChange={(id) => setTabId(id as DrawComponent)}>
                         <Tab id="rect" title="Rect" panel={
-                            <FormProvider {...rectFormControls}>
-                                <RectElementForm></RectElementForm>
-                            </FormProvider>
+                            <LabelGroupComboForm ref={submitRef} objectType={tabId} callback={addNewTemplate}>
+
+                            </LabelGroupComboForm>
                             
                         } />
                         <Tab id="svg" title="SVG" panel={
-                            <FormProvider {...svgFormControls}>
-                                <SVGElementForm ></SVGElementForm>
-                            </FormProvider>
-                        } />
-                        <Tab id="label-group" title="Label Group" panel={
-                            <div style={{ padding: "16px 0" }}>
-                                <Text>Label group element form will go here</Text>
-                            </div>
+                            <LabelGroupComboForm ref={submitRef} objectType={tabId} callback={addNewTemplate}>
+
+                            </LabelGroupComboForm>
                         } />
                     </Tabs>
                 </DialogBody>
@@ -67,9 +81,9 @@ export default function NewElementDialog(props: INewElementDialog) {
                     <>
                     <Button 
                             text="Cancel" 
-                            onClick={close}
+                            onClick={() => props.close()}
                             variant="minimal"/>
-                    <Button onClick={() => addNewTemplate()}
+                    <Button onClick={() => submitRef.current?.submit()}
                             text="Submit" 
                             intent="primary"
                             />

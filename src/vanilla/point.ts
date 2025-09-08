@@ -1,8 +1,7 @@
-import Aligner from "./aligner";
-import logger, { Operations } from "./log";
-import { AllComponentTypes } from "./diagramHandler";
-import Spacial, { IBinding, Dimensions } from "./spacial";
+import { AllComponentTypes, } from "./diagramHandler";
+import { Dimensions, IBinding } from "./spacial";
 import { posPrecision } from "./util";
+
 
 export type ID = string;
 

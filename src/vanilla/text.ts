@@ -1,11 +1,8 @@
-import { Visual, IVisual as IVisual, Display } from "./visual";
-import { SVG , Element as SVGElement, Svg } from '@svgdotjs/svg.js'
+import { Element, SVG, Element as SVGElement } from '@svgdotjs/svg.js';
 import TeXToSVG from "tex-to-svg";
 import defaultText from "./default/data/text.json";
-import { cascadeID, FillObject, posPrecision, RecursivePartial, sizePrecision, UpdateObj } from "./util";
-import PaddedBox from "./paddedBox";
-import { UserComponentType } from "./diagramHandler";
-import { Element } from "@svgdotjs/svg.js";
+import { cascadeID, FillObject, RecursivePartial, sizePrecision } from "./util";
+import { Display, IVisual, Visual } from "./visual";
 
 export const EXTOPX = 38.314;
 export const SCALER = 5;

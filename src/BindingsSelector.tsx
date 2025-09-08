@@ -1,7 +1,6 @@
-import { CSSProperties, useRef, useState } from "react"
-import { Colors, Icon } from "@blueprintjs/core"
-import Spacial, { IBinding, Dimensions, SiteNames, IBindingPayload } from "./vanilla/spacial"
+import { Colors } from "@blueprintjs/core";
 import ENGINE from "./vanilla/engine";
+import Spacial, { Dimensions, IBindingPayload, SiteNames } from "./vanilla/spacial";
 
 interface IBindings {
     element: Spacial,

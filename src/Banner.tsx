@@ -1,9 +1,8 @@
-import { Alignment, Button, ButtonGroup, Checkbox, Classes, Dialog, DialogFooter, EntityTitle, FormGroup, Icon, InputGroup, Navbar, NumericInput, Popover } from '@blueprintjs/core'
-import React, { useEffect, useRef, useState } from 'react'
-import DraggableElement from './dnd/DraggableElement'
+import { Button, Checkbox, Classes, Dialog, DialogFooter, FormGroup, Icon, InputGroup, Navbar, NumericInput, Popover } from '@blueprintjs/core'
+import React, { useRef, useState } from 'react'
 import { myToaster, SelectionMode } from './App'
-import ENGINE from './vanilla/engine'
 import { IDiagram } from './vanilla/diagram'
+import ENGINE from './vanilla/engine'
 
 export interface IBannerProps {
     saveSVG: () => void, 

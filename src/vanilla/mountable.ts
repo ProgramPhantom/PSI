@@ -1,4 +1,3 @@
-import { defaultMountable } from "./default/data";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { ID } from "./point";
 import Space from "./space";
@@ -9,7 +8,7 @@ export type Alignment = "here" | "centre" | "far" | "stretch" | "none";
 
 
 export interface IMountConfig {
-    index: number,
+    index: number | null,
     channelID: ID | null,
     sequenceID: ID | null,
 

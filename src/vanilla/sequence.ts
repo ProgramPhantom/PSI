@@ -1,24 +1,13 @@
-import { Visual, IVisual } from "./visual";
-import { SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import { Position, IText } from "./text";
-import Channel, { IChannel } from "./channel"
-import Text from "./text";
-import { json } from "stream/consumers";
-import Arrow from "./arrow";
-import defaultSequence from "./default/data/sequence.json"
-import DiagramHandler, { IHaveStructure } from "./diagramHandler";
-import { NumberAlias, select } from "svg.js";
-import { FillObject, PartialConstruct, RecursivePartial } from "./util";
-import { ILine, Line } from "./line";
-import Spacial, { Dimensions } from "./spacial";
-import Collection, { ICollection } from "./collection";
-import PaddedBox from "./paddedBox";
 import Aligner from "./aligner";
+import Channel, { IChannel } from "./channel";
+import Collection, { ICollection } from "./collection";
+import defaultSequence from "./default/data/sequence.json";
+import { IHaveStructure } from "./diagramHandler";
 import logger, { Operations, Processes } from "./log";
-import { defaultNewIndexGetter } from "@dnd-kit/sortable";
-import { Alignment } from "./mountable";
-import Space from "./space";
 import Point from "./point";
+import Space from "./space";
+import { FillObject, RecursivePartial } from "./util";
+import { Visual } from "./visual";
 
 export interface ISequence extends ICollection {
     channels: IChannel[]

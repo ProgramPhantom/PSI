@@ -1,16 +1,9 @@
-import { Svg } from "@svgdotjs/svg.js";
-import { Visual, IVisual, Offset, IDraw, doesDraw } from "./visual";
-import PaddedBox from "./paddedBox";
-import Point, { ID, Place } from "./point";
-import Spacial, { Bounds, Dimensions } from "./spacial";
+import { Element, G } from "@svgdotjs/svg.js";
+import logger, { Processes } from "./log";
+import { ID } from "./point";
+import Spacial, { Bounds } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
-import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS } from "react";
-import logger, { Operations, Processes } from "./log";
-import { SVG } from "@svgdotjs/svg.js";
-import { Element } from "@svgdotjs/svg.js";
-import { G } from "@svgdotjs/svg.js";
-import { Rect } from "@svgdotjs/svg.js";
-import LabelGroup from "./labelGroup";
+import { IDraw, IVisual, Visual, doesDraw } from "./visual";
 
 
 export interface ICollection extends IVisual {

@@ -1,6 +1,11 @@
 import { Element } from "@svgdotjs/svg.js";
+import * as t from "ts-interface-checker";
+import { CheckerTypeIndex } from "../typeCheckers";
+import { UserComponentType } from "./diagramHandler";
+import Point, { ID } from "./point";
+import SVGElement, { ISVGElement } from "./svgElement";
+import RectElement, { IRectElement } from "./rectElement";
 import { Visual } from "./visual";
-import { ID } from "./point";
 
 function isEmpty(obj: any) {
   for (var prop in obj) {
@@ -58,10 +63,6 @@ export type ClassProperties<C> = {
   [Key in keyof C as C[Key] extends Function ? never : Key]: C[Key]
 }
 
-export function hasMountConfig(element: Visual): element is Visual {
-  return element.mountConfig !== undefined
-}
-
 export function posPrecision(val: number): number {
   // return Math.round(val * 100) / 100;
   return val;
@@ -86,4 +87,34 @@ export function createWithTemplate<T>(templateSource: { [key: string]: T }) {
             return params as T;
         }
     };
+}
+
+export function getByPath(obj: any, path: string | undefined) {
+  if (path === undefined) {return obj}
+  return path.split('.').reduce((acc, key) => acc?.[key], obj);
+}
+
+export function validateData(data: any, supposedType: UserComponentType): true | false {
+  var suite: t.ITypeSuite = CheckerTypeIndex[supposedType].suite;
+  var type: t.TType = CheckerTypeIndex[supposedType].type;
+  const checker = t.createCheckers(suite);
+
+  // Validate
+  try {
+    checker[`${type}`].check(data);
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+export function instantiateByType(data: any, type: UserComponentType): Visual {
+  switch (type) {
+    case "svg":
+      return new SVGElement(data as ISVGElement);
+    case "rect":
+      return new RectElement(data as IRectElement);
+    default:
+      throw new Error(`Not implemented`)
+  }
 }

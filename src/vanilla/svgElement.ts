@@ -1,16 +1,26 @@
-import { Visual, IVisual, IDraw } from "./visual";
-import { svgPulses } from "./default/data/svgPulse";
-import { cascadeID, FillObject, RecursivePartial, createWithTemplate } from "./util";
-import { Element, Svg } from "@svgdotjs/svg.js";
-import { SVG } from "@svgdotjs/svg.js";
-import { G } from "@svgdotjs/svg.js";
-import { Orientation } from "./mountable";
-import LabelGroup, { ILabelGroup } from "./labelGroup";
+import { Element, G, SVG } from "@svgdotjs/svg.js";
+import { FormBundle } from "../form/LabelGroupComboForm";
 import SVGElementForm from "../form/SVGElementForm";
-import { Rect } from "@svgdotjs/svg.js";
+import { svgPulses } from "./default/data/svgPulse";
 import { UserComponentType } from "./diagramHandler";
 import ENGINE from "./engine";
+import { cascadeID, createWithTemplate, RecursivePartial } from "./util";
+import { IDraw, IVisual, Visual } from "./visual";
 
+
+const notFound = `
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg fill="#000000" height="800px" width="800px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+	 viewBox="0 0 460.775 460.775" xml:space="preserve">
+<path d="M285.08,230.397L456.218,59.27c6.076-6.077,6.076-15.911,0-21.986L423.511,4.565c-2.913-2.911-6.866-4.55-10.992-4.55
+	c-4.127,0-8.08,1.639-10.993,4.55l-171.138,171.14L59.25,4.565c-2.913-2.911-6.866-4.55-10.993-4.55
+	c-4.126,0-8.08,1.639-10.992,4.55L4.558,37.284c-6.077,6.075-6.077,15.909,0,21.986l171.138,171.128L4.575,401.505
+	c-6.074,6.077-6.074,15.911,0,21.986l32.709,32.719c2.911,2.911,6.865,4.55,10.992,4.55c4.127,0,8.08-1.639,10.994-4.55
+	l171.117-171.12l171.118,171.12c2.913,2.911,6.866,4.55,10.993,4.55c4.128,0,8.081-1.639,10.992-4.55l32.709-32.719
+	c6.074-6.075,6.074-15.909,0-21.986L285.08,230.397z"/>
+</svg>
+`
 
 interface ISVGStyle {
 
@@ -23,19 +33,39 @@ export interface ISVGElement extends IVisual {
 
 
 export default class SVGElement extends Visual implements ISVGElement, IDraw {
-    static override namedElements: {[key: string]: ISVGElement} = {...<any>svgPulses, "default": svgPulses[180], "form-defaults": svgPulses[180]};
+    static override namedElements: {[key: string]: ISVGElement} = {...<any>svgPulses, "default": svgPulses[180], 
+		"form-defaults": {
+			"mountConfig": {
+				"orientation": "top",
+				"alignment": "centre",
+				"noSections": 1,
+				"channelID": null,
+				"sequenceID": null,
+				"index": null,
+				"mountOn": false,
+			},
+
+			"padding": [0, 0, 0, 0],
+			"offset": [0, 0],
+			"svgDataRef": "\\src\\assets\\180.svg",
+			"contentWidth": 50,
+			"contentHeight": 50,
+
+			"ref": "180",
+			"style": {}
+	}};
 	get state(): ISVGElement { return {
 		svgDataRef: this.svgDataRef,
 		style: this.style,
 		...super.state
     }}
 	static ElementType: UserComponentType = "svg";
-	static form: React.FC = SVGElementForm;
+	static formDataPair: FormBundle = {form: SVGElementForm, defaults: SVGElement.namedElements["form-defaults"]};
 
 	elementGroup: G = new G();
 	style: ISVGStyle;
     svgDataRef: string;
-	override svg: Element;
+	// svg: Element;
 
     constructor(params: ISVGElement);
     constructor(params: RecursivePartial<ISVGElement>, templateName: string);
@@ -51,12 +81,13 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		}
 		var svgString: string = ENGINE.AllSvgStrings[this.svgDataRef];
 		if (svgString === undefined) {
-			throw new Error(`Cannot find svg for ${this.ref}`)
+			// throw new Error(`Cannot find svg for ${this.ref}`)
 		}
 		try {
 			var rawSVG: Element = SVG(svgString)
 		} catch {
-			throw new Error(`Cannot parse svg for ${this.ref}`)
+			// throw new Error(`Cannot parse svg for ${this.ref}`)
+			var rawSVG: Element = SVG(notFound);
 		}
 
 		// Wrap svg contents inside a group for translation. 
@@ -147,16 +178,8 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
         this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]]
     }
 
-	// Wtf does this do
-	public restructure(data: Partial<ISVGElement>): void {
-		// Path
-		this.svgDataRef = data.svgDataRef ?? this.svgDataRef;
-		
-		// Style:
-		this.style = data.style ?? this.style;
 
-		super.restructure(data);
+	public static isSVGElement(obj: any): obj is SVGElement {
+		return (obj as SVGElement).svgDataRef !== undefined
 	}
-
-
 }

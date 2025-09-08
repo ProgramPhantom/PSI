@@ -1,18 +1,11 @@
-import { Element } from "@svgdotjs/svg.js";
+import { G, Mask, Rect, Svg } from "@svgdotjs/svg.js";
+import LabelForm from "../form/LabelForm";
+import { FormBundle } from "../form/LabelGroupComboForm";
 import Arrow, { IArrow } from "./arrow";
 import Collection, { ICollection } from "./collection";
-import { ILine, Line } from "./line";
-import LineLike, { ILineLike } from "./lineLike";
+import { AllComponentTypes } from "./diagramHandler";
 import { Dimensions } from "./spacial";
 import Text, { IText, Position } from "./text";
-import { FillObject } from "./util";
-import { Visual } from "./visual";
-import { Rect } from "@svgdotjs/svg.js";
-import { G } from "@svgdotjs/svg.js";
-import { SVG } from "@svgdotjs/svg.js";
-import { Mask } from "@svgdotjs/svg.js";
-import { Svg } from "@svgdotjs/svg.js";
-import { AllComponentTypes, UserComponentType } from "./diagramHandler";
 
 
 export type LabelTextPosition = "top" | "bottom" | "inline"
@@ -31,8 +24,22 @@ export interface ILabel extends ICollection {
 
 
 export default class Label extends Collection implements ILabel {
-    static defaults: {[name: string]: ILabel} = {
+    static namedElements: {[name: string]: ILabel} = {
         "default": {
+            contentWidth: 20,
+            contentHeight: 20,
+            offset: [0, 0],
+            padding: [2, 0, 2, 0],
+
+            text: Text.defaults["default"],
+            line: Arrow.defaults["default"],
+            ref: "default-label",
+            labelConfig: {
+                labelPosition: Position.top,
+                textPosition: "top"
+            }
+        },
+        "form-defaults": {
             contentWidth: 20,
             contentHeight: 20,
             offset: [0, 0],
@@ -55,6 +62,7 @@ export default class Label extends Collection implements ILabel {
             ...super.state
         }
     }
+    static formDataPair: FormBundle<ILabel> = {form: LabelForm, defaults: Label.namedElements["form-defaults"]};
     static ElementType: AllComponentTypes = "label";
 
     text?: Text;

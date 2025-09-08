@@ -1,26 +1,16 @@
-import React, { ReactNode, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
-import Canvas from './Canvas'
-import ElementsDraw from './ElementsDraw'
-import { SVG, extend as SVGextend, Element, Svg } from '@svgdotjs/svg.js'
-import Form from './Form';
+import { Drawer, OverlayToaster, Position, Toaster } from '@blueprintjs/core';
+import { SVG } from '@svgdotjs/svg.js';
+import { saveAs } from 'file-saver';
+import { ReactNode, useState, useSyncExternalStore } from 'react';
+import { createRoot } from 'react-dom/client';
 import Banner from './Banner';
-import FileSaver, { saveAs } from 'file-saver';
-import SVGElementForm from './form/SVGElementForm';
-import Mountable from './vanilla/mountable';
-import { Visual } from './vanilla/visual';
-import { UpdateObj } from './vanilla/util';
-import { svgPulses } from './vanilla/default/data/svgPulse';
-import SVGElement, { ISVGElement } from './vanilla/svgElement';
-import { defaultMountable } from './vanilla/default/data';
-import RectElement, { IRectElement } from './vanilla/rectElement';
-import { simplePulses } from './vanilla/default/data/simplePulse';
-import RectForm from './form/RectForm';
-import ENGINE from './vanilla/engine';
-import Channel from './vanilla/channel';
-import LabelGroup from './vanilla/labelGroup';
-import { OverlayToaster, Toaster, Drawer, Position } from '@blueprintjs/core';
+import Canvas from './Canvas';
 import ComponentResizer from './ComponentResizer';
 import Console from './Console';
+import ElementsDraw from './ElementsDraw';
+import Form from './Form';
+import ENGINE from './vanilla/engine';
+import { Visual } from './vanilla/visual';
 
 
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
@@ -29,7 +19,9 @@ ENGINE.load()
 await ENGINE.loadSVGData();
 ENGINE.createSingletons();
 
-export const myToaster: Toaster = await OverlayToaster.create({ position: "bottom",  });
+export const myToaster: Toaster = await OverlayToaster.createAsync({ position: "bottom",}, {
+  domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster),
+});
 
 
 export type SelectionMode = "select" | "draw";

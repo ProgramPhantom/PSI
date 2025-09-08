@@ -1,13 +1,10 @@
-import { Section, SectionCard, Text, TextArea, Card, Elevation, H5, Divider, Dialog, Button, DialogFooter, DialogBody, EntityTitle, Tabs, Tab, Classes } from '@blueprintjs/core';
-import React, { ChangeEvent, useEffect, useState } from 'react'
-import Errors, { errorState } from './Errors';
+import { Button, Dialog, DialogBody, DialogFooter, Divider, EntityTitle, H5, Section, SectionCard, Tab, Tabs, Text } from '@blueprintjs/core';
+import React, { useState } from 'react';
 import DraggableElement from './dnd/DraggableElement';
-import DiagramHandler from './vanilla/diagramHandler';
-import ENGINE from "./vanilla/engine";
-import { Visual } from './vanilla/visual';
-import RectElementForm from './form/RectForm';
 import NewElementDialog from './NewElementDialog';
 import SchemeManager from './vanilla/default';
+import ENGINE from "./vanilla/engine";
+import { Visual } from './vanilla/visual';
 
 
 interface IElementDrawProps {
@@ -85,7 +82,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                             
                             {Object.entries(ENGINE.singletons).map(([schemeName, singletonDict]) => {
                                 var noElements: number = singletonDict.SVG_TEMPLATES.length + singletonDict.RECT_TEMPLATES.length + 
-                                                         singletonDict.LABELLABLE_TEMPLATES.length;
+                                                         singletonDict.LABELGROUP_TEMPLATES.length;
                                 return (
                                     <Tab style={{width: "100%", overflow: "auto"}} title={schemeName} tagProps={{round: true}} tagContent={noElements} id={schemeName} panel={
                                         <div style={{width: "100%", display: "flex", flexDirection: "row", height: "100%"}}>

@@ -31,7 +31,6 @@ import { ICanvasDropResult, IDrop, isCanvasDrop } from './CanvasDropContainer';
 import { HandleStyles, Rnd } from 'react-rnd';
 import { IMountAreaResult, isMountDrop } from './InsertArea';
 import ENGINE from '../vanilla/engine';
-import { hasMountConfig } from '../vanilla/util';
 import { IMountConfig, Orientation } from '../vanilla/mountable';
 import { Svg } from '@svgdotjs/svg.js';
 import { ID } from '../vanilla/point';

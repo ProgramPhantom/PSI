@@ -1,14 +1,10 @@
-import { Visual, IVisual, IDraw } from "./visual";
-import { FillObject, RecursivePartial } from "./util";
-import { simplePulses } from "./default/data/simplePulse";
-import defaultBar from "./default/data/bar.json";
 import { Element } from "@svgdotjs/svg.js";
+import { FormRequirements } from "../form/FormHolder";
 import VisualForm from "../form/VisualForm";
-import Mountable, { IMountable } from "./mountable"; 
 import { defaultSpace } from "./default/data";
 import { UserComponentType } from "./diagramHandler";
-import { Svg } from "@svgdotjs/svg.js";
-import { FormRequirements } from "../form/FormHolder";
+import { FillObject, RecursivePartial } from "./util";
+import { IDraw, IVisual, Visual } from "./visual";
 
 
 export interface ISpace extends IVisual {

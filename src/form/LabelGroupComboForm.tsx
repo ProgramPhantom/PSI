@@ -1,110 +1,165 @@
-import { Controller, DefaultValues, FormProvider, useForm } from "react-hook-form";
-import IForm, { FormDescriptor } from "./FormBase";
-import { IElement } from "../vanilla/point";
-import { IVisual, Visual } from "../vanilla/visual";
-import Channel, { IChannel } from "../vanilla/channel";
-import { defaultChannel } from "../vanilla/default/data";
-import ChannelForm from "./ChannelForm"
-import ENGINE from "../vanilla/engine";
-import { Button, Card, Dialog, DialogBody, Divider, EditableText, EntityTitle, FormGroup, H5, Icon, InputGroup, Label, Section, SectionCard, Switch, Tab, Tabs, Text } from "@blueprintjs/core";
-import LabelMapForm from "./LabelMapForm";
-import { ChangeEvent, ChangeEventHandler, useEffect, useMemo, useState } from "react";
+import { Tab, Tabs } from "@blueprintjs/core";
+import React, { useImperativeHandle } from "react";
+import { DefaultValues, FormProvider, useForm } from "react-hook-form";
+import Arrow from "../vanilla/arrow";
+import Channel from "../vanilla/channel";
+import Diagram from "../vanilla/diagram";
+import { AllComponentTypes, UserComponentType } from "../vanilla/diagramHandler";
+import Label, { ILabel } from "../vanilla/label";
 import LabelGroup, { ILabelGroup } from "../vanilla/labelGroup";
-import { AllComponentTypes, ElementBundle, UserComponentType } from "../vanilla/diagramHandler";
-import { myToaster } from "../App";
-import { inspect } from "util"
-import ReactJson from "react18-json-view"
-import { Inspector, ObjectInspector } from "react-inspector"
-import { AllStructures } from "../vanilla/diagram";
+import { Line } from "../vanilla/line";
+import RectElement from "../vanilla/rectElement";
+import Sequence from "../vanilla/sequence";
+import Space from "../vanilla/space";
+import SVGElement from "../vanilla/svgElement";
+import { IVisual, Visual } from "../vanilla/visual";
 import { FormRequirements } from "./FormHolder";
-import { ILabel } from "../vanilla/label";
+import LabelListForm, { LabelGroupLabels } from "./LabelListForm";
 
 
 interface LabelGroupComboForm {
     target?:  Visual,
     objectType: UserComponentType,
-    callback: (val: Visual | undefined) => void
+    callback: (val: IVisual | undefined, masterType: AllComponentTypes) => void
+
+     ref?: React.RefObject<MyFormRef>
+}
+
+export type MyFormRef = {
+    submit: () => void
+}
+
+export interface FormBundle<T extends IVisual=IVisual> {
+    form: React.FC,
+    defaults: T
+}
+
+const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
+    "rect": RectElement,
+    "svg": SVGElement,
+    "arrow": Arrow,
+    "channel": Channel,
+    "diagram": Diagram,
+    "line": Line,
+    "sequence": Sequence,
+    "space": Space,
+    "label-group": LabelGroup,
+    "label": Label
 }
 
 
-export function LabelGroupComboForm(props: LabelGroupComboForm) {
-    var parentForm: React.FC<FormRequirements>;
-    var childForm: React.FC<FormRequirements> | undefined;
-    var labelForm: React.FC<FormRequirements> | undefined;
+export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboForm>((props, ref) => {
+    var MasterForm: React.FC<FormRequirements>;
+    var ChildForm: React.FC<FormRequirements> | undefined;
+    var LabelForm: React.FC<FormRequirements> = Label.formDataPair.form;
 
-    var parentDefaults: IVisual;
+    var masterDefaults: IVisual;
     var childDefaults: IVisual | undefined;
-    var labelDefaults: ILabel[];
-
-    var targetCoreChildType: AllComponentTypes | undefined = (props.target?.constructor as typeof Visual).ElementType;
+    var labelDefaults: LabelGroupLabels = {labels: []}
 
 
+    var parentType: AllComponentTypes; 
+    if (props.target !== undefined) {
+        parentType = (props.target?.constructor as typeof Visual).ElementType;
+    } else {
+        parentType = props.objectType;
+    }
+
+
+    var targetIsLabelGroup: boolean = false;
     if (props.target === undefined) {
         // Use the object type to setup a clean form
-        labelDefaults = [];
+        MasterForm = correspondence[props.objectType].formDataPair.form;
+        masterDefaults = correspondence[props.objectType].formDataPair.defaults;
 
-        switch (props.objectType) {
-            case "svg":
-                parentDefaults = ENGINE.schemeManager.defaultScheme.svgElements["180"];
-                break;
-            case "rect":
-                parentDefaults = ENGINE.schemeManager.defaultScheme.rectElements["90-pulse"];
-                break;
-            default:
-                throw new Error(`Not implemented`);
-        }
     } else {
+        MasterForm = (props.target.constructor as typeof Visual).formDataPair.form;
+        masterDefaults = (props.target.constructor as typeof Visual).formDataPair.defaults;
+        
+
         if (LabelGroup.isLabelGroup(props.target)) {
-                // Label group
-        }
+            ChildForm = (props.target.coreChild.constructor as typeof Visual).formDataPair.form;
+            childDefaults = (props.target.coreChild.constructor as typeof Visual).formDataPair.defaults;
+
+            targetIsLabelGroup = true;
+        } 
     }
 
     
-
-    // Resetter (I don't understand why I need this...)
-    useEffect(() => {
-        if (props.target === undefined) {
-            coreDefaults = Channel.defaults.default;
-        } else {
-            labelFormControls.reset(labelDefaults)
-        }
-        
-        parentFormControls.reset(coreDefaults);
-        
-    }, [props.target]);
-    
-
     // Create form hook
-    const parentFormControls = useForm<IVisual>({
-        defaultValues:  coreDefaults as DefaultValues<IVisual>,
+    const masterFormControls = useForm<IVisual>({
+        defaultValues:  masterDefaults as DefaultValues<IVisual>,
         mode: "onChange"
     });
 
     // Create form hook
     const childFormControls = useForm<IVisual>({
-        defaultValues:  coreDefaults as DefaultValues<IVisual>,
+        defaultValues: childDefaults as DefaultValues<IVisual>,
         mode: "onChange"
     });
-
-    // This stops some weird default value caching, don't remove it or code breaks.
 
     // Create label hook form
-    const labelFormControls = useForm<ILabelGroup>({
-        defaultValues: labelDefaults as DefaultValues<ILabelGroup>,
+    const labelListControls = useForm<LabelGroupLabels>({
+        defaultValues: labelDefaults as DefaultValues<LabelGroupLabels>,
         mode: "onChange"
     });
 
 
+    // Jiggery pokery. 
+    useImperativeHandle(ref, () => ({
+        submit: onSubmit
+    }));
+
     // Submit function
-    function onSubmit(data: IVisual) {
+    const onSubmit = masterFormControls.handleSubmit((data) => {
+        var masterFormData: IVisual = masterFormControls.getValues();
+        var childFormData: IVisual | undefined = childFormControls.getValues();
+        var labelListFormData: ILabel[] = labelListControls.getValues().labels;
+        
 
-    }
+        if (targetIsLabelGroup === false) {
+            
+            if (labelListFormData.length > 0) {
+                // Convert into a label group!
+
+                // Normalise core child:
+                childFormData = {...masterFormData}
+                childFormData.padding = [0, 0, 0, 0];
+                childFormData.offset = [0, 0];
+
+                var result: ILabelGroup = {
+                    coreChild: childFormData,
+                    coreChildType: props.objectType,
+                    labels: labelListFormData,
+
+                    ...masterFormData
+                }
+
+                props.callback(result, "label-group")
+            } else {
+                props.callback(masterFormData, props.objectType)
+            }
+        } else {
+            // Already label type
+
+            var result: ILabelGroup = {
+                coreChild: childFormData,
+                coreChildType: (masterFormData as ILabelGroup).coreChildType,
+                labels: labelListFormData,
+
+                ...masterFormData
+            }
+            props.callback(result, "label-group")
+        }
+
+        
+    })
 
 
-    var vals = parentFormControls.getValues(); 
+    var vals = masterFormControls.getValues(); 
     return (
         <>
-        <form onSubmit={parentFormControls.handleSubmit(onSubmit)}
+        <form onSubmit={onSubmit}
                 style={{height: "100%", display: "flex", flexDirection: "column", overflow: "hidden",
                         padding: "0px"
                 }}>
@@ -112,35 +167,23 @@ export function LabelGroupComboForm(props: LabelGroupComboForm) {
             <div style={{overflowY: "scroll", flex: "1 1 0",  padding: "4px"}} id="form-fields">
                 <Tabs defaultSelectedTabId={"core"}>
                     <Tab style={{userSelect: "none", position: "sticky"}} id={"core"} title={"Core"} panel={
-                            <FormProvider {...parentFormControls}>
-                                <ElementForm target={props.target}></ElementForm>
+                            <FormProvider {...masterFormControls}>
+                                <MasterForm target={props.target}></MasterForm>
                             </FormProvider>
                     }></Tab>
                 
 
                 <Tab style={{userSelect: "none"}} id={"label"} title={"Label"} panel={
                     <>
-                        <p style={{display: "inline-block"}}>Use Labels</p>
-                        <Switch onChange={() => {setLabelType(!labelType)}} checked={labelType} 
-                                style={{display: "inline-block", marginLeft: "10px"}}></Switch>
-                        
-                        { labelType ? 
-                        <FormProvider {...labelFormControls}>
-                            <LabelMapForm target={props.target}></LabelMapForm> 
+                        <FormProvider {...labelListControls}>
+                            <LabelListForm target={props.target}></LabelListForm> 
                         </FormProvider>
-                        : <></>}
                     </>
                 }></Tab>
                 </Tabs>
             </div>
-            
-            <div id="submit-area" style={{width: "100%", alignSelf: "center", margin: "4px 2px 18px 2px", height: "30px", marginTop: "auto", display: "flex", flexDirection: "column"}} >
-                <Divider></Divider>
-                <Button style={{width: "80%", margin: "auto", alignSelf: "center", }}
-                    type={"submit"} text={props.target !== undefined ? "Apply" : "Add"} icon={props.target !== undefined ? "tick" : "add"}></Button>
-            </div>
-
         </form>
         </>
     );
-}
+})
+

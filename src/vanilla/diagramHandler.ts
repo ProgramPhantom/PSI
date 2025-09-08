@@ -1,29 +1,18 @@
-import Sequence, { SequenceNamedStructures } from "./sequence";
-import { S } from "memfs/lib/constants";
-import { Svg } from "@svgdotjs/svg.js";
-import Text, { Position } from "./text";
-import { Display, IVisual, Visual } from "./visual";
-import Channel, { ChannelNamedStructure, IChannel } from "./channel";
-import { FillObject, PartialConstruct, RecursivePartial, UpdateObj } from "./util";
-import { Script } from "vm";
-import { mountableElements } from "./default/data";
-import { ILine, Line } from "./line";
-import RectElement, { IRectElement, } from "./rectElement";
-import SVGElement, { ISVGElement, } from "./svgElement";
-import logger, { Operations } from "./log";
-import { error } from "console";
-import LabelGroup, { ILabelGroup } from "./labelGroup";
-import { ILabel } from "./label";
-import Point, { ID } from "./point";
-import { ElementType } from "react";
-import { IMountConfig } from "./mountable";
-import { IBinding, IBindingPayload } from "./spacial";
-import Arrow from "./arrow";
+import { Rect, Svg } from "@svgdotjs/svg.js";
 import { PointBind } from "../BindingsSelector";
+import Arrow from "./arrow";
+import Channel, { IChannel } from "./channel";
+import SchemeManager from "./default";
 import Diagram, { AllStructures, IDiagram } from "./diagram";
-import { Rect } from "@svgdotjs/svg.js";
-import SchemeManager, { ISchemeData, SchemeSet } from "./default";
-import ENGINE from "./engine";
+import LabelGroup, { ILabelGroup } from "./labelGroup";
+import logger, { Operations } from "./log";
+import { IMountConfig } from "./mountable";
+import Point, { ID } from "./point";
+import RectElement, { IRectElement, } from "./rectElement";
+import Sequence from "./sequence";
+import SVGElement, { ISVGElement, } from "./svgElement";
+import { FillObject, instantiateByType, RecursivePartial } from "./util";
+import type { IVisual, Visual } from "./visual";
 
 
 export type ElementBundle = IVisual & Partial<ILabelGroup>
@@ -44,6 +33,8 @@ export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract"
 
 // All
 export type AllElementIdentifiers = AllStructures | AllComponentTypes
+
+
 
 
 export interface IHaveStructure {
@@ -408,6 +399,13 @@ export default class DiagramHandler {
                 if (pParameters.labels !== undefined) {
                     element = new LabelGroup<RectElement>(parameters, element as RectElement) 
                 }
+                break;
+            case "label-group":
+                parameters = FillObject(pParameters as ILabelGroup, this.schemeManager.defaultScheme.labelGroupElements[elementRef])
+                
+                var child: Visual = instantiateByType(parameters.coreChild, parameters.coreChildType);
+
+                element = new LabelGroup(parameters, child);
                 break;
             default:
                 throw new Error(`Not added ability to add component of type ${elementType} via template`)

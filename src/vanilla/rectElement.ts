@@ -1,13 +1,10 @@
-import { Svg } from "@svgdotjs/svg.js";
-import { Visual, IVisual, IDraw } from "./visual";
-import { FillObject, RecursivePartial, createWithTemplate } from "./util";
-import { simplePulses } from "./default/data/simplePulse";
-import defaultBar from "./default/data/bar.json";
-import { SVG } from "@svgdotjs/svg.js";
-import { Rect } from "@svgdotjs/svg.js";
-import { Element } from "@svgdotjs/svg.js";
+import { Element, Rect, SVG } from "@svgdotjs/svg.js";
+import { FormBundle } from "../form/LabelGroupComboForm";
 import RectElementForm from "../form/RectForm";
+import defaultBar from "./default/data/bar.json";
 import { UserComponentType } from "./diagramHandler";
+import { RecursivePartial, createWithTemplate } from "./util";
+import { IDraw, IVisual, Visual } from "./visual";
 
 export interface IRectStyle {
 	fill: string,
@@ -21,25 +18,17 @@ export interface IRectElement extends IVisual {
 
 export default class RectElement extends Visual implements IRectElement, IDraw {
 	static namedElements: {[key: string]: IRectElement } = {
-        "bar": {
-            "ref": "bar",
-            "contentWidth": 10,
-            "contentHeight": 10,
-            "padding": [0, 0, 0, 0],
-            "offset": [0, 0],
-            "style": {
-                "fill": "#000000",
-                "stroke": "black",
-                "strokeWidth": null
-            }
-        }
+        "bar": <any>defaultBar,
+        "form-defaults": <any>defaultBar
     };
     get state(): IRectElement { return {
         style: this.style,
         ...super.state
     }}
     static ElementType: UserComponentType = "rect";
-    static form: React.FC = RectElementForm;
+    static formDataPair: FormBundle = {form: RectElementForm, defaults: RectElement.namedElements["form-defaults"]};
+
+
 
 	style: IRectStyle;	
 
@@ -83,10 +72,7 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
         }
     }
 
-    public restructure(data: Partial<IRectElement>): void {
-        // Style:
-        this.style = data.style ?? this.style;
-
-        super.restructure(data);
-    }
+    public static isRectElement(obj: any): obj is SVGElement {
+		return (obj as RectElement).style.fill !== undefined
+	}
 }

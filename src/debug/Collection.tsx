@@ -1,7 +1,6 @@
 import { CSSProperties } from "react"
 import PaddedBox, { IPaddedBox } from "../vanilla/paddedBox"
 import Spacial, { Dimensions } from "../vanilla/spacial"
-import Positional from "../vanilla/positional"
 import SVGElement from "../vanilla/svgElement"
 import Aligner from "../vanilla/aligner"
 import PaddedBoxDebug, { IPaddedBoxDebug } from "./PaddedBox"

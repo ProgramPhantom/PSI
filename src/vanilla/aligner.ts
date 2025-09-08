@@ -1,11 +1,9 @@
-import { Svg } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
+import logger, { Processes } from "./log";
+import { Alignment } from "./mountable";
 import Spacial, { Dimensions } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
-import { SVG } from "@svgdotjs/svg.js";
-import logger, { Operations, Processes } from "./log";
-import { Alignment } from "./mountable";
 
 export interface IAligner extends ICollection {
     axis: Dimensions,

@@ -1,14 +1,9 @@
-import { debug } from "console"
-import Sequence from "./vanilla/sequence"
-import DiagramHandler, { AllElementIdentifiers } from "./vanilla/diagramHandler"
-import PaddedBoxDebug from "./debug/PaddedBox"
-import CollectionDebug from "./debug/Collection"
-import BindingsDebug from "./debug/Bindings"
-import PaddedBox from "./vanilla/paddedBox"
-import LabelGroup from "./vanilla/labelGroup"
-import { Visual } from "./vanilla/visual"
-import ENGINE from "./vanilla/engine"
 import { Colors } from "@blueprintjs/core"
+import CollectionDebug from "./debug/Collection"
+import PaddedBoxDebug from "./debug/PaddedBox"
+import { AllElementIdentifiers } from "./vanilla/diagramHandler"
+import ENGINE from "./vanilla/engine"
+import { Visual } from "./vanilla/visual"
 
 interface IDebug {
     debugGroupSelection: Record<AllElementIdentifiers, boolean>;

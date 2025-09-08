@@ -1,13 +1,11 @@
-import { Element, SVG, Element as SVGElement, Svg } from '@svgdotjs/svg.js'
-import { posPrecision, RecursivePartial } from './util'
-import { IMountable } from './mountable'
-import { defaultVisual } from './default/data'
+import { Element } from '@svgdotjs/svg.js'
+import { FormBundle } from '../form/LabelGroupComboForm'
 import VisualForm from '../form/VisualForm'
+import { defaultVisual } from './default/data'
 import LabelGroup from './labelGroup'
-import PaddedBox from './paddedBox'
-import Mountable from './mountable'
+import Mountable, { IMountable } from './mountable'
 import { ID } from './point'
-import { AbstractComponentTypes, AllComponentTypes } from './diagramHandler'
+import { posPrecision } from './util'
 
 
 type Padding = number | [number, number] | [number, number, number, number]
@@ -32,8 +30,8 @@ export function doesDraw(object: any): object is IDraw {
 
 
 export abstract class Visual extends Mountable implements IVisual {
-    static namedElements: {[name: string]: IVisual} = {"default": <any>defaultVisual}
-    static form: React.FC = VisualForm;
+    static namedElements: {[name: string]: IVisual} = {"default": <any>defaultVisual, "form-default": <any>defaultVisual}
+    static formDataPair: FormBundle = {form: VisualForm, defaults: Visual.namedElements["form-defaults"]};
 
     get state(): IVisual { return {
         offset: this.offset,
@@ -79,26 +77,6 @@ export abstract class Visual extends Mountable implements IVisual {
         this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]]
     }
 
-    public restructure(data: Partial<IVisual>) {
-        // Dimensions
-        this.contentWidth = data.contentWidth ?? this.contentWidth;
-        this.contentHeight = data.contentHeight ?? this.contentHeight;
-
-        // Position
-        this.x = data.x ?? this.x;
-        this.y = data.y ?? this.y;
-
-        // Padding
-        this.padding = data.padding ?? this.padding;
-
-        // Offset 
-        this.offset = data.offset ?? this.offset;
-
-        // Reference
-        if (data.ref !== undefined) {
-            this.ref = data.ref;
-        }
-    }
 
     // Construct and SVG with children positioned relative to (0, 0)
     getInternalRepresentation(): Element | undefined {

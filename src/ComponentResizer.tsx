@@ -1,5 +1,5 @@
 import { Button, Text } from '@blueprintjs/core';
-import React, { ReactNode, useRef, useState, useCallback, useEffect } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 interface ComponentResizerProps {
   children: ReactNode;
