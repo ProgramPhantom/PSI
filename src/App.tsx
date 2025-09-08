@@ -1,7 +1,7 @@
-import { Drawer, OverlayToaster, Position, Toaster } from '@blueprintjs/core';
+import { Button, Dialog, DialogBody, DialogFooter, Drawer, OverlayToaster, Position, Toaster } from '@blueprintjs/core';
 import { SVG } from '@svgdotjs/svg.js';
 import { saveAs } from 'file-saver';
-import { ReactNode, useState, useSyncExternalStore } from 'react';
+import { ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import Banner from './Banner';
 import Canvas from './Canvas';
@@ -39,28 +39,28 @@ function App() {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("select");
 
   // Welcome dialog state
-const [isWelcomeOpen, setIsWelcomeOpen] = useState(true); // can change to false for local storage check
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(true); // can change to false for local storage check
 
-// Check localStorage on first render
-useEffect(() => {
-  const hasSeen = localStorage.getItem("hasSeenWelcome");
-  if (!hasSeen) {
-    setIsWelcomeOpen(true);
+  // Check localStorage on first render
+  useEffect(() => {
+    const hasSeen = localStorage.getItem("hasSeenWelcome");
+    if (!hasSeen) {
+      setIsWelcomeOpen(true);
+    }
+  }, []);
+
+  // Function to close welcome dialog
+  function closeWelcomeDialog() {
+    localStorage.setItem("hasSeenWelcome", "true");
+    setIsWelcomeOpen(false);
   }
-}, []);
-
-// Function to close welcome dialog
-function closeWelcomeDialog() {
-  localStorage.setItem("hasSeenWelcome", "true");
-  setIsWelcomeOpen(false);
-}
 
   // Set up automatic saving every 2 seconds
   // useEffect(() => {
   //   const interval = setInterval(() => {
   //     ENGINE.save();
   //   }, 2000);
-// 
+  // 
   //   // Cleanup interval on component unmount
   //   return () => clearInterval(interval);
   // }, []);
@@ -215,7 +215,6 @@ function closeWelcomeDialog() {
     setIsConsoleOpen(true);
   }
 
-
   return (
       <>
 
@@ -260,11 +259,11 @@ function closeWelcomeDialog() {
         position={Position.BOTTOM}
         size="50%"
         title="Console Output"
-        icon="console"
-        
-      >
-        <Console isOpen={isConsoleOpen} />
+        icon="console">
+      <Console isOpen={isConsoleOpen} />
       </Drawer>
+
+
       {/* Welcome Dialog */}
       <Dialog
       isOpen={isWelcomeOpen}
@@ -273,17 +272,18 @@ function closeWelcomeDialog() {
       canEscapeKeyClose={true}
       canOutsideClickClose={true}
     >
-      <div className="bp3-dialog-body">
+      <DialogBody>
         <p>Welcome to PSI! This application allows you to create and edit pulse sequence diagrams easily.</p>
         <p>Use the toolbar at the top to save your diagrams as SVG or PNG. Create a channel on the right menu and select elements and drag them onto the channel. Edit idividual elements by clicking to select them and using the right menu. </p>
         <p><strong>Credits:</strong> Developed by Henry Varley with contributions from: Gabriel Vilella Nilsson</p>
-      </div>
-      <div className="bp3-dialog-footer">
+      </DialogBody>
+      <DialogFooter>
         <div className="bp3-dialog-footer-actions">
           <Button intent="primary" onClick={closeWelcomeDialog}>Got it!</Button>
         </div>
-      </div>
+      </DialogFooter>
     </Dialog>
+
   </>
     )
 }
