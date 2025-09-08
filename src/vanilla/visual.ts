@@ -31,7 +31,7 @@ export function doesDraw(object: any): object is IDraw {
 
 export abstract class Visual extends Mountable implements IVisual {
     static namedElements: {[name: string]: IVisual} = {"default": <any>defaultVisual, "form-default": <any>defaultVisual}
-    static formDataPair: FormBundle = {form: VisualForm, defaults: Visual.namedElements["form-defaults"]};
+    static formData: FormBundle = {form: VisualForm, defaults: Visual.namedElements["form-defaults"], allowLabels: false};
 
     get state(): IVisual { return {
         offset: this.offset,

@@ -26,7 +26,7 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
         ...super.state
     }}
     static ElementType: UserComponentType = "rect";
-    static formDataPair: FormBundle = {form: RectElementForm, defaults: RectElement.namedElements["form-defaults"]};
+    static formData: FormBundle = {form: RectElementForm, defaults: RectElement.namedElements["form-defaults"], allowLabels: true};
 
 
 

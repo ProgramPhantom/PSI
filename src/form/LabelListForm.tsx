@@ -49,7 +49,7 @@ function LabelListForm(props: ILabelMapProps) {
           intent="success"
           icon="add"
           type="button"
-          onClick={() => append(Label.formDataPair.defaults)}
+          onClick={() => append(Label.formData.defaults)}
         >
           Add Label
         </Button>

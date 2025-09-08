@@ -1,4 +1,5 @@
 import ChannelForm from "../form/ChannelForm";
+import { FormBundle } from "../form/LabelGroupComboForm";
 import Aligner from "./aligner";
 import Collection, { ICollection } from "./collection";
 import defaultChannel from "./default/data/channel.json";
@@ -30,9 +31,38 @@ export interface IChannelStyle {
 
 
 export default class Channel extends Collection implements IHaveStructure {
-    static defaults: {[name: string]: IChannel} = {"default": <any>defaultChannel}
+    static namedElements: {[name: string]: IChannel} = {"default": <any>defaultChannel, "form-defaults": {
+        "mountedElements": [],
+        "padding": [0, 0, 0, 0], 
+        "offset": [0, 0],
+        "ref": "my-channel",
+        "sequenceID": null,
+
+        "style": {
+            "thickness": 3,
+            "barStyle": {
+                "fill": "#000000",
+                "stroke": null,
+                "strokeWidth": null
+            }
+        },
+
+        "channelSymbol": {
+            "offset": [0,0],
+            "padding": [0, 0, 0, 0],
+            "ref": "channel-symbol",
+            "text": "^{1}\\mathrm{H}",
+            "style": {
+                "fontSize": 50,
+                "colour": "black",
+                "display": "block",
+                "background": null
+            }
+        }
+    }}
     static ElementType: UserComponentType = "channel";
-    static form: React.FC = ChannelForm;
+    static formData: FormBundle = {form: ChannelForm, defaults: Channel.namedElements["form-defaults"], allowLabels: false};
+
     get state(): IChannel {
         return {
             mountedElements: this.mountedElements.map((m) => m.state),
@@ -112,7 +142,7 @@ export default class Channel extends Collection implements IHaveStructure {
     sequenceID: ID;
 
     constructor(pParams: RecursivePartial<IChannel>, templateName: string="default") {
-        var fullParams: IChannel = pParams ? UpdateObj(Channel.defaults[templateName], pParams) : Channel.defaults[templateName];
+        var fullParams: IChannel = pParams ? UpdateObj(Channel.namedElements[templateName], pParams) : Channel.namedElements[templateName];
         super(fullParams, templateName);
 
         this.style = fullParams.style;

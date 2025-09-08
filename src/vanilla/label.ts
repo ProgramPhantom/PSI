@@ -62,7 +62,7 @@ export default class Label extends Collection implements ILabel {
             ...super.state
         }
     }
-    static formDataPair: FormBundle<ILabel> = {form: LabelForm, defaults: Label.namedElements["form-defaults"]};
+    static formData: FormBundle<ILabel> = {form: LabelForm, defaults: Label.namedElements["form-defaults"], allowLabels: false};
     static ElementType: AllComponentTypes = "label";
 
     text?: Text;

@@ -31,7 +31,8 @@ export type MyFormRef = {
 
 export interface FormBundle<T extends IVisual=IVisual> {
     form: React.FC,
-    defaults: T
+    defaults: T,
+    allowLabels: boolean
 }
 
 const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
@@ -51,13 +52,13 @@ const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
 export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboForm>((props, ref) => {
     var MasterForm: React.FC<FormRequirements>;
     var ChildForm: React.FC<FormRequirements> | undefined;
-    var LabelForm: React.FC<FormRequirements> = Label.formDataPair.form;
+    var LabelForm: React.FC<FormRequirements> = Label.formData.form;
 
     var masterDefaults: IVisual;
     var childDefaults: IVisual | undefined;
     var labelDefaults: LabelGroupLabels = {labels: []}
 
-
+    var allowLabels: boolean = true;
     var parentType: AllComponentTypes; 
     if (props.target !== undefined) {
         parentType = (props.target?.constructor as typeof Visual).ElementType;
@@ -69,17 +70,17 @@ export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboFo
     var targetIsLabelGroup: boolean = false;
     if (props.target === undefined) {
         // Use the object type to setup a clean form
-        MasterForm = correspondence[props.objectType].formDataPair.form;
-        masterDefaults = correspondence[props.objectType].formDataPair.defaults;
-
+        MasterForm = correspondence[props.objectType].formData.form;
+        masterDefaults = correspondence[props.objectType].formData.defaults;
+        allowLabels = correspondence[props.objectType].formData.allowLabels;
     } else {
-        MasterForm = (props.target.constructor as typeof Visual).formDataPair.form;
-        masterDefaults = (props.target.constructor as typeof Visual).formDataPair.defaults;
-        
+        MasterForm = (props.target.constructor as typeof Visual).formData.form;
+        masterDefaults = (props.target.constructor as typeof Visual).formData.defaults;
+        allowLabels = (props.target.constructor as typeof Visual).formData.allowLabels;
 
         if (LabelGroup.isLabelGroup(props.target)) {
-            ChildForm = (props.target.coreChild.constructor as typeof Visual).formDataPair.form;
-            childDefaults = (props.target.coreChild.constructor as typeof Visual).formDataPair.defaults;
+            ChildForm = (props.target.coreChild.constructor as typeof Visual).formData.form;
+            childDefaults = (props.target.coreChild.constructor as typeof Visual).formData.defaults;
 
             targetIsLabelGroup = true;
         } 
@@ -161,25 +162,27 @@ export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboFo
         <>
         <form onSubmit={onSubmit}
                 style={{display: "flex", flexDirection: "column", overflow: "hidden",
-                        padding: "0px"
+                        padding: "0px", height: "100%"
                 }}>
             
             <div style={{overflowY: "scroll", flex: "1 1 0",  padding: "4px"}} id="form-fields">
-                <Tabs defaultSelectedTabId={"core"}>
-                    <Tab style={{userSelect: "none", position: "sticky"}} id={"core"} title={"Core"} panel={
+                <Tabs defaultSelectedTabId={"properties"}>
+                    <Tab style={{userSelect: "none", position: "sticky"}} id={"properties"} title={"Properties"} panel={
                             <FormProvider {...masterFormControls}>
                                 <MasterForm target={props.target}></MasterForm>
                             </FormProvider>
                     }></Tab>
                 
 
-                <Tab style={{userSelect: "none"}} id={"label"} title={"Label"} panel={
-                    <>
-                        <FormProvider {...labelListControls}>
-                            <LabelListForm target={props.target}></LabelListForm> 
-                        </FormProvider>
-                    </>
-                }></Tab>
+                    {allowLabels ? 
+                        <Tab style={{userSelect: "none"}} id={"label"} title={"Labels"} panel={
+                            <>
+                                <FormProvider {...labelListControls}>
+                                    <LabelListForm target={props.target}></LabelListForm> 
+                                </FormProvider>
+                            </>
+                        }></Tab>
+                    : <></>}
                 </Tabs>
             </div>
         </form>

@@ -111,7 +111,9 @@ const ChannelForm: React.FC = () => {
                     </FormGroup>
                 </ControlGroup>
                 </Section>
-        
+                        
+
+                {/* Label stuff */}
                 <Section 
                     collapseProps={{defaultIsOpen: false}}
                     compact={true}

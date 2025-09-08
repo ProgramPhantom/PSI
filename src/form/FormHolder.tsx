@@ -54,13 +54,13 @@ export function FormHolder(props: FormHolderProps) {
         if (Visual.isLabelGroup(props.target)) {
             isLabelGroup = true;
             elementType =  (props.target.coreChild.constructor as typeof Visual).ElementType;
-            ElementForm = (props.target?.coreChild.constructor as typeof Visual).formDataPair.form;
+            ElementForm = (props.target?.coreChild.constructor as typeof Visual).formData.form;
             coreDefaults = props.target.coreChild.state;
             labelDefaults = props.target.state;
         } else {
             isLabelGroup = false;
             elementType =  (props.target.constructor as typeof Visual).ElementType;
-            ElementForm = (props.target.constructor as typeof Visual).formDataPair.form;
+            ElementForm = (props.target.constructor as typeof Visual).formData.form;
             coreDefaults = props.target.state;
         }
     } else {

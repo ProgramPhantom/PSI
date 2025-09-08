@@ -5,7 +5,7 @@ import * as t from "ts-interface-checker"
 import { LabelGroupComboForm, MyFormRef } from "./form/LabelGroupComboForm"
 import RectElementForm from "./form/RectForm"
 import svgElementTypeSuite from "./typeCheckers/SVGElement-ti"
-import { AllComponentTypes, DrawComponent } from "./vanilla/diagramHandler"
+import { AllComponentTypes, DrawComponent, UserComponentType } from "./vanilla/diagramHandler"
 import ENGINE from "./vanilla/engine"
 import { ILabelGroup } from "./vanilla/labelGroup"
 import { IRectElement } from "./vanilla/rectElement"
@@ -21,7 +21,7 @@ interface INewElementDialog {
 }
 
 export default function NewElementDialog(props: INewElementDialog) {
-    const [tabId, setTabId] = useState<DrawComponent>("svg") 
+    const [tabId, setTabId] = useState<UserComponentType>("svg") 
     const submitRef = useRef<MyFormRef>(null);
 
     const rectFormControls = useForm<IRectElement>({
@@ -62,9 +62,9 @@ export default function NewElementDialog(props: INewElementDialog) {
                 canEscapeKeyClose={true}
             >
                 <DialogBody>
-                    <Tabs id="newElementTabs" defaultSelectedTabId="rect" selectedTabId={tabId} onChange={(id) => setTabId(id as DrawComponent)}>
+                    <Tabs id="newElementTabs" defaultSelectedTabId="rect" selectedTabId={tabId} onChange={(id) => setTabId(id as UserComponentType)}>
                         <Tab id="rect" title="Rect" panel={
-                            <LabelGroupComboForm ref={submitRef} objectType={tabId} callback={addNewTemplate}>
+                            <LabelGroupComboForm ref={submitRef} objectType={"channel"} callback={addNewTemplate}>
 
                             </LabelGroupComboForm>
                             

@@ -60,7 +60,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		...super.state
     }}
 	static ElementType: UserComponentType = "svg";
-	static formDataPair: FormBundle = {form: SVGElementForm, defaults: SVGElement.namedElements["form-defaults"]};
+	static formData: FormBundle = {form: SVGElementForm, defaults: SVGElement.namedElements["form-defaults"], allowLabels: true};
 
 	elementGroup: G = new G();
 	style: ISVGStyle;
