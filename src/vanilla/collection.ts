@@ -208,10 +208,11 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
 
     // Construct and SVG with children positioned relative to (0, 0)
     override getInternalRepresentation(): Element | undefined {
-        var deltaX = -this.contentX;
-        var deltaY = -this.contentY;
+        // var deltaX = -this.contentX;
+        // var deltaY = -this.contentY;
+        // .attr({"transform": `translate(${deltaX}, ${deltaY})`})
 
-        var internalSVG = this.svg?.clone(true, true).attr({"transform": `translate(${deltaX}, ${deltaY})`});
+        var internalSVG = this.svg?.clone(true, true);
         internalSVG?.attr({"style": "display: block;"})
 
         return internalSVG;

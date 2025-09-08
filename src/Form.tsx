@@ -1,7 +1,8 @@
 import { Card } from '@blueprintjs/core';
 import React from 'react';
-import { FormHolder } from './form/FormHolder';
+import { FormHolder2 } from './form/FormHolder2';
 import { Visual } from './vanilla/visual';
+import { AllComponentTypes, UserComponentType } from './vanilla/diagramHandler';
 
 
 interface IFormProps {
@@ -10,11 +11,13 @@ interface IFormProps {
 }
 
 const Form: React.FC<IFormProps> = (props) => {
+    var targetType: AllComponentTypes = props.target ? (props.target.constructor as typeof Visual).ElementType : "channel"
+
     return (
         <>
         <Card style={{ padding: "4px 12px", height: "100%",  overflow: "hidden", display: "flex", flexDirection: 
             "column", borderLeft: "1px solid #c3c3c4"}}>
-                <FormHolder target={props.target} changeTarget={props.changeTarget}/>
+                <FormHolder2 target={props.target} changeTarget={props.changeTarget} targetType={targetType}/>
         </Card>
             
         </>

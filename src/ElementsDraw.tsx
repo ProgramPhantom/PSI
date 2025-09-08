@@ -147,6 +147,9 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                                                     {singletonDict.SVG_TEMPLATES.map((s) => {
                                                         return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
                                                     })}
+                                                    {singletonDict.LABELGROUP_TEMPLATES.map((s) => {
+                                                        return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
+                                                    })}
                                             </div>
                                         </div>             
                                     }>

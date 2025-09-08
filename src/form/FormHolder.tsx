@@ -46,7 +46,7 @@ export function FormHolder(props: FormHolderProps) {
     var isLabelGroup: boolean;
     var elementType: AllComponentTypes;
     var coreDefaults: IVisual;
-    var labelDefaults: ILabelGroup = LabelGroup.defaults["default"];
+    var labelDefaults: ILabelGroup = LabelGroup.namedElements["default"];
     var ElementForm: React.FC<FormRequirements> | undefined;
 
     // Target exists. Decide element type, form type and defaults

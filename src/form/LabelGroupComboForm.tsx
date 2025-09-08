@@ -1,5 +1,5 @@
 import { Tab, Tabs } from "@blueprintjs/core";
-import React, { useImperativeHandle } from "react";
+import React, { useEffect, useImperativeHandle } from "react";
 import { DefaultValues, FormProvider, useForm } from "react-hook-form";
 import Arrow from "../vanilla/arrow";
 import Channel from "../vanilla/channel";
@@ -19,13 +19,13 @@ import LabelListForm, { LabelGroupLabels } from "./LabelListForm";
 
 interface LabelGroupComboForm {
     target?:  Visual,
-    objectType: UserComponentType,
+    objectType: AllComponentTypes,
     callback: (val: IVisual | undefined, masterType: AllComponentTypes) => void
 
-    ref?: React.RefObject<MyFormRef>
+    ref?: React.RefObject<SubmitButtonRef>
 }
 
-export type MyFormRef = {
+export type SubmitButtonRef = {
     submit: () => void
 }
 
@@ -49,7 +49,7 @@ const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
 }
 
 
-export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboForm>((props, ref) => {
+export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupComboForm>((props, ref) => {
     var MasterForm: React.FC<FormRequirements>;
     var ChildForm: React.FC<FormRequirements> | undefined;
     var LabelForm: React.FC<FormRequirements> = Label.formData.form;
@@ -75,7 +75,7 @@ export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboFo
         allowLabels = correspondence[props.objectType].formData.allowLabels;
     } else {
         MasterForm = (props.target.constructor as typeof Visual).formData.form;
-        masterDefaults = (props.target.constructor as typeof Visual).formData.defaults;
+        masterDefaults = props.target.state;
         allowLabels = (props.target.constructor as typeof Visual).formData.allowLabels;
 
         if (LabelGroup.isLabelGroup(props.target)) {
@@ -105,6 +105,14 @@ export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboFo
         mode: "onChange"
     });
 
+    // Make sure form changes (this is needed for unknown reasons)
+    useEffect(() => {
+        masterFormControls.reset(masterDefaults);
+        childFormControls.reset(masterDefaults);
+        labelListControls.reset(labelDefaults);
+        
+    }, [props.target]);
+
 
     // Jiggery pokery. 
     useImperativeHandle(ref, () => ({
@@ -130,7 +138,7 @@ export const LabelGroupComboForm = React.forwardRef<MyFormRef, LabelGroupComboFo
 
                 var result: ILabelGroup = {
                     coreChild: childFormData,
-                    coreChildType: props.objectType,
+                    coreChildType: props.objectType as UserComponentType,
                     labels: labelListFormData,
 
                     ...masterFormData

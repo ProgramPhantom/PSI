@@ -6,6 +6,7 @@ import SVGElement from "./svgElement";
 import { Position } from "./text";
 import { FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
+import { FormBundle, LabelGroupComboForm } from "../form/LabelGroupComboForm";
 
 
 export interface ILabelGroup extends ICollection {
@@ -16,7 +17,7 @@ export interface ILabelGroup extends ICollection {
 
 
 export default class LabelGroup<T extends Visual=Visual> extends Collection implements ILabelGroup {
-    static defaults: {[name: string]: ILabelGroup} = {
+    static namedElements: {[name: string]: ILabelGroup} = {
         "default": {
             contentWidth: 0,
             contentHeight: 0,
@@ -32,6 +33,8 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
         },
     }
     static ElementType: UserComponentType = "label-group";
+    // static formData: FormBundle<ILabelGroup> = {form: LabelGroupComboForm, defaults: LabelGroup.namedElements["form-defaults"], allowLabels: false};
+    // Todo: fix this
     get state(): ILabelGroup { 
         return {
         labels: this.labels.map((l) => {
@@ -52,7 +55,7 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
     labels: Label[] = [];
     
     constructor(params: RecursivePartial<ILabelGroup>, coreChild?: T, templateName: string="default") {
-        var fullParams: ILabelGroup = FillObject<ILabelGroup>(params, LabelGroup.defaults[templateName]);
+        var fullParams: ILabelGroup = FillObject<ILabelGroup>(params, LabelGroup.namedElements[templateName]);
         super(fullParams, templateName);
 
         this.coreChildType = params.coreChildType;
