@@ -19,8 +19,8 @@ import LabelListForm, { LabelGroupLabels } from "./LabelListForm";
 
 interface LabelGroupComboForm {
     target?:  Visual,
-    objectType: AllComponentTypes,
-    callback: (val: IVisual | undefined, masterType: AllComponentTypes) => void
+    objectType: UserComponentType,
+    callback: (val: IVisual | undefined, masterType: UserComponentType) => void
 
     ref?: React.RefObject<SubmitButtonRef>
 }

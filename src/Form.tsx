@@ -1,8 +1,8 @@
 import { Card } from '@blueprintjs/core';
 import React from 'react';
 import { FormHolder2 } from './form/FormHolder2';
+import { AllComponentTypes } from './vanilla/diagramHandler';
 import { Visual } from './vanilla/visual';
-import { AllComponentTypes, UserComponentType } from './vanilla/diagramHandler';
 
 
 interface IFormProps {

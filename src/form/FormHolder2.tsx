@@ -1,20 +1,16 @@
 import { Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon } from "@blueprintjs/core";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { DefaultValues, useForm } from "react-hook-form";
+import { useMemo, useRef, useState } from "react";
 import { ObjectInspector } from "react-inspector";
 import { myToaster } from "../App";
-import Channel from "../vanilla/channel";
-import { AllComponentTypes, UserComponentType } from "../vanilla/diagramHandler";
+import { UserComponentType } from "../vanilla/diagramHandler";
 import ENGINE from "../vanilla/engine";
-import LabelGroup, { ILabelGroup } from "../vanilla/labelGroup";
 import { IVisual, Visual } from "../vanilla/visual";
-import ChannelForm from "./ChannelForm";
 import { LabelGroupComboForm, SubmitButtonRef } from "./LabelGroupComboForm";
 
 
 interface FormHolderProps {
     target?:  Visual,
-    targetType: AllComponentTypes,
+    targetType: UserComponentType,
     changeTarget: (val: Visual | undefined) => void
 }
 
@@ -23,9 +19,9 @@ export interface FormRequirements {
     prefix?: string
 }
 
-type SubmissionFunction = (data: any, type: AllComponentTypes) => void
-type DeleteFunction = (val: Visual, type: AllComponentTypes) => void
-type ModifyFunction = (data: any, type: AllComponentTypes, target: Visual) => Visual
+type SubmissionFunction = (data: any, type: UserComponentType) => void
+type DeleteFunction = (val: Visual, type: UserComponentType) => void
+type ModifyFunction = (data: any, type: UserComponentType, target: Visual) => Visual
 type FormEffect = "submit" | "delete" | "modify"
 type FormEffectFunction = SubmissionFunction | DeleteFunction | ModifyFunction
 type EffectGroup = {"submit": SubmissionFunction, "modify": ModifyFunction, "delete": DeleteFunction}
@@ -71,7 +67,7 @@ export function FormHolder2(props: FormHolderProps) {
     const submitRef = useRef<SubmitButtonRef>(null);
 
     // Submit function
-    function dispatchFormEffect(values: IVisual, masterType: AllComponentTypes, effect: FormEffect) {
+    function dispatchFormEffect(values: IVisual, masterType: UserComponentType, effect: FormEffect) {
         var targetFunction: FormEffectFunction | undefined = ComponentFormEffectRegistry[masterType][effect];
 
         if (targetFunction === undefined) {
@@ -122,7 +118,7 @@ export function FormHolder2(props: FormHolderProps) {
         <div style={{height: "100%", display: "flex", flexDirection: "column", overflow: "hidden",padding: "0px"}}>
             
             <LabelGroupComboForm ref={submitRef} objectType={props.targetType} target={props.target} 
-                    callback={(val: IVisual, masterType: AllComponentTypes) => 
+                    callback={(val: IVisual, masterType: UserComponentType) => 
                         {props.target ? dispatchFormEffect(val, masterType, "modify") :
                                         dispatchFormEffect(val, masterType, "submit");
                          props.changeTarget(undefined);

@@ -8,7 +8,7 @@ import CanvasDraggableElement from './dnd/CanvasDraggableElement';
 import { CanvasDragLayer } from './dnd/CanvasDragLayer';
 import { CanvasDropContainer } from './dnd/CanvasDropContainer';
 import DropField from './dnd/DropField';
-import { AllComponentTypes, AllElementIdentifiers } from './vanilla/diagramHandler';
+import { UserComponentType, AllElementIdentifiers } from './vanilla/diagramHandler';
 import ENGINE from './vanilla/engine';
 import { ID } from './vanilla/point';
 import { Visual } from './vanilla/visual';
@@ -50,7 +50,7 @@ type HoverBehaviour = "terminate" | "carry" | "conditional"
 // Terminate: return this object immediately
 // Carry: always pass to parent
 // Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
-const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> = {
+const FocusLevels: Record<number, Record<HoverBehaviour, UserComponentType[]>> = {
     0: {
         terminate: [
             "label-group",
@@ -170,9 +170,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         var initialElement: Visual | undefined = ENGINE.handler.identifyElement(id);
         if (initialElement === undefined) {return undefined}
 
-        var terminators: AllComponentTypes[] = FocusLevels[focusLevel].terminate;
-        var carry: AllComponentTypes[] = FocusLevels[focusLevel].carry;
-        var conditional: AllComponentTypes[] = FocusLevels[focusLevel].conditional;
+        var terminators: UserComponentType[] = FocusLevels[focusLevel].terminate;
+        var carry: UserComponentType[] = FocusLevels[focusLevel].carry;
+        var conditional: UserComponentType[] = FocusLevels[focusLevel].conditional;
 
         function walkUp(currElement: Visual): Visual | undefined {
             if (currElement.parentId !== undefined) {
@@ -183,8 +183,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             
             if (elementUp === undefined) { return currElement }
             
-            var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual).ElementType;
-            var elementUpType: AllComponentTypes = (elementUp.constructor as typeof Visual).ElementType;
+            var currElementType: UserComponentType = (currElement.constructor as typeof Visual).ElementType;
+            var elementUpType: UserComponentType = (elementUp.constructor as typeof Visual).ElementType;
             if (currElementType === "text") {
                 console.log()
             }

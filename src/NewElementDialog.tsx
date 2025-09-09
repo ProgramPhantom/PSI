@@ -1,11 +1,10 @@
 import { Button, Dialog, DialogBody, DialogFooter, Tab, Tabs } from "@blueprintjs/core"
 import { useRef, useState } from "react"
-import { FormProvider, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import * as t from "ts-interface-checker"
 import { LabelGroupComboForm, SubmitButtonRef } from "./form/LabelGroupComboForm"
-import RectElementForm from "./form/RectForm"
 import svgElementTypeSuite from "./typeCheckers/SVGElement-ti"
-import { AllComponentTypes, DrawComponent, UserComponentType } from "./vanilla/diagramHandler"
+import { UserComponentType } from "./vanilla/diagramHandler"
 import ENGINE from "./vanilla/engine"
 import { ILabelGroup } from "./vanilla/labelGroup"
 import { IRectElement } from "./vanilla/rectElement"
@@ -33,7 +32,7 @@ export default function NewElementDialog(props: INewElementDialog) {
         mode: "onChange",
     });
 
-    function addNewTemplate(values: IVisual, masterType: AllComponentTypes) {
+    function addNewTemplate(values: IVisual, masterType: UserComponentType) {
         switch (masterType) {
             case "svg":
                 ENGINE.addSVGSingleton(values as ISVGElement, props.schemeName);

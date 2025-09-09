@@ -1,4 +1,4 @@
-import { AllComponentTypes, } from "./diagramHandler";
+import { AllComponentTypes, UserComponentType, } from "./diagramHandler";
 import { Dimensions, IBinding } from "./spacial";
 import { posPrecision } from "./util";
 

@@ -15,10 +15,6 @@ import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import type { IVisual, Visual } from "./visual";
 
 
-export type ElementBundle = IVisual & Partial<ILabelGroup>
-
-
-
 
 // All component types
 export type AllComponentTypes = UserComponentType | AbstractComponentTypes 
@@ -142,7 +138,7 @@ export default class DiagramHandler {
     }
 
     // ---- Form interfaces ----
-    public submitElement(parameters: ElementBundle, type: AllComponentTypes): Visual {
+    public submitElement(parameters: IVisual, type: AllComponentTypes): Visual {
 
         var element: Visual | undefined;
         switch (type) {
@@ -204,7 +200,7 @@ export default class DiagramHandler {
     // ------------------------
 
 
-    public createElement(parameters: ElementBundle, type: UserComponentType): Visual {
+    public createElement(parameters: IVisual, type: UserComponentType): Visual {
         var element: Visual;
 
         // NECESSARY to make element accept binding changes. X, Y persists when changing into a label
@@ -215,24 +211,18 @@ export default class DiagramHandler {
         switch (type) {
             case "svg":
                 element = new SVGElement(parameters as ISVGElement)
-                
-                if (parameters.labels !== undefined) {
-                    element = new LabelGroup<SVGElement>(parameters, element as SVGElement) 
-                }
-
                 break;
             case "rect":
                 element = new RectElement(parameters as IRectElement)
-                if (parameters.labels !== undefined) {
-                    element = new LabelGroup<RectElement>(parameters, element as RectElement) 
-                }
+                break;
+            case "label-group":
+                element = new LabelGroup(parameters as ILabelGroup);
                 break;
             default:
                 throw new Error(`Cannot create requested element type ${type}`)
         }
 
         
-
         if (element.mountConfig !== undefined) {
             this.mountElement(element, false)
         } else {

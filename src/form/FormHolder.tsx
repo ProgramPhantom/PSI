@@ -4,7 +4,7 @@ import { DefaultValues, FormProvider, useForm } from "react-hook-form";
 import { ObjectInspector } from "react-inspector";
 import { myToaster } from "../App";
 import Channel from "../vanilla/channel";
-import { AllComponentTypes, ElementBundle } from "../vanilla/diagramHandler";
+import { UserComponentType, ElementBundle } from "../vanilla/diagramHandler";
 import ENGINE from "../vanilla/engine";
 import LabelGroup, { ILabelGroup } from "../vanilla/labelGroup";
 import { IVisual, Visual } from "../vanilla/visual";
@@ -27,9 +27,9 @@ interface FormActions {
     delete: (data: any) => void
 }
 
-type SubmissionType = (data: any, type: AllComponentTypes) => void
-type DeleteType = (val: Visual, type: AllComponentTypes) => void
-type ModifyType = (data: any, type: AllComponentTypes, target: Visual) => Visual
+type SubmissionType = (data: any, type: UserComponentType) => void
+type DeleteType = (val: Visual, type: UserComponentType) => void
+type ModifyType = (data: any, type: UserComponentType, target: Visual) => Visual
 
 
 function getCoreDefaults(target: Visual): IVisual {
@@ -44,7 +44,7 @@ export function FormHolder(props: FormHolderProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     var isLabelGroup: boolean;
-    var elementType: AllComponentTypes;
+    var elementType: UserComponentType;
     var coreDefaults: IVisual;
     var labelDefaults: ILabelGroup = LabelGroup.namedElements["default"];
     var ElementForm: React.FC<FormRequirements> | undefined;

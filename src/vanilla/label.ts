@@ -3,7 +3,7 @@ import LabelForm from "../form/LabelForm";
 import { FormBundle } from "../form/LabelGroupComboForm";
 import Arrow, { IArrow } from "./arrow";
 import Collection, { ICollection } from "./collection";
-import { AllComponentTypes } from "./diagramHandler";
+import { UserComponentType } from "./diagramHandler";
 import { Dimensions } from "./spacial";
 import Text, { IText, Position } from "./text";
 
@@ -63,7 +63,7 @@ export default class Label extends Collection implements ILabel {
         }
     }
     static formData: FormBundle<ILabel> = {form: LabelForm, defaults: Label.namedElements["form-defaults"], allowLabels: false};
-    static ElementType: AllComponentTypes = "label";
+    static ElementType: UserComponentType = "label";
 
     text?: Text;
     line?: Arrow;
