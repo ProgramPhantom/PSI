@@ -1,5 +1,5 @@
 import { useDragDropManager, useDrop } from "react-dnd";
-import { ElementTypes } from "./DraggableElement";
+import { ElementTypes } from "./TemplateDraggableElement";
 import { CSSProperties, useEffect, useState } from "react";
 import DiagramHandler from "../vanilla/diagramHandler";
 import InsertArea, { AddSpec } from "./InsertArea";

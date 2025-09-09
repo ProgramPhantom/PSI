@@ -3,7 +3,7 @@ import type { XYCoord } from 'react-dnd'
 import { useDragLayer } from 'react-dnd'
 
 
-import { ElementTypes } from './DraggableElement'
+import { ElementTypes } from './TemplateDraggableElement'
 import { ElementDragPreview } from './ElementDragPreview'
 import { CanvasDraggableElementPayload } from './CanvasDraggableElement'
 

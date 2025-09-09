@@ -26,7 +26,7 @@ import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
 import { getEmptyImage } from 'react-dnd-html5-backend'
-import { ElementTypes } from './DraggableElement';
+import { ElementTypes } from './TemplateDraggableElement';
 import { ICanvasDropResult, IDrop, isCanvasDrop } from './CanvasDropContainer';
 import { HandleStyles, Rnd } from 'react-rnd';
 import { IMountAreaResult, isMountDrop } from './InsertArea';

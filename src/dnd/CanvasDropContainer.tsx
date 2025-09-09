@@ -2,7 +2,7 @@ import type { CSSProperties, FC, ReactNode } from 'react'
 import { useCallback, useState } from 'react'
 import { useDrop } from 'react-dnd'
 import { Visual } from '../vanilla/visual'
-import { ElementTypes } from './DraggableElement'
+import { ElementTypes } from './TemplateDraggableElement'
 
 
 

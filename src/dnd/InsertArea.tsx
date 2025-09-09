@@ -1,5 +1,5 @@
 import { useDrop } from "react-dnd";
-import { ElementTypes } from "./DraggableElement";
+import { ElementTypes } from "./TemplateDraggableElement";
 import { CSSProperties } from "react";
 import { IDrop } from "./CanvasDropContainer";
 import { Orientation } from "../vanilla/mountable";

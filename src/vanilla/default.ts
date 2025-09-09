@@ -5,6 +5,7 @@ import { IDiagram } from "./diagram"
 import { UserComponentType } from "./diagramHandler"
 import { ILabelGroup } from "./labelGroup"
 import { ILine } from "./line"
+import { ID } from "./point"
 import { IRectElement } from "./rectElement"
 import { ISequence } from "./sequence"
 import { ISVGElement } from "./svgElement"
@@ -43,6 +44,10 @@ export default class SchemeManager {
     static DefaultSchemeName: string = "default"
     static StorageName: string = "schemeSet"
     static SVGAssetPath: string = "\\src\\assets\\"
+
+    public get id(): ID {
+        return JSON.stringify(this.schemeSet)
+    }
 
     public get defaultScheme(): ISchemeData {
         if (this._schemes[SchemeManager.DefaultSchemeName] === undefined) {
@@ -175,6 +180,7 @@ export default class SchemeManager {
         this.saveToLocalStore();
     }
 
+
     public addSVGData(data: ISVGElement, schemeName:string=SchemeManager.DefaultSchemeName) {
         if (this.schemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
@@ -184,7 +190,6 @@ export default class SchemeManager {
         this.schemeSet[schemeName].svgElements[data.ref] = data;
         this.saveToLocalStore()
     }
-
     public addRectData(data: IRectElement, schemeName:string=SchemeManager.DefaultSchemeName) {
         if (this.schemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
@@ -194,7 +199,6 @@ export default class SchemeManager {
         this.schemeSet[schemeName].rectElements[data.ref] = data;
         this.saveToLocalStore();
     }
-
     public addLabelGroupData(data: ILabelGroup, schemeName: string=SchemeManager.DefaultSchemeName) {
         if (this.schemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
@@ -204,6 +208,36 @@ export default class SchemeManager {
         this.schemeSet[schemeName].labelGroupElements[data.ref] = data;
         this.saveToLocalStore();
     }
+
+    public removeSVGData(data: ISVGElement, schemeName:string=SchemeManager.DefaultSchemeName) {
+        if (this.schemeSet[schemeName] === undefined) {
+            throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
+        }
+        
+        if (this.schemeSet[schemeName].svgElements === undefined) {return}
+        delete this.schemeSet[schemeName].svgElements[data.ref];
+        this.saveToLocalStore()
+    }
+    public removeRectData(data: IRectElement, schemeName:string=SchemeManager.DefaultSchemeName) {
+        if (this.schemeSet[schemeName] === undefined) {
+            throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
+        }
+        
+        if (this.schemeSet[schemeName].rectElements === undefined) {return}
+        delete this.schemeSet[schemeName].rectElements[data.ref];
+        this.saveToLocalStore();
+    }
+    public removeLabelGroupData(data: ILabelGroup, schemeName: string=SchemeManager.DefaultSchemeName) {
+        if (this.schemeSet[schemeName] === undefined) {
+            throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
+        }
+
+        if (this.schemeSet[schemeName].labelGroupElements === undefined) {return}
+        delete this.schemeSet[schemeName].labelGroupElements[data.ref];
+        this.saveToLocalStore();
+    }
+
+    
 
     private saveToLocalStore() {
         localStorage.setItem(SchemeManager.StorageName, JSON.stringify(this.schemeSet));

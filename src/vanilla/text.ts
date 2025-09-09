@@ -30,15 +30,10 @@ export default class Text extends Visual implements IText {
     static defaults: {[key: string]: IText} = {"default": {...<IText>defaultText}}
     get state(): IText {
         return {
-            x: this.x,
-            y: this.y,
-            contentHeight: this.contentHeight,
-            contentWidth: this.contentWidth,
-            text: this.text,
-            offset: this.offset,
-            padding: this.padding,
             style: this.style,
-            ref: this.ref
+            text: this.text,
+
+            ...super.state
         }
     }
 

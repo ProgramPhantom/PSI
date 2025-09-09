@@ -1,9 +1,9 @@
 import { Button, Dialog, DialogBody, DialogFooter, Divider, EntityTitle, H5, Section, SectionCard, Tab, Tabs, Text } from '@blueprintjs/core';
-import React, { useState } from 'react';
-import DraggableElement from './dnd/DraggableElement';
+import React, { useState, useSyncExternalStore } from 'react';
+import TemplateDraggableElement from './dnd/TemplateDraggableElement';
 import NewElementDialog from './NewElementDialog';
 import SchemeManager from './vanilla/default';
-import ENGINE from "./vanilla/engine";
+import ENGINE, { SingletonStorage } from "./vanilla/engine";
 import { Visual } from './vanilla/visual';
 
 
@@ -16,6 +16,9 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
     const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
     const [isNewElementDialogOpen, setIsNewElementDialogOpen] = useState(false);
     const [selectedScheme, setSelectedScheme] = useState(SchemeManager.DefaultSchemeName);
+
+    useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+    const [singletons, setSingletons] = useState<SingletonStorage>(ENGINE.singletons);
 
     const handleElementDoubleClick = (element: Visual) => {
         setSelectedElement(element);
@@ -80,7 +83,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                             <style>{`.bp5-tab-panel { width: 100%; height: 100%; !important; max-width: 100% !important; box-sizing: border-box; display: block; 
                                                       overflow: "auto" }`}</style>
                             
-                            {Object.entries(ENGINE.singletons).map(([schemeName, singletonDict]) => {
+                            {Object.entries(singletons).map(([schemeName, singletonDict]) => {
                                 var noElements: number = singletonDict.SVG_TEMPLATES.length + singletonDict.RECT_TEMPLATES.length + 
                                                          singletonDict.LABELGROUP_TEMPLATES.length;
                                 return (
@@ -142,13 +145,13 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                                                     </div>
 
                                                     {singletonDict.RECT_TEMPLATES.map((s) => {
-                                                        return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
+                                                        return <TemplateDraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
                                                     })}
                                                     {singletonDict.SVG_TEMPLATES.map((s) => {
-                                                        return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
+                                                        return <TemplateDraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
                                                     })}
                                                     {singletonDict.LABELGROUP_TEMPLATES.map((s) => {
-                                                        return <DraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} />
+                                                        return <TemplateDraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
                                                     })}
                                             </div>
                                         </div>             

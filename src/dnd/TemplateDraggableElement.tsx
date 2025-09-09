@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect } from 'react'
+import React, { CSSProperties, useEffect, useState } from 'react'
 import { useDrag } from 'react-dnd';
 import { Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
@@ -9,6 +9,11 @@ import '@svgdotjs/svg.draggable.js'
 import { title } from 'process';
 import ENGINE from '../vanilla/engine';
 import { ICanvasDropResult, IDrop, isCanvasDrop } from './CanvasDropContainer';
+import { AllComponentTypes } from '../vanilla/diagramHandler';
+import { ISVGElement } from '../vanilla/svgElement';
+import { IRectElement } from '../vanilla/rectElement';
+import { ILabelGroup } from '../vanilla/labelGroup';
+import { Button } from '@blueprintjs/core';
 
 const style: CSSProperties = {
   border: '1px solid #d3d8de',
@@ -38,9 +43,10 @@ export const ElementTypes = {
 
 
 
-interface IDraggableElementProps {
+interface ITemplateDraggableElementProps {
   element: Visual,
   onDoubleClick?: (element: Visual) => void
+  schemeName: string
 }
 
 interface IDraggableElementDropItem {
@@ -49,7 +55,7 @@ interface IDraggableElementDropItem {
 
 /* When an element is selected, the svg on the canvas is hidden and the element is replaced
 by this. It is a different object that can be dragged. */
-const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
+const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (props) => {
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: ElementTypes.PREFAB,
     item: { element: props.element } as IDraggableElementDropItem,
@@ -78,17 +84,19 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
       
     })
   }))
+  const [showBin, setShowBin] = useState<boolean>(false)
 
-  if (props.element) {
-    var copy = props.element.getInternalRepresentation()
-    // copy?.x(0);
-    // copy?.y(0);
-    // copy?.show();
-    // if (copy) {
-    //   copy.draggable(true)
-    // }
-    
-  }
+  var elementType: AllComponentTypes = (props.element.constructor as typeof Visual).ElementType; 
+
+  // Get visual
+  var copy = props.element.getInternalRepresentation()
+  // copy?.x(0);
+  // copy?.y(0);
+  // copy?.show();
+  // if (copy) {
+  //   copy.draggable(true)
+  // }
+  
 
   const opacity = isDragging ? 0.5 : 1
 
@@ -102,11 +110,26 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
     }
   };
 
+  function deleteTemplate() {
+    switch (elementType) {
+      case "svg":
+        ENGINE.removeSVGSingleton(props.element.state as ISVGElement, props.schemeName);
+        break;
+      case "rect":
+        ENGINE.removeRectSingleton(props.element.state as IRectElement, props.schemeName);
+        break;
+      case "label-group":
+        ENGINE.removeLabelGroupSingleton(props.element.state as ILabelGroup, props.schemeName);
+        break;
+    }
+  }
+
   return (
     (
       <div 
         ref={drag} 
         style={{
+          position: "relative",
           width: "120px",
           height: "120px", 
           padding: "12px 8px",
@@ -126,14 +149,19 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
         onMouseEnter={(e) => {
           e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
           e.currentTarget.style.transform = "translateY(-1px)";
+          setShowBin(true);
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
           e.currentTarget.style.transform = "translateY(0)";
+          setShowBin(false)
         }}
         onDoubleClick={handleDoubleClick}
         title={`Drag ${props.element.ref} to canvas`}
       >
+        <Button title={`Delete ${props.element.ref}`} icon="trash" style={{position: "absolute", top: 1, left: 1, zIndex: 10, visibility: showBin ? "visible" : "hidden"}} 
+        onClick={() => deleteTemplate()} variant='minimal' intent="danger"></Button>
+
         <svg 
           style={{
             width: props.element.contentWidth,
@@ -159,4 +187,4 @@ const DraggableElement: React.FC<IDraggableElementProps> = (props) => {
   )
 }
 
-export default DraggableElement
+export default TemplateDraggableElement
