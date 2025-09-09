@@ -19,7 +19,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const [svgReference, setSvgReference] = useState("");
-    const [schemeName, setSchemeName] = useState(SchemeManager.DefaultSchemeName)
+    const [schemeName, setSchemeName] = useState(SchemeManager.InternalSchemeName)
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (file: File) => {

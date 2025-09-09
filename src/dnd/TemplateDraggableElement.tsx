@@ -1,6 +1,6 @@
 import React, { CSSProperties, useEffect, useState } from 'react'
 import { useDrag } from 'react-dnd';
-import { Visual } from '../vanilla/visual';
+import { IVisual, Visual } from '../vanilla/visual';
 import '@svgdotjs/svg.draggable.js'
 import { SVG } from '@svgdotjs/svg.js';
 import { IMountAreaResult, isMountDrop } from './InsertArea';
@@ -9,11 +9,12 @@ import '@svgdotjs/svg.draggable.js'
 import { title } from 'process';
 import ENGINE from '../vanilla/engine';
 import { ICanvasDropResult, IDrop, isCanvasDrop } from './CanvasDropContainer';
-import { AllComponentTypes } from '../vanilla/diagramHandler';
+import { AllComponentTypes, UserComponentType } from '../vanilla/diagramHandler';
 import { ISVGElement } from '../vanilla/svgElement';
 import { IRectElement } from '../vanilla/rectElement';
 import { ILabelGroup } from '../vanilla/labelGroup';
 import { Button } from '@blueprintjs/core';
+import SchemeManager from '../vanilla/default';
 
 const style: CSSProperties = {
   border: '1px solid #d3d8de',
@@ -72,7 +73,12 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 // 
         // ENGINE.handler.addElementFromTemplate({x: dropResult.x, y: dropResult.y}, props.element.ref);
       } else if (isMountDrop(dropResult)) {
-        ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
+        // ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
+        var elementType = (props.element.constructor as typeof Visual).ElementType;
+        var singletonState: IVisual = props.element.state;
+        singletonState.mountConfig = {...singletonState.mountConfig, ...dropResult};
+
+        ENGINE.handler.createElement(singletonState, elementType as UserComponentType)
       }
 
 
@@ -159,8 +165,11 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
         onDoubleClick={handleDoubleClick}
         title={`Drag ${props.element.ref} to canvas`}
       >
+        { props.schemeName !== SchemeManager.InternalSchemeName ? 
         <Button title={`Delete ${props.element.ref}`} icon="trash" style={{position: "absolute", top: 1, left: 1, zIndex: 10, visibility: showBin ? "visible" : "hidden"}} 
         onClick={() => deleteTemplate()} variant='minimal' intent="danger"></Button>
+        : <></>
+        }
 
         <svg 
           style={{

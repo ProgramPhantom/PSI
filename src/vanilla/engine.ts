@@ -9,7 +9,7 @@ import SVGElement, { ISVGElement } from "./svgElement";
 import { instantiateByType } from "./util";
 import { Visual } from "./visual";
 
-interface SchemeSingletonStore {
+export interface SchemeSingletonStore {
     RECT_TEMPLATES: RectElement[] 
     SVG_TEMPLATES: SVGElement[]
     LABELGROUP_TEMPLATES: LabelGroup[]
@@ -21,7 +21,7 @@ class ENGINE {
     static currentImageName: string = "newPulseImage.svg"
     static StateName: string = "diagram-state";
     static STATE: string | null = localStorage.getItem(ENGINE.StateName);
-    static schemeManager: SchemeManager = new SchemeManager();
+    static schemeManager: SchemeManager;
     static singletons: SingletonStorage;
 
     static set surface(s: Svg) {
@@ -33,6 +33,10 @@ class ENGINE {
         return ENGINE._surface;
     }
     private static _surface: Svg;
+
+    static initialiseSchemeManager() {
+        ENGINE.schemeManager = new SchemeManager(ENGINE.emitChange);
+    }
 
 
     static get handler(): DiagramHandler {
@@ -57,7 +61,7 @@ class ENGINE {
             l();
         })
     }
-    static load() {
+    static loadDiagramState() {
         var stateObj: IDiagram | undefined = undefined; 
         if (this.STATE !== null) {
             try {
@@ -90,21 +94,20 @@ class ENGINE {
     static createSingletons() {
         var singletonCollections: SingletonStorage = {};
         
-        for (var [schemeName, scheme] of Object.entries(this.schemeManager.schemeSet)) {
+        for (var [schemeName, scheme] of Object.entries(this.schemeManager.allSchemes)) {
             var rectSingletons: RectElement[] = [];
             var svgSingletons: SVGElement[] = [];
             var labelGroupSingletons: LabelGroup[] = [];
 
 
             Object.values(scheme.rectElements ?? {}).forEach((t) => {
-                rectSingletons.push(new RectElement(t))
+                rectSingletons.push(new RectElement(t as IRectElement))
             })
             Object.values(scheme.svgElements ?? {}).forEach((t) => {
-                svgSingletons.push(new SVGElement(t));
+                svgSingletons.push(new SVGElement(t as ISVGElement));
             })
             Object.values(scheme.labelGroupElements ?? {}).forEach((t) => {
-                labelGroupSingletons.push(new LabelGroup(t))
-                // TODO: implement
+                labelGroupSingletons.push(new LabelGroup(t as ILabelGroup))
             })
 
             singletonCollections[schemeName] = {
@@ -118,17 +121,17 @@ class ENGINE {
     }
 
 
-    static addSVGSingleton(data: ISVGElement, schemeName: string=SchemeManager.DefaultSchemeName) {
+    static addSVGSingleton(data: ISVGElement, schemeName: string=SchemeManager.InternalSchemeName) {
         this.schemeManager.addSVGData(data, schemeName);
 
         this.singletons[schemeName].SVG_TEMPLATES.push(new SVGElement(data));
     }
-    static addRectSingleton(data: IRectElement, schemeName: string=SchemeManager.DefaultSchemeName) {
+    static addRectSingleton(data: IRectElement, schemeName: string=SchemeManager.InternalSchemeName) {
         this.schemeManager.addRectData(data, schemeName)
 
         this.singletons[schemeName].RECT_TEMPLATES.push(new RectElement(data));
     }
-    static addLabelGroupSingleton(data: ILabelGroup, schemeName: string=SchemeManager.DefaultSchemeName) {
+    static addLabelGroupSingleton(data: ILabelGroup, schemeName: string=SchemeManager.InternalSchemeName) {
         this.schemeManager.addLabelGroupData(data, schemeName);
 
         var childSingleton: Visual = instantiateByType(data.coreChild, data.coreChildType);
@@ -136,26 +139,32 @@ class ENGINE {
         this.singletons[schemeName].LABELGROUP_TEMPLATES.push(new LabelGroup(data, childSingleton));
     }
 
-    static removeSVGSingleton(data: ISVGElement, schemeName: string=SchemeManager.DefaultSchemeName) {
+    static removeSVGSingleton(data: ISVGElement, schemeName: string=SchemeManager.InternalSchemeName) {
         this.schemeManager.removeSVGData(data, schemeName);
 
         this.singletons[schemeName].SVG_TEMPLATES = this.singletons[schemeName].SVG_TEMPLATES.filter(singleton => singleton.ref !== data.ref);
         this.emitChange();
     }
-    static removeRectSingleton(data: IRectElement, schemeName: string=SchemeManager.DefaultSchemeName) {
+    static removeRectSingleton(data: IRectElement, schemeName: string=SchemeManager.InternalSchemeName) {
         this.schemeManager.removeRectData(data, schemeName)
 
         this.singletons[schemeName].RECT_TEMPLATES = this.singletons[schemeName].RECT_TEMPLATES.filter(singleton => singleton.ref !== data.ref);
         this.emitChange();
     }
-    static removeLabelGroupSingleton(data: ILabelGroup, schemeName: string=SchemeManager.DefaultSchemeName) {
+    static removeLabelGroupSingleton(data: ILabelGroup, schemeName: string=SchemeManager.InternalSchemeName) {
         this.schemeManager.removeLabelGroupData(data, schemeName);
 
         this.singletons[schemeName].LABELGROUP_TEMPLATES = this.singletons[schemeName].LABELGROUP_TEMPLATES.filter(singleton => singleton.ref !== data.ref);
         this.emitChange();
     }
 
-    static get SVG_STRINGS(): Record<string, SVGDict> {return this.schemeManager.SVGData}
+
+    static addBlankScheme(name: string) {
+        ENGINE.singletons[name] = {RECT_TEMPLATES: [], SVG_TEMPLATES: [], LABELGROUP_TEMPLATES: []};
+        ENGINE.schemeManager.setUserScheme(name.trim(), {});
+    }
+
+    static get SVG_STRINGS(): Record<string, SVGDict> {return this.schemeManager.allSVGData}
     // Temp
     static get AllSvgStrings(): SVGDict {
         var svgs: Record<string, string> = {};

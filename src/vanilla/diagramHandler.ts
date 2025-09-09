@@ -368,14 +368,13 @@ export default class DiagramHandler {
         if (pParameters.mountConfig !== undefined) {
             pParameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
         }
-        // Temporary:
-        var schemeName: string = "default"
+
 
         var parameters;
 
         switch (elementType) {
             case "svg":
-                parameters = FillObject(pParameters as IVisual, this.schemeManager.defaultScheme.svgElements[elementRef])
+                parameters = FillObject(pParameters as IVisual, this.schemeManager.internalScheme.svgElements[elementRef])
                 element = new SVGElement(parameters)
                 
                 if (pParameters.labels !== undefined) {
@@ -383,7 +382,7 @@ export default class DiagramHandler {
                 }
                 break;
             case "rect":
-                parameters = FillObject(pParameters as IVisual, this.schemeManager.defaultScheme.rectElements[elementRef])
+                parameters = FillObject(pParameters as IVisual, this.schemeManager.internalScheme.rectElements[elementRef])
                 element = new RectElement(parameters);
 
                 if (pParameters.labels !== undefined) {
@@ -391,7 +390,7 @@ export default class DiagramHandler {
                 }
                 break;
             case "label-group":
-                parameters = FillObject(pParameters as ILabelGroup, this.schemeManager.defaultScheme.labelGroupElements[elementRef])
+                parameters = FillObject(pParameters as ILabelGroup, this.schemeManager.internalScheme.labelGroupElements[elementRef])
                 
                 var child: Visual = instantiateByType(parameters.coreChild, parameters.coreChildType);
 
@@ -406,7 +405,12 @@ export default class DiagramHandler {
     }
 
     // @isMountable
-    private mountElement(target: Visual, insert: boolean=true) {
+    public mountElement(target: Visual, insert: boolean=true) {
+        // Temporary
+        if (target.mountConfig !== undefined) {
+            target.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
+        }
+
         this.diagram.mountElement(target, insert);
         this.draw();
     }

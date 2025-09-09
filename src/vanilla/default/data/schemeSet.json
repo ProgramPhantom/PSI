@@ -1,5 +1,5 @@
 {
-    "default": {
+    "internal": {
         "diagram": {
             "ref": "diagram",
             "padding": [0, 0, 0, 0],

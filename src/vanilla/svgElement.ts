@@ -76,9 +76,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		this.style = fullParams.style;
         this.svgDataRef = fullParams.svgDataRef;
 
-		if (this.ref === "s") {
-			console.log()
-		}
+
 		var svgString: string = ENGINE.AllSvgStrings[this.svgDataRef];
 		if (svgString === undefined) {
 			// throw new Error(`Cannot find svg for ${this.ref}`)

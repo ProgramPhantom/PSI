@@ -12,10 +12,11 @@ import Form from './Form';
 import ENGINE from './vanilla/engine';
 import { Visual } from './vanilla/visual';
 
-
+ENGINE.initialiseSchemeManager();
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
-ENGINE.load()
+ENGINE.loadDiagramState()
+
 await ENGINE.loadSVGData();
 ENGINE.createSingletons();
 

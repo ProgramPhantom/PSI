@@ -20,7 +20,7 @@ interface INewElementDialog {
 }
 
 export default function NewElementDialog(props: INewElementDialog) {
-    const [tabId, setTabId] = useState<UserComponentType>("svg") 
+    const [tabId, setTabId] = useState<UserComponentType>("svg")
     const submitRef = useRef<SubmitButtonRef>(null);
 
     const rectFormControls = useForm<IRectElement>({

@@ -1,91 +1,139 @@
-import { IArrow } from "./arrow"
-import { IChannel } from "./channel"
+import Arrow, { IArrow } from "./arrow"
+import Channel, { IChannel } from "./channel"
 import defaultScheme from "./default/data/schemeSet.json"
-import { IDiagram } from "./diagram"
+import Diagram, { IDiagram } from "./diagram"
 import { UserComponentType } from "./diagramHandler"
-import { ILabelGroup } from "./labelGroup"
-import { ILine } from "./line"
+import LabelGroup, { ILabelGroup } from "./labelGroup"
+import { ILine, Line } from "./line"
 import { ID } from "./point"
-import { IRectElement } from "./rectElement"
-import { ISequence } from "./sequence"
-import { ISVGElement } from "./svgElement"
+import RectElement, { IRectElement } from "./rectElement"
+import Sequence, { ISequence } from "./sequence"
+import SVGElement, { ISVGElement } from "./svgElement"
 import { IText } from "./text"
+import { DeepMutable, DeepReadonly } from "./util"
+import { Visual } from "./visual"
+import Space from "./space"
+import Label from "./label"
 
 
 const svgPath: string = "\\src\\assets\\"
 var schemes: string[] = ["default"]
 
+const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
+    "rect": RectElement,
+    "svg": SVGElement,
+    "arrow": Arrow,
+    "channel": Channel,
+    "diagram": Diagram,
+    "line": Line,
+    "sequence": Sequence,
+    "space": Space,
+    "label-group": LabelGroup,
+    "label": Label
+}
+
+
+
+
+
+export interface AppConfigSchemeData {
+    diagram: IDiagram
+    sequence: ISequence
+    channel: IChannel
+    arrow: IArrow
+    line: ILine
+    text: IText
+}
+
+
+export type AppConfigSchemeSet = {
+    "form-defaults": AppConfigSchemeData
+}
 
 // A "scheme" will be the name for a configuration for a package of defaults for the application 
 // to use. It includes prefabs for elements, defaults for sequences etc. The application can 
 // contain multiple 
-export interface ISchemeData {
-    diagram: IDiagram,
-    sequence: ISequence,
-    channel: IChannel,
+export interface IUserSchemeData {
+    diagram: Record<string, IDiagram> | undefined,
+    sequence: Record<string, ISequence> | undefined,
+    channel: Record<string, IChannel> | undefined,
 
-    svgElements: Record<string, ISVGElement>
+    svgElements: Record<string, ISVGElement> | undefined
+    rectElements: Record<string, IRectElement> | undefined,
+    labelGroupElements: Record<string, ILabelGroup> | undefined
+
     svgStrings: SVGDict | undefined;
 
-    rectElements: Record<string, IRectElement>,
-    labelGroupElements: Record<string, ILabelGroup>
-
-    arrow: IArrow,
-    line: ILine,
-    text: IText,
+    arrow: Record<string, IArrow> | undefined,
+    line: Record<string, ILine> | undefined,
+    text: Record<string, IText> | undefined
 }
 
 // A scheme set is a collection of schemes with names. This object is used to store all the default
 // values the application can have.
-export type SchemeSet = Record<string, Partial<ISchemeData>>;
+export type SchemeSet = Record<string, Partial<IUserSchemeData>>;
 export type SVGDict = Record<string, string>;
+export type PartialUserSchemeData = Partial<IUserSchemeData>
+
 
 export default class SchemeManager {
-    static DefaultSchemeName: string = "default"
+    static InternalSchemeName: string = "internal"
     static StorageName: string = "schemeSet"
     static SVGAssetPath: string = "\\src\\assets\\"
 
+    public emitChange: () => void;
     public get id(): ID {
-        return JSON.stringify(this.schemeSet)
+        return JSON.stringify(this.userSchemeSet)
     }
 
-    public get defaultScheme(): ISchemeData {
-        if (this._schemes[SchemeManager.DefaultSchemeName] === undefined) {
-            throw new Error(`Scheme manager contains no default scheme`);
-        }
-        // TODO: is there a way to validate this?
-        return this._schemes[SchemeManager.DefaultSchemeName] as ISchemeData
-    };
+    public internalScheme: IUserSchemeData;
 
-    private _schemes: SchemeSet = {};
-    public get schemeData(): Partial<ISchemeData>[] {return Object.values(this.schemeSet)}
-    public get schemeSet(): SchemeSet {
-        return this._schemes;
+    private _userSchemeSet: SchemeSet = {};
+    public get schemesList(): DeepReadonly<PartialUserSchemeData[]> {return Object.values(this.allSchemes)}
+    
+    public get userSchemeSet(): DeepReadonly<SchemeSet> {
+        return this._userSchemeSet;
     };
-    public set schemeSet(v: SchemeSet) {
-        this._schemes = v;
+    public set userSchemeSet(schemeSet: SchemeSet) {
+        this._userSchemeSet = schemeSet;
+        this.emitChange()
     }
-    public get SVGData(): Record<string, SVGDict> {
+
+    get allSchemes(): SchemeSet {
+        return {...this._userSchemeSet, [SchemeManager.InternalSchemeName]: this.internalScheme};
+    }
+    get schemeNames(): string[] {
+        return Object.keys(this.allSchemes);
+    }
+    public get allSVGData(): Record<string, SVGDict> {
         var svgData: Record<string, SVGDict> = {}
-        for (var [schemeName, schemeData] of Object.entries(this.schemeSet)) {
+        for (var [schemeName, schemeData] of Object.entries(this.allSchemes)) {
             svgData[schemeName] = schemeData.svgStrings ?? {};
         } 
         return svgData;
     }
-    public setScheme(name: string, scheme: Partial<ISchemeData>) {
-        if (name === "default") {
+
+    public setUserScheme(name: string, schemeData: PartialUserSchemeData) {
+        if (name === SchemeManager.InternalSchemeName) {
             throw new Error(`Cannot override default scheme`);
         }
-        this.schemeSet[name] = scheme;
+        this._userSchemeSet[name] = schemeData;
+        this.emitChange();
     }
-    get schemeNames(): string[] {
-        return Object.keys(this.schemeSet);
+    public setUserSchemeCollection<K extends keyof IUserSchemeData>(propertyName: K, schemeName: string, value: IUserSchemeData[K]) {
+        if (this.allSchemes[schemeName] === undefined) {
+            throw new Error(`Cannot add collection to scheme with name ${schemeName} as it does not exist.`)
+        }
+
+        this._userSchemeSet[schemeName][propertyName] = value;
+        this.emitChange();
     }
+    
 
     get elementTypes(): Record<string, UserComponentType> {
         var types: Record<string, UserComponentType> = {};
         
-        for (var scheme of this.schemeData) {
+        for (var scheme of this.schemesList) {
             Object.keys(scheme.svgElements ?? {}).forEach((r) => {
                 types[r] = "svg";
             })
@@ -101,13 +149,17 @@ export default class SchemeManager {
     }
 
 
-    constructor() {
-        var initialScheme: Record<string, ISchemeData> = JSON.parse(JSON.stringify(defaultScheme));
+    constructor(emitChange: () => void) {
+        this.emitChange = () => {this.saveToLocalStore(); emitChange();};
 
-        this.schemeSet = this.getLocalSchemes();
-        this.schemeSet = {...initialScheme, ...this.schemeSet}; 
-    
-        this.saveToLocalStore();
+        var initialScheme: Record<string, IUserSchemeData> = JSON.parse(JSON.stringify(defaultScheme));
+
+        this.internalScheme = initialScheme[SchemeManager.InternalSchemeName];
+        this.internalScheme.svgStrings = {}
+
+        this.userSchemeSet = this.getLocalSchemes();
+        this.loadSVGs();
+
     }
 
     
@@ -115,20 +167,21 @@ export default class SchemeManager {
     public async loadSVGs() {
         // Get all svg data, from the assets and from internal storage:
 
-        var allSvgData: Record<string, Record<string, string>> = {};
+        var allSvgData: Record<string, SVGDict> = {};
         
         // Try to load from assets:
         try {
-            var assetData = await this.getAssetSVGs();
+            var assetData: Record<string, SVGDict> = await this.getAssetSVGs();
             allSvgData = {...assetData};
         } catch {
             console.warn(`Failed to load asset svg data`)
         }
 
         try {
-            var localSvgData = this.getLocalSVGs();
+            var localSvgData: Record<string, SVGDict> = this.getLocalSVGs();
+            
             // TODO: sort this shit out
-            allSvgData = {"default": {...allSvgData["default"], ...localSvgData["default"]}};
+            allSvgData = {...localSvgData, ...allSvgData,};
         } catch {
             console.warn(`Failed to load local svg data`);
         }
@@ -137,21 +190,26 @@ export default class SchemeManager {
         // Confirm that every svg in each scheme has a corresponding svg data collected above
 
         var svgsWithMissing: ISVGElement[] = [];
-        for (var [schemeName, scheme] of Object.entries(this.schemeSet)) {
+        for (var [schemeName, scheme] of Object.entries(this.allSchemes)) {
             if (!scheme.svgElements) {continue}
 
             for (var [name, svgElement] of Object.entries(scheme.svgElements)) {
-                if (allSvgData[schemeName][name] === undefined) { svgsWithMissing.push(svgElement) }
+                var mutableCopy: DeepMutable<ISVGElement> = structuredClone(svgElement) as DeepMutable<ISVGElement>;
+                if (allSvgData[schemeName][name] === undefined) { svgsWithMissing.push(mutableCopy) }
             }
         }
 
         if (svgsWithMissing.length > 0) {
             // Perhaps instead, remove the svg?
-            // throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
+            throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
         } else {
             // Apply loaded svgs to scheme set
-            for (var [schemeName, scheme] of Object.entries(this.schemeSet)) {
-                this.schemeSet[schemeName].svgStrings = allSvgData[schemeName];
+            for (var [schemeName, scheme] of Object.entries(this.allSchemes)) {
+                if (schemeName !== SchemeManager.InternalSchemeName) {
+                    this.setUserSchemeCollection("svgStrings", schemeName, allSvgData[schemeName]);
+                } else {
+                    this.internalScheme.svgStrings = allSvgData[schemeName];
+                }
             }
         }
     }
@@ -171,89 +229,101 @@ export default class SchemeManager {
 
     // Method for adding svg data to a scheme
     public addSVGStrData(dataString: string, reference: string, schemeName: string) {
-        if (this.schemeSet[schemeName] === undefined) {
+        if (this.userSchemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg data to non-existent scheme ${schemeName}`)
         }
 
-        if (this.schemeSet[schemeName].svgStrings === undefined) {this.schemeSet[schemeName].svgStrings = {}}
-        this.schemeSet[schemeName].svgStrings[reference] = dataString;
-        this.saveToLocalStore();
+        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
+        var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+        if (selectedScheme.svgStrings === undefined) {selectedScheme.svgStrings = {}}
+        this.setUserScheme(schemeName, {...selectedScheme, svgStrings: {...selectedScheme.svgStrings, [reference]: dataString}})
     }
 
-
-    public addSVGData(data: ISVGElement, schemeName:string=SchemeManager.DefaultSchemeName) {
-        if (this.schemeSet[schemeName] === undefined) {
+    // Add
+    public addSVGData(data: ISVGElement, schemeName:string=SchemeManager.InternalSchemeName) {
+        if (this.userSchemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
         }
         
-        if (this.schemeSet[schemeName].svgElements === undefined) {this.schemeSet[schemeName].svgElements = {}}
-        this.schemeSet[schemeName].svgElements[data.ref] = data;
-        this.saveToLocalStore()
+        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
+        var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+        if (selectedScheme.svgElements === undefined) {selectedScheme.svgElements = {}}
+        this.setUserScheme(schemeName, {...selectedScheme, svgElements: {...selectedScheme.svgElements, [data.ref]: data}})
     }
-    public addRectData(data: IRectElement, schemeName:string=SchemeManager.DefaultSchemeName) {
-        if (this.schemeSet[schemeName] === undefined) {
+    public addRectData(data: IRectElement, schemeName:string=SchemeManager.InternalSchemeName) {
+        if (this.userSchemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
         }
         
-        if (this.schemeSet[schemeName].rectElements === undefined) {this.schemeSet[schemeName].rectElements = {}}
-        this.schemeSet[schemeName].rectElements[data.ref] = data;
-        this.saveToLocalStore();
+        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
+        var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+        if (selectedScheme.svgStrings === undefined) {selectedScheme.svgStrings = {}}
+        this.setUserScheme(schemeName, {...selectedScheme, rectElements: {...selectedScheme.rectElements, [data.ref]: data}})
     }
-    public addLabelGroupData(data: ILabelGroup, schemeName: string=SchemeManager.DefaultSchemeName) {
-        if (this.schemeSet[schemeName] === undefined) {
+    public addLabelGroupData(data: ILabelGroup, schemeName: string=SchemeManager.InternalSchemeName) {
+        if (this.userSchemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
         }
 
-        if (this.schemeSet[schemeName].labelGroupElements === undefined) {this.schemeSet[schemeName].labelGroupElements = {}}
-        this.schemeSet[schemeName].labelGroupElements[data.ref] = data;
-        this.saveToLocalStore();
+        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
+        var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+        if (selectedScheme.labelGroupElements === undefined) {selectedScheme.labelGroupElements = {}}
+        this.setUserScheme(schemeName, {...selectedScheme, labelGroupElements: {...selectedScheme.labelGroupElements, [data.ref]: data}})
     }
 
-    public removeSVGData(data: ISVGElement, schemeName:string=SchemeManager.DefaultSchemeName) {
-        if (this.schemeSet[schemeName] === undefined) {
+    // Remove
+    public removeSVGData(data: ISVGElement, schemeName:string=SchemeManager.InternalSchemeName) {
+        if (this.userSchemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
         }
         
-        if (this.schemeSet[schemeName].svgElements === undefined) {return}
-        delete this.schemeSet[schemeName].svgElements[data.ref];
-        this.saveToLocalStore()
+        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
+        var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+        delete selectedScheme.svgElements[data.ref];
+        this.setUserScheme(schemeName, {...selectedScheme, svgElements: selectedScheme.svgElements})
     }
-    public removeRectData(data: IRectElement, schemeName:string=SchemeManager.DefaultSchemeName) {
-        if (this.schemeSet[schemeName] === undefined) {
+    public removeRectData(data: IRectElement, schemeName:string=SchemeManager.InternalSchemeName) {
+        if (this.userSchemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
         }
         
-        if (this.schemeSet[schemeName].rectElements === undefined) {return}
-        delete this.schemeSet[schemeName].rectElements[data.ref];
-        this.saveToLocalStore();
+        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
+        var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+        delete selectedScheme.rectElements[data.ref];
+        this.setUserScheme(schemeName, {...selectedScheme, rectElements: selectedScheme.rectElements})
     }
-    public removeLabelGroupData(data: ILabelGroup, schemeName: string=SchemeManager.DefaultSchemeName) {
-        if (this.schemeSet[schemeName] === undefined) {
+    public removeLabelGroupData(data: ILabelGroup, schemeName: string=SchemeManager.InternalSchemeName) {
+        if (this.userSchemeSet[schemeName] === undefined) {
             throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`)
         }
 
-        if (this.schemeSet[schemeName].labelGroupElements === undefined) {return}
-        delete this.schemeSet[schemeName].labelGroupElements[data.ref];
-        this.saveToLocalStore();
+        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
+        var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+        delete selectedScheme.labelGroupElements[data.ref];
+        this.setUserScheme(schemeName, {...selectedScheme, labelGroupElements: selectedScheme.labelGroupElements})
     }
 
     
-
     private saveToLocalStore() {
-        localStorage.setItem(SchemeManager.StorageName, JSON.stringify(this.schemeSet));
+        localStorage.setItem(SchemeManager.StorageName, JSON.stringify(this.allSchemes));
     }
 
     private async getAssetSVGs(): Promise<Record<string, SVGDict>> {
         const svgStrings: Record<string, SVGDict> = {};
 
 
-        for (const [schemeName, scheme] of Object.entries(this.schemeSet)) {
+        for (const [schemeName, scheme] of Object.entries(this.allSchemes)) {
             if (scheme.svgElements === undefined) {continue}
             var svgData: Record<string, string> = {};
             for (var [name, el] of Object.entries(scheme.svgElements)) {
-                if (name === "tick") {
-                    console.log()
-                }
+ 
                 var fetchString = SchemeManager.SVGAssetPath + el.svgDataRef + ".svg";
 
                 try {

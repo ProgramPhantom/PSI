@@ -118,3 +118,13 @@ export function instantiateByType(data: any, type: UserComponentType): Visual {
       throw new Error(`Not implemented`)
   }
 }
+
+// Recursive Readonly type (vibed)
+export type DeepReadonly<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+};
+
+// Deep mutable type (inverse of DeepReadonly)
+export type DeepMutable<T> = {
+  -readonly [P in keyof T]: DeepMutable<T[P]>;
+};
