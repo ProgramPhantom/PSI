@@ -2,8 +2,8 @@ import { Button, FormGroup, HTMLSelect, Section, SectionCard } from "@blueprintj
 import { useEffect, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import ArrowForm from './ArrowForm';
-import { FormRequirements } from './FormHolder';
 import TextForm from './TextForm';
+import { FormRequirements } from "./FormDiagramInterface";
 
 
 

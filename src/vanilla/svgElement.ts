@@ -47,7 +47,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 
 			"padding": [0, 0, 0, 0],
 			"offset": [0, 0],
-			"svgDataRef": "\\src\\assets\\180.svg",
+			"svgDataRef": "180",
 			"contentWidth": 50,
 			"contentHeight": 50,
 

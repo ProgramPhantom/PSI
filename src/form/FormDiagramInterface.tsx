@@ -2,15 +2,24 @@ import { Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon } from "@blu
 import { useMemo, useRef, useState } from "react";
 import { ObjectInspector } from "react-inspector";
 import { myToaster } from "../App";
-import { UserComponentType } from "../vanilla/diagramHandler";
+import { AllComponentTypes, UserComponentType } from "../vanilla/diagramHandler";
 import ENGINE from "../vanilla/engine";
 import { IVisual, Visual } from "../vanilla/visual";
 import { LabelGroupComboForm, SubmitButtonRef } from "./LabelGroupComboForm";
 
+interface FormHolderProps {
+    target?:  Visual,
+    changeTarget: (val: Visual | undefined) => void
+}
+
+export interface FormRequirements {
+    target?: Visual,
+    prefix?: string
+}
 
 interface FormHolderProps {
     target?:  Visual,
-    targetType: UserComponentType,
+    targetType: AllComponentTypes,
     changeTarget: (val: Visual | undefined) => void
 }
 
@@ -37,7 +46,7 @@ function getCoreDefaults(target: Visual): IVisual {
     }
 }
 
-export function FormHolder2(props: FormHolderProps) {
+export function FormDiagramInterface(props: FormHolderProps) {
     const ComponentFormEffectRegistry = useMemo<Partial<Record<UserComponentType, EffectGroup>>>(() => {
         return { "svg": {
             "submit": ENGINE.handler.submitElement.bind(ENGINE.handler),
@@ -105,7 +114,7 @@ export function FormHolder2(props: FormHolderProps) {
 
                     {props.target !== undefined ? (
                     <Button style={{height: "30px", alignSelf: "center", marginLeft: "auto"}} icon="trash" intent="danger"
-                        onClick={() => {dispatchFormEffect(props.target!, props.targetType, "delete"); props.changeTarget(undefined); 
+                        onClick={() => {dispatchFormEffect(props.target!, props.targetType as UserComponentType, "delete"); props.changeTarget(undefined); 
                         myToaster.show({message: `Deleted element '${props.target?.ref}'`, intent: "danger", timeout: 1000})}}>
                     </Button>
                     ) : <></>}
@@ -117,7 +126,7 @@ export function FormHolder2(props: FormHolderProps) {
         
         <div style={{height: "100%", display: "flex", flexDirection: "column", overflow: "hidden",padding: "0px"}}>
             
-            <LabelGroupComboForm ref={submitRef} objectType={props.targetType} target={props.target} 
+            <LabelGroupComboForm ref={submitRef} objectType={props.targetType as UserComponentType} target={props.target} 
                     callback={(val: IVisual, masterType: UserComponentType) => 
                         {props.target ? dispatchFormEffect(val, masterType, "modify") :
                                         dispatchFormEffect(val, masterType, "submit");

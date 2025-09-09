@@ -1,7 +1,7 @@
 import { ControlGroup, FormGroup, InputGroup, Section, Slider } from "@blueprintjs/core";
 import { Controller, useFormContext } from "react-hook-form";
-import { FormRequirements } from "./FormHolder";
 import VisualForm from "./VisualForm";
+import { FormRequirements } from "./FormDiagramInterface";
 
 
 interface ITextFormProps extends FormRequirements {

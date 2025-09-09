@@ -1,8 +1,8 @@
 import { Button, Divider, Section, SectionCard } from "@blueprintjs/core";
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import Label, { ILabel } from '../vanilla/label';
-import { FormRequirements } from './FormHolder';
 import LabelForm from './LabelForm';
+import { FormRequirements } from "./FormDiagramInterface";
 
 
 export type LabelGroupLabels = {

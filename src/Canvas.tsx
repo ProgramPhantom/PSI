@@ -1,5 +1,5 @@
 import { Checkbox, Colors, Dialog, DialogBody, EditableText, HotkeyConfig, Label, Text, useHotkeys } from '@blueprintjs/core';
-import React, { useMemo, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { SelectionMode } from './App';
 import BindingsSelector, { PointBind } from './BindingsSelector';
@@ -8,7 +8,7 @@ import CanvasDraggableElement from './dnd/CanvasDraggableElement';
 import { CanvasDragLayer } from './dnd/CanvasDragLayer';
 import { CanvasDropContainer } from './dnd/CanvasDropContainer';
 import DropField from './dnd/DropField';
-import { UserComponentType, AllElementIdentifiers } from './vanilla/diagramHandler';
+import { UserComponentType, AllElementIdentifiers, AllComponentTypes } from './vanilla/diagramHandler';
 import ENGINE from './vanilla/engine';
 import { ID } from './vanilla/point';
 import { Visual } from './vanilla/visual';
@@ -170,9 +170,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         var initialElement: Visual | undefined = ENGINE.handler.identifyElement(id);
         if (initialElement === undefined) {return undefined}
 
-        var terminators: UserComponentType[] = FocusLevels[focusLevel].terminate;
-        var carry: UserComponentType[] = FocusLevels[focusLevel].carry;
-        var conditional: UserComponentType[] = FocusLevels[focusLevel].conditional;
+        var terminators: AllComponentTypes[] = FocusLevels[focusLevel].terminate;
+        var carry: AllComponentTypes[] = FocusLevels[focusLevel].carry;
+        var conditional: AllComponentTypes[] = FocusLevels[focusLevel].conditional;
 
         function walkUp(currElement: Visual): Visual | undefined {
             if (currElement.parentId !== undefined) {
@@ -183,8 +183,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             
             if (elementUp === undefined) { return currElement }
             
-            var currElementType: UserComponentType = (currElement.constructor as typeof Visual).ElementType;
-            var elementUpType: UserComponentType = (elementUp.constructor as typeof Visual).ElementType;
+            var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual).ElementType;
+            var elementUpType: AllComponentTypes = (elementUp.constructor as typeof Visual).ElementType;
             if (currElementType === "text") {
                 console.log()
             }
@@ -220,6 +220,13 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             ENGINE.currentImageName = correctedFileName;
         }
     }
+
+    // Reset focus level when lose focus
+    useEffect(() => {
+        if (props.selectedElement === undefined) {
+            setFocusLevel(0)
+        }
+    }, [props.selectedElement])
 
     return (
         <>

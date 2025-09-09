@@ -2,8 +2,8 @@ import { ControlGroup, FormGroup, HTMLSelect, NumericInput, Section } from "@blu
 import { Controller, useFormContext } from 'react-hook-form';
 import { IArrow } from '../vanilla/arrow';
 import { getByPath } from '../vanilla/util';
-import { FormRequirements } from './FormHolder';
 import VisualForm from './VisualForm';
+import { FormRequirements } from "./FormDiagramInterface";
 
 
 interface IArrowFormProps extends FormRequirements {

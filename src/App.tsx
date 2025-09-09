@@ -39,21 +39,17 @@ function App() {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("select");
 
   // Welcome dialog state
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState(true); // can change to false for local storage check
-
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(false); // can change to false for local storage check
   // Check localStorage on first render
   useEffect(() => {
     const hasSeen = localStorage.getItem("hasSeenWelcome");
-    if (!hasSeen) {
+    if (hasSeen !== "true") {
       setIsWelcomeOpen(true);
+      localStorage.setItem("hasSeenWelcome", "true");
     }
   }, []);
 
-  // Function to close welcome dialog
-  function closeWelcomeDialog() {
-    localStorage.setItem("hasSeenWelcome", "true");
-    setIsWelcomeOpen(false);
-  }
+
 
   // Set up automatic saving every 2 seconds
   // useEffect(() => {
@@ -264,14 +260,14 @@ function App() {
       </Drawer>
 
 
+
       {/* Welcome Dialog */}
       <Dialog
       isOpen={isWelcomeOpen}
-      onClose={closeWelcomeDialog}
+      onClose={() => setIsWelcomeOpen(false)}
       title="Welcome to PSI"
       canEscapeKeyClose={true}
-      canOutsideClickClose={true}
-    >
+      canOutsideClickClose={true}>
       <DialogBody>
         <p>Welcome to PSI! This application allows you to create and edit pulse sequence diagrams easily.</p>
         <p>Use the toolbar at the top to save your diagrams as SVG or PNG. Create a channel on the right menu and select elements and drag them onto the channel. Edit idividual elements by clicking to select them and using the right menu. </p>
@@ -279,13 +275,13 @@ function App() {
       </DialogBody>
       <DialogFooter>
         <div className="bp3-dialog-footer-actions">
-          <Button intent="primary" onClick={closeWelcomeDialog}>Got it!</Button>
+          <Button intent="primary" onClick={() => setIsWelcomeOpen(false)}>Got it!</Button>
         </div>
       </DialogFooter>
     </Dialog>
 
   </>
-    )
+  )
 }
 
 export default App

@@ -8,6 +8,7 @@ import { FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
 import { FormBundle, LabelGroupComboForm } from "../form/LabelGroupComboForm";
 import RectElement, { IRectElement } from "./rectElement";
+import VisualForm from "../form/VisualForm";
 
 
 export interface ILabelGroup extends ICollection {
@@ -50,7 +51,7 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
         },
     }
     static ElementType: UserComponentType = "label-group";
-    // static formData: FormBundle<ILabelGroup> = {form: LabelGroupComboForm, defaults: LabelGroup.namedElements["form-defaults"], allowLabels: false};
+    static formData: FormBundle<ILabelGroup> = {form: VisualForm, defaults: LabelGroup.namedElements["form-defaults"], allowLabels: true};
     // Todo: fix this
     get state(): ILabelGroup { 
         return {
@@ -80,7 +81,7 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
         if (coreChild !== undefined) {
             this.coreChild = coreChild;
         } else {
-            this.coreChild = LabelGroup.CreateChild(fullParams, fullParams.coreChildType) as T;
+            this.coreChild = LabelGroup.CreateChild(fullParams.coreChild, fullParams.coreChildType) as T;
         }
         
 
@@ -100,10 +101,6 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
             this.labels.push(newLabel);
             this.bindLabel(newLabel);
         })
-
-        // Currently no way to select coreChild, so to stop padding being applied to child and labellable, for now
-        // we'll just set the child padding to 0
-        this.coreChild.padding = [0, 0, 0, 0]
     }
 
     draw(surface: Element) {
@@ -128,7 +125,7 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
                 
                 // Y
                 this.clearBindsTo(this.coreChild, "y");
-                this.bind(label, "y", "here", "here", undefined, undefined, false);
+                this.bind(label, "y", "here", "here", undefined, undefined, true);
                 label.bind(this.coreChild, "y", "far", "here", undefined, undefined, false);
 
                 this.add(label);

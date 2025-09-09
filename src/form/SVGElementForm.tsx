@@ -5,8 +5,8 @@ import { myToaster } from '../App';
 import SchemeManager from '../vanilla/default';
 import ENGINE from '../vanilla/engine';
 import { ISVGElement } from '../vanilla/svgElement';
-import { FormRequirements } from './FormHolder';
 import VisualForm from './VisualForm';
+import { FormRequirements } from "./FormDiagramInterface";
 
 interface ISVGElementFormProps extends FormRequirements {
 

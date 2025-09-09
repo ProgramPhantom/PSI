@@ -1,6 +1,6 @@
 import { Card } from '@blueprintjs/core';
 import React from 'react';
-import { FormHolder2 } from './form/FormHolder2';
+import { FormDiagramInterface } from './form/FormDiagramInterface';
 import { AllComponentTypes } from './vanilla/diagramHandler';
 import { Visual } from './vanilla/visual';
 
@@ -17,7 +17,7 @@ const Form: React.FC<IFormProps> = (props) => {
         <>
         <Card style={{ padding: "4px 12px", height: "100%",  overflow: "hidden", display: "flex", flexDirection: 
             "column", borderLeft: "1px solid #c3c3c4"}}>
-                <FormHolder2 target={props.target} changeTarget={props.changeTarget} targetType={targetType}/>
+                <FormDiagramInterface target={props.target} changeTarget={props.changeTarget} targetType={targetType}/>
         </Card>
             
         </>

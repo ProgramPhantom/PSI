@@ -3,7 +3,7 @@ import React from 'react';
 import { Controller, FieldErrors, useFormContext } from 'react-hook-form';
 import { getByPath } from '../vanilla/util';
 import { IVisual } from '../vanilla/visual';
-import { FormRequirements } from './FormHolder';
+import { FormRequirements } from "./FormDiagramInterface";
 
 interface IVisualFormProps extends FormRequirements {
   widthDisplay?: boolean,

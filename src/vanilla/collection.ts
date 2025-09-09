@@ -41,7 +41,7 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         }
 
         var group = new G().id(this.id).attr({"title": this.ref});
-
+        group.attr({"transform": `translate(${this.offset[0]}, ${this.offset[1]})`})
 
         this.children.forEach((c) => {
             if (doesDraw(c)) {
@@ -208,12 +208,18 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
 
     // Construct and SVG with children positioned relative to (0, 0)
     override getInternalRepresentation(): Element | undefined {
-        // var deltaX = -this.contentX;
-        // var deltaY = -this.contentY;
-        // .attr({"transform": `translate(${deltaX}, ${deltaY})`})
+        try {
+            var deltaX = -this.contentX;
+            var deltaY = -this.contentY;
+        }  catch (err) {
+            var deltaX = 0;
+            var deltaY = 0;
+        }
+        
+        // 
 
         var internalSVG = this.svg?.clone(true, true);
-        internalSVG?.attr({"style": "display: block;"})
+        internalSVG?.attr({"style": "display: block;"}).attr({"transform": `translate(${deltaX}, ${deltaY})`})
 
         return internalSVG;
     }

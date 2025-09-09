@@ -1,5 +1,5 @@
 import { Element } from "@svgdotjs/svg.js";
-import { FormRequirements } from "../form/FormHolder";
+import { FormRequirements } from "../form/FormDiagramInterface";
 import VisualForm from "../form/VisualForm";
 import { defaultSpace } from "./default/data";
 import { UserComponentType } from "./diagramHandler";
