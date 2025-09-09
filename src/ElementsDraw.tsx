@@ -7,6 +7,7 @@ import ENGINE, { SchemeSingletonStore, SingletonStorage } from "./vanilla/engine
 import { Visual } from './vanilla/visual';
 import { Input } from '@blueprintjs/icons';
 import { ObjectInspector } from 'react-inspector';
+import { myToaster } from './App';
 
 
 interface IElementDrawProps {
@@ -20,6 +21,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
     const [selectedScheme, setSelectedScheme] = useState(SchemeManager.InternalSchemeName);
     const [isNewSchemeDialogOpen, setIsNewSchemeDialogOpen] = useState(false);
     const [newSchemeName, setNewSchemeName] = useState('');
+    const [isDeleteSchemeDialogOpen, setIsDeleteSchemeDialogOpen] = useState(false);
 
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
     const [schemeState, setSchemeState] = useState<SchemeSet>(ENGINE.schemeManager.allSchemes);
@@ -63,6 +65,28 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
             setSchemeState(ENGINE.schemeManager.allSchemes)
             handleNewSchemeDialogClose();
         }
+    };
+
+    const handleDeleteSchemeClick = () => {
+        if (selectedScheme === SchemeManager.InternalSchemeName) {
+            myToaster.show({
+                message: "Cannot delete the internal scheme",
+                intent: "danger"
+            });
+        } else {
+            setIsDeleteSchemeDialogOpen(true);
+        }
+    };
+
+    const handleDeleteSchemeDialogClose = () => {
+        setIsDeleteSchemeDialogOpen(false);
+    };
+
+    const handleDeleteSchemeConfirm = () => {
+        ENGINE.removeScheme(selectedScheme);
+        setSchemeState(ENGINE.schemeManager.allSchemes);
+        setSelectedScheme(SchemeManager.InternalSchemeName);
+        setIsDeleteSchemeDialogOpen(false);
     };
 
     return (
@@ -109,9 +133,9 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                                 var noElements: number = singletons.SVG_TEMPLATES.length + singletons.RECT_TEMPLATES.length + 
                                                          singletons.LABELGROUP_TEMPLATES.length;
                                 return (
-                                    <Tab key={schemeName} 
+                                    <Tab key={schemeName} title={schemeName}
                                     style={{width: "100%", overflow: "auto"}} 
-                                    title={schemeName} tagProps={{round: true}} tagContent={noElements} id={schemeName} panel={
+                                     tagProps={{round: true}} tagContent={noElements} id={schemeName} panel={
                                         <div style={{width: "100%", display: "flex", flexDirection: "row", height: "100%"}}>
                                             <Divider style={{}} ></Divider>
                                             <div style={{width: "100%",
@@ -170,13 +194,16 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                                                     </div> : <></>}
 
                                                     {singletons.RECT_TEMPLATES.map((s) => {
-                                                        return <TemplateDraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
+                                                        return <TemplateDraggableElement key={s.ref} 
+                                                        element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
                                                     })}
                                                     {singletons.SVG_TEMPLATES.map((s) => {
-                                                        return <TemplateDraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
+                                                        return <TemplateDraggableElement key={s.ref} 
+                                                        element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
                                                     })}
                                                     {singletons.LABELGROUP_TEMPLATES.map((s) => {
-                                                        return <TemplateDraggableElement key={s.ref} element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
+                                                        return <TemplateDraggableElement key={s.ref} 
+                                                        element={s} onDoubleClick={handleElementDoubleClick} schemeName={schemeName}/>
                                                     })}
                                             </div>
                                         </div>             
@@ -202,6 +229,26 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                                 variant='outlined'
                                 intent="primary"
                                 onClick={() => setIsNewSchemeDialogOpen(true)}
+                                style={{
+                                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+                                }}
+                            />
+                        </div>
+
+                        {/* Delete Scheme button */}
+                        <div style={{
+                            position: "absolute",
+                            bottom: "16px",
+                            left: "60px",
+                            zIndex: 10,
+                            width: "60px"
+                        }}>
+                            <Button
+                                icon="trash"
+                                variant='outlined'
+                                intent="danger"
+                                onClick={handleDeleteSchemeClick}
+                                disabled={selectedScheme === SchemeManager.InternalSchemeName}
                                 style={{
                                     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
                                 }}
@@ -289,6 +336,34 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                             intent="primary"
                             onClick={handleNewSchemeSubmit}
                             disabled={!newSchemeName.trim() || ENGINE.schemeManager.schemeNames.includes(newSchemeName.trim())}/>
+                    </>
+                }></DialogFooter>
+            </Dialog>
+
+            {/* Delete Scheme Confirmation Dialog */}
+            <Dialog
+                isOpen={isDeleteSchemeDialogOpen}
+                onClose={handleDeleteSchemeDialogClose}
+                title="Delete Scheme"
+                canOutsideClickClose={true}
+                canEscapeKeyClose={true}
+            >
+                <DialogBody>
+                    <Text>
+                        Are you sure you want to delete the scheme "{selectedScheme}"? This action cannot be undone.
+                    </Text>
+                </DialogBody>
+                
+                <DialogFooter actions={
+                    <>
+                    <Button 
+                            text="Cancel" 
+                            onClick={handleDeleteSchemeDialogClose}
+                            variant="minimal"/>
+                    <Button 
+                            text="Delete" 
+                            intent="danger"
+                            onClick={handleDeleteSchemeConfirm}/>
                     </>
                 }></DialogFooter>
             </Dialog>

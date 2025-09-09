@@ -164,6 +164,11 @@ class ENGINE {
         ENGINE.schemeManager.setUserScheme(name.trim(), {});
     }
 
+    static removeScheme(name: string) {
+        delete ENGINE.singletons[name]
+        ENGINE.schemeManager.deleteUserScheme(name);
+    }
+
     static get SVG_STRINGS(): Record<string, SVGDict> {return this.schemeManager.allSVGData}
     // Temp
     static get AllSvgStrings(): SVGDict {

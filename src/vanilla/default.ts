@@ -128,8 +128,12 @@ export default class SchemeManager {
         this._userSchemeSet[schemeName][propertyName] = value;
         this.emitChange();
     }
-    
 
+    public deleteUserScheme(name: string) {
+        delete this._userSchemeSet[name];
+        this.emitChange();
+    }
+    
     get elementTypes(): Record<string, UserComponentType> {
         var types: Record<string, UserComponentType> = {};
         
