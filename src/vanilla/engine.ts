@@ -93,7 +93,7 @@ class ENGINE {
         for (var [schemeName, scheme] of Object.entries(this.schemeManager.schemeSet)) {
             var rectSingletons: RectElement[] = [];
             var svgSingletons: SVGElement[] = [];
-            var labellableSingletons: LabelGroup[] = [];
+            var labelGroupSingletons: LabelGroup[] = [];
 
 
             Object.values(scheme.rectElements ?? {}).forEach((t) => {
@@ -103,14 +103,14 @@ class ENGINE {
                 svgSingletons.push(new SVGElement(t));
             })
             Object.values(scheme.labelGroupElements ?? {}).forEach((t) => {
-                labellableSingletons.push()
+                labelGroupSingletons.push(new LabelGroup(t))
                 // TODO: implement
             })
 
             singletonCollections[schemeName] = {
                 RECT_TEMPLATES: rectSingletons,
                 SVG_TEMPLATES: svgSingletons,
-                LABELGROUP_TEMPLATES: labellableSingletons
+                LABELGROUP_TEMPLATES: labelGroupSingletons
             }
         }
 
