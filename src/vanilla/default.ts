@@ -10,7 +10,7 @@ import RectElement, { IRectElement } from "./rectElement"
 import Sequence, { ISequence } from "./sequence"
 import SVGElement, { ISVGElement } from "./svgElement"
 import { IText } from "./text"
-import { DeepMutable, DeepReadonly } from "./util"
+import { DeepMutable, DeepReadonly, mergeObjectsPreferNonEmpty } from "./util"
 import { Visual } from "./visual"
 import Space from "./space"
 import Label from "./label"
@@ -166,7 +166,7 @@ export default class SchemeManager {
 
     }
 
-    
+    //// ----------------- LOADERS -------------------
     // Goes through all schemes and makes sure they have their associated svg data.
     public async loadSVGs() {
         // Get all svg data, from the assets and from internal storage:
@@ -185,7 +185,7 @@ export default class SchemeManager {
             var localSvgData: Record<string, SVGDict> = this.getLocalSVGs();
             
             // TODO: sort this shit out
-            allSvgData = {...localSvgData, ...allSvgData,};
+            allSvgData = mergeObjectsPreferNonEmpty(assetData, localSvgData);
         } catch {
             console.warn(`Failed to load local svg data`);
         }
@@ -199,7 +199,7 @@ export default class SchemeManager {
 
             for (var [name, svgElement] of Object.entries(scheme.svgElements)) {
                 var mutableCopy: DeepMutable<ISVGElement> = structuredClone(svgElement) as DeepMutable<ISVGElement>;
-                if (allSvgData[schemeName][name] === undefined) { svgsWithMissing.push(mutableCopy) }
+                if (allSvgData[schemeName][svgElement.svgDataRef] === undefined) { svgsWithMissing.push(mutableCopy) }
             }
         }
 
@@ -218,6 +218,67 @@ export default class SchemeManager {
         }
     }
 
+    private saveToLocalStore() {
+        localStorage.setItem(SchemeManager.StorageName, JSON.stringify(this.allSchemes));
+    }
+
+    private async getAssetSVGs(): Promise<Record<string, SVGDict>> {
+        const svgStrings: Record<string, SVGDict> = {};
+
+
+        for (const [schemeName, scheme] of Object.entries(this.allSchemes)) {
+            if (scheme.svgElements === undefined) {continue}
+            var svgData: Record<string, string> = {};
+            for (var [name, el] of Object.entries(scheme.svgElements)) {
+ 
+                var fetchString = SchemeManager.SVGAssetPath + el.svgDataRef + ".svg";
+
+                try {
+                    var svg = await fetch(fetchString, {cache: "no-store"}).then(
+                        (response) => {
+                            console.log(`STATUS ${response.status}`)
+                            if (!response.ok || response.status === 404) {
+                                throw new Error("asset not found");
+                            }
+
+                            return response.text()
+                        }
+                    ).catch(
+                        (error) => {console.error(`Cannot find svg for element ${el.ref}`)}
+                    )
+                } catch {continue}
+                
+            
+                if (svg) {
+                    svgData[name] = svg;
+                }
+            }
+
+            svgStrings[schemeName] = svgData;
+        }
+
+        return svgStrings;
+    }
+
+    private getLocalSVGs(): Record<string, SVGDict> {
+        // Try to load svg from internal storage:
+        var storedDataStr: string | null = localStorage.getItem(SchemeManager.StorageName);
+        if (storedDataStr === null) {
+            return {};
+        }
+
+        var storedData: SchemeSet = JSON.parse(storedDataStr);
+
+        var svgData: Record<string, Record<string, string>> = {};
+        for (var [schemeName, scheme] of Object.entries(storedData)) {
+            svgData[schemeName] = scheme.svgStrings ?? {}
+        }
+        
+        // TODO: add validation.
+
+        return svgData;
+    }
+
     // Load scheme data from local storage
     public getLocalSchemes(): SchemeSet {
         var storedDataStr: string | null = localStorage.getItem(SchemeManager.StorageName);
@@ -230,7 +291,10 @@ export default class SchemeManager {
 
         return storedData;
     }
+    //// -----------------------------------------------
 
+
+    //// ---------------------- MODIFIERS --------------
     // Method for adding svg data to a scheme
     public addSVGStrData(dataString: string, reference: string, schemeName: string) {
         if (this.userSchemeSet[schemeName] === undefined) {
@@ -313,66 +377,6 @@ export default class SchemeManager {
         delete selectedScheme.labelGroupElements[data.ref];
         this.setUserScheme(schemeName, {...selectedScheme, labelGroupElements: selectedScheme.labelGroupElements})
     }
+    //// ----------------------------------------------
 
-    
-    private saveToLocalStore() {
-        localStorage.setItem(SchemeManager.StorageName, JSON.stringify(this.allSchemes));
-    }
-
-    private async getAssetSVGs(): Promise<Record<string, SVGDict>> {
-        const svgStrings: Record<string, SVGDict> = {};
-
-
-        for (const [schemeName, scheme] of Object.entries(this.allSchemes)) {
-            if (scheme.svgElements === undefined) {continue}
-            var svgData: Record<string, string> = {};
-            for (var [name, el] of Object.entries(scheme.svgElements)) {
- 
-                var fetchString = SchemeManager.SVGAssetPath + el.svgDataRef + ".svg";
-
-                try {
-                    var svg = await fetch(fetchString, {cache: "no-store"}).then(
-                        (response) => {
-                            console.log(`STATUS ${response.status}`)
-                            if (!response.ok || response.status === 404) {
-                                throw new Error("asset not found");
-                            }
-
-                            return response.text()
-                        }
-                    ).catch(
-                        (error) => {console.error(`Cannot find svg for element ${el.ref}`)}
-                    )
-                } catch {continue}
-                
-            
-                if (svg) {
-                    svgData[name] = svg;
-                }
-            }
-
-            svgStrings[schemeName] = svgData;
-        }
-
-        return svgStrings;
-    }
-
-    private getLocalSVGs(): Record<string, SVGDict> {
-        // Try to load svg from internal storage:
-        var storedDataStr: string | null = localStorage.getItem(SchemeManager.StorageName);
-        if (storedDataStr === null) {
-            return {};
-        }
-
-        var storedData: SchemeSet = JSON.parse(storedDataStr);
-
-        var svgData: Record<string, Record<string, string>> = {};
-        for (var [schemeName, scheme] of Object.entries(storedData)) {
-            svgData[schemeName] = scheme.svgStrings ?? {}
-        }
-        
-        // TODO: add validation.
-
-        return svgData;
-    }
 }

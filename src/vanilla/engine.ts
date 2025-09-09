@@ -161,12 +161,10 @@ class ENGINE {
         ENGINE.singletons[name] = {RECT_TEMPLATES: [], SVG_TEMPLATES: [], LABELGROUP_TEMPLATES: []};
         ENGINE.schemeManager.setUserScheme(name.trim(), {});
     }
-
     static addScheme(name: string, data: IUserSchemeData) {
         ENGINE.schemeManager.setUserScheme(name, data);
         ENGINE.createSingletons();
     }
-
     static removeScheme(name: string) {
         delete ENGINE.singletons[name]
         ENGINE.schemeManager.deleteUserScheme(name);

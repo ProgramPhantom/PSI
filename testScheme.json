@@ -1,6 +1,9 @@
+
+
 {
+    
     "svgElements": {
-        "180": {
+        "new": {
             "mountConfig": {
                 "orientation": "top",
                 "alignment": "centre",
@@ -13,32 +16,16 @@
         
             "padding": [0, 0, 0, 0],
             "offset": [0, 0],
-            "svgDataRef": "180",
+            "svgDataRef": "tick",
             "contentWidth": 50,
             "contentHeight": 50,
         
-            "ref": "180",
+            "ref": "new",
             "style": {}
-        },
-        "acquire": {
-            "mountConfig": {
-                "orientation": "top",
-                "alignment": "centre",
-                "noSections": 1,
-                "channelID": null,
-                "sequenceID": null,
-                "index": 0,
-                "mountOn": true
-            },
-        
-            "padding": [0, 0, 0, 0],
-            "offset": [0, 0],
-            "svgDataRef": "acquire",
-            "contentWidth": 150,
-            "contentHeight": 75,
-            
-            "ref": "acquire",
-        "style": {}
         }
+    },
+
+    "svgStrings": {
+        "tick": "<svg width=\"800px\" height=\"800px\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M4.89163 13.2687L9.16582 17.5427L18.7085 8\" stroke=\"#000000\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"
     }
 }

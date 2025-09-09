@@ -128,3 +128,20 @@ export type DeepReadonly<T> = {
 export type DeepMutable<T> = {
   -readonly [P in keyof T]: DeepMutable<T[P]>;
 };
+
+// (vibed)
+export function mergeObjectsPreferNonEmpty(obj1, obj2) {
+  const result = {};
+  for (const key of new Set([...Object.keys(obj1), ...Object.keys(obj2)])) {
+    const val1 = obj1[key];
+    const val2 = obj2[key];
+    
+    // If val1 is empty object, use val2; otherwise use val1
+    if (val1 && typeof val1 === "object" && !Array.isArray(val1) && Object.keys(val1).length === 0) {
+      result[key] = val2;
+    } else {
+      result[key] = val1 ?? val2; // fallback if val1 is null/undefined
+    }
+  }
+  return result;
+}
