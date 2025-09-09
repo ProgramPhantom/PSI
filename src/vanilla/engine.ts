@@ -134,9 +134,7 @@ class ENGINE {
     static addLabelGroupSingleton(data: ILabelGroup, schemeName: string=SchemeManager.InternalSchemeName) {
         this.schemeManager.addLabelGroupData(data, schemeName);
 
-        var childSingleton: Visual = instantiateByType(data.coreChild, data.coreChildType);
-       
-        this.singletons[schemeName].LABELGROUP_TEMPLATES.push(new LabelGroup(data, childSingleton));
+        this.singletons[schemeName].LABELGROUP_TEMPLATES.push(new LabelGroup(data));
     }
 
     static removeSVGSingleton(data: ISVGElement, schemeName: string=SchemeManager.InternalSchemeName) {
