@@ -1,6 +1,6 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { myToaster } from "../App";
-import SchemeManager, { SVGDict } from "./default";
+import SchemeManager, { IUserSchemeData, SVGDict } from "./default";
 import { IDiagram } from "./diagram";
 import DiagramHandler from "./diagramHandler";
 import LabelGroup, { ILabelGroup } from "./labelGroup";
@@ -162,6 +162,11 @@ class ENGINE {
     static addBlankScheme(name: string) {
         ENGINE.singletons[name] = {RECT_TEMPLATES: [], SVG_TEMPLATES: [], LABELGROUP_TEMPLATES: []};
         ENGINE.schemeManager.setUserScheme(name.trim(), {});
+    }
+
+    static addScheme(name: string, data: IUserSchemeData) {
+        ENGINE.schemeManager.setUserScheme(name, data);
+        ENGINE.createSingletons();
     }
 
     static removeScheme(name: string) {

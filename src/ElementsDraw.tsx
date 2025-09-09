@@ -1,8 +1,8 @@
-import { Button, Dialog, DialogBody, DialogFooter, Divider, EntityTitle, H5, Section, SectionCard, Tab, Tabs, Text, InputGroup, FormGroup } from '@blueprintjs/core';
-import React, { useState, useSyncExternalStore } from 'react';
+import { Button, Dialog, DialogBody, DialogFooter, Divider, EntityTitle, H5, Section, SectionCard, Tab, Tabs, Text, InputGroup, FormGroup, Icon, Classes } from '@blueprintjs/core';
+import React, { useState, useSyncExternalStore, useRef } from 'react';
 import TemplateDraggableElement from './dnd/TemplateDraggableElement';
 import NewElementDialog from './NewElementDialog';
-import SchemeManager, { SchemeSet } from './vanilla/default';
+import SchemeManager, { SchemeSet, IUserSchemeData } from './vanilla/default';
 import ENGINE, { SchemeSingletonStore, SingletonStorage } from "./vanilla/engine";
 import { Visual } from './vanilla/visual';
 import { Input } from '@blueprintjs/icons';
@@ -22,6 +22,9 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
     const [isNewSchemeDialogOpen, setIsNewSchemeDialogOpen] = useState(false);
     const [newSchemeName, setNewSchemeName] = useState('');
     const [isDeleteSchemeDialogOpen, setIsDeleteSchemeDialogOpen] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isDragOver, setIsDragOver] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
     const [schemeState, setSchemeState] = useState<SchemeSet>(ENGINE.schemeManager.allSchemes);
@@ -55,15 +58,42 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
     const handleNewSchemeDialogClose = () => {
         setIsNewSchemeDialogOpen(false);
         setNewSchemeName('');
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     const handleNewSchemeSubmit = () => {
         if (newSchemeName.trim() && !ENGINE.schemeManager.schemeNames.includes(newSchemeName.trim())) {
-            // Create new scheme with empty data
-            ENGINE.addBlankScheme(newSchemeName);
-            // setSelectedScheme(newSchemeName.trim());
-            setSchemeState(ENGINE.schemeManager.allSchemes)
-            handleNewSchemeDialogClose();
+            if (selectedFile) {
+                // Parse JSON file and create scheme with data
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const schemeData = JSON.parse(e.target?.result as string) as IUserSchemeData;
+                        ENGINE.addScheme(newSchemeName.trim(), schemeData);
+                        setSchemeState(ENGINE.schemeManager.allSchemes);
+                        handleNewSchemeDialogClose();
+                        myToaster.show({
+                            message: "Scheme created successfully from JSON file",
+                            intent: "success"
+                        });
+                    } catch (error) {
+                        console.error(error);
+                        myToaster.show({
+                            message: "Invalid JSON file format. Please select a valid scheme file.",
+                            intent: "danger"
+                        });
+                    }
+                };
+                reader.readAsText(selectedFile);
+            } else {
+                // Create new scheme with empty data
+                ENGINE.addBlankScheme(newSchemeName.trim());
+                setSchemeState(ENGINE.schemeManager.allSchemes);
+                handleNewSchemeDialogClose();
+            }
         }
     };
 
@@ -87,6 +117,51 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
         setSchemeState(ENGINE.schemeManager.allSchemes);
         setSelectedScheme(SchemeManager.InternalSchemeName);
         setIsDeleteSchemeDialogOpen(false);
+    };
+
+    const handleFileSelect = (file: File) => {
+        if (file.type === "application/json" || file.name.endsWith('.json')) {
+            setSelectedFile(file);
+        } else {
+            myToaster.show({
+                message: "Please select a JSON file",
+                intent: "warning"
+            });
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    };
+
+    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    };
+
+    const removeFile = () => {
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     return (
@@ -303,7 +378,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                 canOutsideClickClose={true}
                 canEscapeKeyClose={true}
             >
-                <DialogBody>
+                <div className={Classes.DIALOG_BODY}>
                     <Text>
                         Enter a name for the new scheme:
                     </Text>
@@ -321,9 +396,78 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                         </InputGroup>
                     </FormGroup>
 
-                        
-                   
-                </DialogBody>
+                    <Divider style={{ margin: "16px 0" }} />
+
+                    <Text style={{ marginBottom: "12px" }}>
+                        Optionally upload a JSON file to populate the scheme:
+                    </Text>
+                    
+                    <div
+                        style={{
+                            border: `2px dashed ${isDragOver ? '#137cbd' : '#c1c1c1'}`,
+                            borderRadius: '8px',
+                            padding: '40px 20px',
+                            textAlign: 'center',
+                            backgroundColor: isDragOver ? '#f0f8ff' : '#fafafa',
+                            transition: 'all 0.2s ease',
+                            position: 'relative',
+                            minHeight: '200px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    >
+                        {selectedFile ? (
+                            <div style={{ width: '100%' }}>
+                                <div style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'space-between',
+                                    backgroundColor: '#e1f5fe',
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #b3e5fc'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <Icon icon="document" size={16} style={{ marginRight: '8px' }} />
+                                        <span style={{ fontWeight: '500' }}>{selectedFile.name}</span>
+                                    </div>
+                                    <Button
+                                        icon="cross"
+
+                                        onClick={removeFile}
+                                        style={{ marginLeft: '8px' }}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <Icon icon="upload" size={48} style={{ marginBottom: '16px', color: '#5c7080' }} />
+                                <p style={{ marginBottom: '16px', color: '#5c7080' }}>
+                                    Drag and drop a JSON scheme file here, or
+                                </p>
+                                <Button
+                                    icon="folder-open"
+                                    intent="primary"
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    Choose File
+                                </Button>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".json"
+                                    onChange={handleFileInputChange}
+                                    style={{ display: 'none' }}
+                                />
+                            </>
+                        )}
+                    </div>
+                </div>
                 
                 <DialogFooter actions={
                     <>
