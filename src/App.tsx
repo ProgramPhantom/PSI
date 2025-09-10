@@ -13,11 +13,12 @@ import ENGINE from './vanilla/engine';
 import { Visual } from './vanilla/visual';
 
 ENGINE.initialiseSchemeManager();
+await ENGINE.loadSVGData();
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
 ENGINE.loadDiagramState()
 
-await ENGINE.loadSVGData();
+
 ENGINE.createSingletons();
 
 export const myToaster: Toaster = await OverlayToaster.createAsync({ position: "bottom",}, {

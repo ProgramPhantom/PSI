@@ -2,7 +2,7 @@ import Aligner from "./aligner";
 import Channel, { IChannel } from "./channel";
 import Collection, { ICollection } from "./collection";
 import defaultSequence from "./default/data/sequence.json";
-import { IHaveStructure } from "./diagramHandler";
+import { AllComponentTypes, IHaveStructure } from "./diagramHandler";
 import logger, { Operations, Processes } from "./log";
 import Point from "./point";
 import Space from "./space";
@@ -21,7 +21,7 @@ export type SequenceNamedStructures =  "channel column" | "label column" | "labe
 
 export default class Sequence extends Collection implements IHaveStructure {
     static defaults: {[key: string]: ISequence} = {"default": {...<any>defaultSequence}}
-    
+    static ElementType: AllComponentTypes = "sequence";
     get state(): ISequence {
         return {
             channels: this.channels.map((c) => c.state),

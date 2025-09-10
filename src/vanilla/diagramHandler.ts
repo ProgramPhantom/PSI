@@ -20,7 +20,7 @@ import type { IVisual, Visual } from "./visual";
 export type AllComponentTypes = UserComponentType | AbstractComponentTypes 
 
 // The types of component 
-export type UserComponentType = DrawComponent | "label-group" | "label" | "text" | "arrow" | "line" | "channel" | "sequence" | "diagram"; 
+export type UserComponentType = DrawComponent | "label-group" | "label" | "text" | "arrow" | "line" | "channel" | "sequence" | "diagram" ; 
 export type DrawComponent = "svg" | "rect" | "space"
 
 // Abstract component types (have no visual content)
@@ -125,10 +125,14 @@ export default class DiagramHandler {
     public constructDiagram(state: IDiagram): Diagram {
         var newDiagram: Diagram = new Diagram(state);
         this.diagram = newDiagram;
+
         state.sequences.forEach((s) => {
             s.channels.forEach((c) => {
                 c.mountedElements.forEach((m) => {
-                    this.mountElementFromTemplate(m, m.ref);
+                    if (m.type === undefined) {
+                        console.warn(`Element data is missing type: ${m.ref}`)
+                    }
+                    this.createElement(m, m.type as AllComponentTypes);
                 })
             })
         })
@@ -200,7 +204,7 @@ export default class DiagramHandler {
     // ------------------------
 
 
-    public createElement(parameters: IVisual, type: UserComponentType): Visual {
+    public createElement(parameters: IVisual, type: AllComponentTypes): Visual {
         var element: Visual;
 
         // NECESSARY to make element accept binding changes. X, Y persists when changing into a label

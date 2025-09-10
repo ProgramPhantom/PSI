@@ -18,7 +18,8 @@ export interface Place {
 
 export interface IElement {
     ref: string,
-    id?: ID
+    id?: ID,
+    type?: AllComponentTypes
 }
 
 export interface IPoint extends IElement {
@@ -26,12 +27,12 @@ export interface IPoint extends IElement {
     y?: number,
 }
 
-export interface IStateTarget<T extends IPoint> {
+export interface IHaveState<T extends IPoint> {
     get state(): T
 }
 
 
-export default class Point implements IPoint, IStateTarget<IPoint> {
+export default class Point implements IPoint, IHaveState<IPoint> {
     static defaults: {[name: string]: IPoint} = {
         "default": {
             x: undefined,
@@ -47,6 +48,7 @@ export default class Point implements IPoint, IStateTarget<IPoint> {
         y: this._y,
         ref: this.ref,
         id: this.id,
+        type: (this.constructor as typeof Point).ElementType
     }}
 
     protected _x?: number;

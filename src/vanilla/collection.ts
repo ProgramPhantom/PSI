@@ -22,9 +22,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         },
     }
 
-    static structure = {
-
-    }
 
     _parentElement?: T;
     children: T[] = [];
