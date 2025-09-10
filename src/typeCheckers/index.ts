@@ -1,4 +1,4 @@
-import { UserComponentType } from "../vanilla/diagramHandler";
+import { UserComponentType } from "../logic/diagramHandler";
 import * as t from "ts-interface-checker";
 import arrowTypeSuite from "./arrow-ti";
 import channelTypeSuite from "./channel-ti";
@@ -11,19 +11,19 @@ import spaceTypeSuite from "./spacial-ti";
 import svgElementTypeSuite from "./SVGElement-ti";
 import textTypeSuite from "./text-ti";
 
-import Arrow from "../vanilla/arrow";
-import Channel from "../vanilla/channel";
-import Diagram from "../vanilla/diagram";
-import Label from "../vanilla/label";
-import LabelGroup from "../vanilla/labelGroup";
-import { Line } from "../vanilla/line";
-import RectElement from "../vanilla/rectElement";
-import Sequence from "../vanilla/sequence";
-import Space from "../vanilla/space";
-import Text from "../vanilla/text";
-import SVGElement from "../vanilla/svgElement";
-import Point from "../vanilla/point";
-import { Visual } from "../vanilla/visual";
+import Arrow from "../logic/arrow";
+import Channel from "../logic/channel";
+import Diagram from "../logic/diagram";
+import Label from "../logic/label";
+import LabelGroup from "../logic/labelGroup";
+import { Line } from "../logic/line";
+import RectElement from "../logic/rectElement";
+import Sequence from "../logic/sequence";
+import Space from "../logic/space";
+import Text from "../logic/text";
+import SVGElement from "../logic/svgElement";
+import Point from "../logic/point";
+import { Visual } from "../logic/visual";
 
 export const CheckerTypeIndex: Record<UserComponentType, {suite: t.ITypeSuite, type: t.TType}> = {
     "arrow": {suite: arrowTypeSuite, type: arrowTypeSuite.IArrow},
