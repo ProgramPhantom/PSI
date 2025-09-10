@@ -14,6 +14,9 @@ import { DeepMutable, DeepReadonly, mergeObjectsPreferNonEmpty } from "./util"
 import { Visual } from "./visual"
 import Space from "./space"
 import Label from "./label"
+import MissingAssetSVG from "../assets/app/MissingAsset.svg?raw";
+
+const ASSET_SVGS = import.meta.glob('../assets/svg/*.svg', { as: 'raw', eager: true });
 
 
 const svgPath: string = "\\src\\assets\\"
@@ -31,8 +34,6 @@ const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
     "label-group": LabelGroup,
     "label": Label
 }
-
-
 
 
 
@@ -79,7 +80,8 @@ export type PartialUserSchemeData = Partial<IUserSchemeData>
 export default class SchemeManager {
     static InternalSchemeName: string = "internal"
     static StorageName: string = "schemeSet"
-    static SVGAssetPath: string = "\\src\\assets\\"
+    static SVGAssetPath: string = import.meta.env.BASE_URL + "src/assets/"
+    static MissingSVGAssetStr: string = MissingAssetSVG;
 
     public emitChange: () => void;
     public get id(): ID {
@@ -182,7 +184,7 @@ export default class SchemeManager {
         }
 
         try {
-            var localSvgData: Record<string, SVGDict> = this.getLocalSVGs();
+            var localSvgData: Record<string, SVGDict> = this.getLocalStoreSVGs();
             
             // TODO: sort this shit out
             allSvgData = mergeObjectsPreferNonEmpty(assetData, localSvgData);
@@ -199,13 +201,16 @@ export default class SchemeManager {
 
             for (var [name, svgElement] of Object.entries(scheme.svgElements)) {
                 var mutableCopy: DeepMutable<ISVGElement> = structuredClone(svgElement) as DeepMutable<ISVGElement>;
-                if (allSvgData[schemeName][svgElement.svgDataRef] === undefined) { svgsWithMissing.push(mutableCopy) }
+                if (allSvgData[schemeName][svgElement.svgDataRef] === undefined) {
+                     //svgsWithMissing.push(mutableCopy)
+                     allSvgData[schemeName][svgElement.svgDataRef] = SchemeManager.MissingSVGAssetStr;
+                }
             }
         }
 
         if (svgsWithMissing.length > 0) {
             // Perhaps instead, remove the svg?
-            throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
+            // throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
         } else {
             // Apply loaded svgs to scheme set
             for (var [schemeName, scheme] of Object.entries(this.allSchemes)) {
@@ -225,42 +230,20 @@ export default class SchemeManager {
     private async getAssetSVGs(): Promise<Record<string, SVGDict>> {
         const svgStrings: Record<string, SVGDict> = {};
 
+        var renamedSVGAssets = Object.fromEntries(
+            Object.entries(ASSET_SVGS).map(([path, content]) => {
+                const name = path.split('/').pop().replace('.svg', '');
+                return [name, content];
+            })
+        );
+        
+        svgStrings[SchemeManager.InternalSchemeName] = renamedSVGAssets;
 
-        for (const [schemeName, scheme] of Object.entries(this.allSchemes)) {
-            if (scheme.svgElements === undefined) {continue}
-            var svgData: Record<string, string> = {};
-            for (var [name, el] of Object.entries(scheme.svgElements)) {
- 
-                var fetchString = SchemeManager.SVGAssetPath + el.svgDataRef + ".svg";
-
-                try {
-                    var svg = await fetch(fetchString, {cache: "no-store"}).then(
-                        (response) => {
-                            console.log(`STATUS ${response.status}`)
-                            if (!response.ok || response.status === 404) {
-                                throw new Error("asset not found");
-                            }
-
-                            return response.text()
-                        }
-                    ).catch(
-                        (error) => {console.error(`Cannot find svg for element ${el.ref}`)}
-                    )
-                } catch {continue}
-                
-            
-                if (svg) {
-                    svgData[name] = svg;
-                }
-            }
-
-            svgStrings[schemeName] = svgData;
-        }
 
         return svgStrings;
     }
 
-    private getLocalSVGs(): Record<string, SVGDict> {
+    private getLocalStoreSVGs(): Record<string, SVGDict> {
         // Try to load svg from internal storage:
         var storedDataStr: string | null = localStorage.getItem(SchemeManager.StorageName);
         if (storedDataStr === null) {

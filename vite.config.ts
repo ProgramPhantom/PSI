@@ -11,7 +11,7 @@ export default defineConfig({
       'top-level-await': true //browsers can handle top-level-await features
     },
   },
-  // base: '/PSI/',
+  base: '/PSI/',
   plugins: [
     react(),
     nodePolyfills({
