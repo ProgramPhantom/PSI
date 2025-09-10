@@ -7,6 +7,7 @@ import UploadArea from './UploadArea'
 import SVGUploadList from './SVGUploadList'
 import SchemeManager from './vanilla/default'
 import { LoadStateDialog } from './LoadStateDialog'
+import { PNGExportDialog } from './PNGExportDialog'
 
 export interface IBannerProps {
     saveSVG: () => void, 
@@ -18,18 +19,8 @@ export interface IBannerProps {
 export default function Banner(props: IBannerProps) {
     const [isPNGDialogOpen, setIsPNGDialogOpen] = useState(false);
     const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false);
-    const [pngWidth, setPngWidth] = useState(ENGINE.handler.diagram.width);
-    const [pngHeight, setPngHeight] = useState(ENGINE.handler.diagram.height);
-    const [pngFilename, setPngFilename] = useState("pulse-diagram.png");
 
-
-    const handleSavePNG = () => {
-        props.savePNG(pngWidth, pngHeight, pngFilename);
-        setIsPNGDialogOpen(false);
-    };
-
-
-    function copyState() {
+    const copyState = () => {
         var stateObject: IDiagram = ENGINE.handler.diagram.state
         var stateString = JSON.stringify(stateObject, undefined, 4);
 
@@ -41,7 +32,7 @@ export default function Banner(props: IBannerProps) {
         })
     }
 
-    function saveState() {
+    const saveState = () => {
         ENGINE.save();
         myToaster.show({
             message: "State saved to localStorage",
@@ -91,66 +82,7 @@ export default function Banner(props: IBannerProps) {
             </Navbar.Group>
         </Navbar>
 
-        {/* PNG Export Dialog */}
-        <Dialog
-            isOpen={isPNGDialogOpen}
-            onClose={() => setIsPNGDialogOpen(false)}
-            title="Export PNG Image"
-            icon="media"
-        >
-            <div className={Classes.DIALOG_BODY}>
-                <FormGroup
-                    label="Filename"
-                    labelFor="filename-input"
-                >
-                    <InputGroup
-                        id="filename-input"
-                        value={pngFilename}
-                        onChange={(e) => setPngFilename(e.target.value)}
-                        placeholder="Enter filename..."
-                    />
-                </FormGroup>
-                
-                <FormGroup
-                    label="Width (pixels)"
-                    labelFor="width-input"
-                >
-                    <NumericInput
-                        id="width-input"
-                        value={pngWidth}
-                        onValueChange={(value) => setPngWidth(value || ENGINE.handler.diagram.width)}
-                        min={100}
-                        max={4000}
-                        stepSize={50}
-                        majorStepSize={100}
-                    />
-                </FormGroup>
-                
-                <FormGroup
-                    label="Height (pixels)"
-                    labelFor="height-input"
-                >
-                    <NumericInput
-                        id="height-input"
-                        value={pngHeight}
-                        onValueChange={(value) => setPngHeight(value || ENGINE.handler.diagram.height)}
-                        min={100}
-                        max={4000}
-                        stepSize={50}
-                        majorStepSize={100}
-                    />
-                </FormGroup>
-            </div>
-            
-            <DialogFooter
-                actions={
-                    <>
-                        <Button text="Cancel" onClick={() => setIsPNGDialogOpen(false)} />
-                        <Button text="Save" intent="primary" onClick={handleSavePNG} />
-                    </>
-                }
-            />
-        </Dialog>
+        <PNGExportDialog close={() => setIsPNGDialogOpen(false)} isOpen={isPNGDialogOpen} savePNG={props.savePNG}></PNGExportDialog>
         
         <LoadStateDialog close={() => setIsLoadDialogOpen(false)} isOpen={isLoadDialogOpen}></LoadStateDialog>
         </>
