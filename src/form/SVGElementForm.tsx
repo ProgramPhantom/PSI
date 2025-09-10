@@ -116,10 +116,13 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
                 <FormGroup
                     label="Reference Name"
                     labelFor="reference-input"
+                    intent={svgReference.trim() === "" ? "danger" : "none"}
+                    helperText={svgReference.trim() === "" ? "Enter reference" : ""}
                 >
                     <InputGroup
                         id="reference-input"
                         value={svgReference}
+                        intent={svgReference.trim() === "" ? "danger" : "none"}
                         onChange={(e) => setSvgReference(e.target.value)}
                         placeholder="Enter reference name..."
                     />
