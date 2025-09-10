@@ -17,7 +17,7 @@ import Label from "./label"
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
-const ASSET_SVGS = import.meta.glob('../assets/svg/*.svg', { as: 'raw', eager: true });
+const ASSET_SVGS: SVGDict = import.meta.glob('../assets/svg/*.svg', { as: 'raw', eager: true });
 
 
 const svgPath: string = "\\src\\assets\\"
@@ -64,8 +64,6 @@ export interface IUserSchemeData {
     rectElements: Record<string, IRectElement> | undefined,
     labelGroupElements: Record<string, ILabelGroup> | undefined
 
-    svgStrings: SVGDict | undefined;
-
     arrow: Record<string, IArrow> | undefined,
     line: Record<string, ILine> | undefined,
     text: Record<string, IText> | undefined
@@ -80,8 +78,8 @@ export type PartialUserSchemeData = Partial<IUserSchemeData>
 
 export default class SchemeManager {
     static InternalSchemeName: string = "internal"
-    static StorageName: string = "schemeSet"
-    static SVGAssetPath: string = import.meta.env.BASE_URL + "src/assets/"
+    static SchemeSetStorageName: string = "schemeSet";
+    static SVGStringsStorageName: string = "svgs";
     static MissingSVGAssetStr: string = MissingAssetSVG;
 
     public emitChange: () => void;
@@ -90,6 +88,7 @@ export default class SchemeManager {
     }
 
     public internalScheme: IUserSchemeData;
+    public svgStrings: SVGDict | undefined;
 
     private _userSchemeSet: SchemeSet = {};
     public get schemesList(): DeepReadonly<PartialUserSchemeData[]> {return Object.values(this.allSchemes)}
@@ -108,29 +107,18 @@ export default class SchemeManager {
     get allSchemeNames(): string[] {
         return Object.keys(this.allSchemes);
     }
-
-    public get allSVGData(): Record<string, SVGDict> {
-        var svgData: Record<string, SVGDict> = {}
-        for (var [schemeName, schemeData] of Object.entries(this.allSchemes)) {
-            svgData[schemeName] = schemeData.svgStrings ?? {};
-        } 
-        return svgData;
+    get allSVGDataRefs(): string[] {
+        return Object.keys(this.svgStrings)
     }
 
     public setUserScheme(name: string, schemeData: PartialUserSchemeData) {
-        // if (name === SchemeManager.InternalSchemeName) {
-        //     throw new Error(`Cannot override default scheme`);
-        // }
-        // TODO: Very scuffed please figure this out
         if (name === SchemeManager.InternalSchemeName) {
-            this.internalScheme = schemeData as IUserSchemeData;
-        } else {
-            this._userSchemeSet[name] = schemeData;
+            throw new Error(`Cannot override default scheme`);
         }
-
+        
+        this._userSchemeSet[name] = schemeData;
         
         this.emitChange();
-        var v = this.allSVGData;
     }
     public setUserSchemeCollection<K extends keyof IUserSchemeData>(propertyName: K, schemeName: string, value: IUserSchemeData[K]) {
         if (this.allSchemes[schemeName] === undefined) {
@@ -166,12 +154,11 @@ export default class SchemeManager {
 
 
     constructor(emitChange: () => void) {
-        this.emitChange = () => {this.saveToLocalStore(); emitChange();};
+        this.emitChange = () => {this.saveToLocalStore(); emitChange()};
 
         var initialScheme: Record<string, IUserSchemeData> = JSON.parse(JSON.stringify(defaultScheme));
 
         this.internalScheme = initialScheme[SchemeManager.InternalSchemeName];
-        this.internalScheme.svgStrings = {}
 
         this.userSchemeSet = this.getLocalSchemes();
         this.loadSVGs();
@@ -183,18 +170,18 @@ export default class SchemeManager {
     public async loadSVGs() {
         // Get all svg data, from the assets and from internal storage:
 
-        var allSvgData: Record<string, SVGDict> = {};
+        var allSvgData: SVGDict = {};
         
         // Try to load from assets:
         try {
-            var assetData: Record<string, SVGDict> = await this.getAssetSVGs();
+            var assetData: SVGDict = await this.getAssetSVGs();
             allSvgData = {...assetData};
         } catch {
             console.warn(`Failed to load asset svg data`)
         }
 
         try {
-            var localSvgData: Record<string, SVGDict> = this.getLocalStoreSVGs();
+            var localSvgData: SVGDict = this.getLocalStoreSVGs();
             
             // TODO: sort this shit out
             allSvgData = mergeObjectsPreferNonEmpty(assetData, localSvgData);
@@ -202,79 +189,47 @@ export default class SchemeManager {
             console.warn(`Failed to load local svg data`);
         }
 
-
+        this.svgStrings = allSvgData;
         // Confirm that every svg in each scheme has a corresponding svg data collected above
 
-        var svgsWithMissing: ISVGElement[] = [];
-        for (var [schemeName, scheme] of Object.entries(this.allSchemes)) {
-            if (!scheme.svgElements) {continue}
-
-            for (var [name, svgElement] of Object.entries(scheme.svgElements)) {
-                var mutableCopy: DeepMutable<ISVGElement> = structuredClone(svgElement) as DeepMutable<ISVGElement>;
-                if (allSvgData[schemeName][svgElement.svgDataRef] === undefined) {
-                     //svgsWithMissing.push(mutableCopy)
-                     allSvgData[schemeName][svgElement.svgDataRef] = SchemeManager.MissingSVGAssetStr;
-                }
-            }
-        }
-
-        if (svgsWithMissing.length > 0) {
-            // Perhaps instead, remove the svg?
-            // throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
-        } else {
-            // Apply loaded svgs to scheme set
-            for (var [schemeName, scheme] of Object.entries(this.allSchemes)) {
-                if (schemeName !== SchemeManager.InternalSchemeName) {
-                    this.setUserSchemeCollection("svgStrings", schemeName, allSvgData[schemeName]);
-                } else {
-                    this.internalScheme.svgStrings = allSvgData[schemeName];
-                }
-            }
-        }
     }
 
     private saveToLocalStore() {
-        localStorage.setItem(SchemeManager.StorageName, JSON.stringify(this.allSchemes));
+        localStorage.setItem(SchemeManager.SchemeSetStorageName, JSON.stringify(this.allSchemes));
+
+        if (this.svgStrings !== undefined) {
+            localStorage.setItem(SchemeManager.SVGStringsStorageName, JSON.stringify(this.svgStrings));
+        }
     }
 
-    private async getAssetSVGs(): Promise<Record<string, SVGDict>> {
-        const svgStrings: Record<string, SVGDict> = {};
-
+    private async getAssetSVGs(): Promise<SVGDict> {    
         var renamedSVGAssets = Object.fromEntries(
             Object.entries(ASSET_SVGS).map(([path, content]) => {
                 const name = path.split('/').pop().replace('.svg', '');
                 return [name, content];
             })
         );
-        
-        svgStrings[SchemeManager.InternalSchemeName] = renamedSVGAssets;
 
-
-        return svgStrings;
+        return renamedSVGAssets;
     }
 
-    private getLocalStoreSVGs(): Record<string, SVGDict> {
+    private getLocalStoreSVGs(): SVGDict {
         // Try to load svg from internal storage:
-        var storedDataStr: string | null = localStorage.getItem(SchemeManager.StorageName);
+        var storedDataStr: string | null = localStorage.getItem(SchemeManager.SVGStringsStorageName);
         if (storedDataStr === null) {
             return {};
         }
 
-        var storedData: SchemeSet = JSON.parse(storedDataStr);
+        var storedData: SVGDict = JSON.parse(storedDataStr);
 
-        var svgData: Record<string, Record<string, string>> = {};
-        for (var [schemeName, scheme] of Object.entries(storedData)) {
-            svgData[schemeName] = scheme.svgStrings ?? {}
-        }
-        
         // TODO: add validation.
 
-        return svgData;
+        return storedData;
     }
 
     // Load scheme data from local storage
     public getLocalSchemes(): SchemeSet {
-        var storedDataStr: string | null = localStorage.getItem(SchemeManager.StorageName);
+        var storedDataStr: string | null = localStorage.getItem(SchemeManager.SchemeSetStorageName);
         if (storedDataStr === null) {
             return {};
         }
@@ -286,19 +241,39 @@ export default class SchemeManager {
     }
     //// -----------------------------------------------
 
+    //// ---------- Validate ----------------
+    public validateAllSVGsPresent() {
+
+        var svgsWithMissing: ISVGElement[] = [];
+        // Iterate schemes
+        for (var [schemeName, scheme] of Object.entries(this.allSchemes)) {
+            if (!scheme.svgElements) {continue}
+
+            // Iterate svg elements
+            for (var [name, svgElement] of Object.entries(scheme.svgElements)) {
+                if (this.svgStrings[svgElement.svgDataRef] === undefined) {
+                     // Missing, so add a 
+                     // this.svgStrings[svgElement.svgDataRef] = SchemeManager.MissingSVGAssetStr;
+                }
+            }
+        }
+
+
+        if (svgsWithMissing.length > 0) {
+            // Perhaps instead, remove the svg?
+            // throw new Error(`Cannot find svg data for ${svgsWithMissing[0].ref}`);
+        }
+    }
 
     //// ---------------------- MODIFIERS --------------
     // Method for adding svg data to a scheme
-    public addSVGStrData(dataString: string, reference: string, schemeName: string) {
-        if (this.allSchemes[schemeName] === undefined) {
-            throw new Error(`Cannot add svg data to non-existent scheme ${schemeName}`)
+    public addSVGStrData(dataString: string, reference: string) {
+        if (this.svgStrings[reference] !== undefined) {
+            console.warn(`Overriding svg ${reference}`)
         }
 
-        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.allSchemes);
-        var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
-
-        if (selectedScheme.svgStrings === undefined) {selectedScheme.svgStrings = {}}
-        this.setUserScheme(schemeName, {...selectedScheme, svgStrings: {...selectedScheme.svgStrings, [reference]: dataString}})
+        this.svgStrings[reference] = dataString;
+        this.emitChange();
     }
 
     // Add
@@ -321,7 +296,7 @@ export default class SchemeManager {
         var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
         var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
 
-        if (selectedScheme.svgStrings === undefined) {selectedScheme.svgStrings = {}}
+        if (selectedScheme.rectElements === undefined) {selectedScheme.rectElements = {}}
         this.setUserScheme(schemeName, {...selectedScheme, rectElements: {...selectedScheme.rectElements, [data.ref]: data}})
     }
     public addLabelGroupData(data: ILabelGroup, schemeName: string=SchemeManager.InternalSchemeName) {

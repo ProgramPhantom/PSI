@@ -169,18 +169,6 @@ class ENGINE {
         delete ENGINE.singletons[name]
         ENGINE.schemeManager.deleteUserScheme(name);
     }
-
-    static get SVG_STRINGS(): Record<string, SVGDict> {return this.schemeManager.allSVGData}
-    // Temp
-    static get AllSvgStrings(): SVGDict {
-        var svgs: Record<string, string> = {};
-        for (var [schemeName, svgDict] of Object.entries(this.SVG_STRINGS)) {
-            for (var [svgRef, svgStr] of Object.entries(svgDict)) {
-                svgs[svgRef] = svgStr
-            }
-        }
-        return svgs
-    }   
 }
 
 

@@ -68,9 +68,10 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		if (this.svgDataRef === "tick") {
 			console.log()
 		}
-		var svgString: string = ENGINE.AllSvgStrings[this.svgDataRef];
+		var svgString: string | undefined = ENGINE.schemeManager.svgStrings[this.svgDataRef];
 		if (svgString === undefined) {
 			console.warn(`Cannot find svg with ref ${this.svgDataRef} so defaulting to missing asset`)
+			svgString = SchemeManager.MissingSVGAssetStr;
 		}
 		try {
 			var rawSVG: Element = SVG(svgString)

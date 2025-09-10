@@ -40,13 +40,14 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
         }
     };
 
+    // Handle upload
     const handleUploadSVG = () => {
         if (selectedFile && svgReference.trim()) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const svgString = e.target?.result as string;
-                    ENGINE.schemeManager.addSVGStrData(svgString, svgReference.trim(), schemeName);
+                    ENGINE.schemeManager.addSVGStrData(svgString, svgReference.trim());
                     
                     myToaster.show({
                         message: "SVG uploaded successfully",
@@ -84,7 +85,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
             <ControlGroup>
                 <Controller control={formControls.control} name="svgDataRef" render={({field}) => (
                     <HTMLSelect {...field} iconName='caret-down'>
-                        {Object.keys(ENGINE.AllSvgStrings).map((ref) => {
+                        {Object.keys(ENGINE.schemeManager.svgStrings).map((ref) => {
                             return <option key={ref} value={ref}>{ref}</option>
                         })}
                     </HTMLSelect>
