@@ -121,8 +121,16 @@ export default class SchemeManager {
         // if (name === SchemeManager.InternalSchemeName) {
         //     throw new Error(`Cannot override default scheme`);
         // }
-        this._userSchemeSet[name] = schemeData;
+        // TODO: Very scuffed please figure this out
+        if (name === SchemeManager.InternalSchemeName) {
+            this.internalScheme = schemeData as IUserSchemeData;
+        } else {
+            this._userSchemeSet[name] = schemeData;
+        }
+
+        
         this.emitChange();
+        var v = this.allSVGData;
     }
     public setUserSchemeCollection<K extends keyof IUserSchemeData>(propertyName: K, schemeName: string, value: IUserSchemeData[K]) {
         if (this.allSchemes[schemeName] === undefined) {
@@ -282,11 +290,11 @@ export default class SchemeManager {
     //// ---------------------- MODIFIERS --------------
     // Method for adding svg data to a scheme
     public addSVGStrData(dataString: string, reference: string, schemeName: string) {
-        if (this.userSchemeSet[schemeName] === undefined) {
+        if (this.allSchemes[schemeName] === undefined) {
             throw new Error(`Cannot add svg data to non-existent scheme ${schemeName}`)
         }
 
-        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.userSchemeSet);
+        var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(this.allSchemes);
         var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
 
         if (selectedScheme.svgStrings === undefined) {selectedScheme.svgStrings = {}}

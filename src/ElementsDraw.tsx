@@ -292,7 +292,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
             <AddSchemeDialog isOpen={isNewSchemeDialogOpen} onClose={handleNewSchemeDialogClose} onSchemeCreated={handleSchemeCreated} />
 
             {/* Delete Scheme Confirmation Dialog */}
-            <Dialog
+            <Dialog icon="warning-sign"
                 isOpen={isDeleteSchemeDialogOpen}
                 onClose={handleDeleteSchemeDialogClose}
                 title="Delete Scheme"

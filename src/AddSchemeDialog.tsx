@@ -4,6 +4,7 @@ import ENGINE from './vanilla/engine';
 import { IUserSchemeData } from './vanilla/default';
 import { myToaster } from './App';
 import UploadArea from './UploadArea';
+import SVGUploadList from './SVGUploadList';
 
 interface AddSchemeDialogProps {
     isOpen: boolean;
@@ -145,63 +146,16 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
                 />
 
                 {uploadedSchemeData?.svgElements && (
-                    <div style={{ marginTop: '16px' }}>
-                        <Text style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>SVG requirements</Text>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {Object.entries(uploadedSchemeData.svgElements).map(([name, el]) => {
-                                const svgDataRef = (el as any).svgDataRef as string | undefined;
-                                const satisfied = svgDataRef ? isSvgRefSatisfied((el as any).svgDataRef) : true;
-                                return (
-                                    <div
-                                        key={name}
-                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #e1e8ed', borderRadius: 6, padding: '8px 10px' }}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <Text style={{ fontWeight: 600 }}>{name}</Text>
-                                            {svgDataRef && <Text style={{ color: '#5c7080' }}>svgDataRef: {svgDataRef}</Text>}
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            {satisfied ? (
-                                                <Icon icon="tick-circle" intent="success" title="Found" />
-                                            ) : (
-                                                <>
-                                                    <input
-                                                        id={`upload-${name}`}
-                                                        type="file"
-                                                        accept=".svg"
-                                                        style={{ display: 'none' }}
-                                                        onChange={(e) => {
-                                                            const file = e.target.files?.[0];
-                                                            if (!file || !svgDataRef) return;
-                                                            const r = new FileReader();
-                                                            r.onload = (ev) => {
-                                                                const str = ev.target?.result as string;
-                                                                setSvgUploads((prev) => ({ ...prev, [svgDataRef]: str }));
-                                                            };
-                                                            r.readAsText(file);
-                                                            e.currentTarget.value = '';
-                                                        }}
-                                                    />
-                                                    <Button
-                                                        icon="upload"
-                                                        onClick={() => {
-                                                            const input = document.getElementById(`upload-${name}`) as HTMLInputElement | null;
-                                                            input?.click();
-                                                        }}
-                                                    >
-                                                        Upload SVG
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        {!allSvgsSatisfied && (
-                            <Text style={{ color: '#a82a2a', marginTop: 8 }}>Please upload missing SVG files before creating the scheme.</Text>
-                        )}
-                    </div>
+                    <SVGUploadList
+                        title={'SVG requirements'}
+                        elements={Object.entries(uploadedSchemeData.svgElements).map(([name, el]) => ({ name, element: el as any }))}
+                        uploads={svgUploads}
+                        setUploads={setSvgUploads}
+                        extraSvgStrings={uploadedSchemeData?.svgStrings}
+                    />
+                )}
+                {uploadedSchemeData?.svgElements && !allSvgsSatisfied && (
+                    <Text style={{ color: '#a82a2a', marginTop: 8 }}>Please upload missing SVG files before creating the scheme.</Text>
                 )}
             </div>
 
