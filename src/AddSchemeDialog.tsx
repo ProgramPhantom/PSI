@@ -86,7 +86,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
     const allSvgsSatisfied: boolean = requiredSvgRefs.length === 0 || requiredSvgRefs.every((r) => isSvgRefSatisfied(r));
 
     const handleSubmit = () => {
-        if (!newSchemeName.trim() || ENGINE.schemeManager.schemeNames.includes(newSchemeName.trim())) return;
+        if (!newSchemeName.trim() || ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())) return;
         if (selectedFile && uploadedSchemeData) {
             try {
                 const mergedScheme: IUserSchemeData = {
@@ -116,11 +116,11 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
             <div className={Classes.DIALOG_BODY}>
                 <Text>Enter a name for the new scheme:</Text>
                 <FormGroup
-                    intent={!newSchemeName.trim() || ENGINE.schemeManager.schemeNames.includes(newSchemeName.trim()) ? 'danger' : 'primary'}
-                    helperText={!newSchemeName.trim() ? 'Cannot be empty' : (ENGINE.schemeManager.schemeNames.includes(newSchemeName.trim()) ? 'Cannot have duplicate names' : undefined)}
+                    intent={!newSchemeName.trim() || ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim()) ? 'danger' : 'primary'}
+                    helperText={!newSchemeName.trim() ? 'Cannot be empty' : (ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim()) ? 'Cannot have duplicate names' : undefined)}
                 >
                     <InputGroup
-                        intent={!newSchemeName.trim() || ENGINE.schemeManager.schemeNames.includes(newSchemeName.trim()) ? 'danger' : 'primary'}
+                        intent={!newSchemeName.trim() || ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim()) ? 'danger' : 'primary'}
                         value={newSchemeName}
                         onChange={(e) => setNewSchemeName(e.target.value)}
                         placeholder="Scheme name"
@@ -215,7 +215,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
                             onClick={handleSubmit}
                             disabled={
                                 !newSchemeName.trim() ||
-                                ENGINE.schemeManager.schemeNames.includes(newSchemeName.trim()) ||
+                                ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim()) ||
                                 (!!uploadedSchemeData?.svgElements && !allSvgsSatisfied)
                             }
                         />

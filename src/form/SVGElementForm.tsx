@@ -19,7 +19,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [svgReference, setSvgReference] = useState("");
-    const [schemeName, setSchemeName] = useState(SchemeManager.InternalSchemeName)
+    const [schemeName, setSchemeName] = useState<string>(SchemeManager.InternalSchemeName)
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (file: File) => {
@@ -131,9 +131,9 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
                 >
                     <HTMLSelect
                         id="scheme-input"
-                        value={svgReference}
+                        value={schemeName}
                         onChange={(e) => setSchemeName(e.target.value)}>
-                            {ENGINE.schemeManager.schemeNames.map((name) => {
+                            {ENGINE.schemeManager.allSchemeNames.map((name) => {
                                 return <option key={name} value={name}>{name}</option>
                             })}
                         </HTMLSelect>

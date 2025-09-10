@@ -105,9 +105,10 @@ export default class SchemeManager {
     get allSchemes(): SchemeSet {
         return {...this._userSchemeSet, [SchemeManager.InternalSchemeName]: this.internalScheme};
     }
-    get schemeNames(): string[] {
+    get allSchemeNames(): string[] {
         return Object.keys(this.allSchemes);
     }
+
     public get allSVGData(): Record<string, SVGDict> {
         var svgData: Record<string, SVGDict> = {}
         for (var [schemeName, schemeData] of Object.entries(this.allSchemes)) {
@@ -117,9 +118,9 @@ export default class SchemeManager {
     }
 
     public setUserScheme(name: string, schemeData: PartialUserSchemeData) {
-        if (name === SchemeManager.InternalSchemeName) {
-            throw new Error(`Cannot override default scheme`);
-        }
+        // if (name === SchemeManager.InternalSchemeName) {
+        //     throw new Error(`Cannot override default scheme`);
+        // }
         this._userSchemeSet[name] = schemeData;
         this.emitChange();
     }
