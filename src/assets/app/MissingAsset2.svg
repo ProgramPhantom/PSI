@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50" role="img" aria-labelledby="title desc">
+  <title id="title">Missing asset placeholder</title>
+  <desc id="desc">A thin wireframe square with an X and the text 'asset missing' in a harsh pink/purple color.</desc>
+
+  <!-- Background (transparent) -->
+  <rect width="100%" height="100%" fill="none" />
+
+  <!-- Wireframe square -->
+  <rect x="0" y="0" width="50" height="50" fill="none" stroke="#D000A0" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- X through the square -->
+  <line x1="0" y1="0" x2="50" y2="50" stroke="#D000A0" stroke-width="1"/>
+  <line x1="0" y1="50" x2="50" y2="0" stroke="#D000A0" stroke-width="1"/>
+
+  <!-- Centered text -->
+  <text x="50%" y="10%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Inter, Roboto, Arial, sans-serif" font-size="4" font-weight="700"
+        fill="#D000A0">asset missing</text>
+</svg>

@@ -33,7 +33,103 @@
                             "x": 32,
                             "y": 5,
                             "ref": "acquire",
-                            "id": "SvgjsSvg1480",
+                            "id": "SvgjsSvg1000",
+                            "type": "svg"
+                        },
+                        {
+                            "svgDataRef": "acquire",
+                            "style": {},
+                            "offset": [
+                                0,
+                                0
+                            ],
+                            "mountConfig": {
+                                "orientation": "top",
+                                "alignment": "centre",
+                                "noSections": 1,
+                                "channelID": "9c660aa97222e",
+                                "sequenceID": "6a8f9f6ba47758",
+                                "index": 1,
+                                "mountOn": true,
+                                "dropEffect": "insert",
+                                "insert": true
+                            },
+                            "padding": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "contentWidth": 150,
+                            "contentHeight": 75,
+                            "x": 182,
+                            "y": 5,
+                            "ref": "acquire",
+                            "id": "SvgjsSvg1002",
+                            "type": "svg"
+                        },
+                        {
+                            "svgDataRef": "halfsine",
+                            "style": {},
+                            "offset": [
+                                0,
+                                0
+                            ],
+                            "mountConfig": {
+                                "orientation": "top",
+                                "alignment": "centre",
+                                "noSections": 1,
+                                "channelID": "9c660aa97222e",
+                                "sequenceID": "6a8f9f6ba47758",
+                                "index": 2,
+                                "mountOn": true,
+                                "dropEffect": "insert",
+                                "insert": true
+                            },
+                            "padding": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "contentWidth": 15,
+                            "contentHeight": 20,
+                            "x": 332,
+                            "y": 60,
+                            "ref": "halfsine",
+                            "id": "SvgjsSvg1004",
+                            "type": "svg"
+                        },
+                        {
+                            "svgDataRef": "chirplohi",
+                            "style": {},
+                            "offset": [
+                                0,
+                                0
+                            ],
+                            "mountConfig": {
+                                "orientation": "top",
+                                "alignment": "centre",
+                                "noSections": 1,
+                                "channelID": "9c660aa97222e",
+                                "sequenceID": "6a8f9f6ba47758",
+                                "index": 3,
+                                "mountOn": true,
+                                "dropEffect": "insert",
+                                "insert": true
+                            },
+                            "padding": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "contentWidth": 50,
+                            "contentHeight": 50,
+                            "x": 347,
+                            "y": 30,
+                            "ref": "weird-fish",
+                            "id": "SvgjsSvg1006",
                             "type": "svg"
                         }
                     ],
@@ -82,7 +178,7 @@
                         0,
                         0
                     ],
-                    "contentWidth": 177,
+                    "contentWidth": 392,
                     "contentHeight": 98,
                     "x": 5,
                     "y": 5,
@@ -101,7 +197,7 @@
                 5,
                 5
             ],
-            "contentWidth": 177,
+            "contentWidth": 392,
             "contentHeight": 98,
             "x": 0,
             "y": 0,
@@ -120,7 +216,7 @@
         0,
         0
     ],
-    "contentWidth": 187,
+    "contentWidth": 402,
     "contentHeight": 108,
     "x": 0,
     "y": 0,

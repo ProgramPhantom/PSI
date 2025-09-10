@@ -14,7 +14,7 @@ import { DeepMutable, DeepReadonly, mergeObjectsPreferNonEmpty } from "./util"
 import { Visual } from "./visual"
 import Space from "./space"
 import Label from "./label"
-import MissingAssetSVG from "../assets/app/MissingAsset.svg?raw";
+import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
 const ASSET_SVGS = import.meta.glob('../assets/svg/*.svg', { as: 'raw', eager: true });

@@ -58,7 +58,8 @@ const FocusLevels: Record<number, Record<HoverBehaviour, UserComponentType[]>> =
         ],
         carry: [
             "label",
-            "text"
+            "text",
+            "diagram"
         ],
         conditional: [
             "svg",
@@ -66,8 +67,8 @@ const FocusLevels: Record<number, Record<HoverBehaviour, UserComponentType[]>> =
         ]
     },
     1: {
-        terminate: [],
-        carry: [],
+        terminate: ["diagram"],
+        carry: ["diagram"],
         conditional: []
     }
 }
