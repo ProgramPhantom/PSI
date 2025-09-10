@@ -5,7 +5,7 @@
                 {
                     "mountedElements": [
                         {
-                            "svgDataRef": "acquire",
+                            "svgDataRef": "tick",
                             "style": {},
                             "offset": [
                                 0,
@@ -15,105 +15,9 @@
                                 "orientation": "top",
                                 "alignment": "centre",
                                 "noSections": 1,
-                                "channelID": "9c660aa97222e",
-                                "sequenceID": "6a8f9f6ba47758",
+                                "channelID": "6d2f832072ac68",
+                                "sequenceID": "25c3c09c97e32",
                                 "index": 0,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 150,
-                            "contentHeight": 75,
-                            "x": 32,
-                            "y": 5,
-                            "ref": "acquire",
-                            "id": "SvgjsSvg1000",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "acquire",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "9c660aa97222e",
-                                "sequenceID": "6a8f9f6ba47758",
-                                "index": 1,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 150,
-                            "contentHeight": 75,
-                            "x": 182,
-                            "y": 5,
-                            "ref": "acquire",
-                            "id": "SvgjsSvg1002",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "halfsine",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "9c660aa97222e",
-                                "sequenceID": "6a8f9f6ba47758",
-                                "index": 2,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 15,
-                            "contentHeight": 20,
-                            "x": 332,
-                            "y": 60,
-                            "ref": "halfsine",
-                            "id": "SvgjsSvg1004",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "chirplohi",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "9c660aa97222e",
-                                "sequenceID": "6a8f9f6ba47758",
-                                "index": 3,
                                 "mountOn": true,
                                 "dropEffect": "insert",
                                 "insert": true
@@ -126,14 +30,78 @@
                             ],
                             "contentWidth": 50,
                             "contentHeight": 50,
-                            "x": 347,
-                            "y": 30,
-                            "ref": "weird-fish",
-                            "id": "SvgjsSvg1006",
+                            "x": 32,
+                            "y": 5,
+                            "ref": "new",
+                            "id": "SvgjsSvg1000",
+                            "type": "svg"
+                        },
+                        {
+                            "svgDataRef": "tick",
+                            "style": {},
+                            "offset": [
+                                0,
+                                0
+                            ],
+                            "mountConfig": {
+                                "orientation": "top",
+                                "alignment": "centre",
+                                "noSections": 1,
+                                "channelID": "6d2f832072ac68",
+                                "sequenceID": "25c3c09c97e32",
+                                "index": 1,
+                                "mountOn": true,
+                                "dropEffect": "insert",
+                                "insert": true
+                            },
+                            "padding": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "contentWidth": 50,
+                            "contentHeight": 50,
+                            "x": 82,
+                            "y": 5,
+                            "ref": "new",
+                            "id": "SvgjsSvg1002",
+                            "type": "svg"
+                        },
+                        {
+                            "svgDataRef": "180",
+                            "style": {},
+                            "offset": [
+                                0,
+                                0
+                            ],
+                            "mountConfig": {
+                                "orientation": "top",
+                                "alignment": "centre",
+                                "noSections": 1,
+                                "channelID": "6d2f832072ac68",
+                                "sequenceID": "25c3c09c97e32",
+                                "index": 2,
+                                "mountOn": true,
+                                "dropEffect": "insert",
+                                "insert": true
+                            },
+                            "padding": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "contentWidth": 50,
+                            "contentHeight": 50,
+                            "x": 132,
+                            "y": 5,
+                            "ref": "180",
+                            "id": "SvgjsSvg1540",
                             "type": "svg"
                         }
                     ],
-                    "sequenceID": "6a8f9f6ba47758",
+                    "sequenceID": "25c3c09c97e32",
                     "style": {
                         "thickness": 3,
                         "barStyle": {
@@ -163,9 +131,9 @@
                         "contentWidth": 27,
                         "contentHeight": 20,
                         "x": 5,
-                        "y": 71.5,
+                        "y": 46.5,
                         "ref": "TEXT",
-                        "id": "9bfae7a48339c",
+                        "id": "8d17a422b1d5d",
                         "type": "lower-abstract"
                     },
                     "offset": [
@@ -178,12 +146,12 @@
                         0,
                         0
                     ],
-                    "contentWidth": 392,
-                    "contentHeight": 98,
+                    "contentWidth": 177,
+                    "contentHeight": 73,
                     "x": 5,
                     "y": 5,
                     "ref": "my-channel",
-                    "id": "9c660aa97222e",
+                    "id": "6d2f832072ac68",
                     "type": "channel"
                 }
             ],
@@ -197,12 +165,12 @@
                 5,
                 5
             ],
-            "contentWidth": 392,
-            "contentHeight": 98,
+            "contentWidth": 177,
+            "contentHeight": 73,
             "x": 0,
             "y": 0,
             "ref": "sequence",
-            "id": "6a8f9f6ba47758",
+            "id": "25c3c09c97e32",
             "type": "sequence"
         }
     ],
@@ -216,11 +184,11 @@
         0,
         0
     ],
-    "contentWidth": 402,
-    "contentHeight": 108,
+    "contentWidth": 187,
+    "contentHeight": 83,
     "x": 0,
     "y": 0,
     "ref": "diagram",
-    "id": "2377d1ebac46a",
+    "id": "4210fe643edff",
     "type": "diagram"
 }

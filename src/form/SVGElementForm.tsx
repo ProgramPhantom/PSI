@@ -7,6 +7,7 @@ import ENGINE from '../vanilla/engine';
 import { ISVGElement } from '../vanilla/svgElement';
 import VisualForm from './VisualForm';
 import { FormRequirements } from "./FormDiagramInterface";
+import UploadArea from '../UploadArea';
 
 interface ISVGElementFormProps extends FormRequirements {
 
@@ -17,7 +18,6 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
     const formControls = useFormContext<ISVGElement>();
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [isDragOver, setIsDragOver] = useState(false);
     const [svgReference, setSvgReference] = useState("");
     const [schemeName, setSchemeName] = useState(SchemeManager.InternalSchemeName)
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,33 +30,6 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
                 message: "Please select an SVG file",
                 intent: "warning"
             });
-        }
-    };
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragOver(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragOver(false);
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragOver(false);
-        
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) {
-            handleFileSelect(files[0]);
-        }
-    };
-
-    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (files && files.length > 0) {
-            handleFileSelect(files[0]);
         }
     };
 
@@ -166,73 +139,18 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
                         </HTMLSelect>
                 </FormGroup>
                 
-                <div
-                    style={{
-                        border: `2px dashed ${isDragOver ? '#137cbd' : '#c1c1c1'}`,
-                        borderRadius: '8px',
-                        padding: '40px 20px',
-                        textAlign: 'center',
-                        backgroundColor: isDragOver ? '#f0f8ff' : '#fafafa',
-                        transition: 'all 0.2s ease',
-                        position: 'relative',
-                        minHeight: '200px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginTop: '16px'
+                <UploadArea
+                    selectedFile={selectedFile}
+                    onFileSelected={handleFileSelect}
+                    onRemoveFile={removeFile}
+                    accept={".svg"}
+                    promptText={"Drag and drop an SVG file here, or"}
+                    buttonText={"Choose File"}
+                    setInputRef={(el) => {
+                        if (fileInputRef) (fileInputRef as any).current = el
                     }}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                >
-                    {selectedFile ? (
-                        <div style={{ width: '100%' }}>
-                            <div style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between',
-                                backgroundColor: '#e1f5fe',
-                                padding: '12px',
-                                borderRadius: '6px',
-                                border: '1px solid #b3e5fc'
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <Icon icon="document" size={16} style={{ marginRight: '8px' }} />
-                                    <span style={{ fontWeight: '500' }}>{selectedFile.name}</span>
-                                </div>
-                                <Button
-                                    icon="cross"
-                                    minimal
-                                    small
-                                    onClick={removeFile}
-                                    style={{ marginLeft: '8px' }}
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <Icon icon="upload" size={48} style={{ marginBottom: '16px', color: '#5c7080' }} />
-                            <p style={{ marginBottom: '16px', color: '#5c7080' }}>
-                                Drag and drop an SVG file here, or
-                            </p>
-                            <Button
-                                icon="folder-open"
-                                intent="primary"
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                Choose File
-                            </Button>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".svg"
-                                onChange={handleFileInputChange}
-                                style={{ display: 'none' }}
-                            />
-                        </>
-                    )}
-                </div>
+                    style={{ marginTop: '16px' }}
+                />
             </div>
             
             <DialogFooter

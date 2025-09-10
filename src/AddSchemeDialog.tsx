@@ -3,6 +3,7 @@ import React from 'react';
 import ENGINE from './vanilla/engine';
 import { IUserSchemeData } from './vanilla/default';
 import { myToaster } from './App';
+import UploadArea from './UploadArea';
 
 interface AddSchemeDialogProps {
     isOpen: boolean;
@@ -13,7 +14,6 @@ interface AddSchemeDialogProps {
 const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSchemeCreated }) => {
     const [newSchemeName, setNewSchemeName] = React.useState('');
     const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
-    const [isDragOver, setIsDragOver] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const [uploadedSchemeData, setUploadedSchemeData] = React.useState<IUserSchemeData | null>(null);
@@ -22,7 +22,6 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
     const resetState = () => {
         setNewSchemeName('');
         setSelectedFile(null);
-        setIsDragOver(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
         setUploadedSchemeData(null);
         setSvgUploads({});
@@ -55,20 +54,6 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
         }
     };
 
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragOver(true);
-    };
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragOver(false);
-    };
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragOver(false);
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) handleFileSelect(files[0]);
-    };
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files && files.length > 0) handleFileSelect(files[0]);
@@ -147,56 +132,17 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 
                 <Text style={{ marginBottom: '12px' }}>Optionally upload a JSON file to populate the scheme:</Text>
 
-                <div
-                    style={{
-                        border: `2px dashed ${isDragOver ? '#137cbd' : '#c1c1c1'}`,
-                        borderRadius: '8px',
-                        padding: '40px 20px',
-                        textAlign: 'center',
-                        backgroundColor: isDragOver ? '#f0f8ff' : '#fafafa',
-                        transition: 'all 0.2s ease',
-                        position: 'relative',
-                        minHeight: '200px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                <UploadArea
+                    selectedFile={selectedFile}
+                    onFileSelected={handleFileSelect}
+                    onRemoveFile={removeFile}
+                    accept={'.json'}
+                    promptText={'Drag and drop a JSON scheme file here, or'}
+                    buttonText={'Choose File'}
+                    setInputRef={(el) => {
+                        if (fileInputRef) (fileInputRef as any).current = el
                     }}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                >
-                    {selectedFile ? (
-                        <div style={{ width: '100%' }}>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    backgroundColor: '#e1f5fe',
-                                    padding: '12px',
-                                    borderRadius: '6px',
-                                    border: '1px solid #b3e5fc',
-                                }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <Icon icon="document" size={16} style={{ marginRight: '8px' }} />
-                                    <span style={{ fontWeight: '500' }}>{selectedFile.name}</span>
-                                </div>
-                                <Button icon="cross" onClick={removeFile} style={{ marginLeft: '8px' }} />
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <Icon icon="upload" size={48} style={{ marginBottom: '16px', color: '#5c7080' }} />
-                            <p style={{ marginBottom: '16px', color: '#5c7080' }}>Drag and drop a JSON scheme file here, or</p>
-                            <Button icon="folder-open" intent="primary" onClick={() => fileInputRef.current?.click()}>
-                                Choose File
-                            </Button>
-                            <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileInputChange} style={{ display: 'none' }} />
-                        </>
-                    )}
-                </div>
+                />
 
                 {uploadedSchemeData?.svgElements && (
                     <div style={{ marginTop: '16px' }}>
