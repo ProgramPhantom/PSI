@@ -6,13 +6,13 @@ import { AllComponentTypes, AllElementIdentifiers, UserComponentType } from "../
 import ENGINE from "../../logic/engine";
 import { ID } from "../../logic/point";
 import { Visual } from "../../logic/visual";
-import BindingsSelector, { PointBind } from './BindingsSelector';
 import Debug from '../debug/Debug';
 import CanvasDraggableElement from '../dnd/CanvasDraggableElement';
 import { CanvasDragLayer } from '../dnd/CanvasDragLayer';
 import { CanvasDropContainer } from '../dnd/CanvasDropContainer';
 import DropField from '../dnd/DropField';
 import { HitboxLayer } from './HitboxLayer';
+import { DrawArrow } from './DrawArrow';
 
  
 
@@ -56,13 +56,16 @@ interface ICanvasProps {
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
+    // Debug
     const [debugDialogOpen, setDebugDialogOpen] = useState(false);
     const [debugElements, setDebugElements] = useState<Visual[]>([]);
     const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<AllElementIdentifiers, boolean>>(DefaultDebugSelection);
-    const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 
-    const [start, setStart] = useState<PointBind | undefined>(undefined);
-    const [end, setEnd] = useState<PointBind | undefined>(undefined);
+    const [zoom, setZoom] = useState(2);
+    const [dragging, setDragging] = useState(false);
+    const [fileName, setFileName] = useState(ENGINE.currentImageName);
+
+    const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 
     const [focusLevel, setFocusLevel] = useState(0);
 
@@ -85,16 +88,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         setDebugSelectionTypes(newDebugSelection);
     }
 
-    console.log("CREATING CANVAS")
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
-    
 
     let selectedElement = props.selectedElement;
     
-    const [zoom, setZoom] = useState(2);
-    const [dragging, setDragging] = useState(false);
-    const [panning, setPanning] = useState(false);
-    const [fileName, setFileName] = useState(ENGINE.currentImageName);
+    
 
     const deselect = () => {
         selectedElement?.svg?.show();
@@ -203,12 +201,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                   limitToBounds={false} 
                                   centerZoomedOut={true}
                                   disabled={dragging}
-                                  onPanningStart={() => {setPanning(true)}}
-                                  onPanningStop={() => {setPanning(false)}}
                                   doubleClick={{disabled: true}}>
                     
                     
-                        
                     <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
                         
 
@@ -247,15 +242,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                     style={{stroke: `${Colors.BLUE3}`,
                                     strokeWidth: "1px", fill: `none`, strokeDasharray: "1 1",}} ></rect>
                                 </svg> 
-                                {props.selectionMode === "draw" ? 
-                                <BindingsSelector element={hoveredElement} 
-                                    selectedStart={start} setStart={setStart}
-                                    selectedEnd={end} setEnd={setEnd}></BindingsSelector> : <></>}
-
                                 </>
       
                                 : <></>}
 
+                                {props.selectionMode === "draw" ? 
+                                <DrawArrow hoveredElement={hoveredElement}></DrawArrow> : <></>}
                                 
                                 {/* Image */}
                                 <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv"></div>
