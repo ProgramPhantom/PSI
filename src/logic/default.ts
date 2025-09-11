@@ -17,7 +17,7 @@ import Label from "./label"
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
-const ASSET_SVGS: SVGDict = import.meta.glob('../assets/svg/*.svg', { as: 'raw', eager: true });
+const ASSET_SVGS: SVGDict = import.meta.glob('../assets/svg/*.svg', { query: '?raw', import: 'default', eager: true });
 
 
 const svgPath: string = "\\src\\assets\\"
