@@ -246,8 +246,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
       
                                 : <></>}
 
-                                {props.selectionMode === "draw" ? 
-                                <DrawArrow hoveredElement={hoveredElement}></DrawArrow> : <></>}
+
                                 
                                 {/* Image */}
                                 <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv"></div>
@@ -277,7 +276,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                         </CanvasDraggableElement>
                                         </div>
                                      : <></>
-                                }   
+                                }
+
+                                
+                                {/* Tools */}
+                                {props.selectionMode === "draw" ? 
+                                <DrawArrow hoveredElement={hoveredElement}></DrawArrow> : <></>}
                         </div>
                     </TransformComponent>
                     
