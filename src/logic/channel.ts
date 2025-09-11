@@ -95,7 +95,7 @@ export default class Channel extends Collection implements IHaveStructure {
         this.labelColumn.bind(this.bottomAligner, "x", "here", "here", undefined);
 
         if (this.label) {
-            this._labelColumn.add(this.label)
+            this._labelColumn.add(this.label, undefined, false, false)
         }
     }
     get labelColumn(): Aligner<Visual> {
@@ -183,10 +183,6 @@ export default class Channel extends Collection implements IHaveStructure {
         this.bar.bind(this.label, "y", "centre", "centre");
 
         this.add(this.label);
-        
-
-
-
     }
 
 

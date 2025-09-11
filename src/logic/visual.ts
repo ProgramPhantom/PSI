@@ -6,6 +6,8 @@ import LabelGroup from './labelGroup'
 import Mountable, { IMountable } from './mountable'
 import { ID } from './point'
 import { posPrecision } from './util'
+import { SVG } from '@svgdotjs/svg.js'
+import { Rect } from '@svgdotjs/svg.js'
 
 
 type Padding = number | [number, number] | [number, number, number, number]
@@ -61,6 +63,15 @@ export abstract class Visual extends Mountable implements IVisual {
 
 
     abstract draw(surface: Element): void 
+    public getHitbox(): Rect[] {
+        var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
+
+        hitbox.size(this.width, this.height);
+        hitbox.move(this.x, this.y);
+        hitbox.fill(`transparent`).opacity(0.3);
+        return [hitbox];
+    }
+
     erase(): void {
         this.svg?.remove();
     }

@@ -4,6 +4,8 @@ import { ID } from "./point";
 import Spacial, { Bounds } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual, doesDraw } from "./visual";
+import { SVG } from "@svgdotjs/svg.js";
+import { Rect } from "@svgdotjs/svg.js";
 
 
 export interface ICollection extends IVisual {
@@ -49,15 +51,32 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         // group.move(this.x, this.y).size(this.width, this.height)
         this.svg = group;
 
-        // var hitbox = new Rect().attr({"data-editor": "hitbox", "zIndex": -1, "pointer-events": "bounding-box"}).x(0).y(0)
-        //                                    .width("100%").height("100%").fill("transparent").id(this.id)
-        //                                    .stroke("none");
-        // this.svg.add(hitbox)
         surface.add(this.svg);
     }
+
+
+    public getHitbox(): Rect[] {
+        var collectionHitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
+
+        collectionHitbox.size(this.width, this.height);
+        collectionHitbox.move(this.x, this.y);
+        collectionHitbox.fill(`transparent`).opacity(0.3);
+
+        var childHitboxes: Rect[] = [];
+        
+        for (var child of this.children) {
+            if (child instanceof Visual) {
+                childHitboxes.push(...child.getHitbox());
+            }
+        }
+
+
+        return [collectionHitbox, ...childHitboxes];
+    }
  
-    add(child: T, index?: number, bindHere: boolean = false) {
-        child.parentId = this.id;
+
+    add(child: T, index?: number, bindHere: boolean = false, setParentId: boolean=true) {
+        if (setParentId) {child.parentId = this.id};
         this.children.splice(index !== undefined ? index : this.children.length-1, 0, child);
         
         child.subscribe(this.computeBoundary.bind(this));

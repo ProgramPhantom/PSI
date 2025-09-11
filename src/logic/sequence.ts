@@ -327,7 +327,7 @@ export default class Sequence extends Collection implements IHaveStructure {
             for (var i = 0; i<element.mountConfig.noSections; i++) {
                 var newSpace = new Space({contentHeight: 0, contentWidth: 10, padding: [0, 0, 0, 0]})
 
-                this.pulseColumns.children[INDEX+i].add(newSpace, undefined, false, element.mountConfig.alignment);
+                this.pulseColumns.children[INDEX+i].add(newSpace, undefined, false, true, element.mountConfig.alignment);
                 element.dummies.push(newSpace);
             }
 
@@ -338,7 +338,7 @@ export default class Sequence extends Collection implements IHaveStructure {
             endColumn.bind(element, "x", "far", "far")
         } else {
             // Add the element to the sequence's column collection, this should trigger resizing of bars
-            this.pulseColumns.children[INDEX].add(element, undefined, false, element.mountConfig.alignment);
+            this.pulseColumns.children[INDEX].add(element, undefined, false, false, element.mountConfig.alignment);
             // This will set the X of the child ^^^ (the column should gain width immediately.)
         }
 

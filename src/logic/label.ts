@@ -120,14 +120,6 @@ export default class Label extends Collection implements ILabel {
         }
         
         var group = new G().id(this.id).attr({"title": this.ref});
-
-        var hitbox = new Rect().attr({"data-editor": "hitbox", "zIndex": -1}).x(this.x).y(this.y)
-                                .width(this.width).height(this.height).fill("transparent").id(this.id)
-                                .stroke("none")
-
-
-        
-        surface.add(hitbox);
         
         // Clip
 
