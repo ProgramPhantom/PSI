@@ -4,6 +4,7 @@ import { ID } from "./point";
 import Spacial, { Bounds } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual, doesDraw } from "./visual";
+import { SVG } from "@svgdotjs/svg.js";
 
 
 export interface ICollection extends IVisual {
@@ -55,7 +56,24 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         // this.svg.add(hitbox)
         surface.add(this.svg);
     }
+
+
+    public getHitbox(): Element {
+        var mainHitbox = SVG().rect();
+
+        mainHitbox.size(this.width, this.height);
+        mainHitbox.fill("transparent");
+
+        this.children.forEach((c) => {
+            if (c instanceof Visual) {
+                mainHitbox.add(c.getHitbox());
+            }
+        })
+
+        return mainHitbox;
+    }
  
+
     add(child: T, index?: number, bindHere: boolean = false) {
         child.parentId = this.id;
         this.children.splice(index !== undefined ? index : this.children.length-1, 0, child);
