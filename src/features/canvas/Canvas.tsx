@@ -12,6 +12,7 @@ import CanvasDraggableElement from '../dnd/CanvasDraggableElement';
 import { CanvasDragLayer } from '../dnd/CanvasDragLayer';
 import { CanvasDropContainer } from '../dnd/CanvasDropContainer';
 import DropField from '../dnd/DropField';
+import { HitboxLayer } from './HitboxLayer';
 
  
 
@@ -46,32 +47,6 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
     "bottom aligner": false,
 }
 
-type HoverBehaviour = "terminate" | "carry" | "conditional"
-// Terminate: return this object immediately
-// Carry: always pass to parent
-// Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
-const FocusLevels: Record<number, Record<HoverBehaviour, UserComponentType[]>> = {
-    0: {
-        terminate: [
-            "label-group",
-            "channel"
-        ],
-        carry: [
-            "label",
-            "text",
-            "diagram"
-        ],
-        conditional: [
-            "svg",
-            "rect"
-        ]
-    },
-    1: {
-        terminate: ["diagram"],
-        carry: ["diagram"],
-        conditional: []
-    }
-}
 
 
 interface ICanvasProps {
@@ -121,97 +96,54 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     const [panning, setPanning] = useState(false);
     const [fileName, setFileName] = useState(ENGINE.currentImageName);
 
-    function deselect() {
+    const deselect = () => {
         selectedElement?.svg?.show();
         setFocusLevel(0);
         props.select(undefined);
     }
 
-    function select(e: Visual) {
+    const stopHover = () => {
+        setHoveredElement(undefined);
+    }
+
+    const selectVisual = (e: Visual) => {
         props.select(e);
         setFocusLevel(focusLevel + 1)
         e.svg?.hide();
     }
 
-    function doubleClick(click: React.MouseEvent<HTMLDivElement>) {
-        var targetSVGId: string | undefined;
-        targetSVGId = (click.target as HTMLElement).id;
-
-        var element: Visual | undefined = getMouseElement(targetSVGId)
+    const doubleClick = (click: React.MouseEvent<HTMLDivElement>) => {
+        var element: Visual | undefined = hoveredElement;
         
         if (element === undefined) { 
             deselect()
         } else {
-            select(element)
+            selectVisual(element)
         }
     }
 
-    function singleClick(click: React.MouseEvent<HTMLDivElement>) {
+    const singleClick = (click: React.MouseEvent<HTMLDivElement>) => {
         switch (props.selectionMode) {
             case "select":
-                deselect();
+                if (selectedElement && hoveredElement !== selectedElement) {
+                    deselect();
+                }
                 break;
             case "draw":
 
         }
-        
     }
 
-    function mouseOver(over: React.MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
-        var targetSVGId: string | undefined;
-        targetSVGId = (over.target as HTMLElement).id;
-        console.log(targetSVGId);
-        var element: Visual | undefined = getMouseElement(targetSVGId)
-        
+    const constOnHitboxHover = (element?: Visual) => {
         setHoveredElement(element);
     }
 
-    function getMouseElement(id: ID | undefined): Visual | undefined {
-        if (id === undefined) {return undefined}
-        var initialElement: Visual | undefined = ENGINE.handler.identifyElement(id);
-        if (initialElement === undefined) {return undefined}
-
-        var terminators: AllComponentTypes[] = FocusLevels[focusLevel].terminate;
-        var carry: AllComponentTypes[] = FocusLevels[focusLevel].carry;
-        var conditional: AllComponentTypes[] = FocusLevels[focusLevel].conditional;
-
-        function walkUp(currElement: Visual): Visual | undefined {
-            if (currElement.parentId !== undefined) {
-                var elementUp: Visual | undefined = ENGINE.handler.identifyElement(currElement.parentId);
-            } else {
-                return currElement
-            }
-            
-            if (elementUp === undefined) { return currElement }
-            
-            var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual).ElementType;
-            var elementUpType: AllComponentTypes = (elementUp.constructor as typeof Visual).ElementType;
-            if (currElementType === "text") {
-                console.log()
-            }
-
-            if (terminators.includes(currElementType)) {
-                return currElement
-            }
-            if (conditional.includes(currElementType) && !terminators.includes(elementUpType)) {
-                return currElement;
-            }
-            
-            elementUp = walkUp(elementUp);
-            
-            
-            return elementUp
-        }
-
-        return walkUp(initialElement);
-    }
-
-    function handleFileNameChange(newFileName: string) {
+    const handleFileNameChange = (newFileName: string) => {
         setFileName(newFileName);
         ENGINE.currentImageName = newFileName;
     }
 
-    function handleFileNameBlur() {
+    const handleFileNameBlur = () => {
         // Check if filename ends with .svg when editing is finished
         if (!fileName.toLowerCase().endsWith('.svg')) {
             // If it doesn't end with .svg, extract the base name and add .svg
@@ -232,10 +164,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     return (
         <>
         <div style={{width: "100%", height: "100%",  display: "flex", position: "relative"}} 
-             onDoubleClick={(e) => {doubleClick(e); }}
+             onDoubleClick={(e) => {doubleClick(e)}}
              onMouseUp={(e) => {singleClick(e); setDragging(false)}} 
-             onDragEnd={() => {setDragging(false)}}
-             onMouseOver={(e) => {mouseOver(e)}}>
+             onDragEnd={() => {setDragging(false)}}>
 
             {/* Image name display text box - positioned outside TransformWrapper */}
             <div style={{
@@ -263,7 +194,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                 zIndex: 100,
                 }}>
 
-                {hoveredElement ? <Text>{hoveredElement.ref}: {hoveredElement.id}</Text> : <Text>none</Text>}
+                {hoveredElement ? <Text>Hovered: {hoveredElement.ref}: {hoveredElement.id}</Text> : <Text>Hovered: none</Text>}
             </div>
             <CanvasDropContainer scale={zoom} >
                 <TransformWrapper initialScale={zoom} 
@@ -303,7 +234,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                      border: "dashed", 
                                      borderWidth: "0.2px", 
                                      borderColor: "#0000003d"
-                                }}>
+                                }} onMouseLeave={() => stopHover()}>
+
+                                <HitboxLayer focusLevel={focusLevel} setHoveredElement={constOnHitboxHover}></HitboxLayer>
 
                                 {/* Hover highlight */}
                                 { hoveredElement !== undefined ? 

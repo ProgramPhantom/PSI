@@ -142,18 +142,10 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 					this.offset = [this.offset[0], Math.abs(this.offset[1])]
 				}
 			}
-			
 
 			// Position, size and draw svg.
 			this.svg.move(this.drawX, this.drawY);
 			this.svg.size(this.contentWidth, this.contentHeight);
-
-			var hitbox = SVG().rect().attr({"data-editor": "hitbox", "zIndex": -1}).x(0).y(0)
-								   .width("100%").height("100%").fill("transparent").id(this.id)
-								   .stroke("none");
-			this.svg.add(hitbox);
-			
-					
 
 			surface.add(this.svg);
 		}
