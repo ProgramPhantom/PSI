@@ -1,7 +1,7 @@
 import { Checkbox, Colors, Dialog, DialogBody, EditableText, HotkeyConfig, Label, Text, useHotkeys } from '@blueprintjs/core';
 import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
-import { SelectionMode } from "../../app/App";
+import { IToolConfig, Tool } from "../../app/App";
 import { AllComponentTypes, AllElementIdentifiers, UserComponentType } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
 import { ID } from "../../logic/point";
@@ -12,7 +12,7 @@ import { CanvasDragLayer } from '../dnd/CanvasDragLayer';
 import { CanvasDropContainer } from '../dnd/CanvasDropContainer';
 import DropField from '../dnd/DropField';
 import { HitboxLayer } from './HitboxLayer';
-import { DrawArrow } from './DrawArrow';
+import { DrawArrow, IDrawArrowConfig } from './DrawArrow';
 
  
 
@@ -47,12 +47,16 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
     "bottom aligner": false,
 }
 
+export interface ISelectConfig extends IToolConfig {
+
+}
+
 
 
 interface ICanvasProps {
     select: (element?: Visual) => void
     selectedElement: Visual | undefined,
-    selectionMode: SelectionMode
+    selectedTool: Tool
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
@@ -64,6 +68,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     const [zoom, setZoom] = useState(2);
     const [dragging, setDragging] = useState(false);
     const [fileName, setFileName] = useState(ENGINE.currentImageName);
+
+
 
     const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 
@@ -121,13 +127,13 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     }
 
     const singleClick = (click: React.MouseEvent<HTMLDivElement>) => {
-        switch (props.selectionMode) {
+        switch (props.selectedTool.type) {
             case "select":
                 if (selectedElement && hoveredElement !== selectedElement) {
                     deselect();
                 }
                 break;
-            case "draw":
+            case "arrow":
 
         }
     }
@@ -280,8 +286,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
                                 
                                 {/* Tools */}
-                                {props.selectionMode === "draw" ? 
-                                <DrawArrow hoveredElement={hoveredElement}></DrawArrow> : <></>}
+                                {props.selectedTool.type === "arrow" ? 
+                                <DrawArrow hoveredElement={hoveredElement} config={props.selectedTool.config}></DrawArrow> : <></>}
                         </div>
                     </TransformComponent>
                     

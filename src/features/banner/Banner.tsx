@@ -1,6 +1,6 @@
 import { Button, Checkbox, Classes, Icon, Navbar, Popover } from '@blueprintjs/core'
 import React, { useState } from 'react'
-import { myToaster, SelectionMode } from "../../app/App"
+import { myToaster, Tool } from "../../app/App"
 import { IDiagram } from "../../logic/diagram"
 import ENGINE from "../../logic/engine"
 import { LoadStateDialog } from './LoadStateDialog'
@@ -10,7 +10,9 @@ export interface IBannerProps {
     saveSVG: () => void, 
     savePNG: (width: number, height: number, filename: string) => void,
     openConsole: () => void,
-    selection: {selectionMode: SelectionMode, setSelectionMode: React.Dispatch<React.SetStateAction<SelectionMode>>}
+
+    selectedTool: Tool
+    setTool: (tool: Tool) => void
 }
 
 export default function Banner(props: IBannerProps) {
@@ -58,9 +60,10 @@ export default function Banner(props: IBannerProps) {
                 )} interactionKind='click' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
                 content={<div>
                     
-                    <Checkbox label='Draw Line' onClick={() => props.selection.setSelectionMode(props.selection.selectionMode === "select" ? "draw" : "select")} 
-                    checked={props.selection.selectionMode === "select" ? false : true}></Checkbox>
-                </div>} onClose={() => {}}></Popover>
+                    <Checkbox label='Draw Line' onClick={() => props.setTool({type: "arrow", config: {style: {headStyle: "default"}}})} 
+                    checked={props.selectedTool.type === "arrow" ? true : false}></Checkbox>
+                </div>} onClose={() => {}}>
+                </Popover>
                 
                 <Navbar.Divider />
                 <Button size="small" variant="minimal" icon="cut" text="Copy state" onClick={() => copyState()}/>

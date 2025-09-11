@@ -1,21 +1,28 @@
-import { useEffect, useRef, useState } from "react";
-import { SelectionMode } from "../../app/App"
-import BindingsSelector from "./BindingsSelector";
-import { Visual } from "../../logic/visual";
-import { Dimensions, IBindingPayload } from "../../logic/spacial";
-import ENGINE from "../../logic/engine";
 import { Path } from "@svgdotjs/svg.js";
+import { useEffect, useRef, useState } from "react";
+import { IArrowStyle } from "../../logic/arrow";
+import ENGINE from "../../logic/engine";
+import { Dimensions, IBindingPayload } from "../../logic/spacial";
+import { Visual } from "../../logic/visual";
+import BindingsSelector from "./BindingsSelector";
+import { IToolConfig } from "../../app/App";
 
 
-interface IAnnotatorProps {
+
+interface IDrawArrowProps {
     hoveredElement: Visual | undefined;
+    config: IDrawArrowConfig
+}
+
+export interface IDrawArrowConfig extends IToolConfig {
+    style: IArrowStyle
 }
 
 
 export type PointBind = Record<Dimensions, IBindingPayload> 
 
 
-export function DrawArrow(props: IAnnotatorProps) {
+export function DrawArrow(props: IDrawArrowProps) {
     const [startCoords, setStartCoords] = useState<[number, number] | undefined>(undefined)
 
     const start = useRef<PointBind | undefined>(undefined);
