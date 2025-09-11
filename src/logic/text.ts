@@ -1,6 +1,6 @@
 import { Element, SVG, Element as SVGElement } from '@svgdotjs/svg.js';
 import TeXToSVG from "tex-to-svg";
-import defaultText from "./default/data/text.json";
+import defaultText from "./default/text.json";
 import { cascadeID, FillObject, RecursivePartial, sizePrecision } from "./util";
 import { Display, IVisual, Visual } from "./visual";
 

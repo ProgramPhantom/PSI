@@ -1,7 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
 import { FormRequirements } from "../features/form/FormDiagramInterface";
 import VisualForm from "../features/form/VisualForm";
-import { defaultSpace } from "./default/data";
+import { defaultSpace } from "./default/index";
 import { UserComponentType } from "./diagramHandler";
 import { FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";

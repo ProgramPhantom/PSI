@@ -1,5 +1,5 @@
 import { Svg } from "@svgdotjs/svg.js";
-import defaultLine from "./default/data/line.json";
+import defaultLine from "./default/line.json";
 import { UserComponentType } from "./diagramHandler";
 import LineLike, { ILineLike } from "./lineLike";
 import { FillObject, RecursivePartial } from "./util";

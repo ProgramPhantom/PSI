@@ -2,7 +2,7 @@ import { Element, G, SVG } from "@svgdotjs/svg.js";
 import { FormBundle } from "../features/form/LabelGroupComboForm";
 import SVGElementForm from "../features/form/SVGElementForm";
 import SchemeManager from "./default";
-import { svgPulses } from "./default/data/svgPulse";
+import { svgPulses } from "./default/svgPulse";
 import { UserComponentType } from "./diagramHandler";
 import ENGINE from "./engine";
 import { cascadeID, createWithTemplate, RecursivePartial } from "./util";

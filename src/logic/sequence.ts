@@ -1,7 +1,7 @@
 import Aligner from "./aligner";
 import Channel, { IChannel } from "./channel";
 import Collection, { ICollection } from "./collection";
-import defaultSequence from "./default/data/sequence.json";
+import defaultSequence from "./default/sequence.json";
 import { AllComponentTypes, IHaveStructure } from "./diagramHandler";
 import logger, { Operations, Processes } from "./log";
 import Point from "./point";

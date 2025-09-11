@@ -1,7 +1,7 @@
 import { Element } from '@svgdotjs/svg.js'
 import { FormBundle } from '../features/form/LabelGroupComboForm'
 import VisualForm from '../features/form/VisualForm'
-import { defaultVisual } from './default/data'
+import { defaultVisual } from './default/index'
 import LabelGroup from './labelGroup'
 import Mountable, { IMountable } from './mountable'
 import { ID } from './point'
