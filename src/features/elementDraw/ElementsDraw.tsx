@@ -1,12 +1,12 @@
 import { Button, Dialog, DialogBody, DialogFooter, Divider, EntityTitle, H5, Section, SectionCard, Tab, Tabs, Text } from '@blueprintjs/core';
 import React, { useRef, useState, useSyncExternalStore } from 'react';
 import { ObjectInspector } from 'react-inspector';
-import { myToaster } from "../app/App";
-import SchemeManager, { SchemeSet } from "../logic/default";
-import ENGINE, { SchemeSingletonStore } from "../logic/engine";
-import { Visual } from "../logic/visual";
+import { myToaster } from "../../app/App";
+import SchemeManager, { SchemeSet } from "../../logic/default";
+import ENGINE, { SchemeSingletonStore } from "../../logic/engine";
+import { Visual } from "../../logic/visual";
 import AddSchemeDialog from './AddSchemeDialog';
-import TemplateDraggableElement from './dnd/TemplateDraggableElement';
+import TemplateDraggableElement from '../dnd/TemplateDraggableElement';
 import NewElementDialog from './NewElementDialog';
 
 

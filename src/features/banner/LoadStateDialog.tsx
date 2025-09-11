@@ -1,10 +1,10 @@
 import { Button, Dialog, DialogBody, DialogFooter, Text } from "@blueprintjs/core";
 import { useRef, useState } from "react";
-import { myToaster } from "../app/App";
-import { IDiagram } from "../logic/diagram";
-import ENGINE from "../logic/engine";
-import SVGUploadList from "./SVGUploadList";
-import UploadArea from "./UploadArea";
+import { myToaster } from "../../app/App";
+import { IDiagram } from "../../logic/diagram";
+import ENGINE from "../../logic/engine";
+import SVGUploadList from "../SVGUploadList";
+import UploadArea from "../UploadArea";
 
 
 export interface ILoadStateDialogProps {

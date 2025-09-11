@@ -1,17 +1,17 @@
 import { Checkbox, Colors, Dialog, DialogBody, EditableText, HotkeyConfig, Label, Text, useHotkeys } from '@blueprintjs/core';
 import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
-import { SelectionMode } from "../app/App";
-import { AllComponentTypes, AllElementIdentifiers, UserComponentType } from "../logic/diagramHandler";
-import ENGINE from "../logic/engine";
-import { ID } from "../logic/point";
-import { Visual } from "../logic/visual";
+import { SelectionMode } from "../../app/App";
+import { AllComponentTypes, AllElementIdentifiers, UserComponentType } from "../../logic/diagramHandler";
+import ENGINE from "../../logic/engine";
+import { ID } from "../../logic/point";
+import { Visual } from "../../logic/visual";
 import BindingsSelector, { PointBind } from './BindingsSelector';
-import Debug from './Debug';
-import CanvasDraggableElement from './dnd/CanvasDraggableElement';
-import { CanvasDragLayer } from './dnd/CanvasDragLayer';
-import { CanvasDropContainer } from './dnd/CanvasDropContainer';
-import DropField from './dnd/DropField';
+import Debug from '../debug/Debug';
+import CanvasDraggableElement from '../dnd/CanvasDraggableElement';
+import { CanvasDragLayer } from '../dnd/CanvasDragLayer';
+import { CanvasDropContainer } from '../dnd/CanvasDropContainer';
+import DropField from '../dnd/DropField';
 
  
 

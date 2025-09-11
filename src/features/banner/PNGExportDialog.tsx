@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup, NumericInput } from "@blueprintjs/core";
 import { useState } from "react";
-import ENGINE from "../logic/engine";
+import ENGINE from "../../logic/engine";
 
 interface IPNGExportDialogProps {
     close: () => void

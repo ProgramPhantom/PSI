@@ -1,5 +1,5 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import { PointBind } from "../features/BindingsSelector";
+import { PointBind } from "../features/canvas/BindingsSelector";
 import Arrow from "./arrow";
 import Channel, { IChannel } from "./channel";
 import SchemeManager from "./default";

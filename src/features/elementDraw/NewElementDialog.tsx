@@ -2,14 +2,14 @@ import { Button, Dialog, DialogBody, DialogFooter, Tab, Tabs } from "@blueprintj
 import { useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import * as t from "ts-interface-checker"
-import svgElementTypeSuite from "../typeCheckers/SVGElement-ti"
-import { UserComponentType } from "../logic/diagramHandler"
-import ENGINE from "../logic/engine"
-import { ILabelGroup } from "../logic/labelGroup"
-import { IRectElement } from "../logic/rectElement"
-import { ISVGElement } from "../logic/svgElement"
-import { IVisual } from "../logic/visual"
-import { LabelGroupComboForm, SubmitButtonRef } from "./form/LabelGroupComboForm"
+import svgElementTypeSuite from "../../typeCheckers/SVGElement-ti"
+import { UserComponentType } from "../../logic/diagramHandler"
+import ENGINE from "../../logic/engine"
+import { ILabelGroup } from "../../logic/labelGroup"
+import { IRectElement } from "../../logic/rectElement"
+import { ISVGElement } from "../../logic/svgElement"
+import { IVisual } from "../../logic/visual"
+import { LabelGroupComboForm, SubmitButtonRef } from "../form/LabelGroupComboForm"
 
 const checker = t.createCheckers(svgElementTypeSuite);
 

@@ -1,10 +1,10 @@
 import { Button, Classes, Dialog, DialogFooter, Divider, FormGroup, InputGroup, Text } from '@blueprintjs/core';
 import React from 'react';
-import { myToaster } from "../app/App";
-import { IUserSchemeData } from "../logic/default";
-import ENGINE from "../logic/engine";
-import SVGUploadList from './SVGUploadList';
-import UploadArea from './UploadArea';
+import { myToaster } from "../../app/App";
+import { IUserSchemeData } from "../../logic/default";
+import ENGINE from "../../logic/engine";
+import SVGUploadList from '../SVGUploadList';
+import UploadArea from '../UploadArea';
 
 interface AddSchemeDialogProps {
     isOpen: boolean;

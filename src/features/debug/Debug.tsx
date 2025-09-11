@@ -1,9 +1,9 @@
 import { Colors } from "@blueprintjs/core"
-import { AllElementIdentifiers } from "../logic/diagramHandler"
-import ENGINE from "../logic/engine"
-import { Visual } from "../logic/visual"
-import CollectionDebug from "./debug/Collection"
-import PaddedBoxDebug from "./debug/PaddedBox"
+import { AllElementIdentifiers } from "../../logic/diagramHandler"
+import ENGINE from "../../logic/engine"
+import { Visual } from "../../logic/visual"
+import CollectionDebug from "./Collection"
+import PaddedBoxDebug from "./PaddedBox"
 
 interface IDebug {
     debugGroupSelection: Record<AllElementIdentifiers, boolean>;
