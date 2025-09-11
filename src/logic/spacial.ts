@@ -270,6 +270,12 @@ export default class Spacial extends Point implements ISpacial {
         }
     }
 
+    getCoordinateFromBindRule(binding: IBindingRule): number {
+        var getter: BinderGetFunction = this.AnchorFunctions[binding.anchorSiteName as keyof typeof this.AnchorFunctions].get;
+
+        return getter(binding.dimension)
+    }
+
     public enforceBinding() {
         this.bindings.map((b) => b.targetObject).forEach((e) => {
             e.displaced = true;
