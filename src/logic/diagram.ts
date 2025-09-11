@@ -2,7 +2,7 @@ import Aligner from "./aligner";
 import Arrow from "./arrow";
 import Channel, { ChannelNamedStructure } from "./channel";
 import Collection, { ICollection } from "./collection";
-import defaultDiagram from "./default/data/diagram.json";
+import defaultDiagram from "./default/diagram.json";
 import { IHaveStructure, UserComponentType } from "./diagramHandler";
 import logger, { Processes } from "./log";
 import Point from "./point";

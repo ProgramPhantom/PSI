@@ -2,7 +2,7 @@ import ChannelForm from "../features/form/ChannelForm";
 import { FormBundle } from "../features/form/LabelGroupComboForm";
 import Aligner from "./aligner";
 import Collection, { ICollection } from "./collection";
-import defaultChannel from "./default/data/channel.json";
+import defaultChannel from "./default/channel.json";
 import { IHaveStructure, UserComponentType } from "./diagramHandler";
 import { IMountConfig } from "./mountable";
 import { ID } from "./point";

@@ -1,5 +1,5 @@
 import { Element } from "@svgdotjs/svg.js";
-import defaultLineLike from "./default/data/lineLike.json";
+import defaultLineLike from "./default/lineLike.json";
 import { Dimensions } from "./spacial";
 import { FillObject, posPrecision, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";

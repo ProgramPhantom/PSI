@@ -1,7 +1,7 @@
 import { Element, Rect, SVG } from "@svgdotjs/svg.js";
 import { FormBundle } from "../features/form/LabelGroupComboForm";
 import RectElementForm from "../features/form/RectForm";
-import defaultBar from "./default/data/bar.json";
+import defaultBar from "./default/bar.json";
 import { UserComponentType } from "./diagramHandler";
 import { RecursivePartial, createWithTemplate } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";

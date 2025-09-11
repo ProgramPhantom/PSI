@@ -1,5 +1,5 @@
 import { Defs, Element, Marker, Path, SVG } from "@svgdotjs/svg.js";
-import defaultArrow from "./default/data/arrow.json";
+import defaultArrow from "./default/arrow.json";
 import { UserComponentType } from "./diagramHandler";
 import { ILine, Line } from "./line";
 import { FillObject, RecursivePartial } from "./util";
