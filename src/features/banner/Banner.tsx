@@ -60,7 +60,7 @@ export default function Banner(props: IBannerProps) {
                 )} interactionKind='click' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
                 content={<div>
                     
-                    <Checkbox label='Draw Line' onClick={() => props.setTool({type: "arrow", config: {style: {headStyle: "default"}}})} 
+                    <Checkbox label='Draw Line' onClick={() => props.setTool({type: "arrow", config: {style: {headStyle: "none"}}})} 
                     checked={props.selectedTool.type === "arrow" ? true : false}></Checkbox>
                 </div>} onClose={() => {}}>
                 </Popover>

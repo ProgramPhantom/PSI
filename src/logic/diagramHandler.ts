@@ -1,6 +1,5 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import { PointBind } from "../features/canvas/BindingsSelector";
-import Arrow from "./arrow";
+import Arrow, { IArrow } from "./arrow";
 import Channel, { IChannel } from "./channel";
 import SchemeManager from "./default";
 import Diagram, { AllStructures, IDiagram } from "./diagram";
@@ -13,6 +12,7 @@ import Sequence from "./sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import type { IVisual, Visual } from "./visual";
+import { PointBind } from "../features/canvas/DrawArrow";
 
 
 
@@ -336,8 +336,8 @@ export default class DiagramHandler {
         this.draw();
     }
 
-    public createArrow(startBinds: PointBind, endBinds: PointBind) {
-        var newArrow: Arrow = new Arrow({});
+    public createArrow(pParams: RecursivePartial<IArrow>, startBinds: PointBind, endBinds: PointBind) {
+        var newArrow: Arrow = new Arrow(pParams);
 
         startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here");
         startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here");

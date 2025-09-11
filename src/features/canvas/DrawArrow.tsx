@@ -33,7 +33,7 @@ export function DrawArrow(props: IDrawArrowProps) {
 
 
     const createArrow = (startBind: PointBind, endBind: PointBind) => {
-        ENGINE.handler.createArrow(startBind, endBind);
+        ENGINE.handler.createArrow({arrowStyle: props.config.style}, startBind, endBind);
     }
 
 

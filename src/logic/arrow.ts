@@ -67,8 +67,8 @@ export default class Arrow extends Line {
                             stroke: `${this.style.stroke}`,
                             strokeLinecap: "butt",
                             d: pathData,
-                            "marker-start": 'url(#head)',
-                            "marker-end": 'url(#head)',
+                            "marker-start": this.arrowStyle.headStyle === "default" ? 'url(#head)' : "",
+                            "marker-end": this.arrowStyle.headStyle === "default" ? 'url(#head)' : "",
                             "stroke-dasharray": `${this.style.dashing[0]} ${this.style.dashing[1]}`,
                             "stroke-width": `${this.style.thickness}`})
                       
