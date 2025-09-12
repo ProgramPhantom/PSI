@@ -240,7 +240,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
                                 {/* Tools */}
                                 {props.selectedTool.type === "arrow" ? 
-                                <DrawArrow hoveredElement={hoveredElement} config={{lineStyle: props.selectedTool.config}}></DrawArrow> : <></>}
+                                <DrawArrow hoveredElement={hoveredElement} config={props.selectedTool.config}></DrawArrow> : <></>}
 
                                 {/* Hover highlight */}
                                 { hoveredElement !== undefined ? 

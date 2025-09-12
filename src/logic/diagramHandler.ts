@@ -342,10 +342,12 @@ export default class DiagramHandler {
         startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here");
         startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here");
         startBinds["x"].anchorObject.enforceBinding();
+        startBinds["y"].anchorObject.enforceBinding();
 
         endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far");
         endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far");
         endBinds["x"].anchorObject.enforceBinding()
+        endBinds["y"].anchorObject.enforceBinding()
 
         this.diagram.addFreeArrow(newArrow);
         this.draw()

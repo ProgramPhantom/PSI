@@ -12,6 +12,7 @@ import Form from '../features/Form';
 import ENGINE from '../logic/engine';
 import { ILineStyle } from '../logic/line';
 import { Visual } from '../logic/visual';
+import { IDrawArrowConfig } from '../features/canvas/DrawArrow';
 
 ENGINE.initialiseSchemeManager();
 await ENGINE.loadSVGData();
@@ -32,7 +33,7 @@ export interface IToolConfig {
 
 }
 
-export type Tool = { type: "select", config: {} } | {type: "arrow", config: ILineStyle }
+export type Tool = { type: "select", config: {} } | {type: "arrow", config: IDrawArrowConfig }
 
 
 

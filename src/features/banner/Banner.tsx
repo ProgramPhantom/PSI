@@ -6,6 +6,7 @@ import ENGINE from "../../logic/engine"
 import { LoadStateDialog } from './LoadStateDialog'
 import { PNGExportDialog } from './PNGExportDialog'
 import { AnnotateDropdown } from './AnnotateDropdown'
+import Line from '../../logic/line'
 
 export interface IBannerProps {
     saveSVG: () => void, 
@@ -57,7 +58,11 @@ export default function Banner(props: IBannerProps) {
 
                 <Navbar.Divider />
                 <Popover lazy={false} renderTarget={({isOpen, ...targetProps}) => (
-                    <Button {...targetProps} size="small" variant="minimal" icon="new-link" text="Annotate" />
+                    <Button {...targetProps} 
+                    onMouseDown={() => props.setTool({type: "arrow", config: {lineStyle: Line.defaults["default"].lineStyle, vertical: false}})}
+                    intent={props.selectedTool.type === "arrow" ? "success" : "none"}
+                    size="small" variant="minimal" icon="new-link" 
+                    text="Annotate" />
                 )} interactionKind='click' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
                 content={<AnnotateDropdown setTool={props.setTool} selectedTool={props.selectedTool}></AnnotateDropdown>}>
                 </Popover>

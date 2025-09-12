@@ -14,38 +14,27 @@ interface IAnnotateDropdownProps {
 export function AnnotateDropdown(props: IAnnotateDropdownProps) {
     const lineStyleRef = useRef<ILineStyle>(Line.defaults["default"].lineStyle);
     const [selectedColour, setSelectedColour] = useState(Line.defaults["default"].lineStyle.stroke);
+    const [vertical, setVertical] = useState<boolean>(false); 
     const [refresh, setRefresh] = useState(0);
 
     const applyLineStyleUpdate = (partial: Partial<ILineStyle>) => {
         lineStyleRef.current = { ...lineStyleRef.current, ...partial };
-        props.setTool({ type: "arrow", config: lineStyleRef.current });
+        props.setTool({ type: "arrow", config: {lineStyle: lineStyleRef.current, vertical: !vertical} });
         setRefresh((v) => v + 1);
     };
-
-    const onSwitch = () => {
-        if (props.selectedTool.type === "arrow") {
-            props.setTool({type: "select", config: {}})
-        } else {
-            props.setTool({type: "arrow", config: lineStyleRef.current})
-        }
-        
-    }
 
     // Sync current ref from selected tool when it changes (e.g., reopening popover)
     // TODO: Fix this garbage
     useEffect(() => {
         if (props.selectedTool.type === "arrow") {
-            lineStyleRef.current = props.selectedTool.config;
-            setSelectedColour(props.selectedTool.config.stroke)
+            lineStyleRef.current = props.selectedTool.config.lineStyle;
+            setSelectedColour(props.selectedTool.config.lineStyle.stroke)
             setRefresh((v) => v + 1);
         }
     }, [props.selectedTool]);
 
     return (
         <div>
-            <Switch label='Draw Line' onChange={() => onSwitch()} 
-            checked={props.selectedTool.type === "arrow" ? true : false}></Switch>
-
             <ControlGroup fill={true} vertical={true}>
                 <FormGroup label="Heads" inline={true}>
                     <ButtonGroup>
@@ -112,7 +101,12 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
                         style={{ width: 80 }}
                     />
                 </FormGroup>
+
+                <Switch label='Horizontal line' onChange={(e) => {setVertical(!vertical); applyLineStyleUpdate({});}} 
+                    checked={vertical}></Switch>
             </ControlGroup>
+
+            
 
 
         </div>
