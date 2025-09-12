@@ -1,6 +1,6 @@
 import { ControlGroup, FormGroup, HTMLSelect, NumericInput, Section } from "@blueprintjs/core";
 import { Controller, useFormContext } from 'react-hook-form';
-import { IArrow } from "../../logic/arrow";
+import { ILine } from "../../logic/line";
 import { getByPath } from "../../logic/util";
 import { FormRequirements } from "./FormDiagramInterface";
 import VisualForm from './VisualForm';
@@ -15,7 +15,7 @@ function ArrowForm(props: IArrowFormProps) {
   const formControls = useFormContext();
 
   var rawVals = formControls.getValues();
-  var values: Partial<IArrow> | undefined = getByPath(formControls.getValues(), props.prefix);
+  var values: Partial<ILine> | undefined = getByPath(formControls.getValues(), props.prefix);
 
   return (
     <>

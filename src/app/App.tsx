@@ -4,14 +4,14 @@ import { saveAs } from 'file-saver';
 import { ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import Banner from '../features/banner/Banner';
-import Canvas, { ISelectConfig } from '../features/canvas/Canvas';
-import ComponentResizer from '../features/canvas/ComponentResizer';
 import Console from '../features/banner/Console';
+import Canvas from '../features/canvas/Canvas';
+import ComponentResizer from '../features/canvas/ComponentResizer';
 import ElementsDraw from '../features/elementDraw/ElementsDraw';
 import Form from '../features/Form';
 import ENGINE from '../logic/engine';
+import { ILineStyle } from '../logic/line';
 import { Visual } from '../logic/visual';
-import { IDrawArrowConfig } from '../features/canvas/DrawArrow';
 
 ENGINE.initialiseSchemeManager();
 await ENGINE.loadSVGData();
@@ -32,7 +32,7 @@ export interface IToolConfig {
 
 }
 
-export type Tool = { type: "select", config: {} } | {type: "arrow", config: IDrawArrowConfig }
+export type Tool = { type: "select", config: {} } | {type: "arrow", config: ILineStyle }
 
 
 

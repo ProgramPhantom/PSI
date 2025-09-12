@@ -21,7 +21,6 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
     // Types
     "svg": false,
     "text": false,
-    "arrow": false,
     "rect": false,
     "space": false,
     "line": false,
@@ -287,7 +286,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 
                                 {/* Tools */}
                                 {props.selectedTool.type === "arrow" ? 
-                                <DrawArrow hoveredElement={hoveredElement} config={props.selectedTool.config}></DrawArrow> : <></>}
+                                <DrawArrow hoveredElement={hoveredElement} config={{lineStyle: props.selectedTool.config}}></DrawArrow> : <></>}
                         </div>
                     </TransformComponent>
                     

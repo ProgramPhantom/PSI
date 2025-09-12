@@ -1,5 +1,5 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import Arrow, { IArrow } from "./arrow";
+import Line, { ILine } from "./line";
 import Channel, { IChannel } from "./channel";
 import SchemeManager from "./default";
 import Diagram, { AllStructures, IDiagram } from "./diagram";
@@ -20,7 +20,7 @@ import { PointBind } from "../features/canvas/DrawArrow";
 export type AllComponentTypes = UserComponentType | AbstractComponentTypes 
 
 // The types of component 
-export type UserComponentType = DrawComponent | "label-group" | "label" | "text" | "arrow" | "line" | "channel" | "sequence" | "diagram" ; 
+export type UserComponentType = DrawComponent | "label-group" | "label" | "text" | "line" | "channel" | "sequence" | "diagram" ; 
 export type DrawComponent = "svg" | "rect" | "space"
 
 // Abstract component types (have no visual content)
@@ -336,8 +336,8 @@ export default class DiagramHandler {
         this.draw();
     }
 
-    public createArrow(pParams: RecursivePartial<IArrow>, startBinds: PointBind, endBinds: PointBind) {
-        var newArrow: Arrow = new Arrow(pParams);
+    public createArrow(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
+        var newArrow: Line = new Line(pParams);
 
         startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here");
         startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here");

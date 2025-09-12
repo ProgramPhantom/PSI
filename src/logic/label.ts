@@ -1,7 +1,7 @@
 import { G, Mask, Rect, Svg } from "@svgdotjs/svg.js";
 import LabelForm from "../features/form/LabelForm";
 import { FormBundle } from "../features/form/LabelGroupComboForm";
-import Arrow, { IArrow } from "./arrow";
+import Line, { ILine } from "./line";
 import Collection, { ICollection } from "./collection";
 import { UserComponentType } from "./diagramHandler";
 import { Dimensions } from "./spacial";
@@ -17,7 +17,7 @@ export interface ILabelConfig {
 
 export interface ILabel extends ICollection {
     text?: IText ,
-    line?: IArrow,
+    line?: ILine,
 
     labelConfig: ILabelConfig,
 }
@@ -32,7 +32,7 @@ export default class Label extends Collection implements ILabel {
             padding: [2, 0, 2, 0],
 
             text: Text.defaults["default"],
-            line: Arrow.defaults["default"],
+            line: Line.defaults["default"],
             ref: "default-label",
             labelConfig: {
                 labelPosition: Position.top,
@@ -46,7 +46,7 @@ export default class Label extends Collection implements ILabel {
             padding: [2, 0, 2, 0],
 
             text: Text.defaults["default"],
-            line: Arrow.defaults["default"],
+            line: Line.defaults["default"],
             ref: "default-label",
             labelConfig: {
                 labelPosition: Position.top,
@@ -66,7 +66,7 @@ export default class Label extends Collection implements ILabel {
     static ElementType: UserComponentType = "label";
 
     text?: Text;
-    line?: Arrow;
+    line?: Line;
 
     labelConfig: ILabelConfig
 
@@ -88,7 +88,7 @@ export default class Label extends Collection implements ILabel {
         
         if (fullParams.line !== undefined) {
             // Create line
-            this.line = new Arrow(fullParams.line);
+            this.line = new Line(fullParams.line);
 
             var orientationSelect: Dimensions;
             switch (this.labelConfig.labelPosition) {

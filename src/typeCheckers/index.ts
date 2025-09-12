@@ -11,7 +11,7 @@ import spaceTypeSuite from "./spacial-ti";
 import svgElementTypeSuite from "./SVGElement-ti";
 import textTypeSuite from "./text-ti";
 
-import Arrow from "../logic/arrow";
+import Arrow from "../logic/line";
 import Channel from "../logic/channel";
 import Diagram from "../logic/diagram";
 import Label from "../logic/label";

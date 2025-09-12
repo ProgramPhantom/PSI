@@ -1,6 +1,6 @@
 import { Path } from "@svgdotjs/svg.js";
 import { useEffect, useRef, useState } from "react";
-import { IArrowStyle } from "../../logic/arrow";
+import { ILine, ILineStyle } from "../../logic/line";
 import ENGINE from "../../logic/engine";
 import { Dimensions, IBindingPayload } from "../../logic/spacial";
 import { Visual } from "../../logic/visual";
@@ -15,7 +15,7 @@ interface IDrawArrowProps {
 }
 
 export interface IDrawArrowConfig extends IToolConfig {
-    style: IArrowStyle
+    lineStyle: ILineStyle
 }
 
 
@@ -33,7 +33,7 @@ export function DrawArrow(props: IDrawArrowProps) {
 
 
     const createArrow = (startBind: PointBind, endBind: PointBind) => {
-        ENGINE.handler.createArrow({arrowStyle: props.config.style}, startBind, endBind);
+        ENGINE.handler.createArrow({lineStyle: props.config.lineStyle}, startBind, endBind);
     }
 
 
