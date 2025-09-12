@@ -5,7 +5,7 @@ import ENGINE from "../../logic/engine";
 import { Dimensions, IBindingPayload } from "../../logic/spacial";
 import { Visual } from "../../logic/visual";
 import BindingsSelector from "./BindingsSelector";
-import { IToolConfig } from "../../app/App";
+import { IToolConfig, Tool } from "../../app/App";
 import Aligner from "../../logic/aligner";
 
 
@@ -13,6 +13,7 @@ import Aligner from "../../logic/aligner";
 interface IDrawArrowProps {
     hoveredElement: Visual | undefined;
     config: IDrawArrowConfig
+    setTool: (tool: Tool) => void
 }
 
 export interface IDrawArrowConfig extends IToolConfig {
@@ -24,7 +25,7 @@ export interface IDrawArrowConfig extends IToolConfig {
 export type PointBind = Record<Dimensions, IBindingPayload> 
 
 
-export function DrawArrow(props: IDrawArrowProps) {
+export function LineTool(props: IDrawArrowProps) {
     const [startCoords, setStartCoords] = useState<[number, number] | undefined>(undefined);
     const [columnHovered, setColumnHovered] = useState<boolean>(false)
 
@@ -37,6 +38,7 @@ export function DrawArrow(props: IDrawArrowProps) {
 
     const createArrow = (startBind: PointBind, endBind: PointBind) => {
         ENGINE.handler.createArrow({lineStyle: props.config.lineStyle}, startBind, endBind);
+        props.setTool({type: "select", "config": {}})
     }
 
     const placeVerticalLine = (col: Aligner<Visual>, far: boolean=false) => {

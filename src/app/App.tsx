@@ -12,7 +12,7 @@ import Form from '../features/Form';
 import ENGINE from '../logic/engine';
 import { ILineStyle } from '../logic/line';
 import { Visual } from '../logic/visual';
-import { IDrawArrowConfig } from '../features/canvas/DrawArrow';
+import { IDrawArrowConfig } from '../features/canvas/LineTool';
 
 ENGINE.initialiseSchemeManager();
 await ENGINE.loadSVGData();
@@ -74,7 +74,7 @@ function App() {
   //   return () => clearInterval(interval);
   // }, []);
 
-  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectedTool={selectedTool}></Canvas>
+  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectedTool={selectedTool} setTool={setSelectedTool}></Canvas>
 
   const setTool = (tool: Tool) => {
     setSelectedTool(tool);

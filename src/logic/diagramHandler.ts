@@ -12,7 +12,7 @@ import Sequence from "./sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import type { IVisual, Visual } from "./visual";
-import { PointBind } from "../features/canvas/DrawArrow";
+import { PointBind } from "../features/canvas/LineTool";
 
 
 

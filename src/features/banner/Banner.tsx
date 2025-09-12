@@ -33,6 +33,16 @@ export default function Banner(props: IBannerProps) {
         })
     }
 
+    const selectLineTool = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        if (props.selectedTool.type === "arrow") {
+            props.setTool({type: "select", config: {}})
+            e.preventDefault()
+            e.stopPropagation()
+        } else {
+            props.setTool({type: "arrow", config: {lineStyle: Line.defaults["default"].lineStyle, vertical: false}})
+        }
+    }
+
     const saveState = () => {
         ENGINE.save();
         myToaster.show({
@@ -59,11 +69,11 @@ export default function Banner(props: IBannerProps) {
                 <Navbar.Divider />
                 <Popover lazy={false} renderTarget={({isOpen, ...targetProps}) => (
                     <Button {...targetProps} 
-                    onMouseDown={() => props.setTool({type: "arrow", config: {lineStyle: Line.defaults["default"].lineStyle, vertical: false}})}
+                    onClick={(e) => selectLineTool(e)}
                     intent={props.selectedTool.type === "arrow" ? "success" : "none"}
-                    size="small" variant="minimal" icon="new-link" 
-                    text="Annotate" />
-                )} interactionKind='click' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
+                    size="small" variant="minimal" icon="arrow-top-right" 
+                    text="Line Tool" />
+                )} interactionKind='hover' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
                 content={<AnnotateDropdown setTool={props.setTool} selectedTool={props.selectedTool}></AnnotateDropdown>}>
                 </Popover>
                 

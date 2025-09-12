@@ -102,7 +102,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
                     />
                 </FormGroup>
 
-                <Switch label='Horizontal line' onChange={(e) => {setVertical(!vertical); applyLineStyleUpdate({});}} 
+                <Switch label='Vertical line' onChange={(e) => {setVertical(!vertical); applyLineStyleUpdate({});}} 
                     checked={vertical}></Switch>
             </ControlGroup>
 

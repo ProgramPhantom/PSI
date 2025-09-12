@@ -12,7 +12,7 @@ import { CanvasDragLayer } from '../dnd/CanvasDragLayer';
 import { CanvasDropContainer } from '../dnd/CanvasDropContainer';
 import DropField from '../dnd/DropField';
 import { HitboxLayer } from './HitboxLayer';
-import { DrawArrow, IDrawArrowConfig } from './DrawArrow';
+import { LineTool, IDrawArrowConfig } from './LineTool';
 
  
 
@@ -56,6 +56,7 @@ interface ICanvasProps {
     select: (element?: Visual) => void
     selectedElement: Visual | undefined,
     selectedTool: Tool
+    setTool: (tool: Tool) => void
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
@@ -240,7 +241,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
                                 {/* Tools */}
                                 {props.selectedTool.type === "arrow" ? 
-                                <DrawArrow hoveredElement={hoveredElement} config={props.selectedTool.config}></DrawArrow> : <></>}
+                                <LineTool hoveredElement={hoveredElement} config={props.selectedTool.config} setTool={props.setTool}></LineTool> : <></>}
 
                                 {/* Hover highlight */}
                                 { hoveredElement !== undefined ? 
