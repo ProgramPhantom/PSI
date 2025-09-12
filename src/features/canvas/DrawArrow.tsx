@@ -45,11 +45,10 @@ export function DrawArrow(props: IDrawArrowProps) {
             setStartCoords([startX, startY]);
             
             const p = new Path().attr({
-                strokeWidth: 1,
-                stroke: "#4a90e2",
-                fill: "none",
+                strokeWidth: props.config.lineStyle.thickness,
+                stroke: props.config.lineStyle.stroke,
                 d: `M ${startX} ${startY} L ${startX} ${startY}`,
-                "stroke-dasharray": "4 2",
+                "stroke-dasharray": `${props.config.lineStyle.dashing[0]} ${props.config.lineStyle.dashing[1]}`,
             });
             
             setArrowIndicator(p);
