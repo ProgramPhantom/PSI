@@ -67,20 +67,16 @@ export default function Banner(props: IBannerProps) {
                 <Button size="small" variant="minimal" icon="upload" text="Load" onClick={() => setIsLoadDialogOpen(true)}/>
 
                 <Navbar.Divider />
-                <Popover lazy={false} renderTarget={({isOpen, ...targetProps}) => (
-                    <Button {...targetProps} 
-                    onClick={(e) => selectLineTool(e)}
-                    intent={props.selectedTool.type === "arrow" ? "success" : "none"}
-                    size="small" variant="minimal" icon="arrow-top-right" 
-                    text="Line Tool" />
-                )} interactionKind='hover' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
-                content={<AnnotateDropdown setTool={props.setTool} selectedTool={props.selectedTool}></AnnotateDropdown>}>
-                </Popover>
+                
                 
                 <Navbar.Divider />
                 <Button size="small" variant="minimal" icon="cut" text="Copy state" onClick={() => copyState()}/>
                 <Navbar.Divider />
                 <Button size="small" variant="minimal" icon="floppy-disk" text="Save state" onClick={() => saveState()}/>
+
+                <Navbar.Divider />
+                <Navbar.Divider />
+                <AnnotateDropdown selectedTool={props.selectedTool} setTool={props.setTool}></AnnotateDropdown>
             </Navbar.Group>
             
             <Navbar.Group align={"right"}>

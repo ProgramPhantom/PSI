@@ -108,7 +108,7 @@ export function LineTool(props: IDrawArrowProps) {
             setStartCoords([startX, startY]);
             
             const p = new Path().attr({
-                strokeWidth: props.config.lineStyle.thickness,
+                "stroke-width": props.config.lineStyle.thickness,
                 stroke: props.config.lineStyle.stroke,
                 d: `M ${startX} ${startY} L ${startX} ${startY}`,
                 "stroke-dasharray": `${props.config.lineStyle.dashing[0]} ${props.config.lineStyle.dashing[1]}`,

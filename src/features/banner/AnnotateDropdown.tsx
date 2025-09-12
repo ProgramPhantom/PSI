@@ -1,7 +1,9 @@
-import { Button, ButtonGroup, Checkbox, ControlGroup, FormGroup, Menu, MenuItem, NumericInput, Popover, Switch } from "@blueprintjs/core";
+import { Button, ButtonGroup, Classes, ControlGroup, FormGroup, Menu, MenuItem, NumericInput, Popover, Switch } from "@blueprintjs/core";
+import { useEffect, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { Tool } from "../../app/App";
-import { useEffect, useRef, useState } from "react";
-import Line, { HeadStyle, ILineStyle } from "../../logic/line";
+import Line from "../../logic/line";
+import { IDrawArrowConfig } from "../canvas/LineTool";
 
 
 
@@ -11,104 +13,175 @@ interface IAnnotateDropdownProps {
 }
 
 
-export function AnnotateDropdown(props: IAnnotateDropdownProps) {
-    const lineStyleRef = useRef<ILineStyle>(Line.defaults["default"].lineStyle);
-    const [selectedColour, setSelectedColour] = useState(Line.defaults["default"].lineStyle.stroke);
-    const [vertical, setVertical] = useState<boolean>(false); 
-    const [refresh, setRefresh] = useState(0);
 
-    const applyLineStyleUpdate = (partial: Partial<ILineStyle>) => {
-        lineStyleRef.current = { ...lineStyleRef.current, ...partial };
-        props.setTool({ type: "arrow", config: {lineStyle: lineStyleRef.current, vertical: !vertical} });
-        setRefresh((v) => v + 1);
+export function AnnotateDropdown(props: IAnnotateDropdownProps) {
+    const toolValue = useRef<IDrawArrowConfig>({
+            lineStyle: Line.defaults["default"].lineStyle,
+            vertical: false
+        });
+    const { control, handleSubmit, reset, watch } = useForm<IDrawArrowConfig>({
+        mode: "onChange",
+        defaultValues: {
+            lineStyle: Line.defaults["default"].lineStyle,
+            vertical: false
+        }
+    });
+
+    const onSubmit = (data: IDrawArrowConfig) => {
+        // TODO: i dont want the tool to be selected if nothing is changed.
+        if (data != toolValue.current) {
+            props.setTool({ 
+                type: "arrow", 
+                config: data
+            });
+            toolValue.current = data
+        }
+        
     };
 
-    // Sync current ref from selected tool when it changes (e.g., reopening popover)
-    // TODO: Fix this garbage
+    const selectTool = () => {
+        if (props.selectedTool.type === "arrow") {
+            props.setTool({type: "select", config: {}})
+        } else {
+            props.setTool({type: "arrow", config: toolValue.current})
+        }
+        
+    }
+
+
+    // Sync form values from selected tool when it changes
     useEffect(() => {
         if (props.selectedTool.type === "arrow") {
-            lineStyleRef.current = props.selectedTool.config.lineStyle;
-            setSelectedColour(props.selectedTool.config.lineStyle.stroke)
-            setRefresh((v) => v + 1);
+            const config = props.selectedTool.config;
+            reset(config);
         }
-    }, [props.selectedTool]);
+    }, [props.selectedTool, reset])
+
+
 
     return (
-        <div>
+
+        <Popover hoverCloseDelay={100} hoverOpenDelay={500} lazy={false} renderTarget={({isOpen, ...targetProps}) => (
+            <Button {...targetProps} 
+                onClick={(e) => selectTool()}
+                intent={props.selectedTool.type === "arrow" ? "primary" : "none"}
+                size="small" variant={ props.selectedTool.type === "arrow" ? "solid" : "minimal"}
+                icon="arrow-top-right" 
+                text="Line Tool" />
+        )} interactionKind='hover' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
+            content={
+            <form onBlur={handleSubmit(onSubmit)} onMouseLeave={handleSubmit(onSubmit)}>
             <ControlGroup fill={true} vertical={true}>
                 <FormGroup label="Heads" inline={true}>
                     <ButtonGroup>
-                        <Popover minimal={true} hoverOpenDelay={0} hoverCloseDelay={200} interactionKind="click" captureDismiss={true} position="bottom" content={
-                            <Menu>
-                                <MenuItem text="Default" onClick={() => applyLineStyleUpdate({ headStyle: ["default", lineStyleRef.current.headStyle[1]] })} />
-                                <MenuItem text="Thin" onClick={() => applyLineStyleUpdate({ headStyle: ["thin", lineStyleRef.current.headStyle[1]] })} />
-                                <MenuItem text="None" onClick={() => applyLineStyleUpdate({ headStyle: ["none", lineStyleRef.current.headStyle[1]] })} />
-                            </Menu>
-                        }>
-                            <Button text={`Start: ${lineStyleRef.current.headStyle[0]}`} endIcon="caret-down" />
-                        </Popover>
-                        <Popover minimal={true} hoverOpenDelay={0} hoverCloseDelay={200} interactionKind="click" captureDismiss={true} position="bottom" content={
-                            <Menu>
-                                <MenuItem text="Default" onClick={() => applyLineStyleUpdate({ headStyle: [lineStyleRef.current.headStyle[0], "default"] })} />
-                                <MenuItem text="Thin" onClick={() => applyLineStyleUpdate({ headStyle: [lineStyleRef.current.headStyle[0], "thin"] })} />
-                                <MenuItem text="None" onClick={() => applyLineStyleUpdate({ headStyle: [lineStyleRef.current.headStyle[0], "none"] })} />
-                            </Menu>
-                        }>
-                            <Button text={`End: ${lineStyleRef.current.headStyle[1]}`} endIcon="caret-down" />
-                        </Popover>
+                        <Controller
+                            name="lineStyle.headStyle.0"
+                            control={control}
+                            render={({ field }) => (
+                                <Popover minimal={true} hoverOpenDelay={0} hoverCloseDelay={200} interactionKind="click" captureDismiss={true} position="bottom" content={
+                                    <Menu {...field}>
+                                        <MenuItem text="Default" onClick={() => field.onChange("default")} />
+                                        <MenuItem text="Thin" onClick={() => field.onChange("thin")} />
+                                        <MenuItem text="None" onClick={() => field.onChange("none")} />
+                                    </Menu>
+                                }>
+                                    <Button text={`Start: ${field.value}`} endIcon="caret-down" />
+                                </Popover>
+                            )}
+                        />
+                        <Controller
+                            name="lineStyle.headStyle.1"
+                            control={control}
+                            render={({ field }) => (
+                                <Popover minimal={true} hoverOpenDelay={0} hoverCloseDelay={200} interactionKind="click" captureDismiss={true} position="bottom" content={
+                                    <Menu {...field}>
+                                        <MenuItem text="Default" onClick={() => field.onChange("default")} />
+                                        <MenuItem text="Thin" onClick={() => field.onChange("thin")} />
+                                        <MenuItem text="None" onClick={() => field.onChange("none")} />
+                                    </Menu>
+                                }>
+                                    <Button text={`End: ${field.value}`} endIcon="caret-down" />
+                                </Popover>
+                            )}
+                        />
                     </ButtonGroup>
                 </FormGroup>
 
                 <FormGroup label="Stroke" inline={true}>
-                    <input
-                        type="color"
-                        value={selectedColour}
-                        onChange={(e) => {  setSelectedColour(e.target.value) }}
-                        onBlur={(e) => {  applyLineStyleUpdate({ stroke: e.target.value }); }}
-                        style={{ width: 36, height: 30, padding: 0, border: "none", background: "transparent" }}
-                        aria-label="Stroke color"
+                    <Controller
+                        name="lineStyle.stroke"
+                        control={control}
+                        render={({ field }) => (
+                            <input {...field}
+                                type="color"
+                                style={{ width: 36, height: 30, padding: 0, border: "none", background: "transparent" }}
+                                aria-label="Stroke color"
+                            />
+                        )}
                     />
                 </FormGroup>
 
                 <FormGroup label="Dashing" fill={true} inline={true}>
                     <div style={{display: "flex", flexDirection: "row"}}>
-                        <NumericInput
-                            min={0}
-                            placeholder="dash"
-                            value={lineStyleRef.current.dashing[0]}
-                            onValueChange={(v) => applyLineStyleUpdate({ dashing: [Number.isFinite(v) ? v : 0, lineStyleRef.current.dashing[1]] })}
-                            buttonPosition="none"
-                            style={{ width: 70 }}
+                        <Controller
+                            name="lineStyle.dashing.0"
+                            control={control}
+                            render={({ field }) => (
+                                <NumericInput {...field}
+                                    min={0}
+                                    placeholder="dash"
+                                    buttonPosition="none"
+                                    style={{ width: 70 }}
+                                />
+                            )}
                         />
-                        <NumericInput
-                            min={0}
-                            placeholder="gap"
-                            value={lineStyleRef.current.dashing[1]}
-                            onValueChange={(v) => applyLineStyleUpdate({ dashing: [lineStyleRef.current.dashing[0], Number.isFinite(v) ? v : 0] })}
-                            buttonPosition="none"
-                            style={{ width: 70 }}
+                        <Controller
+                            name="lineStyle.dashing.1"
+                            control={control}
+                            render={({ field }) => (
+                                <NumericInput {...field}
+                                    min={0} 
+                                    placeholder="gap"
+                                    buttonPosition="none"
+                                    style={{ width: 70 }}
+                                    allowNumericCharactersOnly={true}
+                                />
+                            )}
                         />
                     </div>
                 </FormGroup>
 
                 <FormGroup label="Thickness" inline={true}>
-                    <NumericInput
-                        min={0.5}
-                        stepSize={0.5}
-                        value={lineStyleRef.current.thickness}
-                        onValueChange={(v) => applyLineStyleUpdate({ thickness: Number.isFinite(v) ? v : lineStyleRef.current.thickness })}
-                        buttonPosition="none"
-                        style={{ width: 80 }}
+                    <Controller
+                        name="lineStyle.thickness"
+                        control={control}
+                        render={({ field }) => (
+                            <NumericInput 
+                                value={field.value}
+                                onValueChange={(num /* number */, str /* string */) =>
+                                    field.onChange(num) // send number to RHF
+                                }
+                                min={1}
+                                stepSize={1}
+                                buttonPosition="none"
+                                style={{ width: 80 }}
+                            />
+                        )}
                     />
                 </FormGroup>
 
-                <Switch label='Vertical line' onChange={(e) => {setVertical(!vertical); applyLineStyleUpdate({});}} 
-                    checked={vertical}></Switch>
+                <Controller
+                    name="vertical"
+                    control={control}
+                    render={({ field }) => (
+                        <Switch checked={field.value}
+                            onChange={(e) => field.onChange(e.currentTarget.checked)}
+                            label="Vertical Line"
+                        />
+                    )}
+                />
             </ControlGroup>
-
-            
-
-
-        </div>
+                     </form>}>
+        </Popover>
     )
 }
