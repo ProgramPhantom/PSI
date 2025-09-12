@@ -56,7 +56,7 @@ export default function Banner(props: IBannerProps) {
                 <Button size="small" variant="minimal" icon="upload" text="Load" onClick={() => setIsLoadDialogOpen(true)}/>
 
                 <Navbar.Divider />
-                <Popover renderTarget={({isOpen, ...targetProps}) => (
+                <Popover lazy={false} renderTarget={({isOpen, ...targetProps}) => (
                     <Button {...targetProps} size="small" variant="minimal" icon="new-link" text="Annotate" />
                 )} interactionKind='click' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
                 content={<AnnotateDropdown setTool={props.setTool} selectedTool={props.selectedTool}></AnnotateDropdown>}>

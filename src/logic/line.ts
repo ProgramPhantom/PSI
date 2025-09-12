@@ -5,7 +5,7 @@ import { FillObject, RecursivePartial } from "./util";
 import LineLike, { ILineLike } from "./lineLike";
 
 
-type HeadStyle = "default" | "thin" | "none"
+export type HeadStyle = "default" | "thin" | "none"
 
 export interface ILineStyle {
     headStyle: [HeadStyle, HeadStyle],
