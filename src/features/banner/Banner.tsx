@@ -5,6 +5,7 @@ import { IDiagram } from "../../logic/diagram"
 import ENGINE from "../../logic/engine"
 import { LoadStateDialog } from './LoadStateDialog'
 import { PNGExportDialog } from './PNGExportDialog'
+import { AnnotateDropdown } from './AnnotateDropdown'
 
 export interface IBannerProps {
     saveSVG: () => void, 
@@ -58,11 +59,7 @@ export default function Banner(props: IBannerProps) {
                 <Popover renderTarget={({isOpen, ...targetProps}) => (
                     <Button {...targetProps} size="small" variant="minimal" icon="new-link" text="Annotate" />
                 )} interactionKind='click' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
-                content={<div>
-                    
-                    <Checkbox label='Draw Line' onClick={() => props.setTool({type: "arrow", config: {style: {headStyle: "none"}}})} 
-                    checked={props.selectedTool.type === "arrow" ? true : false}></Checkbox>
-                </div>} onClose={() => {}}>
+                content={<AnnotateDropdown setTool={props.setTool} selectedTool={props.selectedTool}></AnnotateDropdown>}>
                 </Popover>
                 
                 <Navbar.Divider />
