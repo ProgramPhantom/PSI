@@ -1,16 +1,20 @@
 import { Button, Checkbox, Classes, Icon, Navbar, Popover } from '@blueprintjs/core'
 import React, { useState } from 'react'
-import { myToaster, SelectionMode } from "../../app/App"
+import { myToaster, Tool } from "../../app/App"
 import { IDiagram } from "../../logic/diagram"
 import ENGINE from "../../logic/engine"
 import { LoadStateDialog } from './LoadStateDialog'
 import { PNGExportDialog } from './PNGExportDialog'
+import { AnnotateDropdown } from './AnnotateDropdown'
+import Line from '../../logic/line'
 
 export interface IBannerProps {
     saveSVG: () => void, 
     savePNG: (width: number, height: number, filename: string) => void,
     openConsole: () => void,
-    selection: {selectionMode: SelectionMode, setSelectionMode: React.Dispatch<React.SetStateAction<SelectionMode>>}
+
+    selectedTool: Tool
+    setTool: (tool: Tool) => void
 }
 
 export default function Banner(props: IBannerProps) {
@@ -27,6 +31,16 @@ export default function Banner(props: IBannerProps) {
             message: "State copied to clipboard",
             intent: "success"
         })
+    }
+
+    const selectLineTool = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        if (props.selectedTool.type === "arrow") {
+            props.setTool({type: "select", config: {}})
+            e.preventDefault()
+            e.stopPropagation()
+        } else {
+            props.setTool({type: "arrow", config: {lineStyle: Line.defaults["default"].lineStyle, mode: "bind"}})
+        }
     }
 
     const saveState = () => {
@@ -53,19 +67,16 @@ export default function Banner(props: IBannerProps) {
                 <Button size="small" variant="minimal" icon="upload" text="Load" onClick={() => setIsLoadDialogOpen(true)}/>
 
                 <Navbar.Divider />
-                <Popover renderTarget={({isOpen, ...targetProps}) => (
-                    <Button {...targetProps} size="small" variant="minimal" icon="new-link" text="Annotate" />
-                )} interactionKind='click' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
-                content={<div>
-                    
-                    <Checkbox label='Draw Line' onClick={() => props.selection.setSelectionMode(props.selection.selectionMode === "select" ? "draw" : "select")} 
-                    checked={props.selection.selectionMode === "select" ? false : true}></Checkbox>
-                </div>} onClose={() => {}}></Popover>
+                
                 
                 <Navbar.Divider />
                 <Button size="small" variant="minimal" icon="cut" text="Copy state" onClick={() => copyState()}/>
                 <Navbar.Divider />
                 <Button size="small" variant="minimal" icon="floppy-disk" text="Save state" onClick={() => saveState()}/>
+
+                <Navbar.Divider />
+                <Navbar.Divider />
+                <AnnotateDropdown selectedTool={props.selectedTool} setTool={props.setTool}></AnnotateDropdown>
             </Navbar.Group>
             
             <Navbar.Group align={"right"}>

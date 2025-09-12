@@ -1,5 +1,5 @@
 import Aligner from "./aligner";
-import Arrow from "./arrow";
+import Line from "./line";
 import Channel, { ChannelNamedStructure } from "./channel";
 import Collection, { ICollection } from "./collection";
 import defaultDiagram from "./default/diagram.json";
@@ -53,7 +53,7 @@ export default class Diagram extends Collection implements IHaveStructure {
 
     structure: Record<DiagramNamedStructure, Point>;
 
-    freeArrows: Arrow[] = [];
+    freeArrows: Line[] = [];
 
     root: Spacial;
 
@@ -125,7 +125,7 @@ export default class Diagram extends Collection implements IHaveStructure {
         throw new Error(`Not implemented`)
     }
 
-    addFreeArrow(arrow: Arrow) {
+    addFreeArrow(arrow: Line) {
         this.add(arrow);
     }
 

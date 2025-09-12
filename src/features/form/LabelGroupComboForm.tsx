@@ -1,13 +1,12 @@
 import { Divider, EntityTitle, Tab, Tabs } from "@blueprintjs/core";
 import React, { useEffect, useImperativeHandle } from "react";
 import { DefaultValues, FormProvider, useForm } from "react-hook-form";
-import Arrow from "../../logic/arrow";
 import Channel from "../../logic/channel";
 import Diagram from "../../logic/diagram";
 import { AllComponentTypes, UserComponentType } from "../../logic/diagramHandler";
 import Label, { ILabel } from "../../logic/label";
 import LabelGroup, { ILabelGroup } from "../../logic/labelGroup";
-import { Line } from "../../logic/line";
+import Line  from "../../logic/line";
 import RectElement from "../../logic/rectElement";
 import Sequence from "../../logic/sequence";
 import Space from "../../logic/space";
@@ -38,7 +37,6 @@ export interface FormBundle<T extends IVisual=IVisual> {
 const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
     "rect": RectElement,
     "svg": SVGElement,
-    "arrow": Arrow,
     "channel": Channel,
     "diagram": Diagram,
     "line": Line,

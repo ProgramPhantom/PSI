@@ -133,7 +133,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
             width: ENGINE.handler.diagram.width,
             height: ENGINE.handler.diagram.height,
             marginBottom: "auto", marginTop: "auto"
-          }} onMouseOver={(o) => mouseOver(o)}
+          }} onMouseMove={(o) => {mouseOver(o)}}
           dangerouslySetInnerHTML={{__html: hitboxLayer?.svg()!}}
         />
         </>

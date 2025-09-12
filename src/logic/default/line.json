@@ -1,11 +1,14 @@
 {
+    "ref": "default-arrow",
     "padding": [0, 0, 0, 0],
     "offset": [0, 0],
+    
     "adjustment": [0, 0],
 
-    "style": {
+    "lineStyle": {
         "stroke": "black",
         "thickness": 1,
-        "dashing": [7, 7]
+        "dashing": [0, 0],
+        "headStyle": ["default", "default"]
     }
 }

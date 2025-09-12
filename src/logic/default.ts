@@ -1,10 +1,8 @@
-import Arrow, { IArrow } from "./arrow"
 import Channel, { IChannel } from "./channel"
 import defaultScheme from "./default/schemeSet.json"
 import { UserComponentType } from "./diagramHandler"
 import Diagram, { IDiagram } from "./diagram"
 import LabelGroup, { ILabelGroup } from "./labelGroup"
-import { ILine, Line } from "./line"
 import { ID } from "./point"
 import RectElement, { IRectElement } from "./rectElement"
 import Sequence, { ISequence } from "./sequence"
@@ -15,6 +13,7 @@ import { Visual } from "./visual"
 import Space from "./space"
 import Label from "./label"
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
+import Line, { ILine } from "./line"
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
 const ASSET_SVGS: SVGDict = import.meta.glob('../assets/svg/*.svg', { query: '?raw', import: 'default', eager: true });
@@ -26,7 +25,6 @@ var schemes: string[] = ["default"]
 const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
     "rect": RectElement,
     "svg": SVGElement,
-    "arrow": Arrow,
     "channel": Channel,
     "diagram": Diagram,
     "line": Line,
@@ -42,7 +40,6 @@ export interface AppConfigSchemeData {
     diagram: IDiagram
     sequence: ISequence
     channel: IChannel
-    arrow: IArrow
     line: ILine
     text: IText
 }
@@ -64,7 +61,7 @@ export interface IUserSchemeData {
     rectElements: Record<string, IRectElement> | undefined,
     labelGroupElements: Record<string, ILabelGroup> | undefined
 
-    arrow: Record<string, IArrow> | undefined,
+
     line: Record<string, ILine> | undefined,
     text: Record<string, IText> | undefined
 }

@@ -1,43 +1,19 @@
 import { Colors } from "@blueprintjs/core";
 import ENGINE from "../../logic/engine";
 import Spacial, { Dimensions, IBindingPayload, SiteNames } from "../../logic/spacial";
+import { PointBind } from "./LineTool";
 
 interface IBindings {
     element: Spacial,
-
-    selectedStart: PointBind | undefined
-    selectedEnd: PointBind | undefined
-    setStart: React.Dispatch<React.SetStateAction<PointBind | undefined>>
-    setEnd: React.Dispatch<React.SetStateAction<PointBind | undefined>>
+    selectBind: (bindX: IBindingPayload, bindY: IBindingPayload) => void
 }
 
-export type PointBind = Record<Dimensions, IBindingPayload> 
+
+
 
 const AnchorLocations: SiteNames[] = ["here", "centre", "far"]
 
 const BindingsSelector: React.FC<IBindings> = (props) => {
-
-    function createArrow(startBind: PointBind, endBind: PointBind) {
-        ENGINE.handler.createArrow(startBind, endBind);
-    }
-
-    function select(bindX: IBindingPayload, bindY: IBindingPayload) {
-        if (props.selectedStart === undefined) {
-            props.setStart({"x": bindX, "y": bindY});
-            console.log("Set start");
-        } else {
-            props.setEnd({"x": bindX, "y": bindY});
-            console.log("Set end");
-            
-            if (props.selectedStart !== undefined) {
-                createArrow(props.selectedStart, {"x": bindX, "y": bindY});
-            }
-
-            props.setStart(undefined);
-            props.setEnd(undefined);
-        }
-    }
-
     return (
         <>
         { AnchorLocations.map((xAnchor) => {
@@ -61,14 +37,25 @@ const BindingsSelector: React.FC<IBindings> = (props) => {
                     anchorObject: props.element
                 }
 
-                return (<div 
-                        style={{position: "absolute", left: x, top: y, backgroundColor: Colors.BLUE5,
-                        width: "2px", height: "2px",
-                        transform: `translate(-50%, -50%)` }} 
-                        onClick={(e) => {select(bindingPayloadX, bindingPayloadY)}} onMouseOver={(e) => e.stopPropagation()} >
-
+                return (
+                <>
+                <style>{`
+                .bind-point {
+                    position: absolute;
+                    width: 2px;    /* bigger hit area */
+                    height: 2px;
+                    transform: translate(-50%, -50%);
+                    cursor: pointer;
                     
-                    </div>)
+                    background-color: #54abe0ff;
+                }
+                `}</style>
+                <div className="bind-point"
+                        style={{position: "absolute", left: x, top: y, zIndex: 6600, borderRadius: "50%",
+                        outlineColor: "transparent"}} key={`${xAnchor}${yAnchor}`}
+                        onClick={(e) => {props.selectBind(bindingPayloadX, bindingPayloadY)}} onMouseOver={(e) => e.stopPropagation()} >
+                    </div>
+                </>)
             })
         })}
         </>

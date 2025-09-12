@@ -4,13 +4,15 @@ import { saveAs } from 'file-saver';
 import { ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import Banner from '../features/banner/Banner';
+import Console from '../features/banner/Console';
 import Canvas from '../features/canvas/Canvas';
 import ComponentResizer from '../features/canvas/ComponentResizer';
-import Console from '../features/banner/Console';
 import ElementsDraw from '../features/elementDraw/ElementsDraw';
 import Form from '../features/Form';
 import ENGINE from '../logic/engine';
+import { ILineStyle } from '../logic/line';
 import { Visual } from '../logic/visual';
+import { IDrawArrowConfig } from '../features/canvas/LineTool';
 
 ENGINE.initialiseSchemeManager();
 await ENGINE.loadSVGData();
@@ -26,7 +28,13 @@ export const myToaster: Toaster = await OverlayToaster.createAsync({ position: "
 });
 
 
-export type SelectionMode = "select" | "draw";
+
+export interface IToolConfig {
+
+}
+
+export type Tool = { type: "select", config: {} } | {type: "arrow", config: IDrawArrowConfig }
+
 
 
 function App() {
@@ -38,8 +46,11 @@ function App() {
   const [form, setForm] = useState<ReactNode | null>(null);
   const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
-  const [selectionMode, setSelectionMode] = useState<SelectionMode>("select");
 
+
+  const [selectedTool, setSelectedTool] = useState<Tool>({type: "select", config: {}})
+
+  
   // Welcome dialog state
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false); // can change to false for local storage check
   // Check localStorage on first render
@@ -63,7 +74,11 @@ function App() {
   //   return () => clearInterval(interval);
   // }, []);
 
-  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectionMode={selectionMode}></Canvas>
+  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectedTool={selectedTool} setTool={setSelectedTool}></Canvas>
+
+  const setTool = (tool: Tool) => {
+    setSelectedTool(tool);
+  }
 
   function SaveSVG() {
     try {
@@ -219,12 +234,12 @@ function App() {
       <div style={{display: "flex", height: "100%", width: "100%", flexDirection: "column"}}>
         <div style={{width: "100%"}}>
           <Banner saveSVG={SaveSVG} savePNG={SavePNG} openConsole={openConsole} 
-          selection={{selectionMode: selectionMode, setSelectionMode: setSelectionMode}}></Banner>
+            selectedTool={selectedTool} setTool={setTool}></Banner>
         </div>
         
         <div style={{display: "flex", height: "100%", width: "100%"}}>
           <div style={{flex: "1 1", height: "100%", display: "flex", flexDirection: "column"}}>
-            <div style={{height: "100%", position: "relative", cursor: selectionMode === "select" ? "default" : "crosshair"}} >
+            <div style={{height: "100%", position: "relative", cursor: selectedTool.type === "select" ? "default" : "crosshair"}} >
               {canvas}
             </div>
             

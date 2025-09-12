@@ -1,18 +1,18 @@
 import { Checkbox, Colors, Dialog, DialogBody, EditableText, HotkeyConfig, Label, Text, useHotkeys } from '@blueprintjs/core';
 import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
-import { SelectionMode } from "../../app/App";
+import { IToolConfig, Tool } from "../../app/App";
 import { AllComponentTypes, AllElementIdentifiers, UserComponentType } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
 import { ID } from "../../logic/point";
 import { Visual } from "../../logic/visual";
-import BindingsSelector, { PointBind } from './BindingsSelector';
 import Debug from '../debug/Debug';
 import CanvasDraggableElement from '../dnd/CanvasDraggableElement';
 import { CanvasDragLayer } from '../dnd/CanvasDragLayer';
 import { CanvasDropContainer } from '../dnd/CanvasDropContainer';
 import DropField from '../dnd/DropField';
 import { HitboxLayer } from './HitboxLayer';
+import { LineTool, IDrawArrowConfig } from './LineTool';
 
  
 
@@ -21,7 +21,6 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
     // Types
     "svg": false,
     "text": false,
-    "arrow": false,
     "rect": false,
     "space": false,
     "line": false,
@@ -47,22 +46,32 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
     "bottom aligner": false,
 }
 
+export interface ISelectConfig extends IToolConfig {
+
+}
+
 
 
 interface ICanvasProps {
     select: (element?: Visual) => void
     selectedElement: Visual | undefined,
-    selectionMode: SelectionMode
+    selectedTool: Tool
+    setTool: (tool: Tool) => void
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
+    // Debug
     const [debugDialogOpen, setDebugDialogOpen] = useState(false);
     const [debugElements, setDebugElements] = useState<Visual[]>([]);
     const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<AllElementIdentifiers, boolean>>(DefaultDebugSelection);
-    const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 
-    const [start, setStart] = useState<PointBind | undefined>(undefined);
-    const [end, setEnd] = useState<PointBind | undefined>(undefined);
+    const [zoom, setZoom] = useState(2);
+    const [dragging, setDragging] = useState(false);
+    const [fileName, setFileName] = useState(ENGINE.currentImageName);
+
+
+
+    const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 
     const [focusLevel, setFocusLevel] = useState(0);
 
@@ -85,16 +94,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         setDebugSelectionTypes(newDebugSelection);
     }
 
-    console.log("CREATING CANVAS")
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
-    
 
     let selectedElement = props.selectedElement;
     
-    const [zoom, setZoom] = useState(2);
-    const [dragging, setDragging] = useState(false);
-    const [panning, setPanning] = useState(false);
-    const [fileName, setFileName] = useState(ENGINE.currentImageName);
+    
 
     const deselect = () => {
         selectedElement?.svg?.show();
@@ -123,13 +127,13 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     }
 
     const singleClick = (click: React.MouseEvent<HTMLDivElement>) => {
-        switch (props.selectionMode) {
+        switch (props.selectedTool.type) {
             case "select":
                 if (selectedElement && hoveredElement !== selectedElement) {
                     deselect();
                 }
                 break;
-            case "draw":
+            case "arrow":
 
         }
     }
@@ -203,12 +207,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                   limitToBounds={false} 
                                   centerZoomedOut={true}
                                   disabled={dragging}
-                                  onPanningStart={() => {setPanning(true)}}
-                                  onPanningStop={() => {setPanning(false)}}
                                   doubleClick={{disabled: true}}>
                     
                     
-                        
                     <TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
                         
 
@@ -238,8 +239,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
                                 <HitboxLayer focusLevel={focusLevel} setHoveredElement={constOnHitboxHover}></HitboxLayer>
 
+                                {/* Tools */}
+                                {props.selectedTool.type === "arrow" ? 
+                                <LineTool hoveredElement={hoveredElement} config={props.selectedTool.config} setTool={props.setTool}></LineTool> : <></>}
+
                                 {/* Hover highlight */}
-                                { hoveredElement !== undefined ? 
+                                { hoveredElement !== undefined && props.selectedTool.type === "select" ? 
                                 <>
                                     <svg style={{width: `${hoveredElement.width}px`, height: `${hoveredElement.height}`, position: "absolute", 
                                 top: `${hoveredElement.y}px`, left: `${hoveredElement.x}px`, zIndex: 100, vectorEffect: "non-scaling-stroke"}} pointerEvents={"none"} >
@@ -247,14 +252,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                     style={{stroke: `${Colors.BLUE3}`,
                                     strokeWidth: "1px", fill: `none`, strokeDasharray: "1 1",}} ></rect>
                                 </svg> 
-                                {props.selectionMode === "draw" ? 
-                                <BindingsSelector element={hoveredElement} 
-                                    selectedStart={start} setStart={setStart}
-                                    selectedEnd={end} setEnd={setEnd}></BindingsSelector> : <></>}
-
                                 </>
       
                                 : <></>}
+
 
                                 
                                 {/* Image */}
@@ -285,7 +286,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                         </CanvasDraggableElement>
                                         </div>
                                      : <></>
-                                }   
+                                }
+
+                                
+
                         </div>
                     </TransformComponent>
                     

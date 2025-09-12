@@ -1,6 +1,5 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import { PointBind } from "../features/canvas/BindingsSelector";
-import Arrow from "./arrow";
+import Line, { ILine } from "./line";
 import Channel, { IChannel } from "./channel";
 import SchemeManager from "./default";
 import Diagram, { AllStructures, IDiagram } from "./diagram";
@@ -13,6 +12,7 @@ import Sequence from "./sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import type { IVisual, Visual } from "./visual";
+import { PointBind } from "../features/canvas/LineTool";
 
 
 
@@ -20,7 +20,7 @@ import type { IVisual, Visual } from "./visual";
 export type AllComponentTypes = UserComponentType | AbstractComponentTypes 
 
 // The types of component 
-export type UserComponentType = DrawComponent | "label-group" | "label" | "text" | "arrow" | "line" | "channel" | "sequence" | "diagram" ; 
+export type UserComponentType = DrawComponent | "label-group" | "label" | "text" | "line" | "channel" | "sequence" | "diagram" ; 
 export type DrawComponent = "svg" | "rect" | "space"
 
 // Abstract component types (have no visual content)
@@ -336,16 +336,18 @@ export default class DiagramHandler {
         this.draw();
     }
 
-    public createArrow(startBinds: PointBind, endBinds: PointBind) {
-        var newArrow: Arrow = new Arrow({});
+    public createArrow(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
+        var newArrow: Line = new Line(pParams);
 
         startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here");
         startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here");
         startBinds["x"].anchorObject.enforceBinding();
+        startBinds["y"].anchorObject.enforceBinding();
 
         endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far");
         endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far");
         endBinds["x"].anchorObject.enforceBinding()
+        endBinds["y"].anchorObject.enforceBinding()
 
         this.diagram.addFreeArrow(newArrow);
         this.draw()
