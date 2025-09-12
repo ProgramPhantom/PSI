@@ -18,7 +18,7 @@ interface IDrawArrowProps {
 
 export interface IDrawArrowConfig extends IToolConfig {
     lineStyle: ILineStyle,
-    vertical: boolean
+    mode: "vertical" | "bind"
 }
 
 
@@ -170,10 +170,10 @@ export function LineTool(props: IDrawArrowProps) {
         <>
             <div style={{position: "absolute"}}>
 
-                {props.hoveredElement && !props.config.vertical ? <BindingsSelector element={props.hoveredElement} selectBind={selectBind}></BindingsSelector> : <></>}
+                {props.hoveredElement && props.config.mode === "bind" ? <BindingsSelector element={props.hoveredElement} selectBind={selectBind}></BindingsSelector> : <></>}
 
                 {/* Create regions around pulse columns*/ 
-                props.config.vertical ? 
+                props.config.mode === "vertical" ? 
                     
                     <>
                     {columns.map((col) => {

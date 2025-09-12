@@ -39,7 +39,7 @@ export default function Banner(props: IBannerProps) {
             e.preventDefault()
             e.stopPropagation()
         } else {
-            props.setTool({type: "arrow", config: {lineStyle: Line.defaults["default"].lineStyle, vertical: false}})
+            props.setTool({type: "arrow", config: {lineStyle: Line.defaults["default"].lineStyle, mode: "bind"}})
         }
     }
 

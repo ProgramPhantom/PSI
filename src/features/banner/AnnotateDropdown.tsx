@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Classes, ControlGroup, FormGroup, Menu, MenuItem, NumericInput, Popover, Switch } from "@blueprintjs/core";
+import { Button, ButtonGroup, Classes, ControlGroup, FormGroup, Menu, MenuItem, NumericInput, Popover, SegmentedControl, Switch } from "@blueprintjs/core";
 import { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Tool } from "../../app/App";
@@ -17,13 +17,13 @@ interface IAnnotateDropdownProps {
 export function AnnotateDropdown(props: IAnnotateDropdownProps) {
     const toolValue = useRef<IDrawArrowConfig>({
             lineStyle: Line.defaults["default"].lineStyle,
-            vertical: false
+            mode: "bind"
         });
     const { control, handleSubmit, reset, watch } = useForm<IDrawArrowConfig>({
         mode: "onChange",
         defaultValues: {
             lineStyle: Line.defaults["default"].lineStyle,
-            vertical: false
+            mode: "bind"
         }
     });
 
@@ -61,7 +61,10 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 
     return (
 
-        <Popover hoverCloseDelay={100} hoverOpenDelay={500} lazy={false} renderTarget={({isOpen, ...targetProps}) => (
+        <Popover 
+                hoverCloseDelay={100} 
+                hoverOpenDelay={500} 
+                lazy={false} renderTarget={({isOpen, ...targetProps}) => (
             <Button {...targetProps} 
                 onClick={(e) => selectTool()}
                 intent={props.selectedTool.type === "arrow" ? "primary" : "none"}
@@ -70,8 +73,32 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
                 text="Line Tool" />
         )} interactionKind='hover' popoverClassName={Classes.POPOVER_CONTENT_SIZING}
             content={
-            <form onBlur={handleSubmit(onSubmit)} onMouseLeave={handleSubmit(onSubmit)}>
+            <form style={{width: "300px"}}
+            onBlur={handleSubmit(onSubmit)} 
+            onMouseLeave={handleSubmit(onSubmit)}>
             <ControlGroup fill={true} vertical={true}>
+
+                <FormGroup label="Mode" inline={true} >
+                    <Controller name="mode"
+                        control={control}
+                        render={({ field }) => (
+                            <SegmentedControl size={"small"} {...field} 
+                            options={[
+                            {
+                                label: "Bind",
+                                value: "bind"
+                            },
+                            {
+                                label: "Vertical",
+                                value: "vertical"
+                            }
+                        ]} defaultValue="bind"
+                            onValueChange={(v) => field.onChange(v)}></SegmentedControl>
+                        )}>
+
+                    </Controller>
+                </FormGroup>
+
                 <FormGroup label="Heads" inline={true}>
                     <ButtonGroup>
                         <Controller
@@ -169,17 +196,6 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
                         )}
                     />
                 </FormGroup>
-
-                <Controller
-                    name="vertical"
-                    control={control}
-                    render={({ field }) => (
-                        <Switch checked={field.value}
-                            onChange={(e) => field.onChange(e.currentTarget.checked)}
-                            label="Vertical Line"
-                        />
-                    )}
-                />
             </ControlGroup>
                      </form>}>
         </Popover>

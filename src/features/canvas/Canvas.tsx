@@ -244,7 +244,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 <LineTool hoveredElement={hoveredElement} config={props.selectedTool.config} setTool={props.setTool}></LineTool> : <></>}
 
                                 {/* Hover highlight */}
-                                { hoveredElement !== undefined ? 
+                                { hoveredElement !== undefined && props.selectedTool.type === "select" ? 
                                 <>
                                     <svg style={{width: `${hoveredElement.width}px`, height: `${hoveredElement.height}`, position: "absolute", 
                                 top: `${hoveredElement.y}px`, left: `${hoveredElement.x}px`, zIndex: 100, vectorEffect: "non-scaling-stroke"}} pointerEvents={"none"} >
