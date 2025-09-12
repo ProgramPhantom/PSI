@@ -43,7 +43,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 
     return (
         <div>
-            <Switch label='Draw Line' onClick={() => onSwitch()} 
+            <Switch label='Draw Line' onChange={() => onSwitch()} 
             checked={props.selectedTool.type === "arrow" ? true : false}></Switch>
 
             <ControlGroup fill={true} vertical={true}>

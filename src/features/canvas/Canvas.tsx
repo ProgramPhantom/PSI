@@ -238,6 +238,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
                                 <HitboxLayer focusLevel={focusLevel} setHoveredElement={constOnHitboxHover}></HitboxLayer>
 
+                                {/* Tools */}
+                                {props.selectedTool.type === "arrow" ? 
+                                <DrawArrow hoveredElement={hoveredElement} config={{lineStyle: props.selectedTool.config}}></DrawArrow> : <></>}
+
                                 {/* Hover highlight */}
                                 { hoveredElement !== undefined ? 
                                 <>
@@ -284,9 +288,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 }
 
                                 
-                                {/* Tools */}
-                                {props.selectedTool.type === "arrow" ? 
-                                <DrawArrow hoveredElement={hoveredElement} config={{lineStyle: props.selectedTool.config}}></DrawArrow> : <></>}
+
                         </div>
                     </TransformComponent>
                     

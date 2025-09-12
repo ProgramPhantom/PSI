@@ -37,7 +37,7 @@ export function DrawArrow(props: IDrawArrowProps) {
     }
 
 
-    function select(bindX: IBindingPayload, bindY: IBindingPayload) {
+    function selectBind(bindX: IBindingPayload, bindY: IBindingPayload) {
         if (start.current === undefined) {
             start.current = {"x": bindX, "y": bindY};
             var startX = bindX.anchorObject.getCoordinateFromBindRule(bindX.bindingRule);
@@ -103,7 +103,8 @@ export function DrawArrow(props: IDrawArrowProps) {
 
     return (
         <>
-            {props.hoveredElement ? <BindingsSelector element={props.hoveredElement} selectBind={select}></BindingsSelector> : <></>}
+            {props.hoveredElement ? <BindingsSelector element={props.hoveredElement} selectBind={selectBind}></BindingsSelector> : <></>}
+            
             {startCoords !== undefined && previewPathSvg !== undefined ? 
                 <svg key="annotation-preview-layer"
                     ref={overlaySvgRef}
