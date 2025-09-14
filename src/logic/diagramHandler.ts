@@ -11,7 +11,7 @@ import RectElement, { IRectElement, } from "./rectElement";
 import Sequence from "./sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
-import type { IVisual, Visual } from "./visual";
+import { IVisual, Visual } from "./visual";
 import { PointBind } from "../features/canvas/LineTool";
 
 
@@ -36,6 +36,7 @@ export type AllElementIdentifiers = AllStructures | AllComponentTypes
 export interface IHaveStructure {
     structure: Partial<Record<AllStructures, Point>>
 }
+
 
 
 export default class DiagramHandler {
@@ -128,7 +129,7 @@ export default class DiagramHandler {
 
         state.sequences.forEach((s) => {
             s.channels.forEach((c) => {
-                c.mountedElements.forEach((m) => {
+                c.userChildren.forEach((m) => {
                     if (m.type === undefined) {
                         console.warn(`Element data is missing type: ${m.ref}`)
                     }

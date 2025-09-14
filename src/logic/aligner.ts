@@ -30,7 +30,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
             offset: [0, 0],
             padding: [0, 0, 0, 0],
             ref: "default-aligner",
-            children: []
+            userChildren: []
         }
     }
 

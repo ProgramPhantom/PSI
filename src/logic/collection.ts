@@ -6,10 +6,16 @@ import { FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual, doesDraw } from "./visual";
 import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
+import { IHaveStructure } from "./diagramHandler";
+
+
+export function HasStructure(obj: any): obj is IHaveStructure {
+    return (obj.structure !== undefined)
+}
 
 
 export interface ICollection extends IVisual {
-    children: IVisual[]
+    userChildren: IVisual[]
 }
 export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
     static defaults: {[name: string]: ICollection} = {
@@ -21,12 +27,12 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
             offset: [0, 0],
             padding: [0, 0, 0, 0],
             ref: "default-collection",
-            children: []
+            userChildren: []
         },
     }
     get state(): ICollection {
         return {
-            children: this.children,
+            userChildren: this.userChildren.map(c => c.state),
             ...super.state
         }
     }
@@ -35,6 +41,10 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
     _parentElement?: T;
     children: T[] = [];
     
+
+    get userChildren(): T[] {
+        return this.children.filter(c => HasStructure(this) ? !Object.values(this.structure).includes(c) : true)
+    }
 
     constructor(params: RecursivePartial<ICollection>, templateName: string=Collection.defaults["default"].ref) {
         var fullParams: ICollection = FillObject<ICollection>(params, Collection.defaults[templateName]);

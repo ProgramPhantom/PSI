@@ -3,73 +3,7 @@
         {
             "channels": [
                 {
-                    "mountedElements": [
-                        {
-                            "svgDataRef": "amp",
-                            "style": {},
-                            "offset": [
-                                0,
-                                1
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "4c7eb887117048",
-                                "sequenceID": "f0d2a2f259ea88",
-                                "index": 0,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 15,
-                            "contentHeight": 40,
-                            "x": 32,
-                            "y": 15,
-                            "ref": "amp",
-                            "id": "SvgjsSvg1322",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "tick",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "4c7eb887117048",
-                                "sequenceID": "f0d2a2f259ea88",
-                                "index": 1,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 50,
-                            "contentHeight": 50,
-                            "x": 47,
-                            "y": 5,
-                            "ref": "tick",
-                            "id": "SvgjsSvg3530",
-                            "type": "svg"
-                        }
-                    ],
-                    "sequenceID": "f0d2a2f259ea88",
+                    "sequenceID": "9db46faa49e2f",
                     "style": {
                         "thickness": 3,
                         "barStyle": {
@@ -99,11 +33,45 @@
                         "contentWidth": 27,
                         "contentHeight": 20,
                         "x": 5,
-                        "y": 46.5,
+                        "y": 26.5,
                         "ref": "TEXT",
-                        "id": "399a73302eeb48",
+                        "id": "3ca4c6c3dbbc7",
                         "type": "lower-abstract"
                     },
+                    "userChildren": [
+                        {
+                            "svgDataRef": "chirphilo",
+                            "style": {},
+                            "offset": [
+                                0,
+                                1
+                            ],
+                            "mountConfig": {
+                                "orientation": "top",
+                                "alignment": "centre",
+                                "noSections": 1,
+                                "channelID": "f705d88838db7",
+                                "sequenceID": "9db46faa49e2f",
+                                "index": 0,
+                                "mountOn": true,
+                                "dropEffect": "insert",
+                                "insert": true
+                            },
+                            "padding": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "contentWidth": 50,
+                            "contentHeight": 20,
+                            "x": 32,
+                            "y": 15,
+                            "ref": "chirphilo",
+                            "id": "SvgjsSvg1459",
+                            "type": "svg"
+                        }
+                    ],
                     "offset": [
                         0,
                         0
@@ -114,15 +82,16 @@
                         0,
                         0
                     ],
-                    "contentWidth": 92,
-                    "contentHeight": 73,
+                    "contentWidth": 77,
+                    "contentHeight": 53,
                     "x": 5,
                     "y": 5,
                     "ref": "my-channel",
-                    "id": "4c7eb887117048",
+                    "id": "f705d88838db7",
                     "type": "channel"
                 }
             ],
+            "userChildren": [],
             "offset": [
                 0,
                 0
@@ -133,15 +102,16 @@
                 5,
                 5
             ],
-            "contentWidth": 92,
-            "contentHeight": 73,
+            "contentWidth": 77,
+            "contentHeight": 53,
             "x": 0,
             "y": 0,
             "ref": "sequence",
-            "id": "f0d2a2f259ea88",
+            "id": "9db46faa49e2f",
             "type": "sequence"
         }
     ],
+    "userChildren": [],
     "offset": [
         0,
         0
@@ -152,11 +122,11 @@
         0,
         0
     ],
-    "contentWidth": 102,
-    "contentHeight": 83,
+    "contentWidth": 87,
+    "contentHeight": 63,
     "x": 0,
     "y": 0,
     "ref": "diagram",
-    "id": "1bea307ae86d7",
+    "id": "4204da2ba5d2e8",
     "type": "diagram"
 }

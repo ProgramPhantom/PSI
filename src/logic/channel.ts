@@ -13,10 +13,9 @@ import { RecursivePartial, UpdateObj } from "./util";
 import { IVisual, Visual } from "./visual";
  
 
-export type ChannelNamedStructure = "top aligner" | "bottom aligner" | "bar"
+export type ChannelNamedStructure = "top aligner" | "bottom aligner" | "bar" | "label"
 
 export interface IChannel extends ICollection {
-    mountedElements: IVisual[],
     sequenceID: ID,
 
     style: IChannelStyle;
@@ -32,12 +31,11 @@ export interface IChannelStyle {
 
 export default class Channel extends Collection implements IHaveStructure {
     static namedElements: {[name: string]: IChannel} = {"default": <any>defaultChannel, "form-defaults": {
-        "mountedElements": [],
         "padding": [0, 0, 0, 0], 
         "offset": [0, 0],
         "ref": "my-channel",
         "sequenceID": null,
-        children: [],
+        userChildren: [],
 
         "style": {
             "thickness": 3,
@@ -66,7 +64,6 @@ export default class Channel extends Collection implements IHaveStructure {
 
     get state(): IChannel {
         return {
-            mountedElements: this.mountedElements.map((m) => m.state),
             sequenceID: this.sequenceID,
             style: this.style,
             channelSymbol: this.label.state,
@@ -167,11 +164,7 @@ export default class Channel extends Collection implements IHaveStructure {
         this.bar.bind(this.bottomAligner, "y", "far", "here");
         this.add(this.bottomAligner);
 
-        this.structure = {
-            "top aligner": this.topAligner,
-            "bottom aligner": this.bottomAligner,
-            "bar": this.bar
-        }
+
         // ----------------------------
 
         
@@ -184,6 +177,13 @@ export default class Channel extends Collection implements IHaveStructure {
         this.bar.bind(this.label, "y", "centre", "centre");
 
         this.add(this.label);
+
+        this.structure = {
+            "top aligner": this.topAligner,
+            "bottom aligner": this.bottomAligner,
+            "bar": this.bar,
+            "label": this.label
+        }
     }
 
 
@@ -201,7 +201,7 @@ export default class Channel extends Collection implements IHaveStructure {
         // ---- Bind to the upper and lower aligners for Y ONLY
         switch (config.orientation) {
             case "top":
-                this.topAligner.add(element);
+                this.topAligner.add(element, undefined, false, false);
                 break;
             case "both":
                 this.bar.bind(element, "y", "centre", "centre")
@@ -209,9 +209,11 @@ export default class Channel extends Collection implements IHaveStructure {
                 this.bar.enforceBinding()
                 break;
             case "bottom":
-                this.bottomAligner.add(element);
+                this.bottomAligner.add(element, undefined, false, false);
                 break;
         }
+
+        this.add(element)
     }
 
     removeMountable(element: Visual) {
