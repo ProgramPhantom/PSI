@@ -34,7 +34,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
     _parentElement?: T;
     children: T[] = [];
-    childBounds: Bounds = {top: 0, bottom: 0, left: 0, right: 0};
+    
 
     constructor(params: RecursivePartial<ICollection>, templateName: string=Collection.defaults["default"].ref) {
         var fullParams: ICollection = FillObject<ICollection>(params, Collection.defaults[templateName]);
@@ -202,7 +202,6 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
         
 
-        var bounds = {top: top, right: right, bottom: bottom, left: left}
         var width = right - left;
         var height = bottom - top;
         
@@ -219,12 +218,6 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
             // this.contentHeight = 0;
         }
 
-        this.childBounds = {
-            top: top,
-            bottom: bottom,
-            left: left,
-            right: right
-        }
 
         logger.processEnd(Processes.COMPUTE_BOUNDARY, `Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`, this)
     }

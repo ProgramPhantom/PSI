@@ -302,16 +302,6 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
         } else {
             this.contentHeight = 0;
         }
-
-        this.childBounds = {
-            top: top,
-            bottom: bottom,
-            left: left,
-            right: right
-        }
-
-
-
         logger.processEnd(Processes.COMPUTE_BOUNDARY, `Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`, this)
     }
 }

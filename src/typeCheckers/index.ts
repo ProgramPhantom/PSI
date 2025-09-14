@@ -16,7 +16,6 @@ import Channel from "../logic/channel";
 import Diagram from "../logic/diagram";
 import Label from "../logic/label";
 import LabelGroup from "../logic/labelGroup";
-import { Line } from "../logic/line";
 import RectElement from "../logic/rectElement";
 import Sequence from "../logic/sequence";
 import Space from "../logic/space";
@@ -26,7 +25,6 @@ import Point from "../logic/point";
 import { Visual } from "../logic/visual";
 
 export const CheckerTypeIndex: Record<UserComponentType, {suite: t.ITypeSuite, type: t.TType}> = {
-    "arrow": {suite: arrowTypeSuite, type: arrowTypeSuite.IArrow},
     "channel": {suite: channelTypeSuite, type: channelTypeSuite.IChannel},
     "diagram": {suite: diagramTypeSuite, type: diagramTypeSuite.IDiagram},
     "label": {suite: labelTypeSuite, type: labelTypeSuite.ILabel},
