@@ -9,9 +9,9 @@ import { Rect } from "@svgdotjs/svg.js";
 
 
 export interface ICollection extends IVisual {
-    
+    children: IVisual[]
 }
-export default class Collection<T extends Spacial = Spacial> extends Visual implements IDraw {
+export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
     static defaults: {[name: string]: ICollection} = {
         "default": {
             contentWidth: 0,
@@ -20,8 +20,15 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             y: undefined,
             offset: [0, 0],
             padding: [0, 0, 0, 0],
-            ref: "default-collection"
+            ref: "default-collection",
+            children: []
         },
+    }
+    get state(): ICollection {
+        return {
+            children: this.children,
+            ...super.state
+        }
     }
 
 

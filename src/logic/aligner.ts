@@ -16,7 +16,7 @@ export interface IAligner extends ICollection {
 
 // A collection where all elements are assumed to be in a stack arrangement (either vertically or horizontally)
 // Useful for getting the max width/height of multiple elements
-export default class Aligner<T extends Spacial = Spacial> extends Collection<T> {
+export default class Aligner<T extends Visual = Visual> extends Collection<T> {
     static defaults: {[name: string]: IAligner} = {
         "default": {
             axis: "x",
@@ -29,7 +29,8 @@ export default class Aligner<T extends Spacial = Spacial> extends Collection<T> 
             y: undefined,
             offset: [0, 0],
             padding: [0, 0, 0, 0],
-            ref: "default-aligner"
+            ref: "default-aligner",
+            children: []
         }
     }
 

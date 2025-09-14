@@ -37,6 +37,7 @@ export default class Channel extends Collection implements IHaveStructure {
         "offset": [0, 0],
         "ref": "my-channel",
         "sequenceID": null,
+        children: [],
 
         "style": {
             "thickness": 3,
