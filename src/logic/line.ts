@@ -3,6 +3,7 @@ import defaultLine from "./default/line.json";
 import { UserComponentType } from "./diagramHandler";
 import { FillObject, RecursivePartial } from "./util";
 import LineLike, { ILineLike } from "./lineLike";
+import { Rect } from "@svgdotjs/svg.js";
 
 
 export type HeadStyle = "default" | "thin" | "none"
@@ -47,6 +48,19 @@ export default class Line extends LineLike implements ILine {
     if (fullParams.y2 !== undefined) {
       this.y2 = fullParams.y2
     }
+  }
+
+    public getHitbox(): Rect[] {
+      var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
+
+      hitbox.size(this.length, this.lineStyle.thickness + LineLike.HitboxPadding);
+      hitbox.rotate(this.angle / Math.PI * 180, this.x, this.y);
+
+      var crossShift: [number, number] = this.moveRelative([this.x, this.y], 
+        "cross", -(this.lineStyle.thickness + LineLike.HitboxPadding) / 2)
+      hitbox.move(crossShift[0], crossShift[1]);
+      hitbox.fill(`red`).opacity(0.3);
+      return [hitbox];
   }
 
 

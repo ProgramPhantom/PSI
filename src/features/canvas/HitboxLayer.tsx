@@ -23,9 +23,9 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
     0: {
         terminate: [
             "label-group",
+            
         ],
         carry: [
-            "label",
             "text",
             "diagram",
             "lower-abstract",
@@ -34,6 +34,8 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
             "rect",
             "channel",
             "svg",
+            "line",
+            "label"
         ]
     },
     1: {
