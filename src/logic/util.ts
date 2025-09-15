@@ -1,11 +1,12 @@
 import { Element } from "@svgdotjs/svg.js";
 import * as t from "ts-interface-checker";
 import { CheckerTypeIndex } from "../typeCheckers";
-import { UserComponentType } from "./diagramHandler";
+import { AllComponentTypes, UserComponentType } from "./diagramHandler";
 import { ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
-import { Visual } from "./visual";
+import { IVisual, Visual } from "./visual";
+import Line, { ILine } from "./line";
 
 function isEmpty(obj: any) {
   for (var prop in obj) {
@@ -144,4 +145,24 @@ export function mergeObjectsPreferNonEmpty(obj1, obj2) {
     }
   }
   return result;
+}
+
+export function CreateChild(values: IVisual, type: AllComponentTypes): Visual {
+    // I would LOVE to do this with a registry defined at the top level but it's causing
+    // a circular dependency error which is impossible to fix...
+    var element: Visual;
+    switch (type) {
+        case "svg":
+            element = new SVGElement(values as ISVGElement);
+            break;
+        case "rect":
+            element = new RectElement(values as IRectElement);
+            break;
+        case "line":
+            element = new Line(values as ILine);
+            break;
+        default:
+            throw new Error(`Not implemented`);
+    }
+    return element;
 }

@@ -16,6 +16,8 @@ export interface ILineStyle {
 
 export interface ILine extends ILineLike {
     lineStyle: ILineStyle,
+    x2?: number
+    y2?: number
 }
 
 
@@ -26,6 +28,8 @@ export default class Line extends LineLike implements ILine {
   static arbitraryAdjustment: number = 1;
   get state(): ILine { return {
     lineStyle: this.lineStyle,
+    x2: this.x2,
+    y2: this.y2,
     ...super.state
   }}
 
@@ -36,6 +40,13 @@ export default class Line extends LineLike implements ILine {
     super(fullParams);
 
     this.lineStyle = fullParams.lineStyle;
+
+    if (fullParams.x2 !== undefined) {
+      this.x2 = fullParams.x2
+    }
+    if (fullParams.y2 !== undefined) {
+      this.y2 = fullParams.y2
+    }
   }
 
 

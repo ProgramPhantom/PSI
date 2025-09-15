@@ -2,12 +2,12 @@ import { Element } from "@svgdotjs/svg.js";
 import { FormBundle } from "../features/form/LabelGroupComboForm";
 import VisualForm from "../features/form/VisualForm";
 import Collection, { ICollection } from "./collection";
-import { UserComponentType } from "./diagramHandler";
+import DiagramHandler, { UserComponentType } from "./diagramHandler";
 import Label, { ILabel } from "./label";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import { Position } from "./text";
-import { FillObject, RecursivePartial } from "./util";
+import { CreateChild, FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
 
 
@@ -19,22 +19,7 @@ export interface ILabelGroup extends ICollection {
 
 
 export default class LabelGroup<T extends Visual=Visual> extends Collection implements ILabelGroup {
-    static CreateChild(values: IVisual, type: UserComponentType): Visual {
-        // I would LOVE to do this with a registry defined at the top level but it's causing
-        // a circular dependency error which is impossible to fix...
-        var element: Visual;
-        switch (type) {
-            case "svg":
-                element = new SVGElement(values as ISVGElement);
-                break;
-            case "rect":
-                element = new RectElement(values as IRectElement);
-                break;
-            default:
-                throw new Error(`Not implemented`);
-        }
-        return element;
-    }
+
     static namedElements: {[name: string]: ILabelGroup} = {
         "default": {
             contentWidth: 0,
@@ -47,7 +32,8 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
             labels: [],
             ref: "default-labellable",
             coreChild: SVGElement.namedElements["180"],
-            coreChildType: "svg"
+            coreChildType: "svg",
+            userChildren: []
         },
     }
     static ElementType: UserComponentType = "label-group";
@@ -81,7 +67,7 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
         if (coreChild !== undefined) {
             this.coreChild = coreChild;
         } else {
-            this.coreChild = LabelGroup.CreateChild(fullParams.coreChild, fullParams.coreChildType) as T;
+            this.coreChild = CreateChild(fullParams.coreChild, fullParams.coreChildType) as T;
         }
         
 

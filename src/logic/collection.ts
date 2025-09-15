@@ -2,11 +2,11 @@ import { Element, G } from "@svgdotjs/svg.js";
 import logger, { Processes } from "./log";
 import { ID } from "./point";
 import Spacial, { Bounds } from "./spacial";
-import { FillObject, RecursivePartial } from "./util";
+import { CreateChild, FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual, doesDraw } from "./visual";
 import { SVG } from "@svgdotjs/svg.js";
 import { Rect } from "@svgdotjs/svg.js";
-import { IHaveStructure } from "./diagramHandler";
+import DiagramHandler, { IHaveStructure } from "./diagramHandler";
 
 
 export function HasStructure(obj: any): obj is IHaveStructure {
@@ -49,6 +49,15 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
     constructor(params: RecursivePartial<ICollection>, templateName: string=Collection.defaults["default"].ref) {
         var fullParams: ICollection = FillObject<ICollection>(params, Collection.defaults[templateName]);
         super(fullParams);
+
+        fullParams.userChildren.forEach((c) => {
+            if (c.type === undefined) {
+                console.warn(`Cannot instantiate parameter child ${c.ref} as it has no type`)
+                return
+            }
+            var child: T = CreateChild(c, c.type) as T;
+            this.add(child);
+        })
     }
 
     draw(surface: Element) {

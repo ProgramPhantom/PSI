@@ -40,7 +40,7 @@ export interface IHaveStructure {
 
 
 export default class DiagramHandler {
-    
+
 
     diagram: Diagram;
     surface?: Svg;
@@ -215,10 +215,10 @@ export default class DiagramHandler {
 
         switch (type) {
             case "svg":
-                element = new SVGElement(parameters as ISVGElement)
+                element = new SVGElement(parameters as ISVGElement);
                 break;
             case "rect":
-                element = new RectElement(parameters as IRectElement)
+                element = new RectElement(parameters as IRectElement);
                 break;
             case "label-group":
                 element = new LabelGroup(parameters as ILabelGroup);

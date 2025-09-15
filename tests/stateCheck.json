@@ -3,7 +3,7 @@
         {
             "channels": [
                 {
-                    "sequenceID": "9db46faa49e2f",
+                    "sequenceID": "5b4041b23b93a",
                     "style": {
                         "thickness": 3,
                         "barStyle": {
@@ -33,25 +33,25 @@
                         "contentWidth": 27,
                         "contentHeight": 20,
                         "x": 5,
-                        "y": 26.5,
+                        "y": 71.5,
                         "ref": "TEXT",
-                        "id": "3ca4c6c3dbbc7",
+                        "id": "16575377e4a47",
                         "type": "lower-abstract"
                     },
                     "userChildren": [
                         {
-                            "svgDataRef": "chirphilo",
+                            "svgDataRef": "acquire",
                             "style": {},
                             "offset": [
                                 0,
-                                1
+                                0
                             ],
                             "mountConfig": {
                                 "orientation": "top",
                                 "alignment": "centre",
                                 "noSections": 1,
-                                "channelID": "f705d88838db7",
-                                "sequenceID": "9db46faa49e2f",
+                                "channelID": "179f1ffde78fe8",
+                                "sequenceID": "5b4041b23b93a",
                                 "index": 0,
                                 "mountOn": true,
                                 "dropEffect": "insert",
@@ -63,12 +63,12 @@
                                 0,
                                 0
                             ],
-                            "contentWidth": 50,
-                            "contentHeight": 20,
+                            "contentWidth": 150,
+                            "contentHeight": 75,
                             "x": 32,
-                            "y": 15,
-                            "ref": "chirphilo",
-                            "id": "SvgjsSvg1459",
+                            "y": 5,
+                            "ref": "acquire",
+                            "id": "SvgjsSvg1465",
                             "type": "svg"
                         }
                     ],
@@ -82,12 +82,12 @@
                         0,
                         0
                     ],
-                    "contentWidth": 77,
-                    "contentHeight": 53,
+                    "contentWidth": 177,
+                    "contentHeight": 98,
                     "x": 5,
                     "y": 5,
                     "ref": "my-channel",
-                    "id": "f705d88838db7",
+                    "id": "179f1ffde78fe8",
                     "type": "channel"
                 }
             ],
@@ -102,16 +102,55 @@
                 5,
                 5
             ],
-            "contentWidth": 77,
-            "contentHeight": 53,
+            "contentWidth": 177,
+            "contentHeight": 98,
             "x": 0,
             "y": 0,
             "ref": "sequence",
-            "id": "9db46faa49e2f",
+            "id": "5b4041b23b93a",
             "type": "sequence"
         }
     ],
-    "userChildren": [],
+    "userChildren": [
+        {
+            "lineStyle": {
+                "stroke": "black",
+                "thickness": 1,
+                "dashing": [
+                    0,
+                    0
+                ],
+                "headStyle": [
+                    "default",
+                    "default"
+                ]
+            },
+            "x2": 182,
+            "y2": 5,
+            "adjustment": [
+                0,
+                0
+            ],
+            "orientation": "horizontal",
+            "offset": [
+                0,
+                0
+            ],
+            "padding": [
+                0,
+                0,
+                0,
+                0
+            ],
+            "contentWidth": 150,
+            "contentHeight": 1,
+            "x": 32,
+            "y": 5,
+            "ref": "LINE",
+            "id": "11c84270897838",
+            "type": "line"
+        }
+    ],
     "offset": [
         0,
         0
@@ -122,11 +161,11 @@
         0,
         0
     ],
-    "contentWidth": 87,
-    "contentHeight": 63,
+    "contentWidth": 187,
+    "contentHeight": 108,
     "x": 0,
     "y": 0,
     "ref": "diagram",
-    "id": "4204da2ba5d2e8",
+    "id": "6939bcabeec5b8",
     "type": "diagram"
 }

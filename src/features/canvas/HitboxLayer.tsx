@@ -23,8 +23,6 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
     0: {
         terminate: [
             "label-group",
-            
-            
         ],
         carry: [
             "label",
