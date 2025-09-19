@@ -1,13 +1,23 @@
 import Aligner from "./aligner";
 import Channel, { IChannel } from "./channel";
-import Collection, { ICollection } from "./collection";
+import Collection, { ICollection, IHaveComponents } from "./collection";
 import defaultSequence from "./default/sequence.json";
-import { AllComponentTypes, IHaveStructure } from "./diagramHandler";
+import { AllComponentTypes } from "./diagramHandler";
 import logger, { Operations, Processes } from "./log";
-import Point from "./point";
+import { ID } from "./point";
 import Space from "./space";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
+
+
+export interface ISequenceComponents {
+    channels: Channel[]
+
+    channelColumn: Aligner<Channel>
+    pulseColumns: Aligner<Aligner<Visual>>
+    labelColumn: Aligner<Visual>
+    columns: Aligner<Aligner<Visual>>
+}
 
 export interface ISequence extends ICollection {
     channels: IChannel[]
@@ -19,36 +29,28 @@ export type OccupancyStatus = Visual | "." | undefined
 export type SequenceNamedStructures =  "channel column" | "label column" | "label col | pulse columns"| "pulse columns"
 
 
-export default class Sequence extends Collection implements IHaveStructure {
+export default class Sequence extends Collection implements IHaveComponents<ISequenceComponents> {
     static defaults: {[key: string]: ISequence} = {"default": {...<any>defaultSequence}}
     static ElementType: AllComponentTypes = "sequence";
     get state(): ISequence {
         return {
-            channels: this.channels.map((c) => c.state),
+            channels: this.components.channels.map((c) => c.state),
 
             ...super.state
         }
     }
 
-    channelsDict: {[name: string]: Channel;} = {};
-    get channels(): Channel[] {return Object.values(this.channelsDict)}
-    get channelIDs(): string[] {return Object.keys(this.channelsDict)}
 
-    structure: Record<SequenceNamedStructures, Point>;
-
-    channelColumn: Aligner<Channel>;
-
-    pulseColumns: Aligner<Aligner<Visual>>;
-    labelColumn: Aligner<Visual>;
-
-    columns: Aligner<Aligner<Visual>>;
+    components: ISequenceComponents;
 
     elementMatrix: OccupancyStatus[][] = [];
 
+    get channelsDict(): Record<ID, Channel> {return Object.fromEntries(this.components.channels.map(item => [item.id, item]));}
+    get channelIDs(): string[] {return this.components.channels.map(c => c.id)}
     get allPulseElements(): Visual[] {
         var elements: Visual[] = [];
-        this.channels.forEach((c) => {
-            elements.push(...c.mountedElements)
+        this.components.channels.forEach((c) => {
+            elements.push(...c.components.mountedElements)
         })
         return elements;
     }
@@ -60,33 +62,32 @@ export default class Sequence extends Collection implements IHaveStructure {
 
         // ----- Create structure ----
         // Channel column
-        this.channelColumn = new Aligner<Channel>(
+        var channelColumn: Aligner<Channel> = new Aligner<Channel>(
             {bindMainAxis: true, axis: "y", alignment: "here", ref: "channel column"}, "default", );
-        this.add(this.channelColumn, undefined, true);
+        this.add(channelColumn, undefined, true);
 
         // All columns
-        this.columns = new Aligner({axis: "x", bindMainAxis: true, alignment: "here", ref: "label col | pulse columns"}, "default");
-        this.add(this.columns, undefined, true);
+        var columns: Aligner<Aligner<Visual>> = new Aligner<Aligner<Visual>>({axis: "x", bindMainAxis: true, alignment: "here", ref: "label col | pulse columns"}, "default");
+        this.add(columns, undefined, true);
         
         // Label column
-        this.labelColumn = new Aligner<Visual>({axis: "y", bindMainAxis: false, 
+        var labelColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, 
                                                         alignment: "here", y: 0, ref: "label column"}, "default",);
-        this.columns.add(this.labelColumn);
+        columns.add(labelColumn);
 
         // Pulse columns
-        this.pulseColumns = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: "x", y: 0, ref: "pulse columns"}, "default", );
-        this.columns.add(this.pulseColumns);
+        var pulseColumns: Aligner<Aligner<Visual>> = new Aligner<Aligner<Visual>>({bindMainAxis: true, axis: "x", y: 0, ref: "pulse columns"}, "default", );
+        columns.add(pulseColumns);
 
-        this.structure = {
-            "channel column": this.channelColumn,
-            "label col | pulse columns": this.columns,
-            "label column": this.labelColumn,
-            "pulse columns": this.pulseColumns,
+        this.components = {
+            "channelColumn": channelColumn,
+            "channels": [],
+            "columns": columns,
+            "labelColumn": labelColumn,
+            "pulseColumns": pulseColumns
         }
         // --------------------------
 
-
-        this.channelsDict = {};  
         fullParams.channels.forEach((c) => {
             var newChan = new Channel(c);
             this.addChannel(newChan);
@@ -95,15 +96,11 @@ export default class Sequence extends Collection implements IHaveStructure {
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
 
-    reset() {
-        this.channelsDict = {};
-    }
 
-    
     clearEmptyColumns() {
-        this.pulseColumns.children.forEach((c) => {
+        this.components.pulseColumns.children.forEach((c) => {
             if (c.children.length === 0) {
-                this.pulseColumns.remove(c);
+                this.components.pulseColumns.remove(c);
                 console.warn("Clearing empty columns. Delete has not cleared up properly")
             }
         })
@@ -135,14 +132,13 @@ export default class Sequence extends Collection implements IHaveStructure {
         return split;
     }
 
-
     addColumns(index: number, quantity: number=1) {
         // Check if addition of column will split a multi-column element (not allowed currently)
         var split: boolean = this.checkMultiElementSplit(index);
         if (split) {console.warn(`Splitting element`);}
 
         // Calculate gap from index to leftmost column
-        var numColumns: number = this.pulseColumns.children.length;
+        var numColumns: number = this.components.pulseColumns.children.length;
         var diff: number = Math.max(index - numColumns, 0);
 
         var columnsToAdd: Aligner<Visual>[] = [];
@@ -167,11 +163,11 @@ export default class Sequence extends Collection implements IHaveStructure {
                                                           ref: `column at ${INDEX}`, minCrossAxis: 10}, "default", );
 
         // Add to positional columns
-        this.pulseColumns.add(newColumn, INDEX);
+        this.components.pulseColumns.add(newColumn, INDEX);
 
         // Update indices after this new column:
         // Update internal indexes of Positional elements in pos col:
-        this.channels.forEach((channel) => {
+        this.components.channels.forEach((channel) => {
             channel.shiftIndices(index, 1);
         })
 
@@ -184,15 +180,15 @@ export default class Sequence extends Collection implements IHaveStructure {
     deleteColumns(index: number, ifEmpty: boolean=false, quantity: number=1): boolean {
         // Update positional indices of elements after this 
         var columnsRemoved: number = 0;
-        var targets: (Aligner<Visual> | undefined)[] = this.pulseColumns.children.slice(index, index+quantity);
+        var targets: (Aligner<Visual> | undefined)[] = this.components.pulseColumns.children.slice(index, index+quantity);
 
         targets.forEach((t, i) => {
             if (t && ((ifEmpty && t.children.length === 0) || !ifEmpty)) {
-                var INDEX: number = this.pulseColumns.children.indexOf(t);
-                this.pulseColumns.remove(t);
+                var INDEX: number = this.components.pulseColumns.children.indexOf(t);
+                this.components.pulseColumns.remove(t);
                 columnsRemoved += 1
                 
-                this.channels.forEach((channel) => {
+                this.components.channels.forEach((channel) => {
                     channel.shiftIndices(INDEX, -1);
                 })
                 this.elementMatrix.forEach((c) => {
@@ -208,14 +204,14 @@ export default class Sequence extends Collection implements IHaveStructure {
 
     // Content Commands
     addChannel(channel: Channel) {
-        this.channelColumn.add(channel);
+        this.components.channelColumn.add(channel);
         
         // Set and initialise channel
-        this.channelsDict[channel.id] = channel; 
+        this.components.channels.push(channel); 
 
-        var index = this.channels.length - 1;
-        channel.mountColumns = this.pulseColumns;  // And apply the column ref
-        channel.labelColumn = this.labelColumn;
+        var index = this.components.channels.length - 1;
+        channel.mountColumns = this.components.pulseColumns;  // And apply the column ref
+        channel.labelColumn = this.components.labelColumn;
         
 
         this.elementMatrix.splice(this.elementMatrix.length, 0, []);
@@ -224,29 +220,29 @@ export default class Sequence extends Collection implements IHaveStructure {
     }
 
     deleteChannel(channel: Channel) {
-        if (!this.channels.includes(channel)) {
+        if (!this.components.channels.includes(channel)) {
             throw new Error(`Channel '${channel.ref}' does not belong to ${this.ref}`);
         }
         // The order is very important here
-        var index = this.channels.indexOf(channel);
+        var index = this.components.channels.indexOf(channel);
         
 
-        if (channel.label) {
-            this.labelColumn.remove(channel.label)
+        if (channel.components.label) {
+            this.components.labelColumn.remove(channel.components.label)
         }
 
-        channel.remove(channel.bar);
+        channel.remove(channel.components.bar);
 
-        for (var element of channel.mountedElements) {
+        for (var element of channel.components.mountedElements) {
             if (element.mountConfig) {
                 this.deleteMountedElement(element);
             }
         }
 
-        this.channelColumn.remove(channel);
+        this.components.channelColumn.remove(channel);
 
         this.elementMatrix.splice(index, 1);
-        delete this.channelsDict[channel.id];
+        this.components.channels.splice(index, 1);
     }
 
     public addElement(element: Visual) {
@@ -270,7 +266,7 @@ export default class Sequence extends Collection implements IHaveStructure {
             throw new Error(`Cannot find channel width ID ${element.mountConfig.channelID}`)
         }
 
-        var numColumns = this.pulseColumns.children.length;
+        var numColumns = this.components.pulseColumns.children.length;
         
         var INDEX = element.mountConfig.index;
         if (INDEX === undefined) {
@@ -293,7 +289,7 @@ export default class Sequence extends Collection implements IHaveStructure {
 
         // Calculate how many columns to insert
         var targetedOccupancy: OccupancyStatus[] = targetChannel.mountOccupancy.slice(INDEX, endINDEX+1);
-        var targetedColumns: Aligner<Visual>[] = this.pulseColumns.children.slice(INDEX, endINDEX+1);
+        var targetedColumns: Aligner<Visual>[] = this.components.pulseColumns.children.slice(INDEX, endINDEX+1);
 
         var columnsToAdd: number = element.mountConfig.noSections;
         for (var i=0; i < targetedColumns.length; i++) {
@@ -327,18 +323,18 @@ export default class Sequence extends Collection implements IHaveStructure {
             for (var i = 0; i<element.mountConfig.noSections; i++) {
                 var newSpace = new Space({contentHeight: 0, contentWidth: 10, padding: [0, 0, 0, 0]})
 
-                this.pulseColumns.children[INDEX+i].add(newSpace, undefined, false, true, element.mountConfig.alignment);
+                this.components.pulseColumns.children[INDEX+i].add(newSpace, undefined, false, true, element.mountConfig.alignment);
                 element.dummies.push(newSpace);
             }
 
-            var startColumn: Aligner<Visual> = this.pulseColumns.children[INDEX];
-            var endColumn: Aligner<Visual> = this.pulseColumns.children[endINDEX];
+            var startColumn: Aligner<Visual> = this.components.pulseColumns.children[INDEX];
+            var endColumn: Aligner<Visual> = this.components.pulseColumns.children[endINDEX];
             // Stretch element
             startColumn.bind(element, "x", "here", "here")
             endColumn.bind(element, "x", "far", "far")
         } else {
             // Add the element to the sequence's column collection, this should trigger resizing of bars
-            this.pulseColumns.children[INDEX].add(element, undefined, false, false, element.mountConfig.alignment);
+            this.components.pulseColumns.children[INDEX].add(element, undefined, false, false, element.mountConfig.alignment);
             // This will set the X of the child ^^^ (the column should gain width immediately.)
         }
 
@@ -351,15 +347,15 @@ export default class Sequence extends Collection implements IHaveStructure {
         // this.clearEmptyColumns();  // TODO: this shouldn't be needed
 
         // SET X of element
-        this.pulseColumns.children[INDEX].enforceBinding();
+        this.components.pulseColumns.children[INDEX].enforceBinding();
         // NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
         // Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
 
         // This makes sure multi-column elements correctly bind far to the endColumn. For some reason they don't if this isn't here
-        this.pulseColumns.children[endINDEX].enforceBinding();
+        this.components.pulseColumns.children[endINDEX].enforceBinding();
 
 
-        var channelIndex = this.channels.indexOf(targetChannel);
+        var channelIndex = this.components.channels.indexOf(targetChannel);
         this.elementMatrix[channelIndex][INDEX] = element;
         this.elementMatrix[channelIndex].fill(".", INDEX+1, endINDEX+1);
     }
@@ -369,7 +365,7 @@ export default class Sequence extends Collection implements IHaveStructure {
     public deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
         var channelID: string = target.mountConfig?.channelID!;
         var channel: Channel | undefined = this.channelsDict[channelID]
-        var channelIndex: number = this.channels.indexOf(channel);
+        var channelIndex: number = this.components.channels.indexOf(channel);
         var INDEX: number;
         var endINDEX: number
 
@@ -387,8 +383,8 @@ export default class Sequence extends Collection implements IHaveStructure {
         INDEX = target.mountConfig!.index;
         endINDEX = INDEX + target.mountConfig.noSections-1;
 
-        var startColumn: Aligner<Visual> = this.pulseColumns.children[INDEX];
-        var endColumn: Aligner<Visual> = this.pulseColumns.children[endINDEX];
+        var startColumn: Aligner<Visual> = this.components.pulseColumns.children[INDEX];
+        var endColumn: Aligner<Visual> = this.components.pulseColumns.children[endINDEX];
 
         startColumn.clearBindsTo(target, "x")
         endColumn.clearBindsTo(target, "x")
@@ -401,7 +397,7 @@ export default class Sequence extends Collection implements IHaveStructure {
         try {
             if (target.mountConfig.noSections > 1) {
                 for (var i=0; i<target.mountConfig.noSections; i++) {
-                    var selectedColumn = this.pulseColumns.children[INDEX + i];
+                    var selectedColumn = this.components.pulseColumns.children[INDEX + i];
 
                     selectedColumn.children.forEach((c) => {
                         if (target.dummies.includes(c)) {
@@ -411,7 +407,7 @@ export default class Sequence extends Collection implements IHaveStructure {
                 }
                 target.dummies = [];
             } else {
-                this.pulseColumns.children[INDEX].remove(target);
+                this.components.pulseColumns.children[INDEX].remove(target);
             }
             
         } catch {

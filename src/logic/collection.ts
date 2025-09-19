@@ -1,22 +1,23 @@
-import { Element, G } from "@svgdotjs/svg.js";
+import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import logger, { Processes } from "./log";
-import { ID } from "./point";
-import Spacial, { Bounds } from "./spacial";
+import Point, { ID } from "./point";
 import { CreateChild, FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual, doesDraw } from "./visual";
-import { SVG } from "@svgdotjs/svg.js";
-import { Rect } from "@svgdotjs/svg.js";
-import DiagramHandler, { IHaveStructure } from "./diagramHandler";
 
 
-export function HasStructure(obj: any): obj is IHaveStructure {
-    return (obj.structure !== undefined)
+export function HasComponents(obj: any): obj is IHaveComponents<any> {
+    return (obj.components !== undefined)
 }
 
+
+export interface IHaveComponents<C> {
+    components: C
+}
 
 export interface ICollection extends IVisual {
     userChildren: IVisual[]
 }
+
 export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
     static defaults: {[name: string]: ICollection} = {
         "default": {
@@ -43,7 +44,35 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
     
 
     get userChildren(): T[] {
-        return this.children.filter(c => HasStructure(this) ? !Object.values(this.structure).includes(c) : true)
+        var freeChildren: T[] = [];
+        var arrayStructure: Point[][] = [];
+        if (HasComponents(this)) {
+            arrayStructure = Object.values(this.components).filter(s => Array.isArray(s));
+        }
+
+        for (var child of this.children) {
+            var adding: boolean = true;
+
+            if (HasComponents(this)) {
+                var structureObjIndex = Object.values(this.components).indexOf(child);
+                if (structureObjIndex !== -1) {
+                    adding = false;
+                } else {
+                    
+                    // search array structure
+                    for (var arrStruct of arrayStructure) {
+                        if (arrStruct.includes(child)) {
+                            adding = false;
+                        }
+                    }
+                }
+            }
+
+            if (adding) {
+                freeChildren.push(child)
+            }
+        }
+        return freeChildren;
     }
 
     constructor(params: RecursivePartial<ICollection>, templateName: string=Collection.defaults["default"].ref) {
@@ -55,8 +84,11 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
                 console.warn(`Cannot instantiate parameter child ${c.ref} as it has no type`)
                 return
             }
-            var child: T = CreateChild(c, c.type) as T;
-            this.add(child);
+            if (!this.has(c.id)) {
+                var child: T = CreateChild(c, c.type) as T;
+                this.add(child);
+            }
+            
         })
     }
 
@@ -311,5 +343,9 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
             }
         })
         return elements;
+    }
+
+    public has(id: ID): boolean {
+        return this.children.filter(c => c.id = id).length > 0
     }
 }

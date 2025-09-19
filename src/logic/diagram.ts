@@ -1,68 +1,71 @@
 import Aligner from "./aligner";
 import Line from "./line";
-import Channel, { ChannelNamedStructure } from "./channel";
-import Collection, { ICollection } from "./collection";
+import Channel, { ChannelNamedStructure, IChannelComponents } from "./channel";
+import Collection, { ICollection, IHaveComponents } from "./collection";
 import defaultDiagram from "./default/diagram.json";
-import { IHaveStructure, UserComponentType } from "./diagramHandler";
+import { UserComponentType } from "./diagramHandler";
 import logger, { Processes } from "./log";
-import Point from "./point";
+import Point, { ID } from "./point";
 import Sequence, { ISequence, SequenceNamedStructures as SequenceNamedStructure } from "./sequence";
 import Spacial from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
 
 
+export interface IDiagramComponents {
+    sequences: Sequence[]
+
+    sequenceColumn: Aligner<Sequence>
+    root: Spacial,
+}
+
 export interface IDiagram extends ICollection {
     sequences: ISequence[]
 }
 
+
 type DiagramNamedStructure = "sequence column" | "root"
  
 export type AllStructures = SequenceNamedStructure | ChannelNamedStructure | DiagramNamedStructure
-// "Structure" are objects that are created as decendants of components which are used to arrange the their
+// "Structure" are objects that are created as descendants of components which are used to arrange the their
 // content. Currently all structures are abstract (as in, have no visual, they are only used for positioning)
 // except for the BAR in the channel component (these might need differentiating)
 
 
-export default class Diagram extends Collection implements IHaveStructure {
+export default class Diagram extends Collection implements IHaveComponents<IDiagramComponents> {
     static defaults: {[key: string]: IDiagram} = {"default": {...<any>defaultDiagram}}
     static ElementType: UserComponentType = "diagram";
 
     get state(): IDiagram {
         return {
-            sequences: this.sequences.map((s) => s.state),
+            sequences: this.components.sequences.map((s) => s.state),
             ...super.state
         }
     }
 
-    sequenceDict: {[name: string]: Sequence;} = {};
-    get sequences(): Sequence[] {return Object.values(this.sequenceDict)}
+    get sequenceDict(): Record<ID, Sequence> {
+        return Object.fromEntries(this.components.sequences.map(item => [item.id, item]));
+    };
     get sequenceIDs(): string[] {return Object.keys(this.sequenceDict)}
 
     get channelsDict(): {[name: string]: Channel;} {
         var channels: {[name: string]: Channel} = {}
-        this.sequences.forEach((s) => {
+        this.components.sequences.forEach((s) => {
             Object.entries(s.channelsDict).forEach(([id, channel]) => {
                 channels[id] = channel
             })
         })
         return channels
     }
-    get channels(): Channel[] {return this.sequences.map((s) => s.channels).flat()}
-    get channelIDs(): string[] {return this.sequences.map((s) => s.channelIDs).flat()}
+    get channels(): Channel[] {return this.components.sequences.map((s) => s.components.channels).flat()}
+    get channelIDs(): string[] {return this.components.sequences.map((s) => s.channelIDs).flat()}
 
-    structure: Record<DiagramNamedStructure, Point>;
-
-    freeArrows: Line[] = [];
-
-    root: Spacial;
-
-    sequenceColumn: Aligner<Sequence>;
+    components: IDiagramComponents;
 
 
     get allPulseElements(): Visual[] {
         var elements: Visual[] = [];
-        this.sequences.forEach((s) => {
+        this.components.sequences.forEach((s) => {
             elements.push(...s.allPulseElements)
         })
         return elements;
@@ -75,23 +78,24 @@ export default class Diagram extends Collection implements IHaveStructure {
 
         logger.processStart(Processes.INSTANTIATE, ``, this);
 
-        this.sequenceDict = {};
-
         // ----- Create structure ---- 
+
         // Root 
-        this.root = new Spacial(0, 0, 0, 0, "root");
+        var root: Spacial = new Spacial(0, 0, 0, 0, "root");
 
         // Sequence column
-        this.sequenceColumn = new Aligner<Sequence>(
+        var sequenceColumn: Aligner<Sequence> = new Aligner<Sequence>(
             {bindMainAxis: true, axis: "y", alignment: "here", ref: "sequence column", x:0, y:0}, "default", );
-        this.root.bind(this.sequenceColumn, "x", "here", "here");
-        this.root.bind(this.sequenceColumn, "y", "here", "here");
-        this.add(this.sequenceColumn);
+        root.bind(sequenceColumn, "x", "here", "here");
+        root.bind(sequenceColumn, "y", "here", "here");
+        this.add(sequenceColumn);
 
-        this.structure = {
-            "sequence column": this.sequenceColumn,
-            "root": this.root
+        this.components = {
+            "root": root,
+            "sequenceColumn": sequenceColumn,
+            "sequences": [] 
         }
+
         // --------------------------
 
 
@@ -112,8 +116,8 @@ export default class Diagram extends Collection implements IHaveStructure {
 
     // Adding
     public addSequence(sequence: Sequence) {
-        this.sequenceColumn.add(sequence);
-        this.sequenceDict[sequence.id] = sequence;
+        this.components.sequenceColumn.add(sequence);
+        this.components.sequences.push(sequence);
     }
 
     public addElement(element: Visual) {

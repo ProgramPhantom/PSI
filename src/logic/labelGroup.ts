@@ -1,7 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
 import { FormBundle } from "../features/form/LabelGroupComboForm";
 import VisualForm from "../features/form/VisualForm";
-import Collection, { ICollection } from "./collection";
+import Collection, { ICollection, IHaveComponents } from "./collection";
 import DiagramHandler, { UserComponentType } from "./diagramHandler";
 import Label, { ILabel } from "./label";
 import RectElement, { IRectElement } from "./rectElement";
@@ -9,6 +9,11 @@ import SVGElement, { ISVGElement } from "./svgElement";
 import { Position } from "./text";
 import { CreateChild, FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
+
+interface ILabelGroupComponents<T> {
+    labels: Label[],
+    coreChild: T
+}
 
 
 export interface ILabelGroup extends ICollection {
@@ -18,8 +23,7 @@ export interface ILabelGroup extends ICollection {
 }
 
 
-export default class LabelGroup<T extends Visual=Visual> extends Collection implements ILabelGroup {
-
+export default class LabelGroup<T extends Visual=Visual> extends Collection implements IHaveComponents<ILabelGroupComponents<T>> {
     static namedElements: {[name: string]: ILabelGroup} = {
         "default": {
             contentWidth: 0,
@@ -41,22 +45,24 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
     // Todo: fix this
     get state(): ILabelGroup { 
         return {
-        labels: this.labels.map((l) => {
+        labels: this.components.labels.map((l) => {
             return l.state
         }),
-        coreChild: this.coreChild.state,
+        coreChild: this.components.coreChild.state,
         coreChildType: this.coreChildType,
         ...super.state,
-        contentWidth: this.coreChild.contentWidth,
-        contentHeight: this.coreChild.contentHeight,
+        contentWidth: this.components.coreChild.contentWidth,
+        contentHeight: this.components.coreChild.contentHeight,
     }}
 
 
-    coreChild: T;
+    components: ILabelGroupComponents<T>;
+
     coreChildType: UserComponentType;
 
-    public labelDict: {[key in Position]?: Label} = {};
-    labels: Label[] = [];
+    public labelPositionDict(): { [k: string]: Label; } {
+        return Object.fromEntries(this.components.labels.map(item => [item.labelConfig.labelPosition, item]));
+    }
     
     constructor(params: RecursivePartial<ILabelGroup>, coreChild?: T, templateName: string="default") {
         var fullParams: ILabelGroup = FillObject<ILabelGroup>(params, LabelGroup.namedElements[templateName]);
@@ -65,28 +71,34 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
         this.coreChildType = fullParams.coreChildType;
 
         if (coreChild !== undefined) {
-            this.coreChild = coreChild;
+            var coreChild: T = coreChild;
         } else {
-            this.coreChild = CreateChild(fullParams.coreChild, fullParams.coreChildType) as T;
+            var coreChild: T = CreateChild(fullParams.coreChild, fullParams.coreChildType) as T;
         }
         
 
-        this._contentHeight = this.coreChild.contentHeight!;
-        this._contentWidth = this.coreChild.contentWidth!;
+        this._contentHeight = coreChild.contentHeight!;
+        this._contentWidth = coreChild.contentWidth!;
 
         this.mountConfig = fullParams.mountConfig;
         // parent.mountConfig = undefined;
 
         // this.ref = "labelled-" + coreChild.ref;
-        this.ref = this.coreChild.ref;
+        this.ref = coreChild.ref;
 
-        this.add(this.coreChild, undefined, true);
+        this.add(coreChild, undefined, true);
     
+        var labels: Label[] = [];
         fullParams.labels?.forEach((label) => {
             var newLabel = new Label(label);
-            this.labels.push(newLabel);
+            labels.push(newLabel);
             this.bindLabel(newLabel);
         })
+
+        this.components = {
+            "coreChild": coreChild,
+            "labels": labels
+        }
     }
 
     draw(surface: Element) {
@@ -95,70 +107,70 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
 
 
     bindLabel(label: Label) {
-        if (this.labelDict[label.labelConfig.labelPosition] !== undefined) {
+        if (this.labelPositionDict[label.labelConfig.labelPosition] !== undefined) {
             throw new Error("Cannot add a label to the same position twice")
         }
 
         switch (label.labelConfig.labelPosition) {
-            case Position.top:
+            case "top":
                 // X
                 label.sizeSource.x = "inherited"
-                this.coreChild.bind(label, "x", "here", "here");
-                this.coreChild.bind(label, "x", "far", "far");
+                this.components.coreChild.bind(label, "x", "here", "here");
+                this.components.coreChild.bind(label, "x", "far", "far");
 
-                this.clearBindsTo(this.coreChild, "x");
-                this.bind(this.coreChild, "x", "centre", "centre");
+                this.clearBindsTo(this.components.coreChild, "x");
+                this.bind(this.components.coreChild, "x", "centre", "centre");
                 
                 // Y
-                this.clearBindsTo(this.coreChild, "y");
+                this.clearBindsTo(this.components.coreChild, "y");
                 this.bind(label, "y", "here", "here", undefined, undefined, true);
-                label.bind(this.coreChild, "y", "far", "here", undefined, undefined, false);
+                label.bind(this.components.coreChild, "y", "far", "here", undefined, undefined, false);
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
                 break;
-            case Position.right:
+            case "right":
                 // Y
                 label.sizeSource.y = "inherited"
-                this.coreChild.bind(label, "y", "here", "here", undefined)
-                this.coreChild.bind(label, "y", "far", "far")
+                this.components.coreChild.bind(label, "y", "here", "here", undefined)
+                this.components.coreChild.bind(label, "y", "far", "far")
 
                 // X
-                this.coreChild.bind(label, "x", "far", "here", undefined, undefined, false)
+                this.components.coreChild.bind(label, "x", "far", "here", undefined, undefined, false)
 
                 this.add(label)
                 this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
                 break;
-            case Position.bottom:
+            case "bottom":
                 // Y
-                this.coreChild.bind(label, "y", "far", "here")
+                this.components.coreChild.bind(label, "y", "far", "here")
                 
                 // X
                 label.sizeSource.x = "inherited"
-                this.coreChild.bind(label, "x", "here", "here")
-                this.coreChild.bind(label, "x", "far", "far")
+                this.components.coreChild.bind(label, "x", "here", "here")
+                this.components.coreChild.bind(label, "x", "far", "far")
 
-                this.clearBindsTo(this.coreChild, "x");
-                this.bind(this.coreChild, "x", "centre", "centre");
+                this.clearBindsTo(this.components.coreChild, "x");
+                this.bind(this.components.coreChild, "x", "centre", "centre");
 
                 this.add(label);
                 this._contentHeight = this._contentHeight! + label.height; // OPTIMISATION
                 break;
-            case Position.left:
+            case "left":
                 // Y
                 label.sizeSource.y = "inherited"
-                this.coreChild.bind(label, "y", "here", "here")
-                this.coreChild.bind(label, "y", "far", "far")
+                this.components.coreChild.bind(label, "y", "here", "here")
+                this.components.coreChild.bind(label, "y", "far", "far")
 
                 // X
-                this.clearBindsTo(this.coreChild, "x");
+                this.clearBindsTo(this.components.coreChild, "x");
                 this.bind(label, "x", "here", "here")
-                label.bind(this.coreChild, "x", "far", "here", undefined, undefined, false)
+                label.bind(this.components.coreChild, "x", "far", "here", undefined, undefined, false)
 
                 this.add(label);
                 this._contentWidth = this._contentWidth! + label.width; // OPTIMISATION
                 break;
-            case Position.centre:
+            case "centre":
                 throw new Error("Not implemented")
                 break;
             default:
@@ -168,8 +180,8 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
 
     getTotalLabelHeight(): number {
         var totalHeight: number = 0;
-        this.labels.forEach((l) => {
-            if (l.labelConfig.labelPosition === Position.top || l.labelConfig.labelPosition === Position.bottom) {
+        this.components.labels.forEach((l) => {
+            if (l.labelConfig.labelPosition === "top" || l.labelConfig.labelPosition === "bottom") {
                 totalHeight += l.height
             }
         })
@@ -178,8 +190,8 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
 
     getTotalLabelWidth(): number {
         var totalWidth: number = 0;
-        this.labels.forEach((l) => {
-            if (l.labelConfig.labelPosition === Position.left || l.labelConfig.labelPosition === Position.right) {
+        this.components.labels.forEach((l) => {
+            if (l.labelConfig.labelPosition === "left" || l.labelConfig.labelPosition === "right") {
                 totalWidth += l.width
             }
         })
@@ -201,7 +213,7 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
             this._contentWidth = v;
 
             if (this.sizeSource.x === "inherited") {
-                this.coreChild.contentWidth = v - this.getTotalLabelWidth();
+                this.components.coreChild.contentWidth = v - this.getTotalLabelWidth();
             }
 
             this.enforceBinding();
@@ -223,7 +235,7 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
             this._contentHeight = v;
 
             if (this.sizeSource.y === "inherited") {
-                this.coreChild.contentHeight = v - this.getTotalLabelHeight();
+                this.components.coreChild.contentHeight = v - this.getTotalLabelHeight();
             }
             
 

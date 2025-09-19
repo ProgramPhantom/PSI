@@ -56,7 +56,7 @@ export function LineTool(props: IDrawArrowProps) {
                 targetSiteName: "here",
                 dimension: "y"
             },
-            anchorObject: ENGINE.handler.diagram.sequences[0]!
+            anchorObject: ENGINE.handler.diagram.components.sequences[0]!
         }
 
         var bottomBindingPayloadX: IBindingPayload = {
@@ -73,7 +73,7 @@ export function LineTool(props: IDrawArrowProps) {
                 targetSiteName: "far",
                 dimension: "y"
             },
-            anchorObject: ENGINE.handler.diagram.sequences[0]!
+            anchorObject: ENGINE.handler.diagram.components.sequences[0]!
         }
 
 
@@ -85,8 +85,8 @@ export function LineTool(props: IDrawArrowProps) {
         
         var x = !far ? col.x : col.getFar("x");
 
-        var topY = ENGINE.handler.diagram.sequences[0]!.contentY;
-        var bottomY = ENGINE.handler.diagram.sequences[0]!.getFar("y", true);
+        var topY = ENGINE.handler.diagram.components.sequences[0]!.contentY;
+        var bottomY = ENGINE.handler.diagram.components.sequences[0]!.getFar("y", true);
         setColumnHovered(true);
         
         const p = new Path().attr({
@@ -164,8 +164,8 @@ export function LineTool(props: IDrawArrowProps) {
         }
     }, [startCoords, arrowIndicator])
 
-    var columns = ENGINE.handler.diagram.sequences[0]!.pulseColumns.children;
-    var lastColumn = ENGINE.handler.diagram.sequences[0]!.pulseColumns.children.at(-1);
+    var columns = ENGINE.handler.diagram.components.sequences[0]!.components.pulseColumns.children;
+    var lastColumn = ENGINE.handler.diagram.components.sequences[0]!.components.pulseColumns.children.at(-1);
     return (
         <>
             <div style={{position: "absolute"}}>
@@ -180,7 +180,7 @@ export function LineTool(props: IDrawArrowProps) {
                         return <div style={{position: "absolute",
                             backgroundColor: "transparent",
                             width: "10px",
-                            height: ENGINE.handler.diagram.sequences[0].height,
+                            height: ENGINE.handler.diagram.components.sequences[0].height,
                             left: col.x,
                             top: 0, zIndex: 6000,
                             transform: "translateX(-50%)"

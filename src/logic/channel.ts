@@ -1,9 +1,9 @@
 import ChannelForm from "../features/form/ChannelForm";
 import { FormBundle } from "../features/form/LabelGroupComboForm";
 import Aligner from "./aligner";
-import Collection, { ICollection } from "./collection";
+import Collection, { ICollection, IHaveComponents } from "./collection";
 import defaultChannel from "./default/channel.json";
-import { IHaveStructure, UserComponentType } from "./diagramHandler";
+import { UserComponentType } from "./diagramHandler";
 import { IMountConfig } from "./mountable";
 import { ID } from "./point";
 import RectElement, { IRectStyle } from "./rectElement";
@@ -13,14 +13,26 @@ import { RecursivePartial, UpdateObj } from "./util";
 import { IVisual, Visual } from "./visual";
  
 
-export type ChannelNamedStructure = "top aligner" | "bottom aligner" | "bar" | "label"
+export type ChannelNamedStructure = "top aligner" | "bottom aligner" | "bar" | "label" | "mounted-elements"
+
+
+
+export interface IChannelComponents {
+    bar: RectElement
+    label: Text,
+    mountedElements: Visual[],
+
+    topAligner: Aligner<Visual>,
+    bottomAligner: Aligner<Visual>
+}
+
 
 export interface IChannel extends ICollection {
     sequenceID: ID,
-
+    
     style: IChannelStyle;
-
-    channelSymbol: IText;
+    mountedElements: IVisual[]
+    label: IText;
 }
 
 export interface IChannelStyle {
@@ -29,13 +41,14 @@ export interface IChannelStyle {
 }
 
 
-export default class Channel extends Collection implements IHaveStructure {
+export default class Channel extends Collection implements IHaveComponents<IChannelComponents> {
     static namedElements: {[name: string]: IChannel} = {"default": <any>defaultChannel, "form-defaults": {
         "padding": [0, 0, 0, 0], 
         "offset": [0, 0],
         "ref": "my-channel",
         "sequenceID": null,
         userChildren: [],
+        mountedElements: [],
 
         "style": {
             "thickness": 3,
@@ -46,7 +59,7 @@ export default class Channel extends Collection implements IHaveStructure {
             }
         },
 
-        "channelSymbol": {
+        "label": {
             "offset": [0,0],
             "padding": [0, 0, 0, 0],
             "ref": "channel-symbol",
@@ -66,34 +79,29 @@ export default class Channel extends Collection implements IHaveStructure {
         return {
             sequenceID: this.sequenceID,
             style: this.style,
-            channelSymbol: this.label.state,
+            label: this.components.label.state,
+            mountedElements: this.components.mountedElements.map((m) => m.state),
             ...super.state
         }
     }
     
-    structure: Record<ChannelNamedStructure, Visual>;
 
+    components: IChannelComponents;
     style: IChannelStyle;
 
-    // Upper and Lower aligners are responsible for binding the elements to the bar,
-    // and carrying a height used to structure the channel.
-    public topAligner: Aligner<Visual>;
-    public bottomAligner: Aligner<Visual>;
-
-    bar: RectElement;
 
     // A column for containing the channel label and binding the bar and positional columns
     private _labelColumn?: Aligner<Visual>;
     set labelColumn(v: Aligner<Visual>) {  // When the label column is set, apply binding to the label.
         this._labelColumn = v;
 
-        this._labelColumn.bind(this.bar, "x", "far", "here");  // Bind X of bar
+        this._labelColumn.bind(this.components.bar, "x", "far", "here");  // Bind X of bar
 
-        this.labelColumn.bind(this.topAligner, "x", "here", "here", undefined);
-        this.labelColumn.bind(this.bottomAligner, "x", "here", "here", undefined);
+        this.labelColumn.bind(this.components.topAligner, "x", "here", "here", undefined);
+        this.labelColumn.bind(this.components.bottomAligner, "x", "here", "here", undefined);
 
-        if (this.label) {
-            this._labelColumn.add(this.label, undefined, false, false)
+        if (this.components.label) {
+            this._labelColumn.add(this.components.label, undefined, false, false)
         }
     }
     get labelColumn(): Aligner<Visual> {
@@ -115,8 +123,8 @@ export default class Channel extends Collection implements IHaveStructure {
         this._mountColumns = value;
         // this._mountColumns.bindSize(this.bar, "x");
 
-        this._mountColumns.bind(this.bar, "x", "far", "far")
-        this.bar.contentWidth = this._mountColumns.width; 
+        this._mountColumns.bind(this.components.bar, "x", "far", "far")
+        this.components.bar.contentWidth = this._mountColumns.width; 
         // This means when adding a new channel the bar is already as long as image
     }
 
@@ -131,11 +139,6 @@ export default class Channel extends Collection implements IHaveStructure {
         this._mountOccupancy = val;
     }
 
-    label: Text;
-
-    public get mountedElements(): Visual[]  { // All positional elements on this channel
-        return this.mountOccupancy.filter(p => (p !== undefined) && (p !== ".")) as Visual[];
-    };  
 
     sequenceID: ID;
 
@@ -150,19 +153,19 @@ export default class Channel extends Collection implements IHaveStructure {
 
         // ----- Create structure -----
         // Top aligner
-        this.topAligner = new Aligner({axis: "x", alignment: "far", minCrossAxis: 30, ref: `top aligner`}, "default");
-        this.add(this.topAligner, undefined, true)
+        var topAligner: Aligner<Visual> = new Aligner({axis: "x", alignment: "far", minCrossAxis: 30, ref: `top aligner`}, "default");
+        this.add(topAligner, undefined, true)
         
         // Bar
-        this.bar = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle, ref: "bar"}, "bar");
-        this.topAligner.bind(this.bar, "y", "far", "here");
-        this.bar.sizeSource.x = "inherited";
-        this.add(this.bar);
+        var bar: RectElement = new RectElement({contentHeight: this.style.thickness, style: this.style.barStyle, ref: "bar"}, "bar");
+        topAligner.bind(bar, "y", "far", "here");
+        bar.sizeSource.x = "inherited";
+        this.add(bar);
 
         // Bottom aligner
-        this.bottomAligner = new Aligner({axis: "x", alignment: "here", minCrossAxis: 20, ref: "bottom aligner"}, "default");
-        this.bar.bind(this.bottomAligner, "y", "far", "here");
-        this.add(this.bottomAligner);
+        var bottomAligner: Aligner<Visual> = new Aligner({axis: "x", alignment: "here", minCrossAxis: 20, ref: "bottom aligner"}, "default");
+        bar.bind(bottomAligner, "y", "far", "here");
+        this.add(bottomAligner);
 
 
         // ----------------------------
@@ -172,17 +175,18 @@ export default class Channel extends Collection implements IHaveStructure {
         // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
         
         
-        this.label = new Text(fullParams.channelSymbol);
+        var label = new Text(fullParams.label);
 
-        this.bar.bind(this.label, "y", "centre", "centre");
+        bar.bind(label, "y", "centre", "centre");
 
-        this.add(this.label);
+        this.add(label);
 
-        this.structure = {
-            "top aligner": this.topAligner,
-            "bottom aligner": this.bottomAligner,
-            "bar": this.bar,
-            "label": this.label
+        this.components = {
+            "bar": bar,
+            "bottomAligner": bottomAligner,
+            "label": label,
+            "mountedElements": [],
+            "topAligner": topAligner
         }
     }
 
@@ -201,24 +205,26 @@ export default class Channel extends Collection implements IHaveStructure {
         // ---- Bind to the upper and lower aligners for Y ONLY
         switch (config.orientation) {
             case "top":
-                this.topAligner.add(element, undefined, false, false);
+                this.components.topAligner.add(element, undefined, false, false);
                 break;
             case "both":
-                this.bar.bind(element, "y", "centre", "centre")
+                this.components.bar.bind(element, "y", "centre", "centre")
                 this.add(element);
-                this.bar.enforceBinding()
+                this.components.bar.enforceBinding()
                 break;
             case "bottom":
-                this.bottomAligner.add(element, undefined, false, false);
+                this.components.bottomAligner.add(element, undefined, false, false);
                 break;
         }
 
         this.add(element)
+        this.components.mountedElements.push(element);
     }
 
     removeMountable(element: Visual) {
         // Remove from children of this channel (positional elements should be property taking positionals from children)
         this.remove(element);
+        this.components.mountedElements.splice(this.components.mountedElements.indexOf(element), 1);
 
         // Remove from the column (?)
         if (element.mountConfig!.index === undefined) {
@@ -228,13 +234,13 @@ export default class Channel extends Collection implements IHaveStructure {
         // Remove from aligner (yes one of these is redundant)
         switch (element.mountConfig?.orientation) {
             case "top":
-                this.topAligner.remove(element);
+                this.components.topAligner.remove(element);
                 break;
             case "bottom":
-                this.bottomAligner.remove(element);
+                this.components.bottomAligner.remove(element);
                 break;
             case "both":
-                this.bar.clearBindsTo(element);
+                this.components.bar.clearBindsTo(element);
                 break;
             default:
                 throw new Error(`Unknown element orientation '${element.mountConfig?.orientation}`);

@@ -1,4 +1,4 @@
-import { Element } from '@svgdotjs/svg.js'
+import { Element, Rect, SVG } from '@svgdotjs/svg.js'
 import { FormBundle } from '../features/form/LabelGroupComboForm'
 import VisualForm from '../features/form/VisualForm'
 import { defaultVisual } from './default/index'
@@ -6,13 +6,10 @@ import LabelGroup from './labelGroup'
 import Mountable, { IMountable } from './mountable'
 import { ID } from './point'
 import { posPrecision } from './util'
-import { SVG } from '@svgdotjs/svg.js'
-import { Rect } from '@svgdotjs/svg.js'
 
 
-type Padding = number | [number, number] | [number, number, number, number]
+
 export type Offset = [number, number]
-
 
 export type Display = "none" | "block"
 
@@ -33,8 +30,10 @@ export function doesDraw(object: any): object is IDraw {
 
 export abstract class Visual extends Mountable implements IVisual {
     static namedElements: {[name: string]: IVisual} = {"default": <any>defaultVisual, "form-default": <any>defaultVisual}
-    static formData: FormBundle = {form: VisualForm, defaults: Visual.namedElements["form-defaults"], allowLabels: false};
-
+    static get formData(): FormBundle {
+        return {form: VisualForm, defaults: Visual.namedElements["form-default"], allowLabels: false};
+    }
+    
     get state(): IVisual { return {
         offset: this.offset,
         ...super.state
@@ -160,7 +159,7 @@ export abstract class Visual extends Mountable implements IVisual {
     }
 
     static isLabelGroup(val: Visual): val is LabelGroup {
-        return (val as LabelGroup).labels !== undefined
+        return (val as LabelGroup).components?.labels !== undefined
     }
 
 

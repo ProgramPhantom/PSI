@@ -35,6 +35,7 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
     "label-group": false,
 
     // Named elements
+    "mounted-elements": false,
     "label col | pulse columns": false,
     "channel column": false,
     "pulse columns": false,

@@ -23,18 +23,19 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
     0: {
         terminate: [
             "label-group",
-            
+            "channel",
+            "diagram",
+            "rect",
+            "line",
+            "svg",
         ],
         carry: [
             "text",
-            "diagram",
             "lower-abstract",
         ],
         conditional: [
             "rect",
-            "channel",
             "svg",
-            "line",
             "label"
         ]
     },

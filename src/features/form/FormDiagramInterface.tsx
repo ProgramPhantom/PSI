@@ -40,7 +40,7 @@ type EffectGroup = {"submit": SubmissionFunction, "modify": ModifyFunction, "del
 
 function getCoreDefaults(target: Visual): IVisual {
     if (Visual.isLabelGroup(target)) {
-        return target.coreChild.state
+        return target.components.coreChild.state
     } else {
         return target.state
     }

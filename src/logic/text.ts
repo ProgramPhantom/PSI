@@ -19,11 +19,7 @@ export interface ITextStyle {
     display: Display 
 }
 
-export enum Position {top="top",
-                      right="right",
-                      bottom="bottom",
-                      left="left",
-                      centre="centre"}
+export type Position = "top" | "right" | "bottom" | "left" | "centre"
 
 
 export default class Text extends Visual implements IText {

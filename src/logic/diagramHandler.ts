@@ -1,18 +1,18 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import Line, { ILine } from "./line";
+import { PointBind } from "../features/canvas/LineTool";
 import Channel, { IChannel } from "./channel";
 import SchemeManager from "./default";
 import Diagram, { AllStructures, IDiagram } from "./diagram";
 import LabelGroup, { ILabelGroup } from "./labelGroup";
+import Line, { ILine } from "./line";
 import logger, { Operations } from "./log";
 import { IMountConfig } from "./mountable";
-import Point, { ID } from "./point";
+import { ID } from "./point";
 import RectElement, { IRectElement, } from "./rectElement";
 import Sequence from "./sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
-import { PointBind } from "../features/canvas/LineTool";
 
 
 
@@ -33,10 +33,6 @@ export type AllElementIdentifiers = AllStructures | AllComponentTypes
 
 
 
-export interface IHaveStructure {
-    structure: Partial<Record<AllStructures, Point>>
-}
-
 
 
 export default class DiagramHandler {
@@ -48,7 +44,7 @@ export default class DiagramHandler {
 
     get id(): string {
         var id: string = "";
-        this.diagram.sequences.forEach((s) => {
+        this.diagram.components.sequences.forEach((s) => {
             Object.keys(s.allElements).forEach((k) => {
                 id += k;
             })
@@ -57,26 +53,11 @@ export default class DiagramHandler {
     }
     syncExternal: () => void;
 
-    get sequences(): Sequence[] {return this.diagram.sequences}
+    get sequences(): Sequence[] {return this.diagram.components.sequences}
     hasSequence(name: string): boolean {return this.diagram.sequenceIDs.includes(name)}
 
     get allElements(): Record<ID, Visual> {
         return this.diagram.allElements
-    }
-    get structuralElements(): Record<ID, Point> {
-        var structuralElements: Record<ID, Point> = {};
-
-        Object.values(this.diagram.structure).forEach((o) => {
-            structuralElements[o.id] = o
-        })
-
-        this.diagram.sequences.forEach((c) => {
-            Object.values(c.structure).forEach((structure) => {
-                structuralElements[structure.id] = structure;
-            })
-        })
-
-        return structuralElements;
     }
 
     constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager) {
@@ -129,7 +110,7 @@ export default class DiagramHandler {
 
         state.sequences.forEach((s) => {
             s.channels.forEach((c) => {
-                c.userChildren.forEach((m) => {
+                c.mountedElements.forEach((m) => {
                     if (m.type === undefined) {
                         console.warn(`Element data is missing type: ${m.ref}`)
                     }
