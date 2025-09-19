@@ -24,13 +24,13 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
         terminate: [
             "label-group",
             "channel",
-            "diagram",
             "rect",
             "line",
             "svg",
         ],
         carry: [
             "text",
+            "diagram",
             "lower-abstract",
         ],
         conditional: [
@@ -94,7 +94,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
             
             if (elementUp === undefined) { return currElement }
             
-            if (currElement.ref === "label column" || currElement.ref === 'label col | pulse columns') {
+            if (currElement.ref === "LINE" || currElement.id === "SvgjsSvg1000") {
                 console.log()
             }
             var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual).ElementType;

@@ -117,7 +117,7 @@ export default class Diagram extends Collection implements IHaveComponents<IDiag
     // Adding
     public addSequence(sequence: Sequence) {
         this.components.sequenceColumn.add(sequence);
-        this.components.sequences.push(sequence);
+        this.components.sequences.push(sequence)
     }
 
     public addElement(element: Visual) {

@@ -108,6 +108,7 @@ export default class DiagramHandler {
         var newDiagram: Diagram = new Diagram(state);
         this.diagram = newDiagram;
 
+        // Create and mount pulses.
         state.sequences.forEach((s) => {
             s.channels.forEach((c) => {
                 c.mountedElements.forEach((m) => {

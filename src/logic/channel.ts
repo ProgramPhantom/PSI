@@ -146,6 +146,7 @@ export default class Channel extends Collection implements IHaveComponents<IChan
         var fullParams: IChannel = pParams ? UpdateObj(Channel.namedElements[templateName], pParams) : Channel.namedElements[templateName];
         super(fullParams, templateName);
 
+        this.sequenceID = fullParams.sequenceID;
         this.style = fullParams.style;
         this.padding = [...fullParams.padding];
         // SIDE PADDING is not permitted for channels as it would break alignment
@@ -167,18 +168,8 @@ export default class Channel extends Collection implements IHaveComponents<IChan
         bar.bind(bottomAligner, "y", "far", "here");
         this.add(bottomAligner);
 
-
-        // ----------------------------
-
-        
-        this.sequenceID = fullParams.sequenceID;
-        // this.positionalElements = [...fullParams.positionalElements];  // please please PLEASE do this (list is ref type)
-        
-        
         var label = new Text(fullParams.label);
-
         bar.bind(label, "y", "centre", "centre");
-
         this.add(label);
 
         this.components = {
@@ -188,6 +179,8 @@ export default class Channel extends Collection implements IHaveComponents<IChan
             "mountedElements": [],
             "topAligner": topAligner
         }
+
+        // ----------------------------
     }
 
 

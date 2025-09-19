@@ -346,6 +346,6 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
     }
 
     public has(id: ID): boolean {
-        return this.children.filter(c => c.id = id).length > 0
+        return this.children.filter(c => c.id === id).length > 0
     }
 }

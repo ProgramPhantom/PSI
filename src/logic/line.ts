@@ -57,7 +57,7 @@ export default class Line extends LineLike implements ILine {
       hitbox.rotate(this.angle / Math.PI * 180, this.x, this.y);
 
       var crossShift: [number, number] = this.moveRelative([this.x, this.y], 
-        "cross", -(this.lineStyle.thickness + LineLike.HitboxPadding) / 2)
+        "cross", (this.lineStyle.thickness + LineLike.HitboxPadding) / 2)
       hitbox.move(crossShift[0], crossShift[1]);
       hitbox.fill(`red`).opacity(0.3);
       return [hitbox];
