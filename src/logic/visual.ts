@@ -62,14 +62,7 @@ export abstract class Visual extends Mountable implements IVisual {
 
 
     abstract draw(surface: Element): void 
-    public getHitbox(): Rect[] {
-        var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
 
-        hitbox.size(this.width, this.height);
-        hitbox.move(this.x, this.y);
-        hitbox.fill(`transparent`).opacity(0.3);
-        return [hitbox];
-    }
 
     erase(): void {
         this.svg?.remove();

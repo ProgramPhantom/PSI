@@ -3,14 +3,15 @@ import logger, { Processes } from "./log";
 import Point, { ID } from "./point";
 import { CreateChild, FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual, doesDraw } from "./visual";
+import Spacial from "./spacial";
 
 
-export function HasComponents(obj: any): obj is IHaveComponents<any> {
-    return (obj.components !== undefined)
+export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(obj: any): obj is IHaveComponents<T> {
+    return ((obj as any).components !== undefined)
 }
 
 
-export interface IHaveComponents<C> {
+export interface IHaveComponents<C extends Record<string, Spacial | Spacial[]>> {
     components: C
 }
 
@@ -113,8 +114,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
     }
 
 
-    public getHitbox(): Rect[] {
-        var collectionHitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
+    public getHitbox(layer: number): Rect[] {
+        var collectionHitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref, zIndex: layer});
 
         collectionHitbox.size(this.width, this.height);
         collectionHitbox.move(this.x, this.y);
@@ -122,12 +123,21 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
         var childHitboxes: Rect[] = [];
         
-        for (var child of this.children) {
+        for (var child of this.userChildren) {
             if (child instanceof Visual) {
-                childHitboxes.push(...child.getHitbox());
+                childHitboxes.push(...child.getHitbox(layer+1));
             }
         }
 
+        if (HasComponents(this)) {
+            for (var component of Object.values(this.components)) {
+                if (Array.isArray(component)) {
+                    childHitboxes.push( ...component.map(c => c.getHitbox(layer+100)).flat() );
+                } else {
+                    childHitboxes.push(...component.getHitbox(layer+100));
+                }
+            }
+        }
 
         return [collectionHitbox, ...childHitboxes];
     }

@@ -6,11 +6,12 @@ import { AllComponentTypes } from "./diagramHandler";
 import logger, { Operations, Processes } from "./log";
 import { ID } from "./point";
 import Space from "./space";
+import Spacial from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
 
 
-export interface ISequenceComponents {
+export interface ISequenceComponents extends Record<string, Spacial | Spacial[]> {
     channels: Channel[]
 
     channelColumn: Aligner<Channel>

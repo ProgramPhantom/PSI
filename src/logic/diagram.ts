@@ -1,22 +1,22 @@
 import Aligner from "./aligner";
-import Line from "./line";
-import Channel, { ChannelNamedStructure, IChannelComponents } from "./channel";
+import Channel, { ChannelNamedStructure } from "./channel";
 import Collection, { ICollection, IHaveComponents } from "./collection";
 import defaultDiagram from "./default/diagram.json";
 import { UserComponentType } from "./diagramHandler";
+import Line from "./line";
 import logger, { Processes } from "./log";
-import Point, { ID } from "./point";
-import Sequence, { ISequence, SequenceNamedStructures as SequenceNamedStructure } from "./sequence";
+import { ID } from "./point";
+import Sequence, { ISequence, SequenceNamedStructures } from "./sequence";
 import Spacial from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { Visual } from "./visual";
 
 
-export interface IDiagramComponents {
-    sequences: Sequence[]
+export interface IDiagramComponents extends Record<string, Spacial | Spacial[]> {
+    "sequences": Sequence[]
 
-    sequenceColumn: Aligner<Sequence>
-    root: Spacial,
+    "sequenceColumn": Aligner<Sequence>
+    "root": Spacial,
 }
 
 export interface IDiagram extends ICollection {
@@ -26,7 +26,7 @@ export interface IDiagram extends ICollection {
 
 type DiagramNamedStructure = "sequence column" | "root"
  
-export type AllStructures = SequenceNamedStructure | ChannelNamedStructure | DiagramNamedStructure
+export type AllStructures = SequenceNamedStructures | ChannelNamedStructure | DiagramNamedStructure
 // "Structure" are objects that are created as descendants of components which are used to arrange the their
 // content. Currently all structures are abstract (as in, have no visual, they are only used for positioning)
 // except for the BAR in the channel component (these might need differentiating)

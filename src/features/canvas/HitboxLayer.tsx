@@ -68,7 +68,7 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
 
 
 export function HitboxLayer(props: IHitboxLayerProps) {
-    var hitboxes: Rect[] = ENGINE.handler.diagram.getHitbox();
+    var hitboxes: Rect[] = ENGINE.handler.diagram.getHitbox(999);
     var hitboxLayer: Svg = SVG();
 
     for (var hitbox of hitboxes) {
@@ -94,7 +94,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
             
             if (elementUp === undefined) { return currElement }
             
-            if (currElement.ref === "LINE" || currElement.id === "SvgjsSvg1000") {
+            if (currElement.ref === "LINE") {
                 console.log()
             }
             var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual).ElementType;
@@ -119,21 +119,26 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
     const mouseOver = (over: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) => {
         var rawTargetId: string | undefined = (over.target as HTMLElement).id;
+         console.log(rawTargetId)
+        
         if (rawTargetId === undefined) {
             props.setHoveredElement(undefined);
+
             return
         }
         
         var parsedId: string = rawTargetId.split("-")[0]
         var element: Visual | undefined = getMouseElementFromID(parsedId)
         
+       
         props.setHoveredElement(element);
     }
 
     return (
         <>
-        <svg 
+        <svg key={"hitbox"}
           style={{position: "absolute", left: 0, top: 0,
+            
             width: ENGINE.handler.diagram.width,
             height: ENGINE.handler.diagram.height,
             marginBottom: "auto", marginTop: "auto"

@@ -9,8 +9,9 @@ import SVGElement, { ISVGElement } from "./svgElement";
 import { Position } from "./text";
 import { CreateChild, FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
+import Spacial from "./spacial";
 
-interface ILabelGroupComponents<T> {
+interface ILabelGroupComponents<T extends Visual=Visual> extends Record<string, Spacial | Spacial[]> {
     labels: Label[],
     coreChild: T
 }

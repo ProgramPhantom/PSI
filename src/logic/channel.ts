@@ -8,6 +8,7 @@ import { IMountConfig } from "./mountable";
 import { ID } from "./point";
 import RectElement, { IRectStyle } from "./rectElement";
 import { OccupancyStatus } from "./sequence";
+import Spacial from "./spacial";
 import Text, { IText } from "./text";
 import { RecursivePartial, UpdateObj } from "./util";
 import { IVisual, Visual } from "./visual";
@@ -17,7 +18,7 @@ export type ChannelNamedStructure = "top aligner" | "bottom aligner" | "bar" | "
 
 
 
-export interface IChannelComponents {
+export interface IChannelComponents extends Record<string, Spacial | Spacial[]> {
     bar: RectElement
     label: Text,
     mountedElements: Visual[],

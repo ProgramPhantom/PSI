@@ -1,6 +1,8 @@
+import { SVG } from "@svgdotjs/svg.js";
 import logger, { Operations } from "./log";
 import Point, { ID, IPoint } from "./point";
 import { posPrecision } from "./util";
+import { Rect } from "@svgdotjs/svg.js";
 
 export interface Bounds {
     top: number,
@@ -98,6 +100,16 @@ export default class Spacial extends Point implements ISpacial {
         
         width !== undefined ? this._contentWidth = width : null;
         height !== undefined ? this._contentHeight = height : null;
+    }
+
+
+    public getHitbox(layer: number): Rect[] {
+        var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref, zIndex: layer});
+
+        hitbox.size(this.width, this.height);
+        hitbox.move(this.x, this.y);
+        hitbox.fill(`transparent`).opacity(0.3);
+        return [hitbox];
     }
 
     public get contentX() : number {

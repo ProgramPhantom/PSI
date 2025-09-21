@@ -50,17 +50,17 @@ export default class Line extends LineLike implements ILine {
     }
   }
 
-    public getHitbox(): Rect[] {
-      var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
+  public getHitbox(layer: number): Rect[] {
+    var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref, zIndex: layer});
 
-      hitbox.size(this.length, this.lineStyle.thickness + LineLike.HitboxPadding);
-      hitbox.rotate(this.angle / Math.PI * 180, this.x, this.y);
+    hitbox.size(this.length, this.lineStyle.thickness + LineLike.HitboxPadding);
+    hitbox.rotate(this.angle / Math.PI * 180, this.x, this.y);
 
-      var crossShift: [number, number] = this.moveRelative([this.x, this.y], 
-        "cross", (this.lineStyle.thickness + LineLike.HitboxPadding) / 2)
-      hitbox.move(crossShift[0], crossShift[1]);
-      hitbox.fill(`red`).opacity(0.3);
-      return [hitbox];
+    var crossShift: [number, number] = this.moveRelative([this.x, this.y], 
+      "cross", -(this.lineStyle.thickness + LineLike.HitboxPadding) / 2)
+    hitbox.move(crossShift[0], crossShift[1]);
+    hitbox.fill(`red`).opacity(0.3);
+    return [hitbox];
   }
 
 

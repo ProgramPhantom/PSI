@@ -4,10 +4,10 @@ import { FormBundle } from "../features/form/LabelGroupComboForm";
 import Line, { ILine } from "./line";
 import Collection, { ICollection, IHaveComponents } from "./collection";
 import {  UserComponentType } from "./diagramHandler";
-import { Dimensions } from "./spacial";
+import Spacial, { Dimensions } from "./spacial";
 import Text, { IText, Position } from "./text";
 
-interface ILabelComponents {
+interface ILabelComponents extends Record<string, Spacial | Spacial[]> {
     text?: Text,
     line?: Line
 }
