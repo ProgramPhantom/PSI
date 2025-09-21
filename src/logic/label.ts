@@ -137,7 +137,7 @@ export default class Label extends Collection implements ILabel, IHaveComponents
             this.components.line.draw(surface);
         }
         if (this.components.text) {
-            this.components.text.draw(surface)
+            this.components.text.draw(surface);
 
             const SPILL_PADDING = 4;
             const TEXT_PADDING = 1;

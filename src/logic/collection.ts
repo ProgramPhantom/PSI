@@ -109,6 +109,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
         // group.move(this.x, this.y).size(this.width, this.height)
         this.svg = group;
+        
+        this.svg.attr({"data-position": this.positionMethod});
 
         surface.add(this.svg);
     }

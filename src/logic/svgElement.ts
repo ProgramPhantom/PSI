@@ -7,6 +7,7 @@ import { UserComponentType } from "./diagramHandler";
 import ENGINE from "./engine";
 import { cascadeID, createWithTemplate, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";
+import { PositionMethod } from "./spacial";
 
 
 
@@ -146,6 +147,8 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 			// Position, size and draw svg.
 			this.svg.move(this.drawX, this.drawY);
 			this.svg.size(this.contentWidth, this.contentHeight);
+
+			this.svg.attr({"data-position": this.positionMethod});
 
 			surface.add(this.svg);
 		}

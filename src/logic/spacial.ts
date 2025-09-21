@@ -16,7 +16,9 @@ export interface Size {
     height?: number
 }
 
+export type PositionMethod = "controlled" | "free" | "partially-controlled"
 export type SizeMethod = "given" | "inherited"
+
 export type SiteNames = "here" | "centre" | "far"
 
 export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
@@ -549,5 +551,15 @@ export default class Spacial extends Point implements ISpacial {
             case "y":
                 return this.height;
         }
+    }
+
+    get positionMethod(): PositionMethod {
+        var method: PositionMethod = "free";
+        if (this.bindingsToThis.length === 2) {
+            method = "controlled";
+        } else if (this.bindingsToThis.length = 1) {
+            method = "partially-controlled"
+        }
+        return method
     }
 }
