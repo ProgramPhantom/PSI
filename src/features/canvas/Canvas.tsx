@@ -13,6 +13,7 @@ import { CanvasDropContainer } from '../dnd/CanvasDropContainer';
 import DropField from '../dnd/DropField';
 import { HitboxLayer } from './HitboxLayer';
 import { LineTool, IDrawArrowConfig } from './LineTool';
+import { DebugLayerDialog } from './DebugLayerDialog';
 
  
 
@@ -89,10 +90,13 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         [debugDialogOpen],
     );
     const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
-    function handleSetDebugSelection(type: AllElementIdentifiers) {
+    const  handleSetDebugSelection = (type: AllElementIdentifiers) => {
         var newDebugSelection: Record<AllElementIdentifiers, boolean> = {...debugSelectionTypes}
         newDebugSelection[type] = !newDebugSelection[type]
         setDebugSelectionTypes(newDebugSelection);
+    }
+    const handleDialogClose = (val: boolean) => {
+        setDebugDialogOpen(val);
     }
 
     useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
@@ -300,40 +304,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
             </CanvasDropContainer>
         </div>
         
-        <Dialog style={{width: "400px"}}
-            isOpen={debugDialogOpen}
-            onClose={() => {setDebugDialogOpen(false)}}
-            title="Debug Layers"
-            canOutsideClickClose={true}
-            canEscapeKeyClose={true} icon="wrench"
-        >
-            <DialogBody style={{}}>
-                <div style={{display: "flex", flexDirection: "column"}}>
-                   <Checkbox label='Pulse columns' alignIndicator='end' checked={debugSelectionTypes['pulse columns']}
-                            onChange={() => {handleSetDebugSelection("pulse columns")}}></Checkbox>
-                   <Checkbox label='Elements' alignIndicator='end' checked={debugSelectionTypes['rect']} 
-                             onChange={() => {handleSetDebugSelection("svg")}}></Checkbox>
-
-                   <Checkbox label='Label Column' alignIndicator='end' checked={debugSelectionTypes['label column']} 
-                             onChange={() => {handleSetDebugSelection("label column")}}></Checkbox>
-
-                   <Checkbox label='Channels' alignIndicator='end' checked={debugSelectionTypes['channel']} 
-                             onChange={() => {handleSetDebugSelection("channel")}}></Checkbox>
-
-                    <Checkbox label='Upper aligners' alignIndicator='end' checked={debugSelectionTypes['top aligner']} 
-                             onChange={() => {handleSetDebugSelection('top aligner')}}></Checkbox>
-
-                    <Checkbox label='Lower aligners' alignIndicator='end' checked={debugSelectionTypes['bottom aligner']} 
-                             onChange={() => {handleSetDebugSelection("bottom aligner")}}></Checkbox>
-
-                    <Checkbox label='Sequences' alignIndicator='end' checked={debugSelectionTypes['sequence']} 
-                             onChange={() => {handleSetDebugSelection("sequence")}}></Checkbox>
-
-                    <Checkbox label='Diagram' alignIndicator='end' checked={debugSelectionTypes['diagram']} 
-                             onChange={() => {handleSetDebugSelection("diagram")}}></Checkbox>
-                </div>
-            </DialogBody>
-        </Dialog>
+        <DebugLayerDialog open={debugDialogOpen} 
+        setOpen={handleDialogClose} 
+        debugSelection={debugSelectionTypes} 
+        setDebugSelection={handleSetDebugSelection}></DebugLayerDialog>
+        
         </>
     )
 }
