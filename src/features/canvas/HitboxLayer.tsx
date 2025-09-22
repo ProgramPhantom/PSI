@@ -68,13 +68,27 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
 
 
 export function HitboxLayer(props: IHitboxLayerProps) {
-    var hitboxes: Rect[] = ENGINE.handler.diagram.getHitbox(999);
-    var hitboxLayer: Svg = SVG();
+    var drawSVG: Element = ENGINE.handler.diagram.svg;
+    var hitboxSVG: Element = SVG();
+    var rectArray: Rect[] = [];
 
-    for (var hitbox of hitboxes) {
-        hitboxLayer.add(hitbox);
+    // Create hitboxes
+
+    const createHitboxDom = (root: Element, rectArray: Rect[], depth: number=0) => {
+        var thisElement: Visual = ENGINE.handler.identifyElement(root.id());
+        
+        if (thisElement !== undefined) {
+            var thisLayer: Rect = thisElement.getHitbox().attr({"zIndex": depth});
+            rectArray.push(thisLayer);
+
+            
+            if (root.type !== "svg") {
+                root.children().forEach((c) => {
+                    createHitboxDom(c, rectArray, depth+1);
+                })
+            }
+        }
     }
-
 
     const getMouseElementFromID = (id: ID | undefined): Visual | undefined => {
         if (id === undefined) {return undefined}
@@ -134,6 +148,11 @@ export function HitboxLayer(props: IHitboxLayerProps) {
         props.setHoveredElement(element);
     }
 
+
+    createHitboxDom(drawSVG, rectArray);
+    rectArray.forEach((r) => {
+        hitboxSVG.add(r);
+    })
     return (
         <>
         <svg key={"hitbox"}
@@ -143,7 +162,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
             height: ENGINE.handler.diagram.height,
             marginBottom: "auto", marginTop: "auto"
           }} onMouseMove={(o) => {mouseOver(o)}}
-          dangerouslySetInnerHTML={{__html: hitboxLayer?.svg()!}}
+          dangerouslySetInnerHTML={{__html: hitboxSVG?.svg()!}}
         />
         </>
     )

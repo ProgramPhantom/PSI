@@ -50,17 +50,20 @@ export default class Line extends LineLike implements ILine {
     }
   }
 
-  public getHitbox(layer: number): Rect[] {
-    var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref, zIndex: layer});
+  public getHitbox(): Rect {
+    var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
 
-    hitbox.size(this.length, this.lineStyle.thickness + LineLike.HitboxPadding);
-    hitbox.rotate(this.angle / Math.PI * 180, this.x, this.y);
+    var hitboxHeight: number = this.lineStyle.thickness + LineLike.HitboxPadding;
+    hitbox.size(this.length, hitboxHeight);
+    hitbox.rotate(this.angle / Math.PI * 180, this.x, this.y + hitboxHeight/2 );
 
     var crossShift: [number, number] = this.moveRelative([this.x, this.y], 
       "cross", -(this.lineStyle.thickness + LineLike.HitboxPadding) / 2)
     hitbox.move(crossShift[0], crossShift[1]);
+
+    // hitbox.move(this.x, this.y)
     hitbox.fill(`red`).opacity(0.3);
-    return [hitbox];
+    return hitbox;
   }
 
 
@@ -89,7 +92,7 @@ export default class Line extends LineLike implements ILine {
 
       var pathData: string = `M${this.x + dx}, ${this.y + dy}, ${this.x2 - dx} ${this.y2 - dy}`;
 
-      var newArrow = SVG().path().id("arrow-line")
+      var newArrow = SVG().path().id(this.id)
                      .attr({strokeWidth: `${this.lineStyle.thickness}`,
                             stroke: `${this.lineStyle.stroke}`,
                             strokeLinecap: "butt",

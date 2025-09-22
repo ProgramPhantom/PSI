@@ -116,32 +116,14 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
     }
 
 
-    public getHitbox(layer: number): Rect[] {
-        var collectionHitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref, zIndex: layer});
+    public getHitbox(): Rect {
+        var collectionHitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
 
         collectionHitbox.size(this.width, this.height);
         collectionHitbox.move(this.x, this.y);
         collectionHitbox.fill(`transparent`).opacity(0.3);
 
-        var childHitboxes: Rect[] = [];
-        
-        for (var child of this.userChildren) {
-            if (child instanceof Visual) {
-                childHitboxes.push(...child.getHitbox(layer+1));
-            }
-        }
-
-        if (HasComponents(this)) {
-            for (var component of Object.values(this.components)) {
-                if (Array.isArray(component)) {
-                    childHitboxes.push( ...component.map(c => c.getHitbox(layer+100)).flat() );
-                } else {
-                    childHitboxes.push(...component.getHitbox(layer+100));
-                }
-            }
-        }
-
-        return [collectionHitbox, ...childHitboxes];
+        return collectionHitbox
     }
  
 

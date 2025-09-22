@@ -105,13 +105,13 @@ export default class Spacial extends Point implements ISpacial {
     }
 
 
-    public getHitbox(layer: number): Rect[] {
-        var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref, zIndex: layer});
+    public getHitbox(): Rect {
+        var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
 
         hitbox.size(this.width, this.height);
         hitbox.move(this.x, this.y);
         hitbox.fill(`transparent`).opacity(0.3);
-        return [hitbox];
+        return hitbox;
     }
 
     public get contentX() : number {

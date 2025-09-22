@@ -144,6 +144,8 @@ export default abstract class LineLike extends Visual {
     }
 
     public moveRelative(coordinate: [number, number], direction: Direction, quantity: number): [number, number] {
+
+        
         var newCoord: [number, number];
         var dy: number = Math.sin(this.angle!) * quantity
         var dx: number = Math.cos(this.angle!) * quantity
