@@ -6,6 +6,7 @@ import { SVG } from "@svgdotjs/svg.js";
 import { Visual } from "../../logic/visual";
 import { ID } from "../../logic/point";
 import { AllComponentTypes } from "../../logic/diagramHandler";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
 
 interface IHitboxLayerProps {
@@ -14,6 +15,7 @@ interface IHitboxLayerProps {
     setHoveredElement: (element?: Visual) => void
 }
 
+const BASE_LAYER = 10000;
 
 type HoverBehaviour = "terminate" | "carry" | "conditional"
 // Terminate: return this object immediately
@@ -23,30 +25,34 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
     0: {
         terminate: [
             "label-group",
-            "channel"
+            "channel",
+            "line",
+            "svg",
+            "rect"
         ],
         carry: [
-            "label",
             "text",
             "diagram",
             "lower-abstract",
         ],
         conditional: [
+            "rect",
             "svg",
-            "rect"
+            "label"
         ]
     },
     1: {
         terminate: [
             "diagram",
             "label-group",
-            "channel"
-        ],
-        carry: ["diagram"],
-        conditional: [
+            "channel",
             "svg",
             "rect",
             "label-group"
+        ],
+        carry: ["diagram"],
+        conditional: [
+            
         ]
     },
     2: {
@@ -64,13 +70,51 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
 
 
 export function HitboxLayer(props: IHitboxLayerProps) {
-    var hitboxes: Rect[] = ENGINE.handler.diagram.getHitbox();
-    var hitboxLayer: Svg = SVG();
+    var drawSVG: Element | undefined = ENGINE.surface;
+    if (drawSVG === undefined) {return <></>}
+    var hitboxSVG: Svg = SVG();
+    var hitboxSvgRef = useRef<SVGSVGElement | null>();
+    
+    var componentRectArray: Rect[] = [];
+    var freeRectArray: Rect[] = [];
 
-    for (var hitbox of hitboxes) {
-        hitboxLayer.add(hitbox);
+    // Create hitboxes
+    const createHitboxDom = () => {
+        hitboxSVG = SVG();
+        componentRectArray = [];
+        freeRectArray = [];
+
+        traverseDom(drawSVG, componentRectArray, freeRectArray);
+
+        componentRectArray.forEach((r) => {
+            hitboxSVG.add(r);
+        })
+        freeRectArray.forEach((r) => {
+            hitboxSVG.add(r)
+        })
     }
 
+    const traverseDom = (root: Element, componentRectArray: Rect[], freeRectArray: Rect[], depth: number=BASE_LAYER) => {
+        var thisElement: Visual = ENGINE.handler.identifyElement(root.id());
+        
+        if (thisElement !== undefined) {
+            var thisLayer: Rect = thisElement.getHitbox().attr({"zIndex": depth});
+
+            if (thisElement.ownershipType === "component") {
+                componentRectArray.push(thisLayer);
+            } else if (thisElement.ownershipType === "free") {
+                freeRectArray.push(thisLayer)
+            }
+            
+
+            
+            if ((root.type !== "svg" || depth === BASE_LAYER) && thisElement.ref !== "label col | pulse columns") {
+                root.children().forEach((c) => {
+                    traverseDom(c, componentRectArray, freeRectArray, depth-1);
+                })
+            }
+        }
+    }
 
     const getMouseElementFromID = (id: ID | undefined): Visual | undefined => {
         if (id === undefined) {return undefined}
@@ -90,7 +134,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
             
             if (elementUp === undefined) { return currElement }
             
-            if (currElement.ref === "label column" || currElement.ref === 'label col | pulse columns') {
+            if (currElement.ref === "LINE") {
                 console.log()
             }
             var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual).ElementType;
@@ -115,26 +159,42 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
     const mouseOver = (over: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) => {
         var rawTargetId: string | undefined = (over.target as HTMLElement).id;
+         console.log(rawTargetId)
+        
         if (rawTargetId === undefined) {
             props.setHoveredElement(undefined);
+
             return
         }
         
         var parsedId: string = rawTargetId.split("-")[0]
         var element: Visual | undefined = getMouseElementFromID(parsedId)
         
+       
         props.setHoveredElement(element);
     }
 
+
+
+
+    const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+    useEffect(() => {
+        createHitboxDom();
+
+        if (hitboxSvgRef.current && hitboxSVG) {
+            hitboxSvgRef.current.replaceChildren();
+            hitboxSvgRef.current.appendChild(hitboxSVG.node);
+        }
+    }, [store])
     return (
         <>
-        <svg 
-          style={{position: "absolute", left: 0, top: 0,
+        <svg ref={hitboxSvgRef}
+            key={"hitbox"}
+            style={{position: "absolute", left: 0, top: 0, zIndex: BASE_LAYER,
             width: ENGINE.handler.diagram.width,
             height: ENGINE.handler.diagram.height,
             marginBottom: "auto", marginTop: "auto"
           }} onMouseMove={(o) => {mouseOver(o)}}
-          dangerouslySetInnerHTML={{__html: hitboxLayer?.svg()!}}
         />
         </>
     )

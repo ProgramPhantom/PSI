@@ -1,9 +1,9 @@
 import { Svg } from "@svgdotjs/svg.js";
 import { myToaster } from "../app/App";
 import SchemeManager, { IUserSchemeData } from "./default";
-import { IDiagram } from "./diagram";
+import { IDiagram } from "./hasComponents/diagram";
 import DiagramHandler from "./diagramHandler";
-import LabelGroup, { ILabelGroup } from "./labelGroup";
+import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 

@@ -1,18 +1,19 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import Line, { ILine } from "./line";
-import Channel, { IChannel } from "./channel";
+import { PointBind } from "../features/canvas/LineTool";
+import Channel, { IChannel } from "./hasComponents/channel";
 import SchemeManager from "./default";
-import Diagram, { AllStructures, IDiagram } from "./diagram";
-import LabelGroup, { ILabelGroup } from "./labelGroup";
+import Diagram, { AllStructures, IDiagram } from "./hasComponents/diagram";
+import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
+import Line, { ILine } from "./line";
 import logger, { Operations } from "./log";
 import { IMountConfig } from "./mountable";
-import Point, { ID } from "./point";
+import { ID } from "./point";
 import RectElement, { IRectElement, } from "./rectElement";
-import Sequence from "./sequence";
+import Sequence from "./hasComponents/sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
-import type { IVisual, Visual } from "./visual";
-import { PointBind } from "../features/canvas/LineTool";
+import { IVisual, Visual } from "./visual";
+import ENGINE from "./engine";
 
 
 
@@ -33,21 +34,24 @@ export type AllElementIdentifiers = AllStructures | AllComponentTypes
 
 
 
-export interface IHaveStructure {
-    structure: Partial<Record<AllStructures, Point>>
-}
 
 
 export default class DiagramHandler {
-    
+    private _diagram: Diagram;
+    public get diagram(): Diagram {
+        return this._diagram;
+    }
+    public set diagram(val: Diagram) {
+        val.ownershipType = "component";
+        this._diagram = val;
+    }
 
-    diagram: Diagram;
     surface?: Svg;
     schemeManager: SchemeManager;
 
     get id(): string {
         var id: string = "";
-        this.diagram.sequences.forEach((s) => {
+        this.diagram.components.sequences.forEach((s) => {
             Object.keys(s.allElements).forEach((k) => {
                 id += k;
             })
@@ -56,26 +60,11 @@ export default class DiagramHandler {
     }
     syncExternal: () => void;
 
-    get sequences(): Sequence[] {return this.diagram.sequences}
+    get sequences(): Sequence[] {return this.diagram.components.sequences}
     hasSequence(name: string): boolean {return this.diagram.sequenceIDs.includes(name)}
 
     get allElements(): Record<ID, Visual> {
         return this.diagram.allElements
-    }
-    get structuralElements(): Record<ID, Point> {
-        var structuralElements: Record<ID, Point> = {};
-
-        Object.values(this.diagram.structure).forEach((o) => {
-            structuralElements[o.id] = o
-        })
-
-        this.diagram.sequences.forEach((c) => {
-            Object.values(c.structure).forEach((structure) => {
-                structuralElements[structure.id] = structure;
-            })
-        })
-
-        return structuralElements;
     }
 
     constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager) {
@@ -126,6 +115,7 @@ export default class DiagramHandler {
         var newDiagram: Diagram = new Diagram(state);
         this.diagram = newDiagram;
 
+        // Create and mount pulses.
         state.sequences.forEach((s) => {
             s.channels.forEach((c) => {
                 c.mountedElements.forEach((m) => {
@@ -214,10 +204,10 @@ export default class DiagramHandler {
 
         switch (type) {
             case "svg":
-                element = new SVGElement(parameters as ISVGElement)
+                element = new SVGElement(parameters as ISVGElement);
                 break;
             case "rect":
-                element = new RectElement(parameters as IRectElement)
+                element = new RectElement(parameters as IRectElement);
                 break;
             case "label-group":
                 element = new LabelGroup(parameters as ILabelGroup);
@@ -336,21 +326,44 @@ export default class DiagramHandler {
         this.draw();
     }
 
-    public createArrow(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
+    public createLine(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
         var newArrow: Line = new Line(pParams);
 
-        startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here");
-        startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here");
+        startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
+        startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
         startBinds["x"].anchorObject.enforceBinding();
         startBinds["y"].anchorObject.enforceBinding();
 
-        endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far");
-        endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far");
+        endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
+        endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
         endBinds["x"].anchorObject.enforceBinding()
         endBinds["y"].anchorObject.enforceBinding()
 
         this.diagram.addFreeArrow(newArrow);
-        this.draw()
+        this.draw();
+    }
+
+    public deleteFreeElement(target: Visual) {
+        if (!this.diagram.userChildren.includes(target)) {
+            throw new Error(`Cannot remove controlled element ${target.ref} with this method`)
+        }
+
+        this.diagram.remove(target);
+        this.draw();
+    }
+
+    public deleteFreeElementByID(id: ID) {
+        var target: Visual | undefined = this.identifyElement(id);
+        if (target === undefined) {
+            throw new Error(`Cannot find element with ID ${id}`);
+        }
+
+        if (!this.diagram.userChildren.includes(target)) {
+            throw new Error(`Cannot remove controlled element ${target.ref} with this method`)
+        }
+
+        this.diagram.remove(target);
+        this.draw();
     }
 
 

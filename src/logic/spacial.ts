@@ -1,6 +1,8 @@
+import { SVG } from "@svgdotjs/svg.js";
 import logger, { Operations } from "./log";
 import Point, { ID, IPoint } from "./point";
 import { posPrecision } from "./util";
+import { Rect } from "@svgdotjs/svg.js";
 
 export interface Bounds {
     top: number,
@@ -14,7 +16,9 @@ export interface Size {
     height?: number
 }
 
+export type PositionMethod = "controlled" | "free" | "partially-controlled"
 export type SizeMethod = "given" | "inherited"
+
 export type SiteNames = "here" | "centre" | "far"
 
 export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
@@ -98,6 +102,16 @@ export default class Spacial extends Point implements ISpacial {
         
         width !== undefined ? this._contentWidth = width : null;
         height !== undefined ? this._contentHeight = height : null;
+    }
+
+
+    public getHitbox(): Rect {
+        var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
+
+        hitbox.size(this.width, this.height);
+        hitbox.move(this.x, this.y);
+        hitbox.fill(`transparent`).opacity(0.3);
+        return hitbox;
     }
 
     public get contentX() : number {
@@ -537,5 +551,15 @@ export default class Spacial extends Point implements ISpacial {
             case "y":
                 return this.height;
         }
+    }
+
+    get positionMethod(): PositionMethod {
+        var method: PositionMethod = "free";
+        if (this.bindingsToThis.length >= 2) {
+            method = "controlled";
+        } else if (this.bindingsToThis.length = 1) {
+            method = "partially-controlled"
+        }
+        return method
     }
 }

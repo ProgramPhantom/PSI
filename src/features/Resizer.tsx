@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Rnd } from "react-rnd"
 import { Visual } from "../logic/visual"
 
@@ -8,7 +8,6 @@ interface IResizer {
 
 
 const Resizer: React.FC<IResizer> = (props) => {
-
     var copy = props.element.svg?.clone()
 
     var [x, setX] = useState(0);
@@ -17,6 +16,8 @@ const Resizer: React.FC<IResizer> = (props) => {
     copy?.x(0);
     copy?.y(0);
 
+    const svgRef = useRef<SVGSVGElement | null>()
+    svgRef.current.appendChild(copy.node);
     return (
         <>
             <Rnd position={{x: props.element.contentX, y:props.element.contentY}}
@@ -27,7 +28,7 @@ const Resizer: React.FC<IResizer> = (props) => {
                 height: props.element.contentHeight!
             }} enableResizing={false} onDrag={(e, d) => {e.stopPropagation(); setX(d.x); setY(d.y)}}>
                 
-                <svg  className="content" dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} style={{height: "100%", width: "100%"}}></svg>
+                <svg  className="content" ref={svgRef} style={{height: "100%", width: "100%"}}></svg>
             </Rnd>
         </>
     )

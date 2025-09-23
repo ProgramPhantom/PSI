@@ -6,7 +6,7 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import SchemeManager from '../../logic/default';
 import { AllComponentTypes, UserComponentType } from '../../logic/diagramHandler';
 import ENGINE from '../../logic/engine';
-import { ILabelGroup } from '../../logic/labelGroup';
+import { ILabelGroup } from '../../logic/hasComponents/labelGroup';
 import { IRectElement } from '../../logic/rectElement';
 import { ISVGElement } from '../../logic/svgElement';
 import { IVisual, Visual } from '../../logic/visual';

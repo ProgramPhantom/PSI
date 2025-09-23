@@ -1,7 +1,7 @@
 import { ControlGroup, Divider, FormGroup, InputGroup, NumericInput, Section, Slider } from "@blueprintjs/core";
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { IChannel } from '../../logic/channel';
+import { IChannel } from '../../logic/hasComponents/channel';
 
 
 
@@ -24,7 +24,7 @@ const ChannelForm: React.FC = () => {
                     helperText="LaTeX"
                     labelFor="text-input">
                 
-                    <Controller control={formControls.control} name={"channelSymbol.text"} render={({field}) => (
+                    <Controller control={formControls.control} name={"label.text"} render={({field}) => (
                         <InputGroup {...field} id="text" placeholder="_1\textrm{H}" size="small" />
                         )}>
                     </Controller>

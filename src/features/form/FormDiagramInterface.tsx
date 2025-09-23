@@ -33,14 +33,14 @@ type DeleteFunction = (val: Visual, type: UserComponentType) => void
 type ModifyFunction = (data: any, type: UserComponentType, target: Visual) => Visual
 type FormEffect = "submit" | "delete" | "modify"
 type FormEffectFunction = SubmissionFunction | DeleteFunction | ModifyFunction
-type EffectGroup = {"submit": SubmissionFunction, "modify": ModifyFunction, "delete": DeleteFunction}
+type EffectGroup = {"submit": SubmissionFunction, "modify"?: ModifyFunction, "delete": DeleteFunction}
 
 
 
 
 function getCoreDefaults(target: Visual): IVisual {
     if (Visual.isLabelGroup(target)) {
-        return target.coreChild.state
+        return target.components.coreChild.state
     } else {
         return target.state
     }
@@ -68,7 +68,10 @@ export function FormDiagramInterface(props: FormHolderProps) {
             "modify": ENGINE.handler.submitModifyElement.bind(ENGINE.handler),
             "delete": ENGINE.handler.submitDeleteElement.bind(ENGINE.handler)
         },
-    
+        "line": {
+            "submit": ENGINE.handler.createLine.bind(ENGINE.handler),
+            "delete": ENGINE.handler.deleteFreeElement.bind(ENGINE.handler)
+        }
     }
     }, [ENGINE.handler])
 

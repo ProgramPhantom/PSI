@@ -2,7 +2,7 @@ import { AllComponentTypes } from "./diagramHandler";
 import { Dimensions, IBinding } from "./spacial";
 import { posPrecision } from "./util";
 
-
+export type OwnershipType = "component" | "free"
 export type ID = string;
 
 interface Shift {
@@ -67,6 +67,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 
     bindings: IBinding[] = [];  // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
     bindingsToThis: IBinding[] = [];
+
+    ownershipType: OwnershipType = "free";
 
     displaced: boolean=false;
 

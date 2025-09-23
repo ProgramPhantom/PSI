@@ -1,17 +1,25 @@
-import { Element, G } from "@svgdotjs/svg.js";
+import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import logger, { Processes } from "./log";
-import { ID } from "./point";
-import Spacial, { Bounds } from "./spacial";
-import { FillObject, RecursivePartial } from "./util";
+import Point, { ID } from "./point";
+import { CreateChild, FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual, doesDraw } from "./visual";
-import { SVG } from "@svgdotjs/svg.js";
-import { Rect } from "@svgdotjs/svg.js";
+import Spacial from "./spacial";
 
+
+export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(obj: any): obj is IHaveComponents<T> {
+    return ((obj as any).components !== undefined)
+}
+
+
+export interface IHaveComponents<C extends Record<string, Spacial | Spacial[]>> {
+    components: C
+}
 
 export interface ICollection extends IVisual {
-    
+    userChildren: IVisual[]
 }
-export default class Collection<T extends Spacial = Spacial> extends Visual implements IDraw {
+
+export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
     static defaults: {[name: string]: ICollection} = {
         "default": {
             contentWidth: 0,
@@ -20,18 +28,83 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             y: undefined,
             offset: [0, 0],
             padding: [0, 0, 0, 0],
-            ref: "default-collection"
+            ref: "default-collection",
+            userChildren: []
         },
+    }
+    get state(): ICollection {
+        return {
+            userChildren: this.userChildren.map(c => c.state),
+            ...super.state
+        }
     }
 
 
     _parentElement?: T;
     children: T[] = [];
-    childBounds: Bounds = {top: 0, bottom: 0, left: 0, right: 0};
+    
+
+    get userChildren(): T[] {
+        var freeChildren: T[] = [];
+        var arrayStructure: Point[][] = [];
+        if (HasComponents(this)) {
+            arrayStructure = Object.values(this.components).filter(s => Array.isArray(s));
+        }
+
+        for (var child of this.children) {
+            var adding: boolean = true;
+
+            if (HasComponents(this)) {
+                var structureObjIndex = Object.values(this.components).indexOf(child);
+                if (structureObjIndex !== -1) {
+                    adding = false;
+                } else {
+                    
+                    // search array structure
+                    for (var arrStruct of arrayStructure) {
+                        if (arrStruct.includes(child)) {
+                            adding = false;
+                        }
+                    }
+                }
+            }
+
+            if (adding) {
+                freeChildren.push(child)
+            }
+        }
+        return freeChildren;
+    }
+    get componentChildren(): T[] {
+        var allComponentChildren: T[] = [];
+        if (HasComponents(this)) {
+            for (var child of Object.values(this.components)) {
+                if (Array.isArray(child)) {
+                    allComponentChildren.push(...(child as T[]))
+                } else{
+                    allComponentChildren.push(child as T)
+                }
+            }
+        }
+        
+        return allComponentChildren;
+    }
 
     constructor(params: RecursivePartial<ICollection>, templateName: string=Collection.defaults["default"].ref) {
         var fullParams: ICollection = FillObject<ICollection>(params, Collection.defaults[templateName]);
         super(fullParams);
+
+        fullParams.userChildren.forEach((c) => {
+            if (c.type === undefined) {
+                console.warn(`Cannot instantiate parameter child ${c.ref} as it has no type`)
+                return
+            }
+            if (!this.has(c.id)) {
+                var child: T = CreateChild(c, c.type) as T;
+                this.add(child);
+            }
+            
+        })
     }
 
     draw(surface: Element) {
@@ -42,36 +115,36 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
         var group = new G().id(this.id).attr({"title": this.ref});
         group.attr({"transform": `translate(${this.offset[0]}, ${this.offset[1]})`})
 
-        this.children.forEach((c) => {
+        // Add component children to group
+        this.componentChildren.forEach((c) => {
             if (doesDraw(c)) {
                 c.draw(group);
             }
         })
-
         // group.move(this.x, this.y).size(this.width, this.height)
         this.svg = group;
+        
+        this.svg.attr({"data-position": this.positionMethod, "data-ownership": this.ownershipType});
 
         surface.add(this.svg);
+        
+
+        this.userChildren.forEach((uc) => {
+            if (doesDraw(uc)) {
+                uc.draw(surface)
+            }
+        })
     }
 
 
-    public getHitbox(): Rect[] {
+    public getHitbox(): Rect {
         var collectionHitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
 
         collectionHitbox.size(this.width, this.height);
         collectionHitbox.move(this.x, this.y);
         collectionHitbox.fill(`transparent`).opacity(0.3);
 
-        var childHitboxes: Rect[] = [];
-        
-        for (var child of this.children) {
-            if (child instanceof Visual) {
-                childHitboxes.push(...child.getHitbox());
-            }
-        }
-
-
-        return [collectionHitbox, ...childHitboxes];
+        return collectionHitbox
     }
  
 
@@ -195,7 +268,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
 
         
 
-        var bounds = {top: top, right: right, bottom: bottom, left: left}
         var width = right - left;
         var height = bottom - top;
         
@@ -212,12 +284,6 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             // this.contentHeight = 0;
         }
 
-        this.childBounds = {
-            top: top,
-            bottom: bottom,
-            left: left,
-            right: right
-        }
 
         logger.processEnd(Processes.COMPUTE_BOUNDARY, `Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`, this)
     }
@@ -280,7 +346,10 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
     }
 
     override get hasDimensions(): boolean {
-        return true;
+        if (this._contentWidth !== undefined && this._contentHeight !== undefined) {
+            return true;
+        }
+        return false;
     }
 
     override get allElements(): Record<ID, Visual> {
@@ -292,5 +361,17 @@ export default class Collection<T extends Spacial = Spacial> extends Visual impl
             }
         })
         return elements;
+    }
+
+    public has(id: ID): boolean {
+        return this.children.filter(c => c.id === id).length > 0
+    }
+
+    public markComponent(child: T) {
+        if (HasComponents(this)) {
+            child.ownershipType = "component"
+        } else {
+            console.warn(`Trying to mark child ${child.ref} as component on non-component owning parent`)
+        }
     }
 }

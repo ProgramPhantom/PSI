@@ -64,7 +64,9 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
                     stroke: this.style.stroke})
             .move(this.contentX + this.offset[0], this.contentY + this.offset[1])
             .attr({"stroke-width": this.style.strokeWidth,
-                   "shape-rendering": "crispEdges"
+                   "shape-rendering": "crispEdges",
+                   "data-position": this.positionMethod,
+                   "data-ownership": this.ownershipType
             });
             surface.add(this.svg);
 

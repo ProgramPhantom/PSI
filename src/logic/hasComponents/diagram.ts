@@ -1,68 +1,73 @@
-import Aligner from "./aligner";
-import Line from "./line";
+import Aligner from "../aligner";
 import Channel, { ChannelNamedStructure } from "./channel";
-import Collection, { ICollection } from "./collection";
-import defaultDiagram from "./default/diagram.json";
-import { IHaveStructure, UserComponentType } from "./diagramHandler";
-import logger, { Processes } from "./log";
-import Point from "./point";
-import Sequence, { ISequence, SequenceNamedStructures as SequenceNamedStructure } from "./sequence";
-import Spacial from "./spacial";
-import { FillObject, RecursivePartial } from "./util";
-import { Visual } from "./visual";
+import Collection, { ICollection, IHaveComponents } from "../collection";
+import defaultDiagram from "../default/diagram.json";
+import { UserComponentType } from "../diagramHandler";
+import Line from "../line";
+import logger, { Processes } from "../log";
+import { ID } from "../point";
+import Sequence, { ISequence, SequenceNamedStructures } from "./sequence";
+import Spacial from "../spacial";
+import { FillObject, MarkAsComponent, RecursivePartial } from "../util";
+import { doesDraw, Visual } from "../visual";
+import { Element } from "@svgdotjs/svg.js";
+import { G } from "@svgdotjs/svg.js";
 
+
+export interface IDiagramComponents extends Record<string, Spacial | Spacial[]> {
+    "sequences": Sequence[]
+
+    "sequenceColumn": Aligner<Sequence>
+    "root": Spacial,
+}
 
 export interface IDiagram extends ICollection {
     sequences: ISequence[]
 }
 
+
 type DiagramNamedStructure = "sequence column" | "root"
  
-export type AllStructures = SequenceNamedStructure | ChannelNamedStructure | DiagramNamedStructure
-// "Structure" are objects that are created as decendants of components which are used to arrange the their
+export type AllStructures = SequenceNamedStructures | ChannelNamedStructure | DiagramNamedStructure
+// "Structure" are objects that are created as descendants of components which are used to arrange the their
 // content. Currently all structures are abstract (as in, have no visual, they are only used for positioning)
 // except for the BAR in the channel component (these might need differentiating)
 
 
-export default class Diagram extends Collection implements IHaveStructure {
+export default class Diagram extends Collection implements IHaveComponents<IDiagramComponents> {
     static defaults: {[key: string]: IDiagram} = {"default": {...<any>defaultDiagram}}
     static ElementType: UserComponentType = "diagram";
 
     get state(): IDiagram {
         return {
-            sequences: this.sequences.map((s) => s.state),
+            sequences: this.components.sequences.map((s) => s.state),
             ...super.state
         }
     }
 
-    sequenceDict: {[name: string]: Sequence;} = {};
-    get sequences(): Sequence[] {return Object.values(this.sequenceDict)}
+    get sequenceDict(): Record<ID, Sequence> {
+        return Object.fromEntries(this.components.sequences.map(item => [item.id, item]));
+    };
     get sequenceIDs(): string[] {return Object.keys(this.sequenceDict)}
 
     get channelsDict(): {[name: string]: Channel;} {
         var channels: {[name: string]: Channel} = {}
-        this.sequences.forEach((s) => {
+        this.components.sequences.forEach((s) => {
             Object.entries(s.channelsDict).forEach(([id, channel]) => {
                 channels[id] = channel
             })
         })
         return channels
     }
-    get channels(): Channel[] {return this.sequences.map((s) => s.channels).flat()}
-    get channelIDs(): string[] {return this.sequences.map((s) => s.channelIDs).flat()}
+    get channels(): Channel[] {return this.components.sequences.map((s) => s.components.channels).flat()}
+    get channelIDs(): string[] {return this.components.sequences.map((s) => s.channelIDs).flat()}
 
-    structure: Record<DiagramNamedStructure, Point>;
-
-    freeArrows: Line[] = [];
-
-    root: Spacial;
-
-    sequenceColumn: Aligner<Sequence>;
+    components: IDiagramComponents;
 
 
     get allPulseElements(): Visual[] {
         var elements: Visual[] = [];
-        this.sequences.forEach((s) => {
+        this.components.sequences.forEach((s) => {
             elements.push(...s.allPulseElements)
         })
         return elements;
@@ -75,23 +80,24 @@ export default class Diagram extends Collection implements IHaveStructure {
 
         logger.processStart(Processes.INSTANTIATE, ``, this);
 
-        this.sequenceDict = {};
-
         // ----- Create structure ---- 
+
         // Root 
-        this.root = new Spacial(0, 0, 0, 0, "root");
+        var root: Spacial = new Spacial(0, 0, 0, 0, "root");
 
         // Sequence column
-        this.sequenceColumn = new Aligner<Sequence>(
+        var sequenceColumn: Aligner<Sequence> = new Aligner<Sequence>(
             {bindMainAxis: true, axis: "y", alignment: "here", ref: "sequence column", x:0, y:0}, "default", );
-        this.root.bind(this.sequenceColumn, "x", "here", "here");
-        this.root.bind(this.sequenceColumn, "y", "here", "here");
-        this.add(this.sequenceColumn);
+        root.bind(sequenceColumn, "x", "here", "here");
+        root.bind(sequenceColumn, "y", "here", "here");
+        this.add(sequenceColumn);
 
-        this.structure = {
-            "sequence column": this.sequenceColumn,
-            "root": this.root
+        this.components = {
+            "root": root,
+            "sequenceColumn": sequenceColumn,
+            "sequences": [] 
         }
+        MarkAsComponent(this.components);
         // --------------------------
 
 
@@ -110,10 +116,42 @@ export default class Diagram extends Collection implements IHaveStructure {
         logger.processEnd(Processes.INSTANTIATE, ``, this);
     }
 
+    override draw(surface: Element) {
+        if (this.svg) {
+            this.svg.remove();
+        }
+
+        surface.clear();
+        this.svg = surface;
+
+        var group = new G().id(this.id).attr({"title": this.ref});
+        group.attr({"transform": `translate(${this.offset[0]}, ${this.offset[1]})`})
+
+        // Add component children to group
+        this.componentChildren.forEach((c) => {
+            if (doesDraw(c)) {
+                c.draw(group);
+            }
+        })
+        // group.move(this.x, this.y).size(this.width, this.height)
+        
+        this.svg.attr({"data-position": this.positionMethod, 
+                        "data-ownership": this.ownershipType}).id(this.id);
+
+        this.svg.add(group);
+
+        this.userChildren.forEach((uc) => {
+            if (doesDraw(uc)) {
+                uc.draw(surface)
+            }
+        })
+    }
+
     // Adding
     public addSequence(sequence: Sequence) {
-        this.sequenceColumn.add(sequence);
-        this.sequenceDict[sequence.id] = sequence;
+        this.markComponent(sequence);
+        this.components.sequenceColumn.add(sequence);
+        this.components.sequences.push(sequence)
     }
 
     public addElement(element: Visual) {

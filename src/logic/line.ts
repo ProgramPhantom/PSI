@@ -3,6 +3,7 @@ import defaultLine from "./default/line.json";
 import { UserComponentType } from "./diagramHandler";
 import { FillObject, RecursivePartial } from "./util";
 import LineLike, { ILineLike } from "./lineLike";
+import { Rect } from "@svgdotjs/svg.js";
 
 
 export type HeadStyle = "default" | "thin" | "none"
@@ -16,6 +17,8 @@ export interface ILineStyle {
 
 export interface ILine extends ILineLike {
     lineStyle: ILineStyle,
+    x2?: number
+    y2?: number
 }
 
 
@@ -26,6 +29,8 @@ export default class Line extends LineLike implements ILine {
   static arbitraryAdjustment: number = 1;
   get state(): ILine { return {
     lineStyle: this.lineStyle,
+    x2: this.x2,
+    y2: this.y2,
     ...super.state
   }}
 
@@ -36,6 +41,35 @@ export default class Line extends LineLike implements ILine {
     super(fullParams);
 
     this.lineStyle = fullParams.lineStyle;
+
+    if (fullParams.x2 !== undefined) {
+      this.x2 = fullParams.x2
+    }
+    if (fullParams.y2 !== undefined) {
+      this.y2 = fullParams.y2
+    }
+  }
+
+  public getHitbox(): Rect {
+    var hitbox = SVG().rect().id(this.id + "-hitbox").attr({"data-editor": "hitbox", key: this.ref});
+
+    var hitboxHeight: number = this.lineStyle.thickness + LineLike.HitboxPadding;
+    hitbox.size(this.length, hitboxHeight);
+    hitbox.rotate(this.angle / Math.PI * 180, this.x, this.y + hitboxHeight/2 );
+
+    var crossShift: [number, number] = this.moveRelative([this.x, this.y], 
+      "cross", -(this.lineStyle.thickness + LineLike.HitboxPadding) / 2)
+    hitbox.move(crossShift[0], crossShift[1]);
+
+    // hitbox.move(this.x, this.y)
+    hitbox.fill(`transparent`).opacity(0.3);
+    return hitbox;
+  }
+
+  public getInternalRepresentation(): Element | undefined {
+    var internal: Element = this.svg.clone(true, true);
+
+    return internal;
   }
 
 
@@ -64,7 +98,7 @@ export default class Line extends LineLike implements ILine {
 
       var pathData: string = `M${this.x + dx}, ${this.y + dy}, ${this.x2 - dx} ${this.y2 - dy}`;
 
-      var newArrow = SVG().path().id("arrow-line")
+      var newArrow = SVG().path().id(this.id)
                      .attr({strokeWidth: `${this.lineStyle.thickness}`,
                             stroke: `${this.lineStyle.stroke}`,
                             strokeLinecap: "butt",
@@ -77,7 +111,8 @@ export default class Line extends LineLike implements ILine {
       
       this.svg = newArrow;
 
-      
+      this.svg.attr({"data-position": this.positionMethod, "data-ownership": this.ownershipType});
+
       surface.add(this.svg)
       surface.add(markerDefs)
     }

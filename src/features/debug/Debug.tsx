@@ -23,20 +23,20 @@ const Debug: React.FC<IDebug> = (props) => {
                     })
                     break;
                 case "pulse columns":
-                    return <CollectionDebug element={ENGINE.handler.diagram.sequences[0].pulseColumns}></CollectionDebug>
+                    return <CollectionDebug element={ENGINE.handler.diagram.components.sequences[0].components.pulseColumns}></CollectionDebug>
                 case "label column":
-                    return <CollectionDebug element={ENGINE.handler.diagram.sequences[0].labelColumn}></CollectionDebug>
+                    return <CollectionDebug element={ENGINE.handler.diagram.components.sequences[0].components.labelColumn}></CollectionDebug>
                 case "channel":
                     return ENGINE.handler.diagram.channels.map((c) => {
                         return <PaddedBoxDebug element={c} contentColour={Colors.BLUE4}></PaddedBoxDebug>
                     })
                 case "upper aligner":
                     return ENGINE.handler.diagram.channels.map((c) => {
-                        return <PaddedBoxDebug element={c.topAligner} contentColour={Colors.VIOLET3}></PaddedBoxDebug>
+                        return <PaddedBoxDebug element={c.components.topAligner} contentColour={Colors.VIOLET3}></PaddedBoxDebug>
                     })
                 case "lower aligner":
                     return ENGINE.handler.diagram.channels.map((c) => {
-                        return <PaddedBoxDebug element={c.bottomAligner} contentColour={Colors.GREEN5}></PaddedBoxDebug>
+                        return <PaddedBoxDebug element={c.components.bottomAligner} contentColour={Colors.GREEN5}></PaddedBoxDebug>
                     })
                 case "sequence":
                     return ENGINE.handler.sequences.map((s) => {

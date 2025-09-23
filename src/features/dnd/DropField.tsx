@@ -1,9 +1,9 @@
 import Aligner from "../../logic/aligner";
-import Channel from "../../logic/channel";
-import Diagram from "../../logic/diagram";
+import Channel from "../../logic/hasComponents/channel";
+import Diagram from "../../logic/hasComponents/diagram";
 import DiagramHandler from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import Sequence, { OccupancyStatus } from "../../logic/sequence";
+import Sequence, { OccupancyStatus } from "../../logic/hasComponents/sequence";
 import { Visual } from "../../logic/visual";
 import InsertArea, { AddSpec } from "./InsertArea";
 
@@ -24,13 +24,13 @@ class DiagramDropInterpreter {
         this.insertAreas = [];
         
         var diagram: Diagram = this.handler.diagram;
-        var sequences: Sequence[] = this.handler.diagram.sequences;
-        var columnSets: Aligner<Visual>[] = sequences.map((s) => s.pulseColumns);
+        var sequences: Sequence[] = this.handler.diagram.components.sequences;
+        var columnSets: Aligner<Visual>[] = sequences.map((s) => s.components.pulseColumns);
         var newSlither: AddSpec;
 
         Object.entries(diagram.sequenceDict).forEach(([seqID, sequence]) => {
-            var channels = sequence.channels;
-            var columns: Aligner<Visual>[] = sequence.pulseColumns.children;
+            var channels = sequence.components.channels;
+            var columns: Aligner<Visual>[] = sequence.components.pulseColumns.children;
             var noColumns = columns.length;
             var noChannels = channels.length;
 
@@ -68,7 +68,7 @@ class DiagramDropInterpreter {
                             area: {x: column.x - this.slitherWidth/2, 
                                 y: channel.y, 
                                 width: this.slitherWidth, 
-                                height: channel.topAligner.contentHeight! + channel.padding[0]},
+                                height: channel.components.topAligner.contentHeight! + channel.padding[0]},
                             index: columnIndex, orientation: "top", channelID: chanID, insert: true,
                             sequenceID: sequence.id
                         };
@@ -77,9 +77,9 @@ class DiagramDropInterpreter {
                         // bottom slither
                         newSlither = {
                             area: {x: column.x - this.slitherWidth/2, 
-                                y: channel.bottomAligner.y, 
+                                y: channel.components.bottomAligner.y, 
                                 width: this.slitherWidth, 
-                                height: channel.bottomAligner.contentHeight! + channel.padding[2]},
+                                height: channel.components.bottomAligner.contentHeight! + channel.padding[2]},
                             index: columnIndex, orientation: "bottom", channelID: chanID, insert: true,
                             sequenceID: sequence.id
                         };
@@ -88,8 +88,8 @@ class DiagramDropInterpreter {
 
                     if (!occupied) {  // Top block
                         var columnWidth = column.contentWidth === undefined ? 0 : column.contentWidth;
-                        var upperAlignerHeight = channel.topAligner.contentHeight === undefined ? 0 : channel.topAligner.contentHeight;
-                        var lowerAlignerHeight = channel.bottomAligner.contentHeight === undefined ? 0 : channel.bottomAligner.contentHeight;
+                        var upperAlignerHeight = channel.components.topAligner.contentHeight === undefined ? 0 : channel.components.topAligner.contentHeight;
+                        var lowerAlignerHeight = channel.components.bottomAligner.contentHeight === undefined ? 0 : channel.components.bottomAligner.contentHeight;
 
                         let newBlock: AddSpec = {
                             area: {x: column.x + this.slitherWidth / 2, 
@@ -102,7 +102,7 @@ class DiagramDropInterpreter {
                         // Bottom block
                         newBlock = {
                             area: {x: column.x + this.slitherWidth / 2, 
-                                y: channel.bottomAligner.y, 
+                                y: channel.components.bottomAligner.y, 
                                 width: columnWidth - this.slitherWidth, 
                                 height: lowerAlignerHeight}, 
                             index: columnIndex, orientation: "bottom", channelID: chanID, sequenceID: seqID, insert: false}
@@ -115,13 +115,13 @@ class DiagramDropInterpreter {
             var column: Aligner<Visual> = columns[columns.length - 1];
             var i = columns.length - 1;
             if (column === undefined) {  // no positional columns yet
-                column = sequence.labelColumn;
+                column = sequence.components.labelColumn;
             }
             // insert end slithers:
             Object.entries(sequence.channelsDict).forEach(([name, channel]) => {
                     // insert end slithers
-                    var upperAlignerHeight = channel.topAligner.contentHeight === undefined ? 0 : channel.topAligner.contentHeight;
-                    var lowerAlignerHeight = channel.bottomAligner.contentHeight === undefined ? 0 : channel.bottomAligner.contentHeight;
+                    var upperAlignerHeight = channel.components.topAligner.contentHeight === undefined ? 0 : channel.components.topAligner.contentHeight;
+                    var lowerAlignerHeight = channel.components.bottomAligner.contentHeight === undefined ? 0 : channel.components.bottomAligner.contentHeight;
 
                     
                     // Top slither
@@ -138,7 +138,7 @@ class DiagramDropInterpreter {
                     // bottom slither
                     newSlither = {
                         area: {x: column.getFar("x") ?? 0 - this.slitherWidth/2, 
-                            y: channel.bottomAligner.y, 
+                            y: channel.components.bottomAligner.y, 
                             width: this.slitherWidth, 
                             height: lowerAlignerHeight + channel.padding[2]},
                         index: i+1, orientation: "bottom", channelID: name, insert: true,

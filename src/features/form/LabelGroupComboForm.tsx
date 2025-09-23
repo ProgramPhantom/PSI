@@ -1,14 +1,14 @@
 import { Divider, EntityTitle, Tab, Tabs } from "@blueprintjs/core";
 import React, { useEffect, useImperativeHandle } from "react";
 import { DefaultValues, FormProvider, useForm } from "react-hook-form";
-import Channel from "../../logic/channel";
-import Diagram from "../../logic/diagram";
+import Channel from "../../logic/hasComponents/channel";
+import Diagram from "../../logic/hasComponents/diagram";
 import { AllComponentTypes, UserComponentType } from "../../logic/diagramHandler";
-import Label, { ILabel } from "../../logic/label";
-import LabelGroup, { ILabelGroup } from "../../logic/labelGroup";
+import Label, { ILabel } from "../../logic/hasComponents/label";
+import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
 import Line  from "../../logic/line";
 import RectElement from "../../logic/rectElement";
-import Sequence from "../../logic/sequence";
+import Sequence from "../../logic/hasComponents/sequence";
 import Space from "../../logic/space";
 import SVGElement from "../../logic/svgElement";
 import { IVisual, Visual } from "../../logic/visual";
@@ -63,7 +63,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
         parentType = (props.target.constructor as typeof Visual).ElementType;
 
         if (LabelGroup.isLabelGroup(props.target) ) {
-            childType = (props.target.coreChild.constructor as typeof Visual).ElementType as UserComponentType;
+            childType = (props.target.components.coreChild.constructor as typeof Visual).ElementType as UserComponentType;
         }
     } else {
         parentType = props.objectType;
@@ -82,10 +82,10 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
         allowLabels = (props.target.constructor as typeof Visual).formData.allowLabels;
 
         if (LabelGroup.isLabelGroup(props.target)) {
-            ChildForm = (props.target.coreChild.constructor as typeof Visual).formData.form;
-            childDefaults = props.target.coreChild.state;
+            ChildForm = (props.target.components.coreChild.constructor as typeof Visual).formData.form;
+            childDefaults = props.target.components.coreChild.state;
 
-            labelDefaults.labels = props.target.labels;
+            labelDefaults.labels = props.target.components.labels;
 
             targetIsLabelGroup = true;
         } 
@@ -145,7 +145,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
                     coreChild: childFormData,
                     coreChildType: props.objectType as UserComponentType,
                     labels: labelListFormData,
-
+                    userChildren: [],
                     ...masterFormData
                 }
 
@@ -163,6 +163,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
                     coreChild: childFormData,
                     coreChildType: (masterFormData as ILabelGroup).coreChildType,
                     labels: labelListFormData,  // Override labels
+                    userChildren: [],
                 }
                 props.callback(result, "label-group")
             } else {

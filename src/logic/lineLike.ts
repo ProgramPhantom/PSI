@@ -3,9 +3,11 @@ import defaultLineLike from "./default/lineLike.json";
 import { Dimensions } from "./spacial";
 import { FillObject, posPrecision, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
+import { Rect } from "@svgdotjs/svg.js";
+import { SVG } from "@svgdotjs/svg.js";
 
 type Orientation ="horizontal" | "vertical" | "angled"
-
+type Direction = "along" | "cross"
 
 export interface ILineLike extends IVisual {
     adjustment: [number, number],
@@ -37,6 +39,7 @@ export default abstract class LineLike extends Visual {
             set: this.setFar.bind(this)
         }
     }
+    static HitboxPadding: number = 2;
 
     adjustment: [number, number];
     orientation: Orientation;
@@ -138,6 +141,21 @@ export default abstract class LineLike extends Visual {
         } else if (this.x2 >= this.x && this.y2 < this.y) {
             return 3
         }
+    }
+
+    public moveRelative(coordinate: [number, number], direction: Direction, quantity: number): [number, number] {
+
+        
+        var newCoord: [number, number];
+        var dy: number = Math.sin(this.angle!) * quantity
+        var dx: number = Math.cos(this.angle!) * quantity
+
+        if (direction === "along") {
+            newCoord = [coordinate[0] + dx, coordinate[1] + dy]
+        } else {
+            newCoord = [coordinate[0] + dy, coordinate[1] + dx]
+        }
+        return newCoord
     }
 
     get hasPosition(): boolean {
