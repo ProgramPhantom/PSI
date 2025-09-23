@@ -1,14 +1,14 @@
-import Aligner from "./aligner";
+import Aligner from "../aligner";
 import Channel, { IChannel } from "./channel";
-import Collection, { ICollection, IHaveComponents } from "./collection";
-import defaultSequence from "./default/sequence.json";
-import { AllComponentTypes } from "./diagramHandler";
-import logger, { Operations, Processes } from "./log";
-import { ID } from "./point";
-import Space from "./space";
-import Spacial from "./spacial";
-import { FillObject, RecursivePartial } from "./util";
-import { Visual } from "./visual";
+import Collection, { ICollection, IHaveComponents } from "../collection";
+import defaultSequence from "../default/sequence.json";
+import { AllComponentTypes } from "../diagramHandler";
+import logger, { Operations, Processes } from "../log";
+import { ID } from "../point";
+import Space from "../space";
+import Spacial from "../spacial";
+import { FillObject, MarkAsComponent, RecursivePartial } from "../util";
+import { Visual } from "../visual";
 
 
 export interface ISequenceComponents extends Record<string, Spacial | Spacial[]> {
@@ -87,6 +87,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
             "labelColumn": labelColumn,
             "pulseColumns": pulseColumns
         }
+        MarkAsComponent(this.components)
         // --------------------------
 
         fullParams.channels.forEach((c) => {
@@ -162,6 +163,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 
         var newColumn: Aligner<Visual> = new Aligner<Visual>({axis: "y", bindMainAxis: false, alignment: "centre",
                                                           ref: `column at ${INDEX}`, minCrossAxis: 10}, "default", );
+        this.markComponent(newColumn);
 
         // Add to positional columns
         this.components.pulseColumns.add(newColumn, INDEX);
@@ -205,6 +207,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 
     // Content Commands
     addChannel(channel: Channel) {
+        this.markComponent(channel)
         this.components.channelColumn.add(channel);
         
         // Set and initialise channel

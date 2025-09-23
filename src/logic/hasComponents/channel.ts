@@ -1,17 +1,17 @@
-import ChannelForm from "../features/form/ChannelForm";
-import { FormBundle } from "../features/form/LabelGroupComboForm";
-import Aligner from "./aligner";
-import Collection, { ICollection, IHaveComponents } from "./collection";
-import defaultChannel from "./default/channel.json";
-import { UserComponentType } from "./diagramHandler";
-import { IMountConfig } from "./mountable";
-import { ID } from "./point";
-import RectElement, { IRectStyle } from "./rectElement";
+import ChannelForm from "../../features/form/ChannelForm";
+import { FormBundle } from "../../features/form/LabelGroupComboForm";
+import Aligner from "../aligner";
+import Collection, { ICollection, IHaveComponents } from "../collection";
+import defaultChannel from "../default/channel.json";
+import { UserComponentType } from "../diagramHandler";
+import { IMountConfig } from "../mountable";
+import { ID } from "../point";
+import RectElement, { IRectStyle } from "../rectElement";
 import { OccupancyStatus } from "./sequence";
-import Spacial from "./spacial";
-import Text, { IText } from "./text";
-import { RecursivePartial, UpdateObj } from "./util";
-import { IVisual, Visual } from "./visual";
+import Spacial from "../spacial";
+import Text, { IText } from "../text";
+import { MarkAsComponent, RecursivePartial, UpdateObj } from "../util";
+import { IVisual, Visual } from "../visual";
  
 
 export type ChannelNamedStructure = "top aligner" | "bottom aligner" | "bar" | "label" | "mounted-elements"
@@ -181,6 +181,7 @@ export default class Channel extends Collection implements IHaveComponents<IChan
             "topAligner": topAligner
         }
 
+        MarkAsComponent(this.components);
         // ----------------------------
     }
 
@@ -211,6 +212,7 @@ export default class Channel extends Collection implements IHaveComponents<IChan
                 break;
         }
 
+        this.markComponent(element);
         this.add(element)
         this.components.mountedElements.push(element);
     }

@@ -149,7 +149,7 @@ export default class Text extends Visual implements IText {
             }
 
             this.svg?.move(this.contentX, this.contentY);
-            this.svg?.attr({"data-position": this.positionMethod});
+            this.svg?.attr({"data-position": this.positionMethod, "data-ownership": this.ownershipType});
 
             if (this.svg) {
                 surface.add(this.svg);

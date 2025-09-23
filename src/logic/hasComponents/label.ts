@@ -1,11 +1,12 @@
 import { G, Mask, Rect, Svg } from "@svgdotjs/svg.js";
-import LabelForm from "../features/form/LabelForm";
-import { FormBundle } from "../features/form/LabelGroupComboForm";
-import Line, { ILine } from "./line";
-import Collection, { ICollection, IHaveComponents } from "./collection";
-import {  UserComponentType } from "./diagramHandler";
-import Spacial, { Dimensions } from "./spacial";
-import Text, { IText, Position } from "./text";
+import LabelForm from "../../features/form/LabelForm";
+import { FormBundle } from "../../features/form/LabelGroupComboForm";
+import Line, { ILine } from "../line";
+import Collection, { ICollection, IHaveComponents } from "../collection";
+import {  UserComponentType } from "../diagramHandler";
+import Spacial, { Dimensions } from "../spacial";
+import Text, { IText, Position } from "../text";
+import { MarkAsComponent } from "../util";
 
 interface ILabelComponents extends Record<string, Spacial | Spacial[]> {
     text?: Text,
@@ -113,7 +114,6 @@ export default class Label extends Collection implements ILabel, IHaveComponents
             this.bind(line, otherDimension, "here", "here");
             this.bind(line, otherDimension, "far", "far");
 
-            this.arrangeContent(orientationSelect)
 
             this.add(line)
         }
@@ -122,6 +122,8 @@ export default class Label extends Collection implements ILabel, IHaveComponents
             "line": line,
             "text": text
         }
+        MarkAsComponent(this.components)
+        this.arrangeContent(orientationSelect)
     }
  
     draw(surface: Svg) {
@@ -129,7 +131,8 @@ export default class Label extends Collection implements ILabel, IHaveComponents
             this.svg.remove();
         }
         
-        var group = new G().id(this.id).attr({"title": this.ref});
+        // Todo: sort ts out, label children need to be grouped
+        var group = new G().id(this.id).attr({"title": this.ref, });
         
         // Clip
 

@@ -555,7 +555,7 @@ export default class Spacial extends Point implements ISpacial {
 
     get positionMethod(): PositionMethod {
         var method: PositionMethod = "free";
-        if (this.bindingsToThis.length === 2) {
+        if (this.bindingsToThis.length >= 2) {
             method = "controlled";
         } else if (this.bindingsToThis.length = 1) {
             method = "partially-controlled"

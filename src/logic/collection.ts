@@ -110,7 +110,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
         // group.move(this.x, this.y).size(this.width, this.height)
         this.svg = group;
         
-        this.svg.attr({"data-position": this.positionMethod});
+        this.svg.attr({"data-position": this.positionMethod, "data-ownership": this.ownershipType});
 
         surface.add(this.svg);
     }
@@ -341,5 +341,13 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
     public has(id: ID): boolean {
         return this.children.filter(c => c.id === id).length > 0
+    }
+
+    public markComponent(child: T) {
+        if (HasComponents(this)) {
+            child.ownershipType = "component"
+        } else {
+            console.warn(`Trying to mark child ${child.ref} as component on non-component owning parent`)
+        }
     }
 }

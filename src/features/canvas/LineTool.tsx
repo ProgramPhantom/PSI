@@ -37,7 +37,7 @@ export function LineTool(props: IDrawArrowProps) {
 
 
     const createArrow = (startBind: PointBind, endBind: PointBind) => {
-        ENGINE.handler.createArrow({lineStyle: props.config.lineStyle}, startBind, endBind);
+        ENGINE.handler.createLine({lineStyle: props.config.lineStyle}, startBind, endBind);
         props.setTool({type: "select", "config": {}})
     }
 

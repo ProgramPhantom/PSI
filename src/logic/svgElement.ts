@@ -148,7 +148,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 			this.svg.move(this.drawX, this.drawY);
 			this.svg.size(this.contentWidth, this.contentHeight);
 
-			this.svg.attr({"data-position": this.positionMethod});
+			this.svg.attr({"data-position": this.positionMethod, "data-ownership": this.ownershipType});
 
 			surface.add(this.svg);
 		}

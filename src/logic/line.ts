@@ -105,7 +105,7 @@ export default class Line extends LineLike implements ILine {
       
       this.svg = newArrow;
 
-      this.svg.attr({"data-position": this.positionMethod});
+      this.svg.attr({"data-position": this.positionMethod, "data-ownership": this.ownershipType});
 
       surface.add(this.svg)
       surface.add(markerDefs)

@@ -7,6 +7,7 @@ import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import { IVisual, Visual } from "./visual";
 import Line, { ILine } from "./line";
+import Spacial from "./spacial";
 
 function isEmpty(obj: any) {
   for (var prop in obj) {
@@ -165,4 +166,14 @@ export function CreateChild(values: IVisual, type: AllComponentTypes): Visual {
             throw new Error(`Not implemented`);
     }
     return element;
+}
+
+export function MarkAsComponent(components: Record<string, Spacial | Spacial[]>) {
+    Object.values(components).forEach((c) => {
+      if (Array.isArray(c)) {
+        c.forEach((obj) => obj.ownershipType = "component")
+      } else {
+        c.ownershipType = "component"
+      }
+    })
 }

@@ -24,9 +24,9 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
         terminate: [
             "label-group",
             "channel",
-            "rect",
             "line",
             "svg",
+            "rect"
         ],
         carry: [
             "text",
@@ -68,23 +68,31 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
 
 
 export function HitboxLayer(props: IHitboxLayerProps) {
-    var drawSVG: Element = ENGINE.handler.diagram.svg;
+    var drawSVG: Element | undefined = ENGINE.handler.diagram.svg;
+    if (drawSVG === undefined) {return <></>}
     var hitboxSVG: Element = SVG();
-    var rectArray: Rect[] = [];
+    var componentRectArray: Rect[] = [];
+    var freeRectArray: Rect[] = [];
 
     // Create hitboxes
 
-    const createHitboxDom = (root: Element, rectArray: Rect[], depth: number=0) => {
+    const createHitboxDom = (root: Element, componentRectArray: Rect[], freeRectArray: Rect[], depth: number=0) => {
         var thisElement: Visual = ENGINE.handler.identifyElement(root.id());
         
         if (thisElement !== undefined) {
             var thisLayer: Rect = thisElement.getHitbox().attr({"zIndex": depth});
-            rectArray.push(thisLayer);
+
+            if (thisElement.ownershipType === "component") {
+                componentRectArray.push(thisLayer);
+            } else if (thisElement.ownershipType === "free") {
+                freeRectArray.push(thisLayer)
+            }
+            
 
             
             if (root.type !== "svg") {
                 root.children().forEach((c) => {
-                    createHitboxDom(c, rectArray, depth+1);
+                    createHitboxDom(c, componentRectArray, freeRectArray, depth-1);
                 })
             }
         }
@@ -149,10 +157,15 @@ export function HitboxLayer(props: IHitboxLayerProps) {
     }
 
 
-    createHitboxDom(drawSVG, rectArray);
-    rectArray.forEach((r) => {
+    createHitboxDom(drawSVG, componentRectArray, freeRectArray, 10000);
+    
+    componentRectArray.forEach((r) => {
         hitboxSVG.add(r);
     })
+    freeRectArray.forEach((r) => {
+        hitboxSVG.add(r)
+    })
+
     return (
         <>
         <svg key={"hitbox"}

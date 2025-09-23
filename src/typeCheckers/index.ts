@@ -12,12 +12,12 @@ import svgElementTypeSuite from "./SVGElement-ti";
 import textTypeSuite from "./text-ti";
 
 import Arrow from "../logic/line";
-import Channel from "../logic/channel";
-import Diagram from "../logic/diagram";
-import Label from "../logic/label";
-import LabelGroup from "../logic/labelGroup";
+import Channel from "../logic/hasComponents/channel";
+import Diagram from "../logic/hasComponents/diagram";
+import Label from "../logic/hasComponents/label";
+import LabelGroup from "../logic/hasComponents/labelGroup";
 import RectElement from "../logic/rectElement";
-import Sequence from "../logic/sequence";
+import Sequence from "../logic/hasComponents/sequence";
 import Space from "../logic/space";
 import Text from "../logic/text";
 import SVGElement from "../logic/svgElement";

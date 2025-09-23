@@ -1,6 +1,6 @@
 import { Button, Divider, Section, SectionCard } from "@blueprintjs/core";
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import Label, { ILabel } from '../../logic/label';
+import Label, { ILabel } from '../../logic/hasComponents/label';
 import { FormRequirements } from "./FormDiagramInterface";
 import LabelForm from './LabelForm';
 

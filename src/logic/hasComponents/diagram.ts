@@ -1,15 +1,15 @@
-import Aligner from "./aligner";
+import Aligner from "../aligner";
 import Channel, { ChannelNamedStructure } from "./channel";
-import Collection, { ICollection, IHaveComponents } from "./collection";
-import defaultDiagram from "./default/diagram.json";
-import { UserComponentType } from "./diagramHandler";
-import Line from "./line";
-import logger, { Processes } from "./log";
-import { ID } from "./point";
+import Collection, { ICollection, IHaveComponents } from "../collection";
+import defaultDiagram from "../default/diagram.json";
+import { UserComponentType } from "../diagramHandler";
+import Line from "../line";
+import logger, { Processes } from "../log";
+import { ID } from "../point";
 import Sequence, { ISequence, SequenceNamedStructures } from "./sequence";
-import Spacial from "./spacial";
-import { FillObject, RecursivePartial } from "./util";
-import { Visual } from "./visual";
+import Spacial from "../spacial";
+import { FillObject, MarkAsComponent, RecursivePartial } from "../util";
+import { Visual } from "../visual";
 
 
 export interface IDiagramComponents extends Record<string, Spacial | Spacial[]> {
@@ -95,7 +95,7 @@ export default class Diagram extends Collection implements IHaveComponents<IDiag
             "sequenceColumn": sequenceColumn,
             "sequences": [] 
         }
-
+        MarkAsComponent(this.components);
         // --------------------------
 
 
@@ -116,6 +116,7 @@ export default class Diagram extends Collection implements IHaveComponents<IDiag
 
     // Adding
     public addSequence(sequence: Sequence) {
+        this.markComponent(sequence);
         this.components.sequenceColumn.add(sequence);
         this.components.sequences.push(sequence)
     }

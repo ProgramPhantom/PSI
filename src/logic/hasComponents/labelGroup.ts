@@ -1,15 +1,15 @@
 import { Element } from "@svgdotjs/svg.js";
-import { FormBundle } from "../features/form/LabelGroupComboForm";
-import VisualForm from "../features/form/VisualForm";
-import Collection, { ICollection, IHaveComponents } from "./collection";
-import DiagramHandler, { UserComponentType } from "./diagramHandler";
+import { FormBundle } from "../../features/form/LabelGroupComboForm";
+import VisualForm from "../../features/form/VisualForm";
+import Collection, { ICollection, IHaveComponents } from "../collection";
+import DiagramHandler, { UserComponentType } from "../diagramHandler";
 import Label, { ILabel } from "./label";
-import RectElement, { IRectElement } from "./rectElement";
-import SVGElement, { ISVGElement } from "./svgElement";
-import { Position } from "./text";
-import { CreateChild, FillObject, RecursivePartial } from "./util";
-import { IVisual, Visual } from "./visual";
-import Spacial from "./spacial";
+import RectElement, { IRectElement } from "../rectElement";
+import SVGElement, { ISVGElement } from "../svgElement";
+import { Position } from "../text";
+import { CreateChild, FillObject, MarkAsComponent, RecursivePartial } from "../util";
+import { IVisual, Visual } from "../visual";
+import Spacial from "../spacial";
 
 interface ILabelGroupComponents<T extends Visual=Visual> extends Record<string, Spacial | Spacial[]> {
     labels: Label[],
@@ -88,6 +88,11 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
         this.ref = coreChild.ref;
 
         this.add(coreChild, undefined, true);
+
+        this.components = {
+            "coreChild": coreChild,
+            "labels": []
+        }
     
         var labels: Label[] = [];
         fullParams.labels?.forEach((label) => {
@@ -96,10 +101,12 @@ export default class LabelGroup<T extends Visual=Visual> extends Collection impl
             this.bindLabel(newLabel);
         })
 
+        
         this.components = {
             "coreChild": coreChild,
             "labels": labels
         }
+        MarkAsComponent(this.components)
     }
 
     draw(surface: Element) {

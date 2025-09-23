@@ -1,15 +1,15 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
 import { PointBind } from "../features/canvas/LineTool";
-import Channel, { IChannel } from "./channel";
+import Channel, { IChannel } from "./hasComponents/channel";
 import SchemeManager from "./default";
-import Diagram, { AllStructures, IDiagram } from "./diagram";
-import LabelGroup, { ILabelGroup } from "./labelGroup";
+import Diagram, { AllStructures, IDiagram } from "./hasComponents/diagram";
+import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import Line, { ILine } from "./line";
 import logger, { Operations } from "./log";
 import { IMountConfig } from "./mountable";
 import { ID } from "./point";
 import RectElement, { IRectElement, } from "./rectElement";
-import Sequence from "./sequence";
+import Sequence from "./hasComponents/sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
@@ -38,7 +38,15 @@ export type AllElementIdentifiers = AllStructures | AllComponentTypes
 export default class DiagramHandler {
 
 
-    diagram: Diagram;
+    _diagram: Diagram;
+    get diagram(): Diagram {
+        return this._diagram;
+    }
+    set diagram(val: Diagram) {
+        val.ownershipType = "component";
+        this._diagram = val;
+    }
+
     surface?: Svg;
     schemeManager: SchemeManager;
 
@@ -319,7 +327,7 @@ export default class DiagramHandler {
         this.draw();
     }
 
-    public createArrow(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
+    public createLine(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
         var newArrow: Line = new Line(pParams);
 
         startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here");
@@ -334,6 +342,27 @@ export default class DiagramHandler {
 
         this.diagram.addFreeArrow(newArrow);
         this.draw()
+    }
+
+    public deleteFreeElement(target: Visual) {
+        if (!this.diagram.userChildren.includes(target)) {
+            throw new Error(`Cannot remove controlled element ${target.ref} with this method`)
+        }
+
+        this.diagram.remove(target);
+    }
+
+    public deleteFreeElementByID(id: ID) {
+        var target: Visual | undefined = this.identifyElement(id);
+        if (target === undefined) {
+            throw new Error(`Cannot find element with ID ${id}`);
+        }
+
+        if (!this.diagram.userChildren.includes(target)) {
+            throw new Error(`Cannot remove controlled element ${target.ref} with this method`)
+        }
+
+        this.diagram.remove(target);
     }
 
 

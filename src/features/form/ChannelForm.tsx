@@ -1,7 +1,7 @@
 import { ControlGroup, Divider, FormGroup, InputGroup, NumericInput, Section, Slider } from "@blueprintjs/core";
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { IChannel } from '../../logic/channel';
+import { IChannel } from '../../logic/hasComponents/channel';
 
 
 

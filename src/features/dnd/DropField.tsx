@@ -1,9 +1,9 @@
 import Aligner from "../../logic/aligner";
-import Channel from "../../logic/channel";
-import Diagram from "../../logic/diagram";
+import Channel from "../../logic/hasComponents/channel";
+import Diagram from "../../logic/hasComponents/diagram";
 import DiagramHandler from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import Sequence, { OccupancyStatus } from "../../logic/sequence";
+import Sequence, { OccupancyStatus } from "../../logic/hasComponents/sequence";
 import { Visual } from "../../logic/visual";
 import InsertArea, { AddSpec } from "./InsertArea";
 
