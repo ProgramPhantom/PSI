@@ -62,7 +62,7 @@ export default class Line extends LineLike implements ILine {
     hitbox.move(crossShift[0], crossShift[1]);
 
     // hitbox.move(this.x, this.y)
-    hitbox.fill(`red`).opacity(0.3);
+    hitbox.fill(`transparent`).opacity(0.3);
     return hitbox;
   }
 

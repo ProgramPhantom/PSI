@@ -51,7 +51,7 @@ const BindingsSelector: React.FC<IBindings> = (props) => {
                 }
                 `}</style>
                 <div className="bind-point"
-                        style={{position: "absolute", left: x, top: y, zIndex: 6600, borderRadius: "50%",
+                        style={{position: "absolute", left: x, top: y, zIndex: 30000, borderRadius: "50%",
                         outlineColor: "transparent"}} key={`${xAnchor}${yAnchor}`}
                         onClick={(e) => {props.selectBind(bindingPayloadX, bindingPayloadY)}} onMouseOver={(e) => e.stopPropagation()} >
                     </div>
