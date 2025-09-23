@@ -1,5 +1,5 @@
 import { Checkbox, Colors, Dialog, DialogBody, EditableText, HotkeyConfig, Label, Text, useHotkeys } from '@blueprintjs/core';
-import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
 import { AllComponentTypes, AllElementIdentifiers, UserComponentType } from "../../logic/diagramHandler";
@@ -14,6 +14,9 @@ import DropField from '../dnd/DropField';
 import { HitboxLayer } from './HitboxLayer';
 import { LineTool, IDrawArrowConfig } from './LineTool';
 import { DebugLayerDialog } from './DebugLayerDialog';
+import { Element } from '@svgdotjs/svg.js';
+import { SVG } from '@svgdotjs/svg.js';
+import { useDragLayer } from 'react-dnd';
 
  
 
@@ -62,21 +65,15 @@ interface ICanvasProps {
 }
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
-    // Debug
     const [debugDialogOpen, setDebugDialogOpen] = useState(false);
     const [debugElements, setDebugElements] = useState<Visual[]>([]);
     const [debugSelectionTypes, setDebugSelectionTypes] = useState<Record<AllElementIdentifiers, boolean>>(DefaultDebugSelection);
-
     const [zoom, setZoom] = useState(2);
     const [dragging, setDragging] = useState(false);
     const [fileName, setFileName] = useState(ENGINE.currentImageName);
-
-
-
+    const diagramSvgRef = useRef<HTMLDivElement | null>()
     const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
-
     const [focusLevel, setFocusLevel] = useState(0);
-
     const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
         () => [
             {
@@ -98,8 +95,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
     const handleDialogClose = (val: boolean) => {
         setDebugDialogOpen(val);
     }
+    const { isDragging } = useDragLayer((monitor) => ({
+        isDragging: monitor.isDragging(),
+    }));
 
-    useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot)
+    const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+
 
     let selectedElement = props.selectedElement;
     
@@ -170,13 +171,28 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
         }
     }, [props.selectedElement])
 
+    useEffect(() => {
+        if (diagramSvgRef.current && ENGINE.handler.diagram.svg) {
+            diagramSvgRef.current.replaceChildren();
+            diagramSvgRef.current.appendChild(ENGINE.surface.node);
+        }
+    }, [store]);
+
+    
+    var diagramWidth: number = 0;
+    var diagramHeight: number = 0;
+    if (ENGINE.handler.diagram.hasDimensions) {
+        diagramWidth = ENGINE.handler.diagram.width;
+        diagramHeight = ENGINE.handler.diagram.height;
+    }
+
     return (
         <>
         <div style={{width: "100%", height: "100%",  display: "flex", position: "relative"}} 
              onDoubleClick={(e) => {doubleClick(e)}}
              onMouseUp={(e) => {singleClick(e); setDragging(false)}} 
              onDragEnd={() => {setDragging(false)}}>
-
+                
             {/* Image name display text box - positioned outside TransformWrapper */}
             <div style={{
                 position: "absolute",
@@ -194,6 +210,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                       multiline={false}
                       selectAllOnFocus={true}
                   />
+                  <p>{`${isDragging}`}</p> 
             </div>
 
             <div style={{
@@ -211,6 +228,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                   centerOnInit={true} 
                                   limitToBounds={false} 
                                   centerZoomedOut={true}
+                                  maxScale={5}
+                                  minScale={0.5}
                                   disabled={dragging}
                                   doubleClick={{disabled: true}}>
                     
@@ -242,7 +261,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                      borderColor: "#0000003d"
                                 }} onMouseLeave={() => stopHover()}>
 
+                                {/* Hitbox layer */}
+                                
+                                {!isDragging ?
                                 <HitboxLayer focusLevel={focusLevel} setHoveredElement={constOnHitboxHover}></HitboxLayer>
+                                : <></> }
 
                                 {/* Tools */}
                                 {props.selectedTool.type === "arrow" ? 
@@ -262,9 +285,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
                                 : <></>}
 
 
-                                
                                 {/* Image */}
-                                <div dangerouslySetInnerHTML={{"__html": ENGINE.surface.node.outerHTML}} id="drawDiv"></div>
+                                <div id="drawDiv" ref={diagramSvgRef}>
+                                </div>
 
                                 {/* Drop field */}
                                 <DropField></DropField>

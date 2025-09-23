@@ -9,7 +9,9 @@ import { ID } from "../point";
 import Sequence, { ISequence, SequenceNamedStructures } from "./sequence";
 import Spacial from "../spacial";
 import { FillObject, MarkAsComponent, RecursivePartial } from "../util";
-import { Visual } from "../visual";
+import { doesDraw, Visual } from "../visual";
+import { Element } from "@svgdotjs/svg.js";
+import { G } from "@svgdotjs/svg.js";
 
 
 export interface IDiagramComponents extends Record<string, Spacial | Spacial[]> {
@@ -112,6 +114,37 @@ export default class Diagram extends Collection implements IHaveComponents<IDiag
     
 
         logger.processEnd(Processes.INSTANTIATE, ``, this);
+    }
+
+    override draw(surface: Element) {
+        if (this.svg) {
+            this.svg.remove();
+        }
+
+        surface.clear();
+        this.svg = surface;
+
+        var group = new G().id(this.id).attr({"title": this.ref});
+        group.attr({"transform": `translate(${this.offset[0]}, ${this.offset[1]})`})
+
+        // Add component children to group
+        this.componentChildren.forEach((c) => {
+            if (doesDraw(c)) {
+                c.draw(group);
+            }
+        })
+        // group.move(this.x, this.y).size(this.width, this.height)
+        
+        this.svg.attr({"data-position": this.positionMethod, 
+                        "data-ownership": this.ownershipType}).id(this.id);
+
+        this.svg.add(group);
+
+        this.userChildren.forEach((uc) => {
+            if (doesDraw(uc)) {
+                uc.draw(surface)
+            }
+        })
     }
 
     // Adding

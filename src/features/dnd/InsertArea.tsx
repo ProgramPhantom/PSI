@@ -45,22 +45,12 @@ function InsertArea(props: {areaSpec: AddSpec, key: string}) {
             dropEffect: "insert"} as IMountAreaResult),
         collect: (monitor) => ({
             isOver: monitor.isOver(),
-            isOverCurrent: monitor.isOver({shallow: true}),
+            isOverCurrent: monitor.isOver({shallow: false}),
             canDrop: monitor.canDrop(),
         }),
     }))
 
-    let style: CSSProperties = {
-        height: `${props.areaSpec.area.height}px`,
-        width: `${props.areaSpec.area.width}px`,
 
-        backgroundColor: "transparent",
-        position: "absolute",
-        top: `${props.areaSpec.area.y}px`,
-        left: `${props.areaSpec.area.x}px`,
-        opacity: 0.4,
-        zIndex: 200
-    }
 
     const isActive = canDrop && isOver
     let backgroundColor = 'transparent'
@@ -72,7 +62,17 @@ function InsertArea(props: {areaSpec: AddSpec, key: string}) {
         border = "2px solid rgba(80, 80, 80, 0)"
     }
 
-    
+    let style: CSSProperties = {
+        height: `${props.areaSpec.area.height}px`,
+        width: `${props.areaSpec.area.width}px`,
+
+        backgroundColor: "transparent",
+        position: "absolute",
+        top: `${props.areaSpec.area.y}px`,
+        left: `${props.areaSpec.area.x}px`,
+        opacity: 0.4,
+        zIndex: isActive ? 20000 : 200
+    }
 
     return (
         <div ref={drop} style={{ ...style, backgroundColor}} data-testid={props.areaSpec.channelID + props.areaSpec.index}

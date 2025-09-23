@@ -80,7 +80,7 @@ function App() {
     setSelectedTool(tool);
   }
 
-  function SaveSVG() {
+  const SaveSVG = () => {
     try {
       // Get the current SVG surface from the ENGINE
       const surface = ENGINE.surface;

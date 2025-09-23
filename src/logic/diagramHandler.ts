@@ -13,6 +13,7 @@ import Sequence from "./hasComponents/sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
+import ENGINE from "./engine";
 
 
 
@@ -36,13 +37,11 @@ export type AllElementIdentifiers = AllStructures | AllComponentTypes
 
 
 export default class DiagramHandler {
-
-
-    _diagram: Diagram;
-    get diagram(): Diagram {
+    private _diagram: Diagram;
+    public get diagram(): Diagram {
         return this._diagram;
     }
-    set diagram(val: Diagram) {
+    public set diagram(val: Diagram) {
         val.ownershipType = "component";
         this._diagram = val;
     }
@@ -330,18 +329,18 @@ export default class DiagramHandler {
     public createLine(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
         var newArrow: Line = new Line(pParams);
 
-        startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here");
-        startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here");
+        startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
+        startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
         startBinds["x"].anchorObject.enforceBinding();
         startBinds["y"].anchorObject.enforceBinding();
 
-        endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far");
-        endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far");
+        endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
+        endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
         endBinds["x"].anchorObject.enforceBinding()
         endBinds["y"].anchorObject.enforceBinding()
 
         this.diagram.addFreeArrow(newArrow);
-        this.draw()
+        this.draw();
     }
 
     public deleteFreeElement(target: Visual) {
@@ -350,6 +349,7 @@ export default class DiagramHandler {
         }
 
         this.diagram.remove(target);
+        this.draw();
     }
 
     public deleteFreeElementByID(id: ID) {
@@ -363,6 +363,7 @@ export default class DiagramHandler {
         }
 
         this.diagram.remove(target);
+        this.draw();
     }
 
 

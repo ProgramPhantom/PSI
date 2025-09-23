@@ -75,6 +75,20 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
         }
         return freeChildren;
     }
+    get componentChildren(): T[] {
+        var allComponentChildren: T[] = [];
+        if (HasComponents(this)) {
+            for (var child of Object.values(this.components)) {
+                if (Array.isArray(child)) {
+                    allComponentChildren.push(...(child as T[]))
+                } else{
+                    allComponentChildren.push(child as T)
+                }
+            }
+        }
+        
+        return allComponentChildren;
+    }
 
     constructor(params: RecursivePartial<ICollection>, templateName: string=Collection.defaults["default"].ref) {
         var fullParams: ICollection = FillObject<ICollection>(params, Collection.defaults[templateName]);
@@ -101,18 +115,25 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
         var group = new G().id(this.id).attr({"title": this.ref});
         group.attr({"transform": `translate(${this.offset[0]}, ${this.offset[1]})`})
 
-        this.children.forEach((c) => {
+        // Add component children to group
+        this.componentChildren.forEach((c) => {
             if (doesDraw(c)) {
                 c.draw(group);
             }
         })
-
         // group.move(this.x, this.y).size(this.width, this.height)
         this.svg = group;
         
         this.svg.attr({"data-position": this.positionMethod, "data-ownership": this.ownershipType});
 
         surface.add(this.svg);
+        
+
+        this.userChildren.forEach((uc) => {
+            if (doesDraw(uc)) {
+                uc.draw(surface)
+            }
+        })
     }
 
 
@@ -325,7 +346,10 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
     }
 
     override get hasDimensions(): boolean {
-        return true;
+        if (this._contentWidth !== undefined && this._contentHeight !== undefined) {
+            return true;
+        }
+        return false;
     }
 
     override get allElements(): Record<ID, Visual> {

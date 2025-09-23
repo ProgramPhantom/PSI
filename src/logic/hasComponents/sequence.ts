@@ -237,8 +237,10 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 
         channel.remove(channel.components.bar);
 
-        for (var element of channel.components.mountedElements) {
-            if (element.mountConfig) {
+        var noMounted = channel.components.mountedElements.length;
+        for (var i = 0; i < noMounted; i++) {
+            var element = channel.components.mountedElements[0];
+            if (element.mountConfig !== undefined) {
                 this.deleteMountedElement(element);
             }
         }

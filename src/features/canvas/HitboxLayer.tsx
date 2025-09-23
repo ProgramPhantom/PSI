@@ -6,6 +6,7 @@ import { SVG } from "@svgdotjs/svg.js";
 import { Visual } from "../../logic/visual";
 import { ID } from "../../logic/point";
 import { AllComponentTypes } from "../../logic/diagramHandler";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
 
 interface IHitboxLayerProps {
@@ -14,6 +15,7 @@ interface IHitboxLayerProps {
     setHoveredElement: (element?: Visual) => void
 }
 
+const BASE_LAYER = 10000;
 
 type HoverBehaviour = "terminate" | "carry" | "conditional"
 // Terminate: return this object immediately
@@ -68,15 +70,31 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
 
 
 export function HitboxLayer(props: IHitboxLayerProps) {
-    var drawSVG: Element | undefined = ENGINE.handler.diagram.svg;
+    var drawSVG: Element | undefined = ENGINE.surface;
     if (drawSVG === undefined) {return <></>}
-    var hitboxSVG: Element = SVG();
+    var hitboxSVG: Svg = SVG();
+    var hitboxSvgRef = useRef<SVGSVGElement | null>();
+    
     var componentRectArray: Rect[] = [];
     var freeRectArray: Rect[] = [];
 
     // Create hitboxes
+    const createHitboxDom = () => {
+        hitboxSVG = SVG();
+        componentRectArray = [];
+        freeRectArray = [];
 
-    const createHitboxDom = (root: Element, componentRectArray: Rect[], freeRectArray: Rect[], depth: number=0) => {
+        traverseDom(drawSVG, componentRectArray, freeRectArray);
+
+        componentRectArray.forEach((r) => {
+            hitboxSVG.add(r);
+        })
+        freeRectArray.forEach((r) => {
+            hitboxSVG.add(r)
+        })
+    }
+
+    const traverseDom = (root: Element, componentRectArray: Rect[], freeRectArray: Rect[], depth: number=BASE_LAYER) => {
         var thisElement: Visual = ENGINE.handler.identifyElement(root.id());
         
         if (thisElement !== undefined) {
@@ -90,9 +108,9 @@ export function HitboxLayer(props: IHitboxLayerProps) {
             
 
             
-            if (root.type !== "svg") {
+            if ((root.type !== "svg" || depth === BASE_LAYER) && thisElement.ref !== "label col | pulse columns") {
                 root.children().forEach((c) => {
-                    createHitboxDom(c, componentRectArray, freeRectArray, depth-1);
+                    traverseDom(c, componentRectArray, freeRectArray, depth-1);
                 })
             }
         }
@@ -157,25 +175,26 @@ export function HitboxLayer(props: IHitboxLayerProps) {
     }
 
 
-    createHitboxDom(drawSVG, componentRectArray, freeRectArray, 10000);
-    
-    componentRectArray.forEach((r) => {
-        hitboxSVG.add(r);
-    })
-    freeRectArray.forEach((r) => {
-        hitboxSVG.add(r)
-    })
 
+
+    const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+    useEffect(() => {
+        createHitboxDom();
+
+        if (hitboxSvgRef.current && hitboxSVG) {
+            hitboxSvgRef.current.replaceChildren();
+            hitboxSvgRef.current.appendChild(hitboxSVG.node);
+        }
+    }, [store])
     return (
         <>
-        <svg key={"hitbox"}
-          style={{position: "absolute", left: 0, top: 0,
-            
+        <svg ref={hitboxSvgRef}
+            key={"hitbox"}
+            style={{position: "absolute", left: 0, top: 0, zIndex: BASE_LAYER,
             width: ENGINE.handler.diagram.width,
             height: ENGINE.handler.diagram.height,
             marginBottom: "auto", marginTop: "auto"
           }} onMouseMove={(o) => {mouseOver(o)}}
-          dangerouslySetInnerHTML={{__html: hitboxSVG?.svg()!}}
         />
         </>
     )

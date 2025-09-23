@@ -66,6 +66,12 @@ export default class Line extends LineLike implements ILine {
     return hitbox;
   }
 
+  public getInternalRepresentation(): Element | undefined {
+    var internal: Element = this.svg.clone(true, true);
+
+    return internal;
+  }
+
 
   public override draw(surface: Element): void {
     if (this.dirty) {

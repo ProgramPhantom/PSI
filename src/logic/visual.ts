@@ -83,8 +83,10 @@ export abstract class Visual extends Mountable implements IVisual {
 
     // Construct and SVG with children positioned relative to (0, 0)
     getInternalRepresentation(): Element | undefined {
-        
-        return this.svg
+        var cloned: Element = this.svg.clone(true, true)
+        cloned.move(0, 0);
+
+        return cloned
     }
 
     override set x(val: number) {

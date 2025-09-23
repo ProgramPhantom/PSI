@@ -1,6 +1,6 @@
 import { Button, Colors, Icon } from '@blueprintjs/core';
 import '@svgdotjs/svg.draggable.js';
-import React, { CSSProperties, memo, useEffect } from 'react';
+import React, { CSSProperties, memo, useEffect, useRef } from 'react';
 import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { HandleStyles } from 'react-rnd';
@@ -104,19 +104,26 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
     })
   }), [props.x, props.y, props.name])
 
+  var visualRef = useRef<SVGSVGElement>();
+  var visual = props.element.getInternalRepresentation().show();
   
-  var visual = props.element.getInternalRepresentation();
-  
+  const refreshElement = () => {
+    props.element.bindingsToThis.forEach((b) => {
+      b.anchorObject.enforceBinding()
+    })
+  }
+
+
   // Removed the default preview?
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true })
   }, [])
 
-  function refreshElement() {
-    props.element.bindingsToThis.forEach((b) => {
-      b.anchorObject.enforceBinding()
-    })
-  }
+  useEffect(() => {
+    if (visualRef.current) {
+      visualRef.current.appendChild(visual.node) 
+    };
+  }, [props.element])
 
   return (
     <>
@@ -126,7 +133,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
     <div style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block"}} 
                 dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} ></div> outline: isDragging ? `none` : `1px dashed ${Colors.BLUE3}`
       </Rnd> */}
-      <div style={{ opacity: isDragging ? 0.4 : 1, position: "relative"}}>
+      <div style={{zIndex: 15000, opacity: isDragging ? 0.4 : 1, position: "relative"}}>
         
         {/* Pin Button - positioned in top left */}
         <Button type='button'
@@ -137,7 +144,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
              minHeight: 0, minWidth: 0,
              top: "-8px",
              left: "0px",
-             zIndex: 10,
+             zIndex: 40,
              width: "6px",
              height: "8px",
              padding: 0,
@@ -178,18 +185,16 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
          />
         
         <div ref={drag} style={{  height: props.element.contentHeight, width: props.element.contentWidth}}>
-            {/* Border */}
-            <svg style={{width: "100%", height: "100%", position: "absolute", top: 0, left: 0}}>
-              <rect style={{stroke: isDragging ? `none` : `${Colors.BLUE3}`, width: "100%", height: "100%", 
-                strokeWidth: "1px", fill: `${Colors.BLUE5}`, fillOpacity: "10%", strokeDasharray: "1 1"}}></rect>
-            </svg>
-
-
-            <svg style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block", 
-            position: "relative", top: -props.element.offset[1], left: -props.element.offset[0]}} 
-                dangerouslySetInnerHTML={{__html: visual?.node.outerHTML!}} ></svg>
-          
             
+            {/* Border */}
+            <svg  style={{width: "100%", height: "100%", position: "absolute", top: -props.element.offset[1], left: -props.element.offset[0]}}>
+              <svg ref={visualRef}>
+
+              </svg>
+              <rect style={{ stroke: isDragging ? `none` : `${Colors.BLUE3}`, width: "100%", height: "100%", 
+                strokeWidth: "1px", fill: `${Colors.BLUE5}`, fillOpacity: "10%", strokeDasharray: "1 1"}}></rect>
+            
+            </svg>
         </div>
 
         
