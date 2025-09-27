@@ -2,7 +2,7 @@ import { Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon } from "@blu
 import { useMemo, useRef, useState } from "react";
 import { ObjectInspector } from "react-inspector";
 import { myToaster } from "../../app/App";
-import { AllComponentTypes, UserComponentType } from "../../logic/diagramHandler";
+import { AllComponentTypes, Result, UserComponentType } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
 import { IVisual, Visual } from "../../logic/visual";
 import { LabelGroupComboForm, SubmitButtonRef } from "./LabelGroupComboForm";
@@ -28,9 +28,10 @@ export interface FormRequirements {
     prefix?: string
 }
 
-type SubmissionFunction = (data: any, type: UserComponentType) => void
-type DeleteFunction = (val: Visual, type: UserComponentType) => void
-type ModifyFunction = (data: any, type: UserComponentType, target: Visual) => Visual
+type SubmissionFunction = (data: any, type: UserComponentType) => Result<any>
+type DeleteFunction = (val: Visual, type: UserComponentType) => Result<any>
+type ModifyFunction = (data: any, type: UserComponentType, target: Visual) => Result<any>
+
 type FormEffect = "submit" | "delete" | "modify"
 type FormEffectFunction = SubmissionFunction | DeleteFunction | ModifyFunction
 type EffectGroup = {"submit": SubmissionFunction, "modify"?: ModifyFunction, "delete": DeleteFunction}
@@ -86,19 +87,25 @@ export function FormDiagramInterface(props: FormHolderProps) {
             throw new Error(`Not implemented`)
         }
 
+        var result: Result<any>;
         switch (effect) {
             case "submit":
-                (targetFunction as SubmissionFunction)(values, masterType);
+                result = (targetFunction as SubmissionFunction)(values, masterType);
                 break;
             case "modify":
-                (targetFunction as ModifyFunction)(values, masterType, props.target);
+                result = (targetFunction as ModifyFunction)(values, masterType, props.target);
                 break;
             case "delete":
-                (targetFunction as DeleteFunction)(props.target, masterType);
+                result = (targetFunction as DeleteFunction)(props.target, masterType);
                 break;
         }
         
-
+        if (!result.ok) {
+            myToaster.show({
+                message: `Error creating element`,
+                intent: "danger"
+            })
+        }
     }
 
     return (

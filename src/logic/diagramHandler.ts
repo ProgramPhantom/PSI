@@ -177,7 +177,7 @@ export default class DiagramHandler implements IDraw {
     }
 
     // ---- Form interfaces ----
-    public submitVisual(parameters: IVisual, type: AllComponentTypes): Visual {
+    public submitVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
 
         var element: Visual | undefined;
         switch (type) {
@@ -193,19 +193,16 @@ export default class DiagramHandler implements IDraw {
                 }
                 
                 element = this.createVisual(parameters, type)
-                return element
                 break;
-            default:
-                throw new Error(`Unexpected element type "${type}"`)
         }
 
         if (element === undefined) {
-            throw new Error(`Cannot create element ${parameters.ref}`)
+            return {ok: false, error: `Type ${type} has no defined construction`}
         }
-        return element
+        return {ok: true, value: element}
     }
 
-    public submitModifyVisual(parameters: IVisual, type: AllComponentTypes, target: Visual): Visual {
+    public submitModifyVisual(parameters: IVisual, type: AllComponentTypes, target: Visual): Result<Visual> {
         var mountConfigCopy: IMountConfig | undefined = target.mountConfig;
         // Delete element
         this.deleteVisual(target, false)
@@ -217,9 +214,9 @@ export default class DiagramHandler implements IDraw {
             parameters.mountConfig.index = mountConfigCopy.index;
         }
 
-        var element: Visual = this.submitVisual(parameters, type);
+        var result: Result<Visual> = this.submitVisual(parameters, type);
 
-        return element;
+        return result;
     }
 
     public submitDeleteVisual(target: Visual, type: AllComponentTypes) {
