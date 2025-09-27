@@ -14,6 +14,7 @@ import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";
 import ENGINE from "./engine";
+import { error } from "console";
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -219,19 +220,23 @@ export default class DiagramHandler implements IDraw {
         return result;
     }
 
-    public submitDeleteVisual(target: Visual, type: AllComponentTypes) {
+    public submitDeleteVisual(target: Visual, type: AllComponentTypes): Result<Visual> {
+        var result: Result<Visual>
+        
         switch (type) {
             case "rect":
             case "svg":
             case "label-group":
-                this.deleteVisual(target);
+                result = this.deleteVisual(target);
                 break;
             case "channel":
-                this.deleteChannel(target as Channel);
+                result = this.deleteChannel(target as Channel);
                 break;
             default:
                 throw new Error(`Cannot delete component of type ${type}`);
         }
+
+        return result;
     }
 
     public submitChannel(parameters: IChannel): Visual {
@@ -305,10 +310,21 @@ export default class DiagramHandler implements IDraw {
         this.diagram.computeBoundary();
         this.draw();
     }
-    public deleteVisual(target: Visual, removeColumn?: boolean) {
+    public deleteVisual(target: Visual, removeColumn?: boolean): Result<Visual> {
+        var result: Result<Visual>
+        
         if (target.isMountable) {
-            this.deleteMountedVisual(target, removeColumn);
+            var deleteResult = this.deleteMountedVisual(target, removeColumn);
+            if (deleteResult.ok === true) {
+                result = {ok: true, value: deleteResult.value.target}
+            } else {
+                result = deleteResult;
+            }
+        } else {
+            result = this.deleteFreeVisual(target)
         }
+
+        return result;
     }
     public deleteVisualByID(targetId: ID) {
         var target: Visual | undefined = this.identifyElement(targetId);
@@ -316,28 +332,6 @@ export default class DiagramHandler implements IDraw {
             return
         }
         this.deleteVisual(target);
-    }
-
-    public deleteFreeVisual(target: Visual) {
-        if (!this.diagram.userChildren.includes(target)) {
-            throw new Error(`Cannot remove controlled element ${target.ref} with this method`)
-        }
-
-        this.diagram.remove(target);
-        this.draw();
-    }
-    public deleteFreeVisualByID(id: ID) {
-        var target: Visual | undefined = this.identifyElement(id);
-        if (target === undefined) {
-            throw new Error(`Cannot find element with ID ${id}`);
-        }
-
-        if (!this.diagram.userChildren.includes(target)) {
-            throw new Error(`Cannot remove controlled element ${target.ref} with this method`)
-        }
-
-        this.diagram.remove(target);
-        this.draw();
     }
     // ----------------------------
 
@@ -354,15 +348,19 @@ export default class DiagramHandler implements IDraw {
         this.draw()
     }
 
-    public deleteChannel(target: Channel) {
+    @draws
+    public deleteChannel(target: Channel): Result<Channel> {
         var sequence: Sequence | undefined = this.diagram.sequenceDict[target.sequenceID];
 
         if (sequence === undefined) {
-            throw new Error(`Cannot find channel with ID: ${target.sequenceID}`);
+            return {ok: false, error: `Cannot find channel with ID: ${target.sequenceID}`}
         }
 
-        sequence.deleteChannel(target);
-        this.draw();
+        try {
+            sequence.deleteChannel(target);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
     }
 
     // ----------- Annotation stuff ------------------
@@ -383,29 +381,65 @@ export default class DiagramHandler implements IDraw {
         this.draw();
     }
 
+
+    // -------------- Free element interactions ----------------
+    private deleteFreeVisual(target: Visual): Result<Visual> {
+        if (!this.diagram.userChildren.includes(target)) {
+            return {ok: false, error: `Cannot remove controlled element ${target.ref} with this method`}
+        }
+
+        try {
+            this.diagram.remove(target);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        
+        return {ok: true, value: target}
+    }
+    private deleteFreeVisualByID(id: ID) {
+        var target: Visual | undefined = this.identifyElement(id);
+        if (target === undefined) {
+            throw new Error(`Cannot find element with ID ${id}`);
+        }
+
+        if (!this.diagram.userChildren.includes(target)) {
+            throw new Error(`Cannot remove controlled element ${target.ref} with this method`)
+        }
+
+        this.diagram.remove(target);
+        this.draw();
+    }
+
     // -------------- Mounted visual interactions ----------------
     // @isMountable
-    public mountVisual(target: Visual, insert: boolean=true) {
+    @draws
+    public mountVisual(target: Visual, insert: boolean=true): Result<Visual> {
         // Temporary
         if (target.mountConfig !== undefined) {
             target.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
         }
 
-        this.diagram.mountElement(target, insert);
-        this.draw();
+        try {
+            this.diagram.mountElement(target, insert);
+        } catch (err) {
+            return {ok: false, error: `Cannot mount element ${target.ref}`}
+        }
+        
+        return {ok: true, value: target};
     }
 
-    private deleteMountedVisual(target: Visual, removeColumn: boolean=true): boolean {
-        logger.operation(Operations.DELETE, `${target}`)
-
+    @draws
+    private deleteMountedVisual(target: Visual, removeColumn: boolean=true): Result<{target: Visual, removedColumn: boolean}> {
         var columnRemoved: boolean = false;
         // Find which channel owns this element:
         
-        columnRemoved = this.diagram.deleteMountedElement(target, removeColumn);
-
-        logger.operation(Operations.DELETE, `COMPLETE DELETE`);
-        this.draw();
-        return columnRemoved;
+        try {
+            columnRemoved = this.diagram.deleteMountedElement(target, removeColumn);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        
+        return {ok: true, value: {target: target, removedColumn: columnRemoved}};
     }
 
     private replaceMountable(target: Visual,  newElement: Visual) {
@@ -420,24 +454,30 @@ export default class DiagramHandler implements IDraw {
 
     // For inserting
     // @isMountable
-    public shiftMountedVisual(target: Visual, newMountConfig: IMountConfig): void {
-        var deleted: boolean = this.deleteMountedVisual(target, true);
+    public shiftMountedVisual(target: Visual, newMountConfig: IMountConfig): Result<Visual> {
+        var result: Result<{target: Visual, removedColumn: boolean}> = this.deleteMountedVisual(target, true);
+
+        if (result.ok === false) {return {ok: false, error: result.error}}
+        var deleted: boolean = result.value.removedColumn; 
 
         if (deleted && target.mountConfig!.index+target.mountConfig!.noSections === newMountConfig.index) {
             newMountConfig.index -= target.mountConfig!.noSections
         }
 
         target.mountConfig = newMountConfig;
-        this.mountVisual(target, true);
+        return this.mountVisual(target, true);
     }
 
     // For moving to another mount
-    public moveMountedVisual(target: Visual, newMountConfig: IMountConfig) {
+    public moveMountedVisual(target: Visual, newMountConfig: IMountConfig): Result<Visual> {
         var removeCol: boolean = true;
         if (target.mountConfig!.index === newMountConfig.index) {  // Moving to the same column (for intra-channel movement)
             removeCol = false
         }
-        var deleted: boolean = this.deleteMountedVisual(target, removeCol);
+        var result: Result<{target: Visual, removedColumn: boolean}> = this.deleteMountedVisual(target, removeCol);
+
+        if (result.ok === false) {return {ok: false, error: result.error}}
+        var deleted: boolean = result.value.removedColumn;
 
         if (deleted && target.mountConfig!.index + target.mountConfig!.noSections < newMountConfig.index) {
             newMountConfig.index -= 1
@@ -445,7 +485,9 @@ export default class DiagramHandler implements IDraw {
         
 
         target.mountConfig = newMountConfig;
-        this.mountVisual(target, false);
+
+        
+        return this.mountVisual(target, false);
     }
     // ------------------------------------------------------------
 }

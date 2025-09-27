@@ -71,7 +71,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
         },
         "line": {
             "submit": ENGINE.handler.createLine.bind(ENGINE.handler),
-            "delete": ENGINE.handler.deleteFreeVisual.bind(ENGINE.handler)
+            "delete": ENGINE.handler.deleteVisual.bind(ENGINE.handler)
         }
     }
     }, [ENGINE.handler])
