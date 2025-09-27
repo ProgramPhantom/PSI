@@ -2,7 +2,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import { myToaster } from "../app/App";
 import SchemeManager, { IUserSchemeData } from "./default";
 import { IDiagram } from "./hasComponents/diagram";
-import DiagramHandler from "./diagramHandler";
+import DiagramHandler, { Result } from "./diagramHandler";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
@@ -65,19 +65,18 @@ class ENGINE {
             try {
                 stateObj = JSON.parse(this.STATE) as IDiagram;
             } catch(error) {
-                myToaster.show({
-                    message: "Invalid state",
-                    intent: "danger"
-                })
+                console.warn(`Could not parse internal state`)
             }
         }
 
         if (stateObj !== undefined) {
-            try {
-                this.handler.constructDiagram(stateObj);
-            } catch(error) {
-                console.warn(error)
-            }
+            
+            var result: Result<any> = this.handler.constructDiagram(stateObj);
+            
+            if (!result.ok) {
+                console.warn(`Could not construct diagram from internal state`)
+                this.handler.freshDiagram();
+            } 
         }
     }
     static async loadSVGData() {

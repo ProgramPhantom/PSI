@@ -15,7 +15,7 @@ import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";
 import ENGINE from "./engine";
 
-type Result<T> = { ok: true; value: T } | { ok: false; error: string };
+export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
 
 
@@ -27,7 +27,7 @@ type ConstructorFunction = (parameters: IVisual, ...args: any[]) => Result<any>
 function draws(
     target: IDraw,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<ConstructorFunction>
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>
 ) {
     const originalMethod = descriptor.value;
 
@@ -110,7 +110,10 @@ export default class DiagramHandler implements IDraw {
         this.surface = surface;
     }
 
-
+    @draws
+    freshDiagram() {
+        this.diagram = new Diagram({});
+    }
 
     draw() {
         if (!this.surface) {
@@ -145,20 +148,30 @@ export default class DiagramHandler implements IDraw {
     // ----- Construct diagram from state ------
     @draws
     public constructDiagram(state: IDiagram): Result<Diagram> {
-        var newDiagram: Diagram = new Diagram(state);
+
+        try {
+            var newDiagram: Diagram = new Diagram(state);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
         this.diagram = newDiagram;
 
-        // Create and mount pulses.
-        state.sequences.forEach((s) => {
-            s.channels.forEach((c) => {
-                c.mountedElements.forEach((m) => {
-                    if (m.type === undefined) {
-                        console.warn(`Element data is missing type: ${m.ref}`)
-                    }
-                    this.createVisual(m, m.type as AllComponentTypes);
+        try {
+            // Create and mount pulses.
+            state.sequences.forEach((s) => {
+                s.channels.forEach((c) => {
+                    c.mountedElements.forEach((m) => {
+                        if (m.type === undefined) {
+                            console.warn(`Element data is missing type: ${m.ref}`)
+                        }
+                        this.createVisual(m, m.type as AllComponentTypes);
+                    })
                 })
             })
-        })
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        
 
         return { ok: true, value: newDiagram}
     }
