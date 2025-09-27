@@ -12,8 +12,40 @@ import RectElement, { IRectElement, } from "./rectElement";
 import Sequence from "./hasComponents/sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
-import { IVisual, Visual } from "./visual";
+import { IDraw, IVisual, Visual } from "./visual";
 import ENGINE from "./engine";
+
+type Result<T> = { ok: true; value: T } | { ok: false; error: string };
+
+
+
+type ConstructorFunction = (parameters: IVisual, ...args: any[]) => Result<any> 
+/**
+ * Decorator that automatically calls this.draw() after a method execution,
+ * but only if the method returns a Result object with ok: true
+ */
+function draws(
+    target: IDraw,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<ConstructorFunction>
+) {
+    const originalMethod = descriptor.value;
+
+    if (originalMethod) {
+        descriptor.value = function(this: DiagramHandler, ...args: any[]) {
+            const result = originalMethod.apply(this, args);
+            
+            // Only call draw() if the result is ok
+            if (result && typeof result === 'object' && 'ok' in result && result.ok === true) {
+                this.draw();
+            }
+            
+            return result;
+        };
+    }
+
+    return descriptor;
+}
 
 
 
@@ -36,7 +68,7 @@ export type AllElementIdentifiers = AllStructures | AllComponentTypes
 
 
 
-export default class DiagramHandler {
+export default class DiagramHandler implements IDraw {
     private _diagram: Diagram;
     public get diagram(): Diagram {
         return this._diagram;
@@ -92,8 +124,12 @@ export default class DiagramHandler {
         this.syncExternal();
     }
 
+    erase() {
+        this.diagram.erase();
+    }
+
     // ---------- Element identification ----------
-    public identifyElement(id: string): Visual | undefined {
+    public identifyElement(id: ID): Visual | undefined {
         var element: Visual | undefined = undefined;
 
         element = this.allElements[id]
@@ -107,7 +143,8 @@ export default class DiagramHandler {
     }
 
     // ----- Construct diagram from state ------
-    public constructDiagram(state: IDiagram): Diagram {
+    @draws
+    public constructDiagram(state: IDiagram): Result<Diagram> {
         var newDiagram: Diagram = new Diagram(state);
         this.diagram = newDiagram;
 
@@ -123,8 +160,7 @@ export default class DiagramHandler {
             })
         })
 
-        this.draw();
-        return newDiagram
+        return { ok: true, value: newDiagram}
     }
 
     // ---- Form interfaces ----
