@@ -76,7 +76,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
         var singletonState: IVisual = props.element.state;
         singletonState.mountConfig = {...singletonState.mountConfig, ...dropResult};
 
-        ENGINE.handler.createElement(singletonState, elementType as UserComponentType)
+        ENGINE.handler.createVisual(singletonState, elementType as UserComponentType)
       }
 
 

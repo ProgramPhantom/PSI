@@ -49,28 +49,28 @@ function getCoreDefaults(target: Visual): IVisual {
 export function FormDiagramInterface(props: FormHolderProps) {
     const ComponentFormEffectRegistry = useMemo<Partial<Record<UserComponentType, EffectGroup>>>(() => {
         return { "svg": {
-            "submit": ENGINE.handler.submitElement.bind(ENGINE.handler),
-            "modify": ENGINE.handler.submitModifyElement.bind(ENGINE.handler),
-            "delete": ENGINE.handler.submitDeleteElement.bind(ENGINE.handler)
+            "submit": ENGINE.handler.submitVisual.bind(ENGINE.handler),
+            "modify": ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
+            "delete": ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
         },
         "rect": {
-            "submit": ENGINE.handler.submitElement.bind(ENGINE.handler),
-            "modify": ENGINE.handler.submitModifyElement.bind(ENGINE.handler),
-            "delete": ENGINE.handler.submitDeleteElement.bind(ENGINE.handler)
+            "submit": ENGINE.handler.submitVisual.bind(ENGINE.handler),
+            "modify": ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
+            "delete": ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
         },
         "label-group": {
-            "submit": ENGINE.handler.submitElement.bind(ENGINE.handler),
-            "modify": ENGINE.handler.submitModifyElement.bind(ENGINE.handler),
-            "delete": ENGINE.handler.submitDeleteElement.bind(ENGINE.handler)
+            "submit": ENGINE.handler.submitVisual.bind(ENGINE.handler),
+            "modify": ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
+            "delete": ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
         },
         "channel": {
-            "submit": ENGINE.handler.submitElement.bind(ENGINE.handler),
-            "modify": ENGINE.handler.submitModifyElement.bind(ENGINE.handler),
-            "delete": ENGINE.handler.submitDeleteElement.bind(ENGINE.handler)
+            "submit": ENGINE.handler.submitVisual.bind(ENGINE.handler),
+            "modify": ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
+            "delete": ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
         },
         "line": {
             "submit": ENGINE.handler.createLine.bind(ENGINE.handler),
-            "delete": ENGINE.handler.deleteFreeElement.bind(ENGINE.handler)
+            "delete": ENGINE.handler.deleteFreeVisual.bind(ENGINE.handler)
         }
     }
     }, [ENGINE.handler])
