@@ -301,9 +301,9 @@ export default class DiagramHandler implements IDraw {
             return this.addElement(element);
         }
     }
-    public replaceVisual(target: Visual, newElement: Visual): void {
+    public replaceVisual(target: Visual, newElement: Visual): Result<Visual> {
         if (target.isMountable) {
-            this.replaceMountable(target, newElement)
+            return this.replaceMountable(target, newElement)
         } else {
             throw new Error("not implemented")
         }
@@ -453,14 +453,21 @@ export default class DiagramHandler implements IDraw {
         return {ok: true, value: {target: target, removedColumn: columnRemoved}};
     }
 
-    private replaceMountable(target: Visual,  newElement: Visual) {
+    @draws
+    private replaceMountable(target: Visual,  newElement: Visual): Result<Visual> {
         logger.operation(Operations.MODIFY, `${target} -> ${newElement}`)
 
-        this.deleteMountedVisual(target, false);
+        var deleteResult: Result<{target: Visual, removedColumn: boolean}> = this.deleteMountedVisual(target, false);
+        if (deleteResult.ok === false) {
+            return {ok: false, error: deleteResult.error};
+        }
 
-        this.diagram.mountElement(newElement, false);
-     
-        this.draw();
+        var mountResult: Result<Visual> = this.mountVisual(newElement, false);
+        if (mountResult.ok === false) {
+            return mountResult
+        }
+        
+        return {ok: true, value: mountResult.value}
     }
 
     // For inserting
