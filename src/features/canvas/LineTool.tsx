@@ -5,8 +5,9 @@ import ENGINE from "../../logic/engine";
 import { Dimensions, IBindingPayload } from "../../logic/spacial";
 import { Visual } from "../../logic/visual";
 import BindingsSelector from "./BindingsSelector";
-import { IToolConfig, Tool } from "../../app/App";
+import { IToolConfig, myToaster, Tool } from "../../app/App";
 import Aligner from "../../logic/aligner";
+import { Result } from "../../logic/diagramHandler";
 
 
 
@@ -37,7 +38,15 @@ export function LineTool(props: IDrawArrowProps) {
 
 
     const createArrow = (startBind: PointBind, endBind: PointBind) => {
-        ENGINE.handler.createLine({lineStyle: props.config.lineStyle}, startBind, endBind);
+        var result: Result<any> = ENGINE.handler.createLine({lineStyle: props.config.lineStyle}, startBind, endBind);
+
+        if (result.ok == false) {
+            myToaster.show({
+                message: "Error adding line",
+                intent: "danger"
+            })
+        }
+
         props.setTool({type: "select", "config": {}})
     }
 

@@ -308,13 +308,20 @@ export default class DiagramHandler implements IDraw {
             throw new Error("not implemented")
         }
     }
-    public moveVisual(element: Visual, x: number, y: number) {
-        element.x = x;
-        element.y = y;
+    @draws
+    public moveVisual(element: Visual, x: number, y: number): Result<Visual> {
+        try {
+            element.x = x;
+            element.y = y;
 
-        this.diagram.computeBoundary();
-        this.draw();
+            this.diagram.computeBoundary();
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+
+        return {ok: true, value: element}
     }
+    @draws
     public deleteVisual(target: Visual, removeColumn?: boolean): Result<Visual> {
         var result: Result<Visual>
         
@@ -331,12 +338,12 @@ export default class DiagramHandler implements IDraw {
 
         return result;
     }
-    public deleteVisualByID(targetId: ID) {
+    public deleteVisualByID(targetId: ID): Result<Visual> {
         var target: Visual | undefined = this.identifyElement(targetId);
         if (target === undefined) {
-            return
+            return {ok: false, error: `Element with id ${targetId} not found`}
         }
-        this.deleteVisual(target);
+        return this.deleteVisual(target);
     }
     // ----------------------------
 
@@ -375,21 +382,35 @@ export default class DiagramHandler implements IDraw {
     }
 
     // ----------- Annotation stuff ------------------
-    public createLine(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
-        var newArrow: Line = new Line(pParams);
+    @draws
+    public createLine(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind): Result<Line> {
+        try {
+            var newLine: Line = new Line(pParams);
+        } catch (err) {
+            return {ok: false, error: `Cannot instantiate line ${pParams.ref}`}
+        } 
+        
+        try {
+            startBinds["x"].anchorObject.bind(newLine, "x", startBinds["x"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
+            startBinds["y"].anchorObject.bind(newLine, "y", startBinds["y"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
+            startBinds["x"].anchorObject.enforceBinding();
+            startBinds["y"].anchorObject.enforceBinding();
 
-        startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
-        startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
-        startBinds["x"].anchorObject.enforceBinding();
-        startBinds["y"].anchorObject.enforceBinding();
+            endBinds["x"].anchorObject.bind(newLine, "x", endBinds["x"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
+            endBinds["y"].anchorObject.bind(newLine, "y", endBinds["y"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
+            endBinds["x"].anchorObject.enforceBinding()
+            endBinds["y"].anchorObject.enforceBinding()
+        } catch (err) {
+            return {ok: false, error: `Cannot bind line`}
+        }
 
-        endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
-        endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
-        endBinds["x"].anchorObject.enforceBinding()
-        endBinds["y"].anchorObject.enforceBinding()
-
-        this.diagram.addFreeArrow(newArrow);
-        this.draw();
+        try {
+            this.diagram.addFreeArrow(newLine);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        
+        return {ok: true, value: newLine}
     }
 
 
