@@ -255,15 +255,22 @@ export default class DiagramHandler implements IDraw {
 
 
     // ---------- Visual interaction (generic) -----------
-    public addElement(element: Visual) {
+    @draws
+    public addElement(element: Visual): Result<Visual> {
+        var result: Result<Visual>;
+        
         if (element.isMountable === true) {
-            this.mountVisual(element, false);
-            return
+            return this.mountVisual(element, false);
         } 
 
-        this.diagram.add(element);
-        this.diagram.computeBoundary();
-        this.draw();
+        try {
+            this.diagram.add(element);
+            this.diagram.computeBoundary();
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+
+        return {ok: true, value: element}
     }
     public createVisual(parameters: IVisual, type: AllComponentTypes): Visual {
         var element: Visual;
