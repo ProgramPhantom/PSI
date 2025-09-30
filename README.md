@@ -1,3 +1,4 @@
+[![pages-build-deployment](https://github.com/ProgramPhantom/PSI/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/ProgramPhantom/PSI/actions/workflows/pages/pages-build-deployment) 
 [Link to page](https://programphantom.github.io/PSI/)
 <p align="center">
   <img src="Banner.png" />
