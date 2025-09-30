@@ -180,11 +180,11 @@ export default class DiagramHandler implements IDraw {
     // ---- Form interfaces ----
     public submitVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
 
-        var element: Visual | undefined;
+        var result: Result<Visual>;
         switch (type) {
             case "channel":
                 (parameters as IChannel).sequenceID = this.diagram.sequenceIDs[0];
-                element = this.submitChannel(parameters as IChannel);
+                result = this.submitChannel(parameters as IChannel);
                 break;
             case "rect":
             case "svg":
@@ -193,14 +193,13 @@ export default class DiagramHandler implements IDraw {
                     parameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
                 }
                 
-                element = this.createVisual(parameters, type)
+                result = this.createVisual(parameters, type)
                 break;
+            default:
+                result = {ok: false, error: `No implementation to instantiate type ${type} from form submission`}
         }
 
-        if (element === undefined) {
-            return {ok: false, error: `Type ${type} has no defined construction`}
-        }
-        return {ok: true, value: element}
+        return result
     }
 
     public submitModifyVisual(parameters: IVisual, type: AllComponentTypes, target: Visual): Result<Visual> {
@@ -239,16 +238,19 @@ export default class DiagramHandler implements IDraw {
         return result;
     }
 
-    public submitChannel(parameters: IChannel): Visual {
+    public submitChannel(parameters: IChannel): Result<Channel> {
         if (parameters.sequenceID === undefined) {
-            throw new Error(`No sequence id on channel ${parameters.ref}`)
+            return {ok: false, error: `No sequence id on channel ${parameters.ref}`}
         }
         
-        var newChannel = new Channel(parameters);
+        try {
+            var newChannel = new Channel(parameters);
+        } catch (err) {
+            return {ok: false, error: `Cannot instantiate channel ${parameters.ref}`}
+        }
         
-        this.addChannel(newChannel)
-
-        return newChannel
+        
+        return this.addChannel(newChannel);
     }
 
     // ------------------------
@@ -257,8 +259,6 @@ export default class DiagramHandler implements IDraw {
     // ---------- Visual interaction (generic) -----------
     @draws
     public addElement(element: Visual): Result<Visual> {
-        var result: Result<Visual>;
-        
         if (element.isMountable === true) {
             return this.mountVisual(element, false);
         } 
@@ -272,7 +272,7 @@ export default class DiagramHandler implements IDraw {
 
         return {ok: true, value: element}
     }
-    public createVisual(parameters: IVisual, type: AllComponentTypes): Visual {
+    public createVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
         var element: Visual;
 
         // NECESSARY to make element accept binding changes. X, Y persists when changing into a label
@@ -291,17 +291,15 @@ export default class DiagramHandler implements IDraw {
                 element = new LabelGroup(parameters as ILabelGroup);
                 break;
             default:
-                throw new Error(`Cannot create requested element type ${type}`)
+                return {ok: false, error: `Cannot instantiate visual with type ${type}`}
         }
 
         
         if (element.mountConfig !== undefined) {
-            this.mountVisual(element, false)
+            return this.mountVisual(element, false)
         } else {
-            this.diagram.addElement(element);
+            return this.addElement(element);
         }
-
-        return element;
     }
     public replaceVisual(target: Visual, newElement: Visual): void {
         if (target.isMountable) {
@@ -344,15 +342,20 @@ export default class DiagramHandler implements IDraw {
 
 
     // ------- Channel stuff ---------
-    public addChannel(element: Channel) {
+    @draws
+    public addChannel(element: Channel): Result<Channel> {
         var sequence: Sequence | undefined = this.diagram.sequenceDict[element.sequenceID];
 
         if (sequence === undefined) {
-            throw new Error(`Cannot find sequence of ID ${element.sequenceID}`)
+            return {ok: false, error: `Cannot find sequence of ID ${element.sequenceID}`}
         }
-
-        sequence.addChannel(element);
-        this.draw()
+        
+        try {
+            sequence.addChannel(element);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        return {ok: true, value: element}
     }
 
     @draws
@@ -368,6 +371,7 @@ export default class DiagramHandler implements IDraw {
         } catch (err) {
             return {ok: false, error: (err as Error).message}
         }
+        return {ok: true, value: target}
     }
 
     // ----------- Annotation stuff ------------------

@@ -98,6 +98,11 @@ export function FormDiagramInterface(props: FormHolderProps) {
             case "delete":
                 result = (targetFunction as DeleteFunction)(props.target, masterType);
                 break;
+            default:
+                myToaster.show({
+                    message: `No '${effect}' method assigned to object type '${masterType}'`,
+                    intent: "danger"
+                })
         }
         
         if (!result.ok) {
