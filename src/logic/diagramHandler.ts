@@ -12,8 +12,41 @@ import RectElement, { IRectElement, } from "./rectElement";
 import Sequence from "./hasComponents/sequence";
 import SVGElement, { ISVGElement, } from "./svgElement";
 import { FillObject, instantiateByType, RecursivePartial } from "./util";
-import { IVisual, Visual } from "./visual";
+import { IDraw, IVisual, Visual } from "./visual";
 import ENGINE from "./engine";
+import { error } from "console";
+
+export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
+
+
+
+type ConstructorFunction = (parameters: IVisual, ...args: any[]) => Result<any> 
+/**
+ * Decorator that automatically calls this.draw() after a method execution,
+ * but only if the method returns a Result object with ok: true
+ */
+function draws(
+    target: IDraw,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>
+) {
+    const originalMethod = descriptor.value;
+
+    if (originalMethod) {
+        descriptor.value = function(this: DiagramHandler, ...args: any[]) {
+            const result = originalMethod.apply(this, args);
+            
+            // Only call draw() if the result is ok
+            if (result && typeof result === 'object' && 'ok' in result && result.ok === true) {
+                this.draw();
+            }
+            
+            return result;
+        };
+    }
+
+    return descriptor;
+}
 
 
 
@@ -36,7 +69,7 @@ export type AllElementIdentifiers = AllStructures | AllComponentTypes
 
 
 
-export default class DiagramHandler {
+export default class DiagramHandler implements IDraw {
     private _diagram: Diagram;
     public get diagram(): Diagram {
         return this._diagram;
@@ -78,24 +111,9 @@ export default class DiagramHandler {
         this.surface = surface;
     }
 
-    // TODO: forced index for channel addition
-    channel(parameters: IChannel,  index?: number): Visual {
-        if (parameters.sequenceID === undefined) {
-            throw new Error(`No sequence id on channel ${parameters.ref}`)
-        }
-        
-        var newChannel = new Channel(parameters);
-        
-        var sequence: Sequence | undefined = this.diagram.sequenceDict[parameters.sequenceID];
-
-        if (sequence === undefined) {
-            throw new Error(`Cannot find sequence of ID ${parameters.sequenceID}`)
-        }
-
-        sequence.addChannel(newChannel);
-        this.draw()
-
-        return newChannel
+    @draws
+    freshDiagram() {
+        this.diagram = new Diagram({});
     }
 
     draw() {
@@ -110,35 +128,63 @@ export default class DiagramHandler {
         this.syncExternal();
     }
 
+    erase() {
+        this.diagram.erase();
+    }
+
+    // ---------- Element identification ----------
+    public identifyElement(id: ID): Visual | undefined {
+        var element: Visual | undefined = undefined;
+
+        element = this.allElements[id]
+
+        if (element === undefined) {
+            console.warn(`Cannot find element "${id}"`);
+            return undefined;
+        } else {
+            return element;
+        }
+    }
+
     // ----- Construct diagram from state ------
-    public constructDiagram(state: IDiagram): Diagram {
-        var newDiagram: Diagram = new Diagram(state);
+    @draws
+    public constructDiagram(state: IDiagram): Result<Diagram> {
+
+        try {
+            var newDiagram: Diagram = new Diagram(state);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
         this.diagram = newDiagram;
 
-        // Create and mount pulses.
-        state.sequences.forEach((s) => {
-            s.channels.forEach((c) => {
-                c.mountedElements.forEach((m) => {
-                    if (m.type === undefined) {
-                        console.warn(`Element data is missing type: ${m.ref}`)
-                    }
-                    this.createElement(m, m.type as AllComponentTypes);
+        try {
+            // Create and mount pulses.
+            state.sequences.forEach((s) => {
+                s.channels.forEach((c) => {
+                    c.mountedElements.forEach((m) => {
+                        if (m.type === undefined) {
+                            console.warn(`Element data is missing type: ${m.ref}`)
+                        }
+                        this.createVisual(m, m.type as AllComponentTypes);
+                    })
                 })
             })
-        })
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        
 
-        this.draw();
-        return newDiagram
+        return { ok: true, value: newDiagram}
     }
 
     // ---- Form interfaces ----
-    public submitElement(parameters: IVisual, type: AllComponentTypes): Visual {
+    public submitVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
 
-        var element: Visual | undefined;
+        var result: Result<Visual>;
         switch (type) {
             case "channel":
                 (parameters as IChannel).sequenceID = this.diagram.sequenceIDs[0];
-                element = this.channel(parameters as IChannel);
+                result = this.submitChannel(parameters as IChannel);
                 break;
             case "rect":
             case "svg":
@@ -147,23 +193,19 @@ export default class DiagramHandler {
                     parameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
                 }
                 
-                element = this.createElement(parameters, type)
-                return element
+                result = this.createVisual(parameters, type)
                 break;
             default:
-                throw new Error(`Unexpected element type "${type}"`)
+                result = {ok: false, error: `No implementation to instantiate type ${type} from form submission`}
         }
 
-        if (element === undefined) {
-            throw new Error(`Cannot create element ${parameters.ref}`)
-        }
-        return element
+        return result
     }
 
-    public submitModifyElement(parameters: IVisual, type: AllComponentTypes, target: Visual): Visual {
+    public submitModifyVisual(parameters: IVisual, type: AllComponentTypes, target: Visual): Result<Visual> {
         var mountConfigCopy: IMountConfig | undefined = target.mountConfig;
         // Delete element
-        this.deleteElement(target, false)
+        this.deleteVisual(target, false)
 
         // Copy hidden parameter channelID (this shouldn't be needed as it should take the state
         // from the form. The hidden values should still be in the form.)
@@ -172,29 +214,65 @@ export default class DiagramHandler {
             parameters.mountConfig.index = mountConfigCopy.index;
         }
 
-        var element: Visual = this.submitElement(parameters, type);
+        var result: Result<Visual> = this.submitVisual(parameters, type);
 
-        return element;
+        return result;
     }
 
-    public submitDeleteElement(target: Visual, type: AllComponentTypes) {
+    public submitDeleteVisual(target: Visual, type: AllComponentTypes): Result<Visual> {
+        var result: Result<Visual>
+        
         switch (type) {
             case "rect":
             case "svg":
             case "label-group":
-                this.deleteElement(target);
+                result = this.deleteVisual(target);
                 break;
             case "channel":
-                this.deleteChannel(target as Channel);
+                result = this.deleteChannel(target as Channel);
                 break;
             default:
                 throw new Error(`Cannot delete component of type ${type}`);
         }
+
+        return result;
     }
+
+    public submitChannel(parameters: IChannel): Result<Channel> {
+        if (parameters.sequenceID === undefined) {
+            return {ok: false, error: `No sequence id on channel ${parameters.ref}`}
+        }
+        
+        try {
+            var newChannel = new Channel(parameters);
+        } catch (err) {
+            return {ok: false, error: `Cannot instantiate channel ${parameters.ref}`}
+        }
+        
+        
+        return this.addChannel(newChannel);
+    }
+
     // ------------------------
 
 
-    public createElement(parameters: IVisual, type: AllComponentTypes): Visual {
+    // ---------- Visual interaction (generic) -----------
+    @draws
+    public addElement(element: Visual): Result<Visual> {
+        if (element.isMountable === true) {
+            return this.mountVisual(element, false);
+        } 
+
+        try {
+            this.diagram.add(element);
+            this.diagram.computeBoundary();
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+
+        return {ok: true, value: element}
+    }
+    public createVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
         var element: Visual;
 
         // NECESSARY to make element accept binding changes. X, Y persists when changing into a label
@@ -213,146 +291,144 @@ export default class DiagramHandler {
                 element = new LabelGroup(parameters as ILabelGroup);
                 break;
             default:
-                throw new Error(`Cannot create requested element type ${type}`)
+                return {ok: false, error: `Cannot instantiate visual with type ${type}`}
         }
 
         
         if (element.mountConfig !== undefined) {
-            this.mountElement(element, false)
+            return this.mountVisual(element, false)
         } else {
-            this.diagram.addElement(element);
+            return this.addElement(element);
         }
-
-        return element;
     }
-
-    public addElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabelGroup>, elementRef: string) {
-        var elementType: UserComponentType = this.schemeManager.elementTypes[elementRef];
-
-        var element: Visual;
-
-        // Temporary
-        if (pParameters.mountConfig !== undefined) {
-            pParameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
-        }
-
-
-        switch (elementType) {
-            case "svg":
-                element = new SVGElement(pParameters, elementRef)
-                
-                if (pParameters.labels !== undefined) {
-                    element = new LabelGroup<SVGElement>(pParameters, element as SVGElement) 
-                }
-
-                break;
-            case "rect":
-                element = new RectElement(pParameters, elementRef)
-                if (pParameters.labels !== undefined) {
-                    element = new LabelGroup<RectElement>(pParameters, element as RectElement) 
-                }
-                break;
-            default:
-                throw new Error(`Not added ability to add ${elementType} via template`)
-        }
-
-        
-        this.addElement(element);
-    }
-
-    public moveElement(element: Visual, x: number, y: number) {
-        element.x = x;
-        element.y = y;
-
-        this.diagram.computeBoundary();
-        this.draw();
-    }
-
-    public replaceElement(target: Visual, newElement: Visual): void {
+    public replaceVisual(target: Visual, newElement: Visual): Result<Visual> {
         if (target.isMountable) {
-            this.replaceMountable(target, newElement)
+            return this.replaceMountable(target, newElement)
         } else {
             throw new Error("not implemented")
         }
     }
+    @draws
+    public moveVisual(element: Visual, x: number, y: number): Result<Visual> {
+        try {
+            element.x = x;
+            element.y = y;
 
-    public deleteElement(target: Visual, removeColumn?: boolean) {
-        if (target.isMountable) {
-            this.deleteMountedElement(target, removeColumn);
+            this.diagram.computeBoundary();
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
         }
-    }
 
-    public deleteElementByID(targetId: ID) {
+        return {ok: true, value: element}
+    }
+    @draws
+    public deleteVisual(target: Visual, removeColumn?: boolean): Result<Visual> {
+        var result: Result<Visual>
+        
+        if (target.isMountable) {
+            var deleteResult = this.deleteMountedVisual(target, removeColumn);
+            if (deleteResult.ok === true) {
+                result = {ok: true, value: deleteResult.value.target}
+            } else {
+                result = deleteResult;
+            }
+        } else {
+            result = this.deleteFreeVisual(target)
+        }
+
+        return result;
+    }
+    public deleteVisualByID(targetId: ID): Result<Visual> {
         var target: Visual | undefined = this.identifyElement(targetId);
         if (target === undefined) {
-            return
+            return {ok: false, error: `Element with id ${targetId} not found`}
         }
-        this.deleteElement(target);
+        return this.deleteVisual(target);
+    }
+    // ----------------------------
+
+
+    // ------- Channel stuff ---------
+    @draws
+    public addChannel(element: Channel): Result<Channel> {
+        var sequence: Sequence | undefined = this.diagram.sequenceDict[element.sequenceID];
+
+        if (sequence === undefined) {
+            return {ok: false, error: `Cannot find sequence of ID ${element.sequenceID}`}
+        }
+        
+        try {
+            sequence.addChannel(element);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        return {ok: true, value: element}
     }
 
-    public deleteChannel(target: Channel) {
+    @draws
+    public deleteChannel(target: Channel): Result<Channel> {
         var sequence: Sequence | undefined = this.diagram.sequenceDict[target.sequenceID];
 
         if (sequence === undefined) {
-            throw new Error(`Cannot find channel with ID: ${target.sequenceID}`);
+            return {ok: false, error: `Cannot find channel with ID: ${target.sequenceID}`}
         }
 
-        sequence.deleteChannel(target);
-        this.draw();
-    }
-
-    public identifyElement(id: string): Visual | undefined {
-        var element: Visual | undefined = undefined;
-
-        element = this.allElements[id]
-
-        if (element === undefined) {
-            console.warn(`Cannot find element "${id}"`);
-            return undefined;
-        } else {
-            return element;
+        try {
+            sequence.deleteChannel(target);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
         }
+        return {ok: true, value: target}
     }
 
-    public addElement(element: Visual) {
-        if (element.isMountable === true) {
-            this.mountElement(element, false);
-            return
+    // ----------- Annotation stuff ------------------
+    @draws
+    public createLine(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind): Result<Line> {
+        try {
+            var newLine: Line = new Line(pParams);
+        } catch (err) {
+            return {ok: false, error: `Cannot instantiate line ${pParams.ref}`}
         } 
+        
+        try {
+            startBinds["x"].anchorObject.bind(newLine, "x", startBinds["x"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
+            startBinds["y"].anchorObject.bind(newLine, "y", startBinds["y"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
+            startBinds["x"].anchorObject.enforceBinding();
+            startBinds["y"].anchorObject.enforceBinding();
 
-
-        this.diagram.add(element);
-        this.diagram.computeBoundary();
-        this.draw();
-    }
-
-    public createLine(pParams: RecursivePartial<ILine>, startBinds: PointBind, endBinds: PointBind) {
-        var newArrow: Line = new Line(pParams);
-
-        startBinds["x"].anchorObject.bind(newArrow, "x", startBinds["x"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
-        startBinds["y"].anchorObject.bind(newArrow, "y", startBinds["y"].bindingRule.anchorSiteName, "here", undefined, undefined, false);
-        startBinds["x"].anchorObject.enforceBinding();
-        startBinds["y"].anchorObject.enforceBinding();
-
-        endBinds["x"].anchorObject.bind(newArrow, "x", endBinds["x"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
-        endBinds["y"].anchorObject.bind(newArrow, "y", endBinds["y"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
-        endBinds["x"].anchorObject.enforceBinding()
-        endBinds["y"].anchorObject.enforceBinding()
-
-        this.diagram.addFreeArrow(newArrow);
-        this.draw();
-    }
-
-    public deleteFreeElement(target: Visual) {
-        if (!this.diagram.userChildren.includes(target)) {
-            throw new Error(`Cannot remove controlled element ${target.ref} with this method`)
+            endBinds["x"].anchorObject.bind(newLine, "x", endBinds["x"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
+            endBinds["y"].anchorObject.bind(newLine, "y", endBinds["y"].bindingRule.anchorSiteName, "far", undefined, undefined, false);
+            endBinds["x"].anchorObject.enforceBinding()
+            endBinds["y"].anchorObject.enforceBinding()
+        } catch (err) {
+            return {ok: false, error: `Cannot bind line`}
         }
 
-        this.diagram.remove(target);
-        this.draw();
+        try {
+            this.diagram.addFreeArrow(newLine);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        
+        return {ok: true, value: newLine}
     }
 
-    public deleteFreeElementByID(id: ID) {
+
+    // -------------- Free element interactions ----------------
+    private deleteFreeVisual(target: Visual): Result<Visual> {
+        if (!this.diagram.userChildren.includes(target)) {
+            return {ok: false, error: `Cannot remove controlled element ${target.ref} with this method`}
+        }
+
+        try {
+            this.diagram.remove(target);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        
+        return {ok: true, value: target}
+    }
+    private deleteFreeVisualByID(id: ID) {
         var target: Visual | undefined = this.identifyElement(id);
         if (target === undefined) {
             throw new Error(`Cannot find element with ID ${id}`);
@@ -366,117 +442,81 @@ export default class DiagramHandler {
         this.draw();
     }
 
-
-    /* Interaction commands:
-    Add a positional element by providing elementName, channel name, and partial positional interface.
-    Function uses element name to lookup default parameters and replaces with those provided */
-    
-    public mountElementFromTemplate(pParameters: RecursivePartial<IVisual & ILabelGroup>, elementRef: string, insert: boolean=false) {
-        var elementType: UserComponentType | undefined = this.schemeManager.elementTypes[elementRef];
-
-        if (elementType === undefined) {
-            throw new Error(`Template for element ${elementRef} not found`)
-        }
-
-        var element: Visual;
-
-        pParameters.x = undefined;
-        pParameters.y = undefined;
-
-        // Temporary
-        if (pParameters.mountConfig !== undefined) {
-            pParameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
-        }
-
-
-        var parameters;
-
-        switch (elementType) {
-            case "svg":
-                parameters = FillObject(pParameters as IVisual, this.schemeManager.internalScheme.svgElements[elementRef])
-                element = new SVGElement(parameters)
-                
-                if (pParameters.labels !== undefined) {
-                    element = new LabelGroup<SVGElement>(parameters, element as SVGElement) 
-                }
-                break;
-            case "rect":
-                parameters = FillObject(pParameters as IVisual, this.schemeManager.internalScheme.rectElements[elementRef])
-                element = new RectElement(parameters);
-
-                if (pParameters.labels !== undefined) {
-                    element = new LabelGroup<RectElement>(parameters, element as RectElement) 
-                }
-                break;
-            case "label-group":
-                parameters = FillObject(pParameters as ILabelGroup, this.schemeManager.internalScheme.labelGroupElements[elementRef])
-                
-                var child: Visual = instantiateByType(parameters.coreChild, parameters.coreChildType);
-
-                element = new LabelGroup(parameters, child);
-                break;
-            default:
-                throw new Error(`Not added ability to add component of type ${elementType} via template`)
-        }
-
-        
-        this.diagram.mountElement(element, insert);
-    }
-
+    // -------------- Mounted visual interactions ----------------
     // @isMountable
-    public mountElement(target: Visual, insert: boolean=true) {
+    @draws
+    public mountVisual(target: Visual, insert: boolean=true): Result<Visual> {
         // Temporary
         if (target.mountConfig !== undefined) {
             target.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
         }
 
-        this.diagram.mountElement(target, insert);
-        this.draw();
+        try {
+            this.diagram.mountElement(target, insert);
+        } catch (err) {
+            return {ok: false, error: `Cannot mount element ${target.ref}`}
+        }
+        
+        return {ok: true, value: target};
     }
 
-    private deleteMountedElement(target: Visual, removeColumn: boolean=true): boolean {
-        logger.operation(Operations.DELETE, `${target}`)
-
+    @draws
+    private deleteMountedVisual(target: Visual, removeColumn: boolean=true): Result<{target: Visual, removedColumn: boolean}> {
         var columnRemoved: boolean = false;
         // Find which channel owns this element:
         
-        columnRemoved = this.diagram.deleteMountedElement(target, removeColumn);
-
-        logger.operation(Operations.DELETE, `COMPLETE DELETE`);
-        this.draw();
-        return columnRemoved;
+        try {
+            columnRemoved = this.diagram.deleteMountedElement(target, removeColumn);
+        } catch (err) {
+            return {ok: false, error: (err as Error).message}
+        }
+        
+        return {ok: true, value: {target: target, removedColumn: columnRemoved}};
     }
 
-    private replaceMountable(target: Visual,  newElement: Visual) {
+    @draws
+    private replaceMountable(target: Visual,  newElement: Visual): Result<Visual> {
         logger.operation(Operations.MODIFY, `${target} -> ${newElement}`)
 
-        this.deleteMountedElement(target, false);
+        var deleteResult: Result<{target: Visual, removedColumn: boolean}> = this.deleteMountedVisual(target, false);
+        if (deleteResult.ok === false) {
+            return {ok: false, error: deleteResult.error};
+        }
 
-        this.diagram.mountElement(newElement, false);
-     
-        this.draw();
+        var mountResult: Result<Visual> = this.mountVisual(newElement, false);
+        if (mountResult.ok === false) {
+            return mountResult
+        }
+        
+        return {ok: true, value: mountResult.value}
     }
 
-    // @isMountable
     // For inserting
-    public shiftMountedElement(target: Visual, newMountConfig: IMountConfig): void {
-        var deleted: boolean = this.deleteMountedElement(target, true);
+    // @isMountable
+    public shiftMountedVisual(target: Visual, newMountConfig: IMountConfig): Result<Visual> {
+        var result: Result<{target: Visual, removedColumn: boolean}> = this.deleteMountedVisual(target, true);
+
+        if (result.ok === false) {return {ok: false, error: result.error}}
+        var deleted: boolean = result.value.removedColumn; 
 
         if (deleted && target.mountConfig!.index+target.mountConfig!.noSections === newMountConfig.index) {
             newMountConfig.index -= target.mountConfig!.noSections
         }
 
         target.mountConfig = newMountConfig;
-        this.mountElement(target, true);
+        return this.mountVisual(target, true);
     }
 
     // For moving to another mount
-    public moveMountedElement(target: Visual, newMountConfig: IMountConfig) {
+    public moveMountedVisual(target: Visual, newMountConfig: IMountConfig): Result<Visual> {
         var removeCol: boolean = true;
         if (target.mountConfig!.index === newMountConfig.index) {  // Moving to the same column (for intra-channel movement)
             removeCol = false
         }
-        var deleted: boolean = this.deleteMountedElement(target, removeCol);
+        var result: Result<{target: Visual, removedColumn: boolean}> = this.deleteMountedVisual(target, removeCol);
+
+        if (result.ok === false) {return {ok: false, error: result.error}}
+        var deleted: boolean = result.value.removedColumn;
 
         if (deleted && target.mountConfig!.index + target.mountConfig!.noSections < newMountConfig.index) {
             newMountConfig.index -= 1
@@ -484,6 +524,9 @@ export default class DiagramHandler {
         
 
         target.mountConfig = newMountConfig;
-        this.mountElement(target, false);
+
+        
+        return this.mountVisual(target, false);
     }
+    // ------------------------------------------------------------
 }

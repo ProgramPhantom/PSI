@@ -85,9 +85,9 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(function C
             orientation: result.orientation, channelID: result.channelID, sequenceID: result.sequenceID, index: result.index};
 
           if (result.insert) {
-            ENGINE.handler.shiftMountedElement(item.element, newMountConfig);
+            ENGINE.handler.shiftMountedVisual(item.element, newMountConfig);
           } else {
-            ENGINE.handler.moveMountedElement(item.element, newMountConfig)
+            ENGINE.handler.moveMountedVisual(item.element, newMountConfig)
           }
           
         } else {
