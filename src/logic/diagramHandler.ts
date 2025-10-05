@@ -15,6 +15,8 @@ import { FillObject, instantiateByType, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";
 import ENGINE from "./engine";
 import { error } from "console";
+import * as defaultDiagram from "./default/defaultDiagram.json"
+import { myToaster } from "../app/App";
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -102,13 +104,20 @@ export default class DiagramHandler implements IDraw {
 
     constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager) {
         this.syncExternal = emitChange;
-
-
-        this.diagram = new Diagram({});
-        
-        
         this.schemeManager = schemeManager;
         this.surface = surface;
+
+        var constructResult: Result<Diagram> = this.constructDiagram(<any>defaultDiagram as IDiagram)        
+        
+        if (constructResult.ok) {
+            this.diagram = constructResult.value;
+        } else {
+            myToaster.show({
+                message: "Error loading diagram",
+                intent: "danger"
+            })
+            this.diagram = new Diagram({})
+        }
     }
 
     @draws

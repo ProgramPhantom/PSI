@@ -1,0 +1,133 @@
+{
+    "sequences": [
+        {
+            "channels": [
+                {
+                    "sequenceID": "79fa15bc657ca",
+                    "style": {
+                        "thickness": 3,
+                        "barStyle": {
+                            "fill": "#000000",
+                            "stroke": null,
+                            "strokeWidth": null
+                        }
+                    },
+                    "label": {
+                        "style": {
+                            "fontSize": 50,
+                            "colour": "black",
+                            "background": null,
+                            "display": "block"
+                        },
+                        "text": "^{1}\\mathrm{H}",
+                        "offset": [
+                            0,
+                            0
+                        ],
+                        "padding": [
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "contentWidth": 27,
+                        "contentHeight": 20,
+                        "x": 5,
+                        "y": 46.5,
+                        "ref": "TEXT",
+                        "id": "4932b8bd18a39",
+                        "type": "lower-abstract"
+                    },
+                    "mountedElements": [
+                        {
+                            "svgDataRef": "180",
+                            "style": {},
+                            "offset": [
+                                0,
+                                0
+                            ],
+                            "mountConfig": {
+                                "orientation": "top",
+                                "alignment": "centre",
+                                "noSections": 1,
+                                "channelID": "b84105dc1afb18",
+                                "sequenceID": "79fa15bc657ca",
+                                "index": 0,
+                                "mountOn": true,
+                                "dropEffect": "insert",
+                                "insert": true
+                            },
+                            "padding": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "contentWidth": 50,
+                            "contentHeight": 50,
+                            "x": 32,
+                            "y": 5,
+                            "ref": "180",
+                            "id": "SvgjsSvg1517",
+                            "type": "svg"
+                        }
+                    ],
+                    "userChildren": [],
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "padding": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "contentWidth": 77,
+                    "contentHeight": 73,
+                    "x": 5,
+                    "y": 5,
+                    "ref": "my-channel",
+                    "id": "b84105dc1afb18",
+                    "type": "channel"
+                }
+            ],
+            "userChildren": [],
+            "offset": [
+                0,
+                0
+            ],
+            "padding": [
+                5,
+                5,
+                5,
+                5
+            ],
+            "contentWidth": 77,
+            "contentHeight": 73,
+            "x": 0,
+            "y": 0,
+            "ref": "sequence",
+            "id": "79fa15bc657ca",
+            "type": "sequence"
+        }
+    ],
+    "userChildren": [],
+    "offset": [
+        0,
+        0
+    ],
+    "padding": [
+        0,
+        0,
+        0,
+        0
+    ],
+    "contentWidth": 87,
+    "contentHeight": 83,
+    "x": 0,
+    "y": 0,
+    "ref": "diagram",
+    "id": "c8014d41f304e",
+    "type": "diagram"
+}

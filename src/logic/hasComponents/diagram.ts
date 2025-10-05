@@ -1,7 +1,7 @@
 import Aligner from "../aligner";
 import Channel, { ChannelNamedStructure } from "./channel";
 import Collection, { ICollection, IHaveComponents } from "../collection";
-import defaultDiagram from "../default/diagram.json";
+import blankDiagram from "../default/blankDiagram.json";
 import { UserComponentType } from "../diagramHandler";
 import Line from "../line";
 import logger, { Processes } from "../log";
@@ -35,7 +35,7 @@ export type AllStructures = SequenceNamedStructures | ChannelNamedStructure | Di
 
 
 export default class Diagram extends Collection implements IHaveComponents<IDiagramComponents> {
-    static defaults: {[key: string]: IDiagram} = {"default": {...<any>defaultDiagram}}
+    static defaults: {[key: string]: IDiagram} = {"default": {...<any>blankDiagram}}
     static ElementType: UserComponentType = "diagram";
 
     get state(): IDiagram {

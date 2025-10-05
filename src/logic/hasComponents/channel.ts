@@ -29,7 +29,7 @@ export interface IChannelComponents extends Record<string, Spacial | Spacial[]> 
 
 
 export interface IChannel extends ICollection {
-    sequenceID: ID,
+    sequenceID?: ID,
     
     style: IChannelStyle;
     mountedElements: IVisual[]

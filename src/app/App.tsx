@@ -14,18 +14,18 @@ import { ILineStyle } from '../logic/line';
 import { Visual } from '../logic/visual';
 import { IDrawArrowConfig } from '../features/canvas/LineTool';
 
+export const myToaster: Toaster = await OverlayToaster.createAsync({ position: "bottom",}, {
+  domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster),
+});
+
+
 ENGINE.initialiseSchemeManager();
 await ENGINE.loadSVGData();
 ENGINE.surface = SVG().attr({"pointer-events": 'bounding-box'});
 
 ENGINE.loadDiagramState()
-
-
 ENGINE.createSingletons();
 
-export const myToaster: Toaster = await OverlayToaster.createAsync({ position: "bottom",}, {
-  domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster),
-});
 
 
 
