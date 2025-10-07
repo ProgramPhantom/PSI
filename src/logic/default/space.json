@@ -1,16 +1,16 @@
 {
-    "padding": [0, 4, 0, 4],
-    "offset": [0, 0],
+  "padding": [0, 4, 0, 4],
+  "offset": [0, 0],
 
-    "contentWidth": 50,
-    "contentHeight": 50,
+  "contentWidth": 50,
+  "contentHeight": 50,
 
-    "mountConfig": {
-        "orientation": "top",
-        "alignment": "centre",
-        "noSections": 1,
-        "channelID": null,
-        "index": null
-    },
-    "ref": "space"
+  "mountConfig": {
+    "orientation": "top",
+    "alignment": "centre",
+    "noSections": 1,
+    "channelID": null,
+    "index": null
+  },
+  "ref": "space"
 }

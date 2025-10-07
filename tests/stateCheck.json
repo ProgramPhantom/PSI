@@ -1,427 +1,297 @@
 {
-    "sequences": [
+  "sequences": [
+    {
+      "channels": [
         {
-            "channels": [
-                {
-                    "sequenceID": "e08609e4996f88",
-                    "style": {
-                        "thickness": 3,
-                        "barStyle": {
-                            "fill": "#000000",
-                            "stroke": null,
-                            "strokeWidth": null
-                        }
-                    },
-                    "label": {
-                        "style": {
-                            "fontSize": 50,
-                            "colour": "black",
-                            "background": null,
-                            "display": "block"
-                        },
-                        "text": "^{1}\\mathrm{H}",
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 27,
-                        "contentHeight": 20,
-                        "x": 5,
-                        "y": 36.5,
-                        "ref": "TEXT",
-                        "id": "d67849c2b9df2",
-                        "type": "lower-abstract"
-                    },
-                    "mountedElements": [
-                        {
-                            "svgDataRef": "amp",
-                            "style": {},
-                            "offset": [
-                                0,
-                                1
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "abd5c766abf8e8",
-                                "sequenceID": "e08609e4996f88",
-                                "index": 1,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 15,
-                            "contentHeight": 40,
-                            "x": 199.5,
-                            "y": 5,
-                            "ref": "amp",
-                            "id": "SvgjsSvg1000",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "amp",
-                            "style": {},
-                            "offset": [
-                                0,
-                                1
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "abd5c766abf8e8",
-                                "sequenceID": "e08609e4996f88",
-                                "index": 3,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 15,
-                            "contentHeight": 40,
-                            "x": 349.5,
-                            "y": 5,
-                            "ref": "amp",
-                            "id": "SvgjsSvg1003",
-                            "type": "svg"
-                        }
-                    ],
-                    "userChildren": [],
-                    "offset": [
-                        0,
-                        0
-                    ],
-                    "padding": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "contentWidth": 427,
-                    "contentHeight": 63,
-                    "x": 5,
-                    "y": 5,
-                    "ref": "my-channel",
-                    "id": "abd5c766abf8e8",
-                    "type": "channel"
-                },
-                {
-                    "sequenceID": "e08609e4996f88",
-                    "style": {
-                        "thickness": 3,
-                        "barStyle": {
-                            "fill": "#000000",
-                            "stroke": null,
-                            "strokeWidth": null
-                        }
-                    },
-                    "label": {
-                        "style": {
-                            "fontSize": 50,
-                            "colour": "black",
-                            "background": null,
-                            "display": "block"
-                        },
-                        "text": "^{1}\\mathrm{H}",
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 27,
-                        "contentHeight": 20,
-                        "x": 5,
-                        "y": 134.5,
-                        "ref": "TEXT",
-                        "id": "35d8f3adac4068",
-                        "type": "lower-abstract"
-                    },
-                    "mountedElements": [
-                        {
-                            "svgDataRef": "chirphilo",
-                            "style": {},
-                            "offset": [
-                                0,
-                                1
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "c04928672e361",
-                                "sequenceID": "e08609e4996f88",
-                                "index": 1,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": false
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 50,
-                            "contentHeight": 20,
-                            "x": 182,
-                            "y": 123,
-                            "ref": "chirphilo",
-                            "id": "SvgjsSvg1006",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "acquire",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "c04928672e361",
-                                "sequenceID": "e08609e4996f88",
-                                "index": 3,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": false
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 150,
-                            "contentHeight": 75,
-                            "x": 282,
-                            "y": 68,
-                            "ref": "acquire",
-                            "id": "SvgjsSvg1009",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "chirphilo",
-                            "style": {},
-                            "offset": [
-                                0,
-                                1
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "c04928672e361",
-                                "sequenceID": "e08609e4996f88",
-                                "index": 2,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 50,
-                            "contentHeight": 20,
-                            "x": 232,
-                            "y": 123,
-                            "ref": "chirphilo",
-                            "id": "SvgjsSvg1012",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "acquire",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "mountConfig": {
-                                "orientation": "top",
-                                "alignment": "centre",
-                                "noSections": 1,
-                                "channelID": "c04928672e361",
-                                "sequenceID": "e08609e4996f88",
-                                "index": 0,
-                                "mountOn": true,
-                                "dropEffect": "insert",
-                                "insert": true
-                            },
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 150,
-                            "contentHeight": 75,
-                            "x": 32,
-                            "y": 68,
-                            "ref": "acquire",
-                            "id": "SvgjsSvg1015",
-                            "type": "svg"
-                        }
-                    ],
-                    "userChildren": [],
-                    "offset": [
-                        0,
-                        0
-                    ],
-                    "padding": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "contentWidth": 427,
-                    "contentHeight": 98,
-                    "x": 5,
-                    "y": 68,
-                    "ref": "my-channel",
-                    "id": "c04928672e361",
-                    "type": "channel"
-                }
-            ],
-            "userChildren": [],
-            "offset": [
-                0,
-                0
-            ],
-            "padding": [
-                5,
-                5,
-                5,
-                5
-            ],
-            "contentWidth": 427,
-            "contentHeight": 161,
-            "x": 0,
-            "y": 0,
-            "ref": "sequence",
-            "id": "e08609e4996f88",
-            "type": "sequence"
-        }
-    ],
-    "userChildren": [
-        {
-            "lineStyle": {
-                "stroke": "black",
-                "thickness": 1,
-                "dashing": [
-                    0,
-                    0
-                ],
-                "headStyle": [
-                    "default",
-                    "default"
-                ]
+          "sequenceID": "e08609e4996f88",
+          "style": {
+            "thickness": 3,
+            "barStyle": {
+              "fill": "#000000",
+              "stroke": null,
+              "strokeWidth": null
+            }
+          },
+          "label": {
+            "style": {
+              "fontSize": 50,
+              "colour": "black",
+              "background": null,
+              "display": "block"
             },
-            "x2": 207,
-            "y2": 133,
-            "adjustment": [
-                0,
-                0
-            ],
-            "orientation": "horizontal",
-            "offset": [
-                0,
-                0
-            ],
-            "padding": [
-                0,
-                0,
-                0,
-                0
-            ],
-            "contentWidth": 100,
-            "contentHeight": 27.5,
-            "x": 107,
-            "y": 105.5,
-            "ref": "LINE",
-            "id": "75ab708b484a88",
-            "type": "line"
+            "text": "^{1}\\mathrm{H}",
+            "offset": [0, 0],
+            "padding": [0, 0, 0, 0],
+            "contentWidth": 27,
+            "contentHeight": 20,
+            "x": 5,
+            "y": 36.5,
+            "ref": "TEXT",
+            "id": "d67849c2b9df2",
+            "type": "lower-abstract"
+          },
+          "mountedElements": [
+            {
+              "svgDataRef": "amp",
+              "style": {},
+              "offset": [0, 1],
+              "mountConfig": {
+                "orientation": "top",
+                "alignment": "centre",
+                "noSections": 1,
+                "channelID": "abd5c766abf8e8",
+                "sequenceID": "e08609e4996f88",
+                "index": 1,
+                "mountOn": true,
+                "dropEffect": "insert",
+                "insert": true
+              },
+              "padding": [0, 0, 0, 0],
+              "contentWidth": 15,
+              "contentHeight": 40,
+              "x": 199.5,
+              "y": 5,
+              "ref": "amp",
+              "id": "SvgjsSvg1000",
+              "type": "svg"
+            },
+            {
+              "svgDataRef": "amp",
+              "style": {},
+              "offset": [0, 1],
+              "mountConfig": {
+                "orientation": "top",
+                "alignment": "centre",
+                "noSections": 1,
+                "channelID": "abd5c766abf8e8",
+                "sequenceID": "e08609e4996f88",
+                "index": 3,
+                "mountOn": true,
+                "dropEffect": "insert",
+                "insert": true
+              },
+              "padding": [0, 0, 0, 0],
+              "contentWidth": 15,
+              "contentHeight": 40,
+              "x": 349.5,
+              "y": 5,
+              "ref": "amp",
+              "id": "SvgjsSvg1003",
+              "type": "svg"
+            }
+          ],
+          "userChildren": [],
+          "offset": [0, 0],
+          "padding": [0, 0, 0, 0],
+          "contentWidth": 427,
+          "contentHeight": 63,
+          "x": 5,
+          "y": 5,
+          "ref": "my-channel",
+          "id": "abd5c766abf8e8",
+          "type": "channel"
         },
         {
-            "lineStyle": {
-                "stroke": "black",
-                "thickness": 1,
-                "dashing": [
-                    0,
-                    0
-                ],
-                "headStyle": [
-                    "default",
-                    "default"
-                ]
+          "sequenceID": "e08609e4996f88",
+          "style": {
+            "thickness": 3,
+            "barStyle": {
+              "fill": "#000000",
+              "stroke": null,
+              "strokeWidth": null
+            }
+          },
+          "label": {
+            "style": {
+              "fontSize": 50,
+              "colour": "black",
+              "background": null,
+              "display": "block"
             },
-            "x2": 5,
-            "y2": 5,
-            "adjustment": [
-                0,
-                0
-            ],
-            "orientation": "horizontal",
-            "offset": [
-                0,
-                0
-            ],
-            "padding": [
-                0,
-                0,
-                0,
-                0
-            ],
-            "contentWidth": 0,
-            "contentHeight": 0,
-            "x": 207,
-            "y": 25,
-            "ref": "LINE",
-            "id": "622b298263882",
-            "type": "line"
+            "text": "^{1}\\mathrm{H}",
+            "offset": [0, 0],
+            "padding": [0, 0, 0, 0],
+            "contentWidth": 27,
+            "contentHeight": 20,
+            "x": 5,
+            "y": 134.5,
+            "ref": "TEXT",
+            "id": "35d8f3adac4068",
+            "type": "lower-abstract"
+          },
+          "mountedElements": [
+            {
+              "svgDataRef": "chirphilo",
+              "style": {},
+              "offset": [0, 1],
+              "mountConfig": {
+                "orientation": "top",
+                "alignment": "centre",
+                "noSections": 1,
+                "channelID": "c04928672e361",
+                "sequenceID": "e08609e4996f88",
+                "index": 1,
+                "mountOn": true,
+                "dropEffect": "insert",
+                "insert": false
+              },
+              "padding": [0, 0, 0, 0],
+              "contentWidth": 50,
+              "contentHeight": 20,
+              "x": 182,
+              "y": 123,
+              "ref": "chirphilo",
+              "id": "SvgjsSvg1006",
+              "type": "svg"
+            },
+            {
+              "svgDataRef": "acquire",
+              "style": {},
+              "offset": [0, 0],
+              "mountConfig": {
+                "orientation": "top",
+                "alignment": "centre",
+                "noSections": 1,
+                "channelID": "c04928672e361",
+                "sequenceID": "e08609e4996f88",
+                "index": 3,
+                "mountOn": true,
+                "dropEffect": "insert",
+                "insert": false
+              },
+              "padding": [0, 0, 0, 0],
+              "contentWidth": 150,
+              "contentHeight": 75,
+              "x": 282,
+              "y": 68,
+              "ref": "acquire",
+              "id": "SvgjsSvg1009",
+              "type": "svg"
+            },
+            {
+              "svgDataRef": "chirphilo",
+              "style": {},
+              "offset": [0, 1],
+              "mountConfig": {
+                "orientation": "top",
+                "alignment": "centre",
+                "noSections": 1,
+                "channelID": "c04928672e361",
+                "sequenceID": "e08609e4996f88",
+                "index": 2,
+                "mountOn": true,
+                "dropEffect": "insert",
+                "insert": true
+              },
+              "padding": [0, 0, 0, 0],
+              "contentWidth": 50,
+              "contentHeight": 20,
+              "x": 232,
+              "y": 123,
+              "ref": "chirphilo",
+              "id": "SvgjsSvg1012",
+              "type": "svg"
+            },
+            {
+              "svgDataRef": "acquire",
+              "style": {},
+              "offset": [0, 0],
+              "mountConfig": {
+                "orientation": "top",
+                "alignment": "centre",
+                "noSections": 1,
+                "channelID": "c04928672e361",
+                "sequenceID": "e08609e4996f88",
+                "index": 0,
+                "mountOn": true,
+                "dropEffect": "insert",
+                "insert": true
+              },
+              "padding": [0, 0, 0, 0],
+              "contentWidth": 150,
+              "contentHeight": 75,
+              "x": 32,
+              "y": 68,
+              "ref": "acquire",
+              "id": "SvgjsSvg1015",
+              "type": "svg"
+            }
+          ],
+          "userChildren": [],
+          "offset": [0, 0],
+          "padding": [0, 0, 0, 0],
+          "contentWidth": 427,
+          "contentHeight": 98,
+          "x": 5,
+          "y": 68,
+          "ref": "my-channel",
+          "id": "c04928672e361",
+          "type": "channel"
         }
-    ],
-    "offset": [
-        0,
-        0
-    ],
-    "padding": [
-        0,
-        0,
-        0,
-        0
-    ],
-    "contentWidth": 437,
-    "contentHeight": 171,
-    "x": 0,
-    "y": 0,
-    "ref": "diagram",
-    "id": "d0c4a8717b22",
-    "type": "diagram"
+      ],
+      "userChildren": [],
+      "offset": [0, 0],
+      "padding": [5, 5, 5, 5],
+      "contentWidth": 427,
+      "contentHeight": 161,
+      "x": 0,
+      "y": 0,
+      "ref": "sequence",
+      "id": "e08609e4996f88",
+      "type": "sequence"
+    }
+  ],
+  "userChildren": [
+    {
+      "lineStyle": {
+        "stroke": "black",
+        "thickness": 1,
+        "dashing": [0, 0],
+        "headStyle": ["default", "default"]
+      },
+      "x2": 207,
+      "y2": 133,
+      "adjustment": [0, 0],
+      "orientation": "horizontal",
+      "offset": [0, 0],
+      "padding": [0, 0, 0, 0],
+      "contentWidth": 100,
+      "contentHeight": 27.5,
+      "x": 107,
+      "y": 105.5,
+      "ref": "LINE",
+      "id": "75ab708b484a88",
+      "type": "line"
+    },
+    {
+      "lineStyle": {
+        "stroke": "black",
+        "thickness": 1,
+        "dashing": [0, 0],
+        "headStyle": ["default", "default"]
+      },
+      "x2": 5,
+      "y2": 5,
+      "adjustment": [0, 0],
+      "orientation": "horizontal",
+      "offset": [0, 0],
+      "padding": [0, 0, 0, 0],
+      "contentWidth": 0,
+      "contentHeight": 0,
+      "x": 207,
+      "y": 25,
+      "ref": "LINE",
+      "id": "622b298263882",
+      "type": "line"
+    }
+  ],
+  "offset": [0, 0],
+  "padding": [0, 0, 0, 0],
+  "contentWidth": 437,
+  "contentHeight": 171,
+  "x": 0,
+  "y": 0,
+  "ref": "diagram",
+  "id": "d0c4a8717b22",
+  "type": "diagram"
 }

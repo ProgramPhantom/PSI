@@ -7,27 +7,26 @@ import * as t from "ts-interface-checker";
 export const ID = t.name("string");
 
 export const Shift = t.iface([], {
-  "dx": t.opt("number"),
-  "dy": t.opt("number"),
+  dx: t.opt("number"),
+  dy: t.opt("number")
 });
 
 export const Place = t.iface([], {
-  "x": t.opt("number"),
-  "y": t.opt("number"),
+  x: t.opt("number"),
+  y: t.opt("number")
 });
 
 export const IElement = t.iface([], {
-  "ref": "string",
-  "id": t.opt("ID"),
+  ref: "string",
+  id: t.opt("ID")
 });
 
 export const IPoint = t.iface(["IElement"], {
-  "x": t.opt("number"),
-  "y": t.opt("number"),
+  x: t.opt("number"),
+  y: t.opt("number")
 });
 
-export const IStateTarget = t.iface([], {
-});
+export const IStateTarget = t.iface([], {});
 
 const pointTypeSuite: t.ITypeSuite = {
   ID,
@@ -35,6 +34,6 @@ const pointTypeSuite: t.ITypeSuite = {
   Place,
   IElement,
   IPoint,
-  IStateTarget,
+  IStateTarget
 };
 export default pointTypeSuite;

@@ -5,18 +5,22 @@ import * as t from "ts-interface-checker";
 import collectionTypeSuite from "./collection-ti";
 // tslint:disable:object-literal-key-quotes
 
-export const ChannelNamedStructure = t.union(t.lit("top aligner"), t.lit("bottom aligner"), t.lit("bar"));
+export const ChannelNamedStructure = t.union(
+  t.lit("top aligner"),
+  t.lit("bottom aligner"),
+  t.lit("bar")
+);
 
 export const IChannel = t.iface(["ICollection"], {
-  "mountedElements": t.array("IVisual"),
-  "sequenceID": "ID",
-  "style": "IChannelStyle",
-  "channelSymbol": "IText",
+  mountedElements: t.array("IVisual"),
+  sequenceID: "ID",
+  style: "IChannelStyle",
+  channelSymbol: "IText"
 });
 
 export const IChannelStyle = t.iface([], {
-  "thickness": "number",
-  "barStyle": "IRectStyle",
+  thickness: "number",
+  barStyle: "IRectStyle"
 });
 
 const channelTypeSuite: t.ITypeSuite = {

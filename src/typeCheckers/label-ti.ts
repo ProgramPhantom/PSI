@@ -8,14 +8,14 @@ import collectionTypeSuite from "./collection-ti";
 export const LabelTextPosition = t.union(t.lit("top"), t.lit("bottom"), t.lit("inline"));
 
 export const ILabelConfig = t.iface([], {
-  "labelPosition": "Position",
-  "textPosition": "LabelTextPosition",
+  labelPosition: "Position",
+  textPosition: "LabelTextPosition"
 });
 
 export const ILabel = t.iface(["ICollection"], {
-  "text": t.opt("IText"),
-  "line": t.opt("IArrow"),
-  "labelConfig": "ILabelConfig",
+  text: t.opt("IText"),
+  line: t.opt("IArrow"),
+  labelConfig: "ILabelConfig"
 });
 
 const labelTypeSuite: t.ITypeSuite = {

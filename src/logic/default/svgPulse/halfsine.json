@@ -1,18 +1,18 @@
 {
-    "mountConfig": {
-        "orientation": "top",
-        "alignment": "centre",
-        "noSections": 1,
-        "channelID": null,
-        "index": null
-    },
+  "mountConfig": {
+    "orientation": "top",
+    "alignment": "centre",
+    "noSections": 1,
+    "channelID": null,
+    "index": null
+  },
 
-    "padding": [0, 0, 0, 0],
-    "offset": [0, 0],
-    "path": "\\src\\assets\\halfsine.svg",
-    
-    "contentWidth": 15,
-    "contentHeight": 20,
-    
-    "ref": "halfsine"
+  "padding": [0, 0, 0, 0],
+  "offset": [0, 0],
+  "path": "\\src\\assets\\halfsine.svg",
+
+  "contentWidth": 15,
+  "contentHeight": 20,
+
+  "ref": "halfsine"
 }

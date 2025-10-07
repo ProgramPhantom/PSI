@@ -5,19 +5,23 @@ import * as t from "ts-interface-checker";
 import mountableTypeSuite from "./Mountable-ti";
 // tslint:disable:object-literal-key-quotes
 
-export const Padding = t.union("number", t.tuple("number", "number"), t.tuple("number", "number", "number", "number"));
+export const Padding = t.union(
+  "number",
+  t.tuple("number", "number"),
+  t.tuple("number", "number", "number", "number")
+);
 
 export const Offset = t.tuple("number", "number");
 
 export const Display = t.union(t.lit("none"), t.lit("block"));
 
 export const IVisual = t.iface(["IMountable"], {
-  "offset": t.tuple("number", "number"),
+  offset: t.tuple("number", "number")
 });
 
 export const IDraw = t.iface([], {
-  "draw": t.func("void", t.param("surface", "Element")),
-  "erase": t.func("void"),
+  draw: t.func("void", t.param("surface", "Element")),
+  erase: t.func("void")
 });
 
 const visualTypeSuite: t.ITypeSuite = {

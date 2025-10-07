@@ -1,5 +1,5 @@
-import { Button, Text } from '@blueprintjs/core';
-import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import {Button, Text} from "@blueprintjs/core";
+import React, {ReactNode, useCallback, useEffect, useRef, useState} from "react";
 
 interface ComponentResizerProps {
   children: ReactNode;
@@ -11,7 +11,7 @@ interface ComponentResizerProps {
   defaultWidth?: number;
   defaultHeight?: number;
   onResize?: (width: number, height: number) => void;
-  resizeDirection?: 'horizontal' | 'vertical' | 'both';
+  resizeDirection?: "horizontal" | "vertical" | "both";
   collapsedWidth?: number;
   collapsedHeight?: number;
 }
@@ -26,7 +26,7 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
   defaultWidth = 400,
   defaultHeight = 400,
   onResize,
-  resizeDirection = 'horizontal',
+  resizeDirection = "horizontal",
   collapsedWidth = 20,
   collapsedHeight = 20
 }) => {
@@ -43,44 +43,54 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
   const startWidthRef = useRef<number>(0);
   const startHeightRef = useRef<number>(0);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-    startXRef.current = e.clientX;
-    startYRef.current = e.clientY;
-    startWidthRef.current = width;
-    startHeightRef.current = height;
-    document.body.style.cursor = resizeDirection === 'horizontal' ? 'col-resize' : 
-                                resizeDirection === 'vertical' ? 'row-resize' : 'nw-resize';
-    document.body.style.userSelect = 'none';
-  }, [width, height, resizeDirection]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsResizing(true);
+      startXRef.current = e.clientX;
+      startYRef.current = e.clientY;
+      startWidthRef.current = width;
+      startHeightRef.current = height;
+      document.body.style.cursor =
+        resizeDirection === "horizontal"
+          ? "col-resize"
+          : resizeDirection === "vertical"
+            ? "row-resize"
+            : "nw-resize";
+      document.body.style.userSelect = "none";
+    },
+    [width, height, resizeDirection]
+  );
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizing) return;
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing) return;
 
-    const deltaX = e.clientX - startXRef.current;
-    const deltaY = e.clientY - startYRef.current;
-    
-    let newWidth = width;
-    let newHeight = height;
+      const deltaX = e.clientX - startXRef.current;
+      const deltaY = e.clientY - startYRef.current;
 
-    if (resizeDirection === 'horizontal' || resizeDirection === 'both') {
-      newWidth = Math.max(minWidth, Math.min(maxWidth, startWidthRef.current - deltaX));
-    }
-    
-    if (resizeDirection === 'vertical' || resizeDirection === 'both') {
-      newHeight = Math.max(minHeight, Math.min(maxHeight, startHeightRef.current - deltaY));
-    }
-    
-    setWidth(newWidth);
-    setHeight(newHeight);
-    onResize?.(newWidth, newHeight);
-  }, [isResizing, minWidth, maxWidth, minHeight, maxHeight, width, height, resizeDirection, onResize]);
+      let newWidth = width;
+      let newHeight = height;
+
+      if (resizeDirection === "horizontal" || resizeDirection === "both") {
+        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidthRef.current - deltaX));
+      }
+
+      if (resizeDirection === "vertical" || resizeDirection === "both") {
+        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeightRef.current - deltaY));
+      }
+
+      setWidth(newWidth);
+      setHeight(newHeight);
+      onResize?.(newWidth, newHeight);
+    },
+    [isResizing, minWidth, maxWidth, minHeight, maxHeight, width, height, resizeDirection, onResize]
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsResizing(false);
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
   }, []);
 
   const toggleCollapse = useCallback(() => {
@@ -101,43 +111,46 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
 
   useEffect(() => {
     if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
       };
     }
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
   const getResizeHandleStyle = () => {
     const baseStyle = {
-      position: 'absolute' as const,
-      cursor: isCollapsed ? 'default' : 
-              resizeDirection === 'horizontal' ? 'col-resize' : 
-              resizeDirection === 'vertical' ? 'row-resize' : 'nw-resize',
-      backgroundColor: isResizing ? '#0066cc' : isHovering ? '#e6f3ff' : 'transparent',
+      position: "absolute" as const,
+      cursor: isCollapsed
+        ? "default"
+        : resizeDirection === "horizontal"
+          ? "col-resize"
+          : resizeDirection === "vertical"
+            ? "row-resize"
+            : "nw-resize",
+      backgroundColor: isResizing ? "#0066cc" : isHovering ? "#e6f3ff" : "transparent",
       zIndex: 1000,
-      transition: 'background-color 0.1s ease',
-      
+      transition: "background-color 0.1s ease"
     };
 
-    if (resizeDirection === 'horizontal') {
+    if (resizeDirection === "horizontal") {
       return {
         ...baseStyle,
         left: 0,
         top: 0,
-        width: '4px',
-        height: '100%'
+        width: "4px",
+        height: "100%"
       };
-    } else if (resizeDirection === 'vertical') {
+    } else if (resizeDirection === "vertical") {
       return {
         ...baseStyle,
         left: 0,
         top: 0,
-        width: '100%',
-        height: '4px'
+        width: "100%",
+        height: "4px"
       };
     } else {
       // both - create corner handle
@@ -145,111 +158,111 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
         ...baseStyle,
         right: 0,
         bottom: 0,
-        width: '10px',
-        height: '10px',
-        cursor: 'nw-resize'
+        width: "10px",
+        height: "10px",
+        cursor: "nw-resize"
       };
     }
   };
 
   const getToggleButtonStyle = () => {
-    if (resizeDirection === 'horizontal') {
+    if (resizeDirection === "horizontal") {
       return {
-        position: 'absolute' as const,
-        left: isCollapsed ? '-10px' : '-30px',
-        top: '10px',
-        width: '20px',
-        height: '20px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        position: "absolute" as const,
+        left: isCollapsed ? "-10px" : "-30px",
+        top: "10px",
+        width: "20px",
+        height: "20px",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         zIndex: 5,
-        transition: 'background-color 0.2s ease'
+        transition: "background-color 0.2s ease"
       };
-    } else if (resizeDirection === 'vertical') {
+    } else if (resizeDirection === "vertical") {
       return {
-        position: 'absolute' as const,
-        left: '15px',
-        top: isCollapsed ? '-5px' : '-30px',
-        width: '10px',
-        height: '10px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        position: "absolute" as const,
+        left: "15px",
+        top: isCollapsed ? "-5px" : "-30px",
+        width: "10px",
+        height: "10px",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         zIndex: 5,
-        transition: 'background-color 0.2s ease'
+        transition: "background-color 0.2s ease"
       };
     } else {
       // both - place in top-left corner
       return {
-        position: 'absolute' as const,
-        left: '-30px',
-        top: '-30px',
-        width: '20px',
-        height: '20px',
-        backgroundColor: '#f0f0f0',
-        border: '1px solid #ccc',
-        borderRadius: '3px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        position: "absolute" as const,
+        left: "-30px",
+        top: "-30px",
+        width: "20px",
+        height: "20px",
+        backgroundColor: "#f0f0f0",
+        border: "1px solid #ccc",
+        borderRadius: "3px",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         zIndex: 1001,
-        transition: 'background-color 0.2s ease'
+        transition: "background-color 0.2s ease"
       };
     }
   };
 
   const getCollapsedIndicatorStyle = () => {
-    if (resizeDirection === 'horizontal') {
+    if (resizeDirection === "horizontal") {
       return {
-        position: 'absolute' as const,
-        top: '70px',
-        left: '50%',
-        transform: 'translate(-50%, -50%) rotate(90deg)',
-        color: '#999',
-        fontSize: '14px',
-        whiteSpace: 'nowrap',
+        position: "absolute" as const,
+        top: "70px",
+        left: "50%",
+        transform: "translate(-50%, -50%) rotate(90deg)",
+        color: "#999",
+        fontSize: "14px",
+        whiteSpace: "nowrap",
         zIndex: 5,
-        userSelect: 'none' as const,
+        userSelect: "none" as const,
         transition: "none"
       };
-    } else if (resizeDirection === 'vertical') {
+    } else if (resizeDirection === "vertical") {
       return {
-        position: 'absolute' as const,
-        top: '50%',
-        left: '65px',
-        transform: 'translate(-50%, -50%)',
-        color: '#999',
-        fontSize: '14px',
-        whiteSpace: 'nowrap',
+        position: "absolute" as const,
+        top: "50%",
+        left: "65px",
+        transform: "translate(-50%, -50%)",
+        color: "#999",
+        fontSize: "14px",
+        whiteSpace: "nowrap",
         zIndex: 5,
-        userSelect: 'none' as const,
+        userSelect: "none" as const,
         transition: "none"
       };
     } else {
       return {
-        position: 'absolute' as const,
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        color: '#999',
-        fontSize: '12px',
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap',
+        position: "absolute" as const,
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        color: "#999",
+        fontSize: "12px",
+        fontWeight: "bold",
+        whiteSpace: "nowrap",
         zIndex: 999,
-        userSelect: 'none' as const,
+        userSelect: "none" as const,
         transition: "none"
       };
     }
   };
 
   const getToggleIcon = () => {
-    if (resizeDirection === 'horizontal') {
+    if (resizeDirection === "horizontal") {
       return isCollapsed ? "chevron-left" : "chevron-right";
-    } else if (resizeDirection === 'vertical') {
+    } else if (resizeDirection === "vertical") {
       return isCollapsed ? "chevron-up" : "chevron-down";
     } else {
       return isCollapsed ? "expand-all" : "collapse-all";
@@ -259,20 +272,20 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
   // Determine container dimensions based on resize direction
   const getContainerStyle = () => {
     const baseStyle = {
-      position: 'relative' as const,
-      transition: isResizing ? 'none' : 'width 0.3s ease-in-out, height 0.3s ease-in-out',
+      position: "relative" as const,
+      transition: isResizing ? "none" : "width 0.3s ease-in-out, height 0.3s ease-in-out"
     };
 
-    if (resizeDirection === 'horizontal') {
+    if (resizeDirection === "horizontal") {
       return {
         ...baseStyle,
         width: isCollapsed ? `${collapsedWidth}px` : `${width}px`,
-        height: '100%' // Let child determine height
+        height: "100%" // Let child determine height
       };
-    } else if (resizeDirection === 'vertical') {
+    } else if (resizeDirection === "vertical") {
       return {
         ...baseStyle,
-        width: '100%', // Let child determine width
+        width: "100%", // Let child determine width
         height: isCollapsed ? `${collapsedHeight}px` : `${height}px`
       };
     } else {
@@ -286,17 +299,13 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
   };
 
   return (
-    <div
-      ref={containerRef}
-      style={getContainerStyle()}
-    >
+    <div ref={containerRef} style={getContainerStyle()}>
       {/* Toggle button */}
       <div
         style={getToggleButtonStyle()}
         onClick={toggleCollapse}
-        title={isCollapsed ? "Expand panel" : "Collapse panel"}
-      >
-        <Button icon={getToggleIcon()} variant="minimal" ></Button>
+        title={isCollapsed ? "Expand panel" : "Collapse panel"}>
+        <Button icon={getToggleIcon()} variant="minimal"></Button>
       </div>
 
       {/* Resize handle */}
@@ -313,15 +322,16 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
           <Text>{panelName}</Text>
         </div>
       )}
-       
+
       {/* Content */}
-      <div style={{ 
-        width: '100%', 
-        height: '100%',
-        overflow: 'auto',
-        opacity: isCollapsed ? 0 : 1,
-        transition: 'opacity 0.3s ease-in-out', 
-      }}>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          overflow: "auto",
+          opacity: isCollapsed ? 0 : 1,
+          transition: "opacity 0.3s ease-in-out"
+        }}>
         {children}
       </div>
     </div>

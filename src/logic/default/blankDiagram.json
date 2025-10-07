@@ -1,21 +1,13 @@
 {
-    "sequences": [],
-    "userChildren": [],
-    "offset": [
-        0,
-        0
-    ],
-    "padding": [
-        0,
-        0,
-        0,
-        0
-    ],
-    "contentWidth": 87,
-    "contentHeight": 83,
-    "x": 0,
-    "y": 0,
-    "ref": "diagram",
-    "id": "c8014d41f304e",
-    "type": "diagram"
+  "sequences": [],
+  "userChildren": [],
+  "offset": [0, 0],
+  "padding": [0, 0, 0, 0],
+  "contentWidth": 87,
+  "contentHeight": 83,
+  "x": 0,
+  "y": 0,
+  "ref": "diagram",
+  "id": "c8014d41f304e",
+  "type": "diagram"
 }

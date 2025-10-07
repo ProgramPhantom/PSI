@@ -7,20 +7,26 @@ import paddedBoxTypeSuite from "./paddedBox-ti";
 
 export const Orientation = t.union(t.lit("top"), t.lit("bottom"), t.lit("both"));
 
-export const Alignment = t.union(t.lit("here"), t.lit("centre"), t.lit("far"), t.lit("stretch"), t.lit("none"));
+export const Alignment = t.union(
+  t.lit("here"),
+  t.lit("centre"),
+  t.lit("far"),
+  t.lit("stretch"),
+  t.lit("none")
+);
 
 export const IMountConfig = t.iface([], {
-  "index": t.union("number", "null"),
-  "channelID": t.union("ID", "null"),
-  "sequenceID": t.union("ID", "null"),
-  "orientation": "Orientation",
-  "alignment": "Alignment",
-  "noSections": "number",
-  "mountOn": "boolean",
+  index: t.union("number", "null"),
+  channelID: t.union("ID", "null"),
+  sequenceID: t.union("ID", "null"),
+  orientation: "Orientation",
+  alignment: "Alignment",
+  noSections: "number",
+  mountOn: "boolean"
 });
 
 export const IMountable = t.iface(["IPaddedBox"], {
-  "mountConfig": t.opt("IMountConfig"),
+  mountConfig: t.opt("IMountConfig")
 });
 
 const mountableTypeSuite: t.ITypeSuite = {

@@ -8,11 +8,11 @@ import lineTypeSuite from "./line-ti";
 export const HeadStyle = t.union(t.lit("default"), t.lit("thin"), t.lit("none"));
 
 export const IArrowStyle = t.iface([], {
-  "headStyle": "HeadStyle",
+  headStyle: "HeadStyle"
 });
 
 export const IArrow = t.iface(["ILine"], {
-  "arrowStyle": "IArrowStyle",
+  arrowStyle: "IArrowStyle"
 });
 
 const arrowTypeSuite: t.ITypeSuite = {

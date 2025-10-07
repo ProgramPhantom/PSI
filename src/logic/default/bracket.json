@@ -1,14 +1,14 @@
 {
-    "protrusion": 6,
-    "adjustment": [0, 0],
-    "direction": "right",
+  "protrusion": 6,
+  "adjustment": [0, 0],
+  "direction": "right",
 
-    "style": {
-        "strokeWidth": 1,
-        "bracketType": "square",
-        "expression": 0.5,
-        "stroke": "black"
-    },
+  "style": {
+    "strokeWidth": 1,
+    "bracketType": "square",
+    "expression": 0.5,
+    "stroke": "black"
+  },
 
-    "labelMap": {}
+  "labelMap": {}
 }

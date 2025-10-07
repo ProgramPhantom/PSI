@@ -6,8 +6,8 @@ import collectionTypeSuite from "./collection-ti";
 // tslint:disable:object-literal-key-quotes
 
 export const ILabelGroup = t.iface(["ICollection"], {
-  "labels": t.array("ILabel"),
-  "coreChild": "IVisual",
+  labels: t.array("ILabel"),
+  coreChild: "IVisual"
 });
 
 const labelGroupTypeSuite: t.ITypeSuite = {

@@ -1,163 +1,173 @@
-import { Element, SVG, Element as SVGElement } from '@svgdotjs/svg.js';
+import {Element, SVG, Element as SVGElement} from "@svgdotjs/svg.js";
 import TeXToSVG from "tex-to-svg";
 import defaultText from "./default/text.json";
-import { cascadeID, FillObject, RecursivePartial, sizePrecision } from "./util";
-import { Display, IVisual, Visual } from "./visual";
+import {cascadeID, FillObject, RecursivePartial, sizePrecision} from "./util";
+import {Display, IVisual, Visual} from "./visual";
 
 export const EXTOPX = 38.314;
 export const SCALER = 5;
 
 export interface IText extends IVisual {
-    text: string,
-    style: ITextStyle,
+  text: string;
+  style: ITextStyle;
 }
 
 export interface ITextStyle {
-    fontSize: number,
-    colour: string,
-    background: string | null,
-    display: Display 
+  fontSize: number;
+  colour: string;
+  background: string | null;
+  display: Display;
 }
 
-export type Position = "top" | "right" | "bottom" | "left" | "centre"
-
+export type Position = "top" | "right" | "bottom" | "left" | "centre";
 
 export default class Text extends Visual implements IText {
-    static defaults: {[key: string]: IText} = {"default": {...<IText>defaultText}}
-    get state(): IText {
-        return {
-            style: this.style,
-            text: this.text,
+  static defaults: {[key: string]: IText} = {
+    default: {...(<IText>defaultText)}
+  };
+  get state(): IText {
+    return {
+      style: this.style,
+      text: this.text,
 
-            ...super.state
-        }
-    }
+      ...super.state
+    };
+  }
 
-    intrinsicSize: {width: number, height: number}
-    wHRatio: number
+  intrinsicSize: {width: number; height: number};
+  wHRatio: number;
 
-    text: string;
-    style: ITextStyle;
-    
-    constructor(params: RecursivePartial<IText>, templateName: string="default") {
-        var fullParams: IText = FillObject(params, Text.defaults[templateName])
-        super(fullParams);
-        this.ref = "TEXT"
-        this.text = fullParams.text;
-        this.style = fullParams.style;
+  text: string;
+  style: ITextStyle;
 
-        this.intrinsicSize = this.resolveDimensions();
-        this.wHRatio = this.intrinsicSize.width / this.intrinsicSize.height;
+  constructor(params: RecursivePartial<IText>, templateName: string = "default") {
+    var fullParams: IText = FillObject(params, Text.defaults[templateName]);
+    super(fullParams);
+    this.ref = "TEXT";
+    this.text = fullParams.text;
+    this.style = fullParams.style;
 
-        this.contentHeight = sizePrecision(this.intrinsicSize.height/SCALER * this.style.fontSize/EXTOPX);
-        this.contentWidth = sizePrecision(this.intrinsicSize.width/SCALER * this.style.fontSize/EXTOPX);
+    this.intrinsicSize = this.resolveDimensions();
+    this.wHRatio = this.intrinsicSize.width / this.intrinsicSize.height;
 
-        this.constructSVG()
-    }
+    this.contentHeight = sizePrecision(
+      ((this.intrinsicSize.height / SCALER) * this.style.fontSize) / EXTOPX
+    );
+    this.contentWidth = sizePrecision(
+      ((this.intrinsicSize.width / SCALER) * this.style.fontSize) / EXTOPX
+    );
 
-    constructSVG(): void {
-        // Produce tex
-        const SVGEquation = TeXToSVG(`${this.text}`);  // APPARENTLY this.text is ending up as an int (json parse???) 
+    this.constructSVG();
+  }
 
-        var crudeSvg: SVGElement = SVG(SVGEquation)
+  constructSVG(): void {
+    // Produce tex
+    const SVGEquation = TeXToSVG(`${this.text}`); // APPARENTLY this.text is ending up as an int (json parse???)
 
-        var paths: SVGElement[] = crudeSvg.children()[0].children()
-        var pathDict: {[id: string]: SVGElement } = {}
-        paths.forEach((p) => {
-            pathDict[p.id()] = p
-        })
+    var crudeSvg: SVGElement = SVG(SVGEquation);
 
-        var structureGroup: SVGElement = crudeSvg.children()[1];
+    var paths: SVGElement[] = crudeSvg.children()[0].children();
+    var pathDict: {[id: string]: SVGElement} = {};
+    paths.forEach((p) => {
+      pathDict[p.id()] = p;
+    });
 
-        function replace(svg: SVGElement) {
-            var children: SVGElement[] = svg.children()
+    var structureGroup: SVGElement = crudeSvg.children()[1];
 
-            children.forEach((c) => {
-                if (c.children().length > 0) {
-                    replace(c);
-                } else {
-                    var childId: string = (c.attr('xlink:href') as string);
-                    var childTransform: string = (c.attr("transform") as string);
-                    
+    function replace(svg: SVGElement) {
+      var children: SVGElement[] = svg.children();
 
-                    if (childId !== undefined && childId[0] == "#") {
-                        var pathToReplace: SVGElement =  pathDict[childId.slice(1)];
-                        
-                        // Apply transform to path
-                        if (childTransform !== undefined) {
-                            pathToReplace.attr({"transform": childTransform}) 
-                        }
+      children.forEach((c) => {
+        if (c.children().length > 0) {
+          replace(c);
+        } else {
+          var childId: string = c.attr("xlink:href") as string;
+          var childTransform: string = c.attr("transform") as string;
 
-                        c.replace(pathToReplace)
-                    }
+          if (childId !== undefined && childId[0] == "#") {
+            var pathToReplace: SVGElement = pathDict[childId.slice(1)];
 
-                }
-            })
-        }
-
-        replace(structureGroup);
-
-        crudeSvg.children().forEach(c => {c.remove()})
-        crudeSvg.add(structureGroup)
-
-        this.svg = crudeSvg
-
-        this.svg.attr({height: null, preserveAspectRatio: "xMinYMin"})
-        this.svg.width(this.contentWidth!); 
-        this.svg.attr({"style": `color:${this.style.colour}`});
-
-        var group = this.svg.children()[1];
-    
-        if (this.style.background) {
-            group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0)
-        }
-
-        cascadeID(this.svg, this.id)
-     }
-    
-    // TODO: investigate this
-    // Sets this.width and this.height
-    // Currently needs to add and remove the svg to find these dimensions, not ideal
-    resolveDimensions(): {width: number, height: number} {
-        var SVGEquation: string = TeXToSVG(`${this.text}`); 
-        
-        var SVGobj: SVGElement = SVG(SVGEquation);
-        
-        SVGobj.id("svgTempID");
-        SVGobj.attr({preserveAspectRatio: "xMinYMin"})
-
-        
-        var exWidthString: string = <string>SVGobj.width();
-        var exHeightString: string = <string>SVGobj.height();
-        
-        exWidthString = Array.from(exWidthString).splice(0, exWidthString.length-2).join("");
-        exHeightString = Array.from(exHeightString).splice(0, exHeightString.length-2).join("");
-
-        var exWidth: number = Number(exWidthString);
-        var exHeight: number = Number(exHeightString);
-
-        SVGobj.remove();
-
-        return {width: exWidth * EXTOPX, height: exHeight * EXTOPX}
-    }
-
-    draw(surface: Element) {
-        
-        if (this.dirty) {
-            if (this.svg) {
-                this.svg.remove();
+            // Apply transform to path
+            if (childTransform !== undefined) {
+              pathToReplace.attr({transform: childTransform});
             }
 
-            this.svg?.move(this.contentX, this.contentY);
-            this.svg?.attr({"data-position": this.positionMethod, "data-ownership": this.ownershipType});
-
-            if (this.svg) {
-                surface.add(this.svg);
-            }
+            c.replace(pathToReplace);
+          }
         }
+      });
     }
 
-    getInternalRepresentation(): SVGElement | undefined {
-        return this.svg
+    replace(structureGroup);
+
+    crudeSvg.children().forEach((c) => {
+      c.remove();
+    });
+    crudeSvg.add(structureGroup);
+
+    this.svg = crudeSvg;
+
+    this.svg.attr({height: null, preserveAspectRatio: "xMinYMin"});
+    this.svg.width(this.contentWidth!);
+    this.svg.attr({style: `color:${this.style.colour}`});
+
+    var group = this.svg.children()[1];
+
+    if (this.style.background) {
+      group.add(SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`), 0);
     }
+
+    cascadeID(this.svg, this.id);
+  }
+
+  // TODO: investigate this
+  // Sets this.width and this.height
+  // Currently needs to add and remove the svg to find these dimensions, not ideal
+  resolveDimensions(): {width: number; height: number} {
+    var SVGEquation: string = TeXToSVG(`${this.text}`);
+
+    var SVGobj: SVGElement = SVG(SVGEquation);
+
+    SVGobj.id("svgTempID");
+    SVGobj.attr({preserveAspectRatio: "xMinYMin"});
+
+    var exWidthString: string = <string>SVGobj.width();
+    var exHeightString: string = <string>SVGobj.height();
+
+    exWidthString = Array.from(exWidthString)
+      .splice(0, exWidthString.length - 2)
+      .join("");
+    exHeightString = Array.from(exHeightString)
+      .splice(0, exHeightString.length - 2)
+      .join("");
+
+    var exWidth: number = Number(exWidthString);
+    var exHeight: number = Number(exHeightString);
+
+    SVGobj.remove();
+
+    return {width: exWidth * EXTOPX, height: exHeight * EXTOPX};
+  }
+
+  draw(surface: Element) {
+    if (this.dirty) {
+      if (this.svg) {
+        this.svg.remove();
+      }
+
+      this.svg?.move(this.contentX, this.contentY);
+      this.svg?.attr({
+        "data-position": this.positionMethod,
+        "data-ownership": this.ownershipType
+      });
+
+      if (this.svg) {
+        surface.add(this.svg);
+      }
+    }
+  }
+
+  getInternalRepresentation(): SVGElement | undefined {
+    return this.svg;
+  }
 }

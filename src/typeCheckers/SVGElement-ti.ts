@@ -5,12 +5,11 @@ import * as t from "ts-interface-checker";
 import visualTypeSuite from "./Visual-ti";
 // tslint:disable:object-literal-key-quotes
 
-export const ISVGStyle = t.iface([], {
-});
+export const ISVGStyle = t.iface([], {});
 
 export const ISVGElement = t.iface(["IVisual"], {
-  "svgDataRef": "string",
-  "style": "ISVGStyle",
+  svgDataRef: "string",
+  style: "ISVGStyle"
 });
 
 const svgElementTypeSuite: t.ITypeSuite = {

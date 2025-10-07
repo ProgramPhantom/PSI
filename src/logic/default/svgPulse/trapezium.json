@@ -1,17 +1,17 @@
 {
-    "mountConfig": {
-        "orientation": "top",
-        "alignment": "centre",
-        "noSections": 1,
-        "channelID": null,
-        "index": null
-    },
+  "mountConfig": {
+    "orientation": "top",
+    "alignment": "centre",
+    "noSections": 1,
+    "channelID": null,
+    "index": null
+  },
 
-    "padding": [0, 0, 0, 0],
-    "offset": [0, 1],
-    "path": "\\src\\assets\\trapezium.svg",
-    "contentWidth": 60,
-    "contentHeight": 10,
-    
-    "ref": "trapezium"
+  "padding": [0, 0, 0, 0],
+  "offset": [0, 1],
+  "path": "\\src\\assets\\trapezium.svg",
+  "contentWidth": 60,
+  "contentHeight": 10,
+
+  "ref": "trapezium"
 }

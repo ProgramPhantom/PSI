@@ -7,12 +7,12 @@ import * as t from "ts-interface-checker";
 export const Orientation = t.union(t.lit("horizontal"), t.lit("vertical"), t.lit("angled"));
 
 export const ILineLike = t.iface(["IVisual"], {
-  "adjustment": t.tuple("number", "number"),
-  "orientation": "Orientation",
+  adjustment: t.tuple("number", "number"),
+  orientation: "Orientation"
 });
 
 const lineLikeTypeSuite: t.ITypeSuite = {
   Orientation,
-  ILineLike,
+  ILineLike
 };
 export default lineLikeTypeSuite;

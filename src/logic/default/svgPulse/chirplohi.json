@@ -1,17 +1,17 @@
 {
-    "mountConfig": {
-        "orientation": "top",
-        "alignment": "centre",
-        "noSections": 1,
-        "channelID": null,
-        "index": null
-    },
+  "mountConfig": {
+    "orientation": "top",
+    "alignment": "centre",
+    "noSections": 1,
+    "channelID": null,
+    "index": null
+  },
 
-    "padding": [0, 1, 0, 1],
-    "offset": [0, 1],
-    "path": "\\src\\assets\\chirplohi.svg",
-    "contentWidth": 50,
-    "contentHeight": 20,
-    
-    "ref": "chirplohi"
+  "padding": [0, 1, 0, 1],
+  "offset": [0, 1],
+  "path": "\\src\\assets\\chirplohi.svg",
+  "contentWidth": 50,
+  "contentHeight": 20,
+
+  "ref": "chirplohi"
 }

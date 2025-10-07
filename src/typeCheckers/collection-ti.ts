@@ -5,8 +5,7 @@ import * as t from "ts-interface-checker";
 import visualTypeSuite from "./Visual-ti";
 // tslint:disable:object-literal-key-quotes
 
-export const ICollection = t.iface(["IVisual"], {
-});
+export const ICollection = t.iface(["IVisual"], {});
 
 const collectionTypeSuite: t.ITypeSuite = {
   ICollection,

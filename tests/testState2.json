@@ -1,99 +1,67 @@
 {
-    "sequences": [
+  "sequences": [
+    {
+      "channels": [
         {
-            "channels": [
-                {
-                    "style": {
-                        "thickness": 3,
-                        "barStyle": {
-                            "fill": "#000000",
-                            "stroke": null,
-                            "strokeWidth": null
-                        }
-                    },
-                    "label": {
-                        "style": {
-                            "fontSize": 50,
-                            "colour": "black",
-                            "background": null,
-                            "display": "block"
-                        },
-                        "text": "^{1}\\mathrm{H}",
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            2,
-                            0
-                        ],
-                        "contentWidth": 27,
-                        "contentHeight": 20,
-                        "x": 5,
-                        "y": 25.5,
-                        "ref": "TEXT",
-                        "id": "5fdd5783f2d2a",
-                        "type": "lower-abstract"
-                    },
-                    "mountedElements": [],
-                    "userChildren": [],
-                    "offset": [
-                        0,
-                        0
-                    ],
-                    "padding": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "contentWidth": 27,
-                    "contentHeight": 53,
-                    "x": 5,
-                    "y": 5,
-                    "ref": "my-channel",
-                    "id": "a2dc7e0de6f13",
-                    "type": "channel"
-                }
-            ],
-            "userChildren": [],
-            "offset": [
-                0,
-                0
-            ],
-            "padding": [
-                5,
-                5,
-                5,
-                5
-            ],
+          "style": {
+            "thickness": 3,
+            "barStyle": {
+              "fill": "#000000",
+              "stroke": null,
+              "strokeWidth": null
+            }
+          },
+          "label": {
+            "style": {
+              "fontSize": 50,
+              "colour": "black",
+              "background": null,
+              "display": "block"
+            },
+            "text": "^{1}\\mathrm{H}",
+            "offset": [0, 0],
+            "padding": [0, 0, 2, 0],
             "contentWidth": 27,
-            "contentHeight": 53,
-            "x": 0,
-            "y": 0,
-            "ref": "sequence",
-            "id": "a38b1329f9fe7",
-            "type": "sequence"
+            "contentHeight": 20,
+            "x": 5,
+            "y": 25.5,
+            "ref": "TEXT",
+            "id": "5fdd5783f2d2a",
+            "type": "lower-abstract"
+          },
+          "mountedElements": [],
+          "userChildren": [],
+          "offset": [0, 0],
+          "padding": [0, 0, 0, 0],
+          "contentWidth": 27,
+          "contentHeight": 53,
+          "x": 5,
+          "y": 5,
+          "ref": "my-channel",
+          "id": "a2dc7e0de6f13",
+          "type": "channel"
         }
-    ],
-    "userChildren": [],
-    "offset": [
-        0,
-        0
-    ],
-    "padding": [
-        0,
-        0,
-        0,
-        0
-    ],
-    "contentWidth": 37,
-    "contentHeight": 63,
-    "x": 0,
-    "y": 0,
-    "ref": "diagram",
-    "id": "9972b66e0a749",
-    "type": "diagram"
+      ],
+      "userChildren": [],
+      "offset": [0, 0],
+      "padding": [5, 5, 5, 5],
+      "contentWidth": 27,
+      "contentHeight": 53,
+      "x": 0,
+      "y": 0,
+      "ref": "sequence",
+      "id": "a38b1329f9fe7",
+      "type": "sequence"
+    }
+  ],
+  "userChildren": [],
+  "offset": [0, 0],
+  "padding": [0, 0, 0, 0],
+  "contentWidth": 37,
+  "contentHeight": 63,
+  "x": 0,
+  "y": 0,
+  "ref": "diagram",
+  "id": "9972b66e0a749",
+  "type": "diagram"
 }

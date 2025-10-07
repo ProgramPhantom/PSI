@@ -1,21 +1,21 @@
 {
-    "padding": [0, 0, 0, 0],
-    "offset": [0, 0],
-    "text": "\\textrm{Abstract}",
-    "mountConfig": {
-        "orientation": "top",
-        "alignment": "centre",
-        "noSections": 1,
-        "channelID": null
-    },
-    
-    "style": {
-        "contentWidth": 100,
-        "contentHeight": 30,
-        "fill": "black",
-        "stroke": null,
-        "strokeWidth": 0
-    },
+  "padding": [0, 0, 0, 0],
+  "offset": [0, 0],
+  "text": "\\textrm{Abstract}",
+  "mountConfig": {
+    "orientation": "top",
+    "alignment": "centre",
+    "noSections": 1,
+    "channelID": null
+  },
 
-    "labelMap": {}
+  "style": {
+    "contentWidth": 100,
+    "contentHeight": 30,
+    "fill": "black",
+    "stroke": null,
+    "strokeWidth": 0
+  },
+
+  "labelMap": {}
 }

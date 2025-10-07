@@ -1,17 +1,17 @@
 {
-    "mountConfig": {
-        "orientation": "both",
-        "alignment": "centre",
-        "noSections": 1,
-        "channelID": null,
-        "index": null
-    },
+  "mountConfig": {
+    "orientation": "both",
+    "alignment": "centre",
+    "noSections": 1,
+    "channelID": null,
+    "index": null
+  },
 
-    "padding": [0, 0, 0, 0],
-    "offset": [0, 0],
-    "path": "\\src\\assets\\acquire2.svg",
-    "contentWidth": 150,
-    "contentHeight": 75,
-    
-    "ref": "acquire"
+  "padding": [0, 0, 0, 0],
+  "offset": [0, 0],
+  "path": "\\src\\assets\\acquire2.svg",
+  "contentWidth": 150,
+  "contentHeight": 75,
+
+  "ref": "acquire"
 }

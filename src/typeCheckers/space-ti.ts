@@ -5,8 +5,7 @@ import * as t from "ts-interface-checker";
 import visualTypeSuite from "./Visual-ti";
 // tslint:disable:object-literal-key-quotes
 
-export const ISpace = t.iface(["IVisual"], {
-});
+export const ISpace = t.iface(["IVisual"], {});
 
 const spaceTypeSuite: t.ITypeSuite = {
   ISpace,

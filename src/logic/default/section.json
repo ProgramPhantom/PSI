@@ -1,15 +1,15 @@
 {
-    "indexRange": [0, 1],
-    "protrusion": 6,
-    "adjustment": [0, 0],
-    "direction": "down",
+  "indexRange": [0, 1],
+  "protrusion": 6,
+  "adjustment": [0, 0],
+  "direction": "down",
 
-    "style": {
-        "strokeWidth": 1,
-        "bracketType": "square",
-        "expression": 0.5,
-        "stroke": "black"
-    },
+  "style": {
+    "strokeWidth": 1,
+    "bracketType": "square",
+    "expression": 0.5,
+    "stroke": "black"
+  },
 
-    "labelMap": {}
+  "labelMap": {}
 }

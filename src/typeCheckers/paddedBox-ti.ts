@@ -5,24 +5,28 @@ import * as t from "ts-interface-checker";
 import spaceTypeSuite from "./spacial-ti";
 // tslint:disable:object-literal-key-quotes
 
-export const Padding = t.union("number", t.tuple("number", "number"), t.tuple("number", "number", "number", "number"));
+export const Padding = t.union(
+  "number",
+  t.tuple("number", "number"),
+  t.tuple("number", "number", "number", "number")
+);
 
 export const Offset = t.tuple("number", "number");
 
 export const Dim = t.iface([], {
-  "width": t.opt("number"),
-  "height": t.opt("number"),
+  width: t.opt("number"),
+  height: t.opt("number")
 });
 
 export const Bounds = t.iface([], {
-  "top": "number",
-  "bottom": "number",
-  "left": "number",
-  "right": "number",
+  top: "number",
+  bottom: "number",
+  left: "number",
+  right: "number"
 });
 
 export const IPaddedBox = t.iface(["ISpacial"], {
-  "padding": t.tuple("number", "number", "number", "number"),
+  padding: t.tuple("number", "number", "number", "number")
 });
 
 const paddedBoxTypeSuite: t.ITypeSuite = {

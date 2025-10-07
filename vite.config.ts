@@ -1,40 +1,38 @@
-
-import { defineConfig } from 'vite'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
-import react from '@vitejs/plugin-react'
+import {defineConfig} from "vite";
+import {nodePolyfills} from "vite-plugin-node-polyfills";
+import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   appType: "mpa",
   esbuild: {
     supported: {
-      'top-level-await': true //browsers can handle top-level-await features
-    },
+      "top-level-await": true //browsers can handle top-level-await features
+    }
   },
-  base: '/PSI/',
+  base: "/PSI/",
   plugins: [
     react(),
     nodePolyfills({
       // To add only specific polyfills, add them here. If no option is passed, adds all polyfills
-      include: ['path'],
+      include: ["path"],
       // To exclude specific polyfills, add them to this list. Note: if include is provided, this has no effect
       exclude: [
-        'http', // Excludes the polyfill for `http` and `node:http`.
+        "http" // Excludes the polyfill for `http` and `node:http`.
       ],
       // Whether to polyfill specific globals.
       globals: {
         Buffer: true, // can also be 'build', 'dev', or false
         global: true,
-        process: true,
+        process: true
       },
       // Override the default polyfills for specific modules.
       overrides: {
         // Since `fs` is not supported in browsers, we can use the `memfs` package to polyfill it.
-        fs: 'memfs',
+        fs: "memfs"
       },
       // Whether to polyfill `node:` protocol imports.
-      protocolImports: true,
-    
-    }),
-  ],
-})
+      protocolImports: true
+    })
+  ]
+});

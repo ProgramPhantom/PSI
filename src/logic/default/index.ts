@@ -3,24 +3,24 @@
 // export {default as Abstract} from "./Abstract.json";
 // export {default as Aquire} from "./Aquire.json";
 
-import { svgPulses } from "./svgPulse"
-import { simplePulses } from "./simplePulse"
-import * as Abstract from "./abstract.json"
-import * as Span from "./span.json"
-import * as defMountable from "./mountable.json"
-import * as defVisual from "./visual.json"
+import {svgPulses} from "./svgPulse";
+import {simplePulses} from "./simplePulse";
+import * as Abstract from "./abstract.json";
+import * as Span from "./span.json";
+import * as defMountable from "./mountable.json";
+import * as defVisual from "./visual.json";
 
 import * as Channel from "./channel.json";
-import * as Space from "./space.json"
+import * as Space from "./space.json";
 
 export const mountableElements: {[name: string]: any} = {
-    ...svgPulses,
-    ...simplePulses,
-    "abstract": Abstract,
-    "span": Span,
+  ...svgPulses,
+  ...simplePulses,
+  abstract: Abstract,
+  span: Span
 };
 
 export const defaultMountable = defMountable;
 export const defaultVisual = defVisual;
 export const defaultChannel = Channel;
-export const defaultSpace = Space
+export const defaultSpace = Space;
