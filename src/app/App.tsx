@@ -13,6 +13,7 @@ import ENGINE from '../logic/engine';
 import { ILineStyle } from '../logic/line';
 import { Visual } from '../logic/visual';
 import { IDrawArrowConfig } from '../features/canvas/LineTool';
+import { WelcomeSplash } from './WelcomeSplash';
 
 export const myToaster: Toaster = await OverlayToaster.createAsync({ position: "bottom",}, {
   domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster),
@@ -50,20 +51,6 @@ function App() {
 
   const [selectedTool, setSelectedTool] = useState<Tool>({type: "select", config: {}})
 
-  
-  // Welcome dialog state
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState(false); // can change to false for local storage check
-  // Check localStorage on first render
-  useEffect(() => {
-    const hasSeen = localStorage.getItem("hasSeenWelcome");
-    if (hasSeen !== "true") {
-      setIsWelcomeOpen(true);
-      localStorage.setItem("hasSeenWelcome", "true");
-    }
-  }, []);
-
-
-
   // Set up automatic saving every 2 seconds
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -74,7 +61,6 @@ function App() {
   //   return () => clearInterval(interval);
   // }, []);
 
-  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectedTool={selectedTool} setTool={setSelectedTool}></Canvas>
 
   const setTool = (tool: Tool) => {
     setSelectedTool(tool);
@@ -125,7 +111,7 @@ function App() {
     }
   }
 
-  function SavePNG(width: number, height: number, filename: string) {
+  const SavePNG = (width: number, height: number, filename: string) => {
     try {
       // Get the current SVG surface from the ENGINE
       const surface = ENGINE.surface;
@@ -214,7 +200,7 @@ function App() {
     }
   }
 
-  function SelectElement(element: Visual | undefined) {
+  const SelectElement = (element: Visual | undefined) => {
     if (element === undefined) {
       setSelectedElement(undefined);
       setForm(null);
@@ -224,9 +210,12 @@ function App() {
     setSelectedElement(element);
   }
 
-  function openConsole() {
+  const openConsole = () => {
     setIsConsoleOpen(true);
   }
+
+
+  const canvas: ReactNode = <Canvas select={SelectElement} selectedElement={selectedElement} selectedTool={selectedTool} setTool={setSelectedTool}></Canvas>
 
   return (
       <>
@@ -273,30 +262,11 @@ function App() {
         size="50%"
         title="Console Output"
         icon="console">
-      <Console isOpen={isConsoleOpen} />
+        <Console isOpen={isConsoleOpen} />
       </Drawer>
 
 
-
-      {/* Welcome Dialog */}
-      <Dialog
-      isOpen={isWelcomeOpen}
-      onClose={() => setIsWelcomeOpen(false)}
-      title="Welcome to PSI"
-      canEscapeKeyClose={true}
-      canOutsideClickClose={true}>
-      <DialogBody>
-        <p>Welcome to PSI! This application allows you to create and edit pulse sequence diagrams easily.</p>
-        <p>Use the toolbar at the top to save your diagrams as SVG or PNG. Create a channel on the right menu and select elements and drag them onto the channel. Edit idividual elements by clicking to select them and using the right menu. </p>
-        <p><strong>Credits:</strong> Developed by Henry Varley with contributions from: Gabriel Vilella Nilsson</p>
-      </DialogBody>
-      <DialogFooter>
-        <div className="bp3-dialog-footer-actions">
-          <Button intent="primary" onClick={() => setIsWelcomeOpen(false)}>Got it!</Button>
-        </div>
-      </DialogFooter>
-    </Dialog>
-
+      <WelcomeSplash></WelcomeSplash>
   </>
   )
 }
