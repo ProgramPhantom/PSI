@@ -8,7 +8,7 @@ import visualTypeSuite from "./Visual-ti";
 export const ICollection = t.iface(["IVisual"], {});
 
 const collectionTypeSuite: t.ITypeSuite = {
-  ICollection,
-  ...visualTypeSuite
+	ICollection,
+	...visualTypeSuite
 };
 export default collectionTypeSuite;

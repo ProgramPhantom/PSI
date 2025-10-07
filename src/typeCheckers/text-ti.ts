@@ -6,29 +6,29 @@ import visualTypeSuite from "./Visual-ti";
 // tslint:disable:object-literal-key-quotes
 
 export const IText = t.iface(["IVisual"], {
-  text: "string",
-  style: "ITextStyle"
+	text: "string",
+	style: "ITextStyle"
 });
 
 export const ITextStyle = t.iface([], {
-  fontSize: "number",
-  colour: "string",
-  background: t.union("string", "null"),
-  display: "Display"
+	fontSize: "number",
+	colour: "string",
+	background: t.union("string", "null"),
+	display: "Display"
 });
 
 export const Position = t.enumtype({
-  top: "top",
-  right: "right",
-  bottom: "bottom",
-  left: "left",
-  centre: "centre"
+	top: "top",
+	right: "right",
+	bottom: "bottom",
+	left: "left",
+	centre: "centre"
 });
 
 const textTypeSuite: t.ITypeSuite = {
-  IText,
-  ITextStyle,
-  Position,
-  ...visualTypeSuite
+	IText,
+	ITextStyle,
+	Position,
+	...visualTypeSuite
 };
 export default textTypeSuite;

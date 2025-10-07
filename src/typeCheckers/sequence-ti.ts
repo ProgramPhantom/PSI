@@ -6,22 +6,22 @@ import collectionTypeSuite from "./collection-ti";
 // tslint:disable:object-literal-key-quotes
 
 export const ISequence = t.iface(["ICollection"], {
-  channels: t.array("IChannel")
+	channels: t.array("IChannel")
 });
 
 export const OccupancyStatus = t.union("Visual", t.lit("."), "undefined");
 
 export const SequenceNamedStructures = t.union(
-  t.lit("channel column"),
-  t.lit("label column"),
-  t.lit("label col | pulse columns"),
-  t.lit("pulse columns")
+	t.lit("channel column"),
+	t.lit("label column"),
+	t.lit("label col | pulse columns"),
+	t.lit("pulse columns")
 );
 
 const sequenceTypeSuite: t.ITypeSuite = {
-  ISequence,
-  OccupancyStatus,
-  SequenceNamedStructures,
-  ...collectionTypeSuite
+	ISequence,
+	OccupancyStatus,
+	SequenceNamedStructures,
+	...collectionTypeSuite
 };
 export default sequenceTypeSuite;

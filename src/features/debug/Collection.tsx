@@ -4,100 +4,100 @@ import BindingsDebug from "./Bindings";
 import {IPaddedBoxDebug} from "./PaddedBox";
 
 interface ICollectionDebug extends IPaddedBoxDebug {
-  element: Collection;
-  headColour?: string;
-  border?: string;
+	element: Collection;
+	headColour?: string;
+	border?: string;
 }
 
 var globalStyle: CSSProperties = {
-  position: "absolute",
-  pointerEvents: "none"
+	position: "absolute",
+	pointerEvents: "none"
 };
 
 const CollectionDebug: React.FC<ICollectionDebug> = (props) => {
-  var childStyle: CSSProperties = {
-    border: props.border ? props.border : "dotted",
-    strokeOpacity: 0.3,
-    borderWidth: "1px",
-    opacity: 0.4,
-    fill: "none",
+	var childStyle: CSSProperties = {
+		border: props.border ? props.border : "dotted",
+		strokeOpacity: 0.3,
+		borderWidth: "1px",
+		opacity: 0.4,
+		fill: "none",
 
-    ...globalStyle
-  };
+		...globalStyle
+	};
 
-  var headStyle: CSSProperties = {
-    ...childStyle,
-    background: "none",
-    opacity: 0.4
-  };
+	var headStyle: CSSProperties = {
+		...childStyle,
+		background: "none",
+		opacity: 0.4
+	};
 
-  return (
-    <>
-      {props.element.children.map((c, i) => {
-        var x1 = c.x;
-        var y1 = c.y;
-        var width = c.width;
-        var height = c.height;
+	return (
+		<>
+			{props.element.children.map((c, i) => {
+				var x1 = c.x;
+				var y1 = c.y;
+				var width = c.width;
+				var height = c.height;
 
-        if (i == 0) {
-          return (
-            <>
-              <div
-                style={{
-                  position: "absolute",
-                  left: x1,
-                  top: y1,
-                  fontSize: "3px",
-                  margin: "0px",
-                  textAlign: "center"
-                }}>
-                {i}
-              </div>
-              <div
-                style={{
-                  left: x1,
-                  top: y1,
-                  width: width,
-                  height: height,
-                  ...headStyle
-                }}>
-                <p style={{fontSize: 5}}>{width}</p>
-              </div>
-            </>
-          );
-        } else {
-          return (
-            <>
-              <div
-                style={{
-                  position: "absolute",
-                  left: x1,
-                  top: y1,
-                  fontSize: "3px",
-                  margin: "0px",
-                  textAlign: "center"
-                }}>
-                {" "}
-              </div>
-              <div
-                style={{
-                  left: x1,
-                  top: y1,
-                  width: width,
-                  height: height,
-                  ...childStyle
-                }}>
-                {width}
-              </div>
-            </>
-          );
-        }
-      })}
-      {props.element.children.map((c) => {
-        return <BindingsDebug element={c}></BindingsDebug>;
-      })}
-    </>
-  );
+				if (i == 0) {
+					return (
+						<>
+							<div
+								style={{
+									position: "absolute",
+									left: x1,
+									top: y1,
+									fontSize: "3px",
+									margin: "0px",
+									textAlign: "center"
+								}}>
+								{i}
+							</div>
+							<div
+								style={{
+									left: x1,
+									top: y1,
+									width: width,
+									height: height,
+									...headStyle
+								}}>
+								<p style={{fontSize: 5}}>{width}</p>
+							</div>
+						</>
+					);
+				} else {
+					return (
+						<>
+							<div
+								style={{
+									position: "absolute",
+									left: x1,
+									top: y1,
+									fontSize: "3px",
+									margin: "0px",
+									textAlign: "center"
+								}}>
+								{" "}
+							</div>
+							<div
+								style={{
+									left: x1,
+									top: y1,
+									width: width,
+									height: height,
+									...childStyle
+								}}>
+								{width}
+							</div>
+						</>
+					);
+				}
+			})}
+			{props.element.children.map((c) => {
+				return <BindingsDebug element={c}></BindingsDebug>;
+			})}
+		</>
+	);
 };
 
 export default CollectionDebug;

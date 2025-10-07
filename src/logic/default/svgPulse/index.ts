@@ -12,16 +12,16 @@ import * as ChirpHiLo from "./chirphilo.json";
 import * as ChirpLoHi from "./chirplohi.json";
 
 export const svgPulses = {
-  acquire: Acquire,
-  halfsine: HalfSine,
-  amp: AmpSeries,
-  "180": P180,
-  trap: Trapezium,
-  talltrap: TallTrapezium,
+	acquire: Acquire,
+	halfsine: HalfSine,
+	amp: AmpSeries,
+	"180": P180,
+	trap: Trapezium,
+	talltrap: TallTrapezium,
 
-  saltirehilo: SaltireHiLo,
-  saltirelohi: SaltireLoHi,
+	saltirehilo: SaltireHiLo,
+	saltirelohi: SaltireLoHi,
 
-  chirphilo: ChirpHiLo,
-  chirplohi: ChirpLoHi
+	chirphilo: ChirpHiLo,
+	chirplohi: ChirpLoHi
 };

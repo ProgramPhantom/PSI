@@ -1,350 +1,350 @@
 {
-  "internal": {
-    "diagram": {
-      "ref": "diagram",
-      "padding": [0, 0, 0, 0],
-      "offset": [0, 0],
-      "sequences": []
-    },
-    "sequence": {
-      "ref": "sequence",
-      "padding": [5, 5, 5, 5],
-      "offset": [0, 0],
+	"internal": {
+		"diagram": {
+			"ref": "diagram",
+			"padding": [0, 0, 0, 0],
+			"offset": [0, 0],
+			"sequences": []
+		},
+		"sequence": {
+			"ref": "sequence",
+			"padding": [5, 5, 5, 5],
+			"offset": [0, 0],
 
-      "channels": []
-    },
-    "channel": {
-      "mountedElements": [],
-      "padding": [0, 0, 0, 0],
-      "offset": [0, 0],
-      "ref": "my-channel",
-      "sequenceID": "",
+			"channels": []
+		},
+		"channel": {
+			"mountedElements": [],
+			"padding": [0, 0, 0, 0],
+			"offset": [0, 0],
+			"ref": "my-channel",
+			"sequenceID": "",
 
-      "style": {
-        "thickness": 3,
-        "barStyle": {
-          "fill": "#000000",
-          "stroke": null,
-          "strokeWidth": null
-        }
-      },
+			"style": {
+				"thickness": 3,
+				"barStyle": {
+					"fill": "#000000",
+					"stroke": null,
+					"strokeWidth": null
+				}
+			},
 
-      "channelSymbol": {
-        "text": "^{1}\\mathrm{H}",
-        "offset": [0, 0],
-        "padding": [0, 0, 0, 0],
-        "ref": "channel-label",
+			"channelSymbol": {
+				"text": "^{1}\\mathrm{H}",
+				"offset": [0, 0],
+				"padding": [0, 0, 0, 0],
+				"ref": "channel-label",
 
-        "style": {
-          "fontSize": 20,
-          "colour": "black",
-          "background": null,
-          "display": "none"
-        }
-      }
-    },
-    "arrow": {
-      "ref": "arrow",
-      "padding": [0, 0, 0, 0],
-      "offset": [0, 0],
+				"style": {
+					"fontSize": 20,
+					"colour": "black",
+					"background": null,
+					"display": "none"
+				}
+			}
+		},
+		"arrow": {
+			"ref": "arrow",
+			"padding": [0, 0, 0, 0],
+			"offset": [0, 0],
 
-      "adjustment": [0, 0],
-      "orientation": "horizontal",
+			"adjustment": [0, 0],
+			"orientation": "horizontal",
 
-      "arrowStyle": {
-        "headStyle": "default"
-      },
+			"arrowStyle": {
+				"headStyle": "default"
+			},
 
-      "style": {
-        "stroke": "black",
-        "thickness": 1,
-        "dashing": [0, 0]
-      }
-    },
-    "line": {
-      "padding": [0, 0, 0, 0],
-      "offset": [0, 0],
-      "adjustment": [0, 0],
-      "ref": "line",
-      "orientation": "angled",
+			"style": {
+				"stroke": "black",
+				"thickness": 1,
+				"dashing": [0, 0]
+			}
+		},
+		"line": {
+			"padding": [0, 0, 0, 0],
+			"offset": [0, 0],
+			"adjustment": [0, 0],
+			"ref": "line",
+			"orientation": "angled",
 
-      "style": {
-        "stroke": "black",
-        "thickness": 1,
-        "dashing": [7, 7]
-      }
-    },
-    "text": {
-      "ref": "text",
+			"style": {
+				"stroke": "black",
+				"thickness": 1,
+				"dashing": [7, 7]
+			}
+		},
+		"text": {
+			"ref": "text",
 
-      "text": "\\textrm{H}",
-      "padding": [0, 0, 2, 0],
-      "offset": [0, 0],
+			"text": "\\textrm{H}",
+			"padding": [0, 0, 2, 0],
+			"offset": [0, 0],
 
-      "style": {
-        "fontSize": 15,
-        "colour": "black",
-        "background": null,
-        "display": "block"
-      }
-    },
+			"style": {
+				"fontSize": 15,
+				"colour": "black",
+				"background": null,
+				"display": "block"
+			}
+		},
 
-    "svgElements": {
-      "180": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+		"svgElements": {
+			"180": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 0],
-        "svgDataRef": "180",
-        "contentWidth": 50,
-        "contentHeight": 50,
+				"padding": [0, 0, 0, 0],
+				"offset": [0, 0],
+				"svgDataRef": "180",
+				"contentWidth": 50,
+				"contentHeight": 50,
 
-        "ref": "180",
-        "style": {}
-      },
-      "acquire": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "180",
+				"style": {}
+			},
+			"acquire": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 0],
-        "svgDataRef": "acquire",
-        "contentWidth": 150,
-        "contentHeight": 75,
+				"padding": [0, 0, 0, 0],
+				"offset": [0, 0],
+				"svgDataRef": "acquire",
+				"contentWidth": 150,
+				"contentHeight": 75,
 
-        "ref": "acquire",
-        "style": {}
-      },
-      "amp": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "acquire",
+				"style": {}
+			},
+			"amp": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 1],
-        "svgDataRef": "amp",
-        "contentWidth": 15,
-        "contentHeight": 40,
+				"padding": [0, 0, 0, 0],
+				"offset": [0, 1],
+				"svgDataRef": "amp",
+				"contentWidth": 15,
+				"contentHeight": 40,
 
-        "ref": "amp",
-        "style": {}
-      },
-      "chirphilo": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "amp",
+				"style": {}
+			},
+			"chirphilo": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 1],
-        "svgDataRef": "chirphilo",
-        "contentWidth": 50,
-        "contentHeight": 20,
+				"padding": [0, 0, 0, 0],
+				"offset": [0, 1],
+				"svgDataRef": "chirphilo",
+				"contentWidth": 50,
+				"contentHeight": 20,
 
-        "ref": "chirphilo",
-        "style": {}
-      },
-      "chirplohi": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "chirphilo",
+				"style": {}
+			},
+			"chirplohi": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 1, 0, 1],
-        "offset": [0, 1],
-        "svgDataRef": "chirplohi",
-        "contentWidth": 50,
-        "contentHeight": 20,
+				"padding": [0, 1, 0, 1],
+				"offset": [0, 1],
+				"svgDataRef": "chirplohi",
+				"contentWidth": 50,
+				"contentHeight": 20,
 
-        "ref": "chirplohi",
-        "style": {}
-      },
-      "halfsine": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "chirplohi",
+				"style": {}
+			},
+			"halfsine": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 0],
-        "svgDataRef": "halfsine",
+				"padding": [0, 0, 0, 0],
+				"offset": [0, 0],
+				"svgDataRef": "halfsine",
 
-        "contentWidth": 15,
-        "contentHeight": 20,
+				"contentWidth": 15,
+				"contentHeight": 20,
 
-        "ref": "halfsine",
-        "style": {}
-      },
-      "saltirehilo": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "halfsine",
+				"style": {}
+			},
+			"saltirehilo": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 1, 0, 1],
-        "offset": [0, 1],
-        "svgDataRef": "saltirehilo",
-        "contentWidth": 50,
-        "contentHeight": 20,
+				"padding": [0, 1, 0, 1],
+				"offset": [0, 1],
+				"svgDataRef": "saltirehilo",
+				"contentWidth": 50,
+				"contentHeight": 20,
 
-        "ref": "saltirehilo",
-        "style": {}
-      },
-      "saltirelohi": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "saltirehilo",
+				"style": {}
+			},
+			"saltirelohi": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 1, 0, 1],
-        "offset": [0, 1],
-        "svgDataRef": "saltirelohi",
-        "contentWidth": 50,
-        "contentHeight": 20,
+				"padding": [0, 1, 0, 1],
+				"offset": [0, 1],
+				"svgDataRef": "saltirelohi",
+				"contentWidth": 50,
+				"contentHeight": 20,
 
-        "ref": "saltirelohi",
-        "style": {}
-      },
-      "tall-trapezium": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "saltirelohi",
+				"style": {}
+			},
+			"tall-trapezium": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 1],
-        "svgDataRef": "tall-trapezium",
-        "contentWidth": 15,
-        "contentHeight": 25,
+				"padding": [0, 0, 0, 0],
+				"offset": [0, 1],
+				"svgDataRef": "tall-trapezium",
+				"contentWidth": 15,
+				"contentHeight": 25,
 
-        "ref": "tall-trapezium",
-        "style": {}
-      },
-      "trapezium": {
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"ref": "tall-trapezium",
+				"style": {}
+			},
+			"trapezium": {
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "padding": [0, 0, 0, 0],
-        "offset": [0, 1],
-        "svgDataRef": "trapezium",
-        "contentWidth": 60,
-        "contentHeight": 10,
+				"padding": [0, 0, 0, 0],
+				"offset": [0, 1],
+				"svgDataRef": "trapezium",
+				"contentWidth": 60,
+				"contentHeight": 10,
 
-        "ref": "trapezium",
-        "style": {}
-      }
-    },
+				"ref": "trapezium",
+				"style": {}
+			}
+		},
 
-    "rectElements": {
-      "90-pulse": {
-        "padding": [0, 4, 0, 4],
-        "offset": [0, 0],
+		"rectElements": {
+			"90-pulse": {
+				"padding": [0, 4, 0, 4],
+				"offset": [0, 0],
 
-        "contentWidth": 7,
-        "contentHeight": 50,
+				"contentWidth": 7,
+				"contentHeight": 50,
 
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "style": {
-          "fill": "#000000",
-          "stroke": "black",
-          "strokeWidth": 0
-        },
+				"style": {
+					"fill": "#000000",
+					"stroke": "black",
+					"strokeWidth": 0
+				},
 
-        "ref": "90-pulse"
-      },
-      "180-pulse": {
-        "padding": [0, 4, 0, 4],
-        "offset": [0, 0],
+				"ref": "90-pulse"
+			},
+			"180-pulse": {
+				"padding": [0, 4, 0, 4],
+				"offset": [0, 0],
 
-        "contentWidth": 10,
-        "contentHeight": 40,
+				"contentWidth": 10,
+				"contentHeight": 40,
 
-        "mountConfig": {
-          "orientation": "top",
-          "alignment": "centre",
-          "noSections": 1,
-          "channelID": null,
-          "sequenceID": null,
-          "index": 0,
-          "mountOn": true
-        },
+				"mountConfig": {
+					"orientation": "top",
+					"alignment": "centre",
+					"noSections": 1,
+					"channelID": null,
+					"sequenceID": null,
+					"index": 0,
+					"mountOn": true
+				},
 
-        "style": {
-          "fill": "#ffffff",
-          "stroke": "black",
-          "strokeWidth": 1
-        },
+				"style": {
+					"fill": "#ffffff",
+					"stroke": "black",
+					"strokeWidth": 1
+				},
 
-        "ref": "180-pulse"
-      }
-    },
-    "labellable": {}
-  }
+				"ref": "180-pulse"
+			}
+		},
+		"labellable": {}
+	}
 }

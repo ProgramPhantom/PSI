@@ -14,10 +14,10 @@ import * as Channel from "./channel.json";
 import * as Space from "./space.json";
 
 export const mountableElements: {[name: string]: any} = {
-  ...svgPulses,
-  ...simplePulses,
-  abstract: Abstract,
-  span: Span
+	...svgPulses,
+	...simplePulses,
+	abstract: Abstract,
+	span: Span
 };
 
 export const defaultMountable = defMountable;

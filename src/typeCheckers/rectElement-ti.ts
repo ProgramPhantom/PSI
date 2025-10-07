@@ -6,18 +6,18 @@ import visualTypeSuite from "./Visual-ti";
 // tslint:disable:object-literal-key-quotes
 
 export const IRectStyle = t.iface([], {
-  fill: "string",
-  stroke: t.union("string", "null"),
-  strokeWidth: t.union("number", "null")
+	fill: "string",
+	stroke: t.union("string", "null"),
+	strokeWidth: t.union("number", "null")
 });
 
 export const IRectElement = t.iface(["IVisual"], {
-  style: "IRectStyle"
+	style: "IRectStyle"
 });
 
 const rectElementTypeSuite: t.ITypeSuite = {
-  IRectStyle,
-  IRectElement,
-  ...visualTypeSuite
+	IRectStyle,
+	IRectElement,
+	...visualTypeSuite
 };
 export default rectElementTypeSuite;

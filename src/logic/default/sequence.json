@@ -1,10 +1,10 @@
 {
-  "ref": "sequence",
-  "x": 0,
-  "y": 0,
+	"ref": "sequence",
+	"x": 0,
+	"y": 0,
 
-  "padding": [5, 5, 5, 5],
-  "offset": [0, 0],
+	"padding": [5, 5, 5, 5],
+	"offset": [0, 0],
 
-  "channels": []
+	"channels": []
 }

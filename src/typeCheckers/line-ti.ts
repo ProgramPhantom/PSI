@@ -6,18 +6,18 @@ import lineLikeTypeSuite from "./lineLike-ti";
 // tslint:disable:object-literal-key-quotes
 
 export const ILine = t.iface(["ILineLike"], {
-  style: "lineStyle"
+	style: "lineStyle"
 });
 
 export const lineStyle = t.iface([], {
-  stroke: "string",
-  thickness: "number",
-  dashing: t.tuple("number", "number")
+	stroke: "string",
+	thickness: "number",
+	dashing: t.tuple("number", "number")
 });
 
 const lineTypeSuite: t.ITypeSuite = {
-  ILine,
-  lineStyle,
-  ...lineLikeTypeSuite
+	ILine,
+	lineStyle,
+	...lineLikeTypeSuite
 };
 export default lineTypeSuite;

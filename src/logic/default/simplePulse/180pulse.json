@@ -1,23 +1,23 @@
 {
-  "padding": [0, 4, 0, 4],
-  "offset": [0, 0],
+	"padding": [0, 4, 0, 4],
+	"offset": [0, 0],
 
-  "contentWidth": 10,
-  "contentHeight": 40,
+	"contentWidth": 10,
+	"contentHeight": 40,
 
-  "mountConfig": {
-    "orientation": "top",
-    "alignment": "centre",
-    "noSections": 1,
-    "channelID": null,
-    "index": null
-  },
+	"mountConfig": {
+		"orientation": "top",
+		"alignment": "centre",
+		"noSections": 1,
+		"channelID": null,
+		"index": null
+	},
 
-  "style": {
-    "fill": "#ffffff",
-    "stroke": "black",
-    "strokeWidth": 1
-  },
+	"style": {
+		"fill": "#ffffff",
+		"stroke": "black",
+		"strokeWidth": 1
+	},
 
-  "ref": "180-pulse"
+	"ref": "180-pulse"
 }

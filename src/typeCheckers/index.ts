@@ -25,16 +25,16 @@ import Point from "../logic/point";
 import {Visual} from "../logic/visual";
 
 export const CheckerTypeIndex: Record<UserComponentType, {suite: t.ITypeSuite; type: t.TType}> = {
-  channel: {suite: channelTypeSuite, type: channelTypeSuite.IChannel},
-  diagram: {suite: diagramTypeSuite, type: diagramTypeSuite.IDiagram},
-  label: {suite: labelTypeSuite, type: labelTypeSuite.ILabel},
-  "label-group": {suite: labelTypeSuite, type: labelTypeSuite.ILabelGroup},
-  line: {suite: lineTypeSuite, type: lineTypeSuite.ILine},
-  rect: {suite: rectElementTypeSuite, type: rectElementTypeSuite.IRect},
-  sequence: {suite: sequenceTypeSuite, type: sequenceTypeSuite.ISequence},
-  space: {suite: spaceTypeSuite, type: spaceTypeSuite.ISpace},
-  svg: {suite: svgElementTypeSuite, type: svgElementTypeSuite.ISVGElement},
-  text: {suite: textTypeSuite, type: textTypeSuite.IRectElement}
+	channel: {suite: channelTypeSuite, type: channelTypeSuite.IChannel},
+	diagram: {suite: diagramTypeSuite, type: diagramTypeSuite.IDiagram},
+	label: {suite: labelTypeSuite, type: labelTypeSuite.ILabel},
+	"label-group": {suite: labelTypeSuite, type: labelTypeSuite.ILabelGroup},
+	line: {suite: lineTypeSuite, type: lineTypeSuite.ILine},
+	rect: {suite: rectElementTypeSuite, type: rectElementTypeSuite.IRect},
+	sequence: {suite: sequenceTypeSuite, type: sequenceTypeSuite.ISequence},
+	space: {suite: spaceTypeSuite, type: spaceTypeSuite.ISpace},
+	svg: {suite: svgElementTypeSuite, type: svgElementTypeSuite.ISVGElement},
+	text: {suite: textTypeSuite, type: textTypeSuite.IRectElement}
 };
 
 // Brain-warping circular imports are stopping this nice solution from working.

@@ -6,21 +6,21 @@ import collectionTypeSuite from "./collection-ti";
 // tslint:disable:object-literal-key-quotes
 
 export const IDiagram = t.iface(["ICollection"], {
-  sequences: t.array("ISequence")
+	sequences: t.array("ISequence")
 });
 
 export const DiagramNamedStructure = t.union(t.lit("sequence column"), t.lit("root"));
 
 export const AllStructures = t.union(
-  "SequenceNamedStructure",
-  "ChannelNamedStructure",
-  "DiagramNamedStructure"
+	"SequenceNamedStructure",
+	"ChannelNamedStructure",
+	"DiagramNamedStructure"
 );
 
 const diagramTypeSuite: t.ITypeSuite = {
-  IDiagram,
-  DiagramNamedStructure,
-  AllStructures,
-  ...collectionTypeSuite
+	IDiagram,
+	DiagramNamedStructure,
+	AllStructures,
+	...collectionTypeSuite
 };
 export default diagramTypeSuite;

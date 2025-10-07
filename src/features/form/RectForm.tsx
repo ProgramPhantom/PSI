@@ -7,13 +7,13 @@ import VisualForm from "./VisualForm";
 interface IRectFormProps extends FormRequirements {}
 
 const RectElementForm: React.FC<IRectFormProps> = (props) => {
-  const formControls = useFormContext<IRectElement>();
+	const formControls = useFormContext<IRectElement>();
 
-  return (
-    <>
-      <VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
-    </>
-  );
+	return (
+		<>
+			<VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
+		</>
+	);
 };
 
 export default RectElementForm;

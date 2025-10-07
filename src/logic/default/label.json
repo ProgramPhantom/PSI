@@ -1,23 +1,23 @@
 {
-  "contentWidth": 0,
-  "contentHeight": 0,
+	"contentWidth": 0,
+	"contentHeight": 0,
 
-  "offset": [0, 0],
-  "padding": [0, 0, 0, 0],
+	"offset": [0, 0],
+	"padding": [0, 0, 0, 0],
 
-  "text": {
-    "contentWidth": 10,
-    "contentHeight": 10,
+	"text": {
+		"contentWidth": 10,
+		"contentHeight": 10,
 
-    "text": "\\textrm{H}",
-    "padding": [0, 0, 2, 0],
-    "offset": [0, 0],
+		"text": "\\textrm{H}",
+		"padding": [0, 0, 2, 0],
+		"offset": [0, 0],
 
-    "style": {
-      "fontSize": 15,
-      "colour": "black"
-    }
-  },
+		"style": {
+			"fontSize": 15,
+			"colour": "black"
+		}
+	},
 
-  "line": null
+	"line": null
 }

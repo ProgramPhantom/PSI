@@ -6,14 +6,14 @@ import collectionTypeSuite from "./collection-ti";
 // tslint:disable:object-literal-key-quotes
 
 export const IAligner = t.iface(["ICollection"], {
-  axis: "Dimensions",
-  bindMainAxis: "boolean",
-  alignment: "Alignment",
-  minCrossAxis: t.opt("number")
+	axis: "Dimensions",
+	bindMainAxis: "boolean",
+	alignment: "Alignment",
+	minCrossAxis: t.opt("number")
 });
 
 const alignerTypeSuite: t.ITypeSuite = {
-  IAligner,
-  ...collectionTypeSuite
+	IAligner,
+	...collectionTypeSuite
 };
 export default alignerTypeSuite;

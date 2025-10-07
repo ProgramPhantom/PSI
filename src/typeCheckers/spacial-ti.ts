@@ -6,15 +6,15 @@ import pointTypeSuite from "./point-ti";
 // tslint:disable:object-literal-key-quotes
 
 export const Bounds = t.iface([], {
-  top: "number",
-  bottom: "number",
-  left: "number",
-  right: "number"
+	top: "number",
+	bottom: "number",
+	left: "number",
+	right: "number"
 });
 
 export const Size = t.iface([], {
-  width: t.opt("number"),
-  height: t.opt("number")
+	width: t.opt("number"),
+	height: t.opt("number")
 });
 
 export const SizeMethod = t.union(t.lit("given"), t.lit("inherited"));
@@ -22,54 +22,54 @@ export const SizeMethod = t.union(t.lit("given"), t.lit("inherited"));
 export const SiteNames = t.union(t.lit("here"), t.lit("centre"), t.lit("far"));
 
 export const BinderSetFunction = t.func(
-  "void",
-  t.param("dimension", "Dimensions"),
-  t.param("v", "number")
+	"void",
+	t.param("dimension", "Dimensions"),
+	t.param("v", "number")
 );
 
 export const BinderGetFunction = t.func(
-  t.union("number", "undefined"),
-  t.param("dimension", "Dimensions"),
-  t.param("onContent", "boolean", true)
+	t.union("number", "undefined"),
+	t.param("dimension", "Dimensions"),
+	t.param("onContent", "boolean", true)
 );
 
 export const IBindingRule = t.iface([], {
-  anchorSiteGetter: t.opt("BinderGetFunction"),
-  targetSiteSetter: t.opt("BinderSetFunction"),
-  anchorSiteName: "SiteNames",
-  targetSiteName: "SiteNames",
-  dimension: "Dimensions"
+	anchorSiteGetter: t.opt("BinderGetFunction"),
+	targetSiteSetter: t.opt("BinderSetFunction"),
+	anchorSiteName: "SiteNames",
+	targetSiteName: "SiteNames",
+	dimension: "Dimensions"
 });
 
 export const IBinding = t.iface([], {
-  bindingRule: "IBindingRule",
-  targetObject: "Spacial",
-  anchorObject: "Spacial",
-  offset: t.opt("number"),
-  bindToContent: "boolean",
-  hint: t.opt("string")
+	bindingRule: "IBindingRule",
+	targetObject: "Spacial",
+	anchorObject: "Spacial",
+	offset: t.opt("number"),
+	bindToContent: "boolean",
+	hint: t.opt("string")
 });
 
 export const IBindingPayload = t.iface([], {
-  anchorObject: "Spacial",
-  bindingRule: "IBindingRule"
+	anchorObject: "Spacial",
+	bindingRule: "IBindingRule"
 });
 
 export const Dimensions = t.union(t.lit("x"), t.lit("y"));
 
 export const ISpacial = t.iface(["IPoint"], {
-  contentWidth: t.opt("number"),
-  contentHeight: t.opt("number")
+	contentWidth: t.opt("number"),
+	contentHeight: t.opt("number")
 });
 
 export const UpdateNotification = t.func("any", t.param("args", t.array("any")));
 
 const spaceTypeSuite: t.ITypeSuite = {
-  Bounds,
-  Size,
-  Dimensions,
-  ISpacial,
-  UpdateNotification,
-  ...pointTypeSuite
+	Bounds,
+	Size,
+	Dimensions,
+	ISpacial,
+	UpdateNotification,
+	...pointTypeSuite
 };
 export default spaceTypeSuite;

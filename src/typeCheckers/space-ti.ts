@@ -8,7 +8,7 @@ import visualTypeSuite from "./Visual-ti";
 export const ISpace = t.iface(["IVisual"], {});
 
 const spaceTypeSuite: t.ITypeSuite = {
-  ISpace,
-  ...visualTypeSuite
+	ISpace,
+	...visualTypeSuite
 };
 export default spaceTypeSuite;
