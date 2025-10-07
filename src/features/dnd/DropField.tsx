@@ -10,7 +10,7 @@ import InsertArea, {AddSpec} from "./InsertArea";
 class DiagramDropInterpreter {
 	public handler: DiagramHandler;
 	public insertAreas: AddSpec[];
-	private slitherWidth: number = 2;
+	private slitherWidth: number = 4;
 
 	constructor(handler: DiagramHandler) {
 		this.handler = handler;
@@ -177,7 +177,7 @@ class DiagramDropInterpreter {
 				// Top slither
 				newSlither = {
 					area: {
-						x: column.getFar("x") ?? 0 - this.slitherWidth / 2,
+						x: (column.getFar("x") ?? 0) - this.slitherWidth / 2,
 						y: channel.y,
 						width: this.slitherWidth,
 						height: upperAlignerHeight
@@ -193,7 +193,7 @@ class DiagramDropInterpreter {
 				// bottom slither
 				newSlither = {
 					area: {
-						x: column.getFar("x") ?? 0 - this.slitherWidth / 2,
+						x: (column.getFar("x") ?? 0) - this.slitherWidth / 2,
 						y: channel.components.bottomAligner.y,
 						width: this.slitherWidth,
 						height: lowerAlignerHeight + channel.padding[2]

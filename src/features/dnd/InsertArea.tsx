@@ -4,6 +4,7 @@ import {Orientation} from "../../logic/mountable";
 import {ID} from "../../logic/point";
 import {IDrop} from "./CanvasDropContainer";
 import {ElementTypes} from "./TemplateDraggableElement";
+import { Colors } from "@blueprintjs/core";
 
 interface Rect {
 	x: number;
@@ -56,9 +57,9 @@ function InsertArea(props: {areaSpec: AddSpec; key: string}) {
 	let backgroundColor = "transparent";
 	let border = "2px solid rgba(0, 0, 0, 0)";
 	if (isActive) {
-		backgroundColor = "darkgreen";
+		backgroundColor = Colors.BLUE3;
 	} else if (canDrop) {
-		backgroundColor = "lightgrey";
+		backgroundColor = Colors.BLUE5;
 		border = "2px solid rgba(80, 80, 80, 0)";
 	}
 
