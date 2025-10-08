@@ -96,23 +96,6 @@ export default class Channel extends Collection implements IHaveComponents<IChan
 	components: IChannelComponents;
 	style: IChannelStyle;
 
-	// A collection of columns to align this channel's positionals to
-	private _mountColumns?: Aligner<Aligner<Visual>>;
-	public get mountColumns(): Aligner<Aligner<Visual>> {
-		if (this._mountColumns !== undefined) {
-			return this._mountColumns;
-		}
-		throw new Error(`Positional Columns have not been set for channel: ${this.id}`);
-	}
-	public set mountColumns(value: Aligner<Aligner<Visual>>) {
-		this._mountColumns = value;
-		// this._mountColumns.bindSize(this.bar, "x");
-
-		this._mountColumns.bind(this.components.bar, "x", "far", "far");
-		this.components.bar.contentWidth = this._mountColumns.width;
-		// This means when adding a new channel the bar is already as long as image
-	}
-
 	private _mountOccupancy?: OccupancyStatus[];
 	public get mountOccupancy(): OccupancyStatus[] {
 		if (this._mountOccupancy === undefined) {
@@ -249,6 +232,11 @@ export default class Channel extends Collection implements IHaveComponents<IChan
 		if (this.components.label) {
 			v.add(this.components.label, undefined, false, false);
 		}
+	}
+
+	setPulseColumns(value: Aligner<Aligner<Visual>>) {
+		value.bind(this.components.bar, "x", "far", "far");
+		this.components.bar.contentWidth = value.width;
 	}
 
 	//
