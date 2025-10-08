@@ -96,28 +96,6 @@ export default class Channel extends Collection implements IHaveComponents<IChan
 	components: IChannelComponents;
 	style: IChannelStyle;
 
-	// A column for containing the channel label and binding the bar and positional columns
-	private _labelColumn?: Aligner<Visual>;
-	set labelColumn(v: Aligner<Visual>) {
-		// When the label column is set, apply binding to the label.
-		this._labelColumn = v;
-
-		this._labelColumn.bind(this.components.bar, "x", "far", "here"); // Bind X of bar
-
-		this.labelColumn.bind(this.components.topAligner, "x", "here", "here", undefined);
-		this.labelColumn.bind(this.components.bottomAligner, "x", "here", "here", undefined);
-
-		if (this.components.label) {
-			this._labelColumn.add(this.components.label, undefined, false, false);
-		}
-	}
-	get labelColumn(): Aligner<Visual> {
-		if (this._labelColumn !== undefined) {
-			return this._labelColumn;
-		}
-		throw new Error(`Label column has not been set for channel ${this.id}`);
-	}
-
 	// A collection of columns to align this channel's positionals to
 	private _mountColumns?: Aligner<Aligner<Visual>>;
 	public get mountColumns(): Aligner<Aligner<Visual>> {
@@ -260,6 +238,17 @@ export default class Channel extends Collection implements IHaveComponents<IChan
 		}
 
 		element.erase();
+	}
+
+	setLabelColumn(v: Aligner<Visual>) {
+		v.bind(this.components.bar, "x", "far", "here"); // Bind X of bar
+
+		v.bind(this.components.topAligner, "x", "here", "here", undefined);
+		v.bind(this.components.bottomAligner, "x", "here", "here", undefined);
+
+		if (this.components.label) {
+			v.add(this.components.label, undefined, false, false);
+		}
 	}
 
 	//

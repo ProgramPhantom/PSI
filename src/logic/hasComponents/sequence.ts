@@ -260,7 +260,8 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 
 		var index = this.components.channels.length - 1;
 		channel.mountColumns = this.components.pulseColumns; // And apply the column ref
-		channel.labelColumn = this.components.labelColumn;
+		// channel.labelColumn = this.components.labelColumn;
+		channel.setLabelColumn(this.components.labelColumn);
 
 		this.elementMatrix.splice(this.elementMatrix.length, 0, []);
 
