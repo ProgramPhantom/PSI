@@ -71,6 +71,14 @@ export abstract class Visual extends Mountable implements IVisual {
 		this.svg?.remove();
 	}
 
+	computeSize() {
+		// Pass
+
+		// Potentially do
+		// this.width = ...
+		// this.height = ...
+	}
+
 	verticalFlip() {
 		// TODO: this is slightly problematic
 		this.offset = [this.offset[0], -Math.abs(this.offset[1])]; // Strange entanglement error was happening here

@@ -8,6 +8,13 @@ export interface IGrid extends ICollection {
 }
 
 
+interface Cell {
+	x: number,
+	y: number,
+	width: number,
+	height: number
+}
+
 export default class Grid<T extends Visual = Visual> extends Collection implements IDraw {
 	static defaults: {[name: string]: ICollection} = {
 		default: {
@@ -27,6 +34,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			...super.state
 		};
 	}
+
+	gridMatrix: T[][] = [[]];
+
+	gridSizes: Cell[][] = [[]];
 
 	constructor(params: RecursivePartial<IGrid>,
 				templateName: string = Collection.defaults["default"].ref) {
