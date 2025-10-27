@@ -1,5 +1,5 @@
 import {Icon} from "@blueprintjs/core";
-import Spacial, {Dimensions} from "../../logic/spacial";
+import Spacial, {Dimension} from "../../logic/spacial";
 import SVGElement from "../../logic/svgElement";
 
 interface IBindings {
@@ -11,7 +11,7 @@ const BindingsDebug: React.FC<IBindings> = (props) => {
 		<>
 			{props.element.bindings.map((bind) => {
 				var mainAxis = bind.bindingRule.dimension;
-				var crossAxis: Dimensions = mainAxis === "x" ? "y" : "x";
+				var crossAxis: Dimension = mainAxis === "x" ? "y" : "x";
 
 				var getter =
 					props.element.AnchorFunctions[
@@ -53,7 +53,7 @@ const BindingsDebug: React.FC<IBindings> = (props) => {
 			})}
 			{props.element.bindingsToThis.map((bind) => {
 				var mainAxis = bind.bindingRule.dimension;
-				var crossAxis: Dimensions = mainAxis === "x" ? "y" : "x";
+				var crossAxis: Dimension = mainAxis === "x" ? "y" : "x";
 
 				var getter =
 					props.element.AnchorFunctions[

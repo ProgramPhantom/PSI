@@ -4,7 +4,7 @@ import {FormBundle} from "../../features/form/LabelGroupComboForm";
 import Line, {ILine} from "../line";
 import Collection, {ICollection, IHaveComponents} from "../collection";
 import {UserComponentType} from "../diagramHandler";
-import Spacial, {Dimensions} from "../spacial";
+import Spacial, {Dimension} from "../spacial";
 import Text, {IText, Position} from "../text";
 import {MarkAsComponent} from "../util";
 
@@ -99,7 +99,7 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 			// Create line
 			var line: Line = new Line(fullParams.line);
 
-			var orientationSelect: Dimensions;
+			var orientationSelect: Dimension;
 			switch (this.labelConfig.labelPosition) {
 				case "top":
 				case "bottom":
@@ -112,7 +112,7 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 				default:
 					orientationSelect = "y";
 			}
-			var otherDimension: Dimensions = orientationSelect === "x" ? "y" : "x";
+			var otherDimension: Dimension = orientationSelect === "x" ? "y" : "x";
 
 			this.bind(line, otherDimension, "here", "here");
 			this.bind(line, otherDimension, "far", "far");
@@ -183,7 +183,7 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 		}
 	}
 
-	private arrangeContent(orientation: Dimensions) {
+	private arrangeContent(orientation: Dimension) {
 		// if (this.line === undefined || this.text === undefined) {
 		//     throw new Error("Only for use when text and line are present.")
 		// }

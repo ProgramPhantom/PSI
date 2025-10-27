@@ -422,12 +422,12 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 		// this.clearEmptyColumns();  // TODO: this shouldn't be needed
 
 		// SET X of element
-		this.components.pulseColumns.children[INDEX].enforceBinding();
+		this.components.pulseColumns.children[INDEX].enforceBinding(true);
 		// NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
 		// Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
 
 		// This makes sure multi-column elements correctly bind far to the endColumn. For some reason they don't if this isn't here
-		this.components.pulseColumns.children[endINDEX].enforceBinding();
+		this.components.pulseColumns.children[endINDEX].enforceBinding(true);
 
 		var channelIndex = this.components.channels.indexOf(targetChannel);
 		this.elementMatrix[channelIndex][INDEX] = element;

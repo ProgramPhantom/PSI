@@ -10,6 +10,7 @@ import {Visual} from "../../logic/visual";
 import {IDrop, isCanvasDrop} from "./CanvasDropContainer";
 import {IMountAreaResult, isMountDrop} from "./InsertArea";
 import {ElementTypes} from "./TemplateDraggableElement";
+import Collection from "../../logic/collection";
 
 const style: CSSProperties = {
 	border: "1px dashed gray",
@@ -115,6 +116,9 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		const refreshElement = () => {
 			props.element.bindingsToThis.forEach((b) => {
 				b.anchorObject.enforceBinding();
+				if (b.anchorObject instanceof Collection) {
+					b.anchorObject.computeBoundary()
+				}
 			});
 		};
 

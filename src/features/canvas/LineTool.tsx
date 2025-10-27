@@ -2,7 +2,7 @@ import {Path} from "@svgdotjs/svg.js";
 import {useEffect, useRef, useState} from "react";
 import {ILine, ILineStyle} from "../../logic/line";
 import ENGINE from "../../logic/engine";
-import {Dimensions, IBindingPayload} from "../../logic/spacial";
+import {Dimension, IBindingPayload} from "../../logic/spacial";
 import {Visual} from "../../logic/visual";
 import BindingsSelector from "./BindingsSelector";
 import {IToolConfig, myToaster, Tool} from "../../app/App";
@@ -20,7 +20,7 @@ export interface IDrawArrowConfig extends IToolConfig {
 	mode: "vertical" | "bind";
 }
 
-export type PointBind = Record<Dimensions, IBindingPayload>;
+export type PointBind = Record<Dimension, IBindingPayload>;
 
 export function LineTool(props: IDrawArrowProps) {
 	const [startCoords, setStartCoords] = useState<[number, number] | undefined>(undefined);

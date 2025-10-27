@@ -1,5 +1,5 @@
 import {AllComponentTypes} from "./diagramHandler";
-import {Dimensions, IBinding} from "./spacial";
+import {Dimension, IBinding} from "./spacial";
 import {posPrecision} from "./util";
 
 export type OwnershipType = "component" | "free";
@@ -107,9 +107,9 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		}
 	}
 
-	move({dx, dy}: Shift) {
-		this.x += dx ? dx : 0;
-		this.y += dy ? dy : 0;
+	transform({dx, dy}: Shift) {
+		this._x += dx ? dx : 0;
+		this._y += dy ? dy : 0;
 	}
 	place({x, y}: {x?: number; y?: number}) {
 		x !== undefined ? (this.x = x) : {};
@@ -125,7 +125,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		}
 	}
 
-	getPositionByDimension(dim: Dimensions): number | undefined {
+	getPositionByDimension(dim: Dimension): number | undefined {
 		if (dim === "x") {
 			return this._x;
 		} else {

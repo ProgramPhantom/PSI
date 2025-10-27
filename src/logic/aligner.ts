@@ -1,12 +1,12 @@
 import Collection, {ICollection} from "./collection";
 import logger, {Processes} from "./log";
 import {Alignment} from "./mountable";
-import Spacial, {Dimensions} from "./spacial";
+import Spacial, {Dimension} from "./spacial";
 import {FillObject, RecursivePartial} from "./util";
 import {Visual} from "./visual";
 
 export interface IAligner extends ICollection {
-	axis: Dimensions;
+	axis: Dimension;
 	bindMainAxis: boolean;
 	alignment: Alignment;
 	minCrossAxis?: number;
@@ -32,8 +32,8 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 		}
 	};
 
-	mainAxis: Dimensions;
-	crossAxis: Dimensions;
+	mainAxis: Dimension;
+	crossAxis: Dimension;
 
 	bindMainAxis: boolean;
 	alignment: Alignment;
@@ -148,10 +148,13 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 		//this.squeezeCrossAxis();
 
 		this.enforceBinding();
-
 		// Child will tell this to update size when it changes size or position
 		child.subscribe(this.computeBoundary.bind(this));
 		this.computeBoundary();
+
+
+
+		
 	}
 
 	removeAt(index: number, quantity: number = 1): number {
@@ -226,7 +229,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 		});
 
 		this.computeBoundary();
-		this.enforceBinding();
+		this.enforceBinding(true);
 
 		this.squeezeCrossAxis();
 		return true;
@@ -254,13 +257,13 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 	computeBoundary(): void {
 		logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this);
 
-		var displacedElements = this.children.filter((f) => f.displaced === true);
-		if (displacedElements.length > 0) {
-			logger.performance(
-				`ABORT COMPUTE BOUNDRY ${this.ref} as ${displacedElements} have not been positioned`
-			);
-			return;
-		}
+		// var displacedElements = this.children.filter((f) => f.displaced === true);
+		// if (displacedElements.length > 0) {
+		// 	logger.performance(
+		// 		`ABORT COMPUTE BOUNDRY ${this.ref} as ${displacedElements} have not been positioned`
+		// 	);
+		// 	return;
+		// }
 
 		var top = Infinity;
 		var left = Infinity;
@@ -300,7 +303,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 		var width = right - left;
 		var height = bottom - top;
 
-		// Inflate cross axis
+		// Inflate cross axis (allows for minimum cross axis)
 		if (this.minCrossAxis !== undefined) {
 			var currCrossAxis = this.crossAxis === "x" ? width : height;
 
@@ -323,6 +326,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 		} else {
 			this.contentHeight = 0;
 		}
+		
 		logger.processEnd(
 			Processes.COMPUTE_BOUNDARY,
 			`Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`,

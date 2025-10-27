@@ -113,9 +113,10 @@ export default class DiagramHandler implements IDraw {
 			(<any>defaultDiagram) as IDiagram
 		);
 
-		if (constructResult.ok) {
+		if (constructResult.ok === true) {
 			this.diagram = constructResult.value;
 		} else {
+			console.error(constructResult.error)
 			myToaster.show({
 				message: "Error loading diagram",
 				intent: "danger"
@@ -169,6 +170,8 @@ export default class DiagramHandler implements IDraw {
 		}
 		this.diagram = newDiagram;
 
+		
+
 		try {
 			// Create and mount pulses.
 			state.sequences.forEach((s) => {
@@ -182,6 +185,7 @@ export default class DiagramHandler implements IDraw {
 				});
 			});
 		} catch (err) {
+			throw err
 			return {ok: false, error: (err as Error).message};
 		}
 
@@ -512,7 +516,7 @@ export default class DiagramHandler implements IDraw {
 	// @isMountable
 	@draws
 	public mountVisual(target: Visual, insert: boolean = true): Result<Visual> {
-		// Temporary
+		// Temporary, setting the sequence to be the first default sequence. Multiple sequences not currently supported.
 		if (target.mountConfig !== undefined) {
 			target.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
 		}

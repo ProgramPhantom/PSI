@@ -1,6 +1,6 @@
 import {Element} from "@svgdotjs/svg.js";
 import defaultLineLike from "./default/lineLike.json";
-import {Dimensions} from "./spacial";
+import {Dimension} from "./spacial";
 import {FillObject, posPrecision, RecursivePartial} from "./util";
 import {IVisual, Visual} from "./visual";
 import {Rect} from "@svgdotjs/svg.js";
@@ -243,7 +243,7 @@ export default abstract class LineLike extends Visual {
 	}
 
 	// Anchors:
-	public override getNear(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public override getNear(dimension: Dimension, ofContent: boolean = false): number | undefined {
 		switch (dimension) {
 			case "x":
 				if (this._x === undefined) {
@@ -263,7 +263,7 @@ export default abstract class LineLike extends Visual {
 				return this._y;
 		}
 	}
-	public override setNear(dimension: Dimensions, v: number) {
+	public override setNear(dimension: Dimension, v: number) {
 		switch (dimension) {
 			case "x":
 				this.x = v;
@@ -274,7 +274,7 @@ export default abstract class LineLike extends Visual {
 		}
 	}
 	public override getCentre(
-		dimension: Dimensions,
+		dimension: Dimension,
 		ofContent: boolean = false
 	): number | undefined {
 		switch (dimension) {
@@ -302,7 +302,7 @@ export default abstract class LineLike extends Visual {
 				return this.y + posPrecision(this.height / 2);
 		}
 	}
-	public override setCentre(dimension: Dimensions, v: number) {
+	public override setCentre(dimension: Dimension, v: number) {
 		switch (dimension) {
 			case "x":
 				this.x = v - this.width / 2;
@@ -312,7 +312,7 @@ export default abstract class LineLike extends Visual {
 				break;
 		}
 	}
-	public override getFar(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public override getFar(dimension: Dimension, ofContent: boolean = false): number | undefined {
 		switch (dimension) {
 			case "x":
 				if (this._x2 === undefined) {
@@ -328,7 +328,7 @@ export default abstract class LineLike extends Visual {
 				return this.y2;
 		}
 	}
-	public override setFar(dimension: Dimensions, v: number) {
+	public override setFar(dimension: Dimension, v: number) {
 		switch (dimension) {
 			case "x":
 				this.x2 = v;

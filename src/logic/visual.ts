@@ -146,6 +146,14 @@ export abstract class Visual extends Mountable implements IVisual {
 		}
 	}
 
+	override transform({dx, dy}: {dx?: number, dy?: number}) {
+		this._x += dx ? dx : 0;
+		this._y += dy ? dy : 0;
+
+		this.dirty = true
+		
+	}
+
 	get drawX(): number {
 		return this.contentX + this.offset[0];
 	}

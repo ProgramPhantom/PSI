@@ -1,9 +1,9 @@
 import {Element, G, Rect, SVG} from "@svgdotjs/svg.js";
-import logger, {Processes} from "./log";
+import logger, {Operations, Processes} from "./log";
 import Point, {ID} from "./point";
-import {CreateChild, FillObject, RecursivePartial} from "./util";
+import {CreateChild, FillObject, posPrecision, RecursivePartial} from "./util";
 import {IDraw, IVisual, Visual, doesDraw} from "./visual";
-import Spacial from "./spacial";
+import Spacial, {BinderGetFunction, BinderSetFunction, Dimension} from "./spacial";
 
 export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
 	obj: any
@@ -169,9 +169,10 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		}
 
 		if (this.isResolved) {
-			this.enforceBinding();
+			this.enforceBinding(true);
 		}
 
+		
 		// A final compute
 	}
 
@@ -231,13 +232,13 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	computeBoundary(): void {
 		logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this);
 
-		if (this.children.filter((f) => f.displaced === true).length > 0) {
-			logger.performance(`ABORT COMPUTE BOUNDARY[${typeof this}]: ${this.ref}`);
-			console.groupEnd();
-			return;
-		}
+		// if (this.children.filter((f) => f.displaced === true).length > 0) {
+		// 	logger.performance(`ABORT COMPUTE BOUNDARY[${typeof this}]: ${this.ref}`);
+		// 	console.groupEnd();
+		// 	return;
+		// }
 
-		if (this.ref === "default-paddedbox") {
+		if (this.ref === "sequence") {
 			console.log();
 		}
 
@@ -294,6 +295,16 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		);
 	}
 
+	override transform({dx, dy}: {dx?: number, dy?: number}) {
+		super.transform({dx, dy})
+		
+		this.children.forEach((c) => {
+			c.transform({dx, dy})
+		})
+		
+		this.notifyChange();
+	}
+
 	// Construct and SVG with children positioned relative to (0, 0)
 	override getInternalRepresentation(): Element | undefined {
 		try {
@@ -323,13 +334,50 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	protected set contentWidth(v: number) {
 		if (v !== this._contentWidth) {
 			this._contentWidth = v;
-			this.enforceBinding();
+			this.enforceBinding(true);
 			this.notifyChange();
 		}
 	}
 	protected set contentHeight(v: number) {
 		if (v !== this._contentHeight) {
 			this._contentHeight = v;
+			this.enforceBinding(true);
+			this.notifyChange();
+		}
+	}
+
+	get x(): number {
+		if (this._x !== undefined) {
+			return this._x;
+		}
+		throw new Error("x unset");
+	}
+	get y(): number {
+		if (this._y !== undefined) {
+			return this._y;
+		}
+		throw new Error("y unset");
+	}
+	override set x(val: number | undefined) {
+		if (val !== this._x) {
+			var diff: number = val - this._x;
+			if (!(Number.isNaN(diff) || diff === undefined)) {
+				this.transform({dx: diff})
+			}
+
+			this._x = val !== undefined ? posPrecision(val) : undefined;
+			this.enforceBinding();
+			this.notifyChange();
+		}
+	}
+	override set y(val: number | undefined) {
+		if (val !== this._y) {
+			var diff: number = val - this._y;
+			if (!(Number.isNaN(diff) || diff === undefined)) {
+				this.transform({dy: diff})
+			}
+			
+			this._y = val !== undefined ? posPrecision(val) : undefined;
 			this.enforceBinding();
 			this.notifyChange();
 		}
@@ -382,6 +430,75 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 			console.warn(
 				`Trying to mark child ${child.ref} as component on non-component owning parent`
 			);
+		}
+	}
+
+	public override enforceBinding(configureChildren: boolean=false) {
+		this.bindings
+			.map((b) => b.targetObject)
+			.forEach((e) => {
+				e.displaced = true;
+			});
+
+		// Collections only need to enforce bindings on non-children
+		// Children are moved relatively when a new position of a collection is set.
+		
+
+		for (const binding of this.bindings) {
+			var resolution = binding.targetObject.isResolvedInDimension(binding.bindingRule.dimension) === true;
+			var inclusion = this.has(binding.targetObject.id)
+			if (inclusion && resolution && !configureChildren) {
+				console.log(`Skipping element ${binding.targetObject.ref} because it is not resolved and it is a child`)
+				continue
+			}
+
+			var targetElement: Spacial = binding.targetObject;
+			var getter: BinderGetFunction =
+				this.AnchorFunctions[
+					binding.bindingRule.anchorSiteName as keyof typeof this.AnchorFunctions
+				].get;
+			var setter: BinderSetFunction =
+				targetElement.AnchorFunctions[
+					binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions
+				].set;
+			var targetPosChecker: BinderGetFunction =
+				targetElement.AnchorFunctions[
+					binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions
+				].get;
+			var dimension: Dimension = binding.bindingRule.dimension;
+
+			// get the X coord of the location on the anchor
+			var anchorBindCoord: number | undefined = getter(dimension, binding.bindToContent);
+
+			if (anchorBindCoord === undefined) {
+				continue;
+			}
+
+			// Apply offset:
+			anchorBindCoord = anchorBindCoord + (binding.offset ?? 0);
+
+			// Current position of target:
+			var currentTargetPointPosition: number | undefined = targetPosChecker(
+				dimension,
+				binding.bindToContent
+			);
+
+			// This must happen BEFORE the element is positioned so the last element moved in the collection
+			// triggers the compute boundary
+			targetElement.displaced = false;
+
+			// Only go into the setter if it will change a value, massively reduces function calls.
+			// Alternative was doing the check inside the setter which still works but requires a function call
+			if (anchorBindCoord !== currentTargetPointPosition) {
+				// Use the correct setter on the target with this value
+				logger.operation(
+					Operations.BIND,
+					`(${this.ref})[${anchorBindCoord}, ${binding.bindingRule.anchorSiteName}] ${dimension}> (${targetElement.ref})[${currentTargetPointPosition}, ${binding.bindingRule.targetSiteName}]`,
+					this
+				);
+
+				setter(dimension, anchorBindCoord!); // SETTER MAY NEED INTERNAL BINDING FLAG?
+			}
 		}
 	}
 }
