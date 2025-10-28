@@ -116,15 +116,12 @@ export default class DiagramHandler implements IDraw {
 		}
 	}
 
-	@draws
-	freshDiagram() {
-		this.diagram = new Diagram({});
-	}
-
 	draw() {
 		if (!this.surface) {
 			throw new Error("Svg surface not attached!");
 		}
+
+		this.computeDiagram();
 
 		this.surface.add(new Rect().move(0, 0).id("diagram-root"));
 
@@ -135,6 +132,11 @@ export default class DiagramHandler implements IDraw {
 
 	erase() {
 		this.diagram.erase();
+	}
+
+	computeDiagram() {
+		this.diagram.computeSize();
+		this.diagram.computePositions({x: 0, y: 0});
 	}
 
 	// ---------- Element identification ----------
@@ -178,6 +180,11 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		return {ok: true, value: newDiagram};
+	}
+
+	@draws
+	freshDiagram() {
+		this.diagram = new Diagram({});
 	}
 
 	// ---- Form interfaces ----
@@ -335,7 +342,7 @@ export default class DiagramHandler implements IDraw {
 			} catch (err) {
 				result = {ok: false, error: (err as Error).message}
 			}
-		} else if (target.placementMode.type === "bounded") {
+		} else if (target.placementMode.type === "binds") {
 			// TODO
 		}
 
@@ -469,7 +476,7 @@ export default class DiagramHandler implements IDraw {
 		try {
 			if (placementMode.type === "pulse") {
 				this.diagram.addPulse(target);
-			} else if (placementMode.type === "bounded") {
+			} else if (placementMode.type === "binds") {
 				// TODO
 			} else if (placementMode.type === "free") {
 				// Do nothing I believe.

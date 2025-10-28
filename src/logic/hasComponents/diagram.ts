@@ -22,7 +22,7 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 			children: [],
 			offset: [0, 0],
 			padding: [0, 0, 0, 0],
-			placementMode: {type: "free"},
+			placementMode: {type: "free", sizeMode: "fit"},
 			x: 0,
 			y: 0,
 			ref: "diagram",

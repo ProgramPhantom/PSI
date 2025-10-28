@@ -24,7 +24,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 			y: undefined,
 			offset: [0, 0],
 			padding: [0, 0, 0, 0],
-			placementMode: {type: "free"},
+			placementMode: {type: "free", sizeMode: "fit"},
 			ref: "default-aligner",
 			alignerChildren: []
 		}

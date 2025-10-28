@@ -30,9 +30,9 @@ export interface IMountConfig {
 }
 
 
-export type PlacementConfiguration = {type: "free"} | 
+export type PlacementConfiguration = {type: "free", sizeMode: SizeMethod} | 
 									 {type: "pulse"; config: IMountConfig} | 
-									 {type: "bounded"; bindings: undefined} | 
+									 {type: "binds"; bindings: undefined} | 
 									 {type: "grid"; gridConfig: IGridChildConfig} |
 									 {type: "managed"}
 
@@ -91,7 +91,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			y: 0,
 			contentWidth: 0,
 			contentHeight: 0,
-			placementMode: {type: "free"},
+			placementMode: {type: "free", sizeMode: "fixed"},
 			ref: "default-spacial"
 		}
 	};
@@ -265,7 +265,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			if (b.targetObject === target && b.bindingRule.dimension === dimension) {
 				found = true;
 
-				if (b.targetObject.sizeMode[dimension] === "fixed") {
+				if (b.targetObject) {
 					// Not stretchy so this gets overridden
 					console.warn(
 						`Warning: overriding binding on dimension ${b.bindingRule.dimension} for anchor ${this.ref} to target ${target.ref}`
@@ -501,36 +501,10 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	public setFar(dimension: Dimensions, v: number, stretch?: boolean) {
 		switch (dimension) {
 			case "x":
-				if (this.sizeMode.x === "grow" || stretch) {
-					var diff: number = v - this.x;
-					
-					if (diff < 0) {
-						throw new Error(`Flipped element ${this.ref}`);
-					}
-
-					if (diff === 0) {
-						return;
-					}
-
-					this.width = diff;
-				} else {
-					this.x2 = v;
-				}
+				this.x2 = v;
 				break;
 			case "y":
-				if (this.sizeMode.y === "grow" || stretch) {
-					var diff: number = v - this.y;
-					if (diff < 0) {
-						throw new Error(`Flipped element ${this.ref}`);
-					}
-					if (diff === 0) {
-						return;
-					}
-
-					this.height = diff;
-				} else {
-					this.y2 = v;
-				}
+				this.y2 = v;
 				break;
 		}
 	}
