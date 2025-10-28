@@ -59,7 +59,6 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	}
 	public set contentX(v: number) {
 		this.x = v - this.padding[3];
-		// this._contentX = v;
 	}
 
 	public get contentY(): number {
@@ -67,7 +66,6 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	}
 	public set contentY(v: number) {
 		this.y = v - this.padding[0];
-		// this._contentY = v;
 	}
 
 	get dim(): Dim {
@@ -75,57 +73,40 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	}
 
 	get bounds(): Bounds {
-		if (this.hasPosition && this.hasDimensions) {
-			var top = this.y;
-			var left = this.x;
+		var top = this.y;
+		var left = this.x;
 
-			var bottom = this.y + this.height;
-			var right = this.x + this.width;
+		var bottom = this.y + this.height;
+		var right = this.x + this.width;
 
-			return {top: top, right: right, bottom: bottom, left: left};
-		}
-		throw new Error("Dimensions are unset");
+		return {top: top, right: right, bottom: bottom, left: left};
 	}
 
 	override get width(): number {
-		if (this._contentWidth !== undefined) {
-			return this.padding[3] + this._contentWidth + this.padding[1];
-		}
-		throw new Error("Width unset");
+		return this.padding[3] + this._contentWidth + this.padding[1];
 	}
 	override set width(v: number | undefined) {
-		if (v === undefined) {
-			this.contentWidth = undefined;
-		} else {
-			var newContentWidth: number = v - this.padding[1] - this.padding[3];
+		var newContentWidth: number = v - this.padding[1] - this.padding[3];
 
-			if (newContentWidth < 0) {
-				// Don't allow content height to go below 0
-				this.contentWidth = 0;
-			} else {
-				this.contentWidth = newContentWidth;
-			}
+		if (newContentWidth < 0) {
+			// Don't allow content height to go below 0
+			this.contentWidth = 0;
+		} else {
+			this.contentWidth = newContentWidth;
 		}
 	}
 
 	override get height(): number {
-		if (this._contentHeight !== undefined) {
-			return this.padding[0] + this._contentHeight + this.padding[2];
-		}
-		throw new Error("Dimensions undefined");
+		return this.padding[0] + this._contentHeight + this.padding[2];
 	}
 	override set height(v: number | undefined) {
-		if (v === undefined) {
-			this.contentHeight = undefined;
-		} else {
-			var newContentHeight: number = v - this.padding[0] - this.padding[2];
+		var newContentHeight: number = v - this.padding[0] - this.padding[2];
 
-			if (newContentHeight < 0) {
-				// Don't allow content height to go below 0
-				this.contentHeight = 0;
-			} else {
-				this.contentHeight = newContentHeight;
-			}
+		if (newContentHeight < 0) {
+			// Don't allow content height to go below 0
+			this.contentHeight = 0;
+		} else {
+			this.contentHeight = newContentHeight;
 		}
 	}
 }

@@ -12,8 +12,8 @@ export interface Bounds {
 }
 
 export interface Size {
-	width?: number;
-	height?: number;
+	width: number;
+	height: number;
 }
 
 export type PositionMethod = "controlled" | "free" | "partially-controlled";
@@ -50,6 +50,10 @@ export interface IBindingPayload {
 
 export type Dimensions = "x" | "y";
 
+export interface IHaveSize {
+	computeSize: () => Size
+}
+
 export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
@@ -60,7 +64,7 @@ export interface ISpacial extends IPoint {
 
 export type UpdateNotification = (...args: any[]) => any;
 
-export default class Spacial extends Point implements ISpacial {
+export default class Spacial extends Point implements ISpacial, IHaveSize {
 	static override defaults: {[name: string]: ISpacial} = {
 		default: {
 			x: undefined,
@@ -117,6 +121,10 @@ export default class Spacial extends Point implements ISpacial {
 
 		this.width = width ?? 0;
 		this.height = height ?? 0;
+	}
+
+	public computeSize(): Size {
+		return {width: this.width, height: this.height}
 	}
 
 	public getHitbox(): Rect {
