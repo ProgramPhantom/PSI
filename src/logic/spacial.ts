@@ -29,9 +29,10 @@ export interface IMountConfig {
 }
 
 
-type PlacementConfiguration = {type: "free"; position: {x: number, y: number}} | 
-							  {type: "pulse"; config: IMountConfig} | 
-							  {type: "bounded"; bindings: undefined}
+export type PlacementConfiguration = {type: "free"} | 
+									 {type: "pulse"; config: IMountConfig} | 
+									 {type: "bounded"; bindings: undefined} | 
+									 {type: "managed"}
 
 
 export type PositionMethod = "controlled" | "free" | "partially-controlled";
@@ -84,11 +85,11 @@ export type UpdateNotification = (...args: any[]) => any;
 export default class Spacial extends Point implements ISpacial, IHaveSize {
 	static override defaults: {[name: string]: ISpacial} = {
 		default: {
-			x: undefined,
-			y: undefined,
+			x: 0,
+			y: 0,
 			contentWidth: 0,
 			contentHeight: 0,
-			placementMode: {type: "free", position: {x: 0, y: 0}},
+			placementMode: {type: "free"},
 			ref: "default-spacial"
 		}
 	};

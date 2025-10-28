@@ -18,7 +18,7 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 	static defaults: {[key: string]: ISequenceAligner} = {
 		default: {...(<any>blankDiagram)}
 	};
-	static ElementType: UserComponentType = "diagram";
+	static ElementType: UserComponentType = "sequence-aligner";
 
 	get state(): ISequenceAligner {
 		return {
@@ -30,36 +30,6 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 	get sequences(): Sequence[] {
 		return this.alignerChildren;
 	}
-	get sequenceDict(): Record<ID, Sequence> {
-		return Object.fromEntries(this.alignerChildren.map((item) => [item.id, item]));
-	}
-	get sequenceIDs(): string[] {
-		return Object.keys(this.sequenceDict);
-	}
-
-	get channelsDict(): {[name: string]: Channel} {
-		var channels: {[name: string]: Channel} = {};
-		this.alignerChildren.forEach((s) => {
-			Object.entries(s.channelsDict).forEach(([id, channel]) => {
-				channels[id] = channel;
-			});
-		});
-		return channels;
-	}
-	get channels(): Channel[] {
-		return this.alignerChildren.map((s) => s.channels).flat();
-	}
-	get channelIDs(): string[] {
-		return this.alignerChildren.map((s) => s.channelIDs).flat();
-	}
-
-	get allPulseElements(): Visual[] {
-		var elements: Visual[] = [];
-		this.alignerChildren.forEach((s) => {
-			elements.push(...s.allPulseElements);
-		});
-		return elements;
-	}
 
 	constructor(pParams: RecursivePartial<ISequenceAligner>, templateName: string = "default") {
 		var fullParams: ISequenceAligner = FillObject(pParams, SequenceAligner.defaults[templateName]);
@@ -69,19 +39,16 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		// Initial sequence:
 		if (fullParams.alignerChildren.length === 0) {
 			var startSequence = new Sequence({});
-			this.addSequence(startSequence);
+			this.add(startSequence);
 		}
 
 		fullParams.alignerChildren.forEach((s) => {
 			var newSeq = new Sequence(s);
-			this.addSequence(newSeq);
+			this.add(newSeq);
 		});
 	}
 
 	// Adding
-	public addSequence(sequence: Sequence) {
-		this.add(sequence);
-	}
 
 
 	public addPulse(pulse: Visual) {
@@ -98,5 +65,19 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		var targetSequence = this.sequences[sequenceIndex];
 		
 		targetSequence.addPulse(pulse);
+	}
+
+	public deletePulse(pulse: Visual) {
+		if (pulse.placementMode.type !== "pulse") {
+			console.warn(`Cannot remove pulse that is not of pulse position type`)
+			return
+		}
+
+		var sequenceId = pulse.placementMode.config.sequenceID;
+
+		var sequenceIndex = this.locateChildById(sequenceId);
+		var targetSequence = this.sequences[sequenceIndex];
+
+		targetSequence.remove(pulse);
 	}
 }

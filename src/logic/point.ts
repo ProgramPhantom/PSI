@@ -64,7 +64,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 
 	ref: string;
 
-	
+
 	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
 	bindingsToThis: IBinding[] = [];
 
@@ -88,10 +88,10 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	get y(): number {
 		return this._y;
 	}
-	protected set x(val: number) {
+	public set x(val: number) {
 		this._x =  posPrecision(val);
 	}
-	protected set y(val: number) {
+	public set y(val: number) {
 		this._y = posPrecision(val);
 	}
 

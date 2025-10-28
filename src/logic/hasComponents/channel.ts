@@ -7,15 +7,16 @@ import { ID } from "../point";
 import RectElement, { IRectElement, IRectStyle } from "../rectElement";
 import Text, { IText } from "../text";
 import { RecursivePartial, UpdateObj } from "../util";
+import { IVisual, Visual } from "../visual";
 
 
 export interface IChannel extends IGrid {
 	sequenceID?: ID;
-
 	style: IChannelStyle;
-
 	label: IText,
 	bar: IRectElement,
+
+	pulseElements: IVisual[]
 }
 
 export interface IChannelStyle {
@@ -23,7 +24,7 @@ export interface IChannelStyle {
 	barStyle: IRectStyle;
 }
 
-export default class Channel extends Grid {
+export default class Channel extends Grid implements IChannel {
 	static namedElements: {[name: string]: IChannel} = {
 		default: <any>defaultChannel,
 		"form-defaults": {
@@ -32,8 +33,8 @@ export default class Channel extends Grid {
 			ref: "my-channel",
 			sequenceID: null,
 			gridChildren: [],
-			selfAlignment: {x: "centre", y: "centre"},
-			sizeMode: {x: "fixed", y: "fixed"},
+			pulseElements: [],
+			placementMode: {type: "managed"},
 
 			style: {
 				thickness: 3,
@@ -49,13 +50,31 @@ export default class Channel extends Grid {
 				padding: [0, 0, 0, 0],
 				ref: "channel-symbol",
 				text: "^{1}\\mathrm{H}",
-				placementMode: {type: "free", position: {x: 0, y: 0}},
+				placementMode: {type: "managed"},
 				style: {
 					fontSize: 50,
 					colour: "black",
 					display: "block",
 					background: null
 				}
+			},
+
+			"bar": {		
+				"padding": [0, 4, 0, 4],
+				"offset": [0, 0],
+
+				"contentWidth": 7,
+				"contentHeight": 50,
+
+				"placementMode": {type: "managed"},
+
+				"style": {
+					"fill": "#000000",
+					"stroke": "black",
+					"strokeWidth": 0
+				},
+
+				"ref": "90-pulse"
 			}
 		}
 	};
@@ -71,8 +90,13 @@ export default class Channel extends Grid {
 			style: this.style,
 			label: this.label,
 			bar: this.bar,
+			pulseElements: this.pulseElements.map((p) => p.state),
 			...super.state
 		};
+	}
+
+	get pulseElements(): Visual[] {
+		return this.gridChildren.filter((v) => v.placementMode.type === "pulse")
 	}
 
 	style: IChannelStyle;

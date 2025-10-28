@@ -1,23 +1,20 @@
-import {Rect, Svg} from "@svgdotjs/svg.js";
-import {PointBind} from "../features/canvas/LineTool";
-import Channel, {IChannel} from "./hasComponents/channel";
+import { Rect, Svg } from "@svgdotjs/svg.js";
+import { myToaster } from "../app/App";
+import { PointBind } from "../features/canvas/LineTool";
 import SchemeManager from "./default";
-import SequenceAligner, {AllStructures, ISequenceAligner} from "./hasComponents/sequenceAligner";
-import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
-import Line, {ILine} from "./line";
-import logger, {Operations} from "./log";
-import {IMountConfig} from "./mountable";
-import {ID} from "./point";
-import RectElement, {IRectElement} from "./rectElement";
-import Sequence from "./hasComponents/sequence";
-import SVGElement, {ISVGElement} from "./svgElement";
-import {FillObject, instantiateByType, RecursivePartial} from "./util";
-import {IDraw, IVisual, Visual} from "./visual";
-import ENGINE from "./engine";
-import {error} from "console";
 import * as defaultDiagram from "./default/defaultDiagram.json";
-import {myToaster} from "../app/App";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
+import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
+import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
+import { ID } from "./point";
+import RectElement, { IRectElement } from "./rectElement";
+import { IMountConfig, PlacementConfiguration } from "./spacial";
+import SVGElement, { ISVGElement } from "./svgElement";
+import { RecursivePartial } from "./util";
+import { IDraw, IVisual, Visual } from "./visual";
+import Sequence from "./hasComponents/sequence";
+import Channel, { IChannel } from "./hasComponents/channel";
+import Line, { ILine } from "./line";
 
 export type Result<T> = {ok: true; value: T} | {ok: false; error: string};
 
@@ -60,6 +57,7 @@ export type UserComponentType =
 	| "text"
 	| "line"
 	| "channel"
+	| "sequence-aligner"
 	| "sequence"
 	| "diagram";
 export type DrawComponent = "svg" | "rect" | "space";
@@ -68,7 +66,7 @@ export type DrawComponent = "svg" | "rect" | "space";
 export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract" | "visual";
 
 // All
-export type AllElementIdentifiers = AllStructures | AllComponentTypes;
+export type AllElementIdentifiers =  AllComponentTypes;
 
 export default class DiagramHandler implements IDraw {
 	public diagram: Diagram;
@@ -78,7 +76,7 @@ export default class DiagramHandler implements IDraw {
 
 	get id(): string {
 		var id: string = "";
-		this.diagram.components.sequences.forEach((s) => {
+		this.diagram.children.forEach((s) => {
 			Object.keys(s.allElements).forEach((k) => {
 				id += k;
 			});
@@ -88,7 +86,7 @@ export default class DiagramHandler implements IDraw {
 	syncExternal: () => void;
 
 	get sequences(): Sequence[] {
-		return this.diagram.components.sequences;
+		return this.diagram.sequences;
 	}
 	hasSequence(name: string): boolean {
 		return this.diagram.sequenceIDs.includes(name);
@@ -103,8 +101,8 @@ export default class DiagramHandler implements IDraw {
 		this.schemeManager = schemeManager;
 		this.surface = surface;
 
-		var constructResult: Result<SequenceAligner> = this.constructDiagram(
-			(<any>defaultDiagram) as ISequenceAligner
+		var constructResult: Result<Diagram> = this.constructDiagram(
+			(<any>defaultDiagram) as Diagram
 		);
 
 		if (constructResult.ok) {
@@ -114,7 +112,7 @@ export default class DiagramHandler implements IDraw {
 				message: "Error loading diagram",
 				intent: "danger"
 			});
-			this.diagram = new SequenceAligner({});
+			this.diagram = new Diagram({});
 		}
 	}
 
@@ -167,7 +165,7 @@ export default class DiagramHandler implements IDraw {
 			// Create and mount pulses.
 			state.sequenceAligner.sequences.forEach((s) => {
 				s.channels.forEach((c) => {
-					c.mountedElements.forEach((m) => {
+					c.pulseElements.forEach((m) => {
 						if (m.type === undefined) {
 							console.warn(`Element data is missing type: ${m.ref}`);
 						}
@@ -193,8 +191,9 @@ export default class DiagramHandler implements IDraw {
 			case "rect":
 			case "svg":
 			case "label-group":
-				if (parameters.mountConfig !== undefined) {
-					parameters.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
+				// Temporary as we only allow one sequence currently.
+				if (parameters.placementMode.type === "pulse") {
+					parameters.placementMode.config.sequenceID = this.diagram.sequenceIDs[0];
 				}
 
 				result = this.createVisual(parameters, type);
@@ -214,15 +213,19 @@ export default class DiagramHandler implements IDraw {
 		type: AllComponentTypes,
 		target: Visual
 	): Result<Visual> {
-		var mountConfigCopy: IMountConfig | undefined = target.mountConfig;
+		var mountConfigCopy: IMountConfig | undefined;
+		if (target.placementMode.type === "pulse") {
+			mountConfigCopy = target.placementMode.config;
+		}
+		
 		// Delete element
-		this.deleteVisual(target, false);
+		this.deleteVisual(target);
 
 		// Copy hidden parameter channelID (this shouldn't be needed as it should take the state
 		// from the form. The hidden values should still be in the form.)
-		if (mountConfigCopy !== undefined && parameters.mountConfig !== undefined) {
-			parameters.mountConfig.channelID = mountConfigCopy.channelID;
-			parameters.mountConfig.index = mountConfigCopy.index;
+		if (mountConfigCopy !== undefined && parameters.placementMode.type === "pulse") {
+			parameters.placementMode.config.channelID = mountConfigCopy.channelID;
+			parameters.placementMode.config.index = mountConfigCopy.index;
 		}
 
 		var result: Result<Visual> = this.submitVisual(parameters, type);
@@ -269,24 +272,10 @@ export default class DiagramHandler implements IDraw {
 		return this.addChannel(newChannel);
 	}
 
-	// ------------------------
+	// ------------------------------------------
 
 	// ---------- Visual interaction (generic) -----------
 	@draws
-	public addElement(element: Visual): Result<Visual> {
-		if (element.isMountable === true) {
-			return this.mountVisual(element, false);
-		}
-
-		try {
-			this.diagram.add(element);
-			this.diagram.computeBoundary();
-		} catch (err) {
-			return {ok: false, error: (err as Error).message};
-		}
-
-		return {ok: true, value: element};
-	}
 	public createVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
 		var element: Visual;
 
@@ -312,26 +301,16 @@ export default class DiagramHandler implements IDraw {
 				};
 		}
 
-		if (element.mountConfig !== undefined) {
-			return this.mountVisual(element, false);
-		} else {
-			return this.addElement(element);
-		}
-	}
-	public replaceVisual(target: Visual, newElement: Visual): Result<Visual> {
-		if (target.isMountable) {
-			return this.replaceMountable(target, newElement);
-		} else {
-			throw new Error("not implemented");
-		}
+		this.placeVisual(element);
 	}
 	@draws
 	public moveVisual(element: Visual, x: number, y: number): Result<Visual> {
+		// Cancel if pulse position type or change to free position type?
+
 		try {
 			element.x = x;
 			element.y = y;
 
-			this.diagram.computeBoundary();
 		} catch (err) {
 			return {ok: false, error: (err as Error).message};
 		}
@@ -339,18 +318,25 @@ export default class DiagramHandler implements IDraw {
 		return {ok: true, value: element};
 	}
 	@draws
-	public deleteVisual(target: Visual, removeColumn?: boolean): Result<Visual> {
+	public deleteVisual(target: Visual): Result<Visual> {
 		var result: Result<Visual>;
 
-		if (target.isMountable) {
-			var deleteResult = this.deleteMountedVisual(target, removeColumn);
-			if (deleteResult.ok === true) {
-				result = {ok: true, value: deleteResult.value.target};
-			} else {
-				result = deleteResult;
+		if (target.placementMode.type === "pulse") {
+			try {
+				this.diagram.deletePulse(target);
+				result = {ok: true, value: target};
+			} catch (err) {
+				result = {ok: false, error: (err as Error).message}
 			}
-		} else {
-			result = this.deleteFreeVisual(target);
+		} else if (target.placementMode.type === "free") {
+			try {
+				this.diagram.remove(target);
+				result = {ok: true, value: target};
+			} catch (err) {
+				result = {ok: false, error: (err as Error).message}
+			}
+		} else if (target.placementMode.type === "bounded") {
+			// TODO
 		}
 
 		return result;
@@ -367,10 +353,12 @@ export default class DiagramHandler implements IDraw {
 	// ------- Channel stuff ---------
 	@draws
 	public addChannel(element: Channel): Result<Channel> {
+		var result: Result<Channel>;
+
 		var sequence: Sequence | undefined = this.diagram.sequenceDict[element.sequenceID];
 
 		if (sequence === undefined) {
-			return {
+			result = {
 				ok: false,
 				error: `Cannot find sequence of ID ${element.sequenceID}`
 			};
@@ -379,17 +367,20 @@ export default class DiagramHandler implements IDraw {
 		try {
 			sequence.addChannel(element);
 		} catch (err) {
-			return {ok: false, error: (err as Error).message};
+			result = {ok: false, error: (err as Error).message};
 		}
-		return {ok: true, value: element};
+		result = {ok: true, value: element};
+		return result;
 	}
 
 	@draws
 	public deleteChannel(target: Channel): Result<Channel> {
+		var result: Result<Channel>;
+
 		var sequence: Sequence | undefined = this.diagram.sequenceDict[target.sequenceID];
 
 		if (sequence === undefined) {
-			return {
+			result = {
 				ok: false,
 				error: `Cannot find channel with ID: ${target.sequenceID}`
 			};
@@ -398,9 +389,10 @@ export default class DiagramHandler implements IDraw {
 		try {
 			sequence.deleteChannel(target);
 		} catch (err) {
-			return {ok: false, error: (err as Error).message};
+			result = {ok: false, error: (err as Error).message};
 		}
-		return {ok: true, value: target};
+		result = {ok: true, value: target};
+		return result
 	}
 
 	// ----------- Annotation stuff ------------------
@@ -462,153 +454,30 @@ export default class DiagramHandler implements IDraw {
 			return {ok: false, error: `Cannot bind line`};
 		}
 
-		try {
-			this.diagram.addFreeArrow(newLine);
-		} catch (err) {
-			return {ok: false, error: (err as Error).message};
-		}
+		// try {
+		// 	this.diagram.addFreeArrow(newLine);
+		// } catch (err) {
+		// 	return {ok: false, error: (err as Error).message};
+		// }
 
 		return {ok: true, value: newLine};
 	}
 
-	// -------------- Free element interactions ----------------
-	private deleteFreeVisual(target: Visual): Result<Visual> {
-		if (!this.diagram.userChildren.includes(target)) {
-			return {
-				ok: false,
-				error: `Cannot remove controlled element ${target.ref} with this method`
-			};
-		}
-
+	// -------------- Placement ----------------
+	private placeVisual(target: Visual): Result<Visual> {
+		var placementMode: PlacementConfiguration = target.placementMode;
 		try {
-			this.diagram.remove(target);
+			if (placementMode.type === "pulse") {
+				this.diagram.addPulse(target);
+			} else if (placementMode.type === "bounded") {
+				// TODO
+			} else if (placementMode.type === "free") {
+				// Do nothing I believe.
+			}
 		} catch (err) {
 			return {ok: false, error: (err as Error).message};
 		}
-
-		return {ok: true, value: target};
+		
+		return {ok: true, value: target}
 	}
-	private deleteFreeVisualByID(id: ID) {
-		var target: Visual | undefined = this.identifyElement(id);
-		if (target === undefined) {
-			throw new Error(`Cannot find element with ID ${id}`);
-		}
-
-		if (!this.diagram.userChildren.includes(target)) {
-			throw new Error(`Cannot remove controlled element ${target.ref} with this method`);
-		}
-
-		this.diagram.remove(target);
-		this.draw();
-	}
-
-	// -------------- Mounted visual interactions ----------------
-	// @isMountable
-	@draws
-	public mountVisual(target: Visual, insert: boolean = true): Result<Visual> {
-		// Temporary
-		if (target.mountConfig !== undefined) {
-			target.mountConfig.sequenceID = this.diagram.sequenceIDs[0];
-		}
-
-		try {
-			this.diagram.mountElement(target, insert);
-		} catch (err) {
-			return {ok: false, error: `Cannot mount element ${target.ref}`};
-		}
-
-		return {ok: true, value: target};
-	}
-
-	@draws
-	private deleteMountedVisual(
-		target: Visual,
-		removeColumn: boolean = true
-	): Result<{target: Visual; removedColumn: boolean}> {
-		var columnRemoved: boolean = false;
-		// Find which channel owns this element:
-
-		try {
-			columnRemoved = this.diagram.deleteMountedElement(target, removeColumn);
-		} catch (err) {
-			return {ok: false, error: (err as Error).message};
-		}
-
-		return {
-			ok: true,
-			value: {target: target, removedColumn: columnRemoved}
-		};
-	}
-
-	@draws
-	private replaceMountable(target: Visual, newElement: Visual): Result<Visual> {
-		logger.operation(Operations.MODIFY, `${target} -> ${newElement}`);
-
-		var deleteResult: Result<{target: Visual; removedColumn: boolean}> =
-			this.deleteMountedVisual(target, false);
-		if (deleteResult.ok === false) {
-			return {ok: false, error: deleteResult.error};
-		}
-
-		var mountResult: Result<Visual> = this.mountVisual(newElement, false);
-		if (mountResult.ok === false) {
-			return mountResult;
-		}
-
-		return {ok: true, value: mountResult.value};
-	}
-
-	// For inserting
-	// @isMountable
-	public shiftMountedVisual(target: Visual, newMountConfig: IMountConfig): Result<Visual> {
-		var result: Result<{target: Visual; removedColumn: boolean}> = this.deleteMountedVisual(
-			target,
-			true
-		);
-
-		if (result.ok === false) {
-			return {ok: false, error: result.error};
-		}
-		var deleted: boolean = result.value.removedColumn;
-
-		if (
-			deleted
-			&& target.mountConfig!.index + target.mountConfig!.noSections === newMountConfig.index
-		) {
-			newMountConfig.index -= target.mountConfig!.noSections;
-		}
-
-		target.mountConfig = newMountConfig;
-		return this.mountVisual(target, true);
-	}
-
-	// For moving to another mount
-	public moveMountedVisual(target: Visual, newMountConfig: IMountConfig): Result<Visual> {
-		var removeCol: boolean = true;
-		if (target.mountConfig!.index === newMountConfig.index) {
-			// Moving to the same column (for intra-channel movement)
-			removeCol = false;
-		}
-		var result: Result<{target: Visual; removedColumn: boolean}> = this.deleteMountedVisual(
-			target,
-			removeCol
-		);
-
-		if (result.ok === false) {
-			return {ok: false, error: result.error};
-		}
-		var deleted: boolean = result.value.removedColumn;
-
-		if (
-			deleted
-			&& target.mountConfig!.index + target.mountConfig!.noSections < newMountConfig.index
-		) {
-			newMountConfig.index -= 1;
-		}
-
-		target.mountConfig = newMountConfig;
-
-		return this.mountVisual(target, false);
-	}
-	// ------------------------------------------------------------
 }
