@@ -38,7 +38,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		};
 	}
 
+	// Truth
 	gridMatrix: T[][] = [[]];
+	//
+	
 	gridSizes: {x: Rect[], y: Rect[]} = {x: [], y: []};
 	cells: Rect[][];
 
@@ -50,36 +53,42 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	}
 
 
-	draw() {
+	public draw() {
 		// Pass
 	}
 
-	computeSize(): Size {
+	public computeSize(): Size {
 		// Compute the size of the grid by finding the maximum width and height
 		// element in each column and row, and then summing them up.
 
+		var columns: T[][] = this.getColumns();
+		var rows: T[][] = this.gridMatrix;
+
 		// Let's compute the width and height of each column
-		this.gridSizes.x.forEach((col, i) => {
-			var colChildren = this.getColumn(i);
-			var maxWidth = Math.max(...colChildren.map((child) => child.width))
+		var columnRects: Rect[] = Array<Rect>(columns.length).fill({width: 0, height: 0, x: 0, y: 0})
+		columns.forEach((col, i) => {
+			var maxWidth = Math.max(...col.map((child) => child.width))
 
-			this.gridSizes.x[i].width = maxWidth;
+			columnRects[i].width = maxWidth;
 
-			var colHeight = colChildren.reduce((h, c) => h + c.height, 0);
-			this.gridSizes.x[i].height = colHeight
+			var colHeight = col.reduce((h, c) => h + c.height, 0);
+			columnRects[i].height = colHeight
 		})
+
 
 		// Now lets compute the width and height of each row
-		this.gridSizes.y.forEach((row, i) => {
-			var rowChildren = this.gridMatrix[i];
-			var maxHeight = Math.max(...rowChildren.map((child) => child.height))
+		var rowRects: Rect[] = Array<Rect>(rows.length).fill({width: 0, height: 0, x: 0, y: 0})
+		rows.forEach((row, i) => {
+			var maxHeight = Math.max(...row.map((child) => child.height))
 
-			this.gridSizes.y[i].height = maxHeight;
+			rowRects[i].height = maxHeight;
 
-			var rowWidth = rowChildren.reduce((w, c) => w + c.width, 0);
-			this.gridSizes.y[i].width = rowWidth
+			var rowWidth = row.reduce((w, c) => w + c.width, 0);
+			rowRects[i].width = rowWidth
 		})
 
+		this.gridSizes.x = columnRects;
+		this.gridSizes.y = rowRects;
 
 		var totalWidth = this.gridSizes.x.reduce((w, r) => w + r.width, 0);
 		var totalHeight = this.gridSizes.y.reduce((h, r) => h + r.height, 0);
@@ -93,7 +102,22 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	}
 
 
-	private getColumn(index: number): T[] {
-		return this.gridMatrix.map((row) => row[index]);
+
+	private getColumns(): T[][] {
+		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
+			return [];
+		}
+
+		const numCols = this.gridMatrix[0].length;
+		const columns: T[][] = [];
+
+		for (let col = 0; col < numCols; col++) {
+			const column: T[] = this.gridMatrix.map(row => row[col]);
+			columns.push(column);
+		}
+
+		return columns;
 	}
+
+
 }
