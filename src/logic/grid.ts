@@ -146,6 +146,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return columns;
 	}
 
+	private getColumn(index: number): T[] {
+		return this.gridMatrix.map((row) => row[index]);
+	}
+
 	private getFirstAvailableCell(): {row: number, col: number} {
 		var coords: {row: number, col: number} | undefined = undefined; 
 		for (let row=0; row < this.noRows; row++) {
@@ -201,5 +205,35 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			this.gridMatrix.splice(index, 0, newRow);
 		}
   	}
+
+	private removeColumn(index?: number, onlyIfEmpty: boolean=false) {
+		var INDEX = index;
+		if (index === undefined || index < 0 || index > this.noColumns-1) {
+			INDEX = this.noColumns - 1;
+		}
+
+		var targetColumn: T[] = this.getColumn[INDEX];
+		var empty: boolean = !targetColumn.some((c) => c !== undefined);
+
+		if (onlyIfEmpty === true && !empty) { return }
+
+		for (let i = 0; i < this.noRows; i++) {
+			this.gridMatrix[i].splice(INDEX, 1);
+		}
+		
+	}
+	private removeRow(index?: number, onlyIfEmpty: boolean=false) {
+		var INDEX = index;
+		if (index === undefined || index < 0 || index > this.noRows-1) {
+			INDEX = this.noRows - 1;
+		}
+
+		var targetRow: T[] = this.gridMatrix[INDEX];
+		var empty: boolean = !targetRow.some((c) => c !== undefined);
+
+		if (onlyIfEmpty === true && !empty) { return }
+
+		this.gridMatrix.splice(INDEX, 1);	
+	}
 
 }
