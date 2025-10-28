@@ -25,8 +25,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			y: undefined,
 			offset: [0, 0],
 			padding: [0, 0, 0, 0],
-			selfAlignment:  {x: "here", y: "here"},
-			sizeMode: {x: "fixed", y: "fixed"},
+			placementMode: {type: "free", position: {x:0, y: 0}},
 			gridChildren: [],
 			ref: "default-collection",
 		}

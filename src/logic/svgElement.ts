@@ -58,7 +58,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 	elementGroup: G = new G();
 	style: ISVGStyle;
 	svgDataRef: string;
-	// svg: Element;
+	
 
 	constructor(params: ISVGElement);
 	constructor(params: RecursivePartial<ISVGElement>, templateName: string);
@@ -115,16 +115,8 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 	}
 
 	override getInternalRepresentation(): Element | undefined {
-		var deltaX;
-		var deltaY;
-
-		if (this.hasPosition) {
-			deltaX = -this.contentX;
-			deltaY = -this.contentY;
-		} else {
-			deltaX = 0;
-			deltaY = 0;
-		}
+		var deltaX = -this.contentY;
+		var deltaY = -this.contentX
 
 		var internalSVG = this.svg?.clone(true, true);
 		internalSVG?.attr({style: "display: block;"}).move(this.offset[0], this.offset[1]);
@@ -140,30 +132,23 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 			}
 
 			// Flip svg depending on orientation.
-			if (this.isMountable) {
-				if (
-					(!this.flipped && this.mountConfig?.orientation === "bottom")
-					|| (this.flipped && this.mountConfig?.orientation === "top")
-				) {
-					this.flipped = !this.flipped;
-					this.verticalFlip();
-				}
-
-				if (this.flipped) {
-					this.offset = [this.offset[0], -Math.abs(this.offset[1])];
-				} else {
-					this.offset = [this.offset[0], Math.abs(this.offset[1])];
-				}
-			}
-
+			// if (
+			// 	(!this.flipped && this.mountConfig?.orientation === "bottom")
+			// 	|| (this.flipped && this.mountConfig?.orientation === "top")
+			// ) {
+			// 	this.flipped = !this.flipped;
+			// 	this.verticalFlip();
+			// }
+// 
+			// if (this.flipped) {
+			// 	this.offset = [this.offset[0], -Math.abs(this.offset[1])];
+			// } else {
+			// 	this.offset = [this.offset[0], Math.abs(this.offset[1])];
+			// }
+			
 			// Position, size and draw svg.
 			this.svg.move(this.drawX, this.drawY);
 			this.svg.size(this.contentWidth, this.contentHeight);
-
-			this.svg.attr({
-				"data-position": this.positionMethod,
-				"data-ownership": this.ownershipType
-			});
 
 			surface.add(this.svg);
 		}

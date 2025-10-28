@@ -17,6 +17,7 @@ import ENGINE from "./engine";
 import {error} from "console";
 import * as defaultDiagram from "./default/defaultDiagram.json";
 import {myToaster} from "../app/App";
+import Diagram, { IDiagram } from "./hasComponents/diagram";
 
 export type Result<T> = {ok: true; value: T} | {ok: false; error: string};
 
@@ -70,14 +71,7 @@ export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract"
 export type AllElementIdentifiers = AllStructures | AllComponentTypes;
 
 export default class DiagramHandler implements IDraw {
-	private _diagram: SequenceAligner;
-	public get diagram(): SequenceAligner {
-		return this._diagram;
-	}
-	public set diagram(val: SequenceAligner) {
-		val.ownershipType = "component";
-		this._diagram = val;
-	}
+	public diagram: Diagram;
 
 	surface?: Svg;
 	schemeManager: SchemeManager;
@@ -126,7 +120,7 @@ export default class DiagramHandler implements IDraw {
 
 	@draws
 	freshDiagram() {
-		this.diagram = new SequenceAligner({});
+		this.diagram = new Diagram({});
 	}
 
 	draw() {
@@ -161,9 +155,9 @@ export default class DiagramHandler implements IDraw {
 
 	// ----- Construct diagram from state ------
 	@draws
-	public constructDiagram(state: ISequenceAligner): Result<SequenceAligner> {
+	public constructDiagram(state: IDiagram): Result<Diagram> {
 		try {
-			var newDiagram: SequenceAligner = new SequenceAligner(state);
+			var newDiagram: Diagram = new Diagram(state);
 		} catch (err) {
 			return {ok: false, error: (err as Error).message};
 		}
@@ -171,7 +165,7 @@ export default class DiagramHandler implements IDraw {
 
 		try {
 			// Create and mount pulses.
-			state.sequences.forEach((s) => {
+			state.sequenceAligner.sequences.forEach((s) => {
 				s.channels.forEach((c) => {
 					c.mountedElements.forEach((m) => {
 						if (m.type === undefined) {

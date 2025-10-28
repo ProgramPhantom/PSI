@@ -18,7 +18,7 @@ export interface Size {
 	height: number;
 }
 
-interface IMountConfig {
+export interface IMountConfig {
 	index: number | null;
 	channelID: ID | null;
 	sequenceID: ID | null;
@@ -32,7 +32,7 @@ interface IMountConfig {
 type PlacementConfiguration = {type: "free"; position: {x: number, y: number}} | 
 							  {type: "pulse"; config: IMountConfig} | 
 							  {type: "bounded"; bindings: undefined}
-							  
+
 
 export type PositionMethod = "controlled" | "free" | "partially-controlled";
 export type SizeMethod = "fixed" | "fit" | "grow";

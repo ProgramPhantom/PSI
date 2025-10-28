@@ -5,6 +5,7 @@ import {Alignment} from "./mountable";
 import Spacial, {Dimensions, Size} from "./spacial";
 import {FillObject, RecursivePartial} from "./util";
 import {IVisual, Visual} from "./visual";
+import { ID } from "./point";
 
 export interface IAligner extends IVisual {
 	mainAxis: Dimensions;
@@ -26,8 +27,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 			y: undefined,
 			offset: [0, 0],
 			padding: [0, 0, 0, 0],
-			selfAlignment:  {x: "here", y: "here"},
-			sizeMode: {x: "fixed", y: "fixed"},
+			placementMode: {type: "free", position: {x: 0, y: 0}},
 			ref: "default-aligner",
 			alignerChildren: []
 		}
@@ -115,11 +115,15 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 	}
 
 
-	private locateChild(target: T): number | undefined {
+	protected locateChild(target: T): number | undefined {
+		return this.locateChildById(target.id);
+	}
+
+	protected locateChildById(id: ID): number | undefined {
 		var childIndex: number | undefined = undefined;
 
 		this.alignerChildren.forEach((child, index) => {
-			if (target.id === child.id) {
+			if (id === child.id) {
 				childIndex = index;
 			}
 		});

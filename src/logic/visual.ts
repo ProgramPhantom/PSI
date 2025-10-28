@@ -38,7 +38,6 @@ export abstract class Visual extends PaddedBox implements IVisual {
 			allowLabels: false
 		};
 	}
-
 	get state(): IVisual {
 		return {
 			offset: this.offset,
@@ -49,17 +48,11 @@ export abstract class Visual extends PaddedBox implements IVisual {
 		return {[this.id]: this};
 	}
 
-	offset: [number, number];
 
+	offset: [number, number];
 	svg?: Element;
 
-	private _dirty: boolean = true;
-	public get dirty(): boolean {
-		return this._dirty;
-	}
-	public set dirty(value: boolean) {
-		this._dirty = value;
-	}
+	public dirty: boolean = true;
 
 	constructor(params: IVisual) {
 		super(params.padding, params.x, params.y, 
@@ -77,10 +70,6 @@ export abstract class Visual extends PaddedBox implements IVisual {
 	public computeSize(): Size {
 		return super.computeSize();
 		// Pass
-
-		// Potentially do
-		// this.width = ...
-		// this.height = ...
 	}
 
 	protected verticalFlip() {

@@ -49,8 +49,7 @@ export default class Channel extends Grid {
 				padding: [0, 0, 0, 0],
 				ref: "channel-symbol",
 				text: "^{1}\\mathrm{H}",
-				selfAlignment: {x: "centre", y: "centre"},
-				sizeMode: {x: "fixed", y: "fixed"},
+				placementMode: {type: "free", position: {x: 0, y: 0}},
 				style: {
 					fontSize: 50,
 					colour: "black",

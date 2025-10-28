@@ -71,8 +71,6 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 				.attr({
 					"stroke-width": this.style.strokeWidth,
 					"shape-rendering": "crispEdges",
-					"data-position": this.positionMethod,
-					"data-ownership": this.ownershipType
 				});
 			surface.add(this.svg);
 

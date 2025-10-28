@@ -1,16 +1,12 @@
-import Aligner from "../aligner";
-import Channel, {IChannel} from "./channel";
-import Collection, {ICollection, IHaveComponents} from "../collection";
-import defaultSequence from "../default/sequence.json";
-import {AllComponentTypes} from "../diagramHandler";
-import logger, {Operations, Processes} from "../log";
-import {ID} from "../point";
-import Space from "../space";
-import Spacial from "../spacial";
-import {FillObject, MarkAsComponent, RecursivePartial} from "../util";
-import {Visual} from "../visual";
-import Grid, { IGrid } from "../grid";
 import { ISequence } from "../../typeCheckers/sequence-ti";
+import defaultSequence from "../default/sequence.json";
+import { AllComponentTypes } from "../diagramHandler";
+import Grid, { IGrid } from "../grid";
+import { ID } from "../point";
+import { IMountConfig } from "../spacial";
+import { FillObject, RecursivePartial } from "../util";
+import { Visual } from "../visual";
+import Channel, { IChannel } from "./channel";
 
 
 export interface ISequence extends IGrid {
@@ -61,13 +57,49 @@ export default class Sequence extends Grid implements ISequence {
 		});
 	}
 
-	// Content Commands
-	addChannel(channel: Channel) {
-		this.channels.push(channel);
 
+	public addPulse(pulse: Visual) {
+		if (pulse.placementMode.type !== "pulse") {
+			console.warn(`Cannot mount pulse with no pulse type config`)
+			return
+		}
+
+		var config: IMountConfig = pulse.placementMode.config;
+
+		var channelId: ID = pulse.placementMode.config.channelID; 
+
+		// We now need to convert the mount config in the pulse's placement
+		// type into the exact coordinate in the grid to insert this element
+		var channelIndex = this.locateChannelById(channelId);
+
+		var row: number = 0;
+		var column: number = 1;  // Starting at 1 as we know the label goes there
+
+		// --------- Row -------------
+		// Currently, channels ALWAYS have a height of 3 so that's how we find 
+		// our row number.
+		row = channelIndex * 3;
+		if (config.orientation === "both") {
+			row += 1
+		} else if (config.orientation === "bottom") {
+			row += 2
+		}
+
+
+		// ---------- Column ------------
+		column += config.index;  // Shift along by index
+
+
+		this.add(pulse, row, column);
 	}
 
-	deleteChannel(channel: Channel) {
+	// Content Commands
+	public addChannel(channel: Channel) {
+		// this.channels.push(channel);
+		
+	}
+
+	public deleteChannel(channel: Channel) {
 		if (!this.channels.includes(channel)) {
 			throw new Error(`Channel '${channel.ref}' does not belong to ${this.ref}`);
 		}
@@ -75,6 +107,23 @@ export default class Sequence extends Grid implements ISequence {
 		var index = this.channels.indexOf(channel);
 
 		this.channels.splice(index, 1);
+		// TODO, must update the matrix
+	}
+
+	protected locateChannel(channel: Channel) {
+		return this.locateChannelById(channel.id);
+	}
+
+	protected locateChannelById(id: ID): number | undefined {
+		var channelIndex: number | undefined = undefined;
+
+		this.channels.forEach((child, index) => {
+			if (id === child.id) {
+				channelIndex = index;
+			}
+		});
+
+		return channelIndex;
 	}
 
 }

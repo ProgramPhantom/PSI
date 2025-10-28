@@ -1,15 +1,16 @@
-import { Channel } from "diagnostics_channel";
+
 import Aligner, { IAligner } from "../aligner";
 import blankDiagram from "../default/blankDiagram.json";
 import { UserComponentType } from "../diagramHandler";
 import { ID } from "../point";
 import { FillObject, RecursivePartial } from "../util";
 import { Visual } from "../visual";
-import Sequence from "./sequence";
+import Channel from "./channel";
+import Sequence, { ISequence } from "./sequence";
 
 
 export interface ISequenceAligner extends IAligner {
-	
+	sequences: ISequence[]
 }
 
 
@@ -21,10 +22,14 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 
 	get state(): ISequenceAligner {
 		return {
+			sequences: this.sequences.map(s => s.state),
 			...super.state
 		};
 	}
 
+	get sequences(): Sequence[] {
+		return this.alignerChildren;
+	}
 	get sequenceDict(): Record<ID, Sequence> {
 		return Object.fromEntries(this.alignerChildren.map((item) => [item.id, item]));
 	}
@@ -76,5 +81,22 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 	// Adding
 	public addSequence(sequence: Sequence) {
 		this.add(sequence);
+	}
+
+
+	public addPulse(pulse: Visual) {
+		if (pulse.placementMode.type !== "pulse") {
+			console.warn(`Cannot mount pulse with no pulse type config`)
+			return
+		}
+
+		var sequenceId = pulse.placementMode.config.sequenceID;
+
+		// Find the sequence that this pulse belongs to:
+		var sequenceIndex = this.locateChildById(sequenceId);
+
+		var targetSequence = this.sequences[sequenceIndex];
+		
+		targetSequence.addPulse(pulse);
 	}
 }
