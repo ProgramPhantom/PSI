@@ -81,7 +81,6 @@ export default class Spacial extends Point implements ISpacial {
 			...super.state
 		};
 	}
-
 	public AnchorFunctions = {
 		here: {
 			get: this.getNear.bind(this),
@@ -96,8 +95,9 @@ export default class Spacial extends Point implements ISpacial {
 			set: this.setFar.bind(this)
 		}
 	};
-	protected _contentWidth?: number;
-	protected _contentHeight?: number;
+
+	protected _contentWidth: number;
+	protected _contentHeight: number;
 
 	public selfAlignment: Record<Dimensions, SiteNames>;
 	public sizeMode: Record<Dimensions, SizeMethod>;
@@ -115,8 +115,8 @@ export default class Spacial extends Point implements ISpacial {
 	) {
 		super(x, y, ref, id);
 
-		width !== undefined ? (this._contentWidth = width) : null;
-		height !== undefined ? (this._contentHeight = height) : null;
+		this.width = width ?? 0;
+		this.height = height ?? 0;
 	}
 
 	public getHitbox(): Rect {
@@ -136,7 +136,6 @@ export default class Spacial extends Point implements ISpacial {
 	}
 	public set contentX(v: number) {
 		throw new Error("not implemented");
-		// this._contentX = v;
 	}
 
 	public get contentY(): number {
@@ -168,57 +167,32 @@ export default class Spacial extends Point implements ISpacial {
 	}
 
 	// ----------- Size --------------
-	get contentWidth(): number | undefined {
+	get contentWidth(): number {
 		return this._contentWidth;
 	}
-	set contentWidth(v: number | undefined) {
-		if (v !== this._contentWidth) {
-			this._contentWidth = v;
-			this.enforceBinding();
-		}
+	set contentWidth(v: number) {
+		this._contentWidth = v;
 	}
 
-	get contentHeight(): number | undefined {
+	get contentHeight(): number {
 		return this._contentHeight;
 	}
-	set contentHeight(v: number | undefined) {
-		if (v !== this.contentHeight) {
-			this._contentHeight = v;
-			this.enforceBinding();
-		}
+	set contentHeight(v: number) {
+		this._contentHeight = v;
 	}
 
 	get width(): number {
-		if (this.contentWidth !== undefined) {
-			return this.contentWidth;
-		}
-		throw new Error("Width unset");
+		return this.contentWidth;
 	}
-	set width(v: number | undefined) {
-		if (v === undefined) {
-			this.contentWidth = undefined;
-		} else {
-			var newContentWidth: number = v;
-
-			this.contentWidth = newContentWidth;
-		}
+	set width(v: number) {
+		this.contentWidth = v;
 	}
 	get height(): number {
-		if (this.contentHeight !== undefined) {
-			return this.contentHeight;
-		}
-		throw new Error("Dimensions undefined");
+		return this.contentHeight;
 	}
-	set height(v: number | undefined) {
-		if (v === undefined) {
-			this.contentHeight = undefined;
-		} else {
-			var newContentHeight: number = v;
-
-			this.contentHeight = newContentHeight;
-		}
+	set height(v: number) {
+		this.contentHeight = v;
 	}
-
 
 
 	public clearBindings(dimension: Dimensions) {
@@ -409,20 +383,14 @@ export default class Spacial extends Point implements ISpacial {
 	}
 
 	// Anchors:
-	public getNear(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public getNear(dimension: Dimensions, ofContent: boolean = false): number {
 		switch (dimension) {
 			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return this.contentX;
 				}
 				return this._x;
 			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return this.contentY;
 				}
@@ -443,24 +411,18 @@ export default class Spacial extends Point implements ISpacial {
 	public getCentre(dimension: Dimensions, ofContent: boolean = false): number | undefined {
 		switch (dimension) {
 			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return (
 						this.contentX
-						+ (this.contentWidth ? posPrecision(this.contentWidth / 2) : 0)
+						+ posPrecision(this.contentWidth / 2)
 					);
 				}
 				return this.x + posPrecision(this.width / 2);
 			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return (
 						this.contentY
-						+ (this.contentHeight ? posPrecision(this.contentHeight / 2) : 0)
+						+ posPrecision(this.contentHeight / 2)
 					);
 				}
 				return this.y + posPrecision(this.height / 2);
@@ -480,19 +442,13 @@ export default class Spacial extends Point implements ISpacial {
 	public getFar(dimension: Dimensions, ofContent: boolean = false): number | undefined {
 		switch (dimension) {
 			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
-					return this.contentX + (this.contentWidth ? this.contentWidth : 0);
+					return this.contentX + this.contentWidth;
 				}
 				return this.x2;
 			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
-					return this.contentY + (this.contentHeight ? this.contentHeight : 0);
+					return this.contentY + this.contentHeight
 				}
 				return this.y2;
 		}
@@ -501,16 +457,12 @@ export default class Spacial extends Point implements ISpacial {
 		switch (dimension) {
 			case "x":
 				if (this.sizeMode.x === "grow" || stretch) {
-					if (this._x === undefined) {
-						throw new Error(
-							`Trying to stretch element ${this.ref} with unset position`
-						);
-					}
-
 					var diff: number = v - this.x;
+					
 					if (diff < 0) {
 						throw new Error(`Flipped element ${this.ref}`);
 					}
+
 					if (diff === 0) {
 						return;
 					}
@@ -522,12 +474,6 @@ export default class Spacial extends Point implements ISpacial {
 				break;
 			case "y":
 				if (this.sizeMode.y === "grow" || stretch) {
-					if (this._y === undefined) {
-						throw new Error(
-							`Trying to stretch element ${this.ref} with unset position`
-						);
-					}
-
 					var diff: number = v - this.y;
 					if (diff < 0) {
 						throw new Error(`Flipped element ${this.ref}`);
@@ -544,53 +490,18 @@ export default class Spacial extends Point implements ISpacial {
 		}
 	}
 
-	get x(): number {
-		if (this._x !== undefined) {
-			return this._x;
-		}
-		throw new Error("x unset");
-	}
-	get y(): number {
-		if (this._y !== undefined) {
-			return this._y;
-		}
-		throw new Error("y unset");
-	}
-	protected set x(val: number | undefined) {
-		if (val !== this._x) {
-			this._x = val !== undefined ? posPrecision(val) : undefined;
-			this.enforceBinding();
-		}
-	}
-	protected set y(val: number | undefined) {
-		if (val !== this._y) {
-			this._y = val !== undefined ? posPrecision(val) : undefined;
-			this.enforceBinding();
-		}
-	}
-
 	// x2 y2
 	public get x2(): number {
-		if (this.definedHorizontally) {
-			return this.x + this.width;
-		}
-		throw new Error(`${this.ref} not defined horizontally`);
+		return this.x + this.width;
 	}
 	public set x2(v: number) {
-		if (this._contentWidth !== undefined) {
-			this.x = v - this.width;
-		}
+		this.x = v - this.width;
 	}
 	public get y2(): number {
-		if (this.definedVertically) {
-			return this.y + this.height;
-		}
-		throw new Error(`${this.ref} not defined vertically`);
+		return this.y + this.height;
 	}
 	public set y2(v: number) {
-		if (this._contentHeight !== undefined) {
-			this.y = v - this.height;
-		}
+		this.y = v - this.height;
 	}
 
 	// Helpers:

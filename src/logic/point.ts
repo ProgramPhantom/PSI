@@ -50,8 +50,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		};
 	}
 
-	protected _x?: number;
-	protected _y?: number;
+	protected _x: number;
+	protected _y: number;
 
 	private _id: ID;
 	public get id(): ID {
@@ -72,8 +72,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	displaced: boolean = false;
 
 	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined) {
-		this.x = x;
-		this.y = y;
+		this.x = x ?? 0;
+		this.y = y ?? 0;
 
 		this.ref = ref;
 
@@ -85,26 +85,16 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	}
 
 	get x(): number {
-		if (this._x !== undefined) {
-			return this._x;
-		}
-		throw new Error("x unset");
+		return this._x;
 	}
 	get y(): number {
-		if (this._y !== undefined) {
-			return this._y;
-		}
-		throw new Error("y unset");
+		return this._y;
 	}
-	protected set x(val: number | undefined) {
-		if (val !== this._x) {
-			this._x = val !== undefined ? posPrecision(val) : undefined;
-		}
+	protected set x(val: number) {
+		this._x =  posPrecision(val);
 	}
-	protected set y(val: number | undefined) {
-		if (val !== this._y) {
-			this._y = val !== undefined ? posPrecision(val) : undefined;
-		}
+	protected set y(val: number) {
+		this._y = posPrecision(val);
 	}
 
 	move({dx, dy}: Shift) {
