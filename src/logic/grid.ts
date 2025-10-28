@@ -5,7 +5,7 @@ import { IDraw, IVisual, Visual } from "./visual";
 
 
 export interface IGrid extends IVisual {
-
+	gridChildren: IVisual[]
 }
 
 
@@ -27,12 +27,13 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			padding: [0, 0, 0, 0],
 			selfAlignment:  {x: "here", y: "here"},
 			sizeMode: {x: "fixed", y: "fixed"},
+			gridChildren: [],
 			ref: "default-collection",
 		}
 	};
 	get state(): IGrid {
 		return {
-
+			gridChildren: this.gridChildren,
 			...super.state
 		};
 	}
@@ -46,6 +47,19 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		} else {
 			return this.gridMatrix[0].length;
 		}
+	}
+	get gridChildren(): T[] {
+		var allChildren: T[] = [];
+		
+		this.gridMatrix.forEach((row) => {
+			row.forEach((cell) => {
+				if (cell !== undefined) {
+					allChildren.push(cell);
+				}
+			})
+		})
+
+		return allChildren;
 	}
 
 	// Truth
@@ -261,7 +275,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		} 
 
 		for (let i = 0; i < this.noRows; i++) {
-      		this.markComponent[i].splice(index, 0, newColumn[i]);
+      		this.gridMatrix[i].splice(index, 0, newColumn[i]);
     	}
 	}
 	private insertEmptyRow(index?: number): void {
