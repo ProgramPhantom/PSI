@@ -1,17 +1,19 @@
-import {Element, Rect, SVG} from "@svgdotjs/svg.js";
-import {FormBundle} from "../features/form/LabelGroupComboForm";
+import { Element } from "@svgdotjs/svg.js";
+import { FormBundle } from "../features/form/LabelGroupComboForm";
 import VisualForm from "../features/form/VisualForm";
-import {defaultVisual} from "./default/index";
+import { defaultVisual } from "./default/index";
 import LabelGroup from "./hasComponents/labelGroup";
-import Mountable, {IMountable} from "./mountable";
-import {ID} from "./point";
-import {posPrecision} from "./util";
+import PaddedBox, { IPaddedBox } from "./paddedBox";
+import { ID } from "./point";
+import { posPrecision } from "./util";
+import { param } from "ts-interface-checker";
+import { Size } from "./spacial";
 
 export type Offset = [number, number];
 
 export type Display = "none" | "block";
 
-export interface IVisual extends IMountable {
+export interface IVisual extends IPaddedBox {
 	offset: [number, number];
 }
 
@@ -24,7 +26,7 @@ export function doesDraw(object: any): object is IDraw {
 	return "draw" in object;
 }
 
-export abstract class Visual extends Mountable implements IVisual {
+export abstract class Visual extends PaddedBox implements IVisual {
 	static namedElements: {[name: string]: IVisual} = {
 		default: <any>defaultVisual,
 		"form-default": <any>defaultVisual
@@ -60,9 +62,10 @@ export abstract class Visual extends Mountable implements IVisual {
 	}
 
 	constructor(params: IVisual) {
-		super(params);
+		super(params.padding, params.x, params.y, 
+			params.contentWidth, params.contentHeight, params.ref, params.id);
 
-		this.offset = params.offset; // Fixed for some reason
+		this.offset = params.offset;
 	}
 
 	abstract draw(surface: Element): void;
@@ -71,7 +74,8 @@ export abstract class Visual extends Mountable implements IVisual {
 		this.svg?.remove();
 	}
 
-	computeSize() {
+	public computeSize(): Size {
+		return super.computeSize();
 		// Pass
 
 		// Potentially do
@@ -79,7 +83,7 @@ export abstract class Visual extends Mountable implements IVisual {
 		// this.height = ...
 	}
 
-	verticalFlip() {
+	protected verticalFlip() {
 		// TODO: this is slightly problematic
 		this.offset = [this.offset[0], -Math.abs(this.offset[1])]; // Strange entanglement error was happening here
 
@@ -96,62 +100,6 @@ export abstract class Visual extends Mountable implements IVisual {
 		cloned.move(0, 0);
 
 		return cloned;
-	}
-
-	override set x(val: number) {
-		if (val !== this._x) {
-			this.dirty = true;
-			this._x = posPrecision(val);
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	} // OVERRIDING SETTER REQUIRES GETTER TO BE REDEFINED???
-	override get x(): number {
-		if (this._x !== undefined) {
-			return this._x;
-		}
-		throw new Error(`x unset in ${this.ref}`);
-	}
-	override set y(val: number) {
-		if (this.ref === "text in label" && val === 25) {
-			console.log();
-		}
-		if (val !== this._y) {
-			this.dirty = true;
-			this._y = posPrecision(val);
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	}
-	override get y(): number {
-		if (this._y !== undefined) {
-			return this._y;
-		}
-		throw new Error(`y unset in ${this.ref}`);
-	}
-
-	override get contentWidth(): number | undefined {
-		return this._contentWidth;
-	}
-	override set contentWidth(v: number | undefined) {
-		if (v !== this._contentWidth) {
-			this.dirty = true;
-			this._contentWidth = v;
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	}
-
-	override get contentHeight(): number | undefined {
-		return this._contentHeight;
-	}
-	override set contentHeight(v: number | undefined) {
-		if (v !== this._contentHeight) {
-			this.dirty = true;
-			this._contentHeight = v;
-			this.enforceBinding();
-			this.notifyChange();
-		}
 	}
 
 	get drawX(): number {
