@@ -1,7 +1,7 @@
 import { ISequence } from "../../typeCheckers/sequence-ti";
 import defaultSequence from "../default/sequence.json";
 import { AllComponentTypes } from "../diagramHandler";
-import Grid, { IGrid } from "../grid";
+import Grid, { IGrid, IGridChildConfig } from "../grid";
 import { ID } from "../point";
 import { IMountConfig } from "../spacial";
 import { FillObject, RecursivePartial } from "../util";
@@ -58,6 +58,38 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 
+	override computePositions(): void {
+		this.computeCells();
+
+		// Now iterate through the gridMatrix and set the position of children
+		this.gridMatrix.forEach((row, row_index) => {
+			row.forEach((cell, column_index) => {
+				if (cell !== undefined) {
+					var cellPosition: {x: number, y: number} = this.cells[row_index][column_index];
+
+					var gridConfig: IGridChildConfig;
+					if (cell.placementMode.type === "grid") {
+						gridConfig = cell.placementMode.gridConfig;
+					} else if (cell.placementMode.type === "pulse") {
+						gridConfig = this.mountConfigToGridConfig(cell.placementMode.config);
+					} else { // Default config
+						gridConfig = {
+							coords: {row: row_index, col: column_index},
+							alignment: {x: "here", y: "here"},
+							size: {noRows: 1, noCols: 1}
+						}
+					}
+
+					cell.AnchorFunctions[gridConfig.alignment.x].set("x", cellPosition.x)
+					cell.AnchorFunctions[gridConfig.alignment.y].set("y", cellPosition.x)
+				
+					cell.computePositions();
+				}
+			})
+		})
+	}
+
+
 	public addPulse(pulse: Visual) {
 		if (pulse.placementMode.type !== "pulse") {
 			console.warn(`Cannot mount pulse with no pulse type config`)
@@ -66,31 +98,10 @@ export default class Sequence extends Grid implements ISequence {
 
 		var config: IMountConfig = pulse.placementMode.config;
 
-		var channelId: ID = pulse.placementMode.config.channelID; 
-
-		// We now need to convert the mount config in the pulse's placement
-		// type into the exact coordinate in the grid to insert this element
-		var channelIndex = this.locateChannelById(channelId);
-
-		var row: number = 0;
-		var column: number = 1;  // Starting at 1 as we know the label goes there
-
-		// --------- Row -------------
-		// Currently, channels ALWAYS have a height of 3 so that's how we find 
-		// our row number.
-		row = channelIndex * 3;
-		if (config.orientation === "both") {
-			row += 1
-		} else if (config.orientation === "bottom") {
-			row += 2
-		}
+		var gridConfig: IGridChildConfig = this.mountConfigToGridConfig(config);
 
 
-		// ---------- Column ------------
-		column += config.index;  // Shift along by index
-
-
-		this.add(pulse, row, column);
+		this.add(pulse, gridConfig.coords.row, gridConfig.coords.col);
 	}
 
 	// Content Commands
@@ -147,4 +158,35 @@ export default class Sequence extends Grid implements ISequence {
 		return channelIndex;
 	}
 
+
+	protected mountConfigToGridConfig(mountConfig: IMountConfig): IGridChildConfig {
+		var channelId: ID = mountConfig.channelID; 
+
+		// We now need to convert the mount config in the pulse's placement
+		// type into the exact coordinate in the grid to insert this element
+		var channelIndex = this.locateChannelById(channelId);
+
+		var row: number = 0;
+		var column: number = 1;  // Starting at 1 as we know the label goes there
+
+		// --------- Row -------------
+		// Currently, channels ALWAYS have a height of 3 so that's how we find 
+		// our row number.
+		row = channelIndex * 3;
+		if (mountConfig.orientation === "both") {
+			row += 1
+		} else if (mountConfig.orientation === "bottom") {
+			row += 2
+		}
+
+		// ---------- Column ------------
+		column += mountConfig.index;  // Shift along by index
+
+
+		return {
+			coords: {row: row, col: column},
+			alignment: mountConfig.alignment,
+			size: {noRows: 1, noCols: mountConfig.noSections}
+		}
+	}
 }

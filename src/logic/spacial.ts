@@ -3,6 +3,7 @@ import logger, {Operations} from "./log";
 import Point, {ID, IPoint} from "./point";
 import {posPrecision} from "./util";
 import {Rect} from "@svgdotjs/svg.js";
+import { IGridChildConfig } from "./grid";
 
 export interface Bounds {
 	top: number;
@@ -32,6 +33,7 @@ export interface IMountConfig {
 export type PlacementConfiguration = {type: "free"} | 
 									 {type: "pulse"; config: IMountConfig} | 
 									 {type: "bounded"; bindings: undefined} | 
+									 {type: "grid"; gridConfig: IGridChildConfig} |
 									 {type: "managed"}
 
 
@@ -139,7 +141,17 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public computeSize(): Size {
+		this.width = this.contentHeight;
+		this.height = this.contentHeight;
+
 		return {width: this.width, height: this.height}
+	}
+
+	public computePositions() {
+		this.x = this.x;
+		this.y = this.y;
+
+		return
 	}
 
 	public getHitbox(): Rect {

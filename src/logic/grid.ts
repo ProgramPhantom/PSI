@@ -1,11 +1,18 @@
-import Collection, { ICollection } from "./collection";
-import { Size } from "./spacial";
+import Collection from "./collection";
+import { Dimensions, IMountConfig, SiteNames, Size } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";
 
 
 export interface IGrid extends IVisual {
 	gridChildren: IVisual[]
+}
+
+
+export interface IGridChildConfig {
+	coords: {row: number, col: number}
+	alignment: Record<Dimensions, SiteNames>
+	size: {noRows: number, noCols: number}
 }
 
 
@@ -81,6 +88,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	}
 
 	public computeSize(): Size {
+		// First job is to compute the sizes of all children
+		this.gridChildren.forEach((c) => c.computeSize());
+
+
 		// Compute the size of the grid by finding the maximum width and height
 		// element in each column and row, and then summing them up.
 
@@ -122,6 +133,35 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 		// ...so we can use padding
 		return {width: this.width, height: this.height};
+	}
+
+	public computePositions(): void {
+		this.computeCells();
+
+		// Now iterate through the gridMatrix and set the position of children
+		this.gridMatrix.forEach((row, row_index) => {
+			row.forEach((cell, column_index) => {
+				if (cell !== undefined) {
+					var cellPosition: {x: number, y: number} = this.cells[row_index][column_index];
+
+					var gridConfig: IGridChildConfig;
+					if (cell.placementMode.type === "grid") {
+						gridConfig = cell.placementMode.gridConfig;
+					} else {
+						gridConfig = {
+							coords: {row: row_index, col: column_index},
+							alignment: {x: "here", y: "here"},
+							size: {noRows: 1, noCols: 1}
+						}
+					}
+
+					cell.AnchorFunctions[gridConfig.alignment.x].set("x", cellPosition.x)
+					cell.AnchorFunctions[gridConfig.alignment.y].set("y", cellPosition.x)
+				
+					cell.computePositions();
+				}
+			})
+		})
 	}
 
 	public add(child: T, row: number, column?: number) {
@@ -316,4 +356,28 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		this.gridMatrix.splice(INDEX, 1);	
 	}
 
+	protected computeCells() {
+		// First let's generate the sizes and positions of each cell
+
+		this.cells = Array<Rect[]>(this.noRows).fill(Array<Rect>(this.noColumns).fill({x: 0, y: 0, width: 0, height: 0}));
+
+		var xCount: number = 0;
+		var yCount: number = 0;
+		
+
+		for (var row=0; row<this.noRows; row++) {
+			xCount = 0;
+			var rowHeight: number = this.gridSizes.y[row].height;
+
+			for (var col=0; col<this.noColumns; col++) {
+				var colWidth: number = this.gridSizes.x[col].width;
+
+				this.cells[row][col] = {x: xCount, y: yCount, width: colWidth, height: rowHeight}
+
+				xCount += colWidth;
+			}
+
+			yCount += rowHeight;
+		}
+	}
 }

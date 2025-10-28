@@ -66,7 +66,13 @@ export default class Channel extends Grid implements IChannel {
 				contentWidth: 7,
 				contentHeight: 50,
 
-				placementMode: {type: "managed"},
+				placementMode: {type: "grid", 
+					gridConfig: {
+						coords: {row: 1, col: 1},
+						alignment: {x: "here", y: "here"},
+						size: {noRows: 1, noCols: 1},
+					}
+				},
 
 				style: {
 					fill: "#000000",
@@ -132,5 +138,5 @@ export default class Channel extends Grid implements IChannel {
 		this.add(this.bar, 1, 1);
 	}
 
-	
+
 }

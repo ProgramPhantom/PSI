@@ -1,11 +1,8 @@
 import { Element } from "@svgdotjs/svg.js";
-import Collection, {ICollection} from "./collection";
-import logger, {Processes} from "./log";
-import {Alignment} from "./mountable";
-import Spacial, {Dimensions, Size} from "./spacial";
-import {FillObject, RecursivePartial} from "./util";
-import {IVisual, Visual} from "./visual";
 import { ID } from "./point";
+import { Dimensions, Size } from "./spacial";
+import { FillObject, RecursivePartial } from "./util";
+import { IVisual, Visual } from "./visual";
 
 export interface IAligner extends IVisual {
 	mainAxis: Dimensions;
@@ -27,7 +24,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 			y: undefined,
 			offset: [0, 0],
 			padding: [0, 0, 0, 0],
-			placementMode: {type: "free", position: {x: 0, y: 0}},
+			placementMode: {type: "free"},
 			ref: "default-aligner",
 			alignerChildren: []
 		}
@@ -68,6 +65,9 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 	}
 
 	public computeSize(): Size {
+		this.alignerChildren.forEach((c) => c.computeSize());
+
+
 		var contentSize: Size = {width: 0, height: 0};
 
 		if (this.mainAxis === "x") {
