@@ -1,29 +1,17 @@
+import { Channel } from "diagnostics_channel";
 import Aligner, { IAligner } from "../aligner";
-import Channel, {ChannelNamedStructure} from "./channel";
-import Collection, {ICollection, IHaveComponents} from "../collection";
 import blankDiagram from "../default/blankDiagram.json";
-import {UserComponentType} from "../diagramHandler";
-import Line from "../line";
-import logger, {Processes} from "../log";
-import {ID} from "../point";
-import Sequence, {ISequence, SequenceNamedStructures} from "./sequence";
-import Spacial from "../spacial";
-import {FillObject, MarkAsComponent, RecursivePartial} from "../util";
-import {doesDraw, Visual} from "../visual";
-import {Element} from "@svgdotjs/svg.js";
-import {G} from "@svgdotjs/svg.js";
+import { UserComponentType } from "../diagramHandler";
+import { ID } from "../point";
+import { FillObject, RecursivePartial } from "../util";
+import { Visual } from "../visual";
+import Sequence from "./sequence";
 
 
 export interface ISequenceAligner extends IAligner {
 	
 }
 
-type DiagramNamedStructure = "sequence column" | "root";
-
-export type AllStructures = SequenceNamedStructures | ChannelNamedStructure | DiagramNamedStructure;
-// "Structure" are objects that are created as descendants of components which are used to arrange the their
-// content. Currently all structures are abstract (as in, have no visual, they are only used for positioning)
-// except for the BAR in the channel component (these might need differentiating)
 
 export default class SequenceAligner extends Aligner<Sequence> implements ISequenceAligner {
 	static defaults: {[key: string]: ISequenceAligner} = {
@@ -54,7 +42,7 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		return channels;
 	}
 	get channels(): Channel[] {
-		return this.alignerChildren.map((s) => s.components.channels).flat();
+		return this.alignerChildren.map((s) => s.channels).flat();
 	}
 	get channelIDs(): string[] {
 		return this.alignerChildren.map((s) => s.channelIDs).flat();
