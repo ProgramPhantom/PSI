@@ -1,5 +1,5 @@
 import Collection from "./collection";
-import { Dimensions, IMountConfig, SiteNames, Size } from "./spacial";
+import Spacial, { Dimensions, IMountConfig, SiteNames, Size } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";
 
@@ -73,7 +73,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	//
 	
 	gridSizes: {x: Rect[], y: Rect[]} = {x: [], y: []};
-	cells: Rect[][];
+	cells: Spacial[][];
 
 	constructor(params: RecursivePartial<IGrid>,
 				templateName: string = Collection.defaults["default"].ref) {
@@ -135,18 +135,22 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		return {width: this.width, height: this.height};
 	}
 
-	public computePositions(): void {
+	public computePositions(root: {x: number, y: number}): void {
+		this.x = root.x;
+		this.y = root.y;
+
+		// Find dimension and positions of the cells.
 		this.computeCells();
 
 		// Now iterate through the gridMatrix and set the position of children
 		this.gridMatrix.forEach((row, row_index) => {
-			row.forEach((cell, column_index) => {
-				if (cell !== undefined) {
-					var cellPosition: {x: number, y: number} = this.cells[row_index][column_index];
+			row.forEach((child, column_index) => {
+				if (child !== undefined) {
+					var cell: Spacial = this.cells[row_index][column_index];
 
 					var gridConfig: IGridChildConfig;
-					if (cell.placementMode.type === "grid") {
-						gridConfig = cell.placementMode.gridConfig;
+					if (child.placementMode.type === "grid") {
+						gridConfig = child.placementMode.gridConfig;
 					} else {
 						gridConfig = {
 							coords: {row: row_index, col: column_index},
@@ -155,10 +159,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 						}
 					}
 
-					cell.AnchorFunctions[gridConfig.alignment.x].set("x", cellPosition.x)
-					cell.AnchorFunctions[gridConfig.alignment.y].set("y", cellPosition.x)
-				
-					cell.computePositions();
+					cell.internalImmediateBind(child, "x", gridConfig.alignment.x)
+					cell.internalImmediateBind(child, "y", gridConfig.alignment.y)
+
+					child.computePositions({x: cell.x, y: cell.y});
 				}
 			})
 		})
@@ -359,7 +363,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	protected computeCells() {
 		// First let's generate the sizes and positions of each cell
 
-		this.cells = Array<Rect[]>(this.noRows).fill(Array<Rect>(this.noColumns).fill({x: 0, y: 0, width: 0, height: 0}));
+		this.cells = Array<Spacial[]>(this.noRows).fill(Array<Spacial>(this.noColumns).fill(new Spacial()));
 
 		var xCount: number = 0;
 		var yCount: number = 0;
@@ -372,7 +376,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			for (var col=0; col<this.noColumns; col++) {
 				var colWidth: number = this.gridSizes.x[col].width;
 
-				this.cells[row][col] = {x: xCount, y: yCount, width: colWidth, height: rowHeight}
+				this.cells[row][col] = new Spacial(this.contentX + xCount,this.contentY + yCount, colWidth, rowHeight)
 
 				xCount += colWidth;
 			}

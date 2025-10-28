@@ -147,9 +147,9 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return {width: this.width, height: this.height}
 	}
 
-	public computePositions() {
-		this.x = this.x;
-		this.y = this.y;
+	public computePositions(root: {x: number, y: number}) {
+		this.x = root.x;
+		this.y = root.y;
 
 		return
 	}
@@ -378,6 +378,52 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				setter(dimension, anchorBindCoord!); // SETTER MAY NEED INTERNAL BINDING FLAG?
 			}
 		}
+	}
+
+	public immediateBind(		
+		target: Spacial,
+		dimension: Dimensions,
+		anchorBindSide: keyof typeof this.AnchorFunctions,
+		targetBindSide: keyof typeof this.AnchorFunctions,
+		bindToContent: boolean = true) {
+		
+		var getter: BinderGetFunction =
+			this.AnchorFunctions[anchorBindSide].get;
+		var setter: BinderSetFunction =
+			target.AnchorFunctions[targetBindSide].set;
+		
+		var anchorValue: number = getter(dimension, bindToContent);
+
+		setter(dimension, anchorValue);
+	}
+
+	public internalImmediateBind(
+		target: Spacial,
+		dimension: Dimensions,
+		alignment: keyof typeof this.AnchorFunctions,
+		bindToContent: boolean = true) {
+		
+		var getter: BinderGetFunction;
+		var setter: BinderSetFunction;
+
+		switch (alignment) {
+			case "here":
+				getter = this.AnchorFunctions["here"].get;
+				setter = target.AnchorFunctions["here"].set;
+				break;
+			case "centre":
+				getter = this.AnchorFunctions["centre"].get;
+				setter = target.AnchorFunctions["centre"].set;
+				break;
+			case "far":
+				getter = this.AnchorFunctions["far"].get;
+				setter = target.AnchorFunctions["far"].set;
+				break;
+		}
+
+		var anchorValue: number = getter(dimension, bindToContent);
+
+		setter(dimension, anchorValue);
 	}
 
 

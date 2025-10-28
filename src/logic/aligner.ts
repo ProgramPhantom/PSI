@@ -84,6 +84,37 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 		return {width: this.width, height: this.height};
 	}
 
+	public computePositions(root: {x: number, y: number}): void {
+		this.x = root.x;
+		this.y = root.y;
+
+		var xCount = 0;
+		var yCount = 0;
+
+
+		// Yes this could be done with dimension setters
+		if (this.mainAxis === "x") {
+			for (var child of this.alignerChildren) {
+				child.x = this.contentX + xCount
+				xCount += child.width;
+
+				// TODO: allow for other alignments
+				this.internalImmediateBind(child, "y", "centre");
+
+				child.computePositions({x: child.x, y: child.y});
+			}
+		} else {
+			for (var child of this.alignerChildren) {
+				child.y = this.contentY + yCount;
+				yCount += child.height;
+			
+				this.internalImmediateBind(child, "x", "centre");
+
+				child.computePositions({x: child.x, y: child.y});
+			}
+		}
+	}
+
 	public add(
 		child: T,
 		index?: number,

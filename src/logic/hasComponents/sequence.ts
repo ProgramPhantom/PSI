@@ -3,7 +3,7 @@ import defaultSequence from "../default/sequence.json";
 import { AllComponentTypes } from "../diagramHandler";
 import Grid, { IGrid, IGridChildConfig } from "../grid";
 import { ID } from "../point";
-import { IMountConfig } from "../spacial";
+import Spacial, { IMountConfig } from "../spacial";
 import { FillObject, RecursivePartial } from "../util";
 import { Visual } from "../visual";
 import Channel, { IChannel } from "./channel";
@@ -58,36 +58,40 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 
-	override computePositions(): void {
-		this.computeCells();
-
-		// Now iterate through the gridMatrix and set the position of children
-		this.gridMatrix.forEach((row, row_index) => {
-			row.forEach((cell, column_index) => {
-				if (cell !== undefined) {
-					var cellPosition: {x: number, y: number} = this.cells[row_index][column_index];
-
-					var gridConfig: IGridChildConfig;
-					if (cell.placementMode.type === "grid") {
-						gridConfig = cell.placementMode.gridConfig;
-					} else if (cell.placementMode.type === "pulse") {
-						gridConfig = this.mountConfigToGridConfig(cell.placementMode.config);
-					} else { // Default config
-						gridConfig = {
-							coords: {row: row_index, col: column_index},
-							alignment: {x: "here", y: "here"},
-							size: {noRows: 1, noCols: 1}
+	public override computePositions(root: {x: number, y: number}): void {
+			this.x = root.x;
+			this.y = root.y;
+	
+			// Find dimension and positions of the cells.
+			this.computeCells();
+	
+			// Now iterate through the gridMatrix and set the position of children
+			this.gridMatrix.forEach((row, row_index) => {
+				row.forEach((child, column_index) => {
+					if (child !== undefined) {
+						var cell: Spacial = this.cells[row_index][column_index];
+	
+						var gridConfig: IGridChildConfig;
+						if (child.placementMode.type === "grid") {
+							gridConfig = child.placementMode.gridConfig;
+						} else if (cell.placementMode.type === "pulse") {
+							gridConfig = this.mountConfigToGridConfig(cell.placementMode.config);
+						} else {
+							gridConfig = {
+								coords: {row: row_index, col: column_index},
+								alignment: {x: "here", y: "here"},
+								size: {noRows: 1, noCols: 1}
+							}
 						}
+	
+						cell.internalImmediateBind(child, "x", gridConfig.alignment.x)
+						cell.internalImmediateBind(child, "y", gridConfig.alignment.y)
+	
+						child.computePositions({x: cell.x, y: cell.y});
 					}
-
-					cell.AnchorFunctions[gridConfig.alignment.x].set("x", cellPosition.x)
-					cell.AnchorFunctions[gridConfig.alignment.y].set("y", cellPosition.x)
-				
-					cell.computePositions();
-				}
+				})
 			})
-		})
-	}
+		}
 
 
 	public addPulse(pulse: Visual) {
@@ -157,7 +161,6 @@ export default class Sequence extends Grid implements ISequence {
 
 		return channelIndex;
 	}
-
 
 	protected mountConfigToGridConfig(mountConfig: IMountConfig): IGridChildConfig {
 		var channelId: ID = mountConfig.channelID; 
