@@ -157,18 +157,16 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		return collectionHitbox;
 	}
 
-	add(child: T, index?: number, bindHere: boolean = false, setParentId: boolean = true) {
-		if (setParentId) {
-			child.parentId = this.id;
-		}
+	add(child: T, index?: number) {
+		child.parentId = this.id;
 		this.children.splice(index !== undefined ? index : this.children.length - 1, 0, child);
 
 		child.subscribe(this.computeBoundary.bind(this));
 
-		if (bindHere) {
-			this.bind(child, "x", "here", "here", undefined);
-			this.bind(child, "y", "here", "here", undefined);
-		}
+		// if (bindHere) {
+		// 	this.bind(child, "x", "here", "here", undefined);
+		// 	this.bind(child, "y", "here", "here", undefined);
+		// }
 
 		if (this.isResolved) {
 			this.enforceBinding();

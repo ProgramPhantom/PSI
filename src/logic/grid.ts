@@ -37,9 +37,20 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			...super.state
 		};
 	}
+	
+	get noRows(): number {
+		return this.gridMatrix.length;
+	}
+	get noColumns(): number {
+		if (this.gridMatrix[0] === undefined) {
+			return 0
+		} else {
+			return this.gridMatrix[0].length;
+		}
+	}
 
 	// Truth
-	gridMatrix: T[][] = [[]];
+	gridMatrix: (T | undefined)[][] = [[]];
 	//
 	
 	gridSizes: {x: Rect[], y: Rect[]} = {x: [], y: []};
@@ -101,7 +112,23 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return {width: this.width, height: this.height};
 	}
 
+	public add(child: T, row: number, column?: number) {
+		var insertCoords: {row: number, col: number} | undefined;
+		if (column === undefined) {
+			insertCoords = this.getFirstAvailableCell();
+		}
+		insertCoords = {row: row, col: column}
 
+		// Expands the matrix to fix in this coord.
+		this.expandMatrix(insertCoords);
+		
+		// Should never happen
+		if (this.gridMatrix[row][column] !== undefined) {
+			throw new Error(`Position row: ${insertCoords.row} column: ${insertCoords.col} is already occupied`)
+		}
+
+		this.gridMatrix[row][column] = child;
+	}
 
 	private getColumns(): T[][] {
 		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
@@ -119,5 +146,60 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return columns;
 	}
 
+	private getFirstAvailableCell(): {row: number, col: number} {
+		var coords: {row: number, col: number} | undefined = undefined; 
+		for (let row=0; row < this.noRows; row++) {
+			for (let col=0; col<this.noColumns; col++) {
+				if (this.gridMatrix[row][col] === undefined) {
+					coords = {row: row, col: col}
+				}
+			}
+		}
+
+		// If there is nowhere to insert this child, create a new row and put it there
+		if (coords === undefined) {
+			this.insertEmptyRow();
+			coords = {row: this.noRows, col: 0}
+		}
+
+		return coords;
+	}
+
+	private expandMatrix(coords: {row: number, col: number}) {
+		var rowDiff: number = coords.row - this.noRows + 1;
+		var colDiff: number = coords.col - this.noColumns + 1;
+		
+		// There are missing rows needed to add this coord
+		while (rowDiff >= 1) {
+			this.insertEmptyRow()
+			rowDiff -= 1
+		}
+
+		while (colDiff >= 1) {
+			this.insertEmptyColumn();
+			colDiff -= 1
+		}
+	}
+
+	private insertEmptyColumn(index?: number) {
+		var newColumn: T[] = Array<T>(this.noRows).fill(undefined);
+		var index = index; 
+
+		if (index === undefined || index < 0 || index > this.noColumns) {
+			index = this.noColumns 
+		} 
+
+		for (let i = 0; i < this.noRows; i++) {
+      		this.markComponent[i].splice(index, 0, newColumn[i]);
+    	}
+	}
+	private insertEmptyRow(index?: number): void {
+		var newRow: T[] = Array<T>(this.noColumns).fill(undefined)
+		if (index === undefined || index < 0 || index > this.noRows) {
+			this.gridMatrix.push(newRow);
+		} else {
+			this.gridMatrix.splice(index, 0, newRow);
+		}
+  	}
 
 }
