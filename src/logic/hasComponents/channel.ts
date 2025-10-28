@@ -59,22 +59,22 @@ export default class Channel extends Grid implements IChannel {
 				}
 			},
 
-			"bar": {		
-				"padding": [0, 4, 0, 4],
-				"offset": [0, 0],
+			bar: {		
+				padding: [0, 4, 0, 4],
+				offset: [0, 0],
 
-				"contentWidth": 7,
-				"contentHeight": 50,
+				contentWidth: 7,
+				contentHeight: 50,
 
-				"placementMode": {type: "managed"},
+				placementMode: {type: "managed"},
 
-				"style": {
-					"fill": "#000000",
-					"stroke": "black",
-					"strokeWidth": 0
+				style: {
+					fill: "#000000",
+					stroke: "black",
+					strokeWidth: 0
 				},
 
-				"ref": "90-pulse"
+				ref: "bar"
 			}
 		}
 	};
@@ -115,5 +115,22 @@ export default class Channel extends Grid implements IChannel {
 		this.style = fullParams.style;
 
 		this.label = new Text(fullParams.label);
+		this.bar = new RectElement(fullParams.bar);
+
+		this.initialiseChannel();
 	}
+
+	private initialiseChannel() {
+		this.insertEmptyRow();
+		this.insertEmptyRow();
+		this.insertEmptyRow();
+
+		this.insertEmptyColumn();
+		this.insertEmptyColumn();
+
+		this.add(this.label, 1, 0);
+		this.add(this.bar, 1, 1);
+	}
+
+	
 }

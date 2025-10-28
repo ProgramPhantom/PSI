@@ -62,7 +62,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	}
 
 	// Truth
-	gridMatrix: (T | undefined)[][] = [[]];
+	protected gridMatrix: (T | undefined)[][] = [];
 	//
 	
 	gridSizes: {x: Rect[], y: Rect[]} = {x: [], y: []};
