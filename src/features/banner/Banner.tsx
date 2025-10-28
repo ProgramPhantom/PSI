@@ -1,7 +1,7 @@
 import {Button, Checkbox, Classes, Icon, Navbar, Popover} from "@blueprintjs/core";
 import React, {useState} from "react";
 import {myToaster, Tool} from "../../app/App";
-import {IDiagram} from "../../logic/hasComponents/sequenceAligner";
+import {ISequenceAligner} from "../../logic/hasComponents/sequenceAligner";
 import ENGINE from "../../logic/engine";
 import {LoadStateDialog} from "./LoadStateDialog";
 import {PNGExportDialog} from "./PNGExportDialog";
@@ -22,7 +22,7 @@ export default function Banner(props: IBannerProps) {
 	const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false);
 
 	const copyState = () => {
-		var stateObject: IDiagram = ENGINE.handler.diagram.state;
+		var stateObject: ISequenceAligner = ENGINE.handler.diagram.state;
 		var stateString = JSON.stringify(stateObject, undefined, 4);
 
 		navigator.clipboard.writeText(stateString);

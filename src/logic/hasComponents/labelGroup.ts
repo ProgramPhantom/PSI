@@ -40,7 +40,7 @@ export default class LabelGroup<T extends Visual = Visual>
 			ref: "default-labellable",
 			coreChild: SVGElement.namedElements["180"],
 			coreChildType: "svg",
-			userChildren: []
+			children: []
 		}
 	};
 	static ElementType: UserComponentType = "label-group";

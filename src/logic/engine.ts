@@ -1,7 +1,7 @@
 import {Svg} from "@svgdotjs/svg.js";
 import {myToaster} from "../app/App";
 import SchemeManager, {IUserSchemeData} from "./default";
-import {IDiagram} from "./hasComponents/sequenceAligner";
+import {ISequenceAligner} from "./hasComponents/sequenceAligner";
 import DiagramHandler, {Result} from "./diagramHandler";
 import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
 import RectElement, {IRectElement} from "./rectElement";
@@ -59,10 +59,10 @@ class ENGINE {
 		});
 	}
 	static loadDiagramState() {
-		var stateObj: IDiagram | undefined = undefined;
+		var stateObj: ISequenceAligner | undefined = undefined;
 		if (this.STATE !== null) {
 			try {
-				stateObj = JSON.parse(this.STATE) as IDiagram;
+				stateObj = JSON.parse(this.STATE) as ISequenceAligner;
 			} catch (error) {
 				console.warn(`Could not parse internal state`);
 			}
@@ -81,7 +81,7 @@ class ENGINE {
 		await this.schemeManager.loadSVGs();
 	}
 	static save() {
-		var stateObject: IDiagram = ENGINE.handler.diagram.state;
+		var stateObject: ISequenceAligner = ENGINE.handler.diagram.state;
 		var stateString = JSON.stringify(stateObject, undefined, 4);
 		localStorage.setItem(ENGINE.StateName, stateString);
 	}

@@ -1,7 +1,7 @@
 import {Button, Dialog, DialogBody, DialogFooter, Text} from "@blueprintjs/core";
 import {useRef, useState} from "react";
 import {myToaster} from "../../app/App";
-import {IDiagram} from "../../logic/hasComponents/sequenceAligner";
+import {ISequenceAligner} from "../../logic/hasComponents/sequenceAligner";
 import ENGINE from "../../logic/engine";
 import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
@@ -13,7 +13,7 @@ export interface ILoadStateDialogProps {
 
 export function LoadStateDialog(props: ILoadStateDialogProps) {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [pendingState, setPendingState] = useState<IDiagram | null>(null);
+	const [pendingState, setPendingState] = useState<ISequenceAligner | null>(null);
 	const [isSVGRequirementsOpen, setIsSVGDialogOpen] = useState(false);
 	const [stateSvgElements, setStateSvgElements] = useState<Array<{name: string; element: any}>>(
 		[]
@@ -33,7 +33,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 		return false;
 	};
 
-	const extractSvgElements = (stateData: IDiagram): Array<{name: string; element: any}> => {
+	const extractSvgElements = (stateData: ISequenceAligner): Array<{name: string; element: any}> => {
 		const out: Array<{name: string; element: any}> = [];
 		stateData.sequences?.forEach((seq) => {
 			seq.channels?.forEach((ch) => {
@@ -72,7 +72,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				try {
-					const stateData = JSON.parse(e.target?.result as string) as IDiagram;
+					const stateData = JSON.parse(e.target?.result as string) as ISequenceAligner;
 					const svgs = extractSvgElements(stateData);
 					setPendingState(stateData);
 					setStateSvgElements(svgs);

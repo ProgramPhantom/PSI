@@ -142,7 +142,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChild: childFormData,
 						coreChildType: props.objectType as UserComponentType,
 						labels: labelListFormData,
-						userChildren: [],
+						children: [],
 						...masterFormData
 					};
 
@@ -160,7 +160,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChild: childFormData,
 						coreChildType: (masterFormData as ILabelGroup).coreChildType,
 						labels: labelListFormData, // Override labels
-						userChildren: []
+						children: []
 					};
 					props.callback(result, "label-group");
 				} else {

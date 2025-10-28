@@ -14,7 +14,7 @@ import {Element} from "@svgdotjs/svg.js";
 import {G} from "@svgdotjs/svg.js";
 
 
-export interface IDiagram extends IAligner {
+export interface ISequenceAligner extends IAligner {
 	
 }
 
@@ -25,13 +25,13 @@ export type AllStructures = SequenceNamedStructures | ChannelNamedStructure | Di
 // content. Currently all structures are abstract (as in, have no visual, they are only used for positioning)
 // except for the BAR in the channel component (these might need differentiating)
 
-export default class SequenceAligner extends Aligner<Sequence> implements IDiagram {
-	static defaults: {[key: string]: IDiagram} = {
+export default class SequenceAligner extends Aligner<Sequence> implements ISequenceAligner {
+	static defaults: {[key: string]: ISequenceAligner} = {
 		default: {...(<any>blankDiagram)}
 	};
 	static ElementType: UserComponentType = "diagram";
 
-	get state(): IDiagram {
+	get state(): ISequenceAligner {
 		return {
 			...super.state
 		};
@@ -68,8 +68,8 @@ export default class SequenceAligner extends Aligner<Sequence> implements IDiagr
 		return elements;
 	}
 
-	constructor(pParams: RecursivePartial<IDiagram>, templateName: string = "default") {
-		var fullParams: IDiagram = FillObject(pParams, SequenceAligner.defaults[templateName]);
+	constructor(pParams: RecursivePartial<ISequenceAligner>, templateName: string = "default") {
+		var fullParams: ISequenceAligner = FillObject(pParams, SequenceAligner.defaults[templateName]);
 		super(fullParams, templateName);
 
 

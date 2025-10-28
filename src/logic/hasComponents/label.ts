@@ -34,7 +34,7 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 			contentHeight: 20,
 			offset: [0, 0],
 			padding: [2, 0, 2, 0],
-			userChildren: [],
+			children: [],
 
 			text: Text.defaults["default"],
 			line: Line.defaults["default"],
@@ -49,7 +49,7 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 			contentHeight: 20,
 			offset: [0, 0],
 			padding: [2, 0, 2, 0],
-			userChildren: [],
+			children: [],
 
 			text: Text.defaults["default"],
 			line: Line.defaults["default"],

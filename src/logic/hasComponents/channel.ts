@@ -50,7 +50,7 @@ export default class Channel extends Collection implements IHaveComponents<IChan
 			offset: [0, 0],
 			ref: "my-channel",
 			sequenceID: null,
-			userChildren: [],
+			children: [],
 			mountedElements: [],
 
 			style: {

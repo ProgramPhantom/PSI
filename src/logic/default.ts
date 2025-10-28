@@ -1,7 +1,7 @@
 import Channel, {IChannel} from "./hasComponents/channel";
 import defaultScheme from "./default/schemeSet.json";
 import {UserComponentType} from "./diagramHandler";
-import SequenceAligner, {IDiagram} from "./hasComponents/sequenceAligner";
+import SequenceAligner, {ISequenceAligner} from "./hasComponents/sequenceAligner";
 import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
 import {ID} from "./point";
 import RectElement, {IRectElement} from "./rectElement";
@@ -38,7 +38,7 @@ const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
 };
 
 export interface AppConfigSchemeData {
-	diagram: IDiagram;
+	diagram: ISequenceAligner;
 	sequence: ISequence;
 	channel: IChannel;
 	line: ILine;
@@ -53,7 +53,7 @@ export type AppConfigSchemeSet = {
 // to use. It includes prefabs for elements, defaults for sequences etc. The application can
 // contain multiple
 export interface IUserSchemeData {
-	diagram: Record<string, IDiagram> | undefined;
+	diagram: Record<string, ISequenceAligner> | undefined;
 	sequence: Record<string, ISequence> | undefined;
 	channel: Record<string, IChannel> | undefined;
 

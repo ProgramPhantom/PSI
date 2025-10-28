@@ -3,7 +3,7 @@ import logger, {Processes} from "./log";
 import Point, {ID} from "./point";
 import {CreateChild, FillObject, RecursivePartial} from "./util";
 import {IDraw, IVisual, Visual, doesDraw} from "./visual";
-import Spacial from "./spacial";
+import Spacial, { Size } from "./spacial";
 
 export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
 	obj: any
@@ -16,7 +16,7 @@ export interface IHaveComponents<C extends Record<string, Spacial | Spacial[]>> 
 }
 
 export interface ICollection extends IVisual {
-	userChildren: IVisual[];
+	children: IVisual[];
 }
 
 export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
@@ -31,63 +31,17 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 			ref: "default-collection",
 			selfAlignment:  {x: "here", y: "here"},
 			sizeMode: {x: "fixed", y: "fixed"},
-			userChildren: []
+			children: []
 		}
 	};
 	get state(): ICollection {
 		return {
-			userChildren: this.userChildren.map((c) => c.state),
+			children: this.children.map((c) => c.state),
 			...super.state
 		};
 	}
 
-	_parentElement?: T;
 	children: T[] = [];
-
-	get userChildren(): T[] {
-		var freeChildren: T[] = [];
-		var arrayStructure: Point[][] = [];
-		if (HasComponents(this)) {
-			arrayStructure = Object.values(this.components).filter((s) => Array.isArray(s));
-		}
-
-		for (var child of this.children) {
-			var adding: boolean = true;
-
-			if (HasComponents(this)) {
-				var structureObjIndex = Object.values(this.components).indexOf(child);
-				if (structureObjIndex !== -1) {
-					adding = false;
-				} else {
-					// search array structure
-					for (var arrStruct of arrayStructure) {
-						if (arrStruct.includes(child)) {
-							adding = false;
-						}
-					}
-				}
-			}
-
-			if (adding) {
-				freeChildren.push(child);
-			}
-		}
-		return freeChildren;
-	}
-	get componentChildren(): T[] {
-		var allComponentChildren: T[] = [];
-		if (HasComponents(this)) {
-			for (var child of Object.values(this.components)) {
-				if (Array.isArray(child)) {
-					allComponentChildren.push(...(child as T[]));
-				} else {
-					allComponentChildren.push(child as T);
-				}
-			}
-		}
-
-		return allComponentChildren;
-	}
 
 	constructor(
 		params: RecursivePartial<ICollection>,
@@ -99,7 +53,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		);
 		super(fullParams);
 
-		fullParams.userChildren.forEach((c) => {
+		fullParams.children.forEach((c) => {
 			if (c.type === undefined) {
 				console.warn(`Cannot instantiate parameter child ${c.ref} as it has no type`);
 				return;
@@ -121,23 +75,12 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
 		});
 
-		// Add component children to group
-		this.componentChildren.forEach((c) => {
-			if (doesDraw(c)) {
-				c.draw(group);
-			}
-		});
-		// group.move(this.x, this.y).size(this.width, this.height)
 		this.svg = group;
 
-		this.svg.attr({
-			"data-position": this.positionMethod,
-			"data-ownership": this.ownershipType
-		});
 
 		surface.add(this.svg);
 
-		this.userChildren.forEach((uc) => {
+		this.children.forEach((uc) => {
 			if (doesDraw(uc)) {
 				uc.draw(surface);
 			}
@@ -157,22 +100,10 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		return collectionHitbox;
 	}
 
-	add(child: T, index?: number) {
+	add(child: T) {
 		child.parentId = this.id;
-		this.children.splice(index !== undefined ? index : this.children.length - 1, 0, child);
 
-		child.subscribe(this.computeBoundary.bind(this));
-
-		// if (bindHere) {
-		// 	this.bind(child, "x", "here", "here", undefined);
-		// 	this.bind(child, "y", "here", "here", undefined);
-		// }
-
-		if (this.isResolved) {
-			this.enforceBinding();
-		}
-
-		// A final compute
+		this.children.push(child);
 	}
 
 	erase(): void {
@@ -184,27 +115,18 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	}
 
 	remove(child: T) {
-		this.children.forEach((c, i) => {
-			if (c === child) {
-				this.children.splice(i, 1);
+		var index: number | undefined = this.locateChild(child);
 
-				if (c instanceof Visual) {
-					c.erase();
-				}
+		if (index === undefined) {
+			console.warn(`Cannot find child to remove ${child.ref} in ${this.ref}`)
+			return
+		}
 
-				this.clearBindsTo(child);
-			}
-		});
-
-		this.computeBoundary();
-		this.enforceBinding();
+		this.removeAt(index);
 	}
 
 	removeAt(index: number) {
 		this.children.splice(index, 1);
-
-		this.computeBoundary();
-		this.enforceBinding();
 	}
 
 	removeAll() {
@@ -213,33 +135,9 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		});
 	}
 
-	setParent(element: T) {
-		var found = false;
-		this.children.forEach((c) => {
-			if (c == element) {
-				found = true;
-			}
-		});
 
-		if (!found) {
-			throw new Error("Error target parent not found in collection");
-		}
-
-		this._parentElement = element;
-	}
-
-	computeBoundary(): void {
-		logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this);
-
-		if (this.children.filter((f) => f.displaced === true).length > 0) {
-			logger.performance(`ABORT COMPUTE BOUNDARY[${typeof this}]: ${this.ref}`);
-			console.groupEnd();
-			return;
-		}
-
-		if (this.ref === "default-paddedbox") {
-			console.log();
-		}
+	computeSize(): Size {
+		var size: Size = {width: 0, height: 0}
 
 		var top = Infinity;
 		var left = Infinity;
@@ -247,51 +145,23 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		var right = -Infinity;
 
 		this.children.forEach((c) => {
-			if (c.definedVertically) {
-				top = c.y < top ? c.y : top;
+			top = c.y < top ? c.y : top;
+			var far = c.getFar("y");
+			bottom = far > bottom ? far : bottom;
+			
 
-				var far = c.getFar("y");
-				bottom = far === undefined ? -Infinity : far > bottom ? far : bottom;
-			}
-
-			if (c.definedHorizontally) {
-				left = c.x < left ? c.x : left;
-
-				var farX = c.getFar("x");
-				right = farX === undefined ? -Infinity : farX > right ? farX : right;
-			}
+			left = c.x < left ? c.x : left;
+			var farX = c.getFar("x");
+			right = farX > right ? farX : right;
 		});
 
-		// Include current location in boundary.
-		// This fixes a problem for the positional columns where the correct size of the boundary would be computed
-		// as if the collection was positioned at the top left element, but would not actually be in the correct location.
-		// if (this.definedVertically && this.contentY < top) {
-		//     top = this.contentY
-		// }
-		// if (this.definedHorizontally &&  this.contentX < left) {
-		//     left = this.contentX;
-		// }
-		// Don't know why I had that. The dimensions of a collection ARE defined by the children.
+		size.width = right - left;
+		size.height = bottom - top;
 
-		var width = right - left;
-		var height = bottom - top;
+		this.contentWidth = size.width;
+		this.contentHeight = size.height;
 
-		if (width !== -Infinity && this.sizeMode.x !== "grow") {
-			this.contentWidth = width;
-		} else {
-			// this.contentWidth = 0;
-		}
-		if (height !== -Infinity && this.sizeMode.y !== "grow") {
-			this.contentHeight = height;
-		} else {
-			// this.contentHeight = 0;
-		}
-
-		logger.processEnd(
-			Processes.COMPUTE_BOUNDARY,
-			`Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`,
-			this
-		);
+		return {width: this.width, height: this.height}
 	}
 
 	// Construct and SVG with children positioned relative to (0, 0)
@@ -314,26 +184,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		return internalSVG;
 	}
 
-	get contentWidth(): number | undefined {
-		return this._contentWidth;
-	}
-	get contentHeight(): number | undefined {
-		return this._contentHeight;
-	}
-	protected set contentWidth(v: number) {
-		if (v !== this._contentWidth) {
-			this._contentWidth = v;
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	}
-	protected set contentHeight(v: number) {
-		if (v !== this._contentHeight) {
-			this._contentHeight = v;
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	}
+	
 
 	get dirty(): boolean {
 		var isDirty = false;
@@ -353,13 +204,6 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		});
 	}
 
-	override get hasDimensions(): boolean {
-		if (this._contentWidth !== undefined && this._contentHeight !== undefined) {
-			return true;
-		}
-		return false;
-	}
-
 	override get allElements(): Record<ID, Visual> {
 		var elements: Record<ID, Visual> = {[this.id]: this};
 
@@ -375,13 +219,15 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		return this.children.filter((c) => c.id === id).length > 0;
 	}
 
-	public markComponent(child: T) {
-		if (HasComponents(this)) {
-			child.ownershipType = "component";
-		} else {
-			console.warn(
-				`Trying to mark child ${child.ref} as component on non-component owning parent`
-			);
-		}
+	private locateChild(target: T): number | undefined {
+		var index: number | undefined;
+
+		this.children.forEach((c, i) => {
+			if (c.id === target.id) {
+				index = i
+			}
+		})
+
+		return index;
 	}
 }

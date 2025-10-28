@@ -2,7 +2,7 @@ import {Rect, Svg} from "@svgdotjs/svg.js";
 import {PointBind} from "../features/canvas/LineTool";
 import Channel, {IChannel} from "./hasComponents/channel";
 import SchemeManager from "./default";
-import SequenceAligner, {AllStructures, IDiagram} from "./hasComponents/sequenceAligner";
+import SequenceAligner, {AllStructures, ISequenceAligner} from "./hasComponents/sequenceAligner";
 import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
 import Line, {ILine} from "./line";
 import logger, {Operations} from "./log";
@@ -110,7 +110,7 @@ export default class DiagramHandler implements IDraw {
 		this.surface = surface;
 
 		var constructResult: Result<SequenceAligner> = this.constructDiagram(
-			(<any>defaultDiagram) as IDiagram
+			(<any>defaultDiagram) as ISequenceAligner
 		);
 
 		if (constructResult.ok) {
@@ -161,7 +161,7 @@ export default class DiagramHandler implements IDraw {
 
 	// ----- Construct diagram from state ------
 	@draws
-	public constructDiagram(state: IDiagram): Result<SequenceAligner> {
+	public constructDiagram(state: ISequenceAligner): Result<SequenceAligner> {
 		try {
 			var newDiagram: SequenceAligner = new SequenceAligner(state);
 		} catch (err) {
