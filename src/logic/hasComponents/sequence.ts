@@ -73,7 +73,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 			{
 				bindMainAxis: true,
 				axis: "y",
-				alignment: "here",
+				selfAlignment: "here",
 				ref: "channel column"
 			},
 			"default"
@@ -85,7 +85,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 			{
 				axis: "x",
 				bindMainAxis: true,
-				alignment: "here",
+				selfAlignment: "here",
 				ref: "label col | pulse columns"
 			},
 			"default"
@@ -97,7 +97,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 			{
 				axis: "y",
 				bindMainAxis: false,
-				alignment: "here",
+				selfAlignment: "here",
 				y: 0,
 				ref: "label column"
 			},
@@ -197,7 +197,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 			{
 				axis: "y",
 				bindMainAxis: false,
-				alignment: "centre",
+				selfAlignment: "centre",
 				ref: `column at ${INDEX}`,
 				minCrossAxis: 10
 			},

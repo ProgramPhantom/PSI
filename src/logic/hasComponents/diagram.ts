@@ -93,7 +93,7 @@ export default class Diagram extends Collection implements IHaveComponents<IDiag
 			{
 				bindMainAxis: true,
 				axis: "y",
-				alignment: "here",
+				selfAlignment: "here",
 				ref: "sequence column",
 				x: 0,
 				y: 0

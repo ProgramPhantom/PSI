@@ -123,7 +123,7 @@ export default class Channel extends Collection implements IHaveComponents<IChan
 		// ----- Create structure -----
 		// Top aligner
 		var topAligner: Aligner<Visual> = new Aligner(
-			{axis: "x", alignment: "far", minCrossAxis: 30, ref: `top aligner`},
+			{axis: "x", selfAlignment: "far", minCrossAxis: 30, ref: `top aligner`},
 			"default"
 		);
 		this.add(topAligner, undefined, true);
@@ -138,12 +138,12 @@ export default class Channel extends Collection implements IHaveComponents<IChan
 			"bar"
 		);
 		topAligner.bind(bar, "y", "far", "here");
-		bar.sizeSource.x = "inherited";
+in		bar.sizeMode.x = "inherited";
 		this.add(bar);
 
 		// Bottom aligner
 		var bottomAligner: Aligner<Visual> = new Aligner(
-			{axis: "x", alignment: "here", minCrossAxis: 20, ref: "bottom aligner"},
+			{axis: "x", selfAlignment: "here", minCrossAxis: 20, ref: "bottom aligner"},
 			"default"
 		);
 		bar.bind(bottomAligner, "y", "far", "here");

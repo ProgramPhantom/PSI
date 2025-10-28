@@ -17,7 +17,7 @@ export interface Size {
 }
 
 export type PositionMethod = "controlled" | "free" | "partially-controlled";
-export type SizeMethod = "given" | "inherited";
+export type SizeMethod = "fixed" | "fit" | "grow";
 
 export type SiteNames = "here" | "centre" | "far";
 
@@ -53,6 +53,9 @@ export type Dimensions = "x" | "y";
 export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
+
+	selfAlignment: Record<Dimensions, SiteNames>;
+	sizeMode: Record<Dimensions, SizeMethod>;
 }
 
 export type UpdateNotification = (...args: any[]) => any;
@@ -64,6 +67,8 @@ export default class Spacial extends Point implements ISpacial {
 			y: undefined,
 			contentWidth: 0,
 			contentHeight: 0,
+			selfAlignment:  {x: "here", y: "here"},
+			sizeMode: {x: "fixed", y: "fixed"},
 			ref: "default-spacial"
 		}
 	};
@@ -71,7 +76,8 @@ export default class Spacial extends Point implements ISpacial {
 		return {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
-
+			selfAlignment: this.selfAlignment,
+			sizeMode: this.sizeMode,
 			...super.state
 		};
 	}
@@ -92,6 +98,9 @@ export default class Spacial extends Point implements ISpacial {
 	};
 	protected _contentWidth?: number;
 	protected _contentHeight?: number;
+
+	public selfAlignment: Record<Dimensions, SiteNames>;
+	public sizeMode: Record<Dimensions, SizeMethod>;
 
 	override bindings: IBinding[] = [];
 	override bindingsToThis: IBinding[] = [];
@@ -210,10 +219,7 @@ export default class Spacial extends Point implements ISpacial {
 		}
 	}
 
-	public sizeSource: Record<Dimensions, SizeMethod> = {
-		x: "given",
-		y: "given"
-	};
+
 
 	public clearBindings(dimension: Dimensions) {
 		var toRemove: IBinding[] = [];
@@ -263,7 +269,7 @@ export default class Spacial extends Point implements ISpacial {
 			if (b.targetObject === target && b.bindingRule.dimension === dimension) {
 				found = true;
 
-				if (b.targetObject.sizeSource[dimension] === "given") {
+				if (b.targetObject.sizeMode[dimension] === "fixed") {
 					// Not stretchy so this gets overridden
 					console.warn(
 						`Warning: overriding binding on dimension ${b.bindingRule.dimension} for anchor ${this.ref} to target ${target.ref}`
@@ -494,7 +500,7 @@ export default class Spacial extends Point implements ISpacial {
 	public setFar(dimension: Dimensions, v: number, stretch?: boolean) {
 		switch (dimension) {
 			case "x":
-				if (this.sizeSource.x === "inherited" || stretch) {
+				if (this.sizeMode.x === "grow" || stretch) {
 					if (this._x === undefined) {
 						throw new Error(
 							`Trying to stretch element ${this.ref} with unset position`
@@ -515,7 +521,7 @@ export default class Spacial extends Point implements ISpacial {
 				}
 				break;
 			case "y":
-				if (this.sizeSource.y === "inherited" || stretch) {
+				if (this.sizeMode.y === "grow" || stretch) {
 					if (this._y === undefined) {
 						throw new Error(
 							`Trying to stretch element ${this.ref} with unset position`

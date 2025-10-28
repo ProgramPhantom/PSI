@@ -30,12 +30,12 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	var values: Partial<IVisual> = getByPath(formControls.getValues(), props.prefix);
 
 	var widthActive = props.target
-		? props.target.sizeSource.x === "inherited"
+		? props.target.sizeMode.x === "inherited"
 			? false
 			: true
 		: true;
 	var heightActive = props.target
-		? props.target.sizeSource.y === "inherited"
+		? props.target.sizeMode.y === "inherited"
 			? false
 			: true
 		: true;

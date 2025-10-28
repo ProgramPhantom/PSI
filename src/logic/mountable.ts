@@ -46,12 +46,12 @@ class Mountable extends PaddedBox implements IMountable {
 		this.mountConfig = params.mountConfig;
 
 		if (this.mountConfig?.alignment === "stretch") {
-			this.sizeSource.x = "inherited";
+			this.sizeMode.x = "inherited";
 		}
 
 		if (this.mountConfig !== undefined && this.mountConfig.noSections > 1) {
 			this.mountConfig.alignment = "stretch";
-			this.sizeSource.x = "inherited";
+			this.sizeMode.x = "inherited";
 		}
 	}
 

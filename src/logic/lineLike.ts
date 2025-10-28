@@ -55,8 +55,8 @@ export default abstract class LineLike extends Visual {
 		this.adjustment = fullParams.adjustment;
 		this.orientation = fullParams.orientation;
 
-		this.sizeSource.x = "inherited";
-		this.sizeSource.y = "inherited";
+		this.sizeMode.x = "inherited";
+		this.sizeMode.y = "inherited";
 	}
 
 	resolveDimensions(): void {

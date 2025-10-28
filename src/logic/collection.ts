@@ -29,6 +29,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 			offset: [0, 0],
 			padding: [0, 0, 0, 0],
 			ref: "default-collection",
+			selfAlignment:  {x: "here", y: "here"},
+			sizeMode: {x: "fixed", y: "fixed"},
 			userChildren: []
 		}
 	};
@@ -276,12 +278,12 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		var width = right - left;
 		var height = bottom - top;
 
-		if (width !== -Infinity && this.sizeSource.x !== "inherited") {
+		if (width !== -Infinity && this.sizeMode.x !== "grow") {
 			this.contentWidth = width;
 		} else {
 			// this.contentWidth = 0;
 		}
-		if (height !== -Infinity && this.sizeSource.y !== "inherited") {
+		if (height !== -Infinity && this.sizeMode.y !== "grow") {
 			this.contentHeight = height;
 		} else {
 			// this.contentHeight = 0;

@@ -134,7 +134,7 @@ export default class LabelGroup<T extends Visual = Visual>
 		switch (label.labelConfig.labelPosition) {
 			case "top":
 				// X
-				label.sizeSource.x = "inherited";
+				label.sizeMode.x = "inherited";
 				this.components.coreChild.bind(label, "x", "here", "here");
 				this.components.coreChild.bind(label, "x", "far", "far");
 
@@ -159,7 +159,7 @@ export default class LabelGroup<T extends Visual = Visual>
 				break;
 			case "right":
 				// Y
-				label.sizeSource.y = "inherited";
+				label.sizeMode.y = "inherited";
 				this.components.coreChild.bind(label, "y", "here", "here", undefined);
 				this.components.coreChild.bind(label, "y", "far", "far");
 
@@ -182,7 +182,7 @@ export default class LabelGroup<T extends Visual = Visual>
 				this.components.coreChild.bind(label, "y", "far", "here");
 
 				// X
-				label.sizeSource.x = "inherited";
+				label.sizeMode.x = "inherited";
 				this.components.coreChild.bind(label, "x", "here", "here");
 				this.components.coreChild.bind(label, "x", "far", "far");
 
@@ -194,7 +194,7 @@ export default class LabelGroup<T extends Visual = Visual>
 				break;
 			case "left":
 				// Y
-				label.sizeSource.y = "inherited";
+				label.sizeMode.y = "inherited";
 				this.components.coreChild.bind(label, "y", "here", "here");
 				this.components.coreChild.bind(label, "y", "far", "far");
 
@@ -256,7 +256,7 @@ export default class LabelGroup<T extends Visual = Visual>
 		if (v !== this._contentWidth) {
 			this._contentWidth = v;
 
-			if (this.sizeSource.x === "inherited") {
+			if (this.sizeMode.x === "inherited") {
 				this.components.coreChild.contentWidth = v - this.getTotalLabelWidth();
 			}
 
@@ -278,7 +278,7 @@ export default class LabelGroup<T extends Visual = Visual>
 		if (v !== this.contentHeight) {
 			this._contentHeight = v;
 
-			if (this.sizeSource.y === "inherited") {
+			if (this.sizeMode.y === "inherited") {
 				this.components.coreChild.contentHeight = v - this.getTotalLabelHeight();
 			}
 

@@ -24,6 +24,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			y: undefined,
 			offset: [0, 0],
 			padding: [0, 0, 0, 0],
+			selfAlignment:  {x: "here", y: "here"},
+			sizeMode: {x: "fixed", y: "fixed"},
 			ref: "default-collection",
 			userChildren: []
 		}
@@ -44,7 +46,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		var fullParams: ICollection = FillObject<ICollection>(params, Collection.defaults[templateName]);
 		super(fullParams);
 		
-		
+
 	}
 
 

@@ -8,7 +8,6 @@ import {Visual} from "./visual";
 export interface IAligner extends ICollection {
 	axis: Dimensions;
 	bindMainAxis: boolean;
-	alignment: Alignment;
 	minCrossAxis?: number;
 }
 
@@ -19,7 +18,6 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 		default: {
 			axis: "x",
 			bindMainAxis: false,
-			alignment: "here",
 			minCrossAxis: 0,
 			contentWidth: 0,
 			contentHeight: 0,
@@ -27,6 +25,8 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 			y: undefined,
 			offset: [0, 0],
 			padding: [0, 0, 0, 0],
+			selfAlignment:  {x: "here", y: "here"},
+			sizeMode: {x: "fixed", y: "fixed"},
 			ref: "default-aligner",
 			userChildren: []
 		}
@@ -36,7 +36,6 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 	crossAxis: Dimensions;
 
 	bindMainAxis: boolean;
-	alignment: Alignment;
 	minCrossAxis?: number;
 
 	constructor(params: RecursivePartial<IAligner>, templateName: string = "default") {
@@ -47,7 +46,6 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 		this.crossAxis = this.mainAxis === "x" ? "y" : "x";
 
 		this.bindMainAxis = fullParams.bindMainAxis;
-		this.alignment = fullParams.alignment;
 		this.minCrossAxis = fullParams.minCrossAxis;
 
 		// This sets cross axis to minCrossAxis which is the expected value upon initialisation.
@@ -65,7 +63,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 			child.parentId = this.id;
 		}
 		// AlignItem takes precedence
-		var alignChild: Alignment = alignItem !== "none" ? alignItem : this.alignment;
+		var alignChild: Alignment = alignItem !== "none" ? alignItem : this.selfAlignment;
 		const INDEX = index !== undefined ? index : this.children.length;
 
 		// MAIN AXIS COMPUTE
@@ -237,7 +235,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 
 		// Non aligned elements would break the following code,
 		// Currently, an element can only be non-aligned if the aligner is non-aligned.
-		if (this.alignment === "none") {
+		if (this.selfAlignment === "none") {
 			return;
 		}
 
@@ -271,14 +269,14 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> {
 		}
 
 		this.children.forEach((c) => {
-			if (c.definedVertically && c.sizeSource.y === "given") {
+			if (c.definedVertically && c.sizeMode.y === "given") {
 				top = c.y < top ? c.y : top;
 
 				var far = c.getFar("y");
 				bottom = far === undefined ? -Infinity : far > bottom ? far : bottom;
 			}
 
-			if (c.definedHorizontally && c.sizeSource.x === "given") {
+			if (c.definedHorizontally && c.sizeMode.x === "given") {
 				left = c.x < left ? c.x : left;
 
 				var farX = c.getFar("x");
