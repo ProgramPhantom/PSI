@@ -11,10 +11,28 @@ export interface Bounds {
 	right: number;
 }
 
+export type Orientation = "top" | "bottom" | "both";
+
 export interface Size {
 	width: number;
 	height: number;
 }
+
+interface IMountConfig {
+	index: number | null;
+	channelID: ID | null;
+	sequenceID: ID | null;
+
+	orientation: Orientation;
+	alignment: Record<Dimensions, SiteNames>;
+	noSections: number;
+}
+
+
+type PlacementConfiguration = {type: "free"; position: {x: number, y: number}} | 
+							  {type: "pulse"; config: IMountConfig} | 
+							  {type: "bounded"; bindings: undefined}
+							  
 
 export type PositionMethod = "controlled" | "free" | "partially-controlled";
 export type SizeMethod = "fixed" | "fit" | "grow";
@@ -58,8 +76,7 @@ export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
 
-	selfAlignment: Record<Dimensions, SiteNames>;
-	sizeMode: Record<Dimensions, SizeMethod>;
+	placementMode: PlacementConfiguration
 }
 
 export type UpdateNotification = (...args: any[]) => any;
@@ -71,8 +88,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			y: undefined,
 			contentWidth: 0,
 			contentHeight: 0,
-			selfAlignment:  {x: "here", y: "here"},
-			sizeMode: {x: "fixed", y: "fixed"},
+			placementMode: {type: "free", position: {x: 0, y: 0}},
 			ref: "default-spacial"
 		}
 	};
@@ -80,8 +96,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
-			selfAlignment: this.selfAlignment,
-			sizeMode: this.sizeMode,
+			placementMode: this.placementMode,
 			...super.state
 		};
 	}
@@ -103,8 +118,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	protected _contentWidth: number;
 	protected _contentHeight: number;
 
-	public selfAlignment: Record<Dimensions, SiteNames>;
-	public sizeMode: Record<Dimensions, SizeMethod>;
+	public placementMode: PlacementConfiguration;
 
 	override bindings: IBinding[] = [];
 	override bindingsToThis: IBinding[] = [];
@@ -151,27 +165,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 	public set contentY(v: number) {
 		throw new Error("not implemented");
-		// this._contentY = v;
 	}
 
-	get contentBounds(): Bounds {
-		var top = this.contentY;
-		var left = this.contentX;
-
-		var bottom = this.contentY + (this.contentHeight ? this.contentHeight : 0);
-		var right = this.contentX + (this.contentWidth ? this.contentWidth : 0);
-
-		return {top: top, right: right, bottom: bottom, left: left};
-	}
-
-	set contentDim(b: Size) {
+	set contentSize(b: Size) {
 		this._contentWidth = b.width;
 		this._contentHeight = b.height;
 	}
-	get contentDim(): Size {
+	get contentSize(): Size {
 		return {width: this.contentWidth, height: this.contentWidth};
-
-		throw new Error("dimensions unset");
 	}
 
 	// ----------- Size --------------
@@ -314,12 +315,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public enforceBinding() {
-		this.bindings
-			.map((b) => b.targetObject)
-			.forEach((e) => {
-				e.displaced = true;
-			});
-
 		for (const binding of this.bindings) {
 			var targetElement: Spacial = binding.targetObject;
 			var getter: BinderGetFunction =
@@ -356,9 +351,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				binding.bindToContent
 			);
 
-			// This must happen BEFORE the element is positioned so the last element moved in the collection
-			// triggers the compute boundary
-			targetElement.displaced = false;
 
 			// Only go into the setter if it will change a value, massively reduces function calls.
 			// Alternative was doing the check inside the setter which still works but requires a function call
@@ -375,20 +367,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	}
 
-	subscribers: UpdateNotification[] = [];
-
-	subscribe(toRun: UpdateNotification) {
-		if (this.ref === "label") {
-		}
-		this.subscribers.push(toRun);
-	}
-
-	notifyChange() {
-		this.subscribers?.forEach((s) => {
-			logger.broadcast(this, s.name.split(" ")[1]);
-			s();
-		});
-	}
 
 	// Anchors:
 	public getNear(dimension: Dimensions, ofContent: boolean = false): number {
@@ -512,32 +490,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.y = v - this.height;
 	}
 
-	// Helpers:
-	get hasDimensions(): boolean {
-		if (this.contentDim.height === undefined || !this.contentDim.height === undefined) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	get definedVertically(): boolean {
-		if (this._y !== undefined && this.contentHeight !== undefined) {
-			return true;
-		}
-		return false;
-	}
-	get definedHorizontally(): boolean {
-		if (this._x !== undefined && this.contentWidth !== undefined) {
-			return true;
-		}
-		return false;
-	}
-
-	get isResolved(): boolean {
-		return this.definedHorizontally && this.definedVertically;
-	}
-
+	
 	setSizeByDimension(v: number, dim: Dimensions) {
 		switch (dim) {
 			case "x":

@@ -2,19 +2,7 @@ import {ID} from "./point";
 import Spacial, {ISpacial} from "./spacial";
 
 type Padding = number | [number, number] | [number, number, number, number];
-type Offset = [number, number];
 
-interface Dim {
-	width?: number;
-	height?: number;
-}
-
-interface Bounds {
-	top: number;
-	bottom: number;
-	left: number;
-	right: number;
-}
 
 export interface IPaddedBox extends ISpacial {
 	padding: [number, number, number, number];
@@ -25,7 +13,6 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	get state(): IPaddedBox {
 		return {
 			padding: this.padding,
-
 			...super.state
 		};
 	}
@@ -66,20 +53,6 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	}
 	public set contentY(v: number) {
 		this.y = v - this.padding[0];
-	}
-
-	get dim(): Dim {
-		return {width: this.width, height: this.height};
-	}
-
-	get bounds(): Bounds {
-		var top = this.y;
-		var left = this.x;
-
-		var bottom = this.y + this.height;
-		var right = this.x + this.width;
-
-		return {top: top, right: right, bottom: bottom, left: left};
 	}
 
 	override get width(): number {

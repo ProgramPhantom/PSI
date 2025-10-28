@@ -64,12 +64,10 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 
 	ref: string;
 
+	
 	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
 	bindingsToThis: IBinding[] = [];
 
-	ownershipType: OwnershipType = "free";
-
-	displaced: boolean = false;
 
 	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined) {
 		this.x = x ?? 0;
@@ -104,15 +102,6 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	place({x, y}: {x?: number; y?: number}) {
 		x !== undefined ? (this.x = x) : {};
 		y !== undefined ? (this.y = y) : {};
-	}
-
-	// Helpers:
-	get hasPosition(): boolean {
-		if (this._x === undefined || this._y === undefined) {
-			return false;
-		} else {
-			return true;
-		}
 	}
 
 	getPositionByDimension(dim: Dimensions): number | undefined {
