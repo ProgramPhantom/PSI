@@ -28,7 +28,6 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			selfAlignment:  {x: "here", y: "here"},
 			sizeMode: {x: "fixed", y: "fixed"},
 			ref: "default-collection",
-			userChildren: []
 		}
 	};
 	get state(): IGrid {
