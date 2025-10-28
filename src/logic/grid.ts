@@ -1,10 +1,10 @@
 import Collection, { ICollection } from "./collection";
 import { Size } from "./spacial";
 import { FillObject, RecursivePartial } from "./util";
-import { IDraw, Visual } from "./visual";
+import { IDraw, IVisual, Visual } from "./visual";
 
 
-export interface IGrid extends ICollection {
+export interface IGrid extends IVisual {
 
 }
 
@@ -16,7 +16,7 @@ interface Rect {
 	height: number
 }
 
-export default class Grid<T extends Visual = Visual> extends Collection implements IDraw {
+export default class Grid<T extends Visual = Visual> extends Visual implements IDraw {
 	static defaults: {[name: string]: IGrid} = {
 		default: {
 			contentWidth: 0,
@@ -31,9 +31,9 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			userChildren: []
 		}
 	};
-	get state(): ICollection {
+	get state(): IGrid {
 		return {
-			userChildren: this.userChildren.map((c) => c.state),
+
 			...super.state
 		};
 	}
@@ -130,6 +130,31 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		this.gridMatrix[row][column] = child;
 	}
 
+	public remove(child: T) {
+		// First we need to locate this child in the matrix:
+		var coords: {row: number, col: number} | undefined = this.locateChild(child);
+		if (coords === undefined) {
+			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
+			return
+		}
+
+		this.removeAt(coords);
+	}
+
+	public removeAt(coords: {row: number, col: number}) {
+		var targetCell = this.gridMatrix[coords.row][coords.col];
+
+		if (targetCell === undefined) {
+			console.warn(`Removing child in cell outside of matrix in grid ${this.ref}`)
+			return 
+		}
+
+		this.gridMatrix[coords.row][coords.col] = undefined;
+
+		// Cut off empty trailing rows and columns
+		this.squeezeMatrix();
+	}
+
 	private getColumns(): T[][] {
 		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
 			return [];
@@ -145,9 +170,29 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		return columns;
 	}
-
 	private getColumn(index: number): T[] {
 		return this.gridMatrix.map((row) => row[index]);
+	}
+
+	private getRows(): T[][] {
+		return this.gridMatrix;
+	}
+	private getRow(index: number): T[] {
+		return this.gridMatrix[index];
+	}
+
+	private locateChild(child: T): {row: number, col: number} | undefined {
+		var coords: {row: number, col: number} = undefined;
+
+		this.gridMatrix.forEach((row, row_index) => {
+			row.forEach((cell, column_index) => {
+				if (cell && cell.id === child.id) {
+					coords = {row: row_index, col: column_index}
+				}
+			})
+		})
+
+		return coords;
 	}
 
 	private getFirstAvailableCell(): {row: number, col: number} {
@@ -169,6 +214,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return coords;
 	}
 
+	private isEmpty(target: T[]): boolean {
+		return !target.some((c) => c !== undefined)
+	}
+
 	private expandMatrix(coords: {row: number, col: number}) {
 		var rowDiff: number = coords.row - this.noRows + 1;
 		var colDiff: number = coords.col - this.noColumns + 1;
@@ -182,6 +231,25 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		while (colDiff >= 1) {
 			this.insertEmptyColumn();
 			colDiff -= 1
+		}
+	}
+	private squeezeMatrix() {
+		var trailingRow: T[] = this.getRow(this.noRows-1)
+		var trailingColumn: T[] = this.getColumn(this.noColumns-1)
+		
+		var trailingRowEmpty: boolean = this.isEmpty(trailingRow);
+		var trailingColumnEmpty: boolean = this.isEmpty(trailingColumn);
+
+		while (trailingRowEmpty === true) {
+			this.removeRow();
+			var trailingRow: T[] = this.getRow(this.noRows-1);
+			var trailingRowEmpty: boolean = this.isEmpty(trailingRow);
+		}
+
+		while (trailingColumnEmpty === true) {
+			this.removeColumn();
+			var trailingColumn: T[] = this.getColumn(this.noColumns-1);
+			var trailingColumnEmpty: boolean = this.isEmpty(trailingColumn);
 		}
 	}
 
@@ -213,7 +281,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 
 		var targetColumn: T[] = this.getColumn[INDEX];
-		var empty: boolean = !targetColumn.some((c) => c !== undefined);
+		var empty: boolean = this.isEmpty(targetColumn)
 
 		if (onlyIfEmpty === true && !empty) { return }
 
@@ -229,7 +297,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 
 		var targetRow: T[] = this.gridMatrix[INDEX];
-		var empty: boolean = !targetRow.some((c) => c !== undefined);
+		var empty: boolean = this.isEmpty(targetRow)
 
 		if (onlyIfEmpty === true && !empty) { return }
 
