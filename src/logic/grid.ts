@@ -167,7 +167,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		this.squeezeMatrix();
 	}
 
-	private getColumns(): T[][] {
+	protected getColumns(): T[][] {
 		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
 			return [];
 		}
@@ -182,18 +182,18 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 		return columns;
 	}
-	private getColumn(index: number): T[] {
+	protected getColumn(index: number): T[] {
 		return this.gridMatrix.map((row) => row[index]);
 	}
 
-	private getRows(): T[][] {
+	public getRows(): T[][] {
 		return this.gridMatrix;
 	}
-	private getRow(index: number): T[] {
+	protected getRow(index: number): T[] {
 		return this.gridMatrix[index];
 	}
 
-	private locateChild(child: T): {row: number, col: number} | undefined {
+	protected locateChild(child: T): {row: number, col: number} | undefined {
 		var coords: {row: number, col: number} = undefined;
 
 		this.gridMatrix.forEach((row, row_index) => {
@@ -207,7 +207,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		return coords;
 	}
 
-	private getFirstAvailableCell(): {row: number, col: number} {
+	protected getFirstAvailableCell(): {row: number, col: number} {
 		var coords: {row: number, col: number} | undefined = undefined; 
 		for (let row=0; row < this.noRows; row++) {
 			for (let col=0; col<this.noColumns; col++) {
@@ -226,11 +226,11 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		return coords;
 	}
 
-	private isEmpty(target: T[]): boolean {
+	protected isEmpty(target: T[]): boolean {
 		return !target.some((c) => c !== undefined)
 	}
 
-	private expandMatrix(coords: {row: number, col: number}) {
+	protected expandMatrix(coords: {row: number, col: number}) {
 		var rowDiff: number = coords.row - this.noRows + 1;
 		var colDiff: number = coords.col - this.noColumns + 1;
 		
@@ -245,7 +245,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			colDiff -= 1
 		}
 	}
-	private squeezeMatrix() {
+	protected squeezeMatrix() {
 		var trailingRow: T[] = this.getRow(this.noRows-1)
 		var trailingColumn: T[] = this.getColumn(this.noColumns-1)
 		
@@ -265,7 +265,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		}
 	}
 
-	private insertEmptyColumn(index?: number) {
+	protected insertEmptyColumn(index?: number) {
 		var newColumn: T[] = Array<T>(this.noRows).fill(undefined);
 		var index = index; 
 
@@ -277,7 +277,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
       		this.gridMatrix[i].splice(index, 0, newColumn[i]);
     	}
 	}
-	private insertEmptyRow(index?: number): void {
+	protected insertEmptyRow(index?: number): void {
 		var newRow: T[] = Array<T>(this.noColumns).fill(undefined)
 		if (index === undefined || index < 0 || index > this.noRows) {
 			this.gridMatrix.push(newRow);
@@ -286,7 +286,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		}
   	}
 
-	private removeColumn(index?: number, onlyIfEmpty: boolean=false) {
+	protected removeColumn(index?: number, onlyIfEmpty: boolean=false) {
 		var INDEX = index;
 		if (index === undefined || index < 0 || index > this.noColumns-1) {
 			INDEX = this.noColumns - 1;
@@ -302,7 +302,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		}
 		
 	}
-	private removeRow(index?: number, onlyIfEmpty: boolean=false) {
+	protected removeRow(index?: number, onlyIfEmpty: boolean=false) {
 		var INDEX = index;
 		if (index === undefined || index < 0 || index > this.noRows-1) {
 			INDEX = this.noRows - 1;

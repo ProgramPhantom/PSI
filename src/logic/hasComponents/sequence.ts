@@ -95,19 +95,40 @@ export default class Sequence extends Grid implements ISequence {
 
 	// Content Commands
 	public addChannel(channel: Channel) {
-		// this.channels.push(channel);
+		this.channels.push(channel);
 		
+		// Add the three rows of this channel to the bottom of the 
+		// grid matrix;
+
+		// First we need to expand the matrix (as this channel we are)
+		// adding  could be longer than the matrix:
+
+		var channelLength = channel.noColumns;
+		this.expandMatrix({row: 0, col: channelLength})  
+		
+		// Note we don't care about the row as we will just append the 
+		// rows of the channel now, there's no need to expand it
+		
+		channel.getRows().forEach((row) => {
+			this.gridMatrix.push(row);
+		})
+	
 	}
 
 	public deleteChannel(channel: Channel) {
-		if (!this.channels.includes(channel)) {
-			throw new Error(`Channel '${channel.ref}' does not belong to ${this.ref}`);
-		}
-		
-		var index = this.channels.indexOf(channel);
+		var channelIndex = this.locateChannel(channel);
 
-		this.channels.splice(index, 1);
-		// TODO, must update the matrix
+		this.channels.splice(channelIndex, 1);
+		
+		var channelStartRow = channelIndex * 3;
+
+		this.removeRow(channelStartRow);
+		this.removeRow(channelStartRow);
+		this.removeRow(channelStartRow);
+
+		// Matrix now may be over-long if the longest channel has 
+		// been deleted, hence we squeeze.
+		this.squeezeMatrix();
 	}
 
 	protected locateChannel(channel: Channel) {
