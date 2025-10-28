@@ -1,6 +1,6 @@
 import Aligner from "../../logic/aligner";
 import Channel from "../../logic/hasComponents/channel";
-import Diagram from "../../logic/hasComponents/diagram";
+import SequenceAligner from "../../logic/hasComponents/sequenceAligner";
 import DiagramHandler from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
 import Sequence, {OccupancyStatus} from "../../logic/hasComponents/sequence";
@@ -22,7 +22,7 @@ class DiagramDropInterpreter {
 	computeAreas() {
 		this.insertAreas = [];
 
-		var diagram: Diagram = this.handler.diagram;
+		var diagram: SequenceAligner = this.handler.diagram;
 		var sequences: Sequence[] = this.handler.diagram.components.sequences;
 		var columnSets: Aligner<Visual>[] = sequences.map((s) => s.components.pulseColumns);
 		var newSlither: AddSpec;

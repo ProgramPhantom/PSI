@@ -1,7 +1,7 @@
 import {Svg} from "@svgdotjs/svg.js";
 import {myToaster} from "../app/App";
 import SchemeManager, {IUserSchemeData} from "./default";
-import {IDiagram} from "./hasComponents/diagram";
+import {IDiagram} from "./hasComponents/sequenceAligner";
 import DiagramHandler, {Result} from "./diagramHandler";
 import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
 import RectElement, {IRectElement} from "./rectElement";

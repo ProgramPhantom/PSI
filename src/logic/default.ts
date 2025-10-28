@@ -1,7 +1,7 @@
 import Channel, {IChannel} from "./hasComponents/channel";
 import defaultScheme from "./default/schemeSet.json";
 import {UserComponentType} from "./diagramHandler";
-import Diagram, {IDiagram} from "./hasComponents/diagram";
+import SequenceAligner, {IDiagram} from "./hasComponents/sequenceAligner";
 import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
 import {ID} from "./point";
 import RectElement, {IRectElement} from "./rectElement";
@@ -29,7 +29,7 @@ const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
 	rect: RectElement,
 	svg: SVGElement,
 	channel: Channel,
-	diagram: Diagram,
+	diagram: SequenceAligner,
 	line: Line,
 	sequence: Sequence,
 	space: Space,

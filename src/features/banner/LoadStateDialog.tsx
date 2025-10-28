@@ -1,7 +1,7 @@
 import {Button, Dialog, DialogBody, DialogFooter, Text} from "@blueprintjs/core";
 import {useRef, useState} from "react";
 import {myToaster} from "../../app/App";
-import {IDiagram} from "../../logic/hasComponents/diagram";
+import {IDiagram} from "../../logic/hasComponents/sequenceAligner";
 import ENGINE from "../../logic/engine";
 import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";

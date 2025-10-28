@@ -2,7 +2,7 @@ import {Divider, EntityTitle, Tab, Tabs} from "@blueprintjs/core";
 import React, {useEffect, useImperativeHandle} from "react";
 import {DefaultValues, FormProvider, useForm} from "react-hook-form";
 import Channel from "../../logic/hasComponents/channel";
-import Diagram from "../../logic/hasComponents/diagram";
+import SequenceAligner from "../../logic/hasComponents/sequenceAligner";
 import {AllComponentTypes, UserComponentType} from "../../logic/diagramHandler";
 import Label, {ILabel} from "../../logic/hasComponents/label";
 import LabelGroup, {ILabelGroup} from "../../logic/hasComponents/labelGroup";
@@ -37,7 +37,7 @@ const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
 	rect: RectElement,
 	svg: SVGElement,
 	channel: Channel,
-	diagram: Diagram,
+	diagram: SequenceAligner,
 	line: Line,
 	sequence: Sequence,
 	space: Space,

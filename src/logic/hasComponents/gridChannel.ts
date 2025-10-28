@@ -6,7 +6,7 @@ import defaultChannel from "../default/channel.json";
 import {UserComponentType} from "../diagramHandler";
 import {IMountConfig} from "../mountable";
 import {ID} from "../point";
-import RectElement, {IRectStyle} from "../rectElement";
+import RectElement, {IRectElement, IRectStyle} from "../rectElement";
 import {OccupancyStatus} from "./sequence";
 import Spacial from "../spacial";
 import Text, {IText} from "../text";
@@ -21,7 +21,8 @@ export interface IChannel extends IGrid {
 
 	style: IChannelStyle;
 
-	label: IText
+	label: IText,
+	bar: IRectElement,
 }
 
 export interface IChannelStyle {
@@ -82,9 +83,10 @@ export default class Channel extends Grid {
 	}
 
 	style: IChannelStyle;
-	label: Text;
-
 	sequenceID: ID;
+
+	label: Text;
+	bar: RectElement;
 
 	constructor(pParams: RecursivePartial<IChannel>, templateName: string = "default") {
 		var fullParams: IChannel = pParams

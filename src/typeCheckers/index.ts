@@ -13,7 +13,7 @@ import textTypeSuite from "./text-ti";
 
 import Arrow from "../logic/line";
 import Channel from "../logic/hasComponents/channel";
-import Diagram from "../logic/hasComponents/diagram";
+import SequenceAligner from "../logic/hasComponents/sequenceAligner";
 import Label from "../logic/hasComponents/label";
 import LabelGroup from "../logic/hasComponents/labelGroup";
 import RectElement from "../logic/rectElement";

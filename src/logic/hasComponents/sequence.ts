@@ -72,7 +72,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 		var channelColumn: Aligner<Channel> = new Aligner<Channel>(
 			{
 				bindMainAxis: true,
-				axis: "y",
+				mainAxis: "y",
 				selfAlignment: "here",
 				ref: "channel column"
 			},
@@ -83,7 +83,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 		// All columns
 		var columns: Aligner<Aligner<Visual>> = new Aligner<Aligner<Visual>>(
 			{
-				axis: "x",
+				mainAxis: "x",
 				bindMainAxis: true,
 				selfAlignment: "here",
 				ref: "label col | pulse columns"
@@ -95,7 +95,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 		// Label column
 		var labelColumn: Aligner<Visual> = new Aligner<Visual>(
 			{
-				axis: "y",
+				mainAxis: "y",
 				bindMainAxis: false,
 				selfAlignment: "here",
 				y: 0,
@@ -107,7 +107,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 
 		// Pulse columns
 		var pulseColumns: Aligner<Aligner<Visual>> = new Aligner<Aligner<Visual>>(
-			{bindMainAxis: true, axis: "x", y: 0, ref: "pulse columns"},
+			{bindMainAxis: true, mainAxis: "x", y: 0, ref: "pulse columns"},
 			"default"
 		);
 		columns.add(pulseColumns);
@@ -195,7 +195,7 @@ export default class Sequence extends Collection implements IHaveComponents<ISeq
 
 		var newColumn: Aligner<Visual> = new Aligner<Visual>(
 			{
-				axis: "y",
+				mainAxis: "y",
 				bindMainAxis: false,
 				selfAlignment: "centre",
 				ref: `column at ${INDEX}`,

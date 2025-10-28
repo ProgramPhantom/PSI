@@ -1,7 +1,7 @@
 import {Button, Checkbox, Classes, Icon, Navbar, Popover} from "@blueprintjs/core";
 import React, {useState} from "react";
 import {myToaster, Tool} from "../../app/App";
-import {IDiagram} from "../../logic/hasComponents/diagram";
+import {IDiagram} from "../../logic/hasComponents/sequenceAligner";
 import ENGINE from "../../logic/engine";
 import {LoadStateDialog} from "./LoadStateDialog";
 import {PNGExportDialog} from "./PNGExportDialog";

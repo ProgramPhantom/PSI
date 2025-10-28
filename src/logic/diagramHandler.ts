@@ -2,7 +2,7 @@ import {Rect, Svg} from "@svgdotjs/svg.js";
 import {PointBind} from "../features/canvas/LineTool";
 import Channel, {IChannel} from "./hasComponents/channel";
 import SchemeManager from "./default";
-import Diagram, {AllStructures, IDiagram} from "./hasComponents/diagram";
+import SequenceAligner, {AllStructures, IDiagram} from "./hasComponents/sequenceAligner";
 import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
 import Line, {ILine} from "./line";
 import logger, {Operations} from "./log";
@@ -70,11 +70,11 @@ export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract"
 export type AllElementIdentifiers = AllStructures | AllComponentTypes;
 
 export default class DiagramHandler implements IDraw {
-	private _diagram: Diagram;
-	public get diagram(): Diagram {
+	private _diagram: SequenceAligner;
+	public get diagram(): SequenceAligner {
 		return this._diagram;
 	}
-	public set diagram(val: Diagram) {
+	public set diagram(val: SequenceAligner) {
 		val.ownershipType = "component";
 		this._diagram = val;
 	}
@@ -109,7 +109,7 @@ export default class DiagramHandler implements IDraw {
 		this.schemeManager = schemeManager;
 		this.surface = surface;
 
-		var constructResult: Result<Diagram> = this.constructDiagram(
+		var constructResult: Result<SequenceAligner> = this.constructDiagram(
 			(<any>defaultDiagram) as IDiagram
 		);
 
@@ -120,13 +120,13 @@ export default class DiagramHandler implements IDraw {
 				message: "Error loading diagram",
 				intent: "danger"
 			});
-			this.diagram = new Diagram({});
+			this.diagram = new SequenceAligner({});
 		}
 	}
 
 	@draws
 	freshDiagram() {
-		this.diagram = new Diagram({});
+		this.diagram = new SequenceAligner({});
 	}
 
 	draw() {
@@ -161,9 +161,9 @@ export default class DiagramHandler implements IDraw {
 
 	// ----- Construct diagram from state ------
 	@draws
-	public constructDiagram(state: IDiagram): Result<Diagram> {
+	public constructDiagram(state: IDiagram): Result<SequenceAligner> {
 		try {
-			var newDiagram: Diagram = new Diagram(state);
+			var newDiagram: SequenceAligner = new SequenceAligner(state);
 		} catch (err) {
 			return {ok: false, error: (err as Error).message};
 		}
