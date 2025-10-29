@@ -136,8 +136,8 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	) {
 		super(x, y, ref, id);
 
-		this.width = width ?? 0;
-		this.height = height ?? 0;
+		this.contentWidth = width ?? 0;
+		this.contentHeight = height ?? 0;
 	}
 
 	public computeSize(): Size {

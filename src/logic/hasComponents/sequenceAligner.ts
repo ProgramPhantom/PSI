@@ -1,11 +1,7 @@
 
 import Aligner, { IAligner } from "../aligner";
-import blankDiagram from "../default/blankDiagram.json";
 import { UserComponentType } from "../diagramHandler";
-import { ID } from "../point";
-import { FillObject, RecursivePartial } from "../util";
 import { Visual } from "../visual";
-import Channel from "./channel";
 import Sequence, { ISequence } from "./sequence";
 
 
@@ -15,9 +11,6 @@ export interface ISequenceAligner extends IAligner {
 
 
 export default class SequenceAligner extends Aligner<Sequence> implements ISequenceAligner {
-	static defaults: {[key: string]: ISequenceAligner} = {
-		default: {...(<any>blankDiagram)}
-	};
 	static ElementType: UserComponentType = "sequence-aligner";
 
 	get state(): ISequenceAligner {
@@ -31,26 +24,23 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		return this.alignerChildren;
 	}
 
-	constructor(pParams: RecursivePartial<ISequenceAligner>, templateName: string = "default") {
-		var fullParams: ISequenceAligner = FillObject(pParams, SequenceAligner.defaults[templateName]);
-		super(fullParams, templateName);
+	constructor(params: ISequenceAligner) {
+		super(params);
 
 
 		// Initial sequence:
-		if (fullParams.alignerChildren.length === 0) {
+		if (params.alignerChildren.length === 0) {
 			var startSequence = new Sequence({});
 			this.add(startSequence);
 		}
 
-		fullParams.alignerChildren.forEach((s) => {
+		params.alignerChildren.forEach((s) => {
 			var newSeq = new Sequence(s);
 			this.add(newSeq);
 		});
 	}
 
 	// Adding
-
-
 	public addPulse(pulse: Visual) {
 		if (pulse.placementMode.type !== "pulse") {
 			console.warn(`Cannot mount pulse with no pulse type config`)

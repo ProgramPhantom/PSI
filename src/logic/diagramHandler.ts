@@ -63,10 +63,9 @@ export type UserComponentType =
 export type DrawComponent = "svg" | "rect" | "space";
 
 // Abstract component types (have no visual content)
-export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract" | "visual";
+export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract" | "visual" | "grid";
 
-// All
-export type AllElementIdentifiers =  AllComponentTypes;
+
 
 export default class DiagramHandler implements IDraw {
 	public diagram: Diagram;
@@ -112,7 +111,7 @@ export default class DiagramHandler implements IDraw {
 				message: "Error loading diagram",
 				intent: "danger"
 			});
-			this.diagram = new Diagram({});
+			this.diagram = new Diagram(<any>defaultDiagram);
 		}
 	}
 
@@ -184,7 +183,7 @@ export default class DiagramHandler implements IDraw {
 
 	@draws
 	freshDiagram() {
-		this.diagram = new Diagram({});
+		this.diagram = new Diagram(<any>defaultDiagram);
 	}
 
 	// ---- Form interfaces ----

@@ -6,6 +6,11 @@ import ENGINE from "../../logic/engine";
 import Sequence, {OccupancyStatus} from "../../logic/hasComponents/sequence";
 import {Visual} from "../../logic/visual";
 import InsertArea, {AddSpec} from "./InsertArea";
+import Diagram from "../../logic/hasComponents/diagram";
+
+interface Rect {x: number, y: number, width: number, height: number}
+
+
 
 class DiagramDropInterpreter {
 	public handler: DiagramHandler;
@@ -22,14 +27,14 @@ class DiagramDropInterpreter {
 	computeAreas() {
 		this.insertAreas = [];
 
-		var diagram: SequenceAligner = this.handler.diagram;
-		var sequences: Sequence[] = this.handler.diagram.components.sequences;
-		var columnSets: Aligner<Visual>[] = sequences.map((s) => s.components.pulseColumns);
+		var diagram: Diagram = this.handler.diagram;
+		var sequences: Sequence[] = this.handler.diagram.sequences;
 		var newSlither: AddSpec;
 
+		// Iterate sequences
 		Object.entries(diagram.sequenceDict).forEach(([seqID, sequence]) => {
-			var channels = sequence.components.channels;
-			var columns: Aligner<Visual>[] = sequence.components.pulseColumns.children;
+			var channels = sequence.channels;
+			var columns: Rect[] = sequence.gridSizes.column;
 			var noColumns = columns.length;
 			var noChannels = channels.length;
 
@@ -40,15 +45,14 @@ class DiagramDropInterpreter {
 
 				// Columns
 				for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
-					let preOccupancy: OccupancyStatus =
-						sequence.elementMatrix[channelIndex][columnIndex - 1];
-					let hereOccupancy: OccupancyStatus =
-						sequence.elementMatrix[channelIndex][columnIndex];
+					let preOccupancy: Visual | undefined =
+						sequence.gridMatrix[channelIndex][columnIndex - 1];
+					let hereOccupancy: Visual | undefined =
+						sequence.gridMatrix[channelIndex][columnIndex];
 
 					if (
 						!(
 							preOccupancy === undefined
-							|| (preOccupancy === "." && hereOccupancy !== ".")
 							|| (preOccupancy instanceof Visual
 								&& hereOccupancy instanceof Visual
 								&& preOccupancy !== hereOccupancy)
@@ -65,7 +69,7 @@ class DiagramDropInterpreter {
 
 				Object.entries(sequence.channelsDict).forEach(([chanID, channel], channelIndex) => {
 					let occupied: boolean =
-						sequence.elementMatrix[channelIndex][columnIndex] === undefined
+						sequence.gridMatrix[channelIndex][columnIndex] === undefined
 							? false
 							: true;
 
@@ -78,7 +82,7 @@ class DiagramDropInterpreter {
 								y: channel.y,
 								width: this.slitherWidth,
 								height:
-									channel.components.topAligner.contentHeight!
+									channel.gridSizes.row[0].height
 									+ channel.padding[0]
 							},
 							index: columnIndex,
@@ -93,10 +97,10 @@ class DiagramDropInterpreter {
 						newSlither = {
 							area: {
 								x: column.x - this.slitherWidth / 2,
-								y: channel.components.bottomAligner.y,
+								y: channel.gridSizes.row[2].y,
 								width: this.slitherWidth,
 								height:
-									channel.components.bottomAligner.contentHeight!
+									channel.gridSizes.row[2].height
 									+ channel.padding[2]
 							},
 							index: columnIndex,
@@ -110,17 +114,9 @@ class DiagramDropInterpreter {
 
 					if (!occupied) {
 						// Top block
-						var columnWidth =
-							column.contentWidth === undefined ? 0 : column.contentWidth;
-						var upperAlignerHeight =
-							channel.components.topAligner.contentHeight === undefined
-								? 0
-								: channel.components.topAligner.contentHeight;
-						var lowerAlignerHeight =
-							channel.components.bottomAligner.contentHeight === undefined
-								? 0
-								: channel.components.bottomAligner.contentHeight;
-
+						var columnWidth = column.width;
+						var upperAlignerHeight = channel.gridSizes.row[0].height;
+						var lowerAlignerHeight = channel.gridSizes.row[2].height;
 						let newBlock: AddSpec = {
 							area: {
 								x: column.x + this.slitherWidth / 2,
@@ -140,7 +136,7 @@ class DiagramDropInterpreter {
 						newBlock = {
 							area: {
 								x: column.x + this.slitherWidth / 2,
-								y: channel.components.bottomAligner.y,
+								y: channel.gridSizes.row[2].y,
 								width: columnWidth - this.slitherWidth,
 								height: lowerAlignerHeight
 							},
@@ -156,28 +152,21 @@ class DiagramDropInterpreter {
 			});
 
 			// END SLITHERS
-			var column: Aligner<Visual> = columns[columns.length - 1];
+			var column: Rect = columns[columns.length - 1];
 			var i = columns.length - 1;
-			if (column === undefined) {
-				// no positional columns yet
-				column = sequence.components.labelColumn;
-			}
+
+
 			// insert end slithers:
 			Object.entries(sequence.channelsDict).forEach(([name, channel]) => {
 				// insert end slithers
-				var upperAlignerHeight =
-					channel.components.topAligner.contentHeight === undefined
-						? 0
-						: channel.components.topAligner.contentHeight;
-				var lowerAlignerHeight =
-					channel.components.bottomAligner.contentHeight === undefined
-						? 0
-						: channel.components.bottomAligner.contentHeight;
+							
+				var upperAlignerHeight = channel.gridSizes.row[0].height;
+				var lowerAlignerHeight = channel.gridSizes.row[2].height;
 
 				// Top slither
 				newSlither = {
 					area: {
-						x: (column.getFar("x") ?? 0) - this.slitherWidth / 2,
+						x: column.x + column.width - this.slitherWidth / 2,
 						y: channel.y,
 						width: this.slitherWidth,
 						height: upperAlignerHeight
@@ -193,8 +182,8 @@ class DiagramDropInterpreter {
 				// bottom slither
 				newSlither = {
 					area: {
-						x: (column.getFar("x") ?? 0) - this.slitherWidth / 2,
-						y: channel.components.bottomAligner.y,
+						x: column.x + column.width - this.slitherWidth / 2,
+						y: channel.gridSizes.row[2].y,
 						width: this.slitherWidth,
 						height: lowerAlignerHeight + channel.padding[2]
 					},

@@ -29,7 +29,7 @@ export default class Sequence extends Grid implements ISequence {
 		};
 	}
 
-	channels: Channel[];
+	channels: Channel[] = [];
 
 
 	get channelsDict(): Record<ID, Channel> {

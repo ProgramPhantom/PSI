@@ -1,38 +1,28 @@
 import {
-	Checkbox,
 	Colors,
-	Dialog,
-	DialogBody,
 	EditableText,
 	HotkeyConfig,
 	Label,
 	Text,
 	useHotkeys
 } from "@blueprintjs/core";
-import React, {useEffect, useMemo, useRef, useState, useSyncExternalStore} from "react";
-import {TransformComponent, TransformWrapper} from "react-zoom-pan-pinch";
-import {IToolConfig, Tool} from "../../app/App";
-import {
-	AllComponentTypes,
-	AllElementIdentifiers,
-	UserComponentType
-} from "../../logic/diagramHandler";
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useDragLayer } from "react-dnd";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { IToolConfig, Tool } from "../../app/App";
 import ENGINE from "../../logic/engine";
-import {ID} from "../../logic/point";
-import {Visual} from "../../logic/visual";
+import { Visual } from "../../logic/visual";
 import Debug from "../debug/Debug";
 import CanvasDraggableElement from "../dnd/CanvasDraggableElement";
-import {CanvasDragLayer} from "../dnd/CanvasDragLayer";
-import {CanvasDropContainer} from "../dnd/CanvasDropContainer";
+import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
+import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
 import DropField from "../dnd/DropField";
-import {HitboxLayer} from "./HitboxLayer";
-import {LineTool, IDrawArrowConfig} from "./LineTool";
-import {DebugLayerDialog} from "./DebugLayerDialog";
-import {Element} from "@svgdotjs/svg.js";
-import {SVG} from "@svgdotjs/svg.js";
-import {useDragLayer} from "react-dnd";
+import { DebugLayerDialog } from "./DebugLayerDialog";
+import { HitboxLayer } from "./HitboxLayer";
+import { LineTool } from "./LineTool";
+import { AllComponentTypes } from "../../logic/diagramHandler";
 
-const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
+const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
 	// Types
 	svg: false,
 	text: false,
@@ -48,18 +38,8 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
 	label: false,
 	diagram: false,
 	"label-group": false,
-
-	// Named elements
-	"mounted-elements": false,
-	"label col | pulse columns": false,
-	"channel column": false,
-	"pulse columns": false,
-	"sequence column": false,
-	"label column": false,
-	bar: false,
-	root: false,
-	"top aligner": false,
-	"bottom aligner": false
+	"sequence-aligner": false,
+	grid: false,
 };
 
 export interface ISelectConfig extends IToolConfig {}
@@ -75,7 +55,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [debugDialogOpen, setDebugDialogOpen] = useState(false);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [debugSelectionTypes, setDebugSelectionTypes] =
-		useState<Record<AllElementIdentifiers, boolean>>(DefaultDebugSelection);
+		useState<Record<AllComponentTypes, boolean>>(DefaultDebugSelection);
 	const [zoom, setZoom] = useState(2);
 	const [dragging, setDragging] = useState(false);
 	const [fileName, setFileName] = useState(ENGINE.currentImageName);
@@ -97,8 +77,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		[debugDialogOpen]
 	);
 	const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
-	const handleSetDebugSelection = (type: AllElementIdentifiers) => {
-		var newDebugSelection: Record<AllElementIdentifiers, boolean> = {
+	const handleSetDebugSelection = (type: AllComponentTypes) => {
+		var newDebugSelection: Record<AllComponentTypes, boolean> = {
 			...debugSelectionTypes
 		};
 		newDebugSelection[type] = !newDebugSelection[type];
@@ -188,10 +168,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	var diagramWidth: number = 0;
 	var diagramHeight: number = 0;
-	if (ENGINE.handler.diagram.hasDimensions) {
-		diagramWidth = ENGINE.handler.diagram.width;
-		diagramHeight = ENGINE.handler.diagram.height;
-	}
+	
+	diagramWidth = ENGINE.handler.diagram.width;
+	diagramHeight = ENGINE.handler.diagram.height;
+	
 
 	return (
 		<>

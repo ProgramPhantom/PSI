@@ -48,16 +48,15 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 
 	minCrossAxis?: number;
 
-	alignerChildren: T[];
+	alignerChildren: T[] = [];
 
-	constructor(params: RecursivePartial<IAligner>, templateName: string = "default") {
-		var fullParams: IAligner = FillObject<IAligner>(params, Aligner.defaults[templateName]);
-		super(fullParams);
+	constructor(params: IAligner) {
+		super(params);
 
-		this.mainAxis = fullParams.mainAxis;
+		this.mainAxis = params.mainAxis;
 		this.crossAxis = this.mainAxis === "x" ? "y" : "x";
 
-		this.minCrossAxis = fullParams.minCrossAxis;
+		this.minCrossAxis = params.minCrossAxis;
 	}
 
 	public draw(surface: Element): void {

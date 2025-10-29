@@ -20,20 +20,6 @@ export interface ICollection extends IVisual {
 }
 
 export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
-	static defaults: {[name: string]: ICollection} = {
-		default: {
-			contentWidth: 0,
-			contentHeight: 0,
-			x: undefined,
-			y: undefined,
-			offset: [0, 0],
-			padding: [0, 0, 0, 0],
-			ref: "default-collection",
-			selfAlignment:  {x: "here", y: "here"},
-			sizeMode: {x: "fixed", y: "fixed"},
-			children: []
-		}
-	};
 	get state(): ICollection {
 		return {
 			children: this.children.map((c) => c.state),
@@ -44,16 +30,11 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	children: T[] = [];
 
 	constructor(
-		params: RecursivePartial<ICollection>,
-		templateName: string = Collection.defaults["default"].ref
+		params: ICollection,
 	) {
-		var fullParams: ICollection = FillObject<ICollection>(
-			params,
-			Collection.defaults[templateName]
-		);
-		super(fullParams);
+		super(params);
 
-		fullParams.children.forEach((c) => {
+		params.children.forEach((c) => {
 			if (c.type === undefined) {
 				console.warn(`Cannot instantiate parameter child ${c.ref} as it has no type`);
 				return;

@@ -16,20 +16,6 @@ export interface IDiagram extends ICollection {
 
 
 export default class Diagram extends Collection<Visual> implements IDiagram {
-	static defaults: {[key: string]: IDiagram} = {
-		default: {
-			sequenceAligner: SequenceAligner.defaults["default"],
-			children: [],
-			offset: [0, 0],
-			padding: [0, 0, 0, 0],
-			placementMode: {type: "free", sizeMode: "fit"},
-			x: 0,
-			y: 0,
-			ref: "diagram",
-			id: "c8014d41f304e",
-			type: "diagram"
-		}
-	};
 	static ElementType: UserComponentType = "diagram";
 
 	get state(): IDiagram {
@@ -77,12 +63,10 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 
 	sequenceAligner: SequenceAligner;
 
-	constructor(pParams: RecursivePartial<IDiagram>, templateName: string = "default") {
-		var fullParams: IDiagram = FillObject(pParams, Diagram.defaults[templateName]);
-		super(fullParams, templateName);
+	constructor(params: IDiagram) {
+		super(params);
 
-
-		this.sequenceAligner = new SequenceAligner(fullParams.sequenceAligner);
+		this.sequenceAligner = new SequenceAligner(params.sequenceAligner);
 		this.add(this.sequenceAligner);
 	}
 

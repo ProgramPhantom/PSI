@@ -69,10 +69,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	}
 
 	// Truth
-	protected gridMatrix: (T | undefined)[][] = [];
+	public gridMatrix: (T | undefined)[][] = [];
 	//
 	
-	gridSizes: {x: Rect[], y: Rect[]} = {x: [], y: []};
+	public gridSizes: {column: Rect[], row: Rect[]} = {column: [], row: []};
 	cells: Spacial[][];
 
 	constructor(params: RecursivePartial<IGrid>,
@@ -121,11 +121,11 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			rowRects[i].width = rowWidth
 		})
 
-		this.gridSizes.x = columnRects;
-		this.gridSizes.y = rowRects;
+		this.gridSizes.column = columnRects;
+		this.gridSizes.row = rowRects;
 
-		var totalWidth = this.gridSizes.x.reduce((w, r) => w + r.width, 0);
-		var totalHeight = this.gridSizes.y.reduce((h, r) => h + r.height, 0);
+		var totalWidth = this.gridSizes.column.reduce((w, r) => w + r.width, 0);
+		var totalHeight = this.gridSizes.row.reduce((h, r) => h + r.height, 0);
 		
 		// Set via content...
 		this.contentWidth = totalWidth;
@@ -211,7 +211,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		this.squeezeMatrix();
 	}
 
-	protected getColumns(): T[][] {
+	public getColumns(): T[][] {
 		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
 			return [];
 		}
@@ -226,14 +226,14 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 		return columns;
 	}
-	protected getColumn(index: number): T[] {
+	public getColumn(index: number): T[] {
 		return this.gridMatrix.map((row) => row[index]);
 	}
 
 	public getRows(): T[][] {
 		return this.gridMatrix;
 	}
-	protected getRow(index: number): T[] {
+	public getRow(index: number): T[] {
 		return this.gridMatrix[index];
 	}
 
@@ -371,10 +371,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 		for (var row=0; row<this.noRows; row++) {
 			xCount = 0;
-			var rowHeight: number = this.gridSizes.y[row].height;
+			var rowHeight: number = this.gridSizes.row[row].height;
 
 			for (var col=0; col<this.noColumns; col++) {
-				var colWidth: number = this.gridSizes.x[col].width;
+				var colWidth: number = this.gridSizes.column[col].width;
 
 				this.cells[row][col] = new Spacial(this.contentX + xCount,this.contentY + yCount, colWidth, rowHeight)
 
