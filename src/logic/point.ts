@@ -1,6 +1,6 @@
-import {AllComponentTypes} from "./diagramHandler";
-import {Dimensions, IBinding} from "./spacial";
-import {posPrecision} from "./util";
+import { AllComponentTypes } from "./diagramHandler";
+import { Dimensions, IBinding } from "./spacial";
+import { posPrecision } from "./util";
 
 export type OwnershipType = "component" | "free";
 export type ID = string;

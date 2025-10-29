@@ -115,7 +115,7 @@ export default class Channel extends Grid implements IChannel {
 		var fullParams: IChannel = pParams
 			? UpdateObj(Channel.namedElements[templateName], pParams)
 			: Channel.namedElements[templateName];
-		super(fullParams, templateName);
+		super(fullParams);
 
 		this.sequenceID = fullParams.sequenceID;
 		this.style = fullParams.style;

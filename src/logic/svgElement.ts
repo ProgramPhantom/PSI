@@ -1,13 +1,12 @@
-import {Element, G, SVG} from "@svgdotjs/svg.js";
-import {FormBundle} from "../features/form/LabelGroupComboForm";
+import { Element, G, SVG } from "@svgdotjs/svg.js";
+import { FormBundle } from "../features/form/LabelGroupComboForm";
 import SVGElementForm from "../features/form/SVGElementForm";
 import SchemeManager from "./default";
-import {svgPulses} from "./default/svgPulse";
-import {UserComponentType} from "./diagramHandler";
+import { svgPulses } from "./default/svgPulse";
+import { UserComponentType } from "./diagramHandler";
 import ENGINE from "./engine";
-import {cascadeID, createWithTemplate, RecursivePartial} from "./util";
-import {IDraw, IVisual, Visual} from "./visual";
-import {PositionMethod} from "./spacial";
+import { cascadeID, createWithTemplate, RecursivePartial } from "./util";
+import { IDraw, IVisual, Visual } from "./visual";
 
 interface ISVGStyle {}
 

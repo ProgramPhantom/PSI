@@ -1,12 +1,12 @@
-import {Colors} from "@blueprintjs/core";
-import {AllElementIdentifiers} from "../../logic/diagramHandler";
+import { Colors } from "@blueprintjs/core";
 import ENGINE from "../../logic/engine";
-import {Visual} from "../../logic/visual";
+import { Visual } from "../../logic/visual";
 import CollectionDebug from "./Collection";
 import PaddedBoxDebug from "./PaddedBox";
+import { AllComponentTypes } from "../../logic/diagramHandler";
 
 interface IDebug {
-	debugGroupSelection: Record<AllElementIdentifiers, boolean>;
+	debugGroupSelection: Record<AllComponentTypes, boolean>;
 	debugSelection: Visual[];
 }
 
@@ -27,7 +27,7 @@ const Debug: React.FC<IDebug> = (props) => {
 						return (
 							<CollectionDebug
 								element={
-									ENGINE.handler.diagram.components.sequences[0].components
+									ENGINE.handler.diagram.sequences[0]
 										.pulseColumns
 								}></CollectionDebug>
 						);

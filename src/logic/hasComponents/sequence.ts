@@ -3,7 +3,7 @@ import defaultSequence from "../default/sequence.json";
 import { AllComponentTypes } from "../diagramHandler";
 import Grid, { IGrid, IGridChildConfig } from "../grid";
 import { ID } from "../point";
-import Spacial, { IMountConfig } from "../spacial";
+import Spacial, { IMountConfig, Size } from "../spacial";
 import { FillObject, RecursivePartial } from "../util";
 import { Visual } from "../visual";
 import Channel, { IChannel } from "./channel";
@@ -46,17 +46,36 @@ export default class Sequence extends Grid implements ISequence {
 		return elements;
 	}
 
-	constructor(pParams: RecursivePartial<ISequence>, templateName: string = "default") {
-		var fullParams: ISequence = FillObject(pParams, Sequence.defaults[templateName]);
-		super(fullParams, templateName);
+	constructor(params: ISequence) {
+		super(params);
 
 
-		fullParams.channels.forEach((c) => {
+		params.channels.forEach((c) => {
 			var newChan = new Channel(c);
 			this.addChannel(newChan);
 		});
 	}
 
+	public override computeSize(): Size {
+		var size: Size = super.computeSize();
+
+		// Set the channels' sizes.
+
+		var sequenceRows: Visual[][] = this.getRows();
+		this.channels.forEach((channel, i) => {
+			var rowIndex: number = 3 * i;
+
+			channel.gridMatrix = [
+				sequenceRows[rowIndex],
+				sequenceRows[rowIndex+1],
+				sequenceRows[rowIndex+2]
+			]
+
+			channel.computeSize();
+		})
+
+		return size
+	}
 
 	public override computePositions(root: {x: number, y: number}): void {
 			this.x = root.x;

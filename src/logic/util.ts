@@ -1,13 +1,13 @@
-import {Element} from "@svgdotjs/svg.js";
+import { Element } from "@svgdotjs/svg.js";
 import * as t from "ts-interface-checker";
-import {CheckerTypeIndex} from "../typeCheckers";
-import {AllComponentTypes, UserComponentType} from "./diagramHandler";
-import {ID} from "./point";
-import RectElement, {IRectElement} from "./rectElement";
-import SVGElement, {ISVGElement} from "./svgElement";
-import {IVisual, Visual} from "./visual";
-import Line, {ILine} from "./line";
+import { CheckerTypeIndex } from "../typeCheckers";
+import { AllComponentTypes, UserComponentType } from "./diagramHandler";
+import Line, { ILine } from "./line";
+import { ID } from "./point";
+import RectElement, { IRectElement } from "./rectElement";
 import Spacial from "./spacial";
+import SVGElement, { ISVGElement } from "./svgElement";
+import { IVisual, Visual } from "./visual";
 
 function isEmpty(obj: any) {
 	for (var prop in obj) {

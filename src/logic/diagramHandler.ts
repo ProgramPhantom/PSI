@@ -3,18 +3,20 @@ import { myToaster } from "../app/App";
 import { PointBind } from "../features/canvas/LineTool";
 import SchemeManager from "./default";
 import * as defaultDiagram from "./default/defaultDiagram.json";
+import Channel, { IChannel } from "./hasComponents/channel";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
-import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
+import Sequence from "./hasComponents/sequence";
+import Line, { ILine } from "./line";
 import { ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import { IMountConfig, PlacementConfiguration } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import { RecursivePartial } from "./util";
 import { IDraw, IVisual, Visual } from "./visual";
-import Sequence from "./hasComponents/sequence";
-import Channel, { IChannel } from "./hasComponents/channel";
-import Line, { ILine } from "./line";
+
+
+
 
 export type Result<T> = {ok: true; value: T} | {ok: false; error: string};
 
@@ -113,6 +115,8 @@ export default class DiagramHandler implements IDraw {
 			});
 			this.diagram = new Diagram(<any>defaultDiagram);
 		}
+
+		this.draw();
 	}
 
 	draw() {
@@ -164,7 +168,7 @@ export default class DiagramHandler implements IDraw {
 
 		try {
 			// Create and mount pulses.
-			state.sequenceAligner.sequences.forEach((s) => {
+			state.sequenceAligner.alignerChildren.forEach((s) => {
 				s.channels.forEach((c) => {
 					c.pulseElements.forEach((m) => {
 						if (m.type === undefined) {

@@ -1,5 +1,5 @@
-import {ID} from "./point";
-import Spacial, {ISpacial} from "./spacial";
+import { ID } from "./point";
+import Spacial, { ISpacial, PlacementConfiguration } from "./spacial";
 
 type Padding = number | [number, number] | [number, number, number, number];
 
@@ -25,10 +25,11 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		y?: number,
 		width?: number,
 		height?: number,
+		placementMode?: PlacementConfiguration,
 		ref: string = PaddedBox.defaults["default"].ref,
 		id: ID | undefined = undefined
 	) {
-		super(x, y, width, height, ref, id);
+		super(x, y, width, height, placementMode, ref, id);
 
 		if (typeof padding === "number") {
 			this.padding = [padding, padding, padding, padding];

@@ -1,8 +1,8 @@
-import {Element, SVG, Element as SVGElement} from "@svgdotjs/svg.js";
+import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
 import TeXToSVG from "tex-to-svg";
 import defaultText from "./default/text.json";
-import {cascadeID, FillObject, RecursivePartial, sizePrecision} from "./util";
-import {Display, IVisual, Visual} from "./visual";
+import { cascadeID, FillObject, RecursivePartial, sizePrecision } from "./util";
+import { Display, IVisual, Visual } from "./visual";
 
 export const EXTOPX = 38.314;
 export const SCALER = 5;

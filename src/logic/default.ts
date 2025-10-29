@@ -1,19 +1,19 @@
-import Channel, {IChannel} from "./hasComponents/channel";
-import defaultScheme from "./default/schemeSet.json";
-import {UserComponentType} from "./diagramHandler";
-import SequenceAligner, {ISequenceAligner} from "./hasComponents/sequenceAligner";
-import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
-import {ID} from "./point";
-import RectElement, {IRectElement} from "./rectElement";
-import Sequence, {ISequence} from "./hasComponents/sequence";
-import SVGElement, {ISVGElement} from "./svgElement";
-import {IText} from "./text";
-import {DeepMutable, DeepReadonly, mergeObjectsPreferNonEmpty} from "./util";
-import {Visual} from "./visual";
-import Space from "./space";
-import Label from "./hasComponents/label";
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
-import Line, {ILine} from "./line";
+import defaultScheme from "./default/schemeSet.json";
+import { UserComponentType } from "./diagramHandler";
+import Channel, { IChannel } from "./hasComponents/channel";
+import Label from "./hasComponents/label";
+import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
+import Sequence, { ISequence } from "./hasComponents/sequence";
+import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
+import Line, { ILine } from "./line";
+import { ID } from "./point";
+import RectElement, { IRectElement } from "./rectElement";
+import Space from "./space";
+import SVGElement, { ISVGElement } from "./svgElement";
+import { IText } from "./text";
+import { DeepMutable, DeepReadonly, mergeObjectsPreferNonEmpty } from "./util";
+import { Visual } from "./visual";
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
 const ASSET_SVGS: SVGDict = import.meta.glob("../assets/svg/*.svg", {

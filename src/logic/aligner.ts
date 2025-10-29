@@ -1,14 +1,13 @@
 import { Element } from "@svgdotjs/svg.js";
 import { ID } from "./point";
 import { Dimensions, Size } from "./spacial";
-import { FillObject, RecursivePartial } from "./util";
 import { IVisual, Visual } from "./visual";
 
-export interface IAligner extends IVisual {
+export interface IAligner<T extends IVisual = IVisual> extends IVisual {
 	mainAxis: Dimensions;
 	minCrossAxis?: number;
 
-	alignerChildren: IVisual[]
+	alignerChildren: T[]
 }
 
 // A collection where all elements are assumed to be in a stack arrangement (either vertically or horizontally)

@@ -1,9 +1,7 @@
-import {SVG} from "@svgdotjs/svg.js";
-import logger, {Operations} from "./log";
-import Point, {ID, IPoint} from "./point";
-import {posPrecision} from "./util";
-import {Rect} from "@svgdotjs/svg.js";
+import { Rect, SVG } from "@svgdotjs/svg.js";
 import { IGridChildConfig } from "./grid";
+import Point, { ID, IPoint } from "./point";
+import { posPrecision } from "./util";
 
 export interface Bounds {
 	top: number;
@@ -131,10 +129,13 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		y?: number,
 		width?: number,
 		height?: number,
+		placementMode?: PlacementConfiguration,
 		ref: string = "spacial",
 		id: ID | undefined = undefined
 	) {
 		super(x, y, ref, id);
+
+		this.placementMode = placementMode ?? {type: "free", sizeMode: "fit"}
 
 		this.contentWidth = width ?? 0;
 		this.contentHeight = height ?? 0;
@@ -369,11 +370,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			// Alternative was doing the check inside the setter which still works but requires a function call
 			if (anchorBindCoord !== currentTargetPointPosition) {
 				// Use the correct setter on the target with this value
-				logger.operation(
-					Operations.BIND,
-					`(${this.ref})[${anchorBindCoord}, ${binding.bindingRule.anchorSiteName}] ${dimension}> (${targetElement.ref})[${currentTargetPointPosition}, ${binding.bindingRule.targetSiteName}]`,
-					this
-				);
 
 				setter(dimension, anchorBindCoord!); // SETTER MAY NEED INTERNAL BINDING FLAG?
 			}

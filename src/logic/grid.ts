@@ -1,6 +1,4 @@
-import Collection from "./collection";
-import Spacial, { Dimensions, IMountConfig, SiteNames, Size } from "./spacial";
-import { FillObject, RecursivePartial } from "./util";
+import Spacial, { Dimensions, SiteNames, Size } from "./spacial";
 import { IDraw, IVisual, Visual } from "./visual";
 
 
@@ -8,6 +6,7 @@ export interface IGrid extends IVisual {
 	gridChildren: IVisual[]
 }
 
+type GridEntry = Visual | undefined
 
 export interface IGridChildConfig {
 	coords: {row: number, col: number}
@@ -43,6 +42,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			...super.state
 		};
 	}
+	 
 	
 	get noRows(): number {
 		return this.gridMatrix.length;
@@ -73,12 +73,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	//
 	
 	public gridSizes: {column: Rect[], row: Rect[]} = {column: [], row: []};
-	cells: Spacial[][];
+	cells: Spacial[][] = [];
 
-	constructor(params: RecursivePartial<IGrid>,
-				templateName: string = Collection.defaults["default"].ref) {
-		var fullParams: IGrid = FillObject<IGrid>(params, Grid.defaults[templateName]);
-		super(fullParams);
+	constructor(params: IGrid) {
+		super(params);
 
 	}
 
@@ -95,17 +93,17 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		// Compute the size of the grid by finding the maximum width and height
 		// element in each column and row, and then summing them up.
 
-		var columns: T[][] = this.getColumns();
-		var rows: T[][] = this.gridMatrix;
+		var columns: GridEntry[][] = this.getColumns();
+		var rows: GridEntry[][] = this.gridMatrix;
 
 		// Let's compute the width and height of each column
 		var columnRects: Rect[] = Array<Rect>(columns.length).fill({width: 0, height: 0, x: 0, y: 0})
 		columns.forEach((col, i) => {
-			var maxWidth = Math.max(...col.map((child) => child.width))
+			var maxWidth = Math.max(...col.map((child) => child !== undefined ? child.width : 0))
 
 			columnRects[i].width = maxWidth;
 
-			var colHeight = col.reduce((h, c) => h + c.height, 0);
+			var colHeight = col.reduce((h, c) => h + (c !== undefined ? c.height : 0), 0);
 			columnRects[i].height = colHeight
 		})
 
@@ -113,11 +111,11 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		// Now lets compute the width and height of each row
 		var rowRects: Rect[] = Array<Rect>(rows.length).fill({width: 0, height: 0, x: 0, y: 0})
 		rows.forEach((row, i) => {
-			var maxHeight = Math.max(...row.map((child) => child.height))
+			var maxHeight = Math.max(...row.map((child) => child !== undefined ? child.height : 0))
 
 			rowRects[i].height = maxHeight;
 
-			var rowWidth = row.reduce((w, c) => w + c.width, 0);
+			var rowWidth = row.reduce((w, c) => w + (c !== undefined ? c.width : 0), 0);
 			rowRects[i].width = rowWidth
 		})
 
@@ -211,30 +209,44 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		this.squeezeMatrix();
 	}
 
-	public getColumns(): T[][] {
+	public getColumns(): GridEntry[][] {
 		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
 			return [];
 		}
 
 		const numCols = this.gridMatrix[0].length;
-		const columns: T[][] = [];
+		const columns: GridEntry[][] = [];
 
 		for (let col = 0; col < numCols; col++) {
-			const column: T[] = this.gridMatrix.map(row => row[col]);
+			const column: GridEntry[] = this.gridMatrix.map(row => row[col]);
 			columns.push(column);
 		}
 
 		return columns;
 	}
-	public getColumn(index: number): T[] {
+	public getColumn(index: number): GridEntry[] {
 		return this.gridMatrix.map((row) => row[index]);
 	}
 
-	public getRows(): T[][] {
+	public getRows(): GridEntry[][] {
 		return this.gridMatrix;
 	}
-	public getRow(index: number): T[] {
+	public getRow(index: number): GridEntry[] {
 		return this.gridMatrix[index];
+	}
+
+	public matchRowLengths() {
+		var maxRowLength = Math.max(...this.getRows().map(row => row.length));
+
+		this.getRows().forEach((row) => {
+			var rowLength = row.length;
+			var diff = rowLength - maxRowLength;
+
+			if (diff > 0) {
+				row.push(...(new Array<undefined>(diff).fill(undefined)))
+			}
+			
+		})
 	}
 
 	protected locateChild(child: T): {row: number, col: number} | undefined {
@@ -270,7 +282,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		return coords;
 	}
 
-	protected isEmpty(target: T[]): boolean {
+	protected isEmpty(target: GridEntry[]): boolean {
 		return !target.some((c) => c !== undefined)
 	}
 
@@ -290,21 +302,21 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		}
 	}
 	protected squeezeMatrix() {
-		var trailingRow: T[] = this.getRow(this.noRows-1)
-		var trailingColumn: T[] = this.getColumn(this.noColumns-1)
+		var trailingRow: GridEntry[] = this.getRow(this.noRows-1)
+		var trailingColumn: GridEntry[] = this.getColumn(this.noColumns-1)
 		
 		var trailingRowEmpty: boolean = this.isEmpty(trailingRow);
 		var trailingColumnEmpty: boolean = this.isEmpty(trailingColumn);
 
 		while (trailingRowEmpty === true) {
 			this.removeRow();
-			var trailingRow: T[] = this.getRow(this.noRows-1);
+			var trailingRow: GridEntry[] = this.getRow(this.noRows-1);
 			var trailingRowEmpty: boolean = this.isEmpty(trailingRow);
 		}
 
 		while (trailingColumnEmpty === true) {
 			this.removeColumn();
-			var trailingColumn: T[] = this.getColumn(this.noColumns-1);
+			var trailingColumn: GridEntry[] = this.getColumn(this.noColumns-1);
 			var trailingColumnEmpty: boolean = this.isEmpty(trailingColumn);
 		}
 	}

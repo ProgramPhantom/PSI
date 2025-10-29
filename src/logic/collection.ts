@@ -1,9 +1,8 @@
-import {Element, G, Rect, SVG} from "@svgdotjs/svg.js";
-import logger, {Processes} from "./log";
-import Point, {ID} from "./point";
-import {CreateChild, FillObject, RecursivePartial} from "./util";
-import {IDraw, IVisual, Visual, doesDraw} from "./visual";
+import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
+import { ID } from "./point";
 import Spacial, { Size } from "./spacial";
+import { CreateChild } from "./util";
+import { IDraw, IVisual, Visual, doesDraw } from "./visual";
 
 export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
 	obj: any
@@ -126,6 +125,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		var right = -Infinity;
 
 		this.children.forEach((c) => {
+			c.computeSize();
+
 			top = c.y < top ? c.y : top;
 			var far = c.getFar("y");
 			bottom = far > bottom ? far : bottom;

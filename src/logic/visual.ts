@@ -5,8 +5,6 @@ import { defaultVisual } from "./default/index";
 import LabelGroup from "./hasComponents/labelGroup";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { ID } from "./point";
-import { posPrecision } from "./util";
-import { param } from "ts-interface-checker";
 import { Size } from "./spacial";
 
 export type Offset = [number, number];
@@ -48,15 +46,20 @@ export abstract class Visual extends PaddedBox implements IVisual {
 		return {[this.id]: this};
 	}
 
+	private _dirty: boolean = true;
+	public get dirty(): boolean {
+		return this._dirty;
+	}
+	public set dirty(value: boolean) {
+		this._dirty = value;
+	}
 
 	offset: [number, number];
 	svg?: Element;
 
-	public dirty: boolean = true;
-
 	constructor(params: IVisual) {
 		super(params.padding, params.x, params.y, 
-			params.contentWidth, params.contentHeight, params.ref, params.id);
+			params.contentWidth, params.contentHeight, params.placementMode, params.ref, params.id);
 
 		this.offset = params.offset;
 	}

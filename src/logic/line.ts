@@ -1,9 +1,8 @@
-import {Defs, Element, Marker, Path, SVG} from "@svgdotjs/svg.js";
+import { Defs, Element, Marker, Path, Rect, SVG } from "@svgdotjs/svg.js";
 import defaultLine from "./default/line.json";
-import {UserComponentType} from "./diagramHandler";
-import {FillObject, RecursivePartial} from "./util";
-import LineLike, {ILineLike} from "./lineLike";
-import {Rect} from "@svgdotjs/svg.js";
+import { UserComponentType } from "./diagramHandler";
+import LineLike, { ILineLike } from "./lineLike";
+import { FillObject, RecursivePartial } from "./util";
 
 export type HeadStyle = "default" | "thin" | "none";
 
