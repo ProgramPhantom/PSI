@@ -4,7 +4,7 @@ import RectElementForm from "../features/form/RectForm";
 import defaultBar from "./default/bar.json";
 import { UserComponentType } from "./diagramHandler";
 import { RecursivePartial, createWithTemplate } from "./util";
-import { IDraw, IVisual, Visual } from "./visual";
+import Visual, { IDraw, IVisual } from "./visual";
 
 export interface IRectStyle {
 	fill: string;

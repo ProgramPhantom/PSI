@@ -4,7 +4,7 @@ import {ObjectInspector} from "react-inspector";
 import {myToaster} from "../../app/App";
 import {AllComponentTypes, Result, UserComponentType} from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import {IVisual, Visual} from "../../logic/visual";
+import Visual, {IVisual} from "../../logic/visual";
 import {LabelGroupComboForm, SubmitButtonRef} from "./LabelGroupComboForm";
 
 interface FormHolderProps {

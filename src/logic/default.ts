@@ -13,7 +13,7 @@ import Space from "./space";
 import SVGElement, { ISVGElement } from "./svgElement";
 import { IText } from "./text";
 import { DeepMutable, DeepReadonly, mergeObjectsPreferNonEmpty } from "./util";
-import { Visual } from "./visual";
+import Visual from "./visual";
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
 const ASSET_SVGS: SVGDict = import.meta.glob("../assets/svg/*.svg", {

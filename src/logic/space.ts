@@ -4,7 +4,7 @@ import VisualForm from "../features/form/VisualForm";
 import { defaultSpace } from "./default/index";
 import { UserComponentType } from "./diagramHandler";
 import { FillObject, RecursivePartial } from "./util";
-import { IDraw, IVisual, Visual } from "./visual";
+import Visual, { IDraw, IVisual } from "./visual";
 
 export interface ISpace extends IVisual {}
 
@@ -19,7 +19,7 @@ export default class Space extends Visual implements ISpace, IDraw {
 			padding: this.padding,
 			ref: this.ref,
 			offset: this.offset,
-			mountConfig: this.mountConfig
+			placementMode: {type: "managed"}
 		};
 	}
 	static ElementType: UserComponentType = "space";

@@ -1,12 +1,10 @@
-import Aligner from "../../logic/aligner";
-import Channel from "../../logic/hasComponents/channel";
-import SequenceAligner from "../../logic/hasComponents/sequenceAligner";
 import DiagramHandler from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import Sequence, {OccupancyStatus} from "../../logic/hasComponents/sequence";
-import {Visual} from "../../logic/visual";
-import InsertArea, {AddSpec} from "./InsertArea";
+import Channel from "../../logic/hasComponents/channel";
 import Diagram from "../../logic/hasComponents/diagram";
+import Sequence from "../../logic/hasComponents/sequence";
+import Visual from "../../logic/visual";
+import InsertArea, { AddSpec } from "./InsertArea";
 
 interface Rect {x: number, y: number, width: number, height: number}
 

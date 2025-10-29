@@ -2,7 +2,7 @@ import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import { ID } from "./point";
 import Spacial, { Size } from "./spacial";
 import { CreateChild } from "./util";
-import { IDraw, IVisual, Visual, doesDraw } from "./visual";
+import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 
 export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
 	obj: any

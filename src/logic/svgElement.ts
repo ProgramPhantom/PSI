@@ -6,7 +6,7 @@ import { svgPulses } from "./default/svgPulse";
 import { UserComponentType } from "./diagramHandler";
 import ENGINE from "./engine";
 import { cascadeID, createWithTemplate, RecursivePartial } from "./util";
-import { IDraw, IVisual, Visual } from "./visual";
+import Visual, { IDraw, IVisual } from "./visual";
 
 interface ISVGStyle {}
 

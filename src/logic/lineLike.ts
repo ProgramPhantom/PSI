@@ -2,7 +2,7 @@ import { Element } from "@svgdotjs/svg.js";
 import defaultLineLike from "./default/lineLike.json";
 import { Dimensions } from "./spacial";
 import { FillObject, posPrecision, RecursivePartial } from "./util";
-import { IVisual, Visual } from "./visual";
+import Visual, { IVisual } from "./visual";
 
 type Orientation = "horizontal" | "vertical" | "angled";
 type Direction = "along" | "cross";
@@ -53,8 +53,6 @@ export default abstract class LineLike extends Visual {
 		this.adjustment = fullParams.adjustment;
 		this.orientation = fullParams.orientation;
 
-		this.sizeMode.x = "inherited";
-		this.sizeMode.y = "inherited";
 	}
 
 	resolveDimensions(): void {

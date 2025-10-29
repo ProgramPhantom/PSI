@@ -13,7 +13,7 @@ import RectElement, { IRectElement } from "./rectElement";
 import { IMountConfig, PlacementConfiguration } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import { RecursivePartial } from "./util";
-import { IDraw, IVisual, Visual } from "./visual";
+import Visual, { IDraw, IVisual } from "./visual";
 
 
 

@@ -1,5 +1,5 @@
-import Spacial, { Dimensions, SiteNames, Size } from "./spacial";
-import { IDraw, IVisual, Visual } from "./visual";
+import Spacial, { Dimensions, SiteNames, Size } from "./spacial"
+import Visual, { IDraw, IVisual } from "./visual";
 
 
 export interface IGrid extends IVisual {

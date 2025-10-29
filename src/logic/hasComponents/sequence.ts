@@ -5,7 +5,7 @@ import Grid, { IGrid, IGridChildConfig } from "../grid";
 import { ID } from "../point";
 import Spacial, { IMountConfig, Size } from "../spacial";
 import { FillObject, RecursivePartial } from "../util";
-import { Visual } from "../visual";
+import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
 
 

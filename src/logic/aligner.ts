@@ -1,7 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
 import { ID } from "./point";
 import { Dimensions, Size } from "./spacial";
-import { IVisual, Visual } from "./visual";
+import Visual, { IVisual } from "./visual";
 
 export interface IAligner<T extends IVisual = IVisual> extends IVisual {
 	mainAxis: Dimensions;

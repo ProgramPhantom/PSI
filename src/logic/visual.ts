@@ -24,7 +24,7 @@ export function doesDraw(object: any): object is IDraw {
 	return "draw" in object;
 }
 
-export abstract class Visual extends PaddedBox implements IVisual {
+export default abstract class Visual extends PaddedBox implements IVisual {
 	static namedElements: {[name: string]: IVisual} = {
 		default: <any>defaultVisual,
 		"form-default": <any>defaultVisual

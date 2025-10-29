@@ -7,7 +7,7 @@ import { ID } from "../point";
 import RectElement, { IRectElement, IRectStyle } from "../rectElement";
 import Text, { IText } from "../text";
 import { RecursivePartial, UpdateObj } from "../util";
-import { IVisual, Visual } from "../visual";
+import Visual, { IVisual  } from "../visual";
 
 
 export interface IChannel extends IGrid {
