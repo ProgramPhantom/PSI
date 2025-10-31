@@ -1,12 +1,14 @@
-import { Element, G, SVG } from "@svgdotjs/svg.js";
-import { FormBundle } from "../features/form/LabelGroupComboForm";
-import SVGElementForm from "../features/form/SVGElementForm";
-import SchemeManager from "./default";
-import { svgPulses } from "./default/svgPulse";
-import { UserComponentType } from "./diagramHandler";
-import ENGINE from "./engine";
-import { cascadeID, createWithTemplate, RecursivePartial } from "./util";
+import { Element, G, SVG, Svg } from "@svgdotjs/svg.js";
+import { UserComponentType } from "./point";
+import { cascadeID } from "./util2";
 import Visual, { IDraw, IVisual } from "./visual";
+
+
+const MISSING_ASSET: Record<string, string> = import.meta.glob("../assets/app/MissingAsset2.svg", {
+	query: "?raw",
+	eager: true
+});
+const MISSING_ASSET_SVG_DATA: string = MISSING_ASSET["../assets/app/MissingAsset2.svg"];
 
 interface ISVGStyle {}
 
@@ -16,30 +18,6 @@ export interface ISVGElement extends IVisual {
 }
 
 export default class SVGElement extends Visual implements ISVGElement, IDraw {
-	static override namedElements: {[key: string]: ISVGElement} = {
-		...(<any>svgPulses),
-		default: svgPulses[180],
-		"form-defaults": {
-			mountConfig: {
-				orientation: "top",
-				alignment: "centre",
-				noSections: 1,
-				channelID: null,
-				sequenceID: null,
-				index: null,
-				mountOn: false
-			},
-
-			padding: [0, 0, 0, 0],
-			offset: [0, 0],
-			svgDataRef: "180",
-			contentWidth: 50,
-			contentHeight: 50,
-
-			ref: "180",
-			style: {}
-		}
-	};
 	get state(): ISVGElement {
 		return {
 			svgDataRef: this.svgDataRef,
@@ -48,48 +26,24 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		};
 	}
 	static ElementType: UserComponentType = "svg";
-	static formData: FormBundle = {
-		form: SVGElementForm,
-		defaults: SVGElement.namedElements["form-defaults"],
-		allowLabels: true
-	};
+
 
 	elementGroup: G = new G();
 	style: ISVGStyle;
 	svgDataRef: string;
 	
 
-	constructor(params: ISVGElement);
-	constructor(params: RecursivePartial<ISVGElement>, templateName: string);
-	constructor(params: RecursivePartial<ISVGElement> | ISVGElement, templateName?: string) {
-		const fullParams = createWithTemplate<ISVGElement>(SVGElement.namedElements)(
-			params,
-			templateName
-		);
-		super(fullParams);
+	constructor(params: ISVGElement) {
+		super(params);
 
-		this.style = fullParams.style;
-		this.svgDataRef = fullParams.svgDataRef;
+		this.style = params.style;
+		this.svgDataRef = params.svgDataRef;
 
-		if (this.svgDataRef === "tick") {
-			console.log();
-		}
-		var svgString: string | undefined = ENGINE.schemeManager.svgStrings[this.svgDataRef];
-		if (svgString === undefined) {
-			console.warn(
-				`Cannot find svg with ref ${this.svgDataRef} so defaulting to missing asset`
-			);
-			svgString = SchemeManager.MissingSVGAssetStr;
-		}
-		try {
-			var rawSVG: Element = SVG(svgString);
-		} catch {
-			console.warn(
-				`Cannot parse svg with ref ${this.svgDataRef} so defaulting to missing asset`
-			);
-			var rawSVG: Element = SVG(SchemeManager.MissingSVGAssetStr, true);
-		}
 
+
+	}
+
+	public setSvgData(rawSVG: Svg) {
 		// Wrap svg contents inside a group for translation.
 		var innerSVG = rawSVG.children();
 		innerSVG.forEach((c) => {
@@ -100,6 +54,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 			.height(this.contentHeight ?? 0)
 			.width(this.contentWidth ?? 0);
 		this.svg.add(this.elementGroup);
+
 
 		// Synchronise Id
 		this.id = this.svg.id();
@@ -124,6 +79,11 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 	}
 
 	draw(surface: Element) {
+		if (this.svg === undefined) {
+			this.svg = SVG(MISSING_ASSET_SVG_DATA);
+		}
+
+
 		if (this.dirty) {
 			// Clear old svg
 			if (this.svg) {

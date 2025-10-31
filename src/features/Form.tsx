@@ -1,8 +1,10 @@
-import {Card} from "@blueprintjs/core";
+import { Card } from "@blueprintjs/core";
 import React from "react";
-import {AllComponentTypes} from "../logic/diagramHandler";
-import {Visual} from "../logic/visual";
-import {FormDiagramInterface} from "./form/FormDiagramInterface";
+import { AllComponentTypes } from "../logic/point";
+import Visual from "../logic/visual";
+import { FormDiagramInterface } from "./form/FormDiagramInterface";
+
+console.log("Load module form")
 
 interface IFormProps {
 	target?: Visual;
@@ -32,7 +34,7 @@ const Form: React.FC<IFormProps> = (props) => {
 				/>
 			</Card>
 		</>
-	); // Use key in Dynamic form so it forces a remount, triggering the inital values in the form // ?
+	); // Use key in Dynamic form so it forces a remount, triggering the initial values in the form // ?
 };
 
 export default Form;

@@ -1,12 +1,8 @@
-import {Element} from "@svgdotjs/svg.js";
+import { Element, Rect, Svg, SVG } from "@svgdotjs/svg.js";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
-import {Rect} from "@svgdotjs/svg.js";
-import {Svg} from "@svgdotjs/svg.js";
-import {SVG} from "@svgdotjs/svg.js";
-import {Visual} from "../../logic/visual";
-import {ID} from "../../logic/point";
-import {AllComponentTypes} from "../../logic/diagramHandler";
-import {useEffect, useRef, useSyncExternalStore} from "react";
+import { AllComponentTypes, ID } from "../../logic/point";
+import Visual from "../../logic/visual";
 
 interface IHitboxLayerProps {
 	focusLevel: number;
@@ -76,11 +72,11 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		if (thisElement !== undefined) {
 			var thisLayer: Rect = thisElement.getHitbox().attr({zIndex: depth});
 
-			if (thisElement.ownershipType === "component") {
-				componentRectArray.push(thisLayer);
-			} else if (thisElement.ownershipType === "free") {
-				freeRectArray.push(thisLayer);
-			}
+			// if (thisElement.ownershipType === "component") {
+			// 	componentRectArray.push(thisLayer);
+			// } else if (thisElement.ownershipType === "free") {
+			// 	freeRectArray.push(thisLayer);
+			// }
 
 			if (
 				(root.type !== "svg" || depth === BASE_LAYER)

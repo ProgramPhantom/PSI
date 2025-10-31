@@ -1,18 +1,13 @@
-import Spacial, { Dimensions, SiteNames, Size } from "./spacial"
+import Spacial, { IGridChildConfig, Size } from "./spacial";
 import Visual, { IDraw, IVisual } from "./visual";
 
+console.log(`[ModuleLoad] Grid`);
 
 export interface IGrid extends IVisual {
 	gridChildren: IVisual[]
 }
 
 type GridEntry = Visual | undefined
-
-export interface IGridChildConfig {
-	coords: {row: number, col: number}
-	alignment: Record<Dimensions, SiteNames>
-	size: {noRows: number, noCols: number}
-}
 
 
 interface Rect {
@@ -23,26 +18,12 @@ interface Rect {
 }
 
 export default class Grid<T extends Visual = Visual> extends Visual implements IDraw {
-	static defaults: {[name: string]: IGrid} = {
-		default: {
-			contentWidth: 0,
-			contentHeight: 0,
-			x: undefined,
-			y: undefined,
-			offset: [0, 0],
-			padding: [0, 0, 0, 0],
-			placementMode: {type: "free", sizeMode: "fit"},
-			gridChildren: [],
-			ref: "default-collection",
-		}
-	};
 	get state(): IGrid {
 		return {
 			gridChildren: this.gridChildren,
 			...super.state
 		};
 	}
-	 
 	
 	get noRows(): number {
 		return this.gridMatrix.length;
@@ -72,12 +53,13 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	public gridMatrix: (T | undefined)[][] = [];
 	//
 	
-	public gridSizes: {column: Rect[], row: Rect[]} = {column: [], row: []};
-	cells: Spacial[][] = [];
+	public gridSizes: {columns: Spacial[], rows: Spacial[]}= {columns: [], rows: []};
+	cells: Spacial[][];
 
 	constructor(params: IGrid) {
 		super(params);
 
+		this.cells = [];
 	}
 
 
@@ -97,7 +79,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		var rows: GridEntry[][] = this.gridMatrix;
 
 		// Let's compute the width and height of each column
-		var columnRects: Rect[] = Array<Rect>(columns.length).fill({width: 0, height: 0, x: 0, y: 0})
+		var columnRects: Spacial[] = Array<Spacial>(columns.length).fill(new Spacial())
 		columns.forEach((col, i) => {
 			var maxWidth = Math.max(...col.map((child) => child !== undefined ? child.width : 0))
 
@@ -109,7 +91,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 
 		// Now lets compute the width and height of each row
-		var rowRects: Rect[] = Array<Rect>(rows.length).fill({width: 0, height: 0, x: 0, y: 0})
+		var rowRects: Spacial[] = Array<Spacial>(rows.length).fill(new Spacial())
 		rows.forEach((row, i) => {
 			var maxHeight = Math.max(...row.map((child) => child !== undefined ? child.height : 0))
 
@@ -119,11 +101,11 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			rowRects[i].width = rowWidth
 		})
 
-		this.gridSizes.column = columnRects;
-		this.gridSizes.row = rowRects;
+		this.gridSizes.columns = columnRects;
+		this.gridSizes.rows = rowRects;
 
-		var totalWidth = this.gridSizes.column.reduce((w, r) => w + r.width, 0);
-		var totalHeight = this.gridSizes.row.reduce((h, r) => h + r.height, 0);
+		var totalWidth = this.gridSizes.columns.reduce((w, r) => w + r.width, 0);
+		var totalHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
 		
 		// Set via content...
 		this.contentWidth = totalWidth;
@@ -383,10 +365,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 		for (var row=0; row<this.noRows; row++) {
 			xCount = 0;
-			var rowHeight: number = this.gridSizes.row[row].height;
+			var rowHeight: number = this.gridSizes.rows[row].height;
 
 			for (var col=0; col<this.noColumns; col++) {
-				var colWidth: number = this.gridSizes.column[col].width;
+				var colWidth: number = this.gridSizes.columns[col].width;
 
 				this.cells[row][col] = new Spacial(this.contentX + xCount,this.contentY + yCount, colWidth, rowHeight)
 

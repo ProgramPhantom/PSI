@@ -1,9 +1,26 @@
-import { AllComponentTypes } from "./diagramHandler";
-import { Dimensions, IBinding } from "./spacial";
-import { posPrecision } from "./util";
-
 export type OwnershipType = "component" | "free";
 export type ID = string;
+
+console.log("Load module point")
+
+// All component types
+export type AllComponentTypes = UserComponentType | AbstractComponentTypes;
+
+// The types of component
+export type UserComponentType =
+	| DrawComponent
+	| "label-group"
+	| "label"
+	| "text"
+	| "line"
+	| "channel"
+	| "sequence-aligner"
+	| "sequence"
+	| "diagram";
+export type DrawComponent = "svg" | "rect" | "space";
+
+// Abstract component types (have no visual content)
+export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract" | "visual" | "grid";
 
 interface Shift {
 	dx?: number;
@@ -64,11 +81,6 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 
 	ref: string;
 
-
-	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
-	bindingsToThis: IBinding[] = [];
-
-
 	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined) {
 		this.x = x ?? 0;
 		this.y = y ?? 0;
@@ -89,10 +101,10 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		return this._y;
 	}
 	public set x(val: number) {
-		this._x =  posPrecision(val);
+		this._x =  val;
 	}
 	public set y(val: number) {
-		this._y = posPrecision(val);
+		this._y = val;
 	}
 
 	move({dx, dy}: Shift) {
@@ -102,13 +114,5 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	place({x, y}: {x?: number; y?: number}) {
 		x !== undefined ? (this.x = x) : {};
 		y !== undefined ? (this.y = y) : {};
-	}
-
-	getPositionByDimension(dim: Dimensions): number | undefined {
-		if (dim === "x") {
-			return this._x;
-		} else {
-			return this._y;
-		}
 	}
 }

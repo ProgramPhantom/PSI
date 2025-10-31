@@ -1,12 +1,12 @@
-import {G, Mask, Rect, Svg} from "@svgdotjs/svg.js";
-import LabelForm from "../../features/form/LabelForm";
-import {FormBundle} from "../../features/form/LabelGroupComboForm";
-import Line, {ILine} from "../line";
-import Collection, {ICollection, IHaveComponents} from "../collection";
-import {UserComponentType} from "../diagramHandler";
-import Spacial, {Dimensions} from "../spacial";
-import Text, {IText, Position} from "../text";
-import {MarkAsComponent} from "../util";
+import { G, Mask, Rect, Svg } from "@svgdotjs/svg.js";
+import Collection, { ICollection, IHaveComponents } from "../collection";
+import Line, { ILine } from "../line";
+import { UserComponentType } from "../point";
+import Spacial, { Dimensions } from "../spacial";
+import Text, { IText, Position } from "../text";
+
+console.log("Load module label")
+
 
 interface ILabelComponents extends Record<string, Spacial | Spacial[]> {
 	text?: Text;
@@ -28,38 +28,6 @@ export interface ILabel extends ICollection {
 }
 
 export default class Label extends Collection implements ILabel, IHaveComponents<ILabelComponents> {
-	static namedElements: {[name: string]: ILabel} = {
-		default: {
-			contentWidth: 20,
-			contentHeight: 20,
-			offset: [0, 0],
-			padding: [2, 0, 2, 0],
-			children: [],
-
-			text: Text.defaults["default"],
-			line: Line.defaults["default"],
-			ref: "default-label",
-			labelConfig: {
-				labelPosition: "top",
-				textPosition: "top"
-			}
-		},
-		"form-defaults": {
-			contentWidth: 20,
-			contentHeight: 20,
-			offset: [0, 0],
-			padding: [2, 0, 2, 0],
-			children: [],
-
-			text: Text.defaults["default"],
-			line: Line.defaults["default"],
-			ref: "default-label",
-			labelConfig: {
-				labelPosition: "top",
-				textPosition: "top"
-			}
-		}
-	};
 	get state(): ILabel {
 		return {
 			text: this.components.text?.state,
@@ -68,36 +36,28 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 			...super.state
 		};
 	}
-	static formData: FormBundle<ILabel> = {
-		form: LabelForm,
-		defaults: Label.namedElements["form-defaults"],
-		allowLabels: false
-	};
 	static ElementType: UserComponentType = "label";
 
 	components: ILabelComponents;
 
 	labelConfig: ILabelConfig;
 
-	constructor(params: ILabel, templateName = "default") {
-		// When arrow is undefined, this was filling it with the default arrow. Maybe null is preferable?
-		// var fullParams: ILabel = FillObject(params, Label.defaults[templateName])
-		var fullParams: ILabel = params;
-		super(fullParams, templateName);
-		this.labelConfig = fullParams.labelConfig;
+	constructor(params: ILabel) {
+		super(params);
+		this.labelConfig = params.labelConfig;
 
-		if (fullParams.text !== undefined) {
+		if (params.text !== undefined) {
 			// Create text
-			var text: Text = new Text(fullParams.text, undefined);
+			var text: Text = new Text(params.text);
 
 			this.bind(text, "x", "centre", "centre");
 			this.bind(text, "y", "centre", "centre");
 			this.add(text);
 		}
 
-		if (fullParams.line !== undefined) {
+		if (params.line !== undefined) {
 			// Create line
-			var line: Line = new Line(fullParams.line);
+			var line: Line = new Line(params.line);
 
 			var orientationSelect: Dimensions;
 			switch (this.labelConfig.labelPosition) {
@@ -124,7 +84,6 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 			line: line,
 			text: text
 		};
-		MarkAsComponent(this.components);
 		this.arrangeContent(orientationSelect);
 	}
 

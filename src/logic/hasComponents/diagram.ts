@@ -1,14 +1,11 @@
 import Collection, { ICollection } from "../collection";
-import blankDiagram from "../default/blankDiagram.json";
-import { UserComponentType } from "../diagramHandler";
-import { ID } from "../point";
-import { FillObject, RecursivePartial } from "../util";
-import { IVisual, Visual } from "../visual";
+import { ID, UserComponentType } from "../point";
+import Visual from "../visual";
 import Channel from "./channel";
 import Sequence from "./sequence";
-
 import SequenceAligner, { ISequenceAligner } from "./sequenceAligner";
 
+console.log("Load module App")
 
 export interface IDiagram extends ICollection {
 	sequenceAligner: ISequenceAligner
@@ -17,7 +14,6 @@ export interface IDiagram extends ICollection {
 
 export default class Diagram extends Collection<Visual> implements IDiagram {
 	static ElementType: UserComponentType = "diagram";
-
 	get state(): IDiagram {
 		return {
 			sequenceAligner: this.sequenceAligner.state,

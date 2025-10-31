@@ -1,5 +1,5 @@
-import {Icon} from "@blueprintjs/core";
-import Spacial, {Dimensions} from "../../logic/spacial";
+import { Icon } from "@blueprintjs/core";
+import Spacial, { Dimensions } from "../../logic/spacial";
 import SVGElement from "../../logic/svgElement";
 
 interface IBindings {

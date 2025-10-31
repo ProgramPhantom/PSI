@@ -1,9 +1,10 @@
 
 import Aligner, { IAligner } from "../aligner";
-import { UserComponentType } from "../diagramHandler";
-import { Visual } from "../visual";
+import { UserComponentType } from "../point";
+import Visual from "../visual";
 import Sequence, { ISequence } from "./sequence";
 
+console.log("Load module sequence aligner")
 
 export interface ISequenceAligner extends IAligner<ISequence> {
 	sequences: ISequence[]

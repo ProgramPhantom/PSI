@@ -1,7 +1,4 @@
-import {Colors} from "@blueprintjs/core";
-import ENGINE from "../../logic/engine";
-import Spacial, {Dimensions, IBindingPayload, SiteNames} from "../../logic/spacial";
-import {PointBind} from "./LineTool";
+import Spacial, { IBindingPayload, SiteNames } from "../../logic/spacial";
 
 interface IBindings {
 	element: Spacial;

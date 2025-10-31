@@ -1,11 +1,10 @@
 import { Element } from "@svgdotjs/svg.js";
-import { FormBundle } from "../features/form/LabelGroupComboForm";
-import VisualForm from "../features/form/VisualForm";
-import { defaultVisual } from "./default/index";
-import LabelGroup from "./hasComponents/labelGroup";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
-import { ID } from "./point";
+import { ID, UserComponentType } from "./point";
 import { Size } from "./spacial";
+
+
+console.log("Load module visual")
 
 export type Offset = [number, number];
 
@@ -25,17 +24,7 @@ export function doesDraw(object: any): object is IDraw {
 }
 
 export default abstract class Visual extends PaddedBox implements IVisual {
-	static namedElements: {[name: string]: IVisual} = {
-		default: <any>defaultVisual,
-		"form-default": <any>defaultVisual
-	};
-	static get formData(): FormBundle {
-		return {
-			form: VisualForm,
-			defaults: Visual.namedElements["form-default"],
-			allowLabels: false
-		};
-	}
+	static ElementType: UserComponentType = "rect";
 	get state(): IVisual {
 		return {
 			offset: this.offset,
@@ -99,9 +88,5 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	}
 	get drawY(): number {
 		return this.contentY + this.offset[1];
-	}
-
-	static isLabelGroup(val: Visual): val is LabelGroup {
-		return (val as LabelGroup).components?.labels !== undefined;
 	}
 }

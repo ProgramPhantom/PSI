@@ -1,9 +1,9 @@
-import {ControlGroup, FormGroup, HTMLSelect, NumericInput, Section} from "@blueprintjs/core";
-import {Controller, useFormContext} from "react-hook-form";
-import {ILine} from "../../logic/line";
-import {getByPath} from "../../logic/util";
-import {FormRequirements} from "./FormDiagramInterface";
+import { ControlGroup, FormGroup, HTMLSelect, NumericInput, Section } from "@blueprintjs/core";
+import { Controller, useFormContext } from "react-hook-form";
+import { ILine } from "../../logic/line";
+import { getByPath } from "../../logic/util2";
 import VisualForm from "./VisualForm";
+import { FormRequirements } from "./FormBase";
 
 interface IArrowFormProps extends FormRequirements {}
 

@@ -8,8 +8,8 @@ import {
 	Slider
 } from "@blueprintjs/core";
 import React from "react";
-import {Controller, useFormContext} from "react-hook-form";
-import {IChannel} from "../../logic/hasComponents/channel";
+import { Controller, useFormContext } from "react-hook-form";
+import { IChannel } from "../../logic/hasComponents/channel";
 
 interface ChanelFormProps {
 	onSubmit: (data: IChannel) => void;

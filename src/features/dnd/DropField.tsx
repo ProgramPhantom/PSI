@@ -32,7 +32,7 @@ class DiagramDropInterpreter {
 		// Iterate sequences
 		Object.entries(diagram.sequenceDict).forEach(([seqID, sequence]) => {
 			var channels = sequence.channels;
-			var columns: Rect[] = sequence.gridSizes.column;
+			var columns: Rect[] = sequence.gridSizes.columns;
 			var noColumns = columns.length;
 			var noChannels = channels.length;
 
@@ -80,7 +80,7 @@ class DiagramDropInterpreter {
 								y: channel.y,
 								width: this.slitherWidth,
 								height:
-									channel.gridSizes.row[0].height
+									channel.gridSizes.rows[0].height
 									+ channel.padding[0]
 							},
 							index: columnIndex,
@@ -95,10 +95,10 @@ class DiagramDropInterpreter {
 						newSlither = {
 							area: {
 								x: column.x - this.slitherWidth / 2,
-								y: channel.gridSizes.row[2].y,
+								y: channel.gridSizes.rows[2].y,
 								width: this.slitherWidth,
 								height:
-									channel.gridSizes.row[2].height
+									channel.gridSizes.rows[2].height
 									+ channel.padding[2]
 							},
 							index: columnIndex,
@@ -113,8 +113,8 @@ class DiagramDropInterpreter {
 					if (!occupied) {
 						// Top block
 						var columnWidth = column.width;
-						var upperAlignerHeight = channel.gridSizes.row[0].height;
-						var lowerAlignerHeight = channel.gridSizes.row[2].height;
+						var upperAlignerHeight = channel.gridSizes.rows[0].height;
+						var lowerAlignerHeight = channel.gridSizes.rows[2].height;
 						let newBlock: AddSpec = {
 							area: {
 								x: column.x + this.slitherWidth / 2,
@@ -134,7 +134,7 @@ class DiagramDropInterpreter {
 						newBlock = {
 							area: {
 								x: column.x + this.slitherWidth / 2,
-								y: channel.gridSizes.row[2].y,
+								y: channel.gridSizes.rows[2].y,
 								width: columnWidth - this.slitherWidth,
 								height: lowerAlignerHeight
 							},
@@ -158,8 +158,8 @@ class DiagramDropInterpreter {
 			Object.entries(sequence.channelsDict).forEach(([name, channel]) => {
 				// insert end slithers
 							
-				var upperAlignerHeight = channel.gridSizes.row[0].height;
-				var lowerAlignerHeight = channel.gridSizes.row[2].height;
+				var upperAlignerHeight = channel.gridSizes.rows[0].height;
+				var lowerAlignerHeight = channel.gridSizes.rows[2].height;
 
 				// Top slither
 				newSlither = {
@@ -181,7 +181,7 @@ class DiagramDropInterpreter {
 				newSlither = {
 					area: {
 						x: column.x + column.width - this.slitherWidth / 2,
-						y: channel.gridSizes.row[2].y,
+						y: channel.gridSizes.rows[2].y,
 						width: this.slitherWidth,
 						height: lowerAlignerHeight + channel.padding[2]
 					},

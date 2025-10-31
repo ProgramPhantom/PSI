@@ -1,15 +1,15 @@
-import {Button, Colors, Icon} from "@blueprintjs/core";
+import { Button, Colors, Icon } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
-import React, {CSSProperties, memo, useEffect, useRef} from "react";
-import {useDrag} from "react-dnd";
-import {getEmptyImage} from "react-dnd-html5-backend";
-import {HandleStyles} from "react-rnd";
+import React, { CSSProperties, memo, useEffect, useRef } from "react";
+import { useDrag } from "react-dnd";
+import { getEmptyImage } from "react-dnd-html5-backend";
+import { HandleStyles } from "react-rnd";
 import ENGINE from "../../logic/engine";
-import {IMountConfig} from "../../logic/mountable";
-import {Visual} from "../../logic/visual";
-import {IDrop, isCanvasDrop} from "./CanvasDropContainer";
-import {IMountAreaResult, isMountDrop} from "./InsertArea";
-import {ElementTypes} from "./TemplateDraggableElement";
+import Visual from "../../logic/visual";
+import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
+import { IMountAreaResult, isMountDrop } from "./InsertArea";
+import { ElementTypes } from "./TemplateDraggableElement";
+import { IMountConfig } from "../../logic/spacial";
 
 const style: CSSProperties = {
 	border: "1px dashed gray",
@@ -80,20 +80,21 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						var targetSequence = ENGINE.handler.diagram.sequenceDict[result.sequenceID];
 
 						var positionalElement;
-						if (item.element.hasMountConfig) {
+						if (item.element.placementMode.type === "pulse") {
 							var newMountConfig: IMountConfig = {
-								...item.element.mountConfig!,
+								...item.element.placementMode.config!,
 								orientation: result.orientation,
 								channelID: result.channelID,
 								sequenceID: result.sequenceID,
 								index: result.index
 							};
 
-							if (result.insert) {
-								ENGINE.handler.shiftMountedVisual(item.element, newMountConfig);
-							} else {
-								ENGINE.handler.moveMountedVisual(item.element, newMountConfig);
-							}
+							throw new Error("not implemented")
+							// if (result.insert) {
+							// 	ENGINE.handler.shiftMountedVisual(item.element, newMountConfig);
+							// } else {
+							// 	ENGINE.handler.moveMountedVisual(item.element, newMountConfig);
+							// }
 						} else {
 							throw Error("Not yet implemented"); // Converting an unmounted object into a mounted one.
 						}

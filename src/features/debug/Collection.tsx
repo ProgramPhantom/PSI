@@ -1,7 +1,7 @@
-import {CSSProperties} from "react";
+import { CSSProperties } from "react";
 import Collection from "../../logic/collection";
 import BindingsDebug from "./Bindings";
-import {IPaddedBoxDebug} from "./PaddedBox";
+import { IPaddedBoxDebug } from "./PaddedBox";
 
 interface ICollectionDebug extends IPaddedBoxDebug {
 	element: Collection;

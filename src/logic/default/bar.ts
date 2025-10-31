@@ -1,9 +1,12 @@
-{
+import { IRectElement } from "../rectElement";
+
+export const DEFAULT_BAR: IRectElement = {
 	"ref": "bar",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
+	"placementMode": {"type": "managed"},
 
 	"style": {
 		"fill": "#000000",

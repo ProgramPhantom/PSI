@@ -1,18 +1,20 @@
-import {Button} from "@blueprintjs/core";
+import { Button } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
-import React, {CSSProperties, useEffect, useState} from "react";
-import {useDrag} from "react-dnd";
-import {getEmptyImage} from "react-dnd-html5-backend";
+import React, { CSSProperties, useEffect, useState } from "react";
+import { useDrag } from "react-dnd";
+import { getEmptyImage } from "react-dnd-html5-backend";
 import SchemeManager from "../../logic/default";
-import {AllComponentTypes, Result, UserComponentType} from "../../logic/diagramHandler";
+import { Result } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import {ILabelGroup} from "../../logic/hasComponents/labelGroup";
-import {IRectElement} from "../../logic/rectElement";
-import {ISVGElement} from "../../logic/svgElement";
-import {IVisual, Visual} from "../../logic/visual";
-import {IDrop, isCanvasDrop} from "./CanvasDropContainer";
-import {isMountDrop} from "./InsertArea";
-import {myToaster} from "../../app/App";
+import { ILabelGroup } from "../../logic/hasComponents/labelGroup";
+import { AllComponentTypes, UserComponentType } from "../../logic/point";
+import { IRectElement } from "../../logic/rectElement";
+import { ISVGElement } from "../../logic/svgElement";
+import Visual, { IVisual } from "../../logic/visual";
+import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
+import { isMountDrop } from "./InsertArea";
+import { IMountConfig } from "../../logic/spacial";
+import { appToaster } from "../../app/Toaster";
 
 const style: CSSProperties = {
 	border: "1px solid #d3d8de",
@@ -70,10 +72,13 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				// ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
 				var elementType = (props.element.constructor as typeof Visual).ElementType;
 				var singletonState: IVisual = props.element.state;
-				singletonState.mountConfig = {
-					...singletonState.mountConfig,
-					...dropResult
-				};
+				singletonState.placementMode = {
+					type: "pulse",
+					config: {
+						...(singletonState.placementMode.type === "pulse" ? singletonState.placementMode.config : {}),
+						...dropResult 
+					} as IMountConfig  // TODO: investigate
+				}; 
 
 				var result: Result<Visual> = ENGINE.handler.createVisual(
 					singletonState,
@@ -81,7 +86,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				);
 
 				if (result.ok === false) {
-					myToaster.show({
+					appToaster.show({
 						message: `Cannot mount pulse ${singletonState.ref}`,
 						intent: "danger"
 					});

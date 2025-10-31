@@ -1,13 +1,11 @@
 import { Element } from "@svgdotjs/svg.js";
-import * as t from "ts-interface-checker";
-import { CheckerTypeIndex } from "../typeCheckers";
-import { AllComponentTypes, UserComponentType } from "./diagramHandler";
 import Line, { ILine } from "./line";
-import { ID } from "./point";
+import { AllComponentTypes, ID, UserComponentType } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
-import Spacial from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IVisual } from "./visual";
+
+console.log("Load module util")
 
 function isEmpty(obj: any) {
 	for (var prop in obj) {
@@ -92,26 +90,21 @@ export function createWithTemplate<T>(templateSource: {[key: string]: T}) {
 	};
 }
 
-export function getByPath(obj: any, path: string | undefined) {
-	if (path === undefined) {
-		return obj;
-	}
-	return path.split(".").reduce((acc, key) => acc?.[key], obj);
-}
 
-export function validateData(data: any, supposedType: UserComponentType): true | false {
-	var suite: t.ITypeSuite = CheckerTypeIndex[supposedType].suite;
-	var type: t.TType = CheckerTypeIndex[supposedType].type;
-	const checker = t.createCheckers(suite);
 
-	// Validate
-	try {
-		checker[`${type}`].check(data);
-		return true;
-	} catch (err) {
-		return false;
-	}
-}
+// export function validateData(data: any, supposedType: UserComponentType): true | false {
+// 	var suite: t.ITypeSuite = CheckerTypeIndex[supposedType].suite;
+// 	var type: t.TType = CheckerTypeIndex[supposedType].type;
+// 	const checker = t.createCheckers(suite);
+// 
+// 	// Validate
+// 	try {
+// 		checker[`${type}`].check(data);
+// 		return true;
+// 	} catch (err) {
+// 		return false;
+// 	}
+// }
 
 export function instantiateByType(data: any, type: UserComponentType): Visual {
 	switch (type) {
@@ -176,12 +169,12 @@ export function CreateChild(values: IVisual, type: AllComponentTypes): Visual {
 	return element;
 }
 
-export function MarkAsComponent(components: Record<string, Spacial | Spacial[]>) {
-	Object.values(components).forEach((c) => {
-		if (Array.isArray(c)) {
-			c.forEach((obj) => (obj.ownershipType = "component"));
-		} else {
-			c.ownershipType = "component";
-		}
-	});
-}
+// export function MarkAsComponent(components: Record<string, Spacial | Spacial[]>) {
+// 	Object.values(components).forEach((c) => {
+// 		if (Array.isArray(c)) {
+// 			c.forEach((obj) => (obj.ownershipType = "component"));
+// 		} else {
+// 			c.ownershipType = "component";
+// 		}
+// 	});
+// }

@@ -1,8 +1,12 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
-import { ID } from "./point";
+import Line, { ILine } from "./line";
+import { AllComponentTypes, ID } from "./point";
+import RectElement, { IRectElement } from "./rectElement";
 import Spacial, { Size } from "./spacial";
-import { CreateChild } from "./util";
+import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
+
+console.log("Load module collection")
 
 export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
 	obj: any
@@ -19,6 +23,26 @@ export interface ICollection extends IVisual {
 }
 
 export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
+	static CreateChild(values: IVisual, type: AllComponentTypes): Visual {
+		// I would LOVE to do this with a registry defined at the top level but it's causing
+		// a circular dependency error which is impossible to fix...
+		var element: Visual;
+		switch (type) {
+			case "svg":
+				element = new SVGElement(values as ISVGElement);
+				break;
+			case "rect":
+				element = new RectElement(values as IRectElement);
+				break;
+			case "line":
+				element = new Line(values as ILine);
+				break;
+			default:
+				throw new Error(`Not implemented`);
+		}
+		return element;
+	}
+
 	get state(): ICollection {
 		return {
 			children: this.children.map((c) => c.state),
@@ -39,7 +63,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 				return;
 			}
 			if (!this.has(c.id)) {
-				var child: T = CreateChild(c, c.type) as T;
+				var child: T = Collection.CreateChild(c, c.type) as T;
 				this.add(child);
 			}
 		});
@@ -213,3 +237,5 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		return index;
 	}
 }
+
+

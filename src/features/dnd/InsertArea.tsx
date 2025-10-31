@@ -1,10 +1,10 @@
-import {CSSProperties} from "react";
-import {useDrop} from "react-dnd";
-import {Orientation} from "../../logic/mountable";
-import {ID} from "../../logic/point";
-import {IDrop} from "./CanvasDropContainer";
-import {ElementTypes} from "./TemplateDraggableElement";
 import { Colors } from "@blueprintjs/core";
+import { CSSProperties } from "react";
+import { useDrop } from "react-dnd";
+import { ID } from "../../logic/point";
+import { IDrop } from "./CanvasDropContainer";
+import { ElementTypes } from "./TemplateDraggableElement";
+import { Orientation } from "../../logic/spacial";
 
 interface Rect {
 	x: number;

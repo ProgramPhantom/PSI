@@ -1,6 +1,6 @@
-import {useSortable} from "@dnd-kit/sortable";
-import {CSS} from "@dnd-kit/utilities";
-import {PropsWithChildren} from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { PropsWithChildren } from "react";
 
 function SortableItem(props: PropsWithChildren<{id: string}>) {
 	const {attributes, listeners, setNodeRef, transform, transition} = useSortable({id: props.id});

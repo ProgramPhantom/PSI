@@ -1,4 +1,6 @@
-{
+import { IText } from "../text"
+
+export const DEFAULT_TEXT: IText = {
 	"ref": "default-text",
 	"contentWidth": 10,
 	"contentHeight": 10,
@@ -10,6 +12,10 @@
 	"style": {
 		"fontSize": 15,
 		"colour": "black",
-		"background": null
-	}
+		"background": null,
+		"display": "block"
+	},
+
+	"placementMode": {"type": "free", "sizeMode": "fixed"}
 }
+ 

@@ -1,8 +1,8 @@
 import { Defs, Element, Marker, Path, Rect, SVG } from "@svgdotjs/svg.js";
-import defaultLine from "./default/line.json";
-import { UserComponentType } from "./diagramHandler";
 import LineLike, { ILineLike } from "./lineLike";
-import { FillObject, RecursivePartial } from "./util";
+import { UserComponentType } from "./point";
+
+console.log("Load module line")
 
 export type HeadStyle = "default" | "thin" | "none";
 
@@ -20,9 +20,6 @@ export interface ILine extends ILineLike {
 }
 
 export default class Line extends LineLike implements ILine {
-	static defaults: {[key: string]: ILine} = {
-		default: {...(<ILine>defaultLine)}
-	};
 	static ElementType: UserComponentType = "line";
 
 	static arbitraryAdjustment: number = 1;
@@ -37,17 +34,16 @@ export default class Line extends LineLike implements ILine {
 
 	lineStyle: ILineStyle;
 
-	constructor(params: RecursivePartial<ILine>, templateName: string = "default") {
-		var fullParams: ILine = FillObject(params, Line.defaults[templateName]);
-		super(fullParams);
+	constructor(params: ILine) {
+		super(params);
 
-		this.lineStyle = fullParams.lineStyle;
+		this.lineStyle = params.lineStyle;
 
-		if (fullParams.x2 !== undefined) {
-			this.x2 = fullParams.x2;
+		if (params.x2 !== undefined) {
+			this.x2 = params.x2;
 		}
-		if (fullParams.y2 !== undefined) {
-			this.y2 = fullParams.y2;
+		if (params.y2 !== undefined) {
+			this.y2 = params.y2;
 		}
 	}
 

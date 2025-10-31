@@ -1,19 +1,20 @@
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
 import defaultScheme from "./default/schemeSet.json";
-import { UserComponentType } from "./diagramHandler";
-import Channel, { IChannel } from "./hasComponents/channel";
+import type { IChannel } from "./hasComponents/channel";
+import Channel from "./hasComponents/channel";
 import Label from "./hasComponents/label";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import Sequence, { ISequence } from "./hasComponents/sequence";
 import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
 import Line, { ILine } from "./line";
-import { ID } from "./point";
+import { ID, UserComponentType } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import Space from "./space";
 import SVGElement, { ISVGElement } from "./svgElement";
 import { IText } from "./text";
-import { DeepMutable, DeepReadonly, mergeObjectsPreferNonEmpty } from "./util";
 import Visual from "./visual";
+
+console.log("Load module default")
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
 const ASSET_SVGS: SVGDict = import.meta.glob("../assets/svg/*.svg", {
@@ -25,17 +26,6 @@ const ASSET_SVGS: SVGDict = import.meta.glob("../assets/svg/*.svg", {
 const svgPath: string = "\\src\\assets\\";
 var schemes: string[] = ["default"];
 
-const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
-	rect: RectElement,
-	svg: SVGElement,
-	channel: Channel,
-	diagram: SequenceAligner,
-	line: Line,
-	sequence: Sequence,
-	space: Space,
-	"label-group": LabelGroup,
-	label: Label
-};
 
 export interface AppConfigSchemeData {
 	diagram: ISequenceAligner;
@@ -408,3 +398,32 @@ export default class SchemeManager {
 	}
 	//// ----------------------------------------------
 }
+
+export type DeepReadonly<T> = {
+	readonly [P in keyof T]: DeepReadonly<T[P]>;
+};
+
+export function mergeObjectsPreferNonEmpty(obj1, obj2) {
+	const result = {};
+	for (const key of new Set([...Object.keys(obj1), ...Object.keys(obj2)])) {
+		const val1 = obj1[key];
+		const val2 = obj2[key];
+
+		// If val1 is empty object, use val2; otherwise use val1
+		if (
+			val1
+			&& typeof val1 === "object"
+			&& !Array.isArray(val1)
+			&& Object.keys(val1).length === 0
+		) {
+			result[key] = val2;
+		} else {
+			result[key] = val1 ?? val2; // fallback if val1 is null/undefined
+		}
+	}
+	return result;
+}
+
+export type DeepMutable<T> = {
+	-readonly [P in keyof T]: DeepMutable<T[P]>;
+};

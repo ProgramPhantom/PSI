@@ -1,10 +1,8 @@
 import { Element, Rect, SVG } from "@svgdotjs/svg.js";
-import { FormBundle } from "../features/form/LabelGroupComboForm";
-import RectElementForm from "../features/form/RectForm";
-import defaultBar from "./default/bar.json";
-import { UserComponentType } from "./diagramHandler";
-import { RecursivePartial, createWithTemplate } from "./util";
+import { UserComponentType } from "./point";
 import Visual, { IDraw, IVisual } from "./visual";
+
+console.log("Load module rect element")
 
 export interface IRectStyle {
 	fill: string;
@@ -17,10 +15,6 @@ export interface IRectElement extends IVisual {
 }
 
 export default class RectElement extends Visual implements IRectElement, IDraw {
-	static namedElements: {[key: string]: IRectElement} = {
-		bar: <any>defaultBar,
-		"form-defaults": <any>defaultBar
-	};
 	get state(): IRectElement {
 		return {
 			style: this.style,
@@ -28,24 +22,13 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 		};
 	}
 	static ElementType: UserComponentType = "rect";
-	static formData: FormBundle = {
-		form: RectElementForm,
-		defaults: RectElement.namedElements["form-defaults"],
-		allowLabels: true
-	};
 
 	style: IRectStyle;
 
-	constructor(params: IRectElement);
-	constructor(params: RecursivePartial<IRectElement>, templateName: string);
-	constructor(params: RecursivePartial<IRectElement> | IRectElement, templateName?: string) {
-		const fullParams = createWithTemplate<IRectElement>(RectElement.namedElements)(
-			params,
-			templateName
-		);
-		super(fullParams);
+	constructor(params: IRectElement) {
+		super(params);
 
-		this.style = fullParams.style;
+		this.style = params.style;
 
 		this.svg = SVG()
 			.rect(this.contentWidth, this.contentHeight)

@@ -1,17 +1,14 @@
-import {Button, Dialog, DialogBody, DialogFooter, Tab, Tabs} from "@blueprintjs/core";
-import {useRef, useState} from "react";
-import {useForm} from "react-hook-form";
-import * as t from "ts-interface-checker";
-import svgElementTypeSuite from "../../typeCheckers/SVGElement-ti";
-import {UserComponentType} from "../../logic/diagramHandler";
+import { Button, Dialog, DialogBody, DialogFooter, Tab, Tabs } from "@blueprintjs/core";
+import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import ENGINE from "../../logic/engine";
-import {ILabelGroup} from "../../logic/hasComponents/labelGroup";
-import {IRectElement} from "../../logic/rectElement";
-import {ISVGElement} from "../../logic/svgElement";
-import {IVisual} from "../../logic/visual";
-import {LabelGroupComboForm, SubmitButtonRef} from "../form/LabelGroupComboForm";
+import { ILabelGroup } from "../../logic/hasComponents/labelGroup";
+import { UserComponentType } from "../../logic/point";
+import { IRectElement } from "../../logic/rectElement";
+import { ISVGElement } from "../../logic/svgElement";
+import { IVisual } from "../../logic/visual";
+import { LabelGroupComboForm, SubmitButtonRef } from "../form/LabelGroupComboForm";
 
-const checker = t.createCheckers(svgElementTypeSuite);
 
 interface INewElementDialog {
 	isOpen: boolean;
@@ -28,7 +25,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 		mode: "onChange"
 	});
 	const svgFormControls = useForm<ISVGElement>({
-		defaultValues: {contentWidth: 50, contentHeight: 50, mountConfig: {}},
+		defaultValues: {contentWidth: 50, contentHeight: 50,},
 		mode: "onChange"
 	});
 

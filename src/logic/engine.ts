@@ -6,6 +6,8 @@ import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 
+console.log("Load module engine")
+
 export interface SchemeSingletonStore {
 	RECT_TEMPLATES: RectElement[];
 	SVG_TEMPLATES: SVGElement[];

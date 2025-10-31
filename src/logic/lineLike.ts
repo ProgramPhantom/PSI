@@ -1,25 +1,19 @@
 import { Element } from "@svgdotjs/svg.js";
-import defaultLineLike from "./default/lineLike.json";
 import { Dimensions } from "./spacial";
-import { FillObject, posPrecision, RecursivePartial } from "./util";
 import Visual, { IVisual } from "./visual";
 
-type Orientation = "horizontal" | "vertical" | "angled";
+console.log("Load module line like")
+
 type Direction = "along" | "cross";
 
 export interface ILineLike extends IVisual {
 	adjustment: [number, number];
-	orientation: Orientation;
 }
 
 export default abstract class LineLike extends Visual {
-	static defaults: {[key: string]: ILineLike} = {
-		default: <any>defaultLineLike
-	};
 	get state(): ILineLike {
 		return {
 			adjustment: this.adjustment,
-			orientation: this.orientation,
 			...super.state
 		};
 	}
@@ -45,13 +39,12 @@ export default abstract class LineLike extends Visual {
 	private _x2?: number;
 	private _y2?: number;
 
-	constructor(params: RecursivePartial<ILineLike>, templateName: string = "default") {
-		var fullParams: ILineLike = FillObject<ILineLike>(params, LineLike.defaults[templateName]);
-		super(fullParams);
+	constructor(params: ILineLike) {
+		super(params);
 		this.ref = "LINE";
 
-		this.adjustment = fullParams.adjustment;
-		this.orientation = fullParams.orientation;
+		this.adjustment = params.adjustment;
+		this.orientation = params.orientation;
 
 	}
 
@@ -198,14 +191,14 @@ export default abstract class LineLike extends Visual {
 	}
 	set x(val: number | undefined) {
 		if (val !== this._x) {
-			this._x = val !== undefined ? posPrecision(val) : undefined;
+			this._x = val !== undefined ? val : undefined;
 			this.enforceBinding();
 			// this.resolveDimensions();
 		}
 	}
 	set y(val: number | undefined) {
 		if (val !== this._y) {
-			this._y = val !== undefined ? posPrecision(val) : undefined;
+			this._y = val !== undefined ? val : undefined;
 			this.enforceBinding();
 			// this.resolveDimensions();  Removing this fixes stuff? Don't know why lol
 		}
@@ -281,10 +274,10 @@ export default abstract class LineLike extends Visual {
 				if (ofContent) {
 					return (
 						this.contentX
-						+ (this.contentWidth ? posPrecision(this.contentWidth / 2) : 0)
+						+ (this.contentWidth ? this.contentWidth / 2 : 0)
 					);
 				}
-				return this.x + posPrecision(this.width / 2);
+				return this.x + this.width / 2;
 			case "y":
 				if (this._y === undefined) {
 					return undefined;
@@ -292,10 +285,10 @@ export default abstract class LineLike extends Visual {
 				if (ofContent) {
 					return (
 						this.contentY
-						+ (this.contentHeight ? posPrecision(this.contentHeight / 2) : 0)
+						+ (this.contentHeight ? this.contentHeight / 2 : 0)
 					);
 				}
-				return this.y + posPrecision(this.height / 2);
+				return this.y + this.height / 2;
 		}
 	}
 	public override setCentre(dimension: Dimensions, v: number) {

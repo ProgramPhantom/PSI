@@ -1,6 +1,8 @@
 import {defineConfig} from "vite";
 import {nodePolyfills} from "vite-plugin-node-polyfills";
 import react from "@vitejs/plugin-react";
+import CircularDependencyPlugin from 'vite-plugin-circular-dependency';
+
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -33,6 +35,11 @@ export default defineConfig({
 			},
 			// Whether to polyfill `node:` protocol imports.
 			protocolImports: true
-		})
+		}),
+		CircularDependencyPlugin({
+			outputFilePath: "./circleDep",
+			include: ["/\.ts$/"],
+			exclude: ["/node_modules/"]
+		}),
 	]
 });

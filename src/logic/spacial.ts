@@ -1,7 +1,7 @@
 import { Rect, SVG } from "@svgdotjs/svg.js";
-import { IGridChildConfig } from "./grid";
 import Point, { ID, IPoint } from "./point";
-import { posPrecision } from "./util";
+
+console.log(`[ModuleLoad] Spacial`);
 
 export interface Bounds {
 	top: number;
@@ -17,6 +17,8 @@ export interface Size {
 	height: number;
 }
 
+export type PointBind = Record<Dimensions, IBindingPayload>;
+
 export interface IMountConfig {
 	index: number | null;
 	channelID: ID | null;
@@ -27,6 +29,12 @@ export interface IMountConfig {
 	noSections: number;
 }
 
+
+export interface IGridChildConfig {
+	coords: {row: number, col: number}
+	alignment: Record<Dimensions, SiteNames>
+	size: {noRows: number, noCols: number}
+}
 
 export type PlacementConfiguration = {type: "free", sizeMode: SizeMethod} | 
 									 {type: "pulse"; config: IMountConfig} | 
@@ -121,8 +129,8 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 	public placementMode: PlacementConfiguration;
 
-	override bindings: IBinding[] = [];
-	override bindingsToThis: IBinding[] = [];
+	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
+	bindingsToThis: IBinding[] = [];
 
 	constructor(
 		x?: number,
@@ -455,18 +463,18 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				if (ofContent) {
 					return (
 						this.contentX
-						+ posPrecision(this.contentWidth / 2)
+						+ this.contentWidth / 2
 					);
 				}
-				return this.x + posPrecision(this.width / 2);
+				return this.x + this.width / 2;
 			case "y":
 				if (ofContent) {
 					return (
 						this.contentY
-						+ posPrecision(this.contentHeight / 2)
+						+ this.contentHeight / 2
 					);
 				}
-				return this.y + posPrecision(this.height / 2);
+				return this.y + this.height / 2;
 		}
 	}
 	public setCentre(dimension: Dimensions, v: number) {

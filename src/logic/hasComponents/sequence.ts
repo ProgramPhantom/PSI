@@ -1,13 +1,10 @@
-import { ISequence } from "../../typeCheckers/sequence-ti";
-import defaultSequence from "../default/sequence.json";
-import { AllComponentTypes } from "../diagramHandler";
-import Grid, { IGrid, IGridChildConfig } from "../grid";
-import { ID } from "../point";
-import Spacial, { IMountConfig, Size } from "../spacial";
-import { FillObject, RecursivePartial } from "../util";
+import Grid, { IGrid } from "../grid";
+import { AllComponentTypes, ID, UserComponentType } from "../point";
+import Spacial, { IGridChildConfig, IMountConfig, Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
 
+console.log("Load module sequence")
 
 export interface ISequence extends IGrid {
 	channels: IChannel[];
@@ -18,10 +15,7 @@ export type OccupancyStatus = Visual | "." | undefined;
 
 
 export default class Sequence extends Grid implements ISequence {
-	static defaults: {[key: string]: ISequence} = {
-		default: {...(<any>defaultSequence)}
-	};
-	static ElementType: AllComponentTypes = "sequence";
+	static ElementType: UserComponentType = "sequence";
 	get state(): ISequence {
 		return {
 			channels: this.channels.map((c) => c.state),
@@ -29,7 +23,7 @@ export default class Sequence extends Grid implements ISequence {
 		};
 	}
 
-	channels: Channel[] = [];
+	channels: Channel[];
 
 
 	get channelsDict(): Record<ID, Channel> {
@@ -49,6 +43,7 @@ export default class Sequence extends Grid implements ISequence {
 	constructor(params: ISequence) {
 		super(params);
 
+		this.channels = [];
 
 		params.channels.forEach((c) => {
 			var newChan = new Channel(c);

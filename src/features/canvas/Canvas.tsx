@@ -11,7 +11,7 @@ import { useDragLayer } from "react-dnd";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
 import ENGINE from "../../logic/engine";
-import { Visual } from "../../logic/visual";
+import Visual from "../../logic/visual";
 import Debug from "../debug/Debug";
 import CanvasDraggableElement from "../dnd/CanvasDraggableElement";
 import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
@@ -20,7 +20,9 @@ import DropField from "../dnd/DropField";
 import { DebugLayerDialog } from "./DebugLayerDialog";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
-import { AllComponentTypes } from "../../logic/diagramHandler";
+import { AllComponentTypes } from "../../logic/point";
+
+console.log("Load module canvas");
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
 	// Types

@@ -8,10 +8,10 @@ import {
 	Slider
 } from "@blueprintjs/core";
 import React from "react";
-import {Controller, FieldErrors, useFormContext} from "react-hook-form";
-import {getByPath} from "../../logic/util";
-import {IVisual} from "../../logic/visual";
-import {FormRequirements} from "./FormDiagramInterface";
+import { Controller, FieldErrors, useFormContext } from "react-hook-form";
+import { getByPath } from "../../logic/util2";
+import { IVisual } from "../../logic/visual";
+import { FormRequirements } from "./FormBase";
 
 interface IVisualFormProps extends FormRequirements {
 	widthDisplay?: boolean;

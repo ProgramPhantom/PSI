@@ -1,22 +1,20 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import { myToaster } from "../app/App";
-import { PointBind } from "../features/canvas/LineTool";
 import SchemeManager from "./default";
-import * as defaultDiagram from "./default/defaultDiagram.json";
 import Channel, { IChannel } from "./hasComponents/channel";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import Sequence from "./hasComponents/sequence";
 import Line, { ILine } from "./line";
-import { ID } from "./point";
+import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
-import { IMountConfig, PlacementConfiguration } from "./spacial";
+import { IMountConfig, PlacementConfiguration, PointBind } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
-import { RecursivePartial } from "./util";
 import Visual, { IDraw, IVisual } from "./visual";
+import { appToaster } from "../app/Toaster";
+import { defaultDiagram } from "./default/index.ts";
 
 
-
+console.log("Load module diagram handler")
 
 export type Result<T> = {ok: true; value: T} | {ok: false; error: string};
 
@@ -48,24 +46,7 @@ function draws(
 	return descriptor;
 }
 
-// All component types
-export type AllComponentTypes = UserComponentType | AbstractComponentTypes;
 
-// The types of component
-export type UserComponentType =
-	| DrawComponent
-	| "label-group"
-	| "label"
-	| "text"
-	| "line"
-	| "channel"
-	| "sequence-aligner"
-	| "sequence"
-	| "diagram";
-export type DrawComponent = "svg" | "rect" | "space";
-
-// Abstract component types (have no visual content)
-export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract" | "visual" | "grid";
 
 
 
@@ -102,19 +83,19 @@ export default class DiagramHandler implements IDraw {
 		this.schemeManager = schemeManager;
 		this.surface = surface;
 
-		var constructResult: Result<Diagram> = this.constructDiagram(
-			(<any>defaultDiagram) as Diagram
-		);
+		// var constructResult: Result<Diagram> = this.constructDiagram(
+		// 	(<any>defaultDiagram) as Diagram
+		// );
 
-		if (constructResult.ok) {
-			this.diagram = constructResult.value;
-		} else {
-			myToaster.show({
+		//if (constructResult.ok) {
+		//	this.diagram = constructResult.value;
+		//} else {
+			appToaster.show({
 				message: "Error loading diagram",
 				intent: "danger"
 			});
-			this.diagram = new Diagram(<any>defaultDiagram);
-		}
+			this.diagram = new Diagram(defaultDiagram);
+		//}
 
 		this.draw();
 	}
@@ -413,7 +394,7 @@ export default class DiagramHandler implements IDraw {
 		endBinds: PointBind
 	): Result<Line> {
 		try {
-			var newLine: Line = new Line(pParams);
+			var newLine: Line = new Line(pParams as ILine);
 		} catch (err) {
 			return {ok: false, error: `Cannot instantiate line ${pParams.ref}`};
 		}
@@ -491,3 +472,12 @@ export default class DiagramHandler implements IDraw {
 		return {ok: true, value: target}
 	}
 }
+
+
+export type RecursivePartial<T> = {
+	[P in keyof T]?: T[P] extends (infer U)[]
+		? RecursivePartial<U>[]
+		: T[P] extends object | undefined
+			? RecursivePartial<T[P]>
+			: T[P];
+};

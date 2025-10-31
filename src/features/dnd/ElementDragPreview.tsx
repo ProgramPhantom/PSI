@@ -1,7 +1,7 @@
-import {Colors} from "@blueprintjs/core";
-import type {FC} from "react";
-import {memo, useEffect, useRef} from "react";
-import {Visual} from "../../logic/visual";
+import { Colors } from "@blueprintjs/core";
+import type { FC } from "react";
+import { memo, useEffect, useRef } from "react";
+import Visual from "../../logic/visual";
 
 export interface IElementDragPreviewProps {
 	element: Visual;

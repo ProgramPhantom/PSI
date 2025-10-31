@@ -1,9 +1,9 @@
-import {Button, FormGroup, HTMLSelect, Section, SectionCard} from "@blueprintjs/core";
-import {useEffect, useState} from "react";
-import {Controller, useFormContext} from "react-hook-form";
+import { Button, FormGroup, HTMLSelect, Section, SectionCard } from "@blueprintjs/core";
+import { useEffect, useState } from "react";
+import { Controller, useFormContext } from "react-hook-form";
 import ArrowForm from "./ArrowForm";
-import {FormRequirements} from "./FormDiagramInterface";
 import TextForm from "./TextForm";
+import { FormRequirements } from "./FormBase";
 
 interface ILabelArrayFormProps extends FormRequirements {}
 

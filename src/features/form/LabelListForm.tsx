@@ -1,8 +1,9 @@
-import {Button, Divider, Section, SectionCard} from "@blueprintjs/core";
-import {useFieldArray, useFormContext} from "react-hook-form";
-import Label, {ILabel} from "../../logic/hasComponents/label";
-import {FormRequirements} from "./FormDiagramInterface";
+import { Button, Divider, Section, SectionCard } from "@blueprintjs/core";
+import { useFieldArray, useFormContext } from "react-hook-form";
+import { defaultLabel } from "../../logic/default/index";
+import { ILabel } from "../../logic/hasComponents/label";
 import LabelForm from "./LabelForm";
+import { FormRequirements } from "./FormBase";
 
 export type LabelGroupLabels = {
 	labels: ILabel[];
@@ -63,7 +64,7 @@ function LabelListForm(props: ILabelMapProps) {
 					intent="success"
 					icon="add"
 					type="button"
-					onClick={() => append(Label.formData.defaults)}>
+					onClick={() => append(defaultLabel as ILabel)}>
 					Add Label
 				</Button>
 			</div>

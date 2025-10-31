@@ -1,25 +1,22 @@
-import {Drawer, OverlayToaster, Position, Toaster} from "@blueprintjs/core";
-import {SVG} from "@svgdotjs/svg.js";
-import {saveAs} from "file-saver";
-import {ReactNode, useState, useSyncExternalStore} from "react";
-import {createRoot} from "react-dom/client";
+import { Drawer, Position } from "@blueprintjs/core";
+import { SVG } from "@svgdotjs/svg.js";
+import { saveAs } from "file-saver";
+import { ReactNode, useState, useSyncExternalStore } from "react";
 import Banner from "../features/banner/Banner";
 import Console from "../features/banner/Console";
 import Canvas from "../features/canvas/Canvas";
 import ComponentResizer from "../features/canvas/ComponentResizer";
-import {IDrawArrowConfig} from "../features/canvas/LineTool";
+import { IDrawArrowConfig } from "../features/canvas/LineTool";
 import ElementsDraw from "../features/elementDraw/ElementsDraw";
 import Form from "../features/Form";
 import ENGINE from "../logic/engine";
-import {Visual} from "../logic/visual";
-import {WelcomeSplash} from "./WelcomeSplash";
+import Visual from "../logic/visual";
+import { WelcomeSplash } from "./WelcomeSplash";
+import { appToaster } from "./Toaster";
 
-export const myToaster: Toaster = await OverlayToaster.createAsync(
-	{position: "bottom"},
-	{
-		domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster)
-	}
-);
+console.log("Load module App")
+
+
 
 ENGINE.initialiseSchemeManager();
 await ENGINE.loadSVGData();
@@ -88,7 +85,7 @@ function App() {
 			saveAs(blob, fileName);
 
 			// Show success message
-			myToaster.show({
+			appToaster.show({
 				message: `SVG saved successfully as ${fileName}`,
 				intent: "success",
 				icon: "tick-circle"
@@ -97,7 +94,7 @@ function App() {
 			console.error("Error saving SVG:", error);
 
 			// Show error message
-			myToaster.show({
+			appToaster.show({
 				message: `Failed to save SVG: ${error instanceof Error ? error.message : "Unknown error"}`,
 				intent: "danger",
 				icon: "error"
@@ -153,7 +150,7 @@ function App() {
 							saveAs(blob, filename);
 
 							// Show success message
-							myToaster.show({
+							appToaster.show({
 								message: `PNG saved successfully as ${filename}`,
 								intent: "success",
 								icon: "tick-circle"
@@ -169,7 +166,7 @@ function App() {
 					console.error("Error in PNG conversion:", error);
 					URL.revokeObjectURL(url);
 
-					myToaster.show({
+					appToaster.show({
 						message: `Failed to save PNG: ${error instanceof Error ? error.message : "Unknown error"}`,
 						intent: "danger",
 						icon: "error"
@@ -187,7 +184,7 @@ function App() {
 			console.error("Error saving PNG:", error);
 
 			// Show error message
-			myToaster.show({
+			appToaster.show({
 				message: `Failed to save PNG: ${error instanceof Error ? error.message : "Unknown error"}`,
 				intent: "danger",
 				icon: "error"

@@ -3,6 +3,8 @@ import { ID } from "./point";
 import { Dimensions, Size } from "./spacial";
 import Visual, { IVisual } from "./visual";
 
+console.log("Load module aligner")
+
 export interface IAligner<T extends IVisual = IVisual> extends IVisual {
 	mainAxis: Dimensions;
 	minCrossAxis?: number;
@@ -13,21 +15,6 @@ export interface IAligner<T extends IVisual = IVisual> extends IVisual {
 // A collection where all elements are assumed to be in a stack arrangement (either vertically or horizontally)
 // Useful for getting the max width/height of multiple elements
 export default class Aligner<T extends Visual = Visual> extends Visual implements IAligner {
-	static defaults: {[name: string]: IAligner} = {
-		default: {
-			mainAxis: "x",
-			minCrossAxis: 0,
-			contentWidth: 0,
-			contentHeight: 0,
-			x: undefined,
-			y: undefined,
-			offset: [0, 0],
-			padding: [0, 0, 0, 0],
-			placementMode: {type: "free", sizeMode: "fit"},
-			ref: "default-aligner",
-			alignerChildren: []
-		}
-	};
 	get state(): IAligner {
 		return {
 			alignerChildren: this.alignerChildren.map((c) => c.state),

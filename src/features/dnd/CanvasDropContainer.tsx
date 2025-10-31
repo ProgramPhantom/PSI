@@ -1,6 +1,6 @@
-import type {CSSProperties, FC, ReactNode} from "react";
-import {useDrop} from "react-dnd";
-import {ElementTypes} from "./TemplateDraggableElement";
+import type { CSSProperties, FC, ReactNode } from "react";
+import { useDrop } from "react-dnd";
+import { ElementTypes } from "./TemplateDraggableElement";
 
 const styles: CSSProperties = {
 	width: "100%",

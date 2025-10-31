@@ -1,10 +1,10 @@
-import {Button, Dialog, DialogBody, DialogFooter, Text} from "@blueprintjs/core";
-import {useRef, useState} from "react";
-import {myToaster} from "../../app/App";
-import {ISequenceAligner} from "../../logic/hasComponents/sequenceAligner";
+import { Button, Dialog, DialogBody, DialogFooter, Text } from "@blueprintjs/core";
+import { useRef, useState } from "react";
 import ENGINE from "../../logic/engine";
+import { IDiagram } from "../../logic/hasComponents/diagram";
 import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
+import { appToaster } from "../../app/Toaster";
 
 export interface ILoadStateDialogProps {
 	close: () => void;
@@ -13,7 +13,7 @@ export interface ILoadStateDialogProps {
 
 export function LoadStateDialog(props: ILoadStateDialogProps) {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [pendingState, setPendingState] = useState<ISequenceAligner | null>(null);
+	const [pendingState, setPendingState] = useState<IDiagram | null>(null);
 	const [isSVGRequirementsOpen, setIsSVGDialogOpen] = useState(false);
 	const [stateSvgElements, setStateSvgElements] = useState<Array<{name: string; element: any}>>(
 		[]
@@ -33,11 +33,11 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 		return false;
 	};
 
-	const extractSvgElements = (stateData: ISequenceAligner): Array<{name: string; element: any}> => {
+	const extractSvgElements = (stateData: IDiagram): Array<{name: string; element: any}> => {
 		const out: Array<{name: string; element: any}> = [];
-		stateData.sequences?.forEach((seq) => {
+		stateData.sequenceAligner.sequences.forEach((seq) => {
 			seq.channels?.forEach((ch) => {
-				ch.mountedElements?.forEach((el: any, idx: number) => {
+				ch.pulseElements.forEach((el: any, idx: number) => {
 					const hasRef = el && (el.type === "svg" || el.svgDataRef !== undefined);
 					if (hasRef) {
 						const name = el.ref || `${ch.sequenceID}-${idx}`;
@@ -53,7 +53,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 		if (file.type === "application/json" || file.name.endsWith(".json")) {
 			setSelectedFile(file);
 		} else {
-			myToaster.show({
+			appToaster.show({
 				message: "Please select a JSON file",
 				intent: "warning"
 			});
@@ -72,7 +72,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				try {
-					const stateData = JSON.parse(e.target?.result as string) as ISequenceAligner;
+					const stateData = JSON.parse(e.target?.result as string) as IDiagram;
 					const svgs = extractSvgElements(stateData);
 					setPendingState(stateData);
 					setStateSvgElements(svgs);
@@ -82,7 +82,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 						|| svgs.every(({element}) => isSvgRefSatisfied(element?.svgDataRef))
 					) {
 						ENGINE.handler.constructDiagram(stateData);
-						myToaster.show({
+						appToaster.show({
 							message: "State loaded successfully",
 							intent: "success"
 						});
@@ -93,7 +93,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 					}
 				} catch (error) {
 					console.error(error);
-					myToaster.show({
+					appToaster.show({
 						message: "Invalid file format. Please select a valid state file.",
 						intent: "danger"
 					});
@@ -113,7 +113,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 			({element}) => !isSvgRefSatisfied(element?.svgDataRef)
 		);
 		if (missing.length > 0) {
-			myToaster.show({
+			appToaster.show({
 				message: "Please upload missing SVG files before continuing.",
 				intent: "danger"
 			});
@@ -126,13 +126,13 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 		// Now construct diagram
 		try {
 			ENGINE.handler.constructDiagram(pendingState);
-			myToaster.show({
+			appToaster.show({
 				message: "State loaded successfully",
 				intent: "success"
 			});
 		} catch (e) {
 			console.error(e);
-			myToaster.show({
+			appToaster.show({
 				message: "Failed to construct diagram.",
 				intent: "danger"
 			});

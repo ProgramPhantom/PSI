@@ -1,4 +1,4 @@
-import {CSSProperties} from "react";
+import { CSSProperties } from "react";
 import PaddedBox from "../../logic/paddedBox";
 import BindingsDebug from "./Bindings";
 

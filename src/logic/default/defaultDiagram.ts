@@ -1,5 +1,7 @@
-{
-	
+import { IDiagram } from "../hasComponents/diagram";
+
+
+export const DEFAULT_DIAGRAM: IDiagram = {
 	"sequenceAligner": {
 		"mainAxis": "x",
 		"minCrossAxis": 0,
@@ -9,7 +11,7 @@
 		"padding": [0, 0, 0, 0],
 		"placementMode": {"type": "free", "sizeMode": "fit"},
 		"ref": "sequence-aligner",
-
+		"sequences": [],
 		"alignerChildren": [
 			{
 				"placementMode": {"type": "managed"},
@@ -93,6 +95,4 @@
 	"ref": "diagram",
 	"id": "c8014d41f304e",
 	"type": "diagram"
-
-
 }

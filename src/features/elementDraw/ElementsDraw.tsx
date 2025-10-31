@@ -12,15 +12,15 @@ import {
 	Tabs,
 	Text
 } from "@blueprintjs/core";
-import React, {useRef, useState, useSyncExternalStore} from "react";
-import {ObjectInspector} from "react-inspector";
-import {myToaster} from "../../app/App";
-import SchemeManager, {SchemeSet} from "../../logic/default";
-import ENGINE, {SchemeSingletonStore} from "../../logic/engine";
-import {Visual} from "../../logic/visual";
-import AddSchemeDialog from "./AddSchemeDialog";
+import React, { useRef, useState, useSyncExternalStore } from "react";
+import { ObjectInspector } from "react-inspector";
+import SchemeManager, { SchemeSet } from "../../logic/default";
+import ENGINE, { SchemeSingletonStore } from "../../logic/engine";
+import Visual from "../../logic/visual";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
+import AddSchemeDialog from "./AddSchemeDialog";
 import NewElementDialog from "./NewElementDialog";
+import { appToaster } from "../../app/Toaster";
 
 interface IElementDrawProps {}
 
@@ -72,7 +72,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 	const handleDeleteSchemeClick = () => {
 		if (selectedScheme === SchemeManager.InternalSchemeName) {
-			myToaster.show({
+			appToaster.show({
 				message: "Cannot delete the internal scheme",
 				intent: "danger"
 			});
