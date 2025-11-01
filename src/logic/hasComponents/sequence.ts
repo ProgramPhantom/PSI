@@ -1,6 +1,6 @@
 import Grid, { IGrid } from "../grid";
 import { AllComponentTypes, ID, UserComponentType } from "../point";
-import Spacial, { IGridChildConfig, IMountConfig, Size } from "../spacial";
+import Spacial, { IGridChildConfig, IMountConfig, SiteNames, Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
 
@@ -98,10 +98,13 @@ export default class Sequence extends Grid implements ISequence {
 							}
 						}
 	
-						cell.internalImmediateBind(child, "x", gridConfig.alignment.x)
-						cell.internalImmediateBind(child, "y", gridConfig.alignment.y)
+						var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
 	
-						child.computePositions({x: cell.x, y: cell.y});
+						cell.internalImmediateBind(child, "x", alignment.x)
+						cell.internalImmediateBind(child, "y", alignment.y)
+						
+	
+						child.computePositions({x: child.x, y: child.y});
 					}
 				})
 			})

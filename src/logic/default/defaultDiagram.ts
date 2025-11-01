@@ -3,7 +3,7 @@ import { IDiagram } from "../hasComponents/diagram";
 
 export const DEFAULT_DIAGRAM: IDiagram = {
 	"sequenceAligner": {
-		"mainAxis": "x",
+		"mainAxis": "y",
 		"minCrossAxis": 0,
 		"contentWidth": 0,
 		"contentHeight": 0,

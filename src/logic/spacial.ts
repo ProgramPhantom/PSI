@@ -31,9 +31,9 @@ export interface IMountConfig {
 
 
 export interface IGridChildConfig {
-	coords: {row: number, col: number}
-	alignment: Record<Dimensions, SiteNames>
-	size: {noRows: number, noCols: number}
+	coords?: {row: number, col: number}
+	alignment?: Record<Dimensions, SiteNames>
+	size?: {noRows: number, noCols: number}
 }
 
 export type PlacementConfiguration = {type: "free", sizeMode: SizeMethod} | 

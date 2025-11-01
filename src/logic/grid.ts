@@ -1,5 +1,5 @@
 import { Element } from "@svgdotjs/svg.js";
-import Spacial, { IGridChildConfig, Size } from "./spacial";
+import Spacial, { IGridChildConfig, SiteNames, Size } from "./spacial";
 import Visual, { doesDraw, IDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 
@@ -169,10 +169,12 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 						}
 					}
 
-					cell.internalImmediateBind(child, "x", gridConfig.alignment.x)
-					cell.internalImmediateBind(child, "y", gridConfig.alignment.y)
+					var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
 
-					child.computePositions({x: cell.x, y: cell.y});
+					cell.internalImmediateBind(child, "x", alignment.x)
+					cell.internalImmediateBind(child, "y", alignment.y)
+
+					child.computePositions({x: child.x, y: child.y});
 				}
 			})
 		})
@@ -408,10 +410,23 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		this.gridMatrix.splice(INDEX, 1);	
 	}
 
+	/**
+	 * Computes the positions and dimensions of cells in a grid layout.
+	 * Initializes the cells array with Spacial objects representing each cell's geometry.
+	 * Each cell's position is calculated based on cumulative widths (x-axis) and heights (y-axis)
+	 * from the grid's content origin point (contentX, contentY).
+	 * 
+	 * The computation uses:
+	 * - gridSizes.rows[].height for row heights
+	 * - gridSizes.columns[].width for column widths
+	 * 
+	 * @protected
+	 * @returns {void}
+	 */
 	protected computeCells() {
 		// First let's generate the sizes and positions of each cell
 
-		this.cells = Array<Spacial[]>(this.noRows).fill(Array<Spacial>(this.noColumns).fill(new Spacial()));
+		this.cells = Array.from({length: this.noRows}, () => Array.from({length: this.noColumns}, () => new Spacial()));
 
 		var xCount: number = 0;
 		var yCount: number = 0;
