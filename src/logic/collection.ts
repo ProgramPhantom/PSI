@@ -81,7 +81,6 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 		this.svg = group;
 
-
 		surface.add(this.svg);
 
 		this.children.forEach((uc) => {
@@ -168,6 +167,15 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		this.contentHeight = size.height;
 
 		return {width: this.width, height: this.height}
+	}
+
+	public computePositions(root: { x: number; y: number; }): void {
+		this.x = root.x;
+		this.y = root.y;
+
+		this.children.forEach((c) => {
+			c.computePositions({x: this.contentX, y: this.contentY})
+		})
 	}
 
 	// Construct and SVG with children positioned relative to (0, 0)

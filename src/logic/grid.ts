@@ -1,5 +1,7 @@
+import { Element } from "@svgdotjs/svg.js";
 import Spacial, { IGridChildConfig, Size } from "./spacial";
-import Visual, { IDraw, IVisual } from "./visual";
+import Visual, { doesDraw, IDraw, IVisual } from "./visual";
+import { G } from "@svgdotjs/svg.js";
 
 console.log(`[ModuleLoad] Grid`);
 
@@ -63,8 +65,25 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	}
 
 
-	public draw() {
-		// Pass
+	public draw(surface: Element) {
+		if (this.svg) {
+			this.svg.remove();
+		}
+
+		var group = new G().id(this.id).attr({title: this.ref});
+		group.attr({
+			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
+		});
+
+		this.svg = group;
+
+		surface.add(this.svg);
+
+		this.gridChildren.forEach((uc) => {
+			if (doesDraw(uc)) {
+				uc.draw(surface);
+			}
+		});
 	}
 
 	public computeSize(): Size {
@@ -75,12 +94,12 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		// Compute the size of the grid by finding the maximum width and height
 		// element in each column and row, and then summing them up.
 
-		var columns: GridEntry[][] = this.getColumns();
-		var rows: GridEntry[][] = this.gridMatrix;
+		var gridColumns: GridEntry[][] = this.getColumns();
+		var gridRows: GridEntry[][] = this.gridMatrix;
 
 		// Let's compute the width and height of each column
-		var columnRects: Spacial[] = Array<Spacial>(columns.length).fill(new Spacial())
-		columns.forEach((col, i) => {
+		var columnRects: Spacial[] = Array.from({length: gridColumns.length}, () => new Spacial())
+		gridColumns.forEach((col, i) => {
 			var maxWidth = Math.max(...col.map((child) => child !== undefined ? child.width : 0))
 
 			columnRects[i].width = maxWidth;
@@ -91,8 +110,8 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 
 		// Now lets compute the width and height of each row
-		var rowRects: Spacial[] = Array<Spacial>(rows.length).fill(new Spacial())
-		rows.forEach((row, i) => {
+		var rowRects: Spacial[] = Array.from({length: gridRows.length}, () => new Spacial())
+		gridRows.forEach((row, i) => {
 			var maxHeight = Math.max(...row.map((child) => child !== undefined ? child.height : 0))
 
 			rowRects[i].height = maxHeight;
@@ -106,6 +125,17 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 		var totalWidth = this.gridSizes.columns.reduce((w, r) => w + r.width, 0);
 		var totalHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
+
+		// Normalise width and height of columns/rows:
+		rowRects.forEach((row) => {
+			row.width = totalWidth
+		})
+		columnRects.forEach((col) => {
+			col.height = totalHeight
+		})
+
+		this.gridSizes.rows = rowRects;
+		this.gridSizes.columns = columnRects;
 		
 		// Set via content...
 		this.contentWidth = totalWidth;

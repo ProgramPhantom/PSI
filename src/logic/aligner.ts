@@ -1,7 +1,8 @@
 import { Element } from "@svgdotjs/svg.js";
 import { ID } from "./point";
 import { Dimensions, Size } from "./spacial";
-import Visual, { IVisual } from "./visual";
+import Visual, { doesDraw, IVisual } from "./visual";
+import { G } from "@svgdotjs/svg.js";
 
 console.log("Load module aligner")
 
@@ -46,7 +47,24 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 	}
 
 	public draw(surface: Element): void {
-		// TODO
+		if (this.svg) {
+			this.svg.remove();
+		}
+
+		var group = new G().id(this.id).attr({title: this.ref});
+		group.attr({
+			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
+		});
+
+		this.svg = group;
+
+		surface.add(this.svg);
+
+		this.alignerChildren.forEach((uc) => {
+			if (doesDraw(uc)) {
+				uc.draw(surface);
+			}
+		});
 	}
 
 	public computeSize(): Size {

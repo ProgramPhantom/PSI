@@ -87,7 +87,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 	"children": [],
 	"placementMode": {"type": "free", "sizeMode": "fit"},
 	"offset": [0, 0],
-	"padding": [0, 0, 0, 0],
+	"padding": [5, 5, 5, 5],
 	"contentWidth": 87,
 	"contentHeight": 83,
 	"x": 0,
