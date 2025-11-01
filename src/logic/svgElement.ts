@@ -6,7 +6,7 @@ import Visual, { IDraw, IVisual } from "./visual";
 
 const MISSING_ASSET: Record<string, string> = import.meta.glob("../assets/app/MissingAsset2.svg", {
 	query: "?raw",
-	import: "default",
+	import: "default",  // this is important as it means the file is not imported as a "module".
 	eager: true
 });
 const MISSING_ASSET_SVG_DATA: string = MISSING_ASSET["../assets/app/MissingAsset2.svg"];

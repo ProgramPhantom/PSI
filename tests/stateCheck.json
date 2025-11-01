@@ -1,297 +1,527 @@
 {
-	"sequences": [
-		{
-			"channels": [
-				{
-					"sequenceID": "e08609e4996f88",
-					"style": {
-						"thickness": 3,
-						"barStyle": {
-							"fill": "#000000",
-							"stroke": null,
-							"strokeWidth": null
-						}
-					},
-					"label": {
-						"style": {
-							"fontSize": 50,
-							"colour": "black",
-							"background": null,
-							"display": "block"
-						},
-						"text": "^{1}\\mathrm{H}",
-						"offset": [0, 0],
-						"padding": [0, 0, 0, 0],
-						"contentWidth": 27,
-						"contentHeight": 20,
-						"x": 5,
-						"y": 36.5,
-						"ref": "TEXT",
-						"id": "d67849c2b9df2",
-						"type": "lower-abstract"
-					},
-					"mountedElements": [
-						{
-							"svgDataRef": "amp",
-							"style": {},
-							"offset": [0, 1],
-							"mountConfig": {
-								"orientation": "top",
-								"alignment": "centre",
-								"noSections": 1,
-								"channelID": "abd5c766abf8e8",
-								"sequenceID": "e08609e4996f88",
-								"index": 1,
-								"mountOn": true,
-								"dropEffect": "insert",
-								"insert": true
-							},
-							"padding": [0, 0, 0, 0],
-							"contentWidth": 15,
-							"contentHeight": 40,
-							"x": 199.5,
-							"y": 5,
-							"ref": "amp",
-							"id": "SvgjsSvg1000",
-							"type": "svg"
-						},
-						{
-							"svgDataRef": "amp",
-							"style": {},
-							"offset": [0, 1],
-							"mountConfig": {
-								"orientation": "top",
-								"alignment": "centre",
-								"noSections": 1,
-								"channelID": "abd5c766abf8e8",
-								"sequenceID": "e08609e4996f88",
-								"index": 3,
-								"mountOn": true,
-								"dropEffect": "insert",
-								"insert": true
-							},
-							"padding": [0, 0, 0, 0],
-							"contentWidth": 15,
-							"contentHeight": 40,
-							"x": 349.5,
-							"y": 5,
-							"ref": "amp",
-							"id": "SvgjsSvg1003",
-							"type": "svg"
-						}
-					],
-					"userChildren": [],
-					"offset": [0, 0],
-					"padding": [0, 0, 0, 0],
-					"contentWidth": 427,
-					"contentHeight": 63,
-					"x": 5,
-					"y": 5,
-					"ref": "my-channel",
-					"id": "abd5c766abf8e8",
-					"type": "channel"
-				},
-				{
-					"sequenceID": "e08609e4996f88",
-					"style": {
-						"thickness": 3,
-						"barStyle": {
-							"fill": "#000000",
-							"stroke": null,
-							"strokeWidth": null
-						}
-					},
-					"label": {
-						"style": {
-							"fontSize": 50,
-							"colour": "black",
-							"background": null,
-							"display": "block"
-						},
-						"text": "^{1}\\mathrm{H}",
-						"offset": [0, 0],
-						"padding": [0, 0, 0, 0],
-						"contentWidth": 27,
-						"contentHeight": 20,
-						"x": 5,
-						"y": 134.5,
-						"ref": "TEXT",
-						"id": "35d8f3adac4068",
-						"type": "lower-abstract"
-					},
-					"mountedElements": [
-						{
-							"svgDataRef": "chirphilo",
-							"style": {},
-							"offset": [0, 1],
-							"mountConfig": {
-								"orientation": "top",
-								"alignment": "centre",
-								"noSections": 1,
-								"channelID": "c04928672e361",
-								"sequenceID": "e08609e4996f88",
-								"index": 1,
-								"mountOn": true,
-								"dropEffect": "insert",
-								"insert": false
-							},
-							"padding": [0, 0, 0, 0],
-							"contentWidth": 50,
-							"contentHeight": 20,
-							"x": 182,
-							"y": 123,
-							"ref": "chirphilo",
-							"id": "SvgjsSvg1006",
-							"type": "svg"
-						},
-						{
-							"svgDataRef": "acquire",
-							"style": {},
-							"offset": [0, 0],
-							"mountConfig": {
-								"orientation": "top",
-								"alignment": "centre",
-								"noSections": 1,
-								"channelID": "c04928672e361",
-								"sequenceID": "e08609e4996f88",
-								"index": 3,
-								"mountOn": true,
-								"dropEffect": "insert",
-								"insert": false
-							},
-							"padding": [0, 0, 0, 0],
-							"contentWidth": 150,
-							"contentHeight": 75,
-							"x": 282,
-							"y": 68,
-							"ref": "acquire",
-							"id": "SvgjsSvg1009",
-							"type": "svg"
-						},
-						{
-							"svgDataRef": "chirphilo",
-							"style": {},
-							"offset": [0, 1],
-							"mountConfig": {
-								"orientation": "top",
-								"alignment": "centre",
-								"noSections": 1,
-								"channelID": "c04928672e361",
-								"sequenceID": "e08609e4996f88",
-								"index": 2,
-								"mountOn": true,
-								"dropEffect": "insert",
-								"insert": true
-							},
-							"padding": [0, 0, 0, 0],
-							"contentWidth": 50,
-							"contentHeight": 20,
-							"x": 232,
-							"y": 123,
-							"ref": "chirphilo",
-							"id": "SvgjsSvg1012",
-							"type": "svg"
-						},
-						{
-							"svgDataRef": "acquire",
-							"style": {},
-							"offset": [0, 0],
-							"mountConfig": {
-								"orientation": "top",
-								"alignment": "centre",
-								"noSections": 1,
-								"channelID": "c04928672e361",
-								"sequenceID": "e08609e4996f88",
-								"index": 0,
-								"mountOn": true,
-								"dropEffect": "insert",
-								"insert": true
-							},
-							"padding": [0, 0, 0, 0],
-							"contentWidth": 150,
-							"contentHeight": 75,
-							"x": 32,
-							"y": 68,
-							"ref": "acquire",
-							"id": "SvgjsSvg1015",
-							"type": "svg"
-						}
-					],
-					"userChildren": [],
-					"offset": [0, 0],
-					"padding": [0, 0, 0, 0],
-					"contentWidth": 427,
-					"contentHeight": 98,
-					"x": 5,
-					"y": 68,
-					"ref": "my-channel",
-					"id": "c04928672e361",
-					"type": "channel"
-				}
-			],
-			"userChildren": [],
-			"offset": [0, 0],
-			"padding": [5, 5, 5, 5],
-			"contentWidth": 427,
-			"contentHeight": 161,
-			"x": 0,
-			"y": 0,
-			"ref": "sequence",
-			"id": "e08609e4996f88",
-			"type": "sequence"
-		}
-	],
-	"userChildren": [
-		{
-			"lineStyle": {
-				"stroke": "black",
-				"thickness": 1,
-				"dashing": [0, 0],
-				"headStyle": ["default", "default"]
-			},
-			"x2": 207,
-			"y2": 133,
-			"adjustment": [0, 0],
-			"orientation": "horizontal",
-			"offset": [0, 0],
-			"padding": [0, 0, 0, 0],
-			"contentWidth": 100,
-			"contentHeight": 27.5,
-			"x": 107,
-			"y": 105.5,
-			"ref": "LINE",
-			"id": "75ab708b484a88",
-			"type": "line"
-		},
-		{
-			"lineStyle": {
-				"stroke": "black",
-				"thickness": 1,
-				"dashing": [0, 0],
-				"headStyle": ["default", "default"]
-			},
-			"x2": 5,
-			"y2": 5,
-			"adjustment": [0, 0],
-			"orientation": "horizontal",
-			"offset": [0, 0],
-			"padding": [0, 0, 0, 0],
-			"contentWidth": 0,
-			"contentHeight": 0,
-			"x": 207,
-			"y": 25,
-			"ref": "LINE",
-			"id": "622b298263882",
-			"type": "line"
-		}
-	],
-	"offset": [0, 0],
-	"padding": [0, 0, 0, 0],
-	"contentWidth": 437,
-	"contentHeight": 171,
-	"x": 0,
-	"y": 0,
-	"ref": "diagram",
-	"id": "d0c4a8717b22",
-	"type": "diagram"
+  _x: 0,
+  _y: 0,
+  _id: "25f48bde3a279",
+  parentId: undefined,
+  ref: "sequence",
+  AnchorFunctions: {
+    here: {
+      get: function () { [native code] },
+      set: function () { [native code] },
+    },
+    centre: {
+      get: function () { [native code] },
+      set: function () { [native code] },
+    },
+    far: {
+      get: function () { [native code] },
+      set: function () { [native code] },
+    },
+  },
+  _contentWidth: 0,
+  _contentHeight: 0,
+  placementMode: {
+    type: "managed",
+  },
+  bindings: [
+  ],
+  bindingsToThis: [
+  ],
+  padding: [
+    5,
+    5,
+    5,
+    5,
+  ],
+  _dirty: true,
+  offset: [
+    0,
+    0,
+  ],
+  svg: undefined,
+  gridMatrix: [
+    [
+      undefined,
+      undefined,
+      undefined,
+    ],
+    [
+      undefined,
+      undefined,
+    ],
+    [
+      {
+        _x: 0,
+        _y: 0,
+        _id: "4e0040689888f8",
+        parentId: undefined,
+        ref: "TEXT",
+        AnchorFunctions: {
+          here: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+          centre: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+          far: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+        },
+        _contentWidth: 26.85,
+        _contentHeight: 20,
+        placementMode: {
+          type: "managed",
+        },
+        bindings: [
+        ],
+        bindingsToThis: [
+        ],
+        padding: [
+          0,
+          0,
+          0,
+          0,
+        ],
+        _dirty: true,
+        offset: [
+          0,
+          0,
+        ],
+        svg: {
+          node: {
+            instance: [Circular],
+          },
+          type: "svg",
+          dom: {
+          },
+        },
+        intrinsicSize: {
+          width: 102.87309,
+          height: 76.628,
+        },
+        wHRatio: 1.3425,
+        text: "^{1}\\mathrm{H}",
+        style: {
+          fontSize: 50,
+          colour: "black",
+          display: "block",
+          background: null,
+        },
+      },
+      {
+        _x: 0,
+        _y: 0,
+        _id: "e4c865eae13f68",
+        parentId: undefined,
+        ref: "bar",
+        AnchorFunctions: {
+          here: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+          centre: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+          far: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+        },
+        _contentWidth: 7,
+        _contentHeight: 50,
+        placementMode: {
+          type: "grid",
+          gridConfig: {
+            coords: {
+              row: 1,
+              col: 1,
+            },
+            alignment: {
+              x: "here",
+              y: "here",
+            },
+            size: {
+              noRows: 1,
+              noCols: 1,
+            },
+          },
+        },
+        bindings: [
+        ],
+        bindingsToThis: [
+        ],
+        padding: [
+          0,
+          4,
+          0,
+          4,
+        ],
+        _dirty: true,
+        offset: [
+          0,
+          0,
+        ],
+        svg: {
+          node: {
+            instance: [Circular],
+          },
+          type: "rect",
+          dom: {
+          },
+        },
+        style: {
+          fill: "#000000",
+          stroke: "black",
+          strokeWidth: 0,
+        },
+      },
+    ],
+    [
+      undefined,
+      undefined,
+    ],
+  ],
+  gridSizes: {
+    columns: [
+    ],
+    rows: [
+    ],
+  },
+  cells: [
+  ],
+  channels: [
+    {
+      _x: 0,
+      _y: 0,
+      _id: "5fb8b2f90008b8",
+      parentId: undefined,
+      ref: "my-channel",
+      AnchorFunctions: {
+        here: {
+          get: function () { [native code] },
+          set: function () { [native code] },
+        },
+        centre: {
+          get: function () { [native code] },
+          set: function () { [native code] },
+        },
+        far: {
+          get: function () { [native code] },
+          set: function () { [native code] },
+        },
+      },
+      _contentWidth: 0,
+      _contentHeight: 0,
+      placementMode: {
+        type: "managed",
+      },
+      bindings: [
+      ],
+      bindingsToThis: [
+      ],
+      padding: [
+        0,
+        0,
+        0,
+        0,
+      ],
+      _dirty: true,
+      offset: [
+        0,
+        0,
+      ],
+      svg: undefined,
+      gridMatrix: [
+        [
+          undefined,
+          undefined,
+        ],
+        [
+          {
+            _x: 0,
+            _y: 0,
+            _id: "4e0040689888f8",
+            parentId: undefined,
+            ref: "TEXT",
+            AnchorFunctions: {
+              here: {
+                get: function () { [native code] },
+                set: function () { [native code] },
+              },
+              centre: {
+                get: function () { [native code] },
+                set: function () { [native code] },
+              },
+              far: {
+                get: function () { [native code] },
+                set: function () { [native code] },
+              },
+            },
+            _contentWidth: 26.85,
+            _contentHeight: 20,
+            placementMode: {
+              type: "managed",
+            },
+            bindings: [
+            ],
+            bindingsToThis: [
+            ],
+            padding: [
+              0,
+              0,
+              0,
+              0,
+            ],
+            _dirty: true,
+            offset: [
+              0,
+              0,
+            ],
+            svg: {
+              node: {
+                instance: [Circular],
+              },
+              type: "svg",
+              dom: {
+              },
+            },
+            intrinsicSize: {
+              width: 102.87309,
+              height: 76.628,
+            },
+            wHRatio: 1.3425,
+            text: "^{1}\\mathrm{H}",
+            style: {
+              fontSize: 50,
+              colour: "black",
+              display: "block",
+              background: null,
+            },
+          },
+          {
+            _x: 0,
+            _y: 0,
+            _id: "e4c865eae13f68",
+            parentId: undefined,
+            ref: "bar",
+            AnchorFunctions: {
+              here: {
+                get: function () { [native code] },
+                set: function () { [native code] },
+              },
+              centre: {
+                get: function () { [native code] },
+                set: function () { [native code] },
+              },
+              far: {
+                get: function () { [native code] },
+                set: function () { [native code] },
+              },
+            },
+            _contentWidth: 7,
+            _contentHeight: 50,
+            placementMode: {
+              type: "grid",
+              gridConfig: {
+                coords: {
+                  row: 1,
+                  col: 1,
+                },
+                alignment: {
+                  x: "here",
+                  y: "here",
+                },
+                size: {
+                  noRows: 1,
+                  noCols: 1,
+                },
+              },
+            },
+            bindings: [
+            ],
+            bindingsToThis: [
+            ],
+            padding: [
+              0,
+              4,
+              0,
+              4,
+            ],
+            _dirty: true,
+            offset: [
+              0,
+              0,
+            ],
+            svg: {
+              node: {
+                instance: [Circular],
+              },
+              type: "rect",
+              dom: {
+              },
+            },
+            style: {
+              fill: "#000000",
+              stroke: "black",
+              strokeWidth: 0,
+            },
+          },
+        ],
+        [
+          undefined,
+          undefined,
+        ],
+      ],
+      gridSizes: {
+        columns: [
+        ],
+        rows: [
+        ],
+      },
+      cells: [
+      ],
+      style: {
+        thickness: 3,
+        barStyle: {
+          fill: "#000000",
+          stroke: null,
+          strokeWidth: null,
+        },
+      },
+      sequenceID: null,
+      label: {
+        _x: 0,
+        _y: 0,
+        _id: "4e0040689888f8",
+        parentId: undefined,
+        ref: "TEXT",
+        AnchorFunctions: {
+          here: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+          centre: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+          far: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+        },
+        _contentWidth: 26.85,
+        _contentHeight: 20,
+        placementMode: {
+          type: "managed",
+        },
+        bindings: [
+        ],
+        bindingsToThis: [
+        ],
+        padding: [
+          0,
+          0,
+          0,
+          0,
+        ],
+        _dirty: true,
+        offset: [
+          0,
+          0,
+        ],
+        svg: {
+          node: {
+            instance: [Circular],
+          },
+          type: "svg",
+          dom: {
+          },
+        },
+        intrinsicSize: {
+          width: 102.87309,
+          height: 76.628,
+        },
+        wHRatio: 1.3425,
+        text: "^{1}\\mathrm{H}",
+        style: {
+          fontSize: 50,
+          colour: "black",
+          display: "block",
+          background: null,
+        },
+      },
+      bar: {
+        _x: 0,
+        _y: 0,
+        _id: "e4c865eae13f68",
+        parentId: undefined,
+        ref: "bar",
+        AnchorFunctions: {
+          here: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+          centre: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+          far: {
+            get: function () { [native code] },
+            set: function () { [native code] },
+          },
+        },
+        _contentWidth: 7,
+        _contentHeight: 50,
+        placementMode: {
+          type: "grid",
+          gridConfig: {
+            coords: {
+              row: 1,
+              col: 1,
+            },
+            alignment: {
+              x: "here",
+              y: "here",
+            },
+            size: {
+              noRows: 1,
+              noCols: 1,
+            },
+          },
+        },
+        bindings: [
+        ],
+        bindingsToThis: [
+        ],
+        padding: [
+          0,
+          4,
+          0,
+          4,
+        ],
+        _dirty: true,
+        offset: [
+          0,
+          0,
+        ],
+        svg: {
+          node: {
+            instance: [Circular],
+          },
+          type: "rect",
+          dom: {
+          },
+        },
+        style: {
+          fill: "#000000",
+          stroke: "black",
+          strokeWidth: 0,
+        },
+      },
+    },
+  ],
 }

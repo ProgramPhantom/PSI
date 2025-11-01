@@ -8,6 +8,7 @@ import CircularDependencyPlugin from 'vite-plugin-circular-dependency';
 export default defineConfig({
 	appType: "mpa",
 	esbuild: {
+		sourcemap: true,
 		supported: {
 			"top-level-await": true //browsers can handle top-level-await features
 		}
@@ -41,5 +42,8 @@ export default defineConfig({
 			include: ["/\.ts$/"],
 			exclude: ["/node_modules/"]
 		}),
-	]
+	],
+	build: {
+		sourcemap: true,
+	}
 });

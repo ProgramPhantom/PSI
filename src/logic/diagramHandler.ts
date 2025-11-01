@@ -1,5 +1,7 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
+import { appToaster } from "../app/Toaster";
 import SchemeManager from "./default";
+import { defaultDiagram } from "./default/index.ts";
 import Channel, { IChannel } from "./hasComponents/channel";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
@@ -10,9 +12,7 @@ import RectElement, { IRectElement } from "./rectElement";
 import { IMountConfig, PlacementConfiguration, PointBind } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual } from "./visual";
-import { appToaster } from "../app/Toaster";
-import { defaultDiagram } from "./default/index.ts";
-
+import ENGINE from "./engine.ts";
 
 console.log("Load module diagram handler")
 
@@ -83,19 +83,19 @@ export default class DiagramHandler implements IDraw {
 		this.schemeManager = schemeManager;
 		this.surface = surface;
 
-		// var constructResult: Result<Diagram> = this.constructDiagram(
-		// 	(<any>defaultDiagram) as Diagram
-		// );
+		var constructResult: Result<Diagram> = this.constructDiagram(
+			defaultDiagram
+		);
 
-		//if (constructResult.ok) {
-		//	this.diagram = constructResult.value;
-		//} else {
+		if (constructResult.ok) {
+			this.diagram = constructResult.value;
+		} else {
 			appToaster.show({
 				message: "Error loading diagram",
 				intent: "danger"
 			});
 			this.diagram = new Diagram(defaultDiagram);
-		//}
+		}
 
 		this.draw();
 	}
@@ -292,7 +292,7 @@ export default class DiagramHandler implements IDraw {
 				};
 		}
 
-		this.placeVisual(element);
+		return this.placeVisual(element);
 	}
 	@draws
 	public moveVisual(element: Visual, x: number, y: number): Result<Visual> {

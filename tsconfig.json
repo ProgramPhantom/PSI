@@ -6,6 +6,7 @@
 		"module": "ESNext",
 		"skipLibCheck": true,
 		"sourceMap": true,
+		"inlineSources": true,
 		"explainFiles": true,
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,

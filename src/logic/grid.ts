@@ -268,9 +268,33 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		return !target.some((c) => c !== undefined)
 	}
 
-	protected expandMatrix(coords: {row: number, col: number}) {
-		var rowDiff: number = coords.row - this.noRows + 1;
-		var colDiff: number = coords.col - this.noColumns + 1;
+
+	/**
+	 * Expands the matrix by inserting empty rows and/or columns until the provided
+	 * zero-based coordinate (row, col) is within the matrix bounds. This method
+	 * mutates the underlying grid state by calling insertEmptyRow() and
+	 * insertEmptyColumn() as needed.
+	 *
+	 * @protected
+	 *
+	 * @param coords - An object with zero-based `row` and `col` indices that must be contained by the matrix.
+	 *                 If the coordinate is already within bounds, no changes are made.
+	 *
+	 * @remarks
+	 * - The method computes how many additional rows and columns are required and
+	 *   inserts them one at a time until the coordinate is reachable. The coords
+	 *   parameter is *not* the number of rows and columns to be added.
+	 * - Negative indices or non-integer values are not explicitly validated here;
+	 *   callers should provide valid, non-negative integer indices.
+	 * - Complexity is proportional to the number of inserted rows and columns.
+	 *
+	 * @example
+	 * // ensure coordinate (5, 3) exists; will insert rows/columns as needed
+	 * this.expandMatrix({ row: 5, col: 3 });
+	 */
+	protected expandMatrix(coords: {row?: number, col?: number}) {
+		var rowDiff: number = coords.row !== undefined ? coords.row - this.noRows + 1 : 0;
+		var colDiff: number = coords.col !== undefined ? coords.col - this.noRows + 1 : 0;
 		
 		// There are missing rows needed to add this coord
 		while (rowDiff >= 1) {
