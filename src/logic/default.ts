@@ -1,20 +1,15 @@
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
 import defaultScheme from "./default/schemeSet.json";
 import type { IChannel } from "./hasComponents/channel";
-import Channel from "./hasComponents/channel";
-import Label from "./hasComponents/label";
-import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
-import Sequence, { ISequence } from "./hasComponents/sequence";
-import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
-import Line, { ILine } from "./line";
+import { ILabelGroup } from "./hasComponents/labelGroup";
+import { ISequence } from "./hasComponents/sequence";
+import { ISequenceAligner } from "./hasComponents/sequenceAligner";
+import { ILine } from "./line";
 import { ID, UserComponentType } from "./point";
-import RectElement, { IRectElement } from "./rectElement";
-import Space from "./space";
-import SVGElement, { ISVGElement } from "./svgElement";
+import { IRectElement } from "./rectElement";
+import { ISVGElement } from "./svgElement";
 import { IText } from "./text";
-import Visual from "./visual";
 
-console.log("Load module default")
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
 const ASSET_SVGS: SVGDict = import.meta.glob("../assets/svg/*.svg", {
