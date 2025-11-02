@@ -18,8 +18,8 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 				"ref": "sequence",
 				"x": 0,
 				"y": 0,
-
-				"padding": [5, 5, 5, 5],
+				"minHeight": 20,
+				"padding": [0, 0, 0, 0],
 				"offset": [0, 0],
 
 				"gridChildren": [],

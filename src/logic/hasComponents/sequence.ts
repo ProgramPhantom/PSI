@@ -69,47 +69,60 @@ export default class Sequence extends Grid implements ISequence {
 			channel.computeSize();
 		})
 
+		this.applyToChannels();
 		return size
 	}
 
 	public override computePositions(root: {x: number, y: number}): void {
-			this.x = root.x;
-			this.y = root.y;
-	
-			// Find dimension and positions of the cells.
-			this.computeCells();
-	
-			// Now iterate through the gridMatrix and set the position of children
-			this.gridMatrix.forEach((row, row_index) => {
-				row.forEach((child, column_index) => {
-					if (child !== undefined) {
-						var cell: Spacial = this.cells[row_index][column_index];
-	
-						var gridConfig: IGridChildConfig;
-						if (child.placementMode.type === "grid") {
-							gridConfig = child.placementMode.gridConfig;
-						} else if (cell.placementMode.type === "pulse") {
-							gridConfig = this.mountConfigToGridConfig(cell.placementMode.config);
-						} else {
-							gridConfig = {
-								coords: {row: row_index, col: column_index},
-								alignment: {x: "here", y: "here"},
-								size: {noRows: 1, noCols: 1}
-							}
-						}
-	
-						var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
-	
-						cell.internalImmediateBind(child, "x", alignment.x)
-						cell.internalImmediateBind(child, "y", alignment.y)
-						
-	
-						child.computePositions({x: child.x, y: child.y});
-					}
-				})
-			})
-		}
+		this.x = root.x;
+		this.y = root.y;
 
+		// Find dimension and positions of the cells.
+		this.computeCells();
+
+		// Update positions of columns and rows
+		this.gridSizes.columns.forEach((col, i) => {
+			col.x = this.cells[0][i].x;
+			col.y = this.cells[0][0].y;
+		})
+
+		this.gridSizes.rows.forEach((row, i) => {
+			row.y = this.cells[i][0].y;
+			row.x = this.cells[0][0].x;
+		})
+
+		// Now iterate through the gridMatrix and set the position of children
+		this.gridMatrix.forEach((row, row_index) => {
+			row.forEach((child, column_index) => {
+				if (child !== undefined) {
+					var cell: Spacial = this.cells[row_index][column_index];
+
+					var gridConfig: IGridChildConfig;
+					if (child.placementMode.type === "grid") {
+						gridConfig = child.placementMode.gridConfig;
+					} else if (cell.placementMode.type === "pulse") {
+						gridConfig = this.mountConfigToGridConfig(cell.placementMode.config);
+					} else {
+						gridConfig = {
+							coords: {row: row_index, col: column_index},
+							alignment: {x: "here", y: "here"},
+							size: {noRows: 1, noCols: 1}
+						}
+					}
+
+					var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
+
+					cell.internalImmediateBind(child, "x", alignment.x)
+					cell.internalImmediateBind(child, "y", alignment.y)
+					
+
+					child.computePositions({x: child.x, y: child.y});
+				}
+			})
+		})
+
+		this.applyToChannels();
+	}
 
 	public addPulse(pulse: Visual) {
 		if (pulse.placementMode.type !== "pulse") {
@@ -177,6 +190,25 @@ export default class Sequence extends Grid implements ISequence {
 		});
 
 		return channelIndex;
+	}
+
+	private applyToChannels() {
+		this.channels.forEach((channel, channel_index) => {
+			let INDEX: number = channel_index * 3;
+
+			let gridSlice = this.gridMatrix.slice(INDEX, INDEX+3);
+
+			let rowSizeSlice = this.gridSizes.rows.slice(INDEX, INDEX+3);
+			let gridSizes: {columns: Spacial[], rows: Spacial[]} = {rows: rowSizeSlice, columns: this.gridSizes.columns}
+
+			let cellSlice = this.cells.slice(INDEX, INDEX+3);
+
+			channel.x = this.contentX;
+			channel.y = rowSizeSlice[0].y;
+
+			channel.setGrid(gridSlice, gridSizes, cellSlice);
+
+		})
 	}
 
 	protected mountConfigToGridConfig(mountConfig: IMountConfig): IGridChildConfig {

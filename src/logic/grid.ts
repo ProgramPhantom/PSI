@@ -6,7 +6,9 @@ import { G } from "@svgdotjs/svg.js";
 console.log(`[ModuleLoad] Grid`);
 
 export interface IGrid extends IVisual {
-	gridChildren: IVisual[]
+	gridChildren: IVisual[],
+	minHeight?: number,
+	minWidth?: number
 }
 
 type GridEntry = Visual | undefined
@@ -51,17 +53,21 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		return allChildren;
 	}
 
+	private min: {width: number, height: number};
+
 	// Truth
 	public gridMatrix: (T | undefined)[][] = [];
 	//
 	
-	public gridSizes: {columns: Spacial[], rows: Spacial[]}= {columns: [], rows: []};
+	public gridSizes: {columns: Spacial[], rows: Spacial[]} = {columns: [], rows: []};
 	cells: Spacial[][];
 
 	constructor(params: IGrid) {
 		super(params);
 
 		this.cells = [];
+
+		this.min = {width: params.minWidth ?? 0, height: params.minHeight ?? 0};
 	}
 
 
@@ -100,7 +106,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		// Let's compute the width and height of each column
 		var columnRects: Spacial[] = Array.from({length: gridColumns.length}, () => new Spacial())
 		gridColumns.forEach((col, i) => {
-			var maxWidth = Math.max(...col.map((child) => child !== undefined ? child.width : 0))
+			var maxWidth = Math.max(...col.map((child) => child !== undefined ? child.width : 0), this.min.width)
 
 			columnRects[i].width = maxWidth;
 
@@ -112,7 +118,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		// Now lets compute the width and height of each row
 		var rowRects: Spacial[] = Array.from({length: gridRows.length}, () => new Spacial())
 		gridRows.forEach((row, i) => {
-			var maxHeight = Math.max(...row.map((child) => child !== undefined ? child.height : 0))
+			var maxHeight = Math.max(...row.map((child) => child !== undefined ? child.height : 0), this.min.height)
 
 			rowRects[i].height = maxHeight;
 
@@ -151,6 +157,17 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 		// Find dimension and positions of the cells.
 		this.computeCells();
+
+		// Update positions of columns and rows
+		this.gridSizes.columns.forEach((col, i) => {
+			col.x = this.cells[0][i].x;
+			col.y = this.cells[0][0].y;
+		})
+
+		this.gridSizes.rows.forEach((row, i) => {
+			row.y = this.cells[i][0].y;
+			row.x = this.cells[0][0].x;
+		})
 
 		// Now iterate through the gridMatrix and set the position of children
 		this.gridMatrix.forEach((row, row_index) => {
@@ -247,6 +264,12 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	}
 	public getRow(index: number): GridEntry[] {
 		return this.gridMatrix[index];
+	}
+
+	public setGrid(grid: T[][], sizes: {columns: Spacial[], rows: Spacial[]}, cells: Spacial[][]) {
+		this.gridMatrix = grid;
+		this.gridSizes = sizes;
+		this.cells = cells;
 	}
 
 	public matchRowLengths() {

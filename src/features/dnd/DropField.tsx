@@ -79,9 +79,7 @@ class DiagramDropInterpreter {
 								x: column.x - this.slitherWidth / 2,
 								y: channel.y,
 								width: this.slitherWidth,
-								height:
-									channel.gridSizes.rows[0].height
-									+ channel.padding[0]
+								height: channel.gridSizes.rows[0].height
 							},
 							index: columnIndex,
 							orientation: "top",
@@ -194,6 +192,7 @@ class DiagramDropInterpreter {
 				this.insertAreas.push(newSlither);
 			});
 		});
+	
 	}
 }
 
