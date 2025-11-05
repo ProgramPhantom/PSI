@@ -11,6 +11,6 @@ export const DEFAULT_RECT_ELEMENT: IRectElement = {
 		"stroke": null,
 		"strokeWidth": null
 	},
-	"placementMode": {"type": "free", "sizeMode": "fixed"},
+	"placementMode": {"type": "free", "sizeMode": {x: "fit", y: "fit"}},
 	"ref": "rect-element"
 }

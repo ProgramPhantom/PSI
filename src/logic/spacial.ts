@@ -36,7 +36,7 @@ export interface IGridChildConfig {
 	size?: {noRows: number, noCols: number}
 }
 
-export type PlacementConfiguration = {type: "free", sizeMode: SizeMethod} | 
+export type PlacementConfiguration = {type: "free", sizeMode: {x: SizeMethod, y: SizeMethod}} | 
 									 {type: "pulse"; config: IMountConfig} | 
 									 {type: "binds"; bindings: undefined} | 
 									 {type: "grid"; gridConfig: IGridChildConfig} |
@@ -91,16 +91,6 @@ export interface ISpacial extends IPoint {
 export type UpdateNotification = (...args: any[]) => any;
 
 export default class Spacial extends Point implements ISpacial, IHaveSize {
-	static override defaults: {[name: string]: ISpacial} = {
-		default: {
-			x: 0,
-			y: 0,
-			contentWidth: 0,
-			contentHeight: 0,
-			placementMode: {type: "free", sizeMode: "fixed"},
-			ref: "default-spacial"
-		}
-	};
 	get state(): ISpacial {
 		return {
 			contentWidth: this._contentWidth,
@@ -143,7 +133,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	) {
 		super(x, y, ref, id);
 
-		this.placementMode = placementMode ?? {type: "free", sizeMode: "fit"}
+		this.placementMode = placementMode ?? {type: "free", sizeMode: {x: "fit", y: "fit"}}
 
 		this.contentWidth = width ?? 0;
 		this.contentHeight = height ?? 0;

@@ -16,6 +16,6 @@ export const DEFAULT_TEXT: IText = {
 		"display": "block"
 	},
 
-	"placementMode": {"type": "free", "sizeMode": "fixed"}
+	"placementMode": {"type": "free", "sizeMode": {x: "fit", y: "fit"}}
 }
  

@@ -9,7 +9,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 		"contentHeight": 0,
 		"offset": [0, 0],
 		"padding": [0, 0, 0, 0],
-		"placementMode": {"type": "free", "sizeMode": "fit"},
+		"placementMode": {"type": "free", "sizeMode": {x: "fit", y: "fit"}},
 		"ref": "sequence-aligner",
 		"sequences": [],
 		"alignerChildren": [
@@ -85,7 +85,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 		]
 	},
 	"children": [],
-	"placementMode": {"type": "free", "sizeMode": "fit"},
+	"placementMode": {"type": "free", "sizeMode": {x: "fit", y: "fit"}},
 	"offset": [0, 0],
 	"padding": [5, 5, 5, 5],
 	"contentWidth": 87,
