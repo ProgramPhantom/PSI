@@ -2,7 +2,7 @@ import { IRectElement } from "../rectElement";
 
 export const DEFAULT_BAR: IRectElement = {
 	"ref": "bar",
-	"contentWidth": 10,
+	"contentWidth": 0,
 	"contentHeight": 10,
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],

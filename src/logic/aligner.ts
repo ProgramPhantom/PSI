@@ -118,6 +118,14 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 		}
 	}
 
+	public override growElement(containerSize: Size) {
+		this.width = containerSize.width;
+		this.height = containerSize.height;
+
+		// TODO:
+		console.warn("not implemented")
+	}
+
 	public add(
 		child: T,
 		index?: number,

@@ -153,6 +153,11 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return
 	}
 
+	public growElement(containerSize: Size) {
+		this.width = containerSize.width;
+		this.height = containerSize.height;
+	}
+
 	public getHitbox(): Rect {
 		var hitbox = SVG()
 			.rect()
@@ -215,6 +220,9 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.contentHeight = v;
 	}
 
+	get size(): Size {
+		return {width: this.width, height: this.height}
+	}
 
 	public clearBindings(dimension: Dimensions) {
 		var toRemove: IBinding[] = [];

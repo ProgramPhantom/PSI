@@ -178,6 +178,16 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		})
 	}
 
+	public override growElement(containerSize: Size) {
+		this.width = containerSize.width;
+		this.height = containerSize.height;
+
+		// TODO:
+		this.children.forEach((child) => {
+			child.growElement(this.size);
+		})
+	}
+
 	// Construct and SVG with children positioned relative to (0, 0)
 	override getInternalRepresentation(): Element | undefined {
 		try {

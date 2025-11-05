@@ -197,6 +197,21 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		})
 	}
 
+	public override growElement(containerSize: Size) {
+		this.width = containerSize.width;
+		this.height = containerSize.height;
+
+		this.gridMatrix.forEach((row, row_index) => {
+			row.forEach((element, column_index) => {
+				if (element !== undefined) {
+					let cell = this.cells[row_index][column_index];
+
+					element.growElement(cell.size);
+				}
+			})
+		})
+	}
+
 	public add(child: T, row: number, column?: number) {
 		var insertCoords: {row: number, col: number} | undefined;
 		if (column === undefined) {
