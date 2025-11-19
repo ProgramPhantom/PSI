@@ -136,6 +136,8 @@ export default class Sequence extends Grid implements ISequence {
 
 
 		this.add(pulse, gridConfig.coords.row, gridConfig.coords.col);
+
+		this.growBarCellWidth();
 	}
 
 	// Content Commands
@@ -192,6 +194,25 @@ export default class Sequence extends Grid implements ISequence {
 		return channelIndex;
 	}
 
+	/**
+	 * Applies grid slices and positional offsets to each channel in `this.channels`.
+	 *
+	 * For each channel at index `i` this method:
+	 * - computes a base `INDEX = i * 3` and extracts 3-item slices from `this.gridMatrix` and `this.cells`,
+	 *   plus a corresponding 3-item slice from `this.gridSizes.rows`.
+	 * - builds a `gridSizes` object that preserves `this.gridSizes.columns` and uses the extracted row slice.
+	 * - sets the channel's `x` to `this.contentX` and `y` to the `y` value of the first row in the row slice.
+	 * - calls `channel.setGrid(gridSlice, gridSizes, cellSlice)` to assign the extracted grid and cells.
+	 *
+	 * Side effects:
+	 * - Mutates each channel by setting `x`, `y`, and invoking `setGrid`.
+	 *
+	 * Preconditions:
+	 * - `this.gridMatrix`, `this.cells`, and `this.gridSizes.rows` must be aligned and long enough so that
+	 *   slicing `INDEX .. INDEX + 3` is valid for every channel.
+	 *
+	 * @private
+	 */
 	private applyToChannels() {
 		this.channels.forEach((channel, channel_index) => {
 			let INDEX: number = channel_index * 3;
@@ -208,6 +229,14 @@ export default class Sequence extends Grid implements ISequence {
 
 			channel.setGrid(gridSlice, gridSizes, cellSlice);
 
+		})
+	}
+
+	private growBarCellWidth() {
+		this.channels.forEach((c) => {
+			if (c.bar.placementMode.type === "grid") {
+				c.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.noColumns-1}
+			}
 		})
 	}
 
