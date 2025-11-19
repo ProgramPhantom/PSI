@@ -31,22 +31,20 @@ class DiagramDropInterpreter {
 
 		// Iterate sequences
 		Object.entries(diagram.sequenceDict).forEach(([seqID, sequence]) => {
-			var channels = sequence.channels;
-			var columns: Rect[] = sequence.gridSizes.columns;
-			var noColumns = columns.length;
-			var noChannels = channels.length;
 
-			// Allowed Slither indexes
-			var slitherIndexes: boolean[] = Array<boolean>(noColumns).fill(true);
-			for (var channelIndex = 0; channelIndex < noChannels; channelIndex++) {
-				var channel: Channel = channels[channelIndex];
+			Object.entries(sequence.channelsDict).forEach(([channelId, channel], channelIndex) => {
+				var columns: Rect[] = channel.gridSizes.columns;
+				var noColumns = columns.length;
 
-				// Columns
+				// Allowed Slither indexes
+				var slitherIndexes: boolean[] = Array<boolean>(noColumns).fill(true);
+
+				// Compute indexes of the slithers
 				for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
 					let preOccupancy: Visual | undefined =
-						sequence.gridMatrix[channelIndex][columnIndex - 1];
+						channel.gridMatrix[channelIndex][columnIndex - 1];
 					let hereOccupancy: Visual | undefined =
-						sequence.gridMatrix[channelIndex][columnIndex];
+						channel.gridMatrix[channelIndex][columnIndex];
 
 					if (
 						!(
@@ -59,18 +57,17 @@ class DiagramDropInterpreter {
 						slitherIndexes[columnIndex] = false;
 					}
 				}
-			}
+				
 
-			columns.forEach((column, columnIndex) => {
-				var heightTop;
-				var heightBottom;
-
-				Object.entries(sequence.channelsDict).forEach(([chanID, channel], channelIndex) => {
+				// Main slithers and place blocks
+				for (var columnIndex = 1; columnIndex < noColumns; columnIndex++) {
+					var column = columns[columnIndex];
 					let occupied: boolean =
-						sequence.gridMatrix[channelIndex][columnIndex] === undefined
+						channel.gridMatrix[0][columnIndex] === undefined
 							? false
 							: true;
 
+					// SLITHERS
 					if (slitherIndexes[columnIndex]) {
 						// Insert start
 						// Top slither
@@ -83,7 +80,7 @@ class DiagramDropInterpreter {
 							},
 							index: columnIndex,
 							orientation: "top",
-							channelID: chanID,
+							channelID: channelId,
 							insert: true,
 							sequenceID: sequence.id
 						};
@@ -101,13 +98,14 @@ class DiagramDropInterpreter {
 							},
 							index: columnIndex,
 							orientation: "bottom",
-							channelID: chanID,
+							channelID: channelId,
 							insert: true,
 							sequenceID: sequence.id
 						};
 						this.insertAreas.push(newSlither);
 					}
 
+					// PLACE BLOCK
 					if (!occupied) {
 						// Top block
 						var columnWidth = column.width;
@@ -122,7 +120,7 @@ class DiagramDropInterpreter {
 							},
 							index: columnIndex,
 							orientation: "top",
-							channelID: chanID,
+							channelID: channelId,
 							sequenceID: seqID,
 							insert: false
 						};
@@ -138,25 +136,23 @@ class DiagramDropInterpreter {
 							},
 							index: columnIndex,
 							orientation: "bottom",
-							channelID: chanID,
+							channelID: channelId,
 							sequenceID: seqID,
 							insert: false
 						};
 						this.insertAreas.push(newBlock);
 					}
-				});
-			});
-
-			// END SLITHERS
-			var column: Rect = columns[columns.length - 1];
-			var i = columns.length - 1;
+					
+				};
 
 
-			// insert end slithers:
-			Object.entries(sequence.channelsDict).forEach(([name, channel]) => {
+				// END SLITHERS
+				var column: Rect = columns[columns.length - 1];
+				var i = columns.length - 1;
+
+				// insert end slithers:
+				
 				// insert end slithers
-							
-				var upperAlignerHeight = channel.gridSizes.rows[0].height;
 				var lowerAlignerHeight = channel.gridSizes.rows[2].height;
 
 				// Top slither
@@ -165,11 +161,11 @@ class DiagramDropInterpreter {
 						x: column.x + column.width - this.slitherWidth / 2,
 						y: channel.y,
 						width: this.slitherWidth,
-						height: upperAlignerHeight
+						height: channel.gridSizes.rows[0].height
 					},
 					index: i + 1,
 					orientation: "top",
-					channelID: name,
+					channelID: channelId,
 					insert: true,
 					sequenceID: seqID
 				};
@@ -181,16 +177,19 @@ class DiagramDropInterpreter {
 						x: column.x + column.width - this.slitherWidth / 2,
 						y: channel.gridSizes.rows[2].y,
 						width: this.slitherWidth,
-						height: lowerAlignerHeight + channel.padding[2]
+						height: channel.gridSizes.rows[2].height + channel.padding[2]
 					},
 					index: i + 1,
 					orientation: "bottom",
-					channelID: name,
+					channelID: channelId,
 					insert: true,
 					sequenceID: seqID
 				};
 				this.insertAreas.push(newSlither);
-			});
+				
+			})
+
+			
 		});
 	
 	}

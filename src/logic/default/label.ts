@@ -26,7 +26,7 @@ export const DEFAULT_LABEL: ILabel = {
 	},
 
 	"line": null,
-	"placementMode": {"type": "free", "sizeMode": {x: "fit", y: "fit"}},
+	"placementMode": {"type": "free"},
 	"ref": "label",
 
 	"labelConfig": {
