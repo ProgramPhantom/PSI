@@ -24,6 +24,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 		"ref": "channel-symbol",
 		"text": "^{1}\\mathrm{H}",
 		"placementMode": {"type": "managed"},
+		"sizeMode": {"x": "fixed", "y": "fixed"},
 		"style": {
 			"fontSize": 50,
 			"colour": "black",

@@ -147,8 +147,8 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public computeSize(): Size {
-		this.width = this.contentHeight;
-		this.height = this.contentHeight;
+		// this.width = this.contentHeight;
+		// this.height = this.contentHeight;
 
 		return {width: this.width, height: this.height}
 	}
@@ -161,9 +161,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public growElement(containerSize: Size) {
-		if (this.ref === "DEFAULT_BAR") {
-			console.log()
-		}
+
 
 		if (this.sizeMode.x === "grow") {
 			this.width = containerSize.width;

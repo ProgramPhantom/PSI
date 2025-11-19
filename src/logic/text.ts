@@ -40,7 +40,7 @@ export default class Text extends Visual implements IText {
 
 	constructor(params: IText) {
 		super(params);
-		this.ref = "TEXT";
+		this.ref = "TEXT"
 		this.text = params.text;
 		this.style = params.style;
 
