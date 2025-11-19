@@ -179,8 +179,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	}
 
 	public override growElement(containerSize: Size) {
-		this.width = containerSize.width;
-		this.height = containerSize.height;
+		super.growElement(containerSize)
 
 		// TODO:
 		this.children.forEach((child) => {

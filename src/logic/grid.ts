@@ -140,6 +140,8 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			col.height = totalHeight
 		})
 
+		this.computeCellSizes();
+
 		this.gridSizes.rows = rowRects;
 		this.gridSizes.columns = columnRects;
 		
@@ -182,7 +184,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 						gridConfig = {
 							coords: {row: row_index, col: column_index},
 							alignment: {x: "here", y: "here"},
-							size: {noRows: 1, noCols: 1}
+							gridSize: {noRows: 1, noCols: 1}
 						}
 					}
 
@@ -197,7 +199,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		})
 	}
 
-	public override growElement(containerSize: Size) {
+	public growElement(containerSize: Size) {
 		this.width = containerSize.width;
 		this.height = containerSize.height;
 
@@ -279,6 +281,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 	}
 	public getRow(index: number): GridEntry[] {
 		return this.gridMatrix[index];
+	}
+
+	public getCells(): Spacial[] {
+		return this.cells.flat();
 	}
 
 	public setGrid(grid: T[][], sizes: {columns: Spacial[], rows: Spacial[]}, cells: Spacial[][]) {
@@ -484,5 +490,18 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 			yCount += rowHeight;
 		}
+	}
+
+	protected computeCellSizes() {
+		this.cells = Array.from({length: this.noRows}, () => Array.from({length: this.noColumns}, () => new Spacial()));
+
+		this.gridSizes.rows.forEach((row, row_index) => {
+			this.gridSizes.columns.forEach((column, column_index) => {
+				let targetCell = this.cells[row_index][column_index];
+
+				targetCell.width = column.width;
+				targetCell.height = row.height;
+			})
+		})
 	}
 }

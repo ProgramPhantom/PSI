@@ -1,4 +1,5 @@
 import { IDiagram } from "../hasComponents/diagram";
+import { DEFAULT_BAR } from "./bar";
 
 
 export const DEFAULT_DIAGRAM: IDiagram = {
@@ -19,6 +20,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 				"x": 0,
 				"y": 0,
 				"minHeight": 20,
+				"minWidth": 20,
 				"padding": [0, 0, 0, 0],
 				"offset": [0, 0],
 
@@ -56,29 +58,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 							}
 						},
 
-						"bar": {		
-							"padding": [0, 4, 0, 4],
-							"offset": [0, 0],
-
-							"contentWidth": 7,
-							"contentHeight": 50,
-
-							"placementMode": {"type": "grid", 
-								"gridConfig": {
-									"coords": {"row": 1, "col": 1},
-									"alignment": {"x": "here", "y": "here"},
-									"size": {"noRows": 1, "noCols": 1}
-								}
-							},
-
-							"style": {
-								"fill": "#000000",
-								"stroke": "black",
-								"strokeWidth": 0
-							},
-
-						"ref": "bar"
-					}
+						"bar": DEFAULT_BAR
 					}
 				]
 			}

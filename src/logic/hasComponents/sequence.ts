@@ -106,7 +106,7 @@ export default class Sequence extends Grid implements ISequence {
 						gridConfig = {
 							coords: {row: row_index, col: column_index},
 							alignment: {x: "here", y: "here"},
-							size: {noRows: 1, noCols: 1}
+							gridSize: {noRows: 1, noCols: 1}
 						}
 					}
 
@@ -238,7 +238,7 @@ export default class Sequence extends Grid implements ISequence {
 		return {
 			coords: {row: row, col: column},
 			alignment: mountConfig.alignment,
-			size: {noRows: 1, noCols: mountConfig.noSections}
+			gridSize: {noRows: 1, noCols: mountConfig.noSections}
 		}
 	}
 }

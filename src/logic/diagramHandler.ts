@@ -120,6 +120,7 @@ export default class DiagramHandler implements IDraw {
 
 	computeDiagram() {
 		this.diagram.computeSize();
+		this.diagram.growElement(this.diagram.size);
 		this.diagram.computePositions({x: 0, y: 0});
 	}
 

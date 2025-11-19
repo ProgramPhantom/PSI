@@ -33,14 +33,16 @@ export interface IMountConfig {
 export interface IGridChildConfig {
 	coords?: {row: number, col: number}
 	alignment?: Record<Dimensions, SiteNames>
-	size?: {noRows: number, noCols: number}
+	gridSize?: {noRows: number, noCols: number}
 }
 
-export type PlacementConfiguration = {type: "free", sizeMode: {x: SizeMethod, y: SizeMethod}} | 
+export type PlacementConfiguration = {type: "free"} | 
 									 {type: "pulse"; config: IMountConfig} | 
 									 {type: "binds"; bindings: undefined} | 
 									 {type: "grid"; gridConfig: IGridChildConfig} |
 									 {type: "managed"}
+
+export type SizeConfiguration = {x: SizeMethod, y: SizeMethod}
 
 
 export type PositionMethod = "controlled" | "free" | "partially-controlled";
@@ -85,7 +87,8 @@ export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
 
-	placementMode: PlacementConfiguration
+	placementMode?: PlacementConfiguration
+	sizeMode?: SizeConfiguration
 }
 
 export type UpdateNotification = (...args: any[]) => any;
@@ -96,6 +99,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
 			placementMode: this.placementMode,
+			sizeMode: this.sizeMode,
 			...super.state
 		};
 	}
@@ -118,6 +122,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	protected _contentHeight: number;
 
 	public placementMode: PlacementConfiguration;
+	public sizeMode: SizeConfiguration;
 
 	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
 	bindingsToThis: IBinding[] = [];
@@ -128,12 +133,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		width?: number,
 		height?: number,
 		placementMode?: PlacementConfiguration,
+		sizeMode?: SizeConfiguration,
 		ref: string = "spacial",
 		id: ID | undefined = undefined
 	) {
 		super(x, y, ref, id);
 
-		this.placementMode = placementMode ?? {type: "free", sizeMode: {x: "fit", y: "fit"}}
+		this.placementMode = placementMode ?? {type: "free"}
+		this.sizeMode = sizeMode ?? {x: "fixed", y: "fixed"}
 
 		this.contentWidth = width ?? 0;
 		this.contentHeight = height ?? 0;
@@ -154,8 +161,16 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public growElement(containerSize: Size) {
-		this.width = containerSize.width;
-		this.height = containerSize.height;
+		if (this.ref === "DEFAULT_BAR") {
+			console.log()
+		}
+
+		if (this.sizeMode.x === "grow") {
+			this.width = containerSize.width;
+		}
+		if (this.sizeMode.y === "grow") {
+			this.height = containerSize.height;
+		}
 	}
 
 	public getHitbox(): Rect {

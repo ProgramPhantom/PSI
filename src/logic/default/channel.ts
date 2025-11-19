@@ -43,7 +43,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 			"gridConfig": {
 				"coords": {"row": 1, "col": 1},
 				"alignment": {"x": "here", "y": "here"},
-				"size": {"noRows": 1, "noCols": 1}
+				"gridSize": {"noRows": 1, "noCols": 1}
 			}
 		},
 

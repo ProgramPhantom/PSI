@@ -3,6 +3,7 @@ import ENGINE from "../../logic/engine";
 import { AllComponentTypes } from "../../logic/point";
 import Visual from "../../logic/visual";
 import PaddedBoxDebug from "./PaddedBox";
+import GridDebug from "./GridDebug";
 
 interface IDebug {
 	debugGroupSelection: Record<AllComponentTypes, boolean>;
@@ -33,9 +34,8 @@ const Debug: React.FC<IDebug> = (props) => {
 					case "sequence":
 						return ENGINE.handler.sequences.map((s) => {
 							return (
-								<PaddedBoxDebug
-									element={s}
-									contentColour={Colors.LIME2}></PaddedBoxDebug>
+								<GridDebug
+									grid={s}></GridDebug>
 							);
 						});
 					case "diagram":

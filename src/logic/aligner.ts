@@ -1,6 +1,6 @@
 import { Element } from "@svgdotjs/svg.js";
 import { ID } from "./point";
-import { Dimensions, Size } from "./spacial";
+import Spacial, { Dimensions, Size } from "./spacial";
 import Visual, { doesDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 
@@ -37,6 +37,8 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 
 	alignerChildren: T[] = [];
 
+	cells: Spacial[];
+
 	constructor(params: IAligner) {
 		super(params);
 
@@ -70,15 +72,28 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 	public computeSize(): Size {
 		this.alignerChildren.forEach((c) => c.computeSize());
 
-
 		var contentSize: Size = {width: 0, height: 0};
+		this.cells = Array.from({length: this.noChildren}, () => new Spacial());
 
 		if (this.mainAxis === "x") {
 			contentSize.width = this.alignerChildren.reduce((w, c) => w + c.width, 0)
 			contentSize.height = Math.max(...this.alignerChildren.map((c) => c.height))
+
+			this.cells.forEach((cell, cell_index) => {
+				var target: T = this.alignerChildren[cell_index];
+				cell.width = target.width;
+				cell.height = contentSize.height;
+			})
+
 		} else {
 			contentSize.width = Math.max(...this.alignerChildren.map((c) => c.width));
-			contentSize.height = this.alignerChildren.reduce((h, c) => h + c.height, 0)
+			contentSize.height = this.alignerChildren.reduce((h, c) => h + c.height, 0);
+
+			this.cells.forEach((cell, cell_index) => {
+				var target: T = this.alignerChildren[cell_index];
+				cell.height = target.height;
+				cell.width = contentSize.width
+			})
 		}
 
 		this.contentWidth = contentSize.width;
@@ -97,33 +112,48 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 
 		// Yes this could be done with dimension setters
 		if (this.mainAxis === "x") {
-			for (var child of this.alignerChildren) {
+			this.alignerChildren.forEach((child, child_index) => {
+				let targetCell = this.cells[child_index];
+
 				child.x = this.contentX + xCount
+				
+				targetCell.x = child.x;
+				targetCell.y = this.contentY;
+
 				xCount += child.width;
 
 				// TODO: allow for other alignments
 				this.internalImmediateBind(child, "y", "centre");
 
 				child.computePositions({x: child.x, y: child.y});
-			}
-		} else {
-			for (var child of this.alignerChildren) {
+			})
+		} else {  // this.mainAxis === "y"
+			this.alignerChildren.forEach((child, child_index) => {
+				let targetCell = this.cells[child_index];
+
 				child.y = this.contentY + yCount;
+				
+				targetCell.y = child.y;
+				targetCell.x = this.contentX;
+				
 				yCount += child.height;
 			
 				this.internalImmediateBind(child, "x", "centre");
 
 				child.computePositions({x: child.x, y: child.y});
-			}
+			})
 		}
 	}
 
 	public override growElement(containerSize: Size) {
-		this.width = containerSize.width;
-		this.height = containerSize.height;
+		super.growElement(containerSize)
 
 		// TODO:
-		console.warn("not implemented")
+		this.alignerChildren.forEach((child, child_index) => {
+			let targetCell = this.cells[child_index];
+		
+			child.growElement(targetCell.contentSize);	
+		})
 	}
 
 	public add(

@@ -1,5 +1,5 @@
 import { ID } from "./point";
-import Spacial, { ISpacial } from "./spacial";
+import Spacial, { ISpacial, PlacementConfiguration, Size, SizeConfiguration } from "./spacial";
 
 console.log(`[ModuleLoad] PaddedBox`);
 
@@ -26,11 +26,12 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		y?: number,
 		width?: number,
 		height?: number,
-		placementMode?: any,
+		placementMode?: PlacementConfiguration,
+		sizeMode?: SizeConfiguration,
 		ref: string = PaddedBox.defaults["default"].ref,
 		id: ID | undefined = undefined
 	) {
-		super(x, y, width, height, placementMode, ref, id);
+		super(x, y, width, height, placementMode, sizeMode, ref, id);
 
 		if (typeof padding === "number") {
 			this.padding = [padding, padding, padding, padding];
@@ -83,5 +84,9 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		} else {
 			this.contentHeight = newContentHeight;
 		}
+	}
+
+	public get contentSize(): Size {
+		return {width: this.contentWidth, height: this.contentHeight}
 	}
 }
