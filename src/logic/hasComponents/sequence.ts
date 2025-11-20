@@ -248,7 +248,7 @@ export default class Sequence extends Grid implements ISequence {
 		var channelIndex = this.locateChannelById(channelId);
 
 		var row: number = 0;
-		var column: number = 1;  // Starting at 1 as we know the label goes there
+		var column: number = mountConfig.index;  // Starting at 1 as we know the label goes there
 
 		// --------- Row -------------
 		// Currently, channels ALWAYS have a height of 3 so that's how we find 
@@ -261,7 +261,7 @@ export default class Sequence extends Grid implements ISequence {
 		}
 
 		// ---------- Column ------------
-		column += mountConfig.index;  // Shift along by index
+		// column += mountConfig.index;  // Shift along by index
 
 
 		return {
