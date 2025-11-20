@@ -10,7 +10,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 		"contentHeight": 0,
 		"offset": [0, 0],
 		"padding": [0, 0, 0, 0],
-		"placementMode": {"type": "free", "sizeMode": {x: "fit", y: "fit"}},
+		"placementMode": {"type": "free"},
 		"ref": "sequence-aligner",
 		"sequences": [],
 		"alignerChildren": [
@@ -19,7 +19,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 				"ref": "sequence",
 				"x": 0,
 				"y": 0,
-				"minHeight": 20,
+				"minHeight": 0,
 				"minWidth": 20,
 				"padding": [0, 0, 0, 0],
 				"offset": [0, 0],
@@ -36,7 +36,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 						"placementMode": {"type": "managed"},
 
 						"style": {
-							"thickness": 3,
+							"thickness": 2,
 							"barStyle": {
 								"fill": "#000000",
 								"stroke": null,
@@ -46,7 +46,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 
 						"label": {
 							"offset": [0, 0],
-							"padding": [0, 0, 0, 0],
+							"padding": [0, 5, 0, 0],
 							"ref": "channel-symbol",
 							"text": "^{1}\\mathrm{H}",
 							"placementMode": {"type": "managed"},
@@ -65,9 +65,9 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 		]
 	},
 	"children": [],
-	"placementMode": {"type": "free", "sizeMode": {x: "fit", y: "fit"}},
+	"placementMode": {"type": "free"},
 	"offset": [0, 0],
-	"padding": [5, 5, 5, 5],
+	"padding": [10, 10, 10, 10],
 	"contentWidth": 87,
 	"contentHeight": 83,
 	"x": 0,

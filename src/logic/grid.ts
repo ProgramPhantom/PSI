@@ -106,7 +106,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		// Let's compute the width and height of each column
 		var columnRects: Spacial[] = Array.from({length: gridColumns.length}, () => new Spacial())
 		gridColumns.forEach((col, i) => {
-			var maxWidth = Math.max(...col.map((child) => child !== undefined ? child.width : 0), this.min.width)
+			var colChildren: Visual[] = col.filter((child) => child !== undefined);
+			var widths: number[] = colChildren.map((child) => child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined ? 
+										(child.placementMode.gridConfig.contribution.x === true ? child.width : 0) : child.width)
+			var maxWidth = Math.max(...widths, this.min.width)
 
 			columnRects[i].width = maxWidth;
 
@@ -118,7 +121,10 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		// Now lets compute the width and height of each row
 		var rowRects: Spacial[] = Array.from({length: gridRows.length}, () => new Spacial())
 		gridRows.forEach((row, i) => {
-			var maxHeight = Math.max(...row.map((child) => child !== undefined ? child.height : 0), this.min.height)
+			var rowChildren: Visual[] = row.filter((child) => child !== undefined);
+			var heights: number[] = rowChildren.map((child) => child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined ? 
+										(child.placementMode.gridConfig.contribution.y === true ? child.height : 0) : child.height)
+			var maxHeight = Math.max(...heights, this.min.height)
 
 			rowRects[i].height = maxHeight;
 

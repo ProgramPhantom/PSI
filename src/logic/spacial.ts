@@ -34,6 +34,7 @@ export interface IGridChildConfig {
 	coords?: {row: number, col: number}
 	alignment?: Record<Dimensions, SiteNames>
 	gridSize?: {noRows: number, noCols: number}
+	contribution?: Record<Dimensions, boolean>
 }
 
 export type PlacementConfiguration = {type: "free"} | 
@@ -557,15 +558,5 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			case "y":
 				return this.height;
 		}
-	}
-
-	get positionMethod(): PositionMethod {
-		var method: PositionMethod = "free";
-		if (this.bindingsToThis.length >= 2) {
-			method = "controlled";
-		} else if ((this.bindingsToThis.length = 1)) {
-			method = "partially-controlled";
-		}
-		return method;
 	}
 }

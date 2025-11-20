@@ -14,6 +14,7 @@ class DiagramDropInterpreter {
 	public handler: DiagramHandler;
 	public insertAreas: AddSpec[];
 	private slitherWidth: number = 4;
+	private minHeight: number = 6
 
 	constructor(handler: DiagramHandler) {
 		this.handler = handler;
@@ -74,9 +75,9 @@ class DiagramDropInterpreter {
 						newSlither = {
 							area: {
 								x: column.x - this.slitherWidth / 2,
-								y: channel.y,
+								y: channel.y - this.minHeight,
 								width: this.slitherWidth,
-								height: channel.gridSizes.rows[0].height
+								height: channel.gridSizes.rows[0].height + this.minHeight
 							},
 							index: columnIndex,
 							orientation: "top",
@@ -92,9 +93,7 @@ class DiagramDropInterpreter {
 								x: column.x - this.slitherWidth / 2,
 								y: channel.gridSizes.rows[2].y,
 								width: this.slitherWidth,
-								height:
-									channel.gridSizes.rows[2].height
-									+ channel.padding[2]
+								height: channel.gridSizes.rows[2].height + this.minHeight
 							},
 							index: columnIndex,
 							orientation: "bottom",
@@ -114,9 +113,9 @@ class DiagramDropInterpreter {
 						let newBlock: AddSpec = {
 							area: {
 								x: column.x + this.slitherWidth / 2,
-								y: channel.contentY,
+								y: channel.contentY - this.minHeight,
 								width: columnWidth - this.slitherWidth,
-								height: upperAlignerHeight
+								height: upperAlignerHeight + this.minHeight
 							},
 							index: columnIndex,
 							orientation: "top",
@@ -132,7 +131,7 @@ class DiagramDropInterpreter {
 								x: column.x + this.slitherWidth / 2,
 								y: channel.gridSizes.rows[2].y,
 								width: columnWidth - this.slitherWidth,
-								height: lowerAlignerHeight
+								height: lowerAlignerHeight + this.minHeight
 							},
 							index: columnIndex,
 							orientation: "bottom",
@@ -159,9 +158,9 @@ class DiagramDropInterpreter {
 				newSlither = {
 					area: {
 						x: column.x + column.width - this.slitherWidth / 2,
-						y: channel.y,
+						y: channel.y - this.minHeight,
 						width: this.slitherWidth,
-						height: channel.gridSizes.rows[0].height
+						height: channel.gridSizes.rows[0].height + this.minHeight
 					},
 					index: i + 1,
 					orientation: "top",
@@ -177,7 +176,7 @@ class DiagramDropInterpreter {
 						x: column.x + column.width - this.slitherWidth / 2,
 						y: channel.gridSizes.rows[2].y,
 						width: this.slitherWidth,
-						height: channel.gridSizes.rows[2].height + channel.padding[2]
+						height: channel.gridSizes.rows[2].height + this.minHeight
 					},
 					index: i + 1,
 					orientation: "bottom",
@@ -186,10 +185,7 @@ class DiagramDropInterpreter {
 					sequenceID: seqID
 				};
 				this.insertAreas.push(newSlither);
-				
 			})
-
-			
 		});
 	
 	}
