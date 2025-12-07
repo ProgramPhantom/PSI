@@ -9,6 +9,6 @@ export const DEFAULT_SEQUENCE: ISequence = {
 	"offset": [0, 0],
 
 	"channels": [],
-	"gridChildren": [],
+	"children": [],
 	"placementMode": {"type": "managed"}
 }

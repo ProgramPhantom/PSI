@@ -35,7 +35,7 @@ export default class Sequence extends Grid implements ISequence {
 	get allPulseElements(): Visual[] {
 		var elements: Visual[] = [];
 		this.channels.forEach((c) => {
-			elements.push(...c.gridChildren);
+			elements.push(...c.children);
 		});
 		return elements;
 	}
@@ -135,7 +135,7 @@ export default class Sequence extends Grid implements ISequence {
 		var gridConfig: IGridChildConfig = this.mountConfigToGridConfig(config);
 
 
-		this.add(pulse, gridConfig.coords.row, gridConfig.coords.col);
+		this.addAtCoord(pulse, gridConfig.coords.row, gridConfig.coords.col);
 
 		this.growBarCellWidth();
 	}

@@ -50,7 +50,13 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		};
 	}
 
-	children: T[] = [];
+	private _children: T[] = [];
+	get children(): T[] {
+		return this._children;
+	};
+	set children(val: T[]) {
+		this._children = val;
+	}
 
 	constructor(
 		params: ICollection,

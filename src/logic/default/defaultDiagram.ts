@@ -24,14 +24,14 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 				"padding": [0, 0, 0, 0],
 				"offset": [0, 0],
 
-				"gridChildren": [],
+				"children": [],
 				"channels": [
 					{
 						"padding": [0, 0, 0, 0],
 						"offset": [0, 0],
 						"ref": "my-channel",
 						"sequenceID": null,
-						"gridChildren": [],
+						"children": [],
 						"pulseElements": [],
 						"placementMode": {"type": "managed"},
 

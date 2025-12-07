@@ -2,11 +2,11 @@ import { Element } from "@svgdotjs/svg.js";
 import Spacial, { IGridChildConfig, SiteNames, Size } from "./spacial";
 import Visual, { doesDraw, IDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
+import Collection, { ICollection } from "./collection";
 
 console.log(`[ModuleLoad] Grid`);
 
-export interface IGrid extends IVisual {
-	gridChildren: IVisual[],
+export interface IGrid extends ICollection {
 	minHeight?: number,
 	minWidth?: number
 }
@@ -21,10 +21,9 @@ interface Rect {
 	height: number
 }
 
-export default class Grid<T extends Visual = Visual> extends Visual implements IDraw {
+export default class Grid<T extends Visual = Visual> extends Collection implements IDraw {
 	get state(): IGrid {
 		return {
-			gridChildren: this.gridChildren,
 			...super.state
 		};
 	}
@@ -39,7 +38,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 			return this.gridMatrix[0].length;
 		}
 	}
-	get gridChildren(): T[] {
+	override get children(): T[] {
 		var allChildren: T[] = [];
 		
 		this.gridMatrix.forEach((row) => {
@@ -85,7 +84,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 		surface.add(this.svg);
 
-		this.gridChildren.forEach((uc) => {
+		this.children.forEach((uc) => {
 			if (doesDraw(uc)) {
 				uc.draw(surface);
 			}
@@ -94,7 +93,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 	public computeSize(): Size {
 		// First job is to compute the sizes of all children
-		this.gridChildren.forEach((c) => c.computeSize());
+		this.children.forEach((c) => c.computeSize());
 
 
 		// Compute the size of the grid by finding the maximum width and height
@@ -154,6 +153,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		// Set via content...
 		this.contentWidth = totalWidth;
 		this.contentHeight = totalHeight;
+		// super.computeSize();
 
 		// ...so we can use padding
 		return {width: this.width, height: this.height};
@@ -220,7 +220,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		})
 	}
 
-	public add(child: T, row: number, column?: number) {
+	public addAtCoord(child: T, row: number, column?: number) {
 		var insertCoords: {row: number, col: number} | undefined;
 		if (column === undefined) {
 			insertCoords = this.getFirstAvailableCell();
@@ -240,16 +240,16 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 
 	public remove(child: T) {
 		// First we need to locate this child in the matrix:
-		var coords: {row: number, col: number} | undefined = this.locateChild(child);
+		var coords: {row: number, col: number} | undefined = this.locateGridChild(child);
 		if (coords === undefined) {
 			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
 			return
 		}
 
-		this.removeAt(coords);
+		this.removeAtGrid(coords);
 	}
 
-	public removeAt(coords: {row: number, col: number}) {
+	public removeAtGrid(coords: {row: number, col: number}) {
 		var targetCell = this.gridMatrix[coords.row][coords.col];
 
 		if (targetCell === undefined) {
@@ -313,7 +313,7 @@ export default class Grid<T extends Visual = Visual> extends Visual implements I
 		})
 	}
 
-	protected locateChild(child: T): {row: number, col: number} | undefined {
+	protected locateGridChild(child: T): {row: number, col: number} | undefined {
 		var coords: {row: number, col: number} = undefined;
 
 		this.gridMatrix.forEach((row, row_index) => {

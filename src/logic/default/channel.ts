@@ -5,7 +5,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 	"offset": [0, 0],
 	"ref": "my-channel",
 	"sequenceID": null,
-	"gridChildren": [],
+	"children": [],
 	"pulseElements": [],
 	"placementMode": {"type": "managed"},
 

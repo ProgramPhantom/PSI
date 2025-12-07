@@ -34,7 +34,7 @@ export default class Channel extends Grid implements IChannel {
 	}
 
 	get pulseElements(): Visual[] {
-		return this.gridChildren.filter((v) => v.placementMode.type === "pulse")
+		return this.children.filter((v) => v.placementMode.type === "pulse")
 	}
 
 	style: IChannelStyle;
@@ -70,8 +70,8 @@ export default class Channel extends Grid implements IChannel {
 		this.insertEmptyColumn();
 		this.insertEmptyColumn();
 
-		this.add(this.label, 1, 0);
-		this.add(this.bar, 1, 1);
+		this.addAtCoord(this.label, 1, 0);
+		this.addAtCoord(this.bar, 1, 1);
 	}
 
 

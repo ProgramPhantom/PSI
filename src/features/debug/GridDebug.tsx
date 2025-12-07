@@ -1,6 +1,9 @@
 import {CSSProperties} from "react";
 import Grid from "../../logic/grid";
 import {Colors} from "@blueprintjs/core";
+import CollectionDebug from "./Collection";
+import PaddedBox from "../../logic/paddedBox";
+import PaddedBoxDebug from "./PaddedBox";
 
 export interface IGridDebug {
 	grid: Grid;
@@ -33,6 +36,7 @@ const GridDebug: React.FC<IGridDebug> = (props) => {
 						}}></div>
 				);
 			})}
+			<PaddedBoxDebug element={props.grid}></PaddedBoxDebug>
 		</>
 	);
 };
