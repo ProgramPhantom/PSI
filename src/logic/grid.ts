@@ -377,6 +377,27 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return coords;
 	}
 
+	public getChildBottomLeft(child: T): {row: number, col: number} | undefined {
+		let location: {row: number, col: number} | undefined = this.locateGridChild(child);
+
+		if (location === undefined) {return undefined}
+
+		let right: number = location.col;
+		let bottom: number = location.row;
+
+		// Move right:
+		while (this.gridMatrix[location.row][right+1].element === child) {
+			right += 1
+		}
+
+		// Move down:
+		while (this.gridMatrix[bottom+1][location.col].element === child) {
+			bottom += 1
+		}
+		
+		return {row: bottom, col: right}
+	}
+
 	protected isArrayEmpty(target: GridCell[]): boolean {
 		return !target.some((c) => c !== undefined)
 	}
