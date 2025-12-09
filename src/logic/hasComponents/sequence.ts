@@ -1,5 +1,5 @@
-import Grid, { IGrid } from "../grid";
-import { AllComponentTypes, ID, UserComponentType } from "../point";
+import Grid, { GridCell, IGrid } from "../grid";
+import { ID, UserComponentType } from "../point";
 import Spacial, { IGridChildConfig, IMountConfig, SiteNames, Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
@@ -56,7 +56,7 @@ export default class Sequence extends Grid implements ISequence {
 
 		// Set the channels' sizes.
 
-		var sequenceRows: Visual[][] = this.getRows();
+		var sequenceRows: GridCell[][] = this.getRows();
 		this.channels.forEach((channel, i) => {
 			var rowIndex: number = 3 * i;
 
@@ -69,7 +69,7 @@ export default class Sequence extends Grid implements ISequence {
 			channel.computeSize();
 		})
 
-		this.applyToChannels();
+		this.applySizesToChannels();
 		return size
 	}
 
@@ -93,15 +93,16 @@ export default class Sequence extends Grid implements ISequence {
 
 		// Now iterate through the gridMatrix and set the position of children
 		this.gridMatrix.forEach((row, row_index) => {
-			row.forEach((child, column_index) => {
-				if (child !== undefined) {
-					var cell: Spacial = this.cells[row_index][column_index];
+			row.forEach((cell, column_index) => {
+				if (cell !== undefined) {
+					var cellRect: Spacial = this.cells[row_index][column_index];
+					var element: Visual = cell.element;
 
 					var gridConfig: IGridChildConfig;
-					if (child.placementMode.type === "grid") {
-						gridConfig = child.placementMode.gridConfig;
-					} else if (cell.placementMode.type === "pulse") {
-						gridConfig = this.mountConfigToGridConfig(cell.placementMode.config);
+					if (element.placementMode.type === "grid") {
+						gridConfig = element.placementMode.gridConfig;
+					} else if (cellRect.placementMode.type === "pulse") {
+						gridConfig = this.mountConfigToGridConfig(cellRect.placementMode.config);
 					} else {
 						gridConfig = {
 							coords: {row: row_index, col: column_index},
@@ -112,16 +113,16 @@ export default class Sequence extends Grid implements ISequence {
 
 					var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
 
-					cell.internalImmediateBind(child, "x", alignment.x)
-					cell.internalImmediateBind(child, "y", alignment.y)
+					cellRect.internalImmediateBind(element, "x", alignment.x)
+					cellRect.internalImmediateBind(element, "y", alignment.y)
 					
 
-					child.computePositions({x: child.x, y: child.y});
+					element.computePositions({x: element.x, y: element.y});
 				}
 			})
 		})
 
-		this.applyToChannels();
+		this.applySizesToChannels();
 	}
 
 	public addPulse(pulse: Visual) {
@@ -135,9 +136,17 @@ export default class Sequence extends Grid implements ISequence {
 		var gridConfig: IGridChildConfig = this.mountConfigToGridConfig(config);
 
 
+		// Insert column if occupied:
+		if (this.gridMatrix[gridConfig.coords.row][gridConfig.coords.col] !== undefined) {
+			this.insertEmptyColumn(gridConfig.coords.col);
+		}
+
 		this.addAtCoord(pulse, gridConfig.coords.row, gridConfig.coords.col);
 
-		this.growBarCellWidth();
+		// this.growChannels();
+		this.setChannelDimensions();
+		
+		this.setChannelMatrices();
 	}
 
 	// Content Commands
@@ -151,7 +160,7 @@ export default class Sequence extends Grid implements ISequence {
 		// adding  could be longer than the matrix:
 
 		var channelLength: number = channel.noColumns;
-		this.expandMatrix({row: undefined, col: channelLength-1})
+		this.setMatrixSize({row: undefined, col: channelLength-1})
 		
 		// Note we don't care about the row as we will just append the 
 		// rows of the channel now, there's no need to expand it
@@ -213,7 +222,7 @@ export default class Sequence extends Grid implements ISequence {
 	 *
 	 * @private
 	 */
-	private applyToChannels() {
+	private applySizesToChannels() {
 		this.channels.forEach((channel, channel_index) => {
 			let INDEX: number = channel_index * 3;
 
@@ -232,7 +241,28 @@ export default class Sequence extends Grid implements ISequence {
 		})
 	}
 
-	private growBarCellWidth() {
+	protected setChannelDimensions() {
+		this.channels.forEach((channel, channel_index) => {
+			// Currently channels are forced to be 3 rows so we leave that
+			// and just set the number of columns
+
+			// set matrix takes index
+			channel.setMatrixSize({col: this.noColumns-1});
+			channel.growBar();
+		})
+	}
+
+	protected setChannelMatrices() {
+		this.channels.forEach((channel, channel_index) => {
+			let INDEX: number = channel_index * 3;
+
+			let gridSlice = this.gridMatrix.slice(INDEX, INDEX+3);
+
+			channel.setMatrix(gridSlice);
+		})
+	}
+
+	private growChannels() {
 		this.channels.forEach((c) => {
 			if (c.bar.placementMode.type === "grid") {
 				c.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.noColumns-1}
@@ -269,5 +299,44 @@ export default class Sequence extends Grid implements ISequence {
 			alignment: mountConfig.alignment,
 			gridSize: {noRows: 1, noCols: mountConfig.noSections}
 		}
+	}
+
+	protected override insertEmptyColumn(index?: number) {
+		var newColumn: GridCell[] = Array<GridCell>(this.noRows).fill(undefined);
+		var index = index; 
+
+		if (index === undefined || index < 0 || index > this.noColumns) {
+			index = this.noColumns 
+		} 
+
+		for (let i = 0; i < this.noRows; i++) {
+      		this.gridMatrix[i].splice(index, 0, newColumn[i]);
+    	}
+
+		// Apply this to the channels
+		// This condition means this only happens when a channel is initialised.
+		if (this.noColumns >= 2) {
+			
+
+			// We need to move the bar sources back one and reset their size.
+			if (index === 1) {
+				this.channels.forEach((channel, channel_index) => {
+					let INDEX: number = channel_index * 3;
+					let bar_row: number = INDEX + 1;
+
+					this.gridMatrix[bar_row][1] = this.gridMatrix[bar_row][2];
+					this.gridMatrix[bar_row][2] = {element: channel.bar, source: {row: bar_row, col: 2}};
+
+					if (channel.bar.placementMode.type === "grid") {
+						channel.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.noColumns-1}
+					}
+				})
+			}
+
+			this.channels.forEach((channel) => {
+				this.setChannelMatrices();
+			})
+		}
+		
 	}
 }

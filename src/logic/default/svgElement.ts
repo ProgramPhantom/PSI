@@ -1,7 +1,8 @@
 import { ISVGElement } from "../svgElement";
 
 export const DEFAULT_SVG_ELEMENT: ISVGElement = {
-	"placementMode": {"type": "free", "sizeMode": {x: "fit", y: "fit"}},
+	"placementMode": {"type": "free"},
+	"sizeMode": {x: "fit", y: "fit"},
 
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],

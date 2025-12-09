@@ -11,14 +11,11 @@ export interface IGrid extends ICollection {
 	minWidth?: number
 }
 
-type GridEntry = Visual | undefined
+export type GridCell<T extends Visual=Visual> = GridEntry<T> | undefined
 
-
-interface Rect {
-	x: number,
-	y: number,
-	width: number,
-	height: number
+interface GridEntry<T> {
+  element: T;               // The element if this is the “owning” cell
+  source?: { row: number; col: number }; // If this cell is covered by another
 }
 
 export default class Grid<T extends Visual = Visual> extends Collection implements IDraw {
@@ -43,8 +40,9 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		
 		this.gridMatrix.forEach((row) => {
 			row.forEach((cell) => {
-				if (cell !== undefined) {
-					allChildren.push(cell);
+				if (cell === undefined) {return}
+				if (cell.source === undefined) {
+					allChildren.push(cell.element);
 				}
 			})
 		})
@@ -55,7 +53,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	private min: {width: number, height: number};
 
 	// Truth
-	public gridMatrix: (T | undefined)[][] = [];
+	public gridMatrix: GridCell<T>[][] = [];
 	//
 	
 	public gridSizes: {columns: Spacial[], rows: Spacial[]} = {columns: [], rows: []};
@@ -99,20 +97,20 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		// Compute the size of the grid by finding the maximum width and height
 		// element in each column and row, and then summing them up.
 
-		var gridColumns: GridEntry[][] = this.getColumns();
-		var gridRows: GridEntry[][] = this.gridMatrix;
+		var gridColumns: GridCell<T>[][] = this.getColumns();
+		var gridRows: GridCell<T>[][] = this.gridMatrix;
 
 		// Let's compute the width and height of each column
 		var columnRects: Spacial[] = Array.from({length: gridColumns.length}, () => new Spacial())
 		gridColumns.forEach((col, i) => {
-			var colChildren: Visual[] = col.filter((child) => child !== undefined);
+			var colChildren: Visual[] = col.filter((child) => child !== undefined).map(cell => cell.element);
 			var widths: number[] = colChildren.map((child) => child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined ? 
 										(child.placementMode.gridConfig.contribution.x === true ? child.width : 0) : child.width)
 			var maxWidth = Math.max(...widths, this.min.width)
 
 			columnRects[i].width = maxWidth;
 
-			var colHeight = col.reduce((h, c) => h + (c !== undefined ? c.height : 0), 0);
+			var colHeight = col.reduce((h, c) => h + (c !== undefined ? c.element.height : 0), 0);
 			columnRects[i].height = colHeight
 		})
 
@@ -120,14 +118,14 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		// Now lets compute the width and height of each row
 		var rowRects: Spacial[] = Array.from({length: gridRows.length}, () => new Spacial())
 		gridRows.forEach((row, i) => {
-			var rowChildren: Visual[] = row.filter((child) => child !== undefined);
+			var rowChildren: Visual[] = row.filter((child) => child !== undefined).map(cell => cell.element);
 			var heights: number[] = rowChildren.map((child) => child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined ? 
 										(child.placementMode.gridConfig.contribution.y === true ? child.height : 0) : child.height)
 			var maxHeight = Math.max(...heights, this.min.height)
 
 			rowRects[i].height = maxHeight;
 
-			var rowWidth = row.reduce((w, c) => w + (c !== undefined ? c.width : 0), 0);
+			var rowWidth = row.reduce((w, c) => w + (c !== undefined ? c.element.width : 0), 0);
 			rowRects[i].width = rowWidth
 		})
 
@@ -179,13 +177,14 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		// Now iterate through the gridMatrix and set the position of children
 		this.gridMatrix.forEach((row, row_index) => {
-			row.forEach((child, column_index) => {
-				if (child !== undefined) {
-					var cell: Spacial = this.cells[row_index][column_index];
+			row.forEach((cell, column_index) => {
+				if (cell !== undefined) {
+					var cellRect: Spacial = this.cells[row_index][column_index];
+					var element: Visual = cell.element
 
 					var gridConfig: IGridChildConfig;
-					if (child.placementMode.type === "grid") {
-						gridConfig = child.placementMode.gridConfig;
+					if (element.placementMode.type === "grid") {
+						gridConfig = element.placementMode.gridConfig;
 					} else {
 						gridConfig = {
 							coords: {row: row_index, col: column_index},
@@ -196,10 +195,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 					var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
 
-					cell.internalImmediateBind(child, "x", alignment.x)
-					cell.internalImmediateBind(child, "y", alignment.y)
+					cellRect.internalImmediateBind(element, "x", alignment.x)
+					cellRect.internalImmediateBind(element, "y", alignment.y)
 
-					child.computePositions({x: child.x, y: child.y});
+					element.computePositions({x: element.x, y: element.y});
 				}
 			})
 		})
@@ -210,11 +209,11 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		this.height = containerSize.height;
 
 		this.gridMatrix.forEach((row, row_index) => {
-			row.forEach((element, column_index) => {
-				if (element !== undefined) {
-					let cell = this.cells[row_index][column_index];
+			row.forEach((cell, column_index) => {
+				if (cell !== undefined) {
+					let cellRect = this.cells[row_index][column_index];
 
-					element.growElement(cell.size);
+					cell.element.growElement(cellRect.size);
 				}
 			})
 		})
@@ -228,14 +227,14 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		insertCoords = {row: row, col: column}
 
 		// Expands the matrix to fix in this coord.
-		this.expandMatrix(insertCoords);
+		this.setMatrixSize(insertCoords, true);
 		
-		// Should never happen
+		
 		if (this.gridMatrix[row][column] !== undefined) {
 			throw new Error(`Position row: ${insertCoords.row} column: ${insertCoords.col} is already occupied`)
 		}
 
-		this.gridMatrix[row][column] = child;
+		this.gridMatrix[row][column] = {element: child};
 	}
 
 	public remove(child: T) {
@@ -263,29 +262,29 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		this.squeezeMatrix();
 	}
 
-	public getColumns(): GridEntry[][] {
+	public getColumns(): GridCell<T>[][] {
 		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
 			return [];
 		}
 
 		const numCols = this.gridMatrix[0].length;
-		const columns: GridEntry[][] = [];
+		const columns: GridCell<T>[][] = [];
 
 		for (let col = 0; col < numCols; col++) {
-			const column: GridEntry[] = this.gridMatrix.map(row => row[col]);
+			const column: GridCell<T>[] = this.gridMatrix.map(row => row[col]);
 			columns.push(column);
 		}
 
 		return columns;
 	}
-	public getColumn(index: number): GridEntry[] {
+	public getColumn(index: number): GridCell[] {
 		return this.gridMatrix.map((row) => row[index]);
 	}
 
-	public getRows(): GridEntry[][] {
+	public getRows(): GridCell<T>[][] {
 		return this.gridMatrix;
 	}
-	public getRow(index: number): GridEntry[] {
+	public getRow(index: number): GridCell[] {
 		return this.gridMatrix[index];
 	}
 
@@ -293,11 +292,43 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return this.cells.flat();
 	}
 
-	public setGrid(grid: T[][], sizes: {columns: Spacial[], rows: Spacial[]}, cells: Spacial[][]) {
+	public setGrid(grid: GridCell<T>[][], sizes: {columns: Spacial[], rows: Spacial[]}, cells: Spacial[][]) {
 		this.gridMatrix = grid;
 		this.gridSizes = sizes;
 		this.cells = cells;
 	}
+
+	public setMatrix(matrix: GridCell<T>[][]) {
+		this.gridMatrix = matrix;
+	}
+
+	public setMatrixRegion(gridRegion: GridCell<T>[][], coords?: {row: number, col: number}) {
+		if (gridRegion.length === 0 || gridRegion[0].length === 0) {return}
+		if (coords === undefined) {
+			coords = {row: 0, col: 0}
+		}
+
+		let noRows: number = gridRegion.length;
+		let noCols: number = gridRegion[0].length;
+
+		let leftCol: number = coords.col;
+		let rightCol: number = coords.col + noCols-1;
+		
+		let topRow: number = coords.row;
+		let bottomRow: number = coords.row + noRows-1;
+
+
+		this.setMatrixSize({row: bottomRow, col: rightCol}, true);
+
+		for (let r = 0; r<noRows; r++) {
+			for (let c = 0; c<noCols; c++) {
+				let row: number = r + topRow;
+				let col: number = c + leftCol;
+
+				this.gridMatrix[row][col] = gridRegion[r][c]
+			}
+		}
+	}	
 
 	public matchRowLengths() {
 		var maxRowLength = Math.max(...this.getRows().map(row => row.length));
@@ -318,7 +349,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
-				if (cell && cell.id === child.id) {
+				if (cell !== undefined && cell.element.id === child.id && cell.source === undefined) {
 					coords = {row: row_index, col: column_index}
 				}
 			})
@@ -346,10 +377,37 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return coords;
 	}
 
-	protected isEmpty(target: GridEntry[]): boolean {
+	protected isArrayEmpty(target: GridCell[]): boolean {
 		return !target.some((c) => c !== undefined)
 	}
 
+	protected isCellEmptyAt(coords: {row: number, col: number}): boolean {
+		let cellRow: GridEntry<T>[] | undefined = this.gridMatrix[coords.row];
+		if (cellRow === undefined) {return true}
+		let cell: GridEntry<T> = cellRow[coords.col];
+
+		if (cell === undefined) {
+			return true
+		}
+
+		return false
+	}
+
+	protected numChildrenOverArea(topLeft: {row: number, col: number}, size: {noRows: number, noCols: number}): number {
+		let count: number = 0;
+		let right: number = topLeft.col + size.noCols-1;
+		let bottom: number = topLeft.row + size.noRows-1;
+
+		for (let r = topLeft.row; r<=bottom; r++) {
+			for (let c = topLeft.col; c<=right; c++) {
+				if (this.isCellEmptyAt({row: r, col: c}) === false) {
+					count += 1;
+				}
+			}
+		}
+
+		return count;
+	}
 
 	/**
 	 * Expands the matrix by inserting empty rows and/or columns until the provided
@@ -374,9 +432,9 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	 * // ensure coordinate (5, 3) exists; will insert rows/columns as needed
 	 * this.expandMatrix({ row: 5, col: 3 });
 	 */
-	protected expandMatrix(coords: {row?: number, col?: number}) {
+	public setMatrixSize(coords: {row?: number, col?: number}, onlyGrow: boolean=false) {
 		var rowDiff: number = coords.row !== undefined ? coords.row - this.noRows + 1 : 0;
-		var colDiff: number = coords.col !== undefined ? coords.col - this.noRows + 1 : 0;
+		var colDiff: number = coords.col !== undefined ? coords.col - this.noColumns + 1 : 0;
 		
 		// There are missing rows needed to add this coord
 		while (rowDiff >= 1) {
@@ -388,29 +446,42 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			this.insertEmptyColumn();
 			colDiff -= 1
 		}
+
+		if (onlyGrow === false) {
+			// Or if negative, we need to remove rows
+			while (rowDiff < 0) {
+				this.removeRow();
+				rowDiff += 1
+			}
+
+			while (colDiff < 0) {
+				this.removeColumn();
+				colDiff += 1
+			}
+		}
 	}
 	protected squeezeMatrix() {
-		var trailingRow: GridEntry[] = this.getRow(this.noRows-1)
-		var trailingColumn: GridEntry[] = this.getColumn(this.noColumns-1)
+		var trailingRow: GridCell[] = this.getRow(this.noRows-1)
+		var trailingColumn: GridCell[] = this.getColumn(this.noColumns-1)
 		
-		var trailingRowEmpty: boolean = this.isEmpty(trailingRow);
-		var trailingColumnEmpty: boolean = this.isEmpty(trailingColumn);
+		var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
+		var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
 
 		while (trailingRowEmpty === true) {
 			this.removeRow();
-			var trailingRow: GridEntry[] = this.getRow(this.noRows-1);
-			var trailingRowEmpty: boolean = this.isEmpty(trailingRow);
+			var trailingRow: GridCell[] = this.getRow(this.noRows-1);
+			var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
 		}
 
 		while (trailingColumnEmpty === true) {
 			this.removeColumn();
-			var trailingColumn: GridEntry[] = this.getColumn(this.noColumns-1);
-			var trailingColumnEmpty: boolean = this.isEmpty(trailingColumn);
+			var trailingColumn: GridCell[] = this.getColumn(this.noColumns-1);
+			var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
 		}
 	}
 
 	protected insertEmptyColumn(index?: number) {
-		var newColumn: T[] = Array<T>(this.noRows).fill(undefined);
+		var newColumn: GridCell<T>[] = Array<GridCell<T>>(this.noRows).fill(undefined);
 		var index = index; 
 
 		if (index === undefined || index < 0 || index > this.noColumns) {
@@ -422,7 +493,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
     	}
 	}
 	protected insertEmptyRow(index?: number): void {
-		var newRow: T[] = Array<T>(this.noColumns).fill(undefined)
+		var newRow: GridCell<T>[] = Array<GridCell<T>>(this.noColumns).fill(undefined)
 		if (index === undefined || index < 0 || index > this.noRows) {
 			this.gridMatrix.push(newRow);
 		} else {
@@ -436,8 +507,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			INDEX = this.noColumns - 1;
 		}
 
-		var targetColumn: T[] = this.getColumn[INDEX];
-		var empty: boolean = this.isEmpty(targetColumn)
+		var targetColumn: GridCell<T>[] = this.getColumn[INDEX];
+		var empty: boolean = this.isArrayEmpty(targetColumn)
 
 		if (onlyIfEmpty === true && !empty) { return }
 
@@ -452,8 +523,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			INDEX = this.noRows - 1;
 		}
 
-		var targetRow: T[] = this.gridMatrix[INDEX];
-		var empty: boolean = this.isEmpty(targetRow)
+		var targetRow: GridCell<T>[] = this.gridMatrix[INDEX];
+		var empty: boolean = this.isArrayEmpty(targetRow)
 
 		if (onlyIfEmpty === true && !empty) { return }
 
@@ -509,5 +580,34 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 				targetCell.height = row.height;
 			})
 		})
+	}
+
+	public setChildSize(child: T, size: {noRows: number, noCols: number}) {
+		let location: {row: number, col: number} | undefined = this.locateGridChild(child)
+
+		if (location === undefined) {
+			console.warn(`Cannot locate child for size change ${child.ref}`)
+			return
+		}
+
+		// Test if this growth will overlap another element:
+		let overlaps: number = this.numChildrenOverArea({row: location.row, col: location.col}, {noRows: size.noRows, noCols: size.noCols})
+		// This should return 1 if the area is empty (the child is in the top left)
+		if (overlaps > 1) {
+			return
+		}
+
+		// Create region:
+		let entry: GridEntry<T> = {element: child, source: location}
+		let region: GridEntry<T>[][] = Array<GridEntry<T>[]>(size.noRows).fill(Array<GridEntry<T>>(size.noCols).fill(entry))
+
+		// Put the top left back to just the element:
+		region[0][0] = {element: child};
+
+		this.setMatrixRegion(region, location);
+
+		if (child.placementMode.type === "grid") {
+			child.placementMode.gridConfig.gridSize = {noRows: size.noRows, noCols: size.noCols}
+		}
 	}
 }

@@ -124,7 +124,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChild: childFormData,
 						coreChildType: props.objectType as UserComponentType,
 						labels: labelListFormData,
-						gridChildren: [],
+						children: [],
 						...masterFormData
 					};
 

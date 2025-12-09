@@ -35,7 +35,7 @@ export default class LabelGroup<T extends Visual = Visual>
 	}
 
 	get labels(): Label[] {
-		return this.gridChildren.filter((c) => c.placementMode.type === "grid") as Label[]
+		return this.children.filter((c) => c.placementMode.type === "grid") as Label[]
 	}
 
 	private _coreChild: T;
@@ -82,7 +82,7 @@ export default class LabelGroup<T extends Visual = Visual>
 	private setCoreChild(child: T) {
 		this._coreChild = child;
 
-		this.add(child, 1, 1);
+		this.add(child);
 	}
 
 

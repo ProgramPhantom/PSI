@@ -1,6 +1,6 @@
 import DiagramHandler from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import Channel from "../../logic/hasComponents/channel";
+import { GridCell } from "../../logic/grid";
 import Diagram from "../../logic/hasComponents/diagram";
 import Sequence from "../../logic/hasComponents/sequence";
 import Visual from "../../logic/visual";
@@ -42,9 +42,9 @@ class DiagramDropInterpreter {
 
 				// Compute indexes of the slithers
 				for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
-					let preOccupancy: Visual | undefined =
+					let preOccupancy: GridCell =
 						channel.gridMatrix[channelIndex][columnIndex - 1];
-					let hereOccupancy: Visual | undefined =
+					let hereOccupancy: GridCell =
 						channel.gridMatrix[channelIndex][columnIndex];
 
 					if (
