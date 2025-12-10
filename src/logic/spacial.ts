@@ -95,6 +95,32 @@ export interface ISpacial extends IPoint {
 export type UpdateNotification = (...args: any[]) => any;
 
 export default class Spacial extends Point implements ISpacial, IHaveSize {
+	static CreateUnion(...rects: Spacial[]): Spacial {
+		var size: Size = {width: 0, height: 0}
+		var top = Infinity;
+		var left = Infinity;
+		var bottom = -Infinity;
+		var right = -Infinity;
+
+		rects.forEach((r) => {
+			top = r.y < top ? r.y : top;
+			var far = r.getFar("y");
+			bottom = far > bottom ? far : bottom;
+			
+
+			left = r.x < left ? r.x : left;
+			var farX = r.getFar("x");
+			right = farX > right ? farX : right;
+		});
+
+		size.width = right - left;
+		size.height = bottom - top;
+
+		let result: Spacial = new Spacial(top, left, size.width, size.height, {type: "free"}, {x: "fixed", y: "fixed"})
+
+		return result
+	}
+	
 	get state(): ISpacial {
 		return {
 			contentWidth: this._contentWidth,

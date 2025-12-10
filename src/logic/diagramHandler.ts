@@ -275,6 +275,7 @@ export default class DiagramHandler implements IDraw {
 		// so if this isn't done, element might not carry changes and update label position.
 		parameters.x = undefined;
 		parameters.y = undefined;
+		parameters.id = undefined;
 
 		switch (type) {
 			case "svg":

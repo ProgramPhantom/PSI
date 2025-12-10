@@ -11,9 +11,9 @@ export interface IGrid extends ICollection {
 	minWidth?: number
 }
 
-export type GridCell<T extends Visual=Visual> = GridEntry<T> | undefined
+export type GridCell<T extends Visual=Visual> = OccupiedCell<T> | undefined
 
-interface GridEntry<T> {
+interface OccupiedCell<T> {
   element: T;               // The element if this is the “owning” cell
   source?: { row: number; col: number }; // If this cell is covered by another
 }
@@ -104,8 +104,28 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		var columnRects: Spacial[] = Array.from({length: gridColumns.length}, () => new Spacial())
 		gridColumns.forEach((col, i) => {
 			var colChildren: Visual[] = col.filter((child) => child !== undefined).map(cell => cell.element);
-			var widths: number[] = colChildren.map((child) => child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined ? 
-										(child.placementMode.gridConfig.contribution.x === true ? child.width : 0) : child.width)
+			
+			var widths: number[] = [];
+
+			for (let child of colChildren) {
+				let contributing: boolean = true;
+
+				if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
+					&& child.placementMode.gridConfig.contribution.x === false
+				) { contributing = false; }
+
+				// Compute partial width contribution (distribute evenly):
+				let width: number = child.width;
+
+				if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noCols > 1) {
+					width = width / child.placementMode.gridConfig.gridSize.noCols;
+				}
+
+				if (contributing === true) {
+					widths.push(width)
+				}
+			}
+
 			var maxWidth = Math.max(...widths, this.min.width)
 
 			columnRects[i].width = maxWidth;
@@ -119,8 +139,28 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		var rowRects: Spacial[] = Array.from({length: gridRows.length}, () => new Spacial())
 		gridRows.forEach((row, i) => {
 			var rowChildren: Visual[] = row.filter((child) => child !== undefined).map(cell => cell.element);
-			var heights: number[] = rowChildren.map((child) => child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined ? 
-										(child.placementMode.gridConfig.contribution.y === true ? child.height : 0) : child.height)
+			
+			var heights: number[] = [];
+
+			for (let child of rowChildren) {
+				let contributing: boolean = true;
+
+				if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
+					&& child.placementMode.gridConfig.contribution.y === false
+				) { contributing = false; }
+
+				// Compute partial width contribution (distribute evenly):
+				let height: number = child.height;
+
+				if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noRows > 1) {
+					height = height / child.placementMode.gridConfig.gridSize.noRows;
+				}
+
+				if (contributing === true) {
+					heights.push(height)
+				}
+			}
+			
 			var maxHeight = Math.max(...heights, this.min.height)
 
 			rowRects[i].height = maxHeight;
@@ -210,8 +250,14 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
-				if (cell !== undefined) {
-					let cellRect = this.cells[row_index][column_index];
+				if (cell !== undefined && cell.source === undefined) {
+					let cellRect: Spacial = this.cells[row_index][column_index];
+					let childBottomRight: {row: number, col: number} = this.getChildBottomRight(cell.element);
+
+					// Create a rect union if the child is in multiple cells
+					if (childBottomRight.col !== column_index || childBottomRight.row !== row_index) {
+						cellRect = this.getMultiCellRect({row: row_index, col: column_index}, childBottomRight);
+					}
 
 					cell.element.growElement(cellRect.size);
 				}
@@ -377,7 +423,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return coords;
 	}
 
-	public getChildBottomLeft(child: T): {row: number, col: number} | undefined {
+	public getChildBottomRight(child: T): {row: number, col: number} | undefined {
 		let location: {row: number, col: number} | undefined = this.locateGridChild(child);
 
 		if (location === undefined) {return undefined}
@@ -386,16 +432,67 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		let bottom: number = location.row;
 
 		// Move right:
-		while (this.gridMatrix[location.row][right+1].element === child) {
+		while (this.gridMatrix[location.row][right+1] !== undefined && this.gridMatrix[location.row][right+1]?.element.id === child.id) {
 			right += 1
 		}
 
 		// Move down:
-		while (this.gridMatrix[bottom+1][location.col].element === child) {
+		while (this.gridMatrix[bottom+1] !== undefined && this.gridMatrix[bottom+1][location.col]?.element.id === child.id) {
 			bottom += 1
 		}
 		
 		return {row: bottom, col: right}
+	}
+
+	public getMatrixInRegion(topLeft: {row: number, col: number}, bottomRight: {row: number, col: number}): GridCell<T>[] {
+		// Check valid input:
+		if (topLeft.row < bottomRight.row || topLeft.col < bottomRight.col) {
+			return []
+		}
+
+		let result: GridCell<T>[] = [];
+
+		for (let r = topLeft.row; r<=bottomRight.row; r++) {
+			for (let c=topLeft.col; c<=bottomRight.col; c++) {
+				result.push(this.gridMatrix[r][c]);
+			}
+		}
+
+		return result;
+	}
+
+	public getCellsInRegion(topLeft: {row: number, col: number}, bottomRight: {row: number, col: number}): Spacial[] {
+		// Check valid input:
+		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
+			return []
+		}
+
+		let result: Spacial[] = [];
+
+		for (let r = topLeft.row; r<=bottomRight.row; r++) {
+			if (this.cells[r] === undefined) {continue}
+			for (let c=topLeft.col; c<=bottomRight.col; c++) {
+				if (this.cells[r][c] === undefined) {continue}
+				result.push(this.cells[r][c]);
+			}
+		}
+
+		return result;
+	}
+
+	public getMultiCellRect(topLeft: {row: number, col: number}, bottomRight: {row: number, col: number}): Spacial {
+		// Select
+
+		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
+			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
+		}
+
+		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+
+		let width: number = cells.reduce((w, c) => w + c.width, 0);
+		let height: number = cells.reduce((h, c) => h + c.height, 0);
+
+		return new Spacial(0, 0, width, height);
 	}
 
 	protected isArrayEmpty(target: GridCell[]): boolean {
@@ -403,9 +500,9 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	}
 
 	protected isCellEmptyAt(coords: {row: number, col: number}): boolean {
-		let cellRow: GridEntry<T>[] | undefined = this.gridMatrix[coords.row];
+		let cellRow: OccupiedCell<T>[] | undefined = this.gridMatrix[coords.row];
 		if (cellRow === undefined) {return true}
-		let cell: GridEntry<T> = cellRow[coords.col];
+		let cell: OccupiedCell<T> = cellRow[coords.col];
 
 		if (cell === undefined) {
 			return true
@@ -421,7 +518,9 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		for (let r = topLeft.row; r<=bottom; r++) {
 			for (let c = topLeft.col; c<=right; c++) {
-				if (this.isCellEmptyAt({row: r, col: c}) === false) {
+				let cell: GridCell<T> = this.gridMatrix[r][c];
+				
+				if (cell !== undefined && cell.source === undefined) {
 					count += 1;
 				}
 			}
@@ -619,8 +718,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 
 		// Create region:
-		let entry: GridEntry<T> = {element: child, source: location}
-		let region: GridEntry<T>[][] = Array<GridEntry<T>[]>(size.noRows).fill(Array<GridEntry<T>>(size.noCols).fill(entry))
+		let entry: OccupiedCell<T> = {element: child, source: location}
+		let region: OccupiedCell<T>[][] = Array<OccupiedCell<T>[]>(size.noRows).fill(Array<OccupiedCell<T>>(size.noCols).fill(entry))
 
 		// Put the top left back to just the element:
 		region[0][0] = {element: child};

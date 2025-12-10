@@ -94,7 +94,7 @@ export default class Sequence extends Grid implements ISequence {
 		// Now iterate through the gridMatrix and set the position of children
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
-				if (cell !== undefined) {
+				if (cell !== undefined && cell.source === undefined) {
 					var cellRect: Spacial = this.cells[row_index][column_index];
 					var element: Visual = cell.element;
 
