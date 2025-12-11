@@ -61,7 +61,7 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	// }
 	"channel": {
 		form: ChannelForm,
-		defaults: defaultChannel as IChannel,
+		defaults: defaultChannel,
 		allowLabels: false
 	}
 }

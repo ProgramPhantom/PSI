@@ -43,9 +43,9 @@ class DiagramDropInterpreter {
 				// Compute indexes of the slithers
 				for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
 					let preOccupancy: GridCell =
-						channel.gridMatrix[channelIndex][columnIndex - 1];
+						channel.gridMatrix[channelIndex]?.[columnIndex - 1];
 					let hereOccupancy: GridCell =
-						channel.gridMatrix[channelIndex][columnIndex];
+						channel.gridMatrix[channelIndex]?.[columnIndex];
 
 					if (
 						(columnIndex !== 1 &&

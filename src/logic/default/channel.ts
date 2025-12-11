@@ -8,6 +8,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 	"children": [],
 	"pulseElements": [],
 	"placementMode": {"type": "managed"},
+	"sizeMode": {"x": "fixed", "y": "fixed"},
 
 	"style": {
 		"thickness": 3,
@@ -20,7 +21,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 
 	"label": {
 		"offset": [0, 0],
-		"padding": [0, 0, 0, 0],
+		"padding": [0, 5, 0, 0],
 		"ref": "channel-symbol",
 		"text": "^{1}\\mathrm{H}",
 		"placementMode": {"type": "managed"},
@@ -34,11 +35,11 @@ export const DEFAULT_CHANNEL: IChannel = {
 	},
 
 	"bar": {		
-		"padding": [0, 4, 0, 4],
+		"padding": [0, 0, 0, 0],
 		"offset": [0, 0],
 
-		"contentWidth": 7,
-		"contentHeight": 50,
+		"contentWidth": 20,
+		"contentHeight": 3,
 
 		"placementMode": {"type": "grid", 
 			"gridConfig": {
@@ -47,6 +48,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 				"gridSize": {"noRows": 1, "noCols": 1}
 			}
 		},
+		"sizeMode": {"x": "grow", "y": "fixed"},
 
 		"style": {
 			"fill": "#000000",

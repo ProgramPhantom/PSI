@@ -36,7 +36,7 @@ const GridDebug: React.FC<IGridDebug> = (props) => {
 						}}></div>
 				);
 			})}
-			<PaddedBoxDebug element={props.grid}></PaddedBoxDebug>
+			{/* <PaddedBoxDebug element={props.grid}></PaddedBoxDebug> */}
 		</>
 	);
 };

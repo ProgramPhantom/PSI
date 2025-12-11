@@ -142,7 +142,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChild: childFormData,
 						coreChildType: (masterFormData as ILabelGroup).coreChildType,
 						labels: labelListFormData, // Override labels
-						gridChildren: []
+						children: []
 					};
 					props.callback(result, "label-group");
 				} else {
