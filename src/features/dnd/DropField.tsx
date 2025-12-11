@@ -48,12 +48,10 @@ class DiagramDropInterpreter {
 						channel.gridMatrix[channelIndex][columnIndex];
 
 					if (
-						!(
-							preOccupancy === undefined
-							|| (preOccupancy instanceof Visual
-								&& hereOccupancy instanceof Visual
-								&& preOccupancy !== hereOccupancy)
-						)
+						(columnIndex !== 1 &&
+						preOccupancy === undefined)
+						|| (hereOccupancy?.source !== undefined)
+						
 					) {
 						slitherIndexes[columnIndex] = false;
 					}
