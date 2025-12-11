@@ -33,6 +33,7 @@ class DiagramDropInterpreter {
 		// Iterate sequences
 		Object.entries(diagram.sequenceDict).forEach(([seqID, sequence]) => {
 
+			// For each channel
 			Object.entries(sequence.channelsDict).forEach(([channelId, channel], channelIndex) => {
 				var columns: Rect[] = channel.gridSizes.columns;
 				var noColumns = columns.length;
@@ -43,15 +44,12 @@ class DiagramDropInterpreter {
 				// Compute indexes of the slithers
 				for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
 					let preOccupancy: GridCell =
-						channel.gridMatrix[channelIndex]?.[columnIndex - 1];
+						channel.gridMatrix[0]?.[columnIndex - 1];
 					let hereOccupancy: GridCell =
-						channel.gridMatrix[channelIndex]?.[columnIndex];
+						channel.gridMatrix[0]?.[columnIndex];
 
 					if (
-						(columnIndex !== 1 &&
-						preOccupancy === undefined)
-						|| (hereOccupancy?.source !== undefined)
-						
+						(hereOccupancy?.source !== undefined)
 					) {
 						slitherIndexes[columnIndex] = false;
 					}
@@ -61,8 +59,12 @@ class DiagramDropInterpreter {
 				// Main slithers and place blocks
 				for (var columnIndex = 1; columnIndex < noColumns; columnIndex++) {
 					var column = columns[columnIndex];
-					let occupied: boolean =
+					let topOccupied: boolean =
 						channel.gridMatrix[0][columnIndex] === undefined
+							? false
+							: true;
+					let bottomOccupied: boolean = 
+					channel.gridMatrix[2][columnIndex] === undefined
 							? false
 							: true;
 
@@ -102,12 +104,12 @@ class DiagramDropInterpreter {
 						this.insertAreas.push(newSlither);
 					}
 
+					var columnWidth = column.width;
 					// PLACE BLOCK
-					if (!occupied) {
+					if (!topOccupied) {
 						// Top block
-						var columnWidth = column.width;
 
-						let newBlock: AddSpec = {
+						var newBlock: AddSpec = {
 							area: {
 								x: column.x + this.slitherWidth / 2,
 								y: channel.gridSizes.rows[0].y,
@@ -121,7 +123,9 @@ class DiagramDropInterpreter {
 							insert: false
 						};
 						this.insertAreas.push(newBlock);
+					}
 
+					if (!bottomOccupied) {
 						// Bottom block
 						newBlock = {
 							area: {
@@ -138,7 +142,6 @@ class DiagramDropInterpreter {
 						};
 						this.insertAreas.push(newBlock);
 					}
-					
 				};
 
 
