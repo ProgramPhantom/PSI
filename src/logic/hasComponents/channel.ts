@@ -1,6 +1,7 @@
 import Grid, { IGrid } from "../grid";
 import { ID, UserComponentType } from "../point";
 import RectElement, { IRectElement, IRectStyle } from "../rectElement";
+import Spacial from "../spacial";
 import Text, { IText } from "../text";
 import Visual, { IVisual } from "../visual";
 
@@ -70,8 +71,11 @@ export default class Channel extends Grid implements IChannel {
 		this.insertEmptyColumn();
 		this.insertEmptyColumn();
 
-		this.addAtCoord(this.label, 1, 0);
-		this.addAtCoord(this.bar, 1, 1);
+		this.addChildAtCoord(this.label, 1, 0);
+		this.addChildAtCoord(this.bar, 1, 1);
+
+		this.setMatrixAtCoord({ghost: {width: 0, height: this.padding[0]}}, {row: 0, column: 0})
+		this.setMatrixAtCoord({ghost: {width: 0, height: this.padding[2]}}, {row: 2, column: 0})
 	}
 
 	public growBar() {

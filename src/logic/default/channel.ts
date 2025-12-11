@@ -1,7 +1,7 @@
 import { IChannel } from "../hasComponents/channel";
 
 export const DEFAULT_CHANNEL: IChannel = {
-	"padding": [0, 0, 0, 0],
+	"padding": [30, 0, 30, 0],
 	"offset": [0, 0],
 	"ref": "my-channel",
 	"sequenceID": null,
@@ -9,6 +9,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 	"pulseElements": [],
 	"placementMode": {"type": "managed"},
 	"sizeMode": {"x": "fixed", "y": "fixed"},
+	
 
 	"style": {
 		"thickness": 3,

@@ -14,8 +14,9 @@ export interface IGrid extends ICollection {
 export type GridCell<T extends Visual=Visual> = OccupiedCell<T> | undefined
 
 interface OccupiedCell<T> {
-  element: T;               // The element if this is the “owning” cell
+  element?: T;               // The element if this is the “owning” cell
   source?: { row: number; col: number }; // If this cell is covered by another
+  ghost?: {width: number, height: number}  // Provide spacing to a cell
 }
 
 export default class Grid<T extends Visual = Visual> extends Collection implements IDraw {
@@ -41,7 +42,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		this.gridMatrix.forEach((row) => {
 			row.forEach((cell) => {
 				if (cell === undefined) {return}
-				if (cell.source === undefined) {
+				if (cell.source === undefined && cell.element !== undefined) {
 					allChildren.push(cell.element);
 				}
 			})
@@ -103,34 +104,53 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		// Let's compute the width and height of each column
 		var columnRects: Spacial[] = Array.from({length: gridColumns.length}, () => new Spacial())
 		gridColumns.forEach((col, i) => {
-			var colChildren: Visual[] = col.filter((child) => child !== undefined).map(cell => cell.element);
+			var colEntries: GridCell<T>[] = col.filter((cell) => cell !== undefined);
 			
+			// Find width of column
 			var widths: number[] = [];
-
-			for (let child of colChildren) {
+			for (let cell of colEntries) {
 				let contributing: boolean = true;
 
-				if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
-					&& child.placementMode.gridConfig.contribution.x === false
-				) { contributing = false; }
-
-				// Compute partial width contribution (distribute evenly):
-				let width: number = child.width;
-
-				if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noCols > 1) {
-					width = width / child.placementMode.gridConfig.gridSize.noCols;
+				if (cell.ghost !== undefined) {
+					widths.push(cell.ghost.width);
 				}
 
-				if (contributing === true) {
-					widths.push(width)
+				if (cell.element !== undefined) {
+					let child: Visual = cell.element;
+
+					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
+						&& child.placementMode.gridConfig.contribution.x === false
+					) { contributing = false; }
+
+					// Compute partial width contribution (distribute evenly):
+					let width: number = child.width;
+
+					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noCols > 1) {
+						width = width / child.placementMode.gridConfig.gridSize.noCols;
+					}
+
+					if (contributing === true) {
+						widths.push(width)
+					}
 				}
 			}
 
+			// Set the width of this column
 			var maxWidth = Math.max(...widths, this.min.width)
-
 			columnRects[i].width = maxWidth;
 
-			var colHeight = col.reduce((h, c) => h + (c !== undefined ? c.element.height : 0), 0);
+
+			var colHeight = col.reduce((h, c) => {
+				let dh = 0;
+				if (c !== undefined && c.element !== undefined) {
+					dh = c.element.height;
+
+					if (c.ghost !== undefined && c.ghost.height > dh) {
+						dh = c.ghost.height
+					}
+				}
+				return h + dh;
+			}, 0);
 			columnRects[i].height = colHeight
 		})
 
@@ -138,34 +158,53 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		// Now lets compute the width and height of each row
 		var rowRects: Spacial[] = Array.from({length: gridRows.length}, () => new Spacial())
 		gridRows.forEach((row, i) => {
-			var rowChildren: Visual[] = row.filter((child) => child !== undefined).map(cell => cell.element);
+			var rowEntries: GridCell<T>[] = row.filter((cell) => cell !== undefined);
 			
+			// Find height of the row
 			var heights: number[] = [];
-
-			for (let child of rowChildren) {
+			for (let cell of rowEntries) {
 				let contributing: boolean = true;
 
-				if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
-					&& child.placementMode.gridConfig.contribution.y === false
-				) { contributing = false; }
-
-				// Compute partial width contribution (distribute evenly):
-				let height: number = child.height;
-
-				if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noRows > 1) {
-					height = height / child.placementMode.gridConfig.gridSize.noRows;
+				if (cell.ghost !== undefined) {
+					heights.push(cell.ghost.height);
 				}
 
-				if (contributing === true) {
-					heights.push(height)
+				if (cell.element !== undefined) {
+					let child: Visual = cell.element;
+
+					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
+						&& child.placementMode.gridConfig.contribution.y === false
+					) { contributing = false; }
+
+					// Compute partial width contribution (distribute evenly):
+					let height: number = child.height;
+
+					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noRows > 1) {
+						height = height / child.placementMode.gridConfig.gridSize.noRows;
+					}
+
+					if (contributing === true) {
+						heights.push(height)
+					}
 				}
 			}
-			
-			var maxHeight = Math.max(...heights, this.min.height)
 
+			// Set the width of this column
+			var maxHeight = Math.max(...heights, this.min.height)
 			rowRects[i].height = maxHeight;
 
-			var rowWidth = row.reduce((w, c) => w + (c !== undefined ? c.element.width : 0), 0);
+
+			var rowWidth = row.reduce((w, c) => {
+				let dw = 0;
+				if (c !== undefined && c.element !== undefined) {
+					dw = c.element.width;
+
+					if (c.ghost !== undefined && c.ghost.width > dw) {
+						dw = c.ghost.height
+					}
+				}
+				return w + dw;
+			}, 0);
 			rowRects[i].width = rowWidth
 		})
 
@@ -250,7 +289,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
-				if (cell !== undefined && cell.source === undefined) {
+				if (cell?.element !== undefined && cell.source === undefined) {
 					let cellRect: Spacial = this.cells[row_index][column_index];
 					let childBottomRight: {row: number, col: number} = this.getChildBottomRight(cell.element);
 
@@ -265,7 +304,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		})
 	}
 
-	public addAtCoord(child: T, row: number, column?: number) {
+	public addChildAtCoord(child: T, row: number, column?: number) {
 		var insertCoords: {row: number, col: number} | undefined;
 		if (column === undefined) {
 			insertCoords = this.getFirstAvailableCell();
@@ -281,6 +320,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 
 		this.gridMatrix[row][column] = {element: child};
+	}
+
+	public setMatrixAtCoord(gridEntry: GridCell<T>, coords: {row: number, column: number}) {
+		this.gridMatrix[coords.row][coords.column] = gridEntry;
 	}
 
 	public remove(child: T) {
@@ -395,7 +438,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
-				if (cell !== undefined && cell.element.id === child.id && cell.source === undefined) {
+				if (cell?.element !== undefined && cell.element.id === child.id && cell.source === undefined) {
 					coords = {row: row_index, col: column_index}
 				}
 			})
@@ -437,7 +480,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 
 		// Move down:
-		while (this.gridMatrix[bottom+1] !== undefined && this.gridMatrix[bottom+1][location.col]?.element.id === child.id) {
+		while (this.gridMatrix[bottom+1] !== undefined && this.gridMatrix[bottom+1][location.col]?.element?.id === child.id) {
 			bottom += 1
 		}
 		
