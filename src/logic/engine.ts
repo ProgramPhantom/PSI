@@ -1,4 +1,4 @@
-import { Svg } from "@svgdotjs/svg.js";
+import { Element, Svg, SVG } from "@svgdotjs/svg.js";
 import SchemeManager, { IUserSchemeData } from "./default";
 import DiagramHandler, { Result } from "./diagramHandler";
 import { IDiagram } from "./hasComponents/diagram";
@@ -25,7 +25,7 @@ class ENGINE {
 
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
-		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager);
+		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager, ENGINE.ConstructSVGElement);
 		console.log("SURFACE ATTACHED");
 	}
 	static get surface(): Svg {
@@ -99,7 +99,7 @@ class ENGINE {
 				rectSingletons.push(new RectElement(t as IRectElement));
 			});
 			Object.values(scheme.svgElements ?? {}).forEach((t) => {
-				svgSingletons.push(new SVGElement(t as ISVGElement));
+				svgSingletons.push(ENGINE.ConstructSVGElement(t as ISVGElement));
 			});
 			Object.values(scheme.labelGroupElements ?? {}).forEach((t) => {
 				labelGroupSingletons.push(new LabelGroup(t as ILabelGroup));
@@ -189,6 +189,25 @@ class ENGINE {
 	static removeScheme(name: string) {
 		delete ENGINE.singletons[name];
 		ENGINE.schemeManager.deleteUserScheme(name);
+	}
+
+
+	static ConstructSVGElement(data: ISVGElement): SVGElement {
+		var result: SVGElement = new SVGElement(data);
+		if (ENGINE.schemeManager.svgStrings && data.svgDataRef) {
+			if (ENGINE.schemeManager.svgStrings[data.svgDataRef] === undefined) {
+				console.warn(
+					`SVG data reference '${data.svgDataRef}' not found in SchemeManager`
+				);
+			} else {
+				let svgString: string = ENGINE.schemeManager.svgStrings[data.svgDataRef];
+				let svgObj: Element = SVG(svgString);
+
+				result.setSvgData(svgObj);
+			}	
+		}
+		
+		return result;
 	}
 }
 

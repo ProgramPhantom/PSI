@@ -12,7 +12,6 @@ import RectElement, { IRectElement } from "./rectElement";
 import { IMountConfig, PlacementConfiguration, PointBind } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual } from "./visual";
-import ENGINE from "./engine.ts";
 
 console.log("Load module diagram handler")
 
@@ -55,6 +54,7 @@ export default class DiagramHandler implements IDraw {
 
 	surface?: Svg;
 	schemeManager: SchemeManager;
+	svgConstructor: (data: ISVGElement) => SVGElement
 
 	get id(): string {
 		var id: string = "";
@@ -78,10 +78,11 @@ export default class DiagramHandler implements IDraw {
 		return this.diagram.allElements;
 	}
 
-	constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager) {
+	constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager, SVGConstructor: ((data: ISVGElement) => SVGElement)) {
 		this.syncExternal = emitChange;
 		this.schemeManager = schemeManager;
 		this.surface = surface;
+		this.svgConstructor = SVGConstructor;
 
 		var constructResult: Result<Diagram> = this.constructDiagram(
 			defaultDiagram
@@ -279,7 +280,7 @@ export default class DiagramHandler implements IDraw {
 
 		switch (type) {
 			case "svg":
-				element = new SVGElement(parameters as ISVGElement);
+				element = this.svgConstructor(parameters as ISVGElement);
 				break;
 			case "rect":
 				element = new RectElement(parameters as IRectElement);

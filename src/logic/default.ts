@@ -96,34 +96,7 @@ export default class SchemeManager {
 		return Object.keys(this.svgStrings);
 	}
 
-	public setUserScheme(name: string, schemeData: PartialUserSchemeData) {
-		if (name === SchemeManager.InternalSchemeName) {
-			throw new Error(`Cannot override default scheme`);
-		}
 
-		this._userSchemeSet[name] = schemeData;
-
-		this.emitChange();
-	}
-	public setUserSchemeCollection<K extends keyof IUserSchemeData>(
-		propertyName: K,
-		schemeName: string,
-		value: IUserSchemeData[K]
-	) {
-		if (this.allSchemes[schemeName] === undefined) {
-			throw new Error(
-				`Cannot add collection to scheme with name ${schemeName} as it does not exist.`
-			);
-		}
-
-		this._userSchemeSet[schemeName][propertyName] = value;
-		this.emitChange();
-	}
-
-	public deleteUserScheme(name: string) {
-		delete this._userSchemeSet[name];
-		this.emitChange();
-	}
 
 	get elementTypes(): Record<string, UserComponentType> {
 		var types: Record<string, UserComponentType> = {};
@@ -157,6 +130,35 @@ export default class SchemeManager {
 
 		this.userSchemeSet = this.getLocalSchemes();
 		this.loadSVGs();
+	}
+
+	public setUserScheme(name: string, schemeData: PartialUserSchemeData) {
+		if (name === SchemeManager.InternalSchemeName) {
+			throw new Error(`Cannot override default scheme`);
+		}
+
+		this._userSchemeSet[name] = schemeData;
+
+		this.emitChange();
+	}
+	public setUserSchemeCollection<K extends keyof IUserSchemeData>(
+		propertyName: K,
+		schemeName: string,
+		value: IUserSchemeData[K]
+	) {
+		if (this.allSchemes[schemeName] === undefined) {
+			throw new Error(
+				`Cannot add collection to scheme with name ${schemeName} as it does not exist.`
+			);
+		}
+
+		this._userSchemeSet[schemeName][propertyName] = value;
+		this.emitChange();
+	}
+
+	public deleteUserScheme(name: string) {
+		delete this._userSchemeSet[name];
+		this.emitChange();
 	}
 
 	//// ----------------- LOADERS -------------------

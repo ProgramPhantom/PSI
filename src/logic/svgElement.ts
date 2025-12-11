@@ -39,12 +39,9 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 
 		this.style = params.style;
 		this.svgDataRef = params.svgDataRef;
-
-
-
 	}
 
-	public setSvgData(rawSVG: Svg) {
+	public setSvgData(rawSVG: Element) {
 		// Wrap svg contents inside a group for translation.
 		var innerSVG = rawSVG.children();
 		innerSVG.forEach((c) => {
