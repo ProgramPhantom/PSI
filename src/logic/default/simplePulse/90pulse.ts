@@ -1,17 +1,16 @@
-{
+import { IRectElement } from "../../rectElement"
+
+export const DEFAULT_90H: IRectElement = {
 	"padding": [0, 4, 0, 4],
 	"offset": [0, 0],
-
 	"contentWidth": 7,
 	"contentHeight": 50,
 
-	"mountConfig": {
+	"placementMode": {"type": "pulse", "config": {
+		"alignment": {"x": "centre", "y": "far"},
 		"orientation": "top",
-		"alignment": "centre",
 		"noSections": 1,
-		"channelID": null,
-		"index": null
-	},
+	}},
 
 	"style": {
 		"fill": "#000000",
@@ -21,3 +20,4 @@
 
 	"ref": "90-pulse"
 }
+

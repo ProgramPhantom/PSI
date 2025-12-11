@@ -20,9 +20,9 @@ export interface Size {
 export type PointBind = Record<Dimensions, IBindingPayload>;
 
 export interface IMountConfig {
-	index: number | null;
-	channelID: ID | null;
-	sequenceID: ID | null;
+	index?: number;
+	channelID?: ID;
+	sequenceID?: ID;
 
 	orientation: Orientation;
 	alignment: Record<Dimensions, SiteNames>;

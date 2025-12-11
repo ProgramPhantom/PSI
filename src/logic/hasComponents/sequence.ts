@@ -101,8 +101,8 @@ export default class Sequence extends Grid implements ISequence {
 					var gridConfig: IGridChildConfig;
 					if (element.placementMode.type === "grid") {
 						gridConfig = element.placementMode.gridConfig;
-					} else if (cellRect.placementMode.type === "pulse") {
-						gridConfig = this.mountConfigToGridConfig(cellRect.placementMode.config);
+					} else if (element.placementMode.type === "pulse") {
+						gridConfig = this.mountConfigToGridConfig(element.placementMode.config);
 					} else {
 						gridConfig = {
 							coords: {row: row_index, col: column_index},

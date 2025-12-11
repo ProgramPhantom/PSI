@@ -1,6 +1,7 @@
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
-import defaultScheme from "./default/schemeSet.json";
+import { DEFAULT_SCHEME_SET } from "./default/schemeSet";
 import type { IChannel } from "./hasComponents/channel";
+import { IDiagram } from "./hasComponents/diagram";
 import { ILabelGroup } from "./hasComponents/labelGroup";
 import { ISequence } from "./hasComponents/sequence";
 import { ISequenceAligner } from "./hasComponents/sequenceAligner";
@@ -38,7 +39,7 @@ export type AppConfigSchemeSet = {
 // to use. It includes prefabs for elements, defaults for sequences etc. The application can
 // contain multiple
 export interface IUserSchemeData {
-	diagram: Record<string, ISequenceAligner> | undefined;
+	diagram: Record<string, IDiagram> | undefined;
 	sequence: Record<string, ISequence> | undefined;
 	channel: Record<string, IChannel> | undefined;
 
@@ -123,7 +124,7 @@ export default class SchemeManager {
 		};
 
 		var initialScheme: Record<string, IUserSchemeData> = JSON.parse(
-			JSON.stringify(defaultScheme)
+			JSON.stringify(DEFAULT_SCHEME_SET)
 		);
 
 		this.internalScheme = initialScheme[SchemeManager.InternalSchemeName];

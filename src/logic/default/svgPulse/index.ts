@@ -1,15 +1,15 @@
-import * as Acquire from "./acquire.json";
-import * as HalfSine from "./halfsine.json";
-import * as AmpSeries from "./amp.json";
-import * as P180 from "./180.json";
-import * as Trapezium from "./trapezium.json";
-import * as TallTrapezium from "./talltrapezium.json";
+import * as Acquire from "./acquire";
+import * as HalfSine from "./halfsine";
+import * as AmpSeries from "./amp";
+import * as P180 from "./180";
+import * as Trapezium from "./trapezium";
+import * as TallTrapezium from "./talltrapezium";
 
-import * as SaltireHiLo from "./saltirehilo.json";
-import * as SaltireLoHi from "./saltirelohi.json";
+import * as SaltireHiLo from "./saltirehilo";
+import * as SaltireLoHi from "./saltirelohi";
 
-import * as ChirpHiLo from "./chirphilo.json";
-import * as ChirpLoHi from "./chirplohi.json";
+import * as ChirpHiLo from "./chirphilo";
+import * as ChirpLoHi from "./chirplohi";
 
 export const svgPulses = {
 	acquire: Acquire,
