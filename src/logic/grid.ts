@@ -126,7 +126,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					let width: number = child.width;
 
 					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noCols > 1) {
-						width = width / child.placementMode.gridConfig.gridSize.noCols;
+						width = 0;
 					}
 
 					if (contributing === true) {
@@ -180,7 +180,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					let height: number = child.height;
 
 					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noRows > 1) {
-						height = height / child.placementMode.gridConfig.gridSize.noRows;
+						height = 0;
 					}
 
 					if (contributing === true) {
