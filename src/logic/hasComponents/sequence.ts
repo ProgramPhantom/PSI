@@ -160,7 +160,7 @@ export default class Sequence extends Grid implements ISequence {
 		// adding  could be longer than the matrix:
 
 		var channelLength: number = channel.noColumns;
-		this.setMatrixSize({row: undefined, col: channelLength-1})
+		this.setMatrixSize({row: undefined, col: channelLength-1}, true)
 		
 		// Note we don't care about the row as we will just append the 
 		// rows of the channel now, there's no need to expand it
