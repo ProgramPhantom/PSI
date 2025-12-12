@@ -74,8 +74,8 @@ export default class Channel extends Grid implements IChannel {
 		this.addChildAtCoord(this.label, 1, 0);
 		this.addChildAtCoord(this.bar, 1, 1);
 
-		this.setMatrixAtCoord({ghost: {width: 0, height: this.padding[0]}}, {row: 0, column: 0})
-		this.setMatrixAtCoord({ghost: {width: 0, height: this.padding[2]}}, {row: 2, column: 0})
+		this.setMatrixAtCoord({ghost: {width: 0, height: 20}}, {row: 0, column: 0})
+		this.setMatrixAtCoord({ghost: {width: 0, height: 20}}, {row: 2, column: 0})
 	}
 
 	public growBar() {

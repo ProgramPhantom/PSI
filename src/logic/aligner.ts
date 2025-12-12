@@ -3,22 +3,23 @@ import { ID } from "./point";
 import Spacial, { Dimensions, Size } from "./spacial";
 import Visual, { doesDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
+import Collection, { ICollection } from "./collection";
 
 console.log("Load module aligner")
 
-export interface IAligner<T extends IVisual = IVisual> extends IVisual {
+export interface IAligner<T extends IVisual = IVisual> extends ICollection {
 	mainAxis: Dimensions;
 	minCrossAxis?: number;
 
-	alignerChildren: T[]
+	children: T[]
 }
 
 // A collection where all elements are assumed to be in a stack arrangement (either vertically or horizontally)
 // Useful for getting the max width/height of multiple elements
-export default class Aligner<T extends Visual = Visual> extends Visual implements IAligner {
+export default class Aligner<T extends Visual = Visual> extends Collection<T> implements IAligner {
 	get state(): IAligner {
 		return {
-			alignerChildren: this.alignerChildren.map((c) => c.state),
+			children: this.children.map((c) => c.state),
 			mainAxis: this.mainAxis,
 			minCrossAxis: this.minCrossAxis,
 			...super.state
@@ -27,15 +28,13 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 
 
 	get noChildren() {
-		return this.alignerChildren.length;
+		return this.children.length;
 	}
 
 	mainAxis: Dimensions;
 	crossAxis: Dimensions;
 
 	minCrossAxis?: number;
-
-	alignerChildren: T[] = [];
 
 	cells: Spacial[];
 
@@ -62,7 +61,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 
 		surface.add(this.svg);
 
-		this.alignerChildren.forEach((uc) => {
+		this.children.forEach((uc) => {
 			if (doesDraw(uc)) {
 				uc.draw(this.svg);
 			}
@@ -70,27 +69,27 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 	}
 
 	public computeSize(): Size {
-		this.alignerChildren.forEach((c) => c.computeSize());
+		this.children.forEach((c) => c.computeSize());
 
 		var contentSize: Size = {width: 0, height: 0};
 		this.cells = Array.from({length: this.noChildren}, () => new Spacial());
 
 		if (this.mainAxis === "x") {
-			contentSize.width = this.alignerChildren.reduce((w, c) => w + c.width, 0)
-			contentSize.height = Math.max(...this.alignerChildren.map((c) => c.height))
+			contentSize.width = this.children.reduce((w, c) => w + c.width, 0)
+			contentSize.height = Math.max(...this.children.map((c) => c.height))
 
 			this.cells.forEach((cell, cell_index) => {
-				var target: T = this.alignerChildren[cell_index];
+				var target: T = this.children[cell_index];
 				cell.width = target.width;
 				cell.height = contentSize.height;
 			})
 
 		} else {
-			contentSize.width = Math.max(...this.alignerChildren.map((c) => c.width));
-			contentSize.height = this.alignerChildren.reduce((h, c) => h + c.height, 0);
+			contentSize.width = Math.max(...this.children.map((c) => c.width));
+			contentSize.height = this.children.reduce((h, c) => h + c.height, 0);
 
 			this.cells.forEach((cell, cell_index) => {
-				var target: T = this.alignerChildren[cell_index];
+				var target: T = this.children[cell_index];
 				cell.height = target.height;
 				cell.width = contentSize.width
 			})
@@ -112,7 +111,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 
 		// Yes this could be done with dimension setters
 		if (this.mainAxis === "x") {
-			this.alignerChildren.forEach((child, child_index) => {
+			this.children.forEach((child, child_index) => {
 				let targetCell = this.cells[child_index];
 
 				child.x = this.contentX + xCount
@@ -128,7 +127,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 				child.computePositions({x: child.x, y: child.y});
 			})
 		} else {  // this.mainAxis === "y"
-			this.alignerChildren.forEach((child, child_index) => {
+			this.children.forEach((child, child_index) => {
 				let targetCell = this.cells[child_index];
 
 				child.y = this.contentY + yCount;
@@ -149,7 +148,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 		super.growElement(containerSize)
 
 		// TODO:
-		this.alignerChildren.forEach((child, child_index) => {
+		this.children.forEach((child, child_index) => {
 			let targetCell = this.cells[child_index];
 		
 			child.growElement(targetCell.contentSize);	
@@ -161,9 +160,9 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 		index?: number,
 	) {
 		if (index === undefined) {
-			this.alignerChildren.push(child);
+			this.children.push(child);
 		} else {
-			this.alignerChildren.splice(index, 0, child)
+			this.children.splice(index, 0, child)
 		}
 	}
 
@@ -173,7 +172,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 			return
 		}
 
-		this.alignerChildren.slice(index, 1);
+		this.children.slice(index, 1);
 	}
 
 	public remove(target: T): boolean {
@@ -187,14 +186,14 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 	}
 
 
-	protected locateChild(target: T): number | undefined {
+	public locateChild(target: T): number | undefined {
 		return this.locateChildById(target.id);
 	}
 
 	protected locateChildById(id: ID): number | undefined {
 		var childIndex: number | undefined = undefined;
 
-		this.alignerChildren.forEach((child, index) => {
+		this.children.forEach((child, index) => {
 			if (id === child.id) {
 				childIndex = index;
 			}

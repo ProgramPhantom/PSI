@@ -23,10 +23,10 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 
 	// ------------ Top level accessor helpers ------------
 	get sequences(): Sequence[] {
-		return this.sequenceAligner.alignerChildren;
+		return this.sequenceAligner.children;
 	}
 	get sequenceDict(): Record<ID, Sequence> {
-		return Object.fromEntries(this.sequenceAligner.alignerChildren.map((item) => [item.id, item]));
+		return Object.fromEntries(this.sequenceAligner.children.map((item) => [item.id, item]));
 	}
 	get sequenceIDs(): string[] {
 		return Object.keys(this.sequenceDict);
@@ -34,7 +34,7 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 
 	get channelsDict(): {[name: string]: Channel} {
 		var channels: {[name: string]: Channel} = {};
-		this.sequenceAligner.alignerChildren.forEach((s) => {
+		this.sequenceAligner.children.forEach((s) => {
 			Object.entries(s.channelsDict).forEach(([id, channel]) => {
 				channels[id] = channel;
 			});
@@ -42,15 +42,15 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 		return channels;
 	}
 	get channels(): Channel[] {
-		return this.sequenceAligner.alignerChildren.map((s) => s.channels).flat();
+		return this.sequenceAligner.children.map((s) => s.channels).flat();
 	}
 	get channelIDs(): string[] {
-		return this.sequenceAligner.alignerChildren.map((s) => s.channelIDs).flat();
+		return this.sequenceAligner.children.map((s) => s.channelIDs).flat();
 	}
 
 	get allPulseElements(): Visual[] {
 		var elements: Visual[] = [];
-		this.sequenceAligner.alignerChildren.forEach((s) => {
+		this.sequenceAligner.children.forEach((s) => {
 			elements.push(...s.allPulseElements);
 		});
 		return elements;

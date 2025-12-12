@@ -91,19 +91,19 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 	}
 
 	get sequences(): Sequence[] {
-		return this.alignerChildren;
+		return this.children;
 	}
 
 	constructor(params: ISequenceAligner) {
 		super(params);
 
 		// Initial sequence:
-		if (params.alignerChildren.length === 0) {
+		if (params.children.length === 0) {
 			var startSequence = new Sequence(DEFAULT_SEQUENCE);
 			this.add(startSequence);
 		}
 
-		params.alignerChildren.forEach((s) => {
+		params.children.forEach((s) => {
 			var newSeq = new Sequence(s);
 			this.add(newSeq);
 		});

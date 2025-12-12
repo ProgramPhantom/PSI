@@ -131,6 +131,7 @@ export default class DiagramHandler implements IDraw {
 
 		element = this.allElements[id];
 
+
 		if (element === undefined) {
 			console.warn(`Cannot find element "${id}"`);
 			return undefined;
@@ -151,7 +152,7 @@ export default class DiagramHandler implements IDraw {
 
 		try {
 			// Create and mount pulses.
-			state.sequenceAligner.alignerChildren.forEach((s) => {
+			state.sequenceAligner.children.forEach((s) => {
 				s.channels.forEach((c) => {
 					c.pulseElements.forEach((m) => {
 						if (m.type === undefined) {

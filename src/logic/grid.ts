@@ -3,6 +3,7 @@ import Spacial, { IGridChildConfig, SiteNames, Size } from "./spacial";
 import Visual, { doesDraw, IDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
+import { ID } from "./point";
 
 console.log(`[ModuleLoad] Grid`);
 
@@ -126,7 +127,11 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					let width: number = child.width;
 
 					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noCols > 1) {
-						width = 0;
+						if (widths.length === 0) {
+							width = child.width / child.placementMode.gridConfig.gridSize.noCols
+						} else {
+							width = 0;
+						}
 					}
 
 					if (contributing === true) {
@@ -180,7 +185,12 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					let height: number = child.height;
 
 					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noRows > 1) {
-						height = 0;
+						if (heights.length === 0) {
+							height = child.height / child.placementMode.gridConfig.gridSize.noRows
+						} else {
+							height = 0;
+						}
+						var buisness = 1
 					}
 
 					if (contributing === true) {
@@ -211,7 +221,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		this.gridSizes.columns = columnRects;
 		this.gridSizes.rows = rowRects;
 
-		var totalWidth = this.gridSizes.columns.reduce((w, r) => w + r.width, 0);
+		var totalWidth = this.gridSizes.columns.reduce((w, c) => w + c.width, 0);
 		var totalHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
 
 		// Normalise width and height of columns/rows:
@@ -284,8 +294,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	}
 
 	public growElement(containerSize: Size) {
-		this.width = containerSize.width;
-		this.height = containerSize.height;
+		super.growElement(containerSize);
 
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {

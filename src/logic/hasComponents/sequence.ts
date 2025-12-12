@@ -42,6 +42,15 @@ export default class Sequence extends Grid implements ISequence {
 		return elements;
 	}
 
+	override get allElements(): Record<ID, Visual> {
+		var elements: Record<ID, Visual> = {[this.id]: this};
+
+		this.channels.forEach((c) => {
+			elements = {...elements, ...c.allElements};
+		});
+		return elements;
+	}
+
 	constructor(params: ISequence) {
 		super(params);
 

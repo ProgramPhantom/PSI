@@ -13,7 +13,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 		"placementMode": {"type": "free"},
 		"ref": "sequence-aligner",
 		"sequences": [],
-		"alignerChildren": [
+		"children": [
 			{
 				"placementMode": {"type": "managed"},
 				"ref": "sequence",
@@ -27,7 +27,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 				"children": [],
 				"channels": [
 					{
-						"padding": [30, 0, 30, 0],
+						"padding": [0, 0, 0, 0],
 						"offset": [0, 0],
 						"ref": "my-channel",
 						"sequenceID": null,

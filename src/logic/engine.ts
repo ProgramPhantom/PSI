@@ -16,6 +16,7 @@ export interface SchemeSingletonStore {
 export type SingletonStorage = Record<string, SchemeSingletonStore>;
 
 class ENGINE {
+	static SURFACE_ID: string = "surface"
 	static listeners: (() => void)[] = [];
 	static currentImageName: string = "newPulseImage.svg";
 	static StateName: string = "diagram-state";
@@ -25,6 +26,7 @@ class ENGINE {
 
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
+		ENGINE._surface.attr({"id": ENGINE.SURFACE_ID})
 		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager, ENGINE.ConstructSVGElement);
 		console.log("SURFACE ATTACHED");
 	}

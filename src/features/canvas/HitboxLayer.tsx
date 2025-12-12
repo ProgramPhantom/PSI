@@ -69,24 +69,26 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	) => {
 		var thisElement: Visual = ENGINE.handler.identifyElement(root.id());
 
-		if (thisElement !== undefined) {
+		// Traverse the top surface
+		if (root.id() === ENGINE.SURFACE_ID) {
+			root.children().forEach((c) => {
+				traverseDom(c, componentRectArray, freeRectArray, depth - 1);
+			});
+		} else if (thisElement !== undefined ) {
 			var thisLayer: Rect = thisElement.getHitbox().attr({zIndex: depth});
 
-			// if (thisElement.ownershipType === "component") {
-			// 	componentRectArray.push(thisLayer);
-			// } else if (thisElement.ownershipType === "free") {
-			// 	freeRectArray.push(thisLayer);
-			// }
+			componentRectArray.push(thisLayer);
 
 			if (
-				(root.type !== "svg" || depth === BASE_LAYER)
-				&& thisElement.ref !== "label col | pulse columns"
+				root.type !== "svg" || depth === BASE_LAYER
 			) {
 				root.children().forEach((c) => {
 					traverseDom(c, componentRectArray, freeRectArray, depth - 1);
 				});
 			}
 		}
+
+
 	};
 
 	const getMouseElementFromID = (id: ID | undefined): Visual | undefined => {
@@ -140,7 +142,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
 	const mouseOver = (over: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) => {
 		var rawTargetId: string | undefined = (over.target as HTMLElement).id;
-		console.log(rawTargetId);
+
 
 		if (rawTargetId === undefined) {
 			props.setHoveredElement(undefined);

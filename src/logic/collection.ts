@@ -237,9 +237,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		var elements: Record<ID, Visual> = {[this.id]: this};
 
 		this.children.forEach((c) => {
-			if (c instanceof Visual) {
-				elements = {...elements, ...c.allElements};
-			}
+			elements = {...elements, ...c.allElements};
+			
 		});
 		return elements;
 	}
@@ -248,7 +247,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		return this.children.filter((c) => c.id === id).length > 0;
 	}
 
-	private locateChild(target: T): number | undefined {
+	public locateChild(target: T): number | undefined {
 		var index: number | undefined;
 
 		this.children.forEach((c, i) => {

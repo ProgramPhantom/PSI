@@ -12,7 +12,7 @@ export const BLANK_DIAGRAM: IDiagram = {
 		"placementMode": {"type": "free"},
 		"ref": "sequence-aligner",
 		"sequences": [],
-		"alignerChildren": []
+		"children": []
 	},
 	"placementMode": {"type": "free"},
 	"children": [],
