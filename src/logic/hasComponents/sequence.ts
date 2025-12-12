@@ -165,6 +165,7 @@ export default class Sequence extends Grid implements ISequence {
 
 		var gridConfig: IGridChildConfig = this.mountConfigToGridConfig(config);
 
+		
 
 		// Insert column if occupied:
 		if (this.gridMatrix[gridConfig.coords.row][gridConfig.coords.col] !== undefined) {
@@ -175,7 +176,6 @@ export default class Sequence extends Grid implements ISequence {
 
 		// this.growChannels();
 		this.setChannelDimensions();
-		
 		this.setChannelMatrices();
 	}
 

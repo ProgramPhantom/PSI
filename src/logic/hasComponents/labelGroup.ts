@@ -29,8 +29,6 @@ export default class LabelGroup<T extends Visual = Visual>
 			coreChild: this.coreChild.state,
 			coreChildType: this.coreChildType,
 			...super.state,
-			contentWidth: this.coreChild.contentWidth,
-			contentHeight: this.coreChild.contentHeight
 		};
 	}
 
@@ -48,23 +46,17 @@ export default class LabelGroup<T extends Visual = Visual>
 
 	constructor(
 		params: ILabelGroup,
-		coreChild?: T,
+		coreChild: T,
 	) {
 		super(params);
+		this.setMatrixSize({row: 2, col: 2})
 
 		this.coreChildType = params.coreChildType;
 
-		if (coreChild !== undefined) {
-			var coreChild: T = coreChild;
-		} else {
-			var coreChild: T = Collection.CreateChild(params.coreChild, params.coreChildType) as T;
-		}
+		var coreChild: T = coreChild;
 
-		this._contentHeight = coreChild.contentHeight!;
-		this._contentWidth = coreChild.contentWidth!;
 
 		this.placementMode = params.placementMode;
-		// parent.mountConfig = undefined;
 
 		// this.ref = "labelled-" + coreChild.ref;
 		this.ref = coreChild.ref;
@@ -82,23 +74,35 @@ export default class LabelGroup<T extends Visual = Visual>
 	private setCoreChild(child: T) {
 		this._coreChild = child;
 
-		this.add(child);
+		this.addChildAtCoord(child, 1, 1)
 	}
 
 
 	addLabel(label: Label) {
+		
+		label.placementMode = {
+			type: "grid",
+			gridConfig: {
+				
+			}
+		}
+		
 		switch (label.labelConfig.labelPosition) {
 			case "top":
-				this.gridChildren[0][1] = label;
+				label.placementMode.gridConfig.alignment = {x: "centre", y: "far"}
+				this.addChildAtCoord(label, 0, 1);
 				break;
 			case "right":
-				this.gridChildren[1][2] = label;
+				label.placementMode.gridConfig.alignment = {x: "here", y: "centre"}
+				this.addChildAtCoord(label, 1, 2);
 				break;
 			case "bottom":
-				this.gridChildren[2][1] = label;
+				label.placementMode.gridConfig.alignment = {x: "centre", y: "here"}
+				this.addChildAtCoord(label, 2, 1);
 				break;
 			case "left":
-				this.gridChildren[1][0] = label;
+				label.placementMode.gridConfig.alignment = {x: "far", y: "centre"}
+				this.addChildAtCoord(label, 1, 0);
 				break;
 			case "centre":
 				throw new Error("Not implemented");

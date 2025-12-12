@@ -63,16 +63,16 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	) {
 		super(params);
 
-		params.children.forEach((c) => {
-			if (c.type === undefined) {
-				console.warn(`Cannot instantiate parameter child ${c.ref} as it has no type`);
-				return;
-			}
-			if (!this.has(c.id)) {
-				var child: T = Collection.CreateChild(c, c.type) as T;
-				this.add(child);
-			}
-		});
+		// params.children.forEach((c) => {
+		// 	if (c.type === undefined) {
+		// 		console.warn(`Cannot instantiate parameter child ${c.ref} as it has no type`);
+		// 		return;
+		// 	}
+		// 	if (!this.has(c.id)) {
+		// 		var child: T = Collection.CreateChild(c, c.type) as T;
+		// 		this.add(child);
+		// 	}
+		// });
 	}
 
 	draw(surface: Element) {

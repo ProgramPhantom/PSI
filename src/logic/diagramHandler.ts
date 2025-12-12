@@ -158,7 +158,7 @@ export default class DiagramHandler implements IDraw {
 						if (m.type === undefined) {
 							console.warn(`Element data is missing type: ${m.ref}`);
 						}
-						this.createVisual(m, m.type as AllComponentTypes);
+						this.addVisual(m, m.type as AllComponentTypes);
 					});
 				});
 			});
@@ -190,7 +190,7 @@ export default class DiagramHandler implements IDraw {
 					parameters.placementMode.config.sequenceID = this.diagram.sequenceIDs[0];
 				}
 
-				result = this.createVisual(parameters, type);
+				result = this.addVisual(parameters, type);
 				break;
 			default:
 				result = {
@@ -268,8 +268,6 @@ export default class DiagramHandler implements IDraw {
 
 	// ------------------------------------------
 
-	// ---------- Visual interaction (generic) -----------
-	@draws
 	public createVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
 		var element: Visual;
 
@@ -287,7 +285,12 @@ export default class DiagramHandler implements IDraw {
 				element = new RectElement(parameters as IRectElement);
 				break;
 			case "label-group":
-				element = new LabelGroup(parameters as ILabelGroup);
+				let coreChild: Result<Visual> = this.createVisual(parameters, (parameters as ILabelGroup).coreChildType);
+				
+				if (coreChild.ok === true) {
+					element = new LabelGroup(parameters as ILabelGroup, coreChild.value);
+				}
+
 				break;
 			default:
 				return {
@@ -296,7 +299,23 @@ export default class DiagramHandler implements IDraw {
 				};
 		}
 
-		return this.placeVisual(element);
+		if (element === undefined) {
+			return {ok: false, error: `Cannot instantiate visual of type ${type}`}
+		} else {
+			return {ok: true, value: element}
+		}
+	}
+
+	// ---------- Visual interaction (generic) -----------
+	@draws
+	public addVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
+		var elementResult: Result<Visual> = this.createVisual(parameters, type);
+
+		if (elementResult.ok === false) {
+			return elementResult;
+		} else {
+			return this.placeVisual(elementResult.value);
+		}
 	}
 	@draws
 	public moveVisual(element: Visual, x: number, y: number): Result<Visual> {

@@ -92,7 +92,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					throw new Error(`Prefabs must have placement type of pulse currently.`)
 				}
 
-				var result: Result<Visual> = ENGINE.handler.createVisual(
+				var result: Result<Visual> = ENGINE.handler.addVisual(
 					singletonState,
 					elementType as UserComponentType
 				);

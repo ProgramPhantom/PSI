@@ -46,7 +46,7 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 		super(params);
 		this.labelConfig = params.labelConfig;
 
-		if (params.text !== undefined) {
+		if (params.text) {
 			// Create text
 			var text: Text = new Text(params.text);
 
@@ -55,7 +55,7 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 			this.add(text);
 		}
 
-		if (params.line !== undefined) {
+		if (params.line) {
 			// Create line
 			var line: Line = new Line(params.line);
 

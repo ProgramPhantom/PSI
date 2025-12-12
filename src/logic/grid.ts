@@ -93,7 +93,9 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 	public computeSize(): Size {
 		// First job is to compute the sizes of all children
-		this.children.forEach((c) => c.computeSize());
+		for (let child of this.children) {
+			child.computeSize();
+		}
 
 
 		// Compute the size of the grid by finding the maximum width and height
@@ -320,6 +322,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 
 		this.gridMatrix[row][column] = {element: child};
+
+		if (child.placementMode.type === "grid") {
+			child.placementMode.gridConfig.coords = insertCoords;
+		}
 	}
 
 	public setMatrixAtCoord(gridEntry: GridCell<T>, coords: {row: number, column: number}) {
