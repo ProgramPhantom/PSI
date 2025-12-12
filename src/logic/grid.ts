@@ -85,7 +85,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		this.children.forEach((uc) => {
 			if (doesDraw(uc)) {
-				uc.draw(surface);
+				uc.draw(this.svg);
 			}
 		});
 	}

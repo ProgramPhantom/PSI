@@ -64,7 +64,7 @@ export default class Aligner<T extends Visual = Visual> extends Visual implement
 
 		this.alignerChildren.forEach((uc) => {
 			if (doesDraw(uc)) {
-				uc.draw(surface);
+				uc.draw(this.svg);
 			}
 		});
 	}

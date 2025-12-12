@@ -91,7 +91,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 		this.children.forEach((uc) => {
 			if (doesDraw(uc)) {
-				uc.draw(surface);
+				uc.draw(this.svg);
 			}
 		});
 	}

@@ -1,8 +1,10 @@
+import { Element } from "@svgdotjs/svg.js";
 import Grid, { GridCell, IGrid } from "../grid";
 import { ID, UserComponentType } from "../point";
 import Spacial, { IGridChildConfig, IMountConfig, SiteNames, Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
+import { G } from "@svgdotjs/svg.js";
 
 console.log("Load module sequence")
 
@@ -48,6 +50,25 @@ export default class Sequence extends Grid implements ISequence {
 		params.channels.forEach((c) => {
 			var newChan = new Channel(c);
 			this.addChannel(newChan);
+		});
+	}
+
+	public override draw(surface: Element) {
+		if (this.svg) {
+			this.svg.remove();
+		}
+
+		var group = new G().id(this.id).attr({title: this.ref});
+		group.attr({
+			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
+		});
+
+		this.svg = group;
+
+		surface.add(this.svg);
+
+		this.channels.forEach((channel) => {
+			channel.draw(this.svg);
 		});
 	}
 
