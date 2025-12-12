@@ -46,6 +46,8 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	offset: [number, number];
 	svg?: Element;
 
+	flipped: boolean = false;
+
 	constructor(params: IVisual) {
 		super(params.padding, params.x, params.y, 
 			params.contentWidth, params.contentHeight, params.placementMode, params.sizeMode, params.ref, params.id);
@@ -64,7 +66,25 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		// Pass
 	}
 
-	protected verticalFlip() {
+	public computePositions(root: {x: number, y: number}) {
+		super.computePositions(root);
+
+		if (this.placementMode.type === "pulse") {
+			if (this.placementMode.config.orientation === "bottom") {
+				this.setVerticalFlip(true);
+			} else {
+				this.setVerticalFlip(false)
+			}
+		}
+
+		return
+	}
+
+	protected setVerticalFlip(flipped: boolean) {
+		if (this.flipped === flipped) {
+			return
+		}
+
 		// TODO: this is slightly problematic
 		this.offset = [this.offset[0], -Math.abs(this.offset[1])]; // Strange entanglement error was happening here
 
@@ -73,6 +93,8 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		});
 
 		this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
+
+		this.flipped = flipped;
 	}
 
 	// Construct and SVG with children positioned relative to (0, 0)

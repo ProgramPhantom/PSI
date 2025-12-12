@@ -127,11 +127,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					let width: number = child.width;
 
 					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noCols > 1) {
-						if (widths.length === 0) {
-							width = child.width / child.placementMode.gridConfig.gridSize.noCols
-						} else {
-							width = 0;
-						}
+						width = 0;
 					}
 
 					if (contributing === true) {
@@ -185,12 +181,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					let height: number = child.height;
 
 					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.gridSize?.noRows > 1) {
-						if (heights.length === 0) {
-							height = child.height / child.placementMode.gridConfig.gridSize.noRows
-						} else {
-							height = 0;
-						}
-						var buisness = 1
+						height = 0;
 					}
 
 					if (contributing === true) {

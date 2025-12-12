@@ -309,6 +309,7 @@ export default class Sequence extends Grid implements ISequence {
 
 		var row: number = 0;
 		var column: number = mountConfig.index;  // Starting at 1 as we know the label goes there
+		var alignment: {x: SiteNames, y: SiteNames} = {x: "centre", y: "far"}
 
 		// --------- Row -------------
 		// Currently, channels ALWAYS have a height of 3 so that's how we find 
@@ -318,6 +319,7 @@ export default class Sequence extends Grid implements ISequence {
 			row += 1
 		} else if (mountConfig.orientation === "bottom") {
 			row += 2
+			alignment = {x: "centre", y: "here"}
 		}
 
 		// ---------- Column ------------
@@ -326,7 +328,7 @@ export default class Sequence extends Grid implements ISequence {
 
 		return {
 			coords: {row: row, col: column},
-			alignment: mountConfig.alignment,
+			alignment: alignment,
 			gridSize: {noRows: 1, noCols: mountConfig.noSections}
 		}
 	}

@@ -115,13 +115,17 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		}
 	}
 
-	verticalFlip() {
+	public override setVerticalFlip(flipped: boolean) {
+		if (this.flipped === flipped) {
+			return
+		}
 		// https://stackoverflow.com/questions/65514861/transform-is-not-applied-on-embedded-svgs-chrome
 
 		//this.elementGroup.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: 0})
 		this.elementGroup.transform({flip: "y", origin: "center"}, true);
 
 		this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
+		this.flipped = flipped
 	}
 
 	public static isSVGElement(obj: any): obj is SVGElement {

@@ -71,14 +71,26 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 			} else if (isMountDrop(dropResult)) {
 				// ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
 				var elementType = (props.element.constructor as typeof Visual).ElementType;
-				var singletonState: IVisual = props.element.state;
-				singletonState.placementMode = {
-					type: "pulse",
-					config: {
-						...(singletonState.placementMode.type === "pulse" ? singletonState.placementMode.config : {}),
-						...dropResult 
-					} as IMountConfig  // TODO: investigate
-				}; 
+				var singletonState: IVisual = structuredClone(props.element.state);
+				 
+				if (singletonState.placementMode.type === "pulse") {
+					let internalConfig: IMountConfig = singletonState.placementMode.config;
+					
+					singletonState.placementMode = {
+						type: "pulse",
+						config: {
+							alignment: internalConfig.alignment,
+							noSections: internalConfig.noSections,
+							
+							orientation: dropResult.orientation,
+							channelID: dropResult.channelID,
+							sequenceID: dropResult.sequenceID,
+							index: dropResult.index
+						}
+					}; 
+				} else {
+					throw new Error(`Prefabs must have placement type of pulse currently.`)
+				}
 
 				var result: Result<Visual> = ENGINE.handler.createVisual(
 					singletonState,
