@@ -167,56 +167,58 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						height: "100%"
 					}}>
 					<div
-						style={{ overflowY: "auto", flex: "1 1 0", padding: "4px" }}
+						style={{ overflowY: "auto", flex: "1 1 0" }}
 						id="form-fields">
-						<Tabs defaultSelectedTabId={"properties"}>
-							<Tab
-								style={{ userSelect: "none", position: "sticky" }}
-								id={"properties"}
-								title={"Properties"}
-								panel={
-									<>
-										<FormProvider {...masterFormControls}>
-											<MasterForm target={props.target}></MasterForm>
-										</FormProvider>
-
-										{ChildForm ? (
-											<>
-												<Divider></Divider>
-												<div style={{ padding: "16px 4px" }}>
-													<EntityTitle
-														icon="add-child"
-														title={"Child object"}></EntityTitle>
-												</div>
-												<FormProvider {...childFormControls}>
-													<ChildForm
-														target={childTarget}
-														prefix={"coreChild"}></ChildForm>
-												</FormProvider>
-											</>
-										) : (
-											<></>
-										)}
-									</>
-								}></Tab>
-
-							{allowLabels || targetIsLabelGroup ? (
+						<div style={{ padding: "4px" }}>
+							<Tabs defaultSelectedTabId={"properties"}>
 								<Tab
 									style={{ userSelect: "none" }}
-									id={"label"}
-									title={"Labels"}
+									id={"properties"}
+									title={"Properties"}
 									panel={
 										<>
-											<FormProvider {...labelListControls}>
-												<LabelListForm
-													target={props.target}></LabelListForm>
+											<FormProvider {...masterFormControls}>
+												<MasterForm target={props.target}></MasterForm>
 											</FormProvider>
+
+											{ChildForm ? (
+												<>
+													<Divider></Divider>
+													<div style={{ padding: "16px 4px" }}>
+														<EntityTitle
+															icon="add-child"
+															title={"Child object"}></EntityTitle>
+													</div>
+													<FormProvider {...childFormControls}>
+														<ChildForm
+															target={childTarget}
+															prefix={"coreChild"}></ChildForm>
+													</FormProvider>
+												</>
+											) : (
+												<></>
+											)}
 										</>
 									}></Tab>
-							) : (
-								<></>
-							)}
-						</Tabs>
+
+								{allowLabels || targetIsLabelGroup ? (
+									<Tab
+										style={{ userSelect: "none" }}
+										id={"label"}
+										title={"Labels"}
+										panel={
+											<>
+												<FormProvider {...labelListControls}>
+													<LabelListForm
+														target={props.target}></LabelListForm>
+												</FormProvider>
+											</>
+										}></Tab>
+								) : (
+									<></>
+								)}
+							</Tabs>
+						</div>
 					</div>
 				</form>
 			</>
