@@ -37,37 +37,37 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 		var allowLabels: boolean = true;
 		var parentType: AllComponentTypes;
 		var childType: UserComponentType | undefined = undefined;
+		var childTarget: Visual | undefined;
+		
+		var targetIsLabelGroup: boolean = false;
+
 		if (props.target !== undefined) {
 			parentType = (props.target.constructor as typeof Visual).ElementType;
 
-			if (LabelGroup.isLabelGroup(props.target)) {
-				childType = (props.target.coreChild.constructor as typeof Visual)
-					.ElementType as UserComponentType;
-			}
-		} else {
-			parentType = props.objectType;
-		}
-
-		var targetIsLabelGroup: boolean = false;
-		if (props.target === undefined) {
-			// Use the object type to setup a clean form
-			MasterForm = FORM_DEFAULTS[props.objectType].form;
-			masterDefaults = FORM_DEFAULTS[props.objectType].defaults;
-			allowLabels = FORM_DEFAULTS[props.objectType].allowLabels;
-		} else {
 			MasterForm = FORM_DEFAULTS[props.objectType].form;
 			masterDefaults = props.target.state;
 			allowLabels = FORM_DEFAULTS[props.objectType].allowLabels;
 
 			if (LabelGroup.isLabelGroup(props.target)) {
+				childType = (props.target.coreChild.constructor as typeof Visual)
+					.ElementType;
+
 				ChildForm = FORM_DEFAULTS[(props.target.coreChild.constructor as typeof Visual).ElementType].form;
 				childDefaults = props.target.coreChild.state;
+				childTarget = props.target.coreChild;
 
 				labelDefaults.labels = props.target.labels;
 
 				targetIsLabelGroup = true;
 			}
-		}
+		} else {
+			parentType = props.objectType;
+			// Use the object type to setup a clean form
+			MasterForm = FORM_DEFAULTS[props.objectType].form;
+			masterDefaults = FORM_DEFAULTS[props.objectType].defaults;
+			allowLabels = FORM_DEFAULTS[props.objectType].allowLabels;
+		} 
+
 
 		console.log(masterDefaults)
 		console.log(childDefaults)
@@ -91,7 +91,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			mode: "onChange"
 		});
 
-		var vals = childFormControls.getValues();
+
 
 		// Make sure form changes (this is needed for unknown reasons)
 		useEffect(() => {
@@ -125,7 +125,8 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChildType: props.objectType as UserComponentType,
 						labels: labelListFormData,
 						children: [],
-						...masterFormData
+						...masterFormData,
+						sizeMode: {x: "fit", y: "fit"}
 					};
 
 					props.callback(result, "label-group");
@@ -133,8 +134,8 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 					props.callback(masterFormData, props.objectType);
 				}
 			} else {
+				
 				// Already label type
-
 				if (labelListFormData.length > 0) {
 					// Still a label group
 					var result: ILabelGroup = {
@@ -142,7 +143,8 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChild: childFormData,
 						coreChildType: (masterFormData as ILabelGroup).coreChildType,
 						labels: labelListFormData, // Override labels
-						children: []
+						children: [],
+						sizeMode: {x: "fit", y: "fit"}
 					};
 					props.callback(result, "label-group");
 				} else {
@@ -152,7 +154,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			}
 		});
 
-		var vals = masterFormControls.getValues();
+
 		return (
 			<>
 				<form
@@ -165,7 +167,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						height: "100%"
 					}}>
 					<div
-						style={{overflowY: "scroll", flex: "1 1 0", padding: "4px"}}
+						style={{overflowY: "auto", flex: "1 1 0", padding: "4px"}}
 						id="form-fields">
 						<Tabs defaultSelectedTabId={"properties"}>
 							<Tab
@@ -180,15 +182,15 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 										{ChildForm ? (
 											<>
-												<Divider style={{margin: "16px 0px"}}></Divider>
-												<div style={{margin: "16px 4px"}}>
+												<Divider></Divider>
+												<div style={{padding: "16px 4px"}}>
 													<EntityTitle
 														icon="add-child"
 														title={"Child object"}></EntityTitle>
 												</div>
 												<FormProvider {...childFormControls}>
 													<ChildForm
-														target={props.target}
+														target={childTarget}
 														prefix={"coreChild"}></ChildForm>
 												</FormProvider>
 											</>

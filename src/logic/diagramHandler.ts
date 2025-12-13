@@ -285,7 +285,7 @@ export default class DiagramHandler implements IDraw {
 				element = new RectElement(parameters as IRectElement);
 				break;
 			case "label-group":
-				let coreChild: Result<Visual> = this.createVisual(parameters, (parameters as ILabelGroup).coreChildType);
+				let coreChild: Result<Visual> = this.createVisual((parameters as ILabelGroup).coreChild, (parameters as ILabelGroup).coreChildType);
 				
 				if (coreChild.ok === true) {
 					element = new LabelGroup(parameters as ILabelGroup, coreChild.value);

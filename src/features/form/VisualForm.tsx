@@ -30,14 +30,14 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	var values: Partial<IVisual> = getByPath(formControls.getValues(), props.prefix);
 
 	var widthActive = props.target
-		? props.target.sizeMode.x === "inherited"
-			? false
-			: true
+		? props.target.sizeMode.x === "fixed"
+			? true
+			: false
 		: true;
 	var heightActive = props.target
-		? props.target.sizeMode.y === "inherited"
-			? false
-			: true
+		? props.target.sizeMode.y === "fixed"
+			? true
+			: false
 		: true;
 
 	var vals = formControls.getValues();
@@ -189,7 +189,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									)}></Controller>
 							</FormGroup>
 
-							{/* No Sections */}
+							{/* No Sections 
 							<FormGroup
 								style={{padding: "4px 8px", margin: 0}}
 								intent={errors?.mountConfig?.noSections ? "danger" : "none"}
@@ -221,7 +221,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										},
 										max: {value: 5, message: "No. Sections cannot exceed 5"}
 									}}></Controller>
-							</FormGroup>
+							</FormGroup>*/}
 						</ControlGroup>
 					</Section>
 				</>
@@ -231,7 +231,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 
 			{/* Padding */}
 			<Section
-				style={{borderRadius: 0}}
+				style={{borderRadius: 0, }}
 				collapseProps={{defaultIsOpen: false}}
 				compact={true}
 				title={"Padding"}

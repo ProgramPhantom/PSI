@@ -37,13 +37,20 @@ export interface IGridChildConfig {
 	contribution?: Record<Dimensions, boolean>
 }
 
+export interface IAlignerConfig {
+	index?: number,
+	alignment?: SiteNames,
+	contribution?: {mainAxis: boolean, crossAxis: boolean}
+}
+
 export type PlacementConfiguration = {type: "free"} | 
 									 {type: "pulse"; config: IMountConfig} | 
 									 {type: "binds"; bindings: undefined} | 
 									 {type: "grid"; gridConfig: IGridChildConfig} |
+									 {type: "aligner", alignerConfig: IAlignerConfig} | 
 									 {type: "managed"}
 
-export type SizeConfiguration = {x: SizeMethod, y: SizeMethod}
+export type SizeConfiguration = Record<Dimensions, SizeMethod>
 
 
 export type PositionMethod = "controlled" | "free" | "partially-controlled";

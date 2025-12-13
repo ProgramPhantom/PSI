@@ -4,6 +4,7 @@ import Line, { ILine } from "../line";
 import { UserComponentType } from "../point";
 import Spacial, { Dimensions } from "../spacial";
 import Text, { IText, Position } from "../text";
+import Aligner, { IAligner } from "../aligner";
 
 console.log("Load module label")
 
@@ -20,25 +21,26 @@ export interface ILabelConfig {
 	textPosition: LabelTextPosition;
 }
 
-export interface ILabel extends ICollection {
+export interface ILabel extends IAligner {
 	text?: IText;
 	line?: ILine;
 
 	labelConfig: ILabelConfig;
 }
 
-export default class Label extends Collection implements ILabel, IHaveComponents<ILabelComponents> {
+export default class Label extends Aligner implements ILabel {
 	get state(): ILabel {
 		return {
-			text: this.components.text?.state,
-			line: this.components.line?.state,
+			line: this.line?.state,
+			text: this.text?.state,
 			labelConfig: this.labelConfig,
 			...super.state
 		};
 	}
 	static ElementType: UserComponentType = "label";
 
-	components: ILabelComponents;
+	line?: Line;
+	text?: Text;
 
 	labelConfig: ILabelConfig;
 
@@ -49,42 +51,70 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 		if (params.text) {
 			// Create text
 			var text: Text = new Text(params.text);
+			text.placementMode = {
+				type: "aligner",
+				alignerConfig: {
+					alignment: "centre"
+				}
+			}
 
-			this.bind(text, "x", "centre", "centre");
-			this.bind(text, "y", "centre", "centre");
+			this.text = text;
 			this.add(text);
 		}
 
 		if (params.line) {
 			// Create line
 			var line: Line = new Line(params.line);
-
-			var orientationSelect: Dimensions;
-			switch (this.labelConfig.labelPosition) {
-				case "top":
-				case "bottom":
-					orientationSelect = "y";
-					break;
-				case "left":
-				case "right":
-					orientationSelect = "x";
-					break;
-				default:
-					orientationSelect = "y";
+			line.placementMode = {
+				type: "aligner",
+				alignerConfig: {
+					alignment: "centre"
+				}
 			}
-			var otherDimension: Dimensions = orientationSelect === "x" ? "y" : "x";
-
-			this.bind(line, otherDimension, "here", "here");
-			this.bind(line, otherDimension, "far", "far");
-
-			this.add(line);
+			this.line = line;
 		}
 
-		this.components = {
-			line: line,
-			text: text
-		};
-		this.arrangeContent(orientationSelect);
+
+		switch (this.labelConfig.labelPosition) {
+			case "top":
+			case "bottom":
+				this.mainAxis = "y";
+				break;
+			case "left":
+			case "right":
+				this.mainAxis = "x";
+				break;
+		}
+
+		if (line !== undefined) {
+			// Make line span side:
+			line.sizeMode = {
+				x: this.crossAxis === "x" ? "grow" : "fixed",
+				y: this.crossAxis === "y" ? "grow" : "fixed"
+			}
+
+			switch (this.labelConfig.textPosition) {
+				case "top":
+					this.add(line)
+					break;
+				case "inline":
+					line.placementMode = {
+						type: "aligner",
+						alignerConfig: {
+							alignment: "centre",
+							contribution: {mainAxis: false, crossAxis: true}
+						}
+					}
+					this.add(line)
+					break;
+				case "bottom":
+					this.add(line, 0);
+				
+			}
+		}
+		
+
+		// this.arrangeContent(orientationSelect);
 	}
 
 	draw(surface: Svg) {
@@ -92,24 +122,25 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 			this.svg.remove();
 		}
 
-		// Todo: sort ts out, label children need to be grouped
+		// Todo: sort ts out, label children need to be groupedLa
 		var group = new G().id(this.id).attr({title: this.ref});
 
 		// Clip
 
-		if (this.components.line) {
-			this.components.line.draw(surface);
+		if (this.line) {
+			this.line.draw(group);
 		}
-		if (this.components.text) {
-			this.components.text.draw(surface);
+
+		if (this.text) {
+			this.text.draw(group);
 
 			const SPILL_PADDING = 4;
 			const TEXT_PADDING = 1;
 
 			if (
-				this.components.line
-				&& this.components.line.svg !== undefined
-				&& this.components.text.svg
+				this.line
+				&& this.line.svg !== undefined
+				&& this.text.svg
 			) {
 				var maskID: string = this.id + "-MASK";
 				var visibleArea = new Rect()
@@ -118,12 +149,12 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 					.fill("white");
 				var blockedArea = new Rect()
 					.move(
-						this.components.text.x - TEXT_PADDING,
-						this.components.text.y - TEXT_PADDING
+						this.text.x - TEXT_PADDING,
+						this.text.y - TEXT_PADDING
 					)
 					.size(
-						(this.components.text.contentWidth ?? 0) + 2 * TEXT_PADDING,
-						(this.components.text.contentHeight ?? 0) + 2 * TEXT_PADDING
+						(this.text.contentWidth ?? 0) + 2 * TEXT_PADDING,
+						(this.text.contentHeight ?? 0) + 2 * TEXT_PADDING
 					)
 					.fill("black");
 
@@ -135,38 +166,13 @@ export default class Label extends Collection implements ILabel, IHaveComponents
 
 				// VERY IMPORTANT: use "useSpaceOnUse" to follow the user coordinates not some random bs coord system
 
-				surface.add(newMask);
+				group.add(newMask);
 
-				this.components.line.svg.attr({mask: `url(#${maskID})`});
+				this.line.svg.attr({mask: `url(#${maskID})`});
 			}
 		}
-	}
 
-	private arrangeContent(orientation: Dimensions) {
-		// if (this.line === undefined || this.text === undefined) {
-		//     throw new Error("Only for use when text and line are present.")
-		// }
-		if (this.components.line === undefined) {
-			return;
-		}
-
-		switch (this.labelConfig.textPosition) {
-			case "top":
-				this.bind(this.components.line, orientation, "far", "here");
-				this.bind(this.components.line, orientation, "far", "far");
-				// this.text.padding[2] += this.line.style.thickness  // Add bottom padding to text
-				break;
-			case "inline":
-				this.bind(this.components.line, orientation, "centre", "here");
-				this.bind(this.components.line, orientation, "centre", "far");
-				break;
-			case "bottom":
-				this.bind(this.components.line, orientation, "here", "here");
-				this.bind(this.components.line, orientation, "here", "far");
-				// this.text.padding[0] += this.line.style.thickness  // Add top padding to text
-				break;
-			default:
-				throw new Error(`Unknown text position ${this.labelConfig.textPosition}`);
-		}
+		this.svg = group;
+		surface.add(this.svg)
 	}
 }

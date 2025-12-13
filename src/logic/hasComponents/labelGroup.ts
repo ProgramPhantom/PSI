@@ -63,10 +63,9 @@ export default class LabelGroup<T extends Visual = Visual>
 
 		this.setCoreChild(coreChild);
 
-		var labels: Label[] = [];
 		params.labels?.forEach((label) => {
 			var newLabel = new Label(label);
-			labels.push(newLabel);
+
 			this.addLabel(newLabel);
 		});
 	}
@@ -90,18 +89,22 @@ export default class LabelGroup<T extends Visual = Visual>
 		switch (label.labelConfig.labelPosition) {
 			case "top":
 				label.placementMode.gridConfig.alignment = {x: "centre", y: "far"}
+				label.sizeMode = {x: "grow", y: "fixed"}
 				this.addChildAtCoord(label, 0, 1);
 				break;
 			case "right":
 				label.placementMode.gridConfig.alignment = {x: "here", y: "centre"}
+				label.sizeMode = {x: "fixed", y: "grow"}
 				this.addChildAtCoord(label, 1, 2);
 				break;
 			case "bottom":
 				label.placementMode.gridConfig.alignment = {x: "centre", y: "here"}
+				label.sizeMode = {x: "grow", y: "fixed"}
 				this.addChildAtCoord(label, 2, 1);
 				break;
 			case "left":
 				label.placementMode.gridConfig.alignment = {x: "far", y: "centre"}
+				label.sizeMode = {x: "fixed", y: "grow"}
 				this.addChildAtCoord(label, 1, 0);
 				break;
 			case "centre":

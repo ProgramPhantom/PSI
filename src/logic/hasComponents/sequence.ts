@@ -189,7 +189,7 @@ export default class Sequence extends Grid implements ISequence {
 		// First we need to expand the matrix (as this channel we are)
 		// adding  could be longer than the matrix:
 
-		var channelLength: number = channel.noColumns;
+		var channelLength: number = channel.numColumns;
 		this.setMatrixSize({row: undefined, col: channelLength-1}, true)
 		
 		// Note we don't care about the row as we will just append the 
@@ -277,7 +277,7 @@ export default class Sequence extends Grid implements ISequence {
 			// and just set the number of columns
 
 			// set matrix takes index
-			channel.setMatrixSize({col: this.noColumns-1});
+			channel.setMatrixSize({col: this.numColumns-1});
 			channel.growBar();
 		})
 	}
@@ -295,7 +295,7 @@ export default class Sequence extends Grid implements ISequence {
 	private growChannels() {
 		this.channels.forEach((c) => {
 			if (c.bar.placementMode.type === "grid") {
-				c.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.noColumns-1}
+				c.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.numColumns-1}
 			}
 		})
 	}
@@ -334,20 +334,20 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	protected override insertEmptyColumn(index?: number) {
-		var newColumn: GridCell[] = Array<GridCell>(this.noRows).fill(undefined);
+		var newColumn: GridCell[] = Array<GridCell>(this.numRows).fill(undefined);
 		var index = index; 
 
-		if (index === undefined || index < 0 || index > this.noColumns) {
-			index = this.noColumns 
+		if (index === undefined || index < 0 || index > this.numColumns) {
+			index = this.numColumns 
 		} 
 
-		for (let i = 0; i < this.noRows; i++) {
+		for (let i = 0; i < this.numRows; i++) {
       		this.gridMatrix[i].splice(index, 0, newColumn[i]);
     	}
 
 		// Apply this to the channels
 		// This condition means this only happens when a channel is initialised.
-		if (this.noColumns >= 2) {
+		if (this.numColumns >= 2) {
 			
 
 			// We need to move the bar sources back one and reset their size.
@@ -360,7 +360,7 @@ export default class Sequence extends Grid implements ISequence {
 					this.gridMatrix[bar_row][2] = {element: channel.bar, source: {row: bar_row, col: 2}};
 
 					if (channel.bar.placementMode.type === "grid") {
-						channel.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.noColumns-1}
+						channel.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.numColumns-1}
 					}
 				})
 			}

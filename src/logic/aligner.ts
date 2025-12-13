@@ -159,11 +159,14 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		child: T,
 		index?: number,
 	) {
-		if (index === undefined) {
-			this.children.push(child);
-		} else {
-			this.children.splice(index, 0, child)
+		let INDEX: number = index ?? this.children.length;
+
+		this.children.splice(INDEX, 0, child)
+		
+		if (child.placementMode.type === "aligner") {
+			child.placementMode.alignerConfig.index = INDEX;
 		}
+		child.parentId = this.id;
 	}
 
 	public removeAt(index: number) {

@@ -79,6 +79,6 @@ export default class Channel extends Grid implements IChannel {
 	}
 
 	public growBar() {
-		this.setChildSize(this.bar, {noRows: 1, noCols: this.noColumns-1})
+		this.setChildSize(this.bar, {noRows: 1, noCols: this.numColumns-1})
 	}
 }

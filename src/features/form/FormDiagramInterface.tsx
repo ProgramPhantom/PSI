@@ -85,7 +85,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 				result = (targetFunction as SubmissionFunction)(values, masterType);
 				break;
 			case "modify":
-				result = (targetFunction as ModifyFunction)(values, masterType, props.target);
+				result = (targetFunction)(values, masterType, props.target);
 				break;
 			case "delete":
 				result = (targetFunction as DeleteFunction)(props.target, masterType);

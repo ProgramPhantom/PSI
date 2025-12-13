@@ -1,6 +1,5 @@
 
 import { defaultChannel, defaultLabel, defaultRectElement, defaultSpace, defaultSvgElement, defaultText, defaultVisual } from "../../logic/default/index";
-import { IChannel } from "../../logic/hasComponents/channel";
 import { ILabel } from "../../logic/hasComponents/label";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
@@ -9,6 +8,7 @@ import { ISVGElement } from "../../logic/svgElement";
 import { IText } from "../../logic/text";
 import { IVisual } from "../../logic/visual";
 import ChannelForm from "./ChannelForm";
+import { GridForm } from "./GridForm";
 import LabelForm from "./LabelForm";
 import RectElementForm from "./RectForm";
 import SVGElementForm from "./SVGElementForm";
@@ -47,6 +47,11 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		form: RectElementForm,
 		defaults: defaultRectElement as IRectElement,
 		allowLabels: true
+	},
+	"label-group": {
+		form: GridForm,
+		defaults: defaultVisual,
+		allowLabels: false
 	},
 	// "line": {
 	// 	form: LineFo
