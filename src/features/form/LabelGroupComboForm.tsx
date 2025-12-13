@@ -32,13 +32,13 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 		var masterDefaults: IVisual;
 		var childDefaults: IVisual | undefined;
-		var labelDefaults: LabelGroupLabels = {labels: []};
+		var labelDefaults: LabelGroupLabels = { labels: [] };
 
 		var allowLabels: boolean = true;
 		var parentType: AllComponentTypes;
 		var childType: UserComponentType | undefined = undefined;
 		var childTarget: Visual | undefined;
-		
+
 		var targetIsLabelGroup: boolean = false;
 
 		if (props.target !== undefined) {
@@ -66,7 +66,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			MasterForm = FORM_DEFAULTS[props.objectType].form;
 			masterDefaults = FORM_DEFAULTS[props.objectType].defaults;
 			allowLabels = FORM_DEFAULTS[props.objectType].allowLabels;
-		} 
+		}
 
 
 		console.log(masterDefaults)
@@ -75,19 +75,19 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 		// Create form hook
 		const masterFormControls = useForm<IVisual>({
-			defaultValues: {...masterDefaults} as DefaultValues<IVisual>,
+			defaultValues: { ...masterDefaults } as DefaultValues<IVisual>,
 			mode: "onChange"
 		});
 
 		// Create form hook
 		const childFormControls = useForm<IVisual>({
-			defaultValues: {...childDefaults} as DefaultValues<IVisual>,
+			defaultValues: { ...childDefaults } as DefaultValues<IVisual>,
 			mode: "onChange"
 		});
 
 		// Create label hook form
 		const labelListControls = useForm<LabelGroupLabels>({
-			defaultValues: {...labelDefaults} as DefaultValues<LabelGroupLabels>,
+			defaultValues: { ...labelDefaults } as DefaultValues<LabelGroupLabels>,
 			mode: "onChange"
 		});
 
@@ -116,7 +116,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 					// Convert into a label group!
 
 					// Normalise core child:
-					childFormData = {...masterFormData};
+					childFormData = { ...masterFormData };
 					childFormData.padding = [0, 0, 0, 0];
 					childFormData.offset = [0, 0];
 
@@ -126,7 +126,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						labels: labelListFormData,
 						children: [],
 						...masterFormData,
-						sizeMode: {x: "fit", y: "fit"}
+						sizeMode: { x: "fit", y: "fit" }
 					};
 
 					props.callback(result, "label-group");
@@ -134,7 +134,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 					props.callback(masterFormData, props.objectType);
 				}
 			} else {
-				
+
 				// Already label type
 				if (labelListFormData.length > 0) {
 					// Still a label group
@@ -144,7 +144,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChildType: (masterFormData as ILabelGroup).coreChildType,
 						labels: labelListFormData, // Override labels
 						children: [],
-						sizeMode: {x: "fit", y: "fit"}
+						sizeMode: { x: "fit", y: "fit" }
 					};
 					props.callback(result, "label-group");
 				} else {
@@ -167,11 +167,11 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						height: "100%"
 					}}>
 					<div
-						style={{overflowY: "auto", flex: "1 1 0", padding: "4px"}}
+						style={{ overflowY: "auto", flex: "1 1 0", padding: "4px" }}
 						id="form-fields">
 						<Tabs defaultSelectedTabId={"properties"}>
 							<Tab
-								style={{userSelect: "none", position: "sticky"}}
+								style={{ userSelect: "none", position: "sticky" }}
 								id={"properties"}
 								title={"Properties"}
 								panel={
@@ -183,7 +183,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 										{ChildForm ? (
 											<>
 												<Divider></Divider>
-												<div style={{padding: "16px 4px"}}>
+												<div style={{ padding: "16px 4px" }}>
 													<EntityTitle
 														icon="add-child"
 														title={"Child object"}></EntityTitle>
@@ -200,9 +200,9 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 									</>
 								}></Tab>
 
-							{allowLabels ? (
+							{allowLabels || targetIsLabelGroup ? (
 								<Tab
-									style={{userSelect: "none"}}
+									style={{ userSelect: "none" }}
 									id={"label"}
 									title={"Labels"}
 									panel={
