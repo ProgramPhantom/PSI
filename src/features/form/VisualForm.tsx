@@ -12,11 +12,241 @@ import { Controller, FieldErrors, useFormContext } from "react-hook-form";
 import { getByPath } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";
+import { Switch } from "@blueprintjs/core";
+import { useWatch } from "react-hook-form";
 
 interface IVisualFormProps extends FormRequirements {
 	widthDisplay?: boolean;
 	heightDisplay?: boolean;
 }
+
+const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPrefix }) => {
+	const { control } = useFormContext();
+	const type = useWatch({
+		control,
+		name: `${fullPrefix}placementMode.type`
+	});
+	const placementMode = useWatch({
+		control,
+		name: `${fullPrefix}placementMode`
+	});
+
+	if (type === "pulse") {
+		return (
+			<>
+				{/* Read-only fields */}
+				<div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
+					<div style={{ display: "flex", justifyContent: "space-between" }}>
+						<span>Idx: {placementMode?.config?.index ?? "-"}</span>
+						<span>Ch: {placementMode?.config?.channelID ?? "-"}</span>
+						<span>Seq: {placementMode?.config?.sequenceID ?? "-"}</span>
+					</div>
+				</div>
+
+				<FormGroup style={{ padding: "4px 8px" }} inline label="Orientation">
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.config.orientation`}
+						defaultValue="top"
+						render={({ field }) => (
+							<HTMLSelect {...field} iconName="caret-down" fill>
+								<option value="top">Top</option>
+								<option value="bottom">Bottom</option>
+								<option value="both">Both</option>
+							</HTMLSelect>
+						)}
+					/>
+				</FormGroup>
+
+				<FormGroup style={{ padding: "4px 8px" }} inline label="Align X">
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.config.alignment.x`}
+						defaultValue="here"
+						render={({ field }) => (
+							<HTMLSelect {...field} iconName="caret-down" fill>
+								<option value="here">Here (Left)</option>
+								<option value="centre">Centre</option>
+								<option value="far">Far (Right)</option>
+							</HTMLSelect>
+						)}
+					/>
+				</FormGroup>
+				<FormGroup style={{ padding: "4px 8px" }} inline label="Align Y">
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.config.alignment.y`}
+						defaultValue="here"
+						render={({ field }) => (
+							<HTMLSelect {...field} iconName="caret-down" fill>
+								<option value="here">Here (Top)</option>
+								<option value="centre">Centre</option>
+								<option value="far">Far (Bottom)</option>
+							</HTMLSelect>
+						)}
+					/>
+				</FormGroup>
+
+				<FormGroup style={{ padding: "4px 8px" }} inline label="No. Sections">
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.config.noSections`}
+						defaultValue={1}
+						render={({ field }) => (
+							<NumericInput {...field} onValueChange={field.onChange} min={1} max={10} size="small" fill />
+						)}
+					/>
+				</FormGroup>
+			</>
+		);
+	}
+
+	if (type === "grid") {
+		return (
+			<>
+				<div style={{ display: "flex", gap: "10px", padding: "0 8px" }}>
+					<FormGroup style={{ flex: 1 }} label="Row">
+						<Controller
+							control={control}
+							name={`${fullPrefix}placementMode.gridConfig.coords.row`}
+							defaultValue={0}
+							render={({ field }) => (
+								<NumericInput {...field} onValueChange={field.onChange} min={0} size="small" fill />
+							)}
+						/>
+					</FormGroup>
+					<FormGroup style={{ flex: 1 }} label="Col">
+						<Controller
+							control={control}
+							name={`${fullPrefix}placementMode.gridConfig.coords.col`}
+							defaultValue={0}
+							render={({ field }) => (
+								<NumericInput {...field} onValueChange={field.onChange} min={0} size="small" fill />
+							)}
+						/>
+					</FormGroup>
+				</div>
+
+				<div style={{ display: "flex", gap: "10px", padding: "0 8px" }}>
+					<FormGroup style={{ flex: 1 }} label="Row Span">
+						<Controller
+							control={control}
+							name={`${fullPrefix}placementMode.gridConfig.gridSize.noRows`}
+							defaultValue={1}
+							render={({ field }) => (
+								<NumericInput {...field} onValueChange={field.onChange} min={1} size="small" fill />
+							)}
+						/>
+					</FormGroup>
+					<FormGroup style={{ flex: 1 }} label="Col Span">
+						<Controller
+							control={control}
+							name={`${fullPrefix}placementMode.gridConfig.gridSize.noCols`}
+							defaultValue={1}
+							render={({ field }) => (
+								<NumericInput {...field} onValueChange={field.onChange} min={1} size="small" fill />
+							)}
+						/>
+					</FormGroup>
+				</div>
+
+				<FormGroup style={{ padding: "4px 8px" }} inline label="Align X">
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.gridConfig.alignment.x`}
+						defaultValue="here"
+						render={({ field }) => (
+							<HTMLSelect {...field} iconName="caret-down" fill>
+								<option value="here">Here</option>
+								<option value="centre">Centre</option>
+								<option value="far">Far</option>
+							</HTMLSelect>
+						)}
+					/>
+				</FormGroup>
+				<FormGroup style={{ padding: "4px 8px" }} inline label="Align Y">
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.gridConfig.alignment.y`}
+						defaultValue="here"
+						render={({ field }) => (
+							<HTMLSelect {...field} iconName="caret-down" fill>
+								<option value="here">Here</option>
+								<option value="centre">Centre</option>
+								<option value="far">Far</option>
+							</HTMLSelect>
+						)}
+					/>
+				</FormGroup>
+
+				<div style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: "5px" }}>
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.gridConfig.contribution.x`}
+						defaultValue={false}
+						render={({ field }) => (
+							<Switch {...field} checked={field.value} label="Contribute X" onChange={(e) => field.onChange(e.target.checked)} />
+						)}
+					/>
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.gridConfig.contribution.y`}
+						defaultValue={false}
+						render={({ field }) => (
+							<Switch {...field} checked={field.value} label="Contribute Y" onChange={(e) => field.onChange(e.target.checked)} />
+						)}
+					/>
+				</div>
+			</>
+		);
+	}
+
+	if (type === "aligner") {
+		return (
+			<>
+				<div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
+					Index: {placementMode?.alignerConfig?.index ?? "N/A"}
+				</div>
+
+				<FormGroup style={{ padding: "4px 8px" }} inline label="Alignment">
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.alignerConfig.alignment`}
+						defaultValue="here"
+						render={({ field }) => (
+							<HTMLSelect {...field} iconName="caret-down" fill>
+								<option value="here">Here</option>
+								<option value="centre">Centre</option>
+								<option value="far">Far</option>
+							</HTMLSelect>
+						)}
+					/>
+				</FormGroup>
+
+				<div style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: "5px" }}>
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.alignerConfig.contribution.mainAxis`}
+						defaultValue={true}
+						render={({ field }) => (
+							<Switch {...field} checked={field.value} label="Main Axis" onChange={(e) => field.onChange(e.target.checked)} />
+						)}
+					/>
+					<Controller
+						control={control}
+						name={`${fullPrefix}placementMode.alignerConfig.contribution.crossAxis`}
+						defaultValue={false}
+						render={({ field }) => (
+							<Switch {...field} checked={field.value} label="Cross Axis" onChange={(e) => field.onChange(e.target.checked)} />
+						)}
+					/>
+				</div>
+			</>
+		);
+	}
+
+	return null;
+};
 
 const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
@@ -45,7 +275,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 		<ControlGroup vertical={true}>
 			{/* Reference */}
 			<FormGroup
-				style={{userSelect: "none"}}
+				style={{ userSelect: "none" }}
 				fill={false}
 				inline={true}
 				label="Reference"
@@ -55,7 +285,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				<Controller
 					control={formControls.control}
 					name={`${fullPrefix}ref`}
-					render={({field}) => (
+					render={({ field }) => (
 						<InputGroup
 							id="ref-input"
 							{...field}
@@ -82,7 +312,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}contentWidth`}
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									id="width-input"
@@ -97,8 +327,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 							)}
 							rules={{
 								required: "Width is required",
-								min: {value: 1, message: "Width must be at least 1"},
-								max: {value: 400, message: "Width cannot exceed 400"}
+								min: { value: 1, message: "Width must be at least 1" },
+								max: { value: 400, message: "Width cannot exceed 400" }
 							}}></Controller>
 					</FormGroup>
 				</>
@@ -118,7 +348,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}contentHeight`}
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									id="height-input"
@@ -133,8 +363,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 							)}
 							rules={{
 								required: "Height is required",
-								min: {value: 1, message: "Height must be at least 1"},
-								max: {value: 400, message: "Height cannot exceed 400"}
+								min: { value: 1, message: "Height must be at least 1" },
+								max: { value: 400, message: "Height cannot exceed 400" }
 							}}></Controller>
 					</FormGroup>
 				</>
@@ -143,144 +373,81 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 			)}
 
 			{/* Config */}
-			{vals.mountConfig !== undefined ? (
-				<>
-					<Section
-						style={{borderRadius: 0}}
-						collapseProps={{defaultIsOpen: false}}
-						compact={true}
-						title={"Config"}
-						collapsible={true}>
-						<ControlGroup vertical={true}>
-							{/* Orientation */}
-							<FormGroup
-								style={{padding: "4px 8px"}}
-								inline={true}
-								label="Orientation"
-								labelFor="text-input">
-								<Controller
-									control={formControls.control}
-									name="mountConfig.orientation"
-									render={({field}) => (
-										<HTMLSelect {...field} iconName="caret-down">
-											<option value={"top"}>Top</option>
-											<option value={"both"}>Both</option>
-											<option value={"bottom"}>Bottom</option>
-										</HTMLSelect>
-									)}></Controller>
-							</FormGroup>
+			{/* Placement Config */}
+			<Section
+				style={{ borderRadius: 0 }}
+				collapseProps={{ defaultIsOpen: false }}
+				compact={true}
+				title={"Placement"}
+				collapsible={true}>
+				<ControlGroup vertical={true}>
+					{/* Type Display */}
+					<div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}placementMode.type`}
+							render={({ field }) => (
+								<div>Type: {field.value}</div>
+							)}></Controller>
+					</div>
 
-							{/* Alignment */}
-							<FormGroup
-								style={{padding: "4px 8px"}}
-								inline={true}
-								label="Alignment"
-								labelFor="text-input">
-								<Controller
-									control={formControls.control}
-									name="mountConfig.alignment"
-									render={({field}) => (
-										<HTMLSelect {...field} iconName="caret-down">
-											<option value={"here"}>Left</option>
-											<option value={"centre"}>Centre</option>
-											<option value={"far"}>Right</option>
-											<option value={"stretch"}>Stretch</option>
-										</HTMLSelect>
-									)}></Controller>
-							</FormGroup>
-
-							{/* No Sections 
-							<FormGroup
-								style={{padding: "4px 8px", margin: 0}}
-								intent={errors?.mountConfig?.noSections ? "danger" : "none"}
-								helperText={errors?.mountConfig?.noSections?.message}
-								inline={true}
-								label="No. Sections"
-								labelFor="sections-input">
-								<Controller
-									control={formControls.control}
-									name="mountConfig.noSections"
-									render={({field}) => (
-										<NumericInput
-											{...field}
-											id="sections-input"
-											onValueChange={field.onChange}
-											min={1}
-											max={5}
-											size="small"
-											intent={
-												errors?.mountConfig?.noSections ? "danger" : "none"
-											}
-											allowNumericCharactersOnly={true}></NumericInput>
-									)}
-									rules={{
-										required: "No. sections is required",
-										min: {
-											value: 1,
-											message: "No. Sections must be at least 1"
-										},
-										max: {value: 5, message: "No. Sections cannot exceed 5"}
-									}}></Controller>
-							</FormGroup>*/}
-						</ControlGroup>
-					</Section>
-				</>
-			) : (
-				<></>
-			)}
+					{/* Dynamic Sub-forms */}
+					<PlacementModeConfig fullPrefix={fullPrefix} />
+				</ControlGroup>
+			</Section>
 
 			{/* Padding */}
 			<Section
-				style={{borderRadius: 0, }}
-				collapseProps={{defaultIsOpen: false}}
+				style={{ borderRadius: 0, }}
+				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				title={"Padding"}
 				collapsible={true}>
-				<ControlGroup vertical={true} style={{gap: 10}}>
+				<ControlGroup vertical={true} style={{ gap: 10 }}>
 					<FormGroup
-						style={{padding: "4px 16px"}}
+						style={{ padding: "4px 16px" }}
 						label="Padding top"
 						labelFor="text-input">
 						<Controller
 							control={formControls.control}
 							name="padding.0"
-							render={({field}) => (
+							render={({ field }) => (
 								<Slider {...field} min={0} max={30} labelStepSize={10}></Slider>
 							)}></Controller>
 					</FormGroup>
 
 					<FormGroup
-						style={{padding: "4px 16px"}}
+						style={{ padding: "4px 16px" }}
 						label="Padding right"
 						labelFor="text-input">
 						<Controller
 							control={formControls.control}
 							name="padding.1"
-							render={({field}) => (
+							render={({ field }) => (
 								<Slider {...field} max={30} min={0} labelStepSize={10}></Slider>
 							)}></Controller>
 					</FormGroup>
 
 					<FormGroup
-						style={{padding: "4px 16px"}}
+						style={{ padding: "4px 16px" }}
 						label="Padding bottom"
 						labelFor="text-input">
 						<Controller
 							control={formControls.control}
 							name="padding.2"
-							render={({field}) => (
+							render={({ field }) => (
 								<Slider {...field} max={30} min={0} labelStepSize={10}></Slider>
 							)}></Controller>
 					</FormGroup>
 
 					<FormGroup
-						style={{padding: "4px 16px", margin: 0}}
+						style={{ padding: "4px 16px", margin: 0 }}
 						label="Padding left"
 						labelFor="slider3">
 						<Controller
 							control={formControls.control}
 							name="padding.3"
-							render={({field}) => (
+							render={({ field }) => (
 								<Slider {...field} max={30} min={0} labelStepSize={10}></Slider>
 							)}></Controller>
 					</FormGroup>
@@ -289,14 +456,14 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 
 			{/* Offset */}
 			<Section
-				style={{borderRadius: 0}}
-				collapseProps={{defaultIsOpen: false}}
+				style={{ borderRadius: 0 }}
+				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				title={"Offset"}
 				collapsible={true}>
 				<ControlGroup vertical={true}>
 					<FormGroup
-						style={{padding: "4px 8px", margin: 0}}
+						style={{ padding: "4px 8px", margin: 0 }}
 						intent={errors?.offset?.[0] ? "danger" : "none"}
 						helperText={errors?.offset?.[0]?.message}
 						inline={true}
@@ -305,7 +472,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}offset.0`}
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									id="offset0"
@@ -323,12 +490,12 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									value: -2000,
 									message: "Offset must be greater than -2000"
 								},
-								max: {value: 2000, message: "Offset cannot exceed 2000"}
+								max: { value: 2000, message: "Offset cannot exceed 2000" }
 							}}></Controller>
 					</FormGroup>
 
 					<FormGroup
-						style={{padding: "4px 8px", margin: 0}}
+						style={{ padding: "4px 8px", margin: 0 }}
 						intent={errors?.offset?.[1] ? "danger" : "none"}
 						helperText={errors?.offset?.[1]?.message}
 						inline={true}
@@ -337,7 +504,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}offset.1`}
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									id="offset1"
@@ -355,7 +522,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									value: -2000,
 									message: "Offset must be greater than -2000"
 								},
-								max: {value: 2000, message: "Offset cannot exceed 2000"}
+								max: { value: 2000, message: "Offset cannot exceed 2000" }
 							}}></Controller>
 					</FormGroup>
 				</ControlGroup>
