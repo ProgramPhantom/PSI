@@ -85,8 +85,9 @@ export default class Sequence extends Grid implements ISequence {
 		var size: Size = super.computeSize();
 
 		// Set the channels' sizes.
-
 		var sequenceRows: GridCell[][] = this.getRows();
+		
+		// Should this really be needed??
 		this.channels.forEach((channel, i) => {
 			var rowIndex: number = 3 * i;
 
@@ -95,8 +96,6 @@ export default class Sequence extends Grid implements ISequence {
 				sequenceRows[rowIndex+1],
 				sequenceRows[rowIndex+2]
 			]
-
-			channel.computeSize();
 		})
 
 		this.applySizesToChannels();
@@ -268,6 +267,11 @@ export default class Sequence extends Grid implements ISequence {
 
 			channel.setGrid(gridSlice, gridSizes, cellSlice);
 
+			let channelWidth: number = this.width;
+			let channelHeight: number = rowSizeSlice.reduce((h, row) => h + row.height, 0);
+
+			channel.width = channelWidth;
+			channel.height = channelHeight;
 		})
 	}
 

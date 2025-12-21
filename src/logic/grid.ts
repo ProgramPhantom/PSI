@@ -101,9 +101,6 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	public computeSize(): Size {
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
-			if (child.ref === "label") {
-				console.log()
-			}
 			child.computeSize();
 		}
 
@@ -131,8 +128,13 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 				if (cell.element !== undefined) {
 					let child: Visual = cell.element;
 
+					// Manual contribution parameter
 					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
 						&& child.placementMode.gridConfig.contribution.x === false
+					) { contributing = false; }
+
+					// Grow elements do not provide size
+					if (child.sizeMode.x === "grow"
 					) { contributing = false; }
 
 					// Compute partial width contribution (distribute evenly):
@@ -185,8 +187,13 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 				if (cell.element !== undefined) {
 					let child: Visual = cell.element;
 
+					// Manual contribution parameter
 					if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
 						&& child.placementMode.gridConfig.contribution.y === false
+					) { contributing = false; }
+
+					// Grow elements do not provide size
+					if (child.sizeMode.y === "grow"
 					) { contributing = false; }
 
 					// Compute partial width contribution (distribute evenly):

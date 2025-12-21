@@ -132,10 +132,10 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 			return
 		}
 
-		var sequenceId = pulse.placementMode.config.sequenceID;
+		let sequenceId: string = pulse.placementMode.config.sequenceID;
 
-		var sequenceIndex = this.locateChildById(sequenceId);
-		var targetSequence = this.sequences[sequenceIndex];
+		let sequenceIndex: number = this.locateChildById(sequenceId);
+		let targetSequence: Sequence = this.sequences[sequenceIndex];
 
 		targetSequence.remove(pulse);
 	}
