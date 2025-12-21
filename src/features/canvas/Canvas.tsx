@@ -44,7 +44,7 @@ const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
 	grid: false,
 };
 
-export interface ISelectConfig extends IToolConfig {}
+export interface ISelectConfig extends IToolConfig { }
 
 interface ICanvasProps {
 	select: (element?: Visual) => void;
@@ -74,11 +74,35 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					setDebugDialogOpen(!debugDialogOpen);
 				},
 				preventDefault: true
+			},
+			{
+				combo: "delete",
+				global: true,
+				label: "Delete selected element",
+				onKeyDown: () => {
+					if (props.selectedElement) {
+						ENGINE.handler.deleteVisual(props.selectedElement);
+						deselect();
+					}
+				},
+				preventDefault: true
+			},
+			{
+				combo: "backspace",
+				global: true,
+				label: "Delete selected element",
+				onKeyDown: () => {
+					if (props.selectedElement) {
+						ENGINE.handler.deleteVisual(props.selectedElement);
+						deselect();
+					}
+				},
+				preventDefault: true
 			}
 		],
-		[debugDialogOpen]
+		[debugDialogOpen, props.selectedElement]
 	);
-	const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
+	const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 	const handleSetDebugSelection = (type: AllComponentTypes) => {
 		var newDebugSelection: Record<AllComponentTypes, boolean> = {
 			...debugSelectionTypes
@@ -89,7 +113,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const handleDialogClose = (val: boolean) => {
 		setDebugDialogOpen(val);
 	};
-	const {isDragging} = useDragLayer((monitor) => ({
+	const { isDragging } = useDragLayer((monitor) => ({
 		isDragging: monitor.isDragging()
 	}));
 
@@ -175,10 +199,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	var diagramWidth: number = 0;
 	var diagramHeight: number = 0;
-	
+
 	diagramWidth = ENGINE.handler.diagram.width;
 	diagramHeight = ENGINE.handler.diagram.height;
-	
+
 
 	return (
 		<>
@@ -208,7 +232,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						left: "10px",
 						zIndex: 100
 					}}>
-					<Label style={{fontSize: "10px", marginBottom: "0px"}}>filename</Label>
+					<Label style={{ fontSize: "10px", marginBottom: "0px" }}>filename</Label>
 					<EditableText
 						value={fileName}
 						onChange={handleFileNameChange}
@@ -246,8 +270,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						maxScale={5}
 						minScale={0.5}
 						disabled={dragging}
-						doubleClick={{disabled: true}}>
-						<TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
+						doubleClick={{ disabled: true }}>
+						<TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
 							{/* Large background grid that moves with transform */}
 							<div
 								style={{
@@ -297,7 +321,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 								{/* Hover highlight */}
 								{hoveredElement !== undefined
-								&& props.selectedTool.type === "select" ? (
+									&& props.selectedTool.type === "select" ? (
 									<>
 										<svg
 											style={{
