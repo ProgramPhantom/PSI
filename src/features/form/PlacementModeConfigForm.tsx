@@ -24,9 +24,9 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                 {/* Read-only fields */}
                 <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span>Idx: {placementMode?.config?.index ?? "-"}</span>
-                        <span>Ch: {placementMode?.config?.channelID ?? "-"}</span>
-                        <span>Seq: {placementMode?.config?.sequenceID ?? "-"}</span>
+                        <span>Index: {placementMode?.config?.index ?? "-"}</span>
+                        <span>ChannelID: {placementMode?.config?.channelID ?? "-"}</span>
+                        <span>SequenceID: {placementMode?.config?.sequenceID ?? "-"}</span>
                     </div>
                 </div>
 
