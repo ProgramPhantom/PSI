@@ -113,6 +113,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		e.svg?.hide();
 	};
 
+	const reselect = (e: Visual) => {
+		deselect();
+		selectVisual(e);
+	}
+
 	const doubleClick = (click: React.MouseEvent<HTMLDivElement>) => {
 		var element: Visual | undefined = hoveredElement;
 
@@ -189,6 +194,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				}}
 				onMouseUp={(e) => {
 					singleClick(e);
+					deselect();
 					setDragging(false);
 				}}
 				onDragEnd={() => {
@@ -344,6 +350,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											setDragging(true);
 										}}>
 										<CanvasDraggableElement
+											reselect={reselect}
 											name={selectedElement.ref}
 											element={selectedElement}
 											x={selectedElement.x}

@@ -1,15 +1,16 @@
-import { Button, Colors, Icon } from "@blueprintjs/core";
+import { Colors } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
 import React, { CSSProperties, memo, useEffect, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { HandleStyles } from "react-rnd";
 import ENGINE from "../../logic/engine";
-import Visual from "../../logic/visual";
+import { IMountConfig } from "../../logic/spacial";
+import Visual, { IVisual } from "../../logic/visual";
 import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
 import { IMountAreaResult, isMountDrop } from "./InsertArea";
 import { ElementTypes } from "./TemplateDraggableElement";
-import { IMountConfig } from "../../logic/spacial";
+
 
 const style: CSSProperties = {
 	border: "1px dashed gray",
@@ -53,6 +54,8 @@ interface IDraggableElementProps {
 	element: Visual;
 	x: number;
 	y: number;
+
+	reselect: (e: Visual) => void
 }
 
 export interface CanvasDraggableElementPayload {
@@ -78,6 +81,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						var result = dropResult as IMountAreaResult;
 						var targetChannel = ENGINE.handler.diagram.channelsDict[result.channelID];
 						var targetSequence = ENGINE.handler.diagram.sequenceDict[result.sequenceID];
+						let elementType = (item.element.constructor as typeof Visual).ElementType
 
 						var positionalElement;
 						if (item.element.placementMode.type === "pulse") {
@@ -89,17 +93,16 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								index: result.index
 							};
 
-							throw new Error("not implemented")
-							// if (result.insert) {
-							// 	ENGINE.handler.shiftMountedVisual(item.element, newMountConfig);
-							// } else {
-							// 	ENGINE.handler.moveMountedVisual(item.element, newMountConfig);
-							// }
+							let newState: IVisual = {...item.element.state, placementMode: {type: "pulse", config: newMountConfig}}
+							let modifyResult = ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
+
+							if (modifyResult.ok === true) {
+								props.reselect(modifyResult.value);
+							}
+							
 						} else {
 							throw Error("Not yet implemented"); // Converting an unmounted object into a mounted one.
 						}
-
-						ENGINE.handler.draw();
 					}
 				},
 				collect: (monitor) => ({
@@ -112,12 +115,6 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 		var visualRef = useRef<SVGSVGElement>();
 		var visual = props.element.getInternalRepresentation().show();
-
-		const refreshElement = () => {
-			props.element.bindingsToThis.forEach((b) => {
-				b.anchorObject.enforceBinding();
-			});
-		};
 
 		// Removed the default preview?
 		useEffect(() => {
@@ -132,10 +129,9 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 		return (
 			<>
-				{/*
-    <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
-    <div style={{width: props.element.contentWidth, height: props.element.contentHeight, display: "block"}} 
-                dangerouslySetInnerHTML={{__html: copy?.node.outerHTML!}} ></div> outline: isDragging ? `none` : `1px dashed ${Colors.BLUE3}`
+				{
+    		/* <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
+    		<svg ref={visualRef}></svg>
       </Rnd> */}
 				<div
 					style={{
@@ -143,61 +139,6 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						opacity: isDragging ? 0.4 : 1,
 						position: "relative"
 					}}>
-					{/* Pin Button - positioned in top left */}
-					<Button
-						type="button"
-						variant="minimal"
-						icon={<Icon icon="lock" size={5} style={{opacity: 0.6}} />}
-						style={{
-							transition: "all 0.2s ease",
-							position: "absolute",
-							minHeight: 0,
-							minWidth: 0,
-							top: "-8px",
-							left: "0px",
-							zIndex: 40,
-							width: "6px",
-							height: "8px",
-							padding: 0,
-							outline: "none",
-							background: "transparent"
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.transform = "scale(1.1)";
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.transform = "scale(1)";
-						}}
-					/>
-
-					{/* Refresh button */}
-					<Button
-						type="button"
-						variant="minimal"
-						icon={<Icon icon="refresh" size={5} style={{opacity: 0.6}} />}
-						style={{
-							transition: "all 0.2s ease",
-							position: "absolute",
-							minHeight: 0,
-							minWidth: 0,
-							top: "-8px",
-							left: "6px",
-							zIndex: 10,
-							width: "6px",
-							height: "8px",
-							padding: 0,
-							outline: "none",
-							background: "transparent"
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.transform = "scale(1.1)";
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.transform = "scale(1)";
-						}}
-						onClick={() => refreshElement()}
-					/>
-
 					<div
 						ref={drag}
 						style={{
