@@ -45,8 +45,8 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 
 				<VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
 
-				{/* Label stuff */}
-				<Section
+				{/* Style stuff */}
+				<Section icon="style"
 					collapseProps={{defaultIsOpen: false}}
 					compact={true}
 					title={"Style"}

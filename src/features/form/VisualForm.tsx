@@ -1,6 +1,7 @@
 import {
 	ControlGroup,
 	FormGroup,
+	H6,
 	HTMLSelect,
 	InputGroup,
 	NumericInput,
@@ -147,7 +148,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 
 			{/* Config */}
 			{/* Placement Config */}
-			<Section
+			<Section icon="area-of-interest"
 				style={{ borderRadius: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
@@ -170,16 +171,16 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 			</Section>
 
 			{/* Padding */}
-			<Section
+			<Section icon="horizontal-inbetween"
 				style={{ borderRadius: 0, }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				title={"Padding"}
 				collapsible={true}>
-				<ControlGroup vertical={true} style={{ gap: 4, padding: "8px 0px" }}>
+				<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", padding: "8px" }}>
 					<FormGroup
-						style={{ padding: "4px 16px" }}
-						label="Padding top"
+						style={{ margin: 0 }}
+						label="Top"
 						labelFor="padding-top-input">
 						<Controller
 							control={formControls.control}
@@ -191,6 +192,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									onValueChange={field.onChange}
 									min={0}
 									size="small"
+									fill
 									allowNumericCharactersOnly={true}
 								/>
 							)}
@@ -201,8 +203,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 					</FormGroup>
 
 					<FormGroup
-						style={{ padding: "4px 16px" }}
-						label="Padding right"
+						style={{ margin: 0 }}
+						label="Right"
 						labelFor="padding-right-input">
 						<Controller
 							control={formControls.control}
@@ -214,6 +216,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									onValueChange={field.onChange}
 									min={0}
 									size="small"
+									fill
 									allowNumericCharactersOnly={true}
 								/>
 							)}
@@ -224,8 +227,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 					</FormGroup>
 
 					<FormGroup
-						style={{ padding: "4px 16px" }}
-						label="Padding bottom"
+						style={{ margin: 0 }}
+						label="Bottom"
 						labelFor="padding-bottom-input">
 						<Controller
 							control={formControls.control}
@@ -237,6 +240,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									onValueChange={field.onChange}
 									min={0}
 									size="small"
+									fill
 									allowNumericCharactersOnly={true}
 								/>
 							)}
@@ -247,8 +251,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 					</FormGroup>
 
 					<FormGroup
-						style={{ padding: "4px 16px", margin: 0 }}
-						label="Padding left"
+						style={{ margin: 0 }}
+						label="Left"
 						labelFor="padding-left-input">
 						<Controller
 							control={formControls.control}
@@ -260,6 +264,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									onValueChange={field.onChange}
 									min={0}
 									size="small"
+									fill
 									allowNumericCharactersOnly={true}
 								/>
 							)}
@@ -268,23 +273,24 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 							}}
 						/>
 					</FormGroup>
-				</ControlGroup>
+				</div>
 			</Section>
 
 			{/* Offset */}
-			<Section
-				style={{ borderRadius: 0 }}
+			<Section icon="arrows-horizontal"
+				style={{ borderRadius: 0, padding: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
-				title={"Offset"}
+				title={
+					"Offset"
+				}
 				collapsible={true}>
-				<ControlGroup vertical={true}>
+				<div style={{ display: "flex", gap: "10px", padding: "8px" }}>
 					<FormGroup
-						style={{ padding: "4px 8px", margin: 0 }}
+						style={{ flex: 1, margin: 0 }}
 						intent={errors?.offset?.[0] ? "danger" : "none"}
 						helperText={errors?.offset?.[0]?.message}
-						inline={true}
-						label="Offset X"
+						label="X"
 						labelFor="offset0">
 						<Controller
 							control={formControls.control}
@@ -298,6 +304,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									min={-2000}
 									max={2000}
 									size="small"
+									fill
 									intent={errors?.offset?.[0] ? "danger" : "none"}
 									allowNumericCharactersOnly={true}></NumericInput>
 							)}
@@ -312,11 +319,10 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 					</FormGroup>
 
 					<FormGroup
-						style={{ padding: "4px 8px", margin: 0 }}
+						style={{ flex: 1, margin: 0 }}
 						intent={errors?.offset?.[1] ? "danger" : "none"}
 						helperText={errors?.offset?.[1]?.message}
-						inline={true}
-						label="Offset Y"
+						label="Y"
 						labelFor="offset1">
 						<Controller
 							control={formControls.control}
@@ -330,6 +336,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									min={-2000}
 									max={2000}
 									size="small"
+									fill
 									intent={errors?.offset?.[1] ? "danger" : "none"}
 									allowNumericCharactersOnly={true}></NumericInput>
 							)}
@@ -342,7 +349,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 								max: { value: 2000, message: "Offset cannot exceed 2000" }
 							}}></Controller>
 					</FormGroup>
-				</ControlGroup>
+				</div>
 			</Section>
 		</ControlGroup>
 	);
