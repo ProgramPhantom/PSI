@@ -194,15 +194,21 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return
 	}
 
-	public growElement(containerSize: Size) {
+	public growElement(containerSize: Size): Record<Dimensions, number> {
+		let dw: number = 0;
+		let dh: number = 0;
 
 
 		if (this.sizeMode.x === "grow") {
+			dw = containerSize.width - this.width;
 			this.width = containerSize.width;
 		}
 		if (this.sizeMode.y === "grow") {
+			dh = containerSize.height - this.height;
 			this.height = containerSize.height;
 		}
+
+		return {x: dw, y: dh}
 	}
 
 	public getHitbox(): Rect {

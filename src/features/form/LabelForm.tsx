@@ -1,45 +1,60 @@
 import { Button, FormGroup, HTMLSelect, Section, SectionCard } from "@blueprintjs/core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import ArrowForm from "./ArrowForm";
 import TextForm from "./TextForm";
 import { FormRequirements } from "./FormBase";
+import { IText } from "../../logic/text";
+import { ILine } from "../../logic/line";
 
-interface ILabelArrayFormProps extends FormRequirements {}
+interface ILabelArrayFormProps extends FormRequirements { }
 
 function LabelForm(props: ILabelArrayFormProps) {
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
 	const formControls = useFormContext();
+	let vals = formControls.getValues();
 
-	var defVals = formControls.getValues();
-	const [textOn, setTextOn] = useState<boolean>(true);
-	const [lineOn, setLineOn] = useState<boolean>(true);
+	const [textOn, setTextOn] = useState<boolean>(formControls.getValues(`${fullPrefix}text`) !== undefined);
+	const [lineOn, setLineOn] = useState<boolean>(formControls.getValues(`${fullPrefix}line`) !== undefined);
 
-	// const hasText = useWatch({ name: "label", control: formControls.control})
+	const [textBackup, setTextBackup] = useState<IText>(undefined);
+	const [lineBackup, setLineBackup] = useState<ILine>(undefined);
 
-	useEffect(() => {
-		if (textOn === false) {
-			formControls.setValue("text", undefined);
+	const toggleText = () => {
+		if (textOn) {
+			setTextBackup(formControls.getValues(`${fullPrefix}text`));
+			formControls.setValue(`${fullPrefix}text`, undefined);
+			setTextOn(false);
+		} else {
+			formControls.setValue(`${fullPrefix}text`, textBackup ?? {});
+			setTextOn(true);
 		}
-		if (lineOn === false) {
-			formControls.setValue("line", undefined);
+	}
+
+	const toggleLine = () => {
+		if (lineOn) {
+			setLineBackup(formControls.getValues(`${fullPrefix}line`));
+			formControls.setValue(`${fullPrefix}line`, undefined);
+			setLineOn(false);
+		} else {
+			formControls.setValue(`${fullPrefix}line`, lineBackup ?? {});
+			setLineOn(true);
 		}
-	}, [textOn, lineOn]);
+	}
 
 	return (
 		<>
 			{/* Position */}
 			<FormGroup
-				style={{padding: "4px 8px", margin: 0}}
+				style={{ padding: "4px 8px", }}
 				fill={false}
 				inline={true}
 				label="Position"
-				helperText="Label position on parent"
 				labelFor="text-input">
 				<Controller
 					control={formControls.control}
 					name={`${fullPrefix}labelConfig.labelPosition`}
-					render={({field}) => (
+					render={({ field }) => (
 						<HTMLSelect {...field} iconName="caret-down">
 							<option value={"top"}>Top</option>
 							<option value={"bottom"}>Bottom</option>
@@ -51,16 +66,15 @@ function LabelForm(props: ILabelArrayFormProps) {
 
 			{/* Text position */}
 			<FormGroup
-				style={{padding: "4px 8px", margin: 0}}
+				style={{ padding: "4px 8px" }}
 				fill={false}
 				inline={true}
 				label="Text Position"
-				labelFor="text-input"
-				helperText="Text position relative to arrow">
+				labelFor="text-input">
 				<Controller
 					control={formControls.control}
 					name={`${fullPrefix}labelConfig.textPosition`}
-					render={({field}) => (
+					render={({ field }) => (
 						<HTMLSelect {...field} iconName="caret-down">
 							<option value={"top"}>Top</option>
 							<option value={"inline"}>Inline</option>
@@ -71,8 +85,8 @@ function LabelForm(props: ILabelArrayFormProps) {
 
 			{/* Text form */}
 			<Section
-				style={{padding: 0}}
-				collapseProps={{defaultIsOpen: false}}
+				style={{ padding: 0 }}
+				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				collapsible={true}
 				title={"Text"}
@@ -82,18 +96,18 @@ function LabelForm(props: ILabelArrayFormProps) {
 						intent="none"
 						onClick={(e) => {
 							e.stopPropagation();
-							setTextOn(!textOn);
+							toggleText();
 						}}></Button>
 				}>
-				<SectionCard style={{padding: "0px"}}>
+				<SectionCard style={{ padding: "8px" }}>
 					<TextForm prefix={fullPrefix + "text"}></TextForm>
 				</SectionCard>
 			</Section>
 
 			{/* Arrow form */}
 			<Section
-				style={{padding: 0}}
-				collapseProps={{defaultIsOpen: false}}
+				style={{ padding: 0 }}
+				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				collapsible={true}
 				title={"Arrow"}
@@ -103,10 +117,10 @@ function LabelForm(props: ILabelArrayFormProps) {
 						intent="none"
 						onClick={(e) => {
 							e.stopPropagation();
-							setLineOn(!lineOn);
+							toggleLine();
 						}}></Button>
 				}>
-				<SectionCard style={{padding: "0px"}}>
+				<SectionCard style={{ padding: "0px" }}>
 					<ArrowForm prefix={fullPrefix + "line"}></ArrowForm>
 				</SectionCard>
 			</Section>

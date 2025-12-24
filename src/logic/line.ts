@@ -2,14 +2,12 @@ import { Defs, Element, Marker, Path, Rect, SVG } from "@svgdotjs/svg.js";
 import LineLike, { ILineLike } from "./lineLike";
 import { UserComponentType } from "./point";
 
-console.log("Load module line")
 
 export type HeadStyle = "default" | "thin" | "none";
 
 export interface ILineStyle {
 	headStyle: [HeadStyle, HeadStyle];
 	stroke: string;
-	thickness: number;
 	dashing: [number, number];
 }
 
@@ -53,14 +51,14 @@ export default class Line extends LineLike implements ILine {
 			.id(this.id + "-hitbox")
 			.attr({"data-editor": "hitbox", key: this.ref});
 
-		var hitboxHeight: number = this.lineStyle.thickness + LineLike.HitboxPadding;
+		var hitboxHeight: number = this.thickness + LineLike.HitboxPadding;
 		hitbox.size(this.length, hitboxHeight);
 		hitbox.rotate((this.angle / Math.PI) * 180, this.x, this.y + hitboxHeight / 2);
 
 		var crossShift: [number, number] = this.moveRelative(
 			[this.x, this.y],
 			"cross",
-			-(this.lineStyle.thickness + LineLike.HitboxPadding) / 2
+			-(this.thickness + LineLike.HitboxPadding) / 2
 		);
 		hitbox.move(crossShift[0], crossShift[1]);
 
@@ -102,20 +100,20 @@ export default class Line extends LineLike implements ILine {
 			var dy = Math.sin(this.angle!) * markerLength;
 			var dx = Math.cos(this.angle!) * markerLength;
 
-			var pathData: string = `M${this.x + dx}, ${this.y + dy}, ${this.x2 - dx} ${this.y2 - dy}`;
+			var pathData: string = `M${this.startX + dx}, ${this.startY + dy}, ${this.endX - dx} ${this.endY - dy}`;
 
 			var newArrow = SVG()
 				.path()
 				.id(this.id)
 				.attr({
-					strokeWidth: `${this.lineStyle.thickness}`,
+					strokeWidth: `${this.thickness}`,
 					stroke: `${this.lineStyle.stroke}`,
 					strokeLinecap: "butt",
 					d: pathData,
 					"marker-start": this.lineStyle.headStyle[0] === "default" ? "url(#head)" : "",
 					"marker-end": this.lineStyle.headStyle[1] === "default" ? "url(#head)" : "",
 					"stroke-dasharray": `${this.lineStyle.dashing[0]} ${this.lineStyle.dashing[1]}`,
-					"stroke-width": `${this.lineStyle.thickness}`
+					"stroke-width": `${this.thickness}`
 				});
 
 			this.svg = newArrow;

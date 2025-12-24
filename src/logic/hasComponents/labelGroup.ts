@@ -85,6 +85,7 @@ export default class LabelGroup<T extends Visual = Visual>
 				
 			}
 		}
+
 		
 		switch (label.labelConfig.labelPosition) {
 			case "top":

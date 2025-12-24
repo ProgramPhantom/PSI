@@ -1,5 +1,5 @@
 import { Element } from "@svgdotjs/svg.js";
-import { Dimensions } from "./spacial";
+import { Dimensions, Size } from "./spacial";
 import Visual, { IVisual } from "./visual";
 
 console.log("Load module line like")
@@ -8,6 +8,10 @@ type Direction = "along" | "cross";
 
 export interface ILineLike extends IVisual {
 	adjustment: [number, number];
+	thickness?: number;
+
+	x2?: number,
+	y2?: number
 }
 
 export default abstract class LineLike extends Visual {
@@ -17,55 +21,25 @@ export default abstract class LineLike extends Visual {
 			...super.state
 		};
 	}
-	public AnchorFunctions = {
-		here: {
-			get: this.getNear.bind(this),
-			set: this.setNear.bind(this)
-		},
-		centre: {
-			get: this.getCentre.bind(this),
-			set: this.setCentre.bind(this)
-		},
-		far: {
-			get: this.getFar.bind(this),
-			set: this.setFar.bind(this)
-		}
-	};
 	static HitboxPadding: number = 2;
 
 	adjustment: [number, number];
-	orientation: Orientation;
+	thickness: number;
 
-	private _x2?: number;
-	private _y2?: number;
+	private _x2: number;
+	private _y2: number;
 
 	constructor(params: ILineLike) {
 		super(params);
-		this.ref = "LINE";
 
 		this.adjustment = params.adjustment;
-		this.orientation = params.orientation;
 
+		this.x2 = params.x2 ?? 0
+		this.y2 = params.y2 ?? 0
+
+		this.thickness = params.thickness ?? 1;
 	}
 
-	resolveDimensions(): void {
-		if (this.hasPosition === false) {
-			return;
-		}
-
-		var width = this.x2 - this.x;
-		var height = this.y2 - this.y;
-
-		if (width === 0) {
-			width = 1;
-		}
-		if (height === 0) {
-			height = 1;
-		}
-
-		this.width = width;
-		this.height = height;
-	}
 
 	public set(x1: number, y1: number, x2: number, y2: number) {
 		this.x = x1;
@@ -74,51 +48,30 @@ export default abstract class LineLike extends Visual {
 		this.x2 = x2;
 		this.y2 = y2;
 
-		this.adjust();
-		this.resolveDimensions();
-	}
-
-	adjust() {
-		switch (this.orientation) {
-			case "vertical":
-				this.y -= this.adjustment[0];
-				this.y2 += this.adjustment[1];
-				break;
-			case "horizontal":
-				this.x -= this.adjustment[0];
-				this.x2 += this.adjustment[1];
-				break;
-			case "angled":
-				throw new Error("Not implementated"); // TODO: implement this
-				break;
-		}
+		
 	}
 
 	abstract draw(surface: Element): void;
 
-	public get length(): number | undefined {
-		if (
-			this.x === undefined
-			|| this.y === undefined
-			|| this.y2 === undefined
-			|| this.x2 === undefined
-		) {
-			return undefined;
-		}
 
+	public override computeSize(): Size {
+		return {width: this.thickness, height: this.thickness}
+	}
+
+	public override computePositions(root: { x: number; y: number; }): void {
+		super.computePositions(root)
+	}
+
+	public override growElement(containerSize: Size): Record<Dimensions, number> {
+
+		return super.growElement(containerSize);
+	}
+
+	public get length(): number {
 		return Math.sqrt(Math.pow(this.x2 - this.x, 2) + Math.pow(this.y2 - this.y, 2));
 	}
 
-	public get angle(): number | undefined {
-		if (
-			this.x === undefined
-			|| this.y === undefined
-			|| this.y2 === undefined
-			|| this.x2 === undefined
-		) {
-			return undefined;
-		}
-
+	public get angle(): number {
 		var dx = this.x2 - this.x;
 		var dy = this.y2 - this.y;
 
@@ -126,16 +79,7 @@ export default abstract class LineLike extends Visual {
 		return angle;
 	}
 
-	public get quadrant(): 0 | 1 | 2 | 3 | undefined {
-		if (
-			this.x === undefined
-			|| this.y === undefined
-			|| this.y2 === undefined
-			|| this.x2 === undefined
-		) {
-			return undefined;
-		}
-
+	public get quadrant(): 0 | 1 | 2 | 3 {
 		if (this.x2 >= this.x && this.y2 >= this.y) {
 			return 0;
 		} else if (this.x2 < this.x && this.y2 >= this.y) {
@@ -146,6 +90,21 @@ export default abstract class LineLike extends Visual {
 			return 3;
 		}
 	}
+
+	public get startX(): number {
+		return this.contentX;
+	}
+	public get startY(): number {
+		return this.contentY;
+	}
+
+	public get endX(): number {
+		return this.getFar("x", true);
+	}
+	public get endY(): number {
+		return this.getFar("y", true);
+	}
+
 
 	public moveRelative(
 		coordinate: [number, number],
@@ -164,88 +123,45 @@ export default abstract class LineLike extends Visual {
 		return newCoord;
 	}
 
-	get hasPosition(): boolean {
-		if (
-			this._x === undefined
-			|| this._y === undefined
-			|| this._x2 === undefined
-			|| this._y2 === undefined
-		) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	get x(): number {
-		if (this._x !== undefined) {
-			return this._x;
-		}
-		throw new Error("x unset");
-	}
-	get y(): number {
-		if (this._y !== undefined) {
-			return this._y;
-		}
-		throw new Error("y unset");
-	}
-	set x(val: number | undefined) {
-		if (val !== this._x) {
-			this._x = val !== undefined ? val : undefined;
-			this.enforceBinding();
-			// this.resolveDimensions();
-		}
-	}
-	set y(val: number | undefined) {
-		if (val !== this._y) {
-			this._y = val !== undefined ? val : undefined;
-			this.enforceBinding();
-			// this.resolveDimensions();  Removing this fixes stuff? Don't know why lol
-		}
-	}
-
 	public get x2(): number {
-		if (this._x2 !== undefined) {
-			return this._x2;
-		}
-		throw new Error("x2 unset");
+		return this._x + this.width;
 	}
 	public get y2(): number {
-		if (this._y2 !== undefined) {
-			return this._y2;
-		}
-		throw new Error("y2 unset");
+		return this._y + this.height;
 	}
 	public set x2(v: number) {
-		if (v !== this._x2) {
-			this._x2 = v;
-			this.enforceBinding();
-			this.resolveDimensions();
-		}
+		this._x2 = v;
 	}
 	public set y2(v: number) {
-		if (v !== this._y2) {
-			this._y2 = v;
-			this.enforceBinding();
-			this.resolveDimensions();
-		}
+		this._y2 = v;
 	}
 
+	// public override get contentWidth(): number {
+	// 	return Math.max(Math.abs(this.x2 - this.x), this.thickness)
+	// }
+	public override set contentWidth(v: number) {
+		// this.x2 = this.x + v;
+		this._contentWidth = v;
+	}
+
+	// public override get contentHeight(): number {
+	// 	return Math.max(Math.abs(this.y2 - this.y), this.thickness)
+	// }
+	public override set contentHeight(v: number) {
+		// this.y2 = this.y + v;
+		this._contentHeight = v;
+	}
+
+
 	// Anchors:
-	public override getNear(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public override getNear(dimension: Dimensions, ofContent: boolean = false): number {
 		switch (dimension) {
 			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return this.contentX;
 				}
 				return this._x;
 			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return this.contentY;
 				}
@@ -265,12 +181,9 @@ export default abstract class LineLike extends Visual {
 	public override getCentre(
 		dimension: Dimensions,
 		ofContent: boolean = false
-	): number | undefined {
+	): number {
 		switch (dimension) {
 			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return (
 						this.contentX
@@ -279,9 +192,6 @@ export default abstract class LineLike extends Visual {
 				}
 				return this.x + this.width / 2;
 			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return (
 						this.contentY
@@ -301,18 +211,12 @@ export default abstract class LineLike extends Visual {
 				break;
 		}
 	}
-	public override getFar(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public override getFar(dimension: Dimensions, ofContent: boolean = false): number {
 		switch (dimension) {
 			case "x":
-				if (this._x2 === undefined) {
-					return undefined;
-				}
 				// if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth : 0); }
 				return this.x2;
 			case "y":
-				if (this._y2 === undefined) {
-					return undefined;
-				}
 				// if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight : 0); }
 				return this.y2;
 		}
@@ -327,4 +231,7 @@ export default abstract class LineLike extends Visual {
 				break;
 		}
 	}
+
+
+
 }

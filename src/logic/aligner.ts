@@ -32,7 +32,9 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 	}
 
 	mainAxis: Dimensions;
-	crossAxis: Dimensions;
+	get crossAxis(): Dimensions {
+		return this.mainAxis === "x" ? "y" : "x";
+	}
 
 	minCrossAxis?: number;
 
@@ -42,7 +44,6 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		super(params);
 
 		this.mainAxis = params.mainAxis;
-		this.crossAxis = this.mainAxis === "x" ? "y" : "x";
 
 		this.minCrossAxis = params.minCrossAxis;
 	}
@@ -71,32 +72,59 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 	public computeSize(): Size {
 		this.children.forEach((c) => c.computeSize());
 
-		var contentSize: Size = {width: 0, height: 0};
+
 		this.cells = Array.from({length: this.noChildren}, () => new Spacial());
 
-		if (this.mainAxis === "x") {
-			contentSize.width = this.children.reduce((w, c) => w + c.width, 0)
-			contentSize.height = Math.max(...this.children.map((c) => c.height))
+		// Compute intrinsic length of main axis:
+		// This is the sum of main axis lengths:
+		this.children.forEach((child, child_index) => {
+			let correspondingCell: Spacial = this.cells[child_index]
+			
+			let contribution: boolean = true;
+			if (child.placementMode.type === "aligner") {
+				if (child.placementMode.alignerConfig.contribution?.mainAxis === false) {
+					contribution = false;
+				}
+				if (child.sizeMode[this.mainAxis] === "grow") {
+					contribution = false;
+				}
+			}
 
-			this.cells.forEach((cell, cell_index) => {
-				var target: T = this.children[cell_index];
-				cell.width = target.width;
-				cell.height = contentSize.height;
-			})
+			if (contribution === true) {
+				correspondingCell.setSizeByDimension(child.getSizeByDimension(this.mainAxis), this.mainAxis) 
+			} else {
+				correspondingCell.setSizeByDimension(0, this.mainAxis)
+			}
+		})
+		let intrinsicLength: number = this.cells.reduce((l, cell) => l + cell.getSizeByDimension(this.mainAxis), 0)
 
-		} else {
-			contentSize.width = Math.max(...this.children.map((c) => c.width));
-			contentSize.height = this.children.reduce((h, c) => h + c.height, 0);
+		// Find the cross axis length of the aligner;
+		// This is the max cross axis size of all elements;
+		let widths: number[] = [];
+		this.children.forEach((child) => {
+			let contribution: boolean = true;
+			if (child.placementMode.type === "aligner") {
+				if (child.placementMode.alignerConfig.contribution?.crossAxis === false) {
+					contribution = false;
+				}
+				if (child.sizeMode[this.crossAxis] === "grow") {
+					contribution = false;
+				}
+			}
 
-			this.cells.forEach((cell, cell_index) => {
-				var target: T = this.children[cell_index];
-				cell.height = target.height;
-				cell.width = contentSize.width
-			})
-		}
+			if (contribution === true) {
+				widths.push(child.getSizeByDimension(this.crossAxis))
+			}
+		})
+		let intrinsicWidth: number = Math.max(...widths);
+		// Apply to cells:
+		this.cells.forEach((cell) => {
+			cell.setSizeByDimension(intrinsicWidth, this.crossAxis)
+		})
 
-		this.contentWidth = contentSize.width;
-		this.contentHeight = contentSize.height
+
+		this.setSizeByDimension(intrinsicLength, this.mainAxis)
+		this.setSizeByDimension(intrinsicWidth, this.crossAxis)
 
 		return {width: this.width, height: this.height};
 	}
@@ -144,15 +172,62 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		}
 	}
 
-	public override growElement(containerSize: Size) {
-		super.growElement(containerSize)
+	public override growElement(containerSize: Size): Record<Dimensions, number> {
+		let change: Record<Dimensions, number> = super.growElement(containerSize)
 
+		// Resize cells:
+		// Main axis:
+		let remainingMainAxisChange: number = change[this.mainAxis];
+		while (remainingMainAxisChange > 0) {
+			let smallestLength: number = this.children[0].getSizeByDimension(this.mainAxis);
+			let secondSmallestLength: number = Infinity;
+			let widthToAdd: number = remainingMainAxisChange;
+
+			this.children.forEach((child) => {
+				let childLength: number = child.getSizeByDimension(this.mainAxis);
+				if (childLength < smallestLength) {
+					secondSmallestLength = smallestLength
+					smallestLength = childLength;
+				}
+				if (childLength > smallestLength) {
+					secondSmallestLength = Math.min(secondSmallestLength, childLength)
+					widthToAdd = secondSmallestLength - smallestLength
+				}
+			})
+
+			widthToAdd = Math.min(widthToAdd, remainingMainAxisChange / this.noChildren);
+
+			this.children.forEach((child) => {
+				let childLength: number = child.getSizeByDimension(this.mainAxis);
+				if (childLength === smallestLength) { /// The smallest element
+					child.setSizeByDimension(widthToAdd, this.mainAxis);
+					remainingMainAxisChange -= widthToAdd;
+				}
+			})
+		} 
+		if (remainingMainAxisChange < 0) {
+			console.warn(`Aligner ${this.ref} is over spilling container on main axis`)
+		}
+
+		// Cross axis:
+		let remainingCrossAxisChange: number = change[this.crossAxis];
+		if (remainingCrossAxisChange > 0) {
+			this.cells.forEach((cell) => {
+				cell.setSizeByDimension(remainingCrossAxisChange, this.crossAxis)
+			})
+		} else if (remainingCrossAxisChange < 0) {
+			console.warn(`Aligner ${this.ref} is over spilling container on cross axis`)
+		}
+
+		
 		// TODO:
 		this.children.forEach((child, child_index) => {
 			let targetCell = this.cells[child_index];
 		
 			child.growElement(targetCell.contentSize);	
 		})
+
+		return change;
 	}
 
 	public add(

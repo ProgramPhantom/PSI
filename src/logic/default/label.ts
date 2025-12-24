@@ -1,4 +1,5 @@
 import { ILabel } from "../hasComponents/label";
+import { DEFAULT_LINE } from "./line";
 
 export const DEFAULT_LABEL: ILabel = {
 	"contentWidth": 0,
@@ -6,6 +7,8 @@ export const DEFAULT_LABEL: ILabel = {
 
 	"offset": [0, 0],
 	"padding": [0, 0, 0, 0],
+	
+	"mainAxis": "x",
 
 	"text": {
 		"contentWidth": 10,
@@ -25,7 +28,7 @@ export const DEFAULT_LABEL: ILabel = {
 		"placementMode": {"type": "managed"}
 	},
 
-	"line": null,
+	"line": DEFAULT_LINE,
 	"placementMode": {"type": "free"},
 	"ref": "label",
 

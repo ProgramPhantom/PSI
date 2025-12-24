@@ -2,7 +2,7 @@ import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
-import Spacial, { Size } from "./spacial";
+import Spacial, { Dimensions, Size } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 
@@ -184,13 +184,15 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		})
 	}
 
-	public override growElement(containerSize: Size) {
-		super.growElement(containerSize)
+	public override growElement(containerSize: Size): Record<Dimensions, number> {
+		let sizeDiff = super.growElement(containerSize)
 
 		// TODO:
 		this.children.forEach((child) => {
 			child.growElement(this.size);
 		})
+
+		return sizeDiff;
 	}
 
 	// Construct and SVG with children positioned relative to (0, 0)

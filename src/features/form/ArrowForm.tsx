@@ -11,7 +11,6 @@ function ArrowForm(props: IArrowFormProps) {
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
 	const formControls = useFormContext();
 
-	var rawVals = formControls.getValues();
 	var values: Partial<ILine> | undefined = getByPath(formControls.getValues(), props.prefix);
 
 	return (
@@ -94,8 +93,7 @@ function ArrowForm(props: IArrowFormProps) {
 								<NumericInput
 									{...field}
 									onValueChange={field.onChange}
-									min={0}
-									small={true}></NumericInput>
+									min={0}></NumericInput>
 							)}></Controller>
 					</FormGroup>
 

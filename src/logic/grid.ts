@@ -1,5 +1,5 @@
 import { Element } from "@svgdotjs/svg.js";
-import Spacial, { IGridChildConfig, SiteNames, Size } from "./spacial";
+import Spacial, { Dimensions, IGridChildConfig, SiteNames, Size } from "./spacial";
 import Visual, { doesDraw, IDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
@@ -303,8 +303,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		})
 	}
 
-	public growElement(containerSize: Size) {
-		super.growElement(containerSize);
+	public growElement(containerSize: Size): Record<Dimensions, number> {
+		let change = super.growElement(containerSize);
 
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
@@ -321,6 +321,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 				}
 			})
 		})
+
+		return change;
 	}
 
 	public addChildAtCoord(child: T, row: number, column?: number) {
