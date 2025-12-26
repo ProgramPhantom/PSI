@@ -749,7 +749,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			for (var col=0; col<this.numColumns; col++) {
 				var colWidth: number = this.gridSizes.columns[col].width;
 
-				this.cells[row][col] = new Spacial(this.contentX + xCount,this.contentY + yCount, colWidth, rowHeight)
+				this.cells[row][col] = new Spacial(this.cx + xCount,this.cy + yCount, colWidth, rowHeight)
 
 				xCount += colWidth;
 			}

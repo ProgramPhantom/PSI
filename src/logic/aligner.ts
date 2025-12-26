@@ -136,16 +136,19 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		var xCount = 0;
 		var yCount = 0;
 
+		if (this.ref === "LABEL") {
+			console.log()
+		}
 
 		// Yes this could be done with dimension setters
 		if (this.mainAxis === "x") {
 			this.children.forEach((child, child_index) => {
 				let targetCell = this.cells[child_index];
 
-				child.x = this.contentX + xCount
+				child.x = this.cx + xCount
 				
 				targetCell.x = child.x;
-				targetCell.y = this.contentY;
+				targetCell.y = this.cy;
 
 				xCount += child.width;
 
@@ -158,10 +161,10 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 			this.children.forEach((child, child_index) => {
 				let targetCell = this.cells[child_index];
 
-				child.y = this.contentY + yCount;
+				child.y = this.cy + yCount;
 				
 				targetCell.y = child.y;
-				targetCell.x = this.contentX;
+				targetCell.x = this.cx;
 				
 				yCount += child.height;
 			
@@ -174,6 +177,12 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 
 	public override growElement(containerSize: Size): Record<Dimensions, number> {
 		let change: Record<Dimensions, number> = super.growElement(containerSize)
+		
+
+		if (this.ref === "LABEL") {
+			console.log()
+		}
+		
 
 		// Resize cells:
 		// Main axis:
@@ -211,9 +220,10 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 
 		// Cross axis:
 		let remainingCrossAxisChange: number = change[this.crossAxis];
+		let containerCrossAxisSize: number = containerSize[this.crossAxis === "x" ? "width" : "height"]
 		if (remainingCrossAxisChange > 0) {
 			this.cells.forEach((cell) => {
-				cell.setSizeByDimension(remainingCrossAxisChange, this.crossAxis)
+				cell.setSizeByDimension(containerCrossAxisSize, this.crossAxis)
 			})
 		} else if (remainingCrossAxisChange < 0) {
 			console.warn(`Aligner ${this.ref} is over spilling container on cross axis`)

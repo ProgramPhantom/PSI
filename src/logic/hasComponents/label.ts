@@ -47,7 +47,7 @@ export default class Label extends Aligner implements ILabel {
 	constructor(params: ILabel) {
 		super(params);
 		this.labelConfig = params.labelConfig;
-
+		this.ref = "LABEL"
 		if (params.text) {
 			// Create text
 			var text: Text = new Text(params.text);

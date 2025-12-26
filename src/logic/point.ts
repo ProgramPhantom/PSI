@@ -82,8 +82,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	ref: string;
 
 	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined) {
-		this.x = x ?? 0;
-		this.y = y ?? 0;
+		this._x = x ?? 0;
+		this._y = y ?? 0;
 
 		this.ref = ref;
 

@@ -262,7 +262,7 @@ export default class Sequence extends Grid implements ISequence {
 
 			let cellSlice = this.cells.slice(INDEX, INDEX+3);
 
-			channel.x = this.contentX;
+			channel.x = this.cx;
 			channel.y = rowSizeSlice[0].y;
 
 			channel.setGrid(gridSlice, gridSizes, cellSlice);

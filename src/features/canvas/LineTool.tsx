@@ -97,7 +97,7 @@ export function LineTool(props: IDrawArrowProps) {
 	const hoverPlaceVerticalLine = (col: Spacial, far: boolean = false) => {
 		var x = col.x + col.width;
 
-		var topY = ENGINE.handler.diagram.sequences[0]!.contentY;
+		var topY = ENGINE.handler.diagram.sequences[0]!.cy;
 		var bottomY = ENGINE.handler.diagram.sequences[0]!.getFar("y", true);
 		setColumnHovered(true);
 

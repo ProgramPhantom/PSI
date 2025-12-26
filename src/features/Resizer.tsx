@@ -22,7 +22,7 @@ const Resizer: React.FC<IResizer> = (props) => {
 	return (
 		<>
 			<Rnd
-				position={{x: props.element.contentX, y: props.element.contentY}}
+				position={{x: props.element.cx, y: props.element.cy}}
 				default={{
 					x: x,
 					y: y,

@@ -39,8 +39,8 @@ const PaddedBoxDebug: React.FC<IPaddedBoxDebug> = (props) => {
 
 	var x1 = props.element.x;
 	var y1 = props.element.y;
-	var cx = props.element.contentX;
-	var cy = props.element.contentY;
+	var cx = props.element.cx;
+	var cy = props.element.cy;
 
 	var width = props.element.width;
 	var height = props.element.height;

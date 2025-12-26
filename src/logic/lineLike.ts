@@ -10,8 +10,11 @@ export interface ILineLike extends IVisual {
 	adjustment: [number, number];
 	thickness?: number;
 
-	x2?: number,
-	y2?: number
+	sx?: number;
+	sy?: number;
+
+	ex?: number;
+	ey?: number;
 }
 
 export default abstract class LineLike extends Visual {
@@ -26,36 +29,35 @@ export default abstract class LineLike extends Visual {
 	adjustment: [number, number];
 	thickness: number;
 
-	private _x2: number;
-	private _y2: number;
+	private _sy: number;
+	private _sx: number;
+	private _ex: number;
+	private _ey: number;
 
 	constructor(params: ILineLike) {
 		super(params);
 
 		this.adjustment = params.adjustment;
 
-		this.x2 = params.x2 ?? 0
-		this.y2 = params.y2 ?? 0
+		this.startX = params.sx ?? params.x ?? 0;
+		this.startY = params.sy ?? params.y ?? 0;
+
+		this.endX = params.ex ?? 0;
+		this.endY = params.ey ?? 0;
+
+		// this._x = this.startX;
+		// this._y = this.startY;
+
 
 		this.thickness = params.thickness ?? 1;
 	}
 
 
-	public set(x1: number, y1: number, x2: number, y2: number) {
-		this.x = x1;
-		this.y = y1;
-
-		this.x2 = x2;
-		this.y2 = y2;
-
-		
-	}
-
 	abstract draw(surface: Element): void;
 
 
 	public override computeSize(): Size {
-		return {width: this.thickness, height: this.thickness}
+		return this.computeBoundingBox();
 	}
 
 	public override computePositions(root: { x: number; y: number; }): void {
@@ -67,42 +69,78 @@ export default abstract class LineLike extends Visual {
 		return super.growElement(containerSize);
 	}
 
+	public computeBoundingBox(): Size {
+		let rect: Size = {width: 0, height: 0};
+
+		let h: number = this.thickness + LineLike.HitboxPadding;
+		let l: number = this.length;
+		let theta: number = this.angle;
+
+		rect.width = l * Math.abs(Math.cos(theta)) + h * Math.abs(Math.sin(theta))
+		rect.height = l * Math.abs(Math.sin(theta)) + h * Math.abs(Math.cos(theta))
+
+		return rect
+	}
+
 	public get length(): number {
-		return Math.sqrt(Math.pow(this.x2 - this.x, 2) + Math.pow(this.y2 - this.y, 2));
+		return Math.sqrt(Math.pow(this.endX - this.startX, 2) + Math.pow(this.endY - this.startY, 2));
 	}
 
 	public get angle(): number {
-		var dx = this.x2 - this.x;
-		var dy = this.y2 - this.y;
+		var dx = this.endX - this.startX;
+		var dy = this.endY - this.startY;
 
 		var angle = Math.atan2(dy, dx);
 		return angle;
 	}
 
 	public get quadrant(): 0 | 1 | 2 | 3 {
-		if (this.x2 >= this.x && this.y2 >= this.y) {
+		if (this.endX >= this.startX && this.endY >= this.startY) {
 			return 0;
-		} else if (this.x2 < this.x && this.y2 >= this.y) {
+		} else if (this.endX < this.startX && this.endY >= this.startY) {
 			return 1;
-		} else if (this.x2 < this.x && this.y2 < this.y) {
+		} else if (this.endX < this.startX && this.endY < this.startY) {
 			return 2;
-		} else if (this.x2 >= this.x && this.y2 < this.y) {
+		} else if (this.endX >= this.startX && this.endY < this.startY) {
 			return 3;
 		}
 	}
 
+
 	public get startX(): number {
-		return this.contentX;
+		return this._sx;
 	}
+	public set startX(v: number) {
+		this._sx = v;
+	}
+
 	public get startY(): number {
-		return this.contentY;
+		return this._sy;
+	}
+	public set startY(v: number) {
+		this._sy = v;
 	}
 
 	public get endX(): number {
-		return this.getFar("x", true);
+		return this._ex;
 	}
+	public set endX(v: number) {
+		this._ex = v;
+	}
+
 	public get endY(): number {
-		return this.getFar("y", true);
+		return this._ey;
+	}
+	public set endY(v: number) {
+		this._ey = v;
+	}
+
+	public get centreX(): number {
+		return (this.startX + this.endX) / 2
+	}
+
+	public get centreY(): number {
+		return (this.startY + this.endY) / 2
 	}
 
 
@@ -123,115 +161,66 @@ export default abstract class LineLike extends Visual {
 		return newCoord;
 	}
 
-	public get x2(): number {
-		return this._x + this.width;
+	public override get contentWidth(): number {
+		let val = this.computeBoundingBox().width;
+		this._contentWidth = val
+		return val;
 	}
-	public get y2(): number {
-		return this._y + this.height;
-	}
-	public set x2(v: number) {
-		this._x2 = v;
-	}
-	public set y2(v: number) {
-		this._y2 = v;
-	}
-
-	// public override get contentWidth(): number {
-	// 	return Math.max(Math.abs(this.x2 - this.x), this.thickness)
-	// }
 	public override set contentWidth(v: number) {
 		// this.x2 = this.x + v;
-		this._contentWidth = v;
+		// this._contentWidth = v;
+		//throw new Error("not possible")
+
+		let quadrant = this.quadrant;
+
+		if (quadrant === 0 || quadrant === 3) {
+			this.endX = this.startX + v;
+		} else {
+			this.startX = this.endX + v;
+		}
+
+		
 	}
 
-	// public override get contentHeight(): number {
-	// 	return Math.max(Math.abs(this.y2 - this.y), this.thickness)
-	// }
+	public override get contentHeight(): number {
+		let val = this.computeBoundingBox().height;
+		this._contentHeight = val;
+		return val;
+	}
 	public override set contentHeight(v: number) {
 		// this.y2 = this.y + v;
-		this._contentHeight = v;
+		//this._contentHeight = v;
+
+		// This needs investigating
+		let quadrant = this.quadrant;
+
+		if (quadrant === 2 || quadrant === 3) {
+			this.endY = this.startY + v;
+		} else {
+			this.startY = this.endY + v;
+		}
+		
 	}
 
 
-	// Anchors:
-	public override getNear(dimension: Dimensions, ofContent: boolean = false): number {
-		switch (dimension) {
-			case "x":
-				if (ofContent) {
-					return this.contentX;
-				}
-				return this._x;
-			case "y":
-				if (ofContent) {
-					return this.contentY;
-				}
-				return this._y;
-		}
+	public override get x(): number {
+		return this.centreX - this.computeBoundingBox().width / 2;
 	}
-	public override setNear(dimension: Dimensions, v: number) {
-		switch (dimension) {
-			case "x":
-				this.x = v;
-				break;
-			case "y":
-				this.y = v;
-				break;
-		}
-	}
-	public override getCentre(
-		dimension: Dimensions,
-		ofContent: boolean = false
-	): number {
-		switch (dimension) {
-			case "x":
-				if (ofContent) {
-					return (
-						this.contentX
-						+ (this.contentWidth ? this.contentWidth / 2 : 0)
-					);
-				}
-				return this.x + this.width / 2;
-			case "y":
-				if (ofContent) {
-					return (
-						this.contentY
-						+ (this.contentHeight ? this.contentHeight / 2 : 0)
-					);
-				}
-				return this.y + this.height / 2;
-		}
-	}
-	public override setCentre(dimension: Dimensions, v: number) {
-		switch (dimension) {
-			case "x":
-				this.x = v - this.width / 2;
-				break;
-			case "y":
-				this.y = v - this.height / 2;
-				break;
-		}
-	}
-	public override getFar(dimension: Dimensions, ofContent: boolean = false): number {
-		switch (dimension) {
-			case "x":
-				// if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth : 0); }
-				return this.x2;
-			case "y":
-				// if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight : 0); }
-				return this.y2;
-		}
-	}
-	public override setFar(dimension: Dimensions, v: number) {
-		switch (dimension) {
-			case "x":
-				this.x2 = v;
-				break;
-			case "y":
-				this.y2 = v;
-				break;
-		}
+	public override set x(v: number) {
+		let currX: number = this.x;
+		this.startX += v - currX;
+		this.endX += v - currX;
+		this._x = v;
+
 	}
 
-
-
+	public override get y(): number {
+		return this.centreY - this.computeBoundingBox().height / 2;
+	}
+	public override set y(v: number) {
+		let currY: number = this.y;  // Fixes problems
+		this.startY += v - currY;
+		this.endY += v - currY;
+		this._y = v;
+	}
 }

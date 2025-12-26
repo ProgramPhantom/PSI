@@ -223,17 +223,17 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return hitbox;
 	}
 
-	public get contentX(): number {
+	public get cx(): number {
 		return this.x;
 	}
-	public set contentX(v: number) {
+	public set cx(v: number) {
 		throw new Error("not implemented");
 	}
 
-	public get contentY(): number {
+	public get cy(): number {
 		return this.y;
 	}
-	public set contentY(v: number) {
+	public set cy(v: number) {
 		throw new Error("not implemented");
 	}
 
@@ -242,7 +242,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this._contentHeight = b.height;
 	}
 	get contentSize(): Size {
-		return {width: this.contentWidth, height: this.contentWidth};
+		return {width: this.contentWidth, height: this.contentHeight};
 	}
 
 	// ----------- Size --------------
@@ -487,12 +487,12 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		switch (dimension) {
 			case "x":
 				if (ofContent) {
-					return this.contentX;
+					return this.cx;
 				}
 				return this._x;
 			case "y":
 				if (ofContent) {
-					return this.contentY;
+					return this.cy;
 				}
 				return this._y;
 		}
@@ -513,7 +513,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			case "x":
 				if (ofContent) {
 					return (
-						this.contentX
+						this.cx
 						+ this.contentWidth / 2
 					);
 				}
@@ -521,7 +521,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			case "y":
 				if (ofContent) {
 					return (
-						this.contentY
+						this.cy
 						+ this.contentHeight / 2
 					);
 				}
@@ -543,12 +543,12 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		switch (dimension) {
 			case "x":
 				if (ofContent) {
-					return this.contentX + this.contentWidth;
+					return this.cx + this.contentWidth;
 				}
 				return this.x2;
 			case "y":
 				if (ofContent) {
-					return this.contentY + this.contentHeight
+					return this.cy + this.contentHeight
 				}
 				return this.y2;
 		}

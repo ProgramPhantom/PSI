@@ -180,7 +180,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		this.y = root.y;
 
 		this.children.forEach((c) => {
-			c.computePositions({x: this.contentX, y: this.contentY})
+			c.computePositions({x: this.cx, y: this.cy})
 		})
 	}
 
@@ -198,8 +198,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	// Construct and SVG with children positioned relative to (0, 0)
 	override getInternalRepresentation(): Element | undefined {
 		try {
-			var deltaX = -this.contentX;
-			var deltaY = -this.contentY;
+			var deltaX = -this.cx;
+			var deltaY = -this.cy;
 		} catch (err) {
 			var deltaX = 0;
 			var deltaY = 0;

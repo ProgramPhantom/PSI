@@ -44,18 +44,32 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		}
 	}
 
-	public get contentX(): number {
+	public get cx(): number {
 		return this.x + this.padding[3];
 	}
-	public set contentX(v: number) {
+	public set cx(v: number) {
 		this.x = v - this.padding[3];
 	}
 
-	public get contentY(): number {
+	public get cy(): number {
 		return this.y + this.padding[0];
 	}
-	public set contentY(v: number) {
+	public set cy(v: number) {
 		this.y = v - this.padding[0];
+	}
+
+	public get cx2(): number {
+		return this.x2 - this.padding[1];
+	}
+	public set cx2(v: number) {
+		this.x2 = v + this.padding[1];
+	}
+
+	public get cy2(): number {
+		return this.y2 - this.padding[2];
+	}
+	public set cy2(v: number) {
+		this.y2 = v + this.padding[2];
 	}
 
 	override get width(): number {

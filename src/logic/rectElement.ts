@@ -50,7 +50,7 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 			this.svg = new Rect()
 				.size(this.contentWidth, this.contentHeight)
 				.attr({fill: this.style.fill, stroke: this.style.stroke})
-				.move(this.contentX + this.offset[0], this.contentY + this.offset[1])
+				.move(this.cx + this.offset[0], this.cy + this.offset[1])
 				.attr({
 					"stroke-width": this.style.strokeWidth,
 					"shape-rendering": "crispEdges",

@@ -106,9 +106,9 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	}
 
 	get drawX(): number {
-		return this.contentX + this.offset[0];
+		return this.cx + this.offset[0];
 	}
 	get drawY(): number {
-		return this.contentY + this.offset[1];
+		return this.cy + this.offset[1];
 	}
 }

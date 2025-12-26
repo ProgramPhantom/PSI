@@ -151,7 +151,7 @@ export default class Text extends Visual implements IText {
 				this.svg.remove();
 			}
 
-			this.svg?.move(this.contentX, this.contentY);
+			this.svg?.move(this.cx, this.cy);
 
 			if (this.svg) {
 				surface.add(this.svg);
