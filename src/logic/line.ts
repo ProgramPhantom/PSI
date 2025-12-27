@@ -37,12 +37,7 @@ export default class Line extends LineLike implements ILine {
 
 		this.lineStyle = params.lineStyle;
 
-		if (params.x2 !== undefined) {
-			this.x2 = params.x2;
-		}
-		if (params.y2 !== undefined) {
-			this.y2 = params.y2;
-		}
+
 	}
 
 	public getHitbox(): Rect {

@@ -39,11 +39,16 @@ export default abstract class LineLike extends Visual {
 
 		this.adjustment = params.adjustment;
 
-		this.startX = params.sx ?? params.x ?? 0;
-		this.startY = params.sy ?? params.y ?? 0;
+		// this.startX = params.sx ?? params.x ?? 0;
+		// this.startY = params.sy ?? params.y ?? 0;
+		this.startX = 0;
+		this.startY = 0;
 
-		this.endX = params.ex ?? 0;
-		this.endY = params.ey ?? 0;
+		// this.endX = params.ex ?? 0;
+		// this.endY = params.ey ?? 0;
+
+		this.endX = 0;
+		this.endY = 0;
 
 		// this._x = this.startX;
 		// this._y = this.startY;
@@ -103,6 +108,8 @@ export default abstract class LineLike extends Visual {
 			return 2;
 		} else if (this.endX >= this.startX && this.endY < this.startY) {
 			return 3;
+		} else {
+			return 0;
 		}
 	}
 

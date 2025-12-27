@@ -2,8 +2,9 @@ import { Colors } from "@blueprintjs/core";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes } from "../../logic/point";
 import Visual from "../../logic/visual";
-import PaddedBoxDebug from "./PaddedBox";
+import PaddedBoxDebug from "./PaddedBoxDebug";
 import GridDebug from "./GridDebug";
+import PulseDebug from "./PulseDebug";
 
 interface IDebug {
 	debugGroupSelection: Record<AllComponentTypes, boolean>;
@@ -18,9 +19,9 @@ const Debug: React.FC<IDebug> = (props) => {
 					return;
 				}
 				switch (componentType) {
-					case "element":
+					case "svg":
 						return ENGINE.handler.diagram.allPulseElements.map((e) => {
-							return <PaddedBoxDebug element={e}></PaddedBoxDebug>;
+							return <PulseDebug element={e}></PulseDebug>;
 						});
 						break;
 					case "channel":
@@ -35,7 +36,7 @@ const Debug: React.FC<IDebug> = (props) => {
 						return ENGINE.handler.sequences.map((s) => {
 							return (
 								<GridDebug
-									grid={s}></GridDebug>
+									element={s}></GridDebug>
 							);
 						});
 					case "diagram":

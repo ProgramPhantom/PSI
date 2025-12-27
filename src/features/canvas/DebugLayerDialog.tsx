@@ -24,9 +24,9 @@ export function DebugLayerDialog(props: IDebugLayerDialogProps) {
 			<DialogBody style={{}}>
 				<div style={{display: "flex", flexDirection: "column"}}>
 					<Checkbox
-						label="Elements"
+						label="Pulses"
 						alignIndicator="end"
-						checked={props.debugSelection["rect"]}
+						checked={props.debugSelection["svg"]}
 						onChange={() => {
 							props.setDebugSelection("svg");
 						}}></Checkbox>

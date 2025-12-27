@@ -71,10 +71,20 @@ const PaddedBoxDebug: React.FC<IPaddedBoxDebug> = (props) => {
 					height: contentHeight,
 					...contentStyle
 				}}>
-				<p style={{fontSize: 5}}>
-					{x1} {y1}
+				
+			</div>
+
+			<div
+				style={{ 	position: "absolute",
+					left: cx,
+					top: cy-3,
+				}}>
+				<p style={{fontSize: 2,
+				}}>
+						{`(${x1}, ${y1})`}
 				</p>
 			</div>
+
 
 			{/* Padding Left */}
 			<div
