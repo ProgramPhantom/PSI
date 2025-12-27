@@ -189,7 +189,9 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 		// TODO:
 		this.children.forEach((child) => {
-			child.growElement(this.size);
+			if (child.placementMode.type === "free") {
+				child.growElement(this.size);
+			}
 		})
 
 		return sizeDiff;
