@@ -72,6 +72,9 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 	public computeSize(): Size {
 		this.children.forEach((c) => c.computeSize());
 
+		if (this.ref === "LABEL") {
+			console.log()
+		}
 
 		this.cells = Array.from({length: this.noChildren}, () => new Spacial());
 

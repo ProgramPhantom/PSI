@@ -78,7 +78,7 @@ export default abstract class LineLike extends Visual {
 		let rect: Size = {width: 0, height: 0};
 
 		let h: number = this.thickness + LineLike.HitboxPadding;
-		let l: number = this.length;
+		let l: number = Math.max(this.length, this.thickness + LineLike.HitboxPadding);
 		let theta: number = this.angle;
 
 		rect.width = l * Math.abs(Math.cos(theta)) + h * Math.abs(Math.sin(theta))
