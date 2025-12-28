@@ -84,20 +84,6 @@ export default class Sequence extends Grid implements ISequence {
 	public override computeSize(): Size {
 		var size: Size = super.computeSize();
 
-		// Set the channels' sizes.
-		var sequenceRows: GridCell[][] = this.getRows();
-		
-		// Should this really be needed??
-		this.channels.forEach((channel, i) => {
-			var rowIndex: number = 3 * i;
-
-			channel.gridMatrix = [
-				sequenceRows[rowIndex],
-				sequenceRows[rowIndex+1],
-				sequenceRows[rowIndex+2]
-			]
-		})
-
 		this.applySizesToChannels();
 		return size
 	}

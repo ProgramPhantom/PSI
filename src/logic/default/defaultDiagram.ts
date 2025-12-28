@@ -27,7 +27,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 				"children": [],
 				"channels": [
 					{
-						"padding": [0, 0, 0, 0],
+						"padding": [10, 0, 10, 0],
 						"offset": [0, 0],
 						"ref": "my-channel",
 						"sequenceID": null,

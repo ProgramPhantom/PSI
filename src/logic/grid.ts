@@ -21,6 +21,7 @@ interface OccupiedCell<T> {
   element?: T;               // The element if this is the “owning” cell
   source?: { row: number; col: number }; // If this cell is covered by another
   ghost?: {width: number, height: number}  // Provide spacing to a cell
+  extra?: {width: number, height: number}  // Applies additional width/height to the row/column
 }
 
 export default class Grid<T extends Visual = Visual> extends Collection implements IDraw {
@@ -118,11 +119,16 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			
 			// Find width of column
 			var widths: number[] = [];
+			var extras: number[] = [];
 			for (let cell of colEntries) {
 				let contributing: boolean = true;
 
 				if (cell.ghost !== undefined) {
 					widths.push(cell.ghost.width);
+				}
+
+				if (cell.extra !== undefined) {
+					extras.push(cell.extra.width);
 				}
 
 				if (cell.element !== undefined) {
@@ -151,13 +157,14 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			}
 
 			// Set the width of this column
-			var maxWidth = Math.max(...widths, this.min.width)
-			columnRects[i].width = maxWidth;
+			var maxWidth = Math.max(...widths, this.min.width);
+			var paddedWidth = maxWidth += extras.reduce((e, v) => e + v, 0)
+			columnRects[i].width = paddedWidth;
 
-
+			// Compute the height of this column
 			var colHeight = col.reduce((h, c) => {
 				let dh = 0;
-				if (c !== undefined && c.element !== undefined) {
+				if (c?.element !== undefined) {
 					dh = c.element.height;
 
 					if (c.ghost !== undefined && c.ghost.height > dh) {
@@ -177,11 +184,16 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			
 			// Find height of the row
 			var heights: number[] = [];
+			var extras: number[] = [];
 			for (let cell of rowEntries) {
 				let contributing: boolean = true;
 
 				if (cell.ghost !== undefined) {
 					heights.push(cell.ghost.height);
+				}
+
+				if (cell.extra !== undefined) {
+					extras.push(cell.extra.height);
 				}
 
 				if (cell.element !== undefined) {
@@ -211,7 +223,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 			// Set the width of this column
 			var maxHeight = Math.max(...heights, this.min.height)
-			rowRects[i].height = maxHeight;
+			var paddedHeight = maxHeight += extras.reduce((e, v) => e + v, 0)
+			rowRects[i].height = paddedHeight;
 
 
 			var rowWidth = row.reduce((w, c) => {
@@ -242,7 +255,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			col.height = totalHeight
 		})
 
-		this.computeCellSizes();
+		this.applyCellSizes();
 
 		this.gridSizes.rows = rowRects;
 		this.gridSizes.columns = columnRects;
@@ -758,7 +771,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 	}
 
-	protected computeCellSizes() {
+	protected applyCellSizes() {
 		this.cells = Array.from({length: this.numRows}, () => Array.from({length: this.numColumns}, () => new Spacial()));
 
 		this.gridSizes.rows.forEach((row, row_index) => {

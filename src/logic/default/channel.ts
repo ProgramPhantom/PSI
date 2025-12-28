@@ -1,7 +1,7 @@
 import { IChannel } from "../hasComponents/channel";
 
 export const DEFAULT_CHANNEL: IChannel = {
-	"padding": [0, 0, 0, 0],
+	"padding": [10, 0, 10, 0],
 	"offset": [0, 0],
 	"ref": "my-channel",
 	"sequenceID": null,
