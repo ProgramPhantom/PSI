@@ -365,7 +365,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		this.gridMatrix[coords.row][coords.column] = gridEntry;
 	}
 
-	public remove(child: T) {
+	public remove(child: T, deleteIfEmpty?: {row: boolean, col: boolean}) {
 		// First we need to locate this child in the matrix:
 		var coords: {row: number, col: number} | undefined = this.locateGridChild(child);
 		if (coords === undefined) {
@@ -373,10 +373,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			return
 		}
 
-		this.removeAtGrid(coords);
+		this.removeAtGrid(coords, deleteIfEmpty);
 	}
 
-	public removeAtGrid(coords: {row: number, col: number}) {
+	public removeAtGrid(coords: {row: number, col: number}, deleteIfEmpty?: {row: boolean, col: boolean}) {
 		var targetCell = this.gridMatrix[coords.row][coords.col];
 
 		if (targetCell === undefined) {
@@ -385,6 +385,13 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 
 		this.gridMatrix[coords.row][coords.col] = undefined;
+
+		if (deleteIfEmpty?.row === true) {
+			this.removeRow(coords.row, true)
+		}
+		if (deleteIfEmpty?.col === true) {
+			this.removeColumn(coords.col, true)
+		}
 
 		// Cut off empty trailing rows and columns
 		this.squeezeMatrix();
@@ -703,23 +710,23 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
   	}
 
-	protected removeColumn(index?: number, onlyIfEmpty: boolean=false) {
+	public removeColumn(index?: number, onlyIfEmpty: boolean=false) {
 		var INDEX = index;
 		if (index === undefined || index < 0 || index > this.numColumns-1) {
 			INDEX = this.numColumns - 1;
 		}
 
-		var targetColumn: GridCell<T>[] = this.getColumn[INDEX];
+		var targetColumn: GridCell[] = this.getColumn(INDEX);
 		var empty: boolean = this.isArrayEmpty(targetColumn)
 
-		if (onlyIfEmpty === true && !empty) { return }
+		if (onlyIfEmpty === true && empty === true) { return }
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);
 		}
 		
 	}
-	protected removeRow(index?: number, onlyIfEmpty: boolean=false) {
+	public removeRow(index?: number, onlyIfEmpty: boolean=false) {
 		var INDEX = index;
 		if (index === undefined || index < 0 || index > this.numRows-1) {
 			INDEX = this.numRows - 1;

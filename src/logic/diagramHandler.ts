@@ -116,7 +116,7 @@ export default class DiagramHandler implements IDraw {
 	}
 
 	erase() {
-		this.diagram.erase();
+		this.diagram?.erase();
 	}
 
 	computeDiagram() {
@@ -143,6 +143,8 @@ export default class DiagramHandler implements IDraw {
 	// ----- Construct diagram from state ------
 	@draws
 	public constructDiagram(state: IDiagram): Result<Diagram> {
+		this.erase();
+
 		try {
 			var newDiagram: Diagram = new Diagram(state);
 		} catch (err) {

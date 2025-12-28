@@ -137,6 +137,6 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		let sequenceIndex: number = this.locateChildById(sequenceId);
 		let targetSequence: Sequence = this.sequences[sequenceIndex];
 
-		targetSequence.remove(pulse);
+		targetSequence.remove(pulse, {row: false, col: true});
 	}
 }

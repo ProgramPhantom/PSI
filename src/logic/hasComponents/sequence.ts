@@ -34,6 +34,9 @@ export default class Sequence extends Grid implements ISequence {
 	get channelIDs(): string[] {
 		return this.channels.map((c) => c.id);
 	}
+	get numChannels(): number {
+		return this.channels.length;
+	}
 	get allPulseElements(): Visual[] {
 		var elements: Visual[] = [];
 		this.channels.forEach((c) => {
@@ -290,6 +293,23 @@ export default class Sequence extends Grid implements ISequence {
 		})
 	}
 
+	public colHasPulse(col: GridCell[]): boolean {
+		let present: number = 0;
+
+		col.forEach((cell) => {
+			if (cell?.element !== undefined) {
+				present += 1;
+			}
+		})
+
+		// Reliable?
+		if (present > this.numChannels) {
+			return true
+		}
+		
+		return false
+	}
+
 	protected mountConfigToGridConfig(mountConfig: IMountConfig): IGridChildConfig {
 		var channelId: ID = mountConfig.channelID; 
 
@@ -361,4 +381,22 @@ export default class Sequence extends Grid implements ISequence {
 		}
 		
 	}
+
+	public override removeColumn(index?: number, onlyIfEmpty: boolean=false) {
+		var INDEX = index;
+		if (index === undefined || index < 0 || index > this.numColumns-1) {
+			INDEX = this.numColumns - 1;
+		}
+
+		var targetColumn: GridCell[] = this.getColumn(INDEX);
+		var empty: boolean = !this.colHasPulse(targetColumn);
+
+		if (onlyIfEmpty === true && empty === false) { return }
+
+		for (let i = 0; i < this.numRows; i++) {
+			this.gridMatrix[i].splice(INDEX, 1);
+		}
+	}
+
+
 }

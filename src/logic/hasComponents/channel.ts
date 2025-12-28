@@ -26,8 +26,8 @@ export default class Channel extends Grid implements IChannel {
 		return {
 			sequenceID: this.sequenceID,
 			style: this.style,
-			label: this.label,
-			bar: this.bar,
+			label: this.label.state,
+			bar: this.bar.state,
 			pulseElements: this.pulseElements.map((p) => p.state),
 			...super.state
 		};
