@@ -56,11 +56,12 @@ export default class LabelGroup<T extends Visual = Visual>
 		var coreChild: T = coreChild;
 
 
-		this.placementMode = params.placementMode;
+		this.placementMode = params.placementMode ?? {type: "free"};
 
 		// this.ref = "labelled-" + coreChild.ref;
 		this.ref = coreChild.ref;
 
+		this._coreChild = coreChild;
 		this.setCoreChild(coreChild);
 
 		params.labels?.forEach((label) => {

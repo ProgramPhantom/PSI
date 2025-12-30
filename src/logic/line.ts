@@ -63,6 +63,7 @@ export default class Line extends LineLike implements ILine {
 	}
 
 	public getInternalRepresentation(): Element | undefined {
+		if (this.svg === undefined) { return }
 		var internal: Element = this.svg.clone(true, true);
 
 		return internal;

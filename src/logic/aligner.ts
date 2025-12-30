@@ -19,7 +19,6 @@ export interface IAligner<T extends IVisual = IVisual> extends ICollection {
 export default class Aligner<T extends Visual = Visual> extends Collection<T> implements IAligner {
 	get state(): IAligner {
 		return {
-			children: this.children.map((c) => c.state),
 			mainAxis: this.mainAxis,
 			minCrossAxis: this.minCrossAxis,
 			...super.state
@@ -46,6 +45,8 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		this.mainAxis = params.mainAxis;
 
 		this.minCrossAxis = params.minCrossAxis;
+
+		this.cells = [];
 	}
 
 	public draw(surface: Element): void {
@@ -64,7 +65,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 
 		this.children.forEach((uc) => {
 			if (doesDraw(uc)) {
-				uc.draw(this.svg);
+				uc.draw(this.svg!);
 			}
 		});
 	}
@@ -257,13 +258,14 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		child.parentId = this.id;
 	}
 
-	public removeAt(index: number) {
+	public removeAt(index: number): boolean {
 		if (index < 0 || index >= this.noChildren) {
 			console.warn(`Trying to remove child at index out of range in ${this.ref}`);
-			return
+			return false
 		}
 
 		this.children.slice(index, 1);
+		return true
 	}
 
 	public remove(target: T): boolean {
@@ -273,7 +275,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 			return false
 		}
 
-		this.removeAt(INDEX);
+		return this.removeAt(INDEX);
 	}
 
 

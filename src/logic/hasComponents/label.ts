@@ -9,11 +9,6 @@ import Aligner, { IAligner } from "../aligner";
 console.log("Load module label")
 
 
-interface ILabelComponents extends Record<string, Spacial | Spacial[]> {
-	text?: Text;
-	line?: Line;
-}
-
 export type LabelTextPosition = "top" | "bottom" | "inline";
 
 export interface ILabelConfig {
@@ -64,7 +59,7 @@ export default class Label extends Aligner implements ILabel {
 
 		if (params.line) {
 			// Create line
-			var line: Line = new Line(params.line);
+			let line: Line = new Line(params.line);
 			line.placementMode = {
 				type: "aligner",
 				alignerConfig: {
@@ -86,29 +81,29 @@ export default class Label extends Aligner implements ILabel {
 				break;
 		}
 
-		if (line !== undefined) {
+		if (this.line !== undefined) {
 			// Make line span side:
-			line.sizeMode = {
+			this.line.sizeMode = {
 				x: this.crossAxis === "x" ? "grow" : "fixed",
 				y: this.crossAxis === "y" ? "grow" : "fixed"
 			}
 
 			switch (this.labelConfig.textPosition) {
 				case "top":
-					this.add(line)
+					this.add(this.line)
 					break;
 				case "inline":
-					line.placementMode = {
+					this.line.placementMode = {
 						type: "aligner",
 						alignerConfig: {
 							alignment: "centre",
 							contribution: {mainAxis: false, crossAxis: true}
 						}
 					}
-					this.add(line)
+					this.add(this.line)
 					break;
 				case "bottom":
-					this.add(line, 0);
+					this.add(this.line, 0);
 				
 			}
 		}

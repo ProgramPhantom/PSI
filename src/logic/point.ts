@@ -75,6 +75,9 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		return this._id;
 	}
 	public set id(value: ID) {
+		if (this.ref === "BAR") {
+			console.log()
+		}
 		this._id = value;
 	}
 	public parentId: ID | undefined;

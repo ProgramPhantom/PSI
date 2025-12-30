@@ -188,7 +188,7 @@ export default class DiagramHandler implements IDraw {
 			case "svg":
 			case "label-group":
 				// Temporary as we only allow one sequence currently.
-				if (parameters.placementMode.type === "pulse") {
+				if (parameters.placementMode?.type === "pulse") {
 					parameters.placementMode.config.sequenceID = this.diagram.sequenceIDs[0];
 				}
 
@@ -218,7 +218,9 @@ export default class DiagramHandler implements IDraw {
 		let deleteResult: Result<Visual> = this.deleteVisual(target);
 		if (deleteResult.ok === false) {
 			console.log()
+			return deleteResult;
 		}
+		let id: ID = deleteResult.value.id;
 
 		// Copy hidden parameter channelID (this shouldn't be needed as it should take the state
 		// from the form. The hidden values should still be in the form.)
@@ -227,6 +229,7 @@ export default class DiagramHandler implements IDraw {
 		// 	parameters.placementMode.config.index = mountConfigCopy.index;
 		// 
 
+		parameters.id = id;
 		var result: Result<Visual> = this.submitVisual(parameters, type);
 
 		return result;
@@ -280,7 +283,7 @@ export default class DiagramHandler implements IDraw {
 		// so if this isn't done, element might not carry changes and update label position.
 		parameters.x = undefined;
 		parameters.y = undefined;
-		parameters.id = undefined;
+		// parameters.id = undefined;
 
 		switch (type) {
 			case "svg":

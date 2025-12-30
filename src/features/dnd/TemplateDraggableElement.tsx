@@ -76,6 +76,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				if (singletonState.placementMode.type === "pulse") {
 					let internalConfig: IMountConfig = singletonState.placementMode.config;
 					
+					singletonState.id = undefined;
 					singletonState.placementMode = {
 						type: "pulse",
 						config: {

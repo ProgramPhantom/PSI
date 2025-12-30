@@ -94,7 +94,7 @@ export default class SchemeManager {
 		return Object.keys(this.allSchemes);
 	}
 	get allSVGDataRefs(): string[] {
-		return Object.keys(this.svgStrings);
+		return Object.keys(this.svgStrings ?? {});
 	}
 
 
@@ -401,7 +401,7 @@ export type DeepReadonly<T> = {
 	readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-export function mergeObjectsPreferNonEmpty(obj1, obj2) {
+export function mergeObjectsPreferNonEmpty(obj1: any, obj2: any) {
 	const result = {};
 	for (const key of new Set([...Object.keys(obj1), ...Object.keys(obj2)])) {
 		const val1 = obj1[key];

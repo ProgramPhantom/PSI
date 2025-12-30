@@ -30,7 +30,6 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 						"padding": [10, 0, 10, 0],
 						"offset": [0, 0],
 						"ref": "my-channel",
-						"sequenceID": null,
 						"children": [],
 						"pulseElements": [],
 						"placementMode": {"type": "managed"},

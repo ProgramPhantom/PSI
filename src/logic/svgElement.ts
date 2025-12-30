@@ -55,7 +55,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 
 
 		// Synchronise Id
-		this.id = this.svg.id();
+		this.svg.id(this.id);
 		this.elementGroup.id(this.id);
 
 		// Configure some attributes

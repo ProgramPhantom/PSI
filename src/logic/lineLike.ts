@@ -29,10 +29,10 @@ export default abstract class LineLike extends Visual {
 	adjustment: [number, number];
 	thickness: number;
 
-	private _sy: number;
-	private _sx: number;
-	private _ex: number;
-	private _ey: number;
+	private _sy: number = 0;
+	private _sx: number = 0;
+	private _ex: number = 0;
+	private _ey: number = 0;
 
 	constructor(params: ILineLike) {
 		super(params);

@@ -99,6 +99,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 
 	// Construct and SVG with children positioned relative to (0, 0)
 	getInternalRepresentation(): Element | undefined {
+		if (this.svg === undefined ) {return undefined}
 		var cloned: Element = this.svg.clone(true, true);
 		cloned.move(0, 0);
 

@@ -59,7 +59,7 @@ export type SizeMethod = "fixed" | "fit" | "grow";
 export type SiteNames = "here" | "centre" | "far";
 
 export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
-export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number | undefined;
+export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number;
 
 export interface IBindingRule {
 	anchorSiteGetter?: BinderGetFunction;
@@ -176,8 +176,8 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.placementMode = placementMode ?? {type: "free"}
 		this.sizeMode = sizeMode ?? {x: "fixed", y: "fixed"}
 
-		this.contentWidth = width ?? 0;
-		this.contentHeight = height ?? 0;
+		this._contentWidth = width ?? 0;
+		this._contentHeight = height ?? 0;
 	}
 
 	public computeSize(): Size {
@@ -508,7 +508,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	}
 
-	public getCentre(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public getCentre(dimension: Dimensions, ofContent: boolean = false): number {
 		switch (dimension) {
 			case "x":
 				if (ofContent) {
@@ -539,7 +539,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	}
 
-	public getFar(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public getFar(dimension: Dimensions, ofContent: boolean = false): number {
 		switch (dimension) {
 			case "x":
 				if (ofContent) {

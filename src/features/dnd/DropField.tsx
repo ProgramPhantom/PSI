@@ -49,7 +49,7 @@ class DiagramDropInterpreter {
 						channel.gridMatrix[0]?.[columnIndex];
 
 					if (
-						(hereOccupancy?.source !== undefined)
+						(hereOccupancy?.sources !== undefined)
 					) {
 						slitherIndexes[columnIndex] = false;
 					}

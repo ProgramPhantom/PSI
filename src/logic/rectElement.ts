@@ -57,7 +57,8 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 				});
 			surface.add(this.svg);
 
-			this.id = this.svg.id();
+			// Do we want elements to have our ID system or the SVGjs ID system?
+			this.svg.id(this.id);
 		}
 	}
 

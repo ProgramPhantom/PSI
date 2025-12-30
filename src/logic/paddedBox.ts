@@ -75,7 +75,7 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	override get width(): number {
 		return this.padding[3] + this.contentWidth + this.padding[1];
 	}
-	override set width(v: number | undefined) {
+	override set width(v: number) {
 		var newContentWidth: number = v - this.padding[1] - this.padding[3];
 
 		if (newContentWidth < 0) {
@@ -89,7 +89,7 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	override get height(): number {
 		return this.padding[0] + this.contentHeight + this.padding[2];
 	}
-	override set height(v: number | undefined) {
+	override set height(v: number) {
 		var newContentHeight: number = v - this.padding[0] - this.padding[2];
 
 		if (newContentHeight < 0) {

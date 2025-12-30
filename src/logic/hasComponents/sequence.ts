@@ -80,7 +80,9 @@ export default class Sequence extends Grid implements ISequence {
 		surface.add(this.svg);
 
 		this.channels.forEach((channel) => {
-			channel.draw(this.svg);
+			
+			channel.draw(this.svg!);
+			
 		});
 	}
 
@@ -112,30 +114,32 @@ export default class Sequence extends Grid implements ISequence {
 		// Now iterate through the gridMatrix and set the position of children
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
-				if (cell?.element !== undefined && cell.source === undefined) {
+				if (cell?.elements !== undefined && cell.sources === undefined) {
 					var cellRect: Spacial = this.cells[row_index][column_index];
-					var element: Visual = cell.element;
+					var elements: Visual[] = cell.elements;
 
 					var gridConfig: IGridChildConfig;
-					if (element.placementMode.type === "grid") {
-						gridConfig = element.placementMode.gridConfig;
-					} else if (element.placementMode.type === "pulse") {
-						gridConfig = this.mountConfigToGridConfig(element.placementMode.config);
-					} else {
-						gridConfig = {
-							coords: {row: row_index, col: column_index},
-							alignment: {x: "here", y: "here"},
-							gridSize: {noRows: 1, noCols: 1}
+					for (let element of elements) {
+						if (element.placementMode.type === "grid") {
+							gridConfig = element.placementMode.gridConfig;
+						} else if (element.placementMode.type === "pulse") {
+							gridConfig = this.mountConfigToGridConfig(element.placementMode.config);
+						} else {
+							gridConfig = {
+								coords: {row: row_index, col: column_index},
+								alignment: {x: "here", y: "here"},
+								gridSize: {noRows: 1, noCols: 1}
+							}
 						}
+
+						var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
+
+						cellRect.internalImmediateBind(element, "x", alignment.x)
+						cellRect.internalImmediateBind(element, "y", alignment.y)
+						
+
+						element.computePositions({x: element.x, y: element.y});
 					}
-
-					var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
-
-					cellRect.internalImmediateBind(element, "x", alignment.x)
-					cellRect.internalImmediateBind(element, "y", alignment.y)
-					
-
-					element.computePositions({x: element.x, y: element.y});
 				}
 			})
 		})
@@ -153,10 +157,12 @@ export default class Sequence extends Grid implements ISequence {
 
 		var gridConfig: IGridChildConfig = this.mountConfigToGridConfig(config);
 
-		
+		if (gridConfig.coords === undefined) {
+			return
+		}
 
 		// Insert column if occupied:
-		if (this.gridMatrix[gridConfig.coords.row][gridConfig.coords.col] !== undefined) {
+		if (gridConfig.coords && this.gridMatrix[gridConfig.coords.row][gridConfig.coords.col] !== undefined) {
 			this.insertEmptyColumn(gridConfig.coords.col);
 		}
 
@@ -190,7 +196,12 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public deleteChannel(channel: Channel) {
-		var channelIndex = this.locateChannel(channel);
+		var channelIndex: number | undefined = this.locateChannel(channel);
+
+		if (channelIndex === undefined) {
+			console.warn(`Cannot find index of channel with ref ${channel.ref}`)
+			return
+		}
 
 		this.channels.splice(channelIndex, 1);
 		
@@ -297,7 +308,7 @@ export default class Sequence extends Grid implements ISequence {
 		let present: number = 0;
 
 		col.forEach((cell) => {
-			if (cell?.element !== undefined) {
+			if (cell?.elements !== undefined) {
 				present += 1;
 			}
 		})
@@ -311,14 +322,17 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	protected mountConfigToGridConfig(mountConfig: IMountConfig): IGridChildConfig {
-		var channelId: ID = mountConfig.channelID; 
-
+		var channelId: ID | undefined = mountConfig.channelID;
+		
+		
 		// We now need to convert the mount config in the pulse's placement
 		// type into the exact coordinate in the grid to insert this element
-		var channelIndex = this.locateChannelById(channelId);
+		var channelIndex: number = this.locateChannelById(channelId ?? "") ?? 0;
+		
 
+		
 		var row: number = 0;
-		var column: number = mountConfig.index;  // Starting at 1 as we know the label goes there
+		var column: number = mountConfig.index ?? 0;  // Starting at 1 as we know the label goes there
 		var alignment: {x: SiteNames, y: SiteNames} = {x: "centre", y: "far"}
 
 		// --------- Row -------------
@@ -358,34 +372,40 @@ export default class Sequence extends Grid implements ISequence {
 		// Apply this to the channels
 		// This condition means this only happens when a channel is initialised.
 		if (this.numColumns >= 2) {
-			
+			this.setChannelDimensions();
+			this.setChannelMatrices();
 
-			// We need to move the bar sources back one and reset their size.
-			if (index === 1) {
-				this.channels.forEach((channel, channel_index) => {
-					let INDEX: number = channel_index * 3;
-					let bar_row: number = INDEX + 1;
+			// // We need to move the bar sources back one and reset their size.
+			// if (index === 1) {
+			// 	this.channels.forEach((channel, channel_index) => {
+			// 		let INDEX: number = channel_index * 3;
+			// 		let bar_row: number = INDEX + 1;
+// 
+			// 		this.gridMatrix[bar_row][1] = this.gridMatrix[bar_row][2];
+			// 		this.gridMatrix[bar_row][2] = {elements: [channel.bar], sources: {[channel.bar.id]: {row: bar_row, col: 2}}};
+// 
+			// 		if (channel.bar.placementMode.type === "grid") {
+			// 			channel.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.numColumns-1}
+			// 		}
+			// 	})
+			// }
 
-					this.gridMatrix[bar_row][1] = this.gridMatrix[bar_row][2];
-					this.gridMatrix[bar_row][2] = {element: channel.bar, source: {row: bar_row, col: 2}};
-
-					if (channel.bar.placementMode.type === "grid") {
-						channel.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.numColumns-1}
-					}
-				})
-			}
-
-			this.channels.forEach((channel) => {
-				this.setChannelMatrices();
-			})
 		}
 		
 	}
 
 	public override removeColumn(index?: number, onlyIfEmpty: boolean=false) {
-		var INDEX = index;
 		if (index === undefined || index < 0 || index > this.numColumns-1) {
-			INDEX = this.numColumns - 1;
+			var INDEX = this.numColumns - 1;
+		} else {
+			INDEX = index;
+		}
+
+		if (INDEX === 1 && this.numColumns === 2) {
+			return
+		} else if (INDEX === 1) {
+			// deleting first col but there are trailing columns
+
 		}
 
 		var targetColumn: GridCell[] = this.getColumn(INDEX);
@@ -396,6 +416,8 @@ export default class Sequence extends Grid implements ISequence {
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);
 		}
+
+		this.setChannelDimensions()
 	}
 
 

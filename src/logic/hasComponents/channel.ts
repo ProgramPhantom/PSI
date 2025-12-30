@@ -38,7 +38,7 @@ export default class Channel extends Grid implements IChannel {
 	}
 
 	style: IChannelStyle;
-	sequenceID: ID;
+	sequenceID?: ID;
 
 	label: Text;
 	bar: RectElement;
@@ -58,6 +58,7 @@ export default class Channel extends Grid implements IChannel {
 		this.bar = new RectElement(params.bar);
 		this.bar.placementMode = {type: "grid", gridConfig: {alignment: {x: "here", y: "centre"},
 														     coords: {row: 1, col: 1}}}
+		this.bar.ref = "BAR";
 
 		this.initialiseChannel();
 	}
@@ -80,6 +81,25 @@ export default class Channel extends Grid implements IChannel {
 	}
 
 	public growBar() {
-		this.setChildSize(this.bar, {noRows: 1, noCols: this.numColumns-1})
+		//this.setChildSize(this.bar, {noRows: 1, noCols: this.numColumns-1});
+		//this.positionElement(this.bar, {row: 1, col: 1})
+		this.remove(this.bar)
+
+		this.bar.placementMode = {
+			type: "grid",
+			gridConfig: {
+				gridSize: {
+					noCols: this.numColumns-1,
+					noRows: 1
+				},
+				coords: {
+					row: 1,
+					col: 1
+				}
+			}
+		}
+
+		var region = this.getElementGridRegion(this.bar)!;
+		this.appendElementsInRegion(region, {row: 1, col: 1});
 	}
 }

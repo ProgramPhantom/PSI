@@ -25,7 +25,6 @@ const DEFAULT_SEQUENCE: ISequence = {
 			"padding": [0, 0, 0, 0],
 			"offset": [0, 0],
 			"ref": "my-channel",
-			"sequenceID": null,
 			"children": [],
 			"pulseElements": [],
 			"placementMode": {"type": "managed"},
@@ -118,10 +117,20 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 
 		var sequenceId = pulse.placementMode.config.sequenceID;
 
-		// Find the sequence that this pulse belongs to:
-		var sequenceIndex = this.locateChildById(sequenceId);
+		if (sequenceId === undefined) {
+			console.warn(`Cannot locate sequence id on pulse positioned object ${pulse.ref}`)
+			return
+		}
 
-		var targetSequence = this.sequences[sequenceIndex];
+		// Find the sequence that this pulse belongs to:
+		var sequenceIndex: number | undefined = this.locateChildById(sequenceId);
+
+		if (sequenceIndex === undefined) {
+			console.warn(`Cannot locate sequence of id ${sequenceId}`)
+			return
+		}
+
+		var targetSequence: Sequence = this.sequences[sequenceIndex];
 		
 		targetSequence.addPulse(pulse);
 	}
@@ -132,9 +141,20 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 			return
 		}
 
-		let sequenceId: string = pulse.placementMode.config.sequenceID;
+		let sequenceId: string | undefined = pulse.placementMode.config.sequenceID;
 
-		let sequenceIndex: number = this.locateChildById(sequenceId);
+		if (sequenceId === undefined) {
+			console.warn(`Cannot locate sequence id on pulse positioned object ${pulse.ref}`)
+			return
+		}
+
+		let sequenceIndex: number | undefined = this.locateChildById(sequenceId);
+
+		if (sequenceIndex === undefined) {
+			console.warn(`Cannot locate sequence of id ${sequenceId}`)
+			return
+		}
+		
 		let targetSequence: Sequence = this.sequences[sequenceIndex];
 
 		targetSequence.remove(pulse, {row: false, col: true});
