@@ -13,7 +13,7 @@ import { appToaster } from "../../app/Toaster";
 export interface IBannerProps {
 	saveSVG: () => void;
 	savePNG: (width: number, height: number, filename: string) => void;
-	openConsole: () => void;
+
 
 	selectedTool: Tool;
 	setTool: (tool: Tool) => void;
@@ -37,13 +37,13 @@ export default function Banner(props: IBannerProps) {
 
 	const selectLineTool = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (props.selectedTool.type === "arrow") {
-			props.setTool({type: "select", config: {}});
+			props.setTool({ type: "select", config: {} });
 			e.preventDefault();
 			e.stopPropagation();
 		} else {
 			props.setTool({
 				type: "arrow",
-				config: {lineStyle: defaultLine.lineStyle as ILineStyle, mode: "bind"}
+				config: { lineStyle: defaultLine.lineStyle as ILineStyle, mode: "bind" }
 			});
 		}
 	};
@@ -60,7 +60,7 @@ export default function Banner(props: IBannerProps) {
 		<>
 			<Navbar>
 				<Navbar.Group>
-					<Icon icon="pulse" size={20} style={{marginRight: "10px"}}></Icon>
+					<Icon icon="pulse" size={20} style={{ marginRight: "10px" }}></Icon>
 					<Navbar.Heading>Pulse Planner v0.5.3 (BETA)</Navbar.Heading>
 					<Navbar.Divider />
 
@@ -118,9 +118,8 @@ export default function Banner(props: IBannerProps) {
 					<Button
 						size="small"
 						variant="minimal"
-						icon="console"
-						text="Console"
-						onClick={props.openConsole}
+						icon="bug"
+						onClick={debugIssue}
 					/>
 				</Navbar.Group>
 			</Navbar>
@@ -135,4 +134,45 @@ export default function Banner(props: IBannerProps) {
 				isOpen={isLoadDialogOpen}></LoadStateDialog>
 		</>
 	);
+}
+
+function debugIssue() {
+	var stateObject: IDiagram = ENGINE.handler.diagram.state;
+	var stateString = JSON.stringify(stateObject, undefined, 4);
+	const blob = new Blob([stateString], { type: "application/json" });
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.href = url;
+	link.download = "psi_debug_state.json";
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+
+	const issueBody = `
+**Describe the bug**
+A clear description of what the bug is.
+
+**To Reproduce**
+Steps to reproduce the behavior:
+
+(Preferable)
+Load the attached state file 'psi_debug_state.json'
+
+**Expected behavior**
+A clear description of what you expected to happen.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
+
+**Desktop (please complete the following information):**
+ - OS: [e.g. Windows]
+ - Browser [e.g. chrome, safari]
+ - Version [e.g. 22]
+
+**Additional context**
+Add any other context about the problem here.
+`.trim();
+
+	const issueUrl = `https://github.com/ProgramPhantom/PSI/issues/new?body=${encodeURIComponent(issueBody)}`;
+	window.open(issueUrl, "_blank");
 }
