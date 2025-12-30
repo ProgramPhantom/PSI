@@ -28,7 +28,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 		lineStyle: defaultLine.lineStyle as ILineStyle,
 		mode: "bind"
 	});
-	const {control, handleSubmit, reset, watch} = useForm<IDrawArrowConfig>({
+	const { control, handleSubmit, reset, watch } = useForm<IDrawArrowConfig>({
 		mode: "onChange",
 		defaultValues: {
 			lineStyle: defaultLine.lineStyle as ILineStyle,
@@ -49,9 +49,9 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 
 	const selectTool = () => {
 		if (props.selectedTool.type === "arrow") {
-			props.setTool({type: "select", config: {}});
+			props.setTool({ type: "select", config: {} });
 		} else {
-			props.setTool({type: "arrow", config: toolValue.current});
+			props.setTool({ type: "arrow", config: toolValue.current });
 		}
 	};
 
@@ -68,8 +68,8 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 			hoverCloseDelay={100}
 			hoverOpenDelay={500}
 			lazy={false}
-			renderTarget={({isOpen, ...targetProps}) => (
-				<Button
+			renderTarget={({ isOpen, ...targetProps }) => (
+				<Button active={false}
 					{...targetProps}
 					onClick={(e) => selectTool()}
 					intent={props.selectedTool.type === "arrow" ? "primary" : "none"}
@@ -83,7 +83,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 			popoverClassName={Classes.POPOVER_CONTENT_SIZING}
 			content={
 				<form
-					style={{width: "300px"}}
+					style={{ width: "300px" }}
 					onBlur={handleSubmit(onSubmit)}
 					onMouseLeave={handleSubmit(onSubmit)}>
 					<ControlGroup fill={true} vertical={true}>
@@ -91,7 +91,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 							<Controller
 								name="mode"
 								control={control}
-								render={({field}) => (
+								render={({ field }) => (
 									<SegmentedControl
 										size={"small"}
 										{...field}
@@ -115,7 +115,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 								<Controller
 									name="lineStyle.headStyle.0"
 									control={control}
-									render={({field}) => (
+									render={({ field }) => (
 										<Popover
 											minimal={true}
 											hoverOpenDelay={0}
@@ -149,7 +149,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 								<Controller
 									name="lineStyle.headStyle.1"
 									control={control}
-									render={({field}) => (
+									render={({ field }) => (
 										<Popover
 											minimal={true}
 											hoverOpenDelay={0}
@@ -187,7 +187,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 							<Controller
 								name="lineStyle.stroke"
 								control={control}
-								render={({field}) => (
+								render={({ field }) => (
 									<input
 										{...field}
 										type="color"
@@ -205,30 +205,30 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 						</FormGroup>
 
 						<FormGroup label="Dashing" fill={true} inline={true}>
-							<div style={{display: "flex", flexDirection: "row"}}>
+							<div style={{ display: "flex", flexDirection: "row" }}>
 								<Controller
 									name="lineStyle.dashing.0"
 									control={control}
-									render={({field}) => (
+									render={({ field }) => (
 										<NumericInput
 											{...field}
 											min={0}
 											placeholder="dash"
 											buttonPosition="none"
-											style={{width: 70}}
+											style={{ width: 70 }}
 										/>
 									)}
 								/>
 								<Controller
 									name="lineStyle.dashing.1"
 									control={control}
-									render={({field}) => (
+									render={({ field }) => (
 										<NumericInput
 											{...field}
 											min={0}
 											placeholder="gap"
 											buttonPosition="none"
-											style={{width: 70}}
+											style={{ width: 70 }}
 											allowNumericCharactersOnly={true}
 										/>
 									)}
@@ -240,7 +240,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 							<Controller
 								name="lineStyle.thickness"
 								control={control}
-								render={({field}) => (
+								render={({ field }) => (
 									<NumericInput
 										value={field.value}
 										onValueChange={
@@ -250,7 +250,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 										min={1}
 										stepSize={1}
 										buttonPosition="none"
-										style={{width: 80}}
+										style={{ width: 80 }}
 									/>
 								)}
 							/>

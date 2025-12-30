@@ -26,7 +26,7 @@ class ENGINE {
 
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
-		ENGINE._surface.attr({"id": ENGINE.SURFACE_ID})
+		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
 		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager, ENGINE.ConstructSVGElement);
 		console.log("SURFACE ATTACHED");
 	}
@@ -87,6 +87,10 @@ class ENGINE {
 		var stateObject: IDiagram = ENGINE.handler.diagram.state;
 		var stateString = JSON.stringify(stateObject, undefined, 4);
 		localStorage.setItem(ENGINE.StateName, stateString);
+	}
+
+	static clearState() {
+		localStorage.removeItem(ENGINE.StateName);
 	}
 
 	static createSingletons() {
@@ -206,9 +210,9 @@ class ENGINE {
 				let svgObj: Element = SVG(svgString);
 
 				result.setSvgData(svgObj);
-			}	
+			}
 		}
-		
+
 		return result;
 	}
 }

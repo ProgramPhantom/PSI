@@ -35,6 +35,24 @@ export default function Banner(props: IBannerProps) {
 		});
 	};
 
+	const downloadState = () => {
+		var stateObject: IDiagram = ENGINE.handler.diagram.state;
+		var stateString = JSON.stringify(stateObject, undefined, 4);
+		const blob = new Blob([stateString], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = "psi_state.json";
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+
+		appToaster.show({
+			message: "State downloaded",
+			intent: "success"
+		});
+	};
+
 	const selectLineTool = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (props.selectedTool.type === "arrow") {
 			props.setTool({ type: "select", config: {} });
@@ -52,6 +70,14 @@ export default function Banner(props: IBannerProps) {
 		ENGINE.save();
 		appToaster.show({
 			message: "State saved to localStorage",
+			intent: "success"
+		});
+	};
+
+	const clearState = () => {
+		ENGINE.clearState();
+		appToaster.show({
+			message: "State cleared from localStorage",
 			intent: "success"
 		});
 	};
@@ -94,8 +120,15 @@ export default function Banner(props: IBannerProps) {
 					<Button
 						size="small"
 						variant="minimal"
+						icon="download"
+						text="Download State"
+						onClick={() => downloadState()}
+					/>
+					<Navbar.Divider />
+					<Button
+						size="small"
+						variant="minimal"
 						icon="cut"
-						text="Copy state"
 						onClick={() => copyState()}
 					/>
 					<Navbar.Divider />
@@ -105,6 +138,14 @@ export default function Banner(props: IBannerProps) {
 						icon="floppy-disk"
 						text="Save state"
 						onClick={() => saveState()}
+					/>
+					<Navbar.Divider />
+					<Button
+						size="small"
+						variant="minimal"
+						icon="trash"
+						text="Clear State"
+						onClick={() => clearState()}
 					/>
 
 					<Navbar.Divider />

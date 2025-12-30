@@ -20,7 +20,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 				"x": 0,
 				"y": 0,
 				"minHeight": 0,
-				"minWidth": 20,
+				"minWidth": 10,
 				"padding": [0, 0, 0, 0],
 				"offset": [0, 0],
 
