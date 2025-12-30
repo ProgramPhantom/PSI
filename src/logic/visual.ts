@@ -1,17 +1,16 @@
-import {Element, Rect, SVG} from "@svgdotjs/svg.js";
-import {FormBundle} from "../features/form/LabelGroupComboForm";
-import VisualForm from "../features/form/VisualForm";
-import {defaultVisual} from "./default/index";
-import LabelGroup from "./hasComponents/labelGroup";
-import Mountable, {IMountable} from "./mountable";
-import {ID} from "./point";
-import {posPrecision} from "./util";
+import { Element } from "@svgdotjs/svg.js";
+import PaddedBox, { IPaddedBox } from "./paddedBox";
+import { ID, UserComponentType } from "./point";
+import { Size } from "./spacial";
+
+
+console.log("Load module visual")
 
 export type Offset = [number, number];
 
 export type Display = "none" | "block";
 
-export interface IVisual extends IMountable {
+export interface IVisual extends IPaddedBox {
 	offset: [number, number];
 }
 
@@ -24,19 +23,8 @@ export function doesDraw(object: any): object is IDraw {
 	return "draw" in object;
 }
 
-export abstract class Visual extends Mountable implements IVisual {
-	static namedElements: {[name: string]: IVisual} = {
-		default: <any>defaultVisual,
-		"form-default": <any>defaultVisual
-	};
-	static get formData(): FormBundle {
-		return {
-			form: VisualForm,
-			defaults: Visual.namedElements["form-default"],
-			allowLabels: false
-		};
-	}
-
+export default abstract class Visual extends PaddedBox implements IVisual {
+	static ElementType: UserComponentType = "rect";
 	get state(): IVisual {
 		return {
 			offset: this.offset,
@@ -47,10 +35,6 @@ export abstract class Visual extends Mountable implements IVisual {
 		return {[this.id]: this};
 	}
 
-	offset: [number, number];
-
-	svg?: Element;
-
 	private _dirty: boolean = true;
 	public get dirty(): boolean {
 		return this._dirty;
@@ -59,10 +43,16 @@ export abstract class Visual extends Mountable implements IVisual {
 		this._dirty = value;
 	}
 
-	constructor(params: IVisual) {
-		super(params);
+	offset: [number, number];
+	svg?: Element;
 
-		this.offset = params.offset; // Fixed for some reason
+	flipped: boolean = false;
+
+	constructor(params: IVisual) {
+		super(params.padding, params.x, params.y, 
+			params.contentWidth, params.contentHeight, params.placementMode, params.sizeMode, params.ref, params.id);
+
+		this.offset = params.offset;
 	}
 
 	abstract draw(surface: Element): void;
@@ -71,7 +61,30 @@ export abstract class Visual extends Mountable implements IVisual {
 		this.svg?.remove();
 	}
 
-	verticalFlip() {
+	public computeSize(): Size {
+		return super.computeSize();
+		// Pass
+	}
+
+	public computePositions(root: {x: number, y: number}) {
+		super.computePositions(root);
+
+		if (this.placementMode.type === "pulse") {
+			if (this.placementMode.config.orientation === "bottom") {
+				this.setVerticalFlip(true);
+			} else {
+				this.setVerticalFlip(false)
+			}
+		}
+
+		return
+	}
+
+	protected setVerticalFlip(flipped: boolean) {
+		if (this.flipped === flipped) {
+			return
+		}
+
 		// TODO: this is slightly problematic
 		this.offset = [this.offset[0], -Math.abs(this.offset[1])]; // Strange entanglement error was happening here
 
@@ -80,80 +93,23 @@ export abstract class Visual extends Mountable implements IVisual {
 		});
 
 		this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
+
+		this.flipped = flipped;
 	}
 
 	// Construct and SVG with children positioned relative to (0, 0)
 	getInternalRepresentation(): Element | undefined {
+		if (this.svg === undefined ) {return undefined}
 		var cloned: Element = this.svg.clone(true, true);
 		cloned.move(0, 0);
 
 		return cloned;
 	}
 
-	override set x(val: number) {
-		if (val !== this._x) {
-			this.dirty = true;
-			this._x = posPrecision(val);
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	} // OVERRIDING SETTER REQUIRES GETTER TO BE REDEFINED???
-	override get x(): number {
-		if (this._x !== undefined) {
-			return this._x;
-		}
-		throw new Error(`x unset in ${this.ref}`);
-	}
-	override set y(val: number) {
-		if (this.ref === "text in label" && val === 25) {
-			console.log();
-		}
-		if (val !== this._y) {
-			this.dirty = true;
-			this._y = posPrecision(val);
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	}
-	override get y(): number {
-		if (this._y !== undefined) {
-			return this._y;
-		}
-		throw new Error(`y unset in ${this.ref}`);
-	}
-
-	override get contentWidth(): number | undefined {
-		return this._contentWidth;
-	}
-	override set contentWidth(v: number | undefined) {
-		if (v !== this._contentWidth) {
-			this.dirty = true;
-			this._contentWidth = v;
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	}
-
-	override get contentHeight(): number | undefined {
-		return this._contentHeight;
-	}
-	override set contentHeight(v: number | undefined) {
-		if (v !== this._contentHeight) {
-			this.dirty = true;
-			this._contentHeight = v;
-			this.enforceBinding();
-			this.notifyChange();
-		}
-	}
-
 	get drawX(): number {
-		return this.contentX + this.offset[0];
+		return this.cx + this.offset[0];
 	}
 	get drawY(): number {
-		return this.contentY + this.offset[1];
-	}
-
-	static isLabelGroup(val: Visual): val is LabelGroup {
-		return (val as LabelGroup).components?.labels !== undefined;
+		return this.cy + this.offset[1];
 	}
 }

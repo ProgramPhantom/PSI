@@ -1,10 +1,8 @@
-import {Element, Rect, SVG} from "@svgdotjs/svg.js";
-import {FormBundle} from "../features/form/LabelGroupComboForm";
-import RectElementForm from "../features/form/RectForm";
-import defaultBar from "./default/bar.json";
-import {UserComponentType} from "./diagramHandler";
-import {RecursivePartial, createWithTemplate} from "./util";
-import {IDraw, IVisual, Visual} from "./visual";
+import { Element, Rect, SVG } from "@svgdotjs/svg.js";
+import { UserComponentType } from "./point";
+import Visual, { IDraw, IVisual } from "./visual";
+
+console.log("Load module rect element")
 
 export interface IRectStyle {
 	fill: string;
@@ -17,10 +15,6 @@ export interface IRectElement extends IVisual {
 }
 
 export default class RectElement extends Visual implements IRectElement, IDraw {
-	static namedElements: {[key: string]: IRectElement} = {
-		bar: <any>defaultBar,
-		"form-defaults": <any>defaultBar
-	};
 	get state(): IRectElement {
 		return {
 			style: this.style,
@@ -28,24 +22,13 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 		};
 	}
 	static ElementType: UserComponentType = "rect";
-	static formData: FormBundle = {
-		form: RectElementForm,
-		defaults: RectElement.namedElements["form-defaults"],
-		allowLabels: true
-	};
 
 	style: IRectStyle;
 
-	constructor(params: IRectElement);
-	constructor(params: RecursivePartial<IRectElement>, templateName: string);
-	constructor(params: RecursivePartial<IRectElement> | IRectElement, templateName?: string) {
-		const fullParams = createWithTemplate<IRectElement>(RectElement.namedElements)(
-			params,
-			templateName
-		);
-		super(fullParams);
+	constructor(params: IRectElement) {
+		super(params);
 
-		this.style = fullParams.style;
+		this.style = params.style;
 
 		this.svg = SVG()
 			.rect(this.contentWidth, this.contentHeight)
@@ -67,16 +50,15 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 			this.svg = new Rect()
 				.size(this.contentWidth, this.contentHeight)
 				.attr({fill: this.style.fill, stroke: this.style.stroke})
-				.move(this.contentX + this.offset[0], this.contentY + this.offset[1])
+				.move(this.cx + this.offset[0], this.cy + this.offset[1])
 				.attr({
 					"stroke-width": this.style.strokeWidth,
 					"shape-rendering": "crispEdges",
-					"data-position": this.positionMethod,
-					"data-ownership": this.ownershipType
 				});
 			surface.add(this.svg);
 
-			this.id = this.svg.id();
+			// Do we want elements to have our ID system or the SVGjs ID system?
+			this.svg.id(this.id);
 		}
 	}
 

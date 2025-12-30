@@ -8,14 +8,14 @@ import {
 	MenuItem,
 	NumericInput,
 	Popover,
-	SegmentedControl,
-	Switch
+	SegmentedControl
 } from "@blueprintjs/core";
-import {useEffect, useRef} from "react";
-import {Controller, useForm} from "react-hook-form";
-import {Tool} from "../../app/App";
-import Line from "../../logic/line";
-import {IDrawArrowConfig} from "../canvas/LineTool";
+import { useEffect, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Tool } from "../../app/App";
+import { defaultLine } from "../../logic/default/index";
+import { ILineStyle } from "../../logic/line";
+import { IDrawArrowConfig } from "../canvas/LineTool";
 
 interface IAnnotateDropdownProps {
 	selectedTool: Tool;
@@ -23,20 +23,21 @@ interface IAnnotateDropdownProps {
 }
 
 export function AnnotateDropdown(props: IAnnotateDropdownProps) {
+	console.log(defaultLine)
 	const toolValue = useRef<IDrawArrowConfig>({
-		lineStyle: Line.defaults["default"].lineStyle,
+		lineStyle: defaultLine.lineStyle as ILineStyle,
 		mode: "bind"
 	});
 	const {control, handleSubmit, reset, watch} = useForm<IDrawArrowConfig>({
 		mode: "onChange",
 		defaultValues: {
-			lineStyle: Line.defaults["default"].lineStyle,
+			lineStyle: defaultLine.lineStyle as ILineStyle,
 			mode: "bind"
 		}
 	});
 
 	const onSubmit = (data: IDrawArrowConfig) => {
-		// TODO: i dont want the tool to be selected if nothing is changed.
+		// TODO: i don't want the tool to be selected if nothing is changed.
 		if (data != toolValue.current) {
 			props.setTool({
 				type: "arrow",

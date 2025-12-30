@@ -1,0 +1,22 @@
+import { IText } from "../text"
+
+export const DEFAULT_TEXT: IText = {
+	"ref": "default-text",
+	"contentWidth": 10,
+	"contentHeight": 10,
+
+	"text": "\\textrm{H}",
+	"padding": [0, 0, 2, 0],
+	"offset": [0, 0],
+
+	"style": {
+		"fontSize": 15,
+		"colour": "black",
+		"background": null,
+		"display": "block"
+	},
+
+	"placementMode": {"type": "free"},
+	"sizeMode": {x: "fit", y: "fit"}
+}
+ 

@@ -1,6 +1,8 @@
 import {useRef, useState} from "react";
 import {Rnd} from "react-rnd";
-import {Visual} from "../logic/visual";
+import Visual from "../logic/visual";
+
+console.log("Load module resizer")
 
 interface IResizer {
 	element: Visual;
@@ -20,7 +22,7 @@ const Resizer: React.FC<IResizer> = (props) => {
 	return (
 		<>
 			<Rnd
-				position={{x: props.element.contentX, y: props.element.contentY}}
+				position={{x: props.element.cx, y: props.element.cy}}
 				default={{
 					x: x,
 					y: y,

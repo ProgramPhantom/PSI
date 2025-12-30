@@ -1,162 +1,155 @@
-import {Element} from "@svgdotjs/svg.js";
-import defaultLineLike from "./default/lineLike.json";
-import {Dimensions} from "./spacial";
-import {FillObject, posPrecision, RecursivePartial} from "./util";
-import {IVisual, Visual} from "./visual";
-import {Rect} from "@svgdotjs/svg.js";
-import {SVG} from "@svgdotjs/svg.js";
+import { Element } from "@svgdotjs/svg.js";
+import { Dimensions, Size } from "./spacial";
+import Visual, { IVisual } from "./visual";
 
-type Orientation = "horizontal" | "vertical" | "angled";
+console.log("Load module line like")
+
 type Direction = "along" | "cross";
 
 export interface ILineLike extends IVisual {
 	adjustment: [number, number];
-	orientation: Orientation;
+	thickness?: number;
+
+	sx?: number;
+	sy?: number;
+
+	ex?: number;
+	ey?: number;
 }
 
 export default abstract class LineLike extends Visual {
-	static defaults: {[key: string]: ILineLike} = {
-		default: <any>defaultLineLike
-	};
 	get state(): ILineLike {
 		return {
 			adjustment: this.adjustment,
-			orientation: this.orientation,
 			...super.state
 		};
 	}
-	public AnchorFunctions = {
-		here: {
-			get: this.getNear.bind(this),
-			set: this.setNear.bind(this)
-		},
-		centre: {
-			get: this.getCentre.bind(this),
-			set: this.setCentre.bind(this)
-		},
-		far: {
-			get: this.getFar.bind(this),
-			set: this.setFar.bind(this)
-		}
-	};
 	static HitboxPadding: number = 2;
 
 	adjustment: [number, number];
-	orientation: Orientation;
+	thickness: number;
 
-	private _x2?: number;
-	private _y2?: number;
+	private _sy: number = 0;
+	private _sx: number = 0;
+	private _ex: number = 0;
+	private _ey: number = 0;
 
-	constructor(params: RecursivePartial<ILineLike>, templateName: string = "default") {
-		var fullParams: ILineLike = FillObject<ILineLike>(params, LineLike.defaults[templateName]);
-		super(fullParams);
-		this.ref = "LINE";
+	constructor(params: ILineLike) {
+		super(params);
 
-		this.adjustment = fullParams.adjustment;
-		this.orientation = fullParams.orientation;
+		this.adjustment = params.adjustment;
 
-		this.sizeSource.x = "inherited";
-		this.sizeSource.y = "inherited";
+		// this.startX = params.sx ?? params.x ?? 0;
+		// this.startY = params.sy ?? params.y ?? 0;
+		this.startX = 0;
+		this.startY = 0;
+
+		// this.endX = params.ex ?? 0;
+		// this.endY = params.ey ?? 0;
+
+		this.endX = 0;
+		this.endY = 0;
+
+		// this._x = this.startX;
+		// this._y = this.startY;
+
+
+		this.thickness = params.thickness ?? 1;
 	}
 
-	resolveDimensions(): void {
-		if (this.hasPosition === false) {
-			return;
-		}
-
-		var width = this.x2 - this.x;
-		var height = this.y2 - this.y;
-
-		if (width === 0) {
-			width = 1;
-		}
-		if (height === 0) {
-			height = 1;
-		}
-
-		this.width = width;
-		this.height = height;
-	}
-
-	public set(x1: number, y1: number, x2: number, y2: number) {
-		this.x = x1;
-		this.y = y1;
-
-		this.x2 = x2;
-		this.y2 = y2;
-
-		this.adjust();
-		this.resolveDimensions();
-	}
-
-	adjust() {
-		switch (this.orientation) {
-			case "vertical":
-				this.y -= this.adjustment[0];
-				this.y2 += this.adjustment[1];
-				break;
-			case "horizontal":
-				this.x -= this.adjustment[0];
-				this.x2 += this.adjustment[1];
-				break;
-			case "angled":
-				throw new Error("Not implementated"); // TODO: implement this
-				break;
-		}
-	}
 
 	abstract draw(surface: Element): void;
 
-	public get length(): number | undefined {
-		if (
-			this.x === undefined
-			|| this.y === undefined
-			|| this.y2 === undefined
-			|| this.x2 === undefined
-		) {
-			return undefined;
-		}
 
-		return Math.sqrt(Math.pow(this.x2 - this.x, 2) + Math.pow(this.y2 - this.y, 2));
+	public override computeSize(): Size {
+		return this.computeBoundingBox();
 	}
 
-	public get angle(): number | undefined {
-		if (
-			this.x === undefined
-			|| this.y === undefined
-			|| this.y2 === undefined
-			|| this.x2 === undefined
-		) {
-			return undefined;
-		}
+	public override computePositions(root: { x: number; y: number; }): void {
+		super.computePositions(root)
+	}
 
-		var dx = this.x2 - this.x;
-		var dy = this.y2 - this.y;
+	public override growElement(containerSize: Size): Record<Dimensions, number> {
+
+		return super.growElement(containerSize);
+	}
+
+	public computeBoundingBox(): Size {
+		let rect: Size = {width: 0, height: 0};
+
+		let h: number = this.thickness + LineLike.HitboxPadding;
+		let l: number = Math.max(this.length, this.thickness + LineLike.HitboxPadding);
+		let theta: number = this.angle;
+
+		rect.width = l * Math.abs(Math.cos(theta)) + h * Math.abs(Math.sin(theta))
+		rect.height = l * Math.abs(Math.sin(theta)) + h * Math.abs(Math.cos(theta))
+
+		return rect
+	}
+
+	public get length(): number {
+		return Math.sqrt(Math.pow(this.endX - this.startX, 2) + Math.pow(this.endY - this.startY, 2));
+	}
+
+	public get angle(): number {
+		var dx = this.endX - this.startX;
+		var dy = this.endY - this.startY;
 
 		var angle = Math.atan2(dy, dx);
 		return angle;
 	}
 
-	public get quadrant(): 0 | 1 | 2 | 3 | undefined {
-		if (
-			this.x === undefined
-			|| this.y === undefined
-			|| this.y2 === undefined
-			|| this.x2 === undefined
-		) {
-			return undefined;
-		}
-
-		if (this.x2 >= this.x && this.y2 >= this.y) {
+	public get quadrant(): 0 | 1 | 2 | 3 {
+		if (this.endX >= this.startX && this.endY >= this.startY) {
 			return 0;
-		} else if (this.x2 < this.x && this.y2 >= this.y) {
+		} else if (this.endX < this.startX && this.endY >= this.startY) {
 			return 1;
-		} else if (this.x2 < this.x && this.y2 < this.y) {
+		} else if (this.endX < this.startX && this.endY < this.startY) {
 			return 2;
-		} else if (this.x2 >= this.x && this.y2 < this.y) {
+		} else if (this.endX >= this.startX && this.endY < this.startY) {
 			return 3;
+		} else {
+			return 0;
 		}
 	}
+
+
+	public get startX(): number {
+		return this._sx;
+	}
+	public set startX(v: number) {
+		this._sx = v;
+	}
+
+	public get startY(): number {
+		return this._sy;
+	}
+	public set startY(v: number) {
+		this._sy = v;
+	}
+
+	public get endX(): number {
+		return this._ex;
+	}
+	public set endX(v: number) {
+		this._ex = v;
+	}
+
+	public get endY(): number {
+		return this._ey;
+	}
+	public set endY(v: number) {
+		this._ey = v;
+	}
+
+	public get centreX(): number {
+		return (this.startX + this.endX) / 2
+	}
+
+	public get centreY(): number {
+		return (this.startY + this.endY) / 2
+	}
+
 
 	public moveRelative(
 		coordinate: [number, number],
@@ -175,167 +168,66 @@ export default abstract class LineLike extends Visual {
 		return newCoord;
 	}
 
-	get hasPosition(): boolean {
-		if (
-			this._x === undefined
-			|| this._y === undefined
-			|| this._x2 === undefined
-			|| this._y2 === undefined
-		) {
-			return false;
+	public override get contentWidth(): number {
+		let val = this.computeBoundingBox().width;
+		this._contentWidth = val
+		return val;
+	}
+	public override set contentWidth(v: number) {
+		// this.x2 = this.x + v;
+		// this._contentWidth = v;
+		//throw new Error("not possible")
+
+		let quadrant = this.quadrant;
+
+		if (quadrant === 0 || quadrant === 3) {
+			this.endX = this.startX + v;
 		} else {
-			return true;
+			this.startX = this.endX + v;
 		}
+
+		
 	}
 
-	get x(): number {
-		if (this._x !== undefined) {
-			return this._x;
-		}
-		throw new Error("x unset");
+	public override get contentHeight(): number {
+		let val = this.computeBoundingBox().height;
+		this._contentHeight = val;
+		return val;
 	}
-	get y(): number {
-		if (this._y !== undefined) {
-			return this._y;
+	public override set contentHeight(v: number) {
+		// this.y2 = this.y + v;
+		//this._contentHeight = v;
+
+		// This needs investigating
+		let quadrant = this.quadrant;
+
+		if (quadrant === 2 || quadrant === 3) {
+			this.endY = this.startY + v;
+		} else {
+			this.startY = this.endY + v;
 		}
-		throw new Error("y unset");
-	}
-	set x(val: number | undefined) {
-		if (val !== this._x) {
-			this._x = val !== undefined ? posPrecision(val) : undefined;
-			this.enforceBinding();
-			// this.resolveDimensions();
-		}
-	}
-	set y(val: number | undefined) {
-		if (val !== this._y) {
-			this._y = val !== undefined ? posPrecision(val) : undefined;
-			this.enforceBinding();
-			// this.resolveDimensions();  Removing this fixes stuff? Don't know why lol
-		}
+		
 	}
 
-	public get x2(): number {
-		if (this._x2 !== undefined) {
-			return this._x2;
-		}
-		throw new Error("x2 unset");
+
+	public override get x(): number {
+		return this.centreX - this.computeBoundingBox().width / 2;
 	}
-	public get y2(): number {
-		if (this._y2 !== undefined) {
-			return this._y2;
-		}
-		throw new Error("y2 unset");
-	}
-	public set x2(v: number) {
-		if (v !== this._x2) {
-			this._x2 = v;
-			this.enforceBinding();
-			this.resolveDimensions();
-		}
-	}
-	public set y2(v: number) {
-		if (v !== this._y2) {
-			this._y2 = v;
-			this.enforceBinding();
-			this.resolveDimensions();
-		}
+	public override set x(v: number) {
+		let currX: number = this.x;
+		this.startX += v - currX;
+		this.endX += v - currX;
+		this._x = v;
+
 	}
 
-	// Anchors:
-	public override getNear(dimension: Dimensions, ofContent: boolean = false): number | undefined {
-		switch (dimension) {
-			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
-				if (ofContent) {
-					return this.contentX;
-				}
-				return this._x;
-			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
-				if (ofContent) {
-					return this.contentY;
-				}
-				return this._y;
-		}
+	public override get y(): number {
+		return this.centreY - this.computeBoundingBox().height / 2;
 	}
-	public override setNear(dimension: Dimensions, v: number) {
-		switch (dimension) {
-			case "x":
-				this.x = v;
-				break;
-			case "y":
-				this.y = v;
-				break;
-		}
-	}
-	public override getCentre(
-		dimension: Dimensions,
-		ofContent: boolean = false
-	): number | undefined {
-		switch (dimension) {
-			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
-				if (ofContent) {
-					return (
-						this.contentX
-						+ (this.contentWidth ? posPrecision(this.contentWidth / 2) : 0)
-					);
-				}
-				return this.x + posPrecision(this.width / 2);
-			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
-				if (ofContent) {
-					return (
-						this.contentY
-						+ (this.contentHeight ? posPrecision(this.contentHeight / 2) : 0)
-					);
-				}
-				return this.y + posPrecision(this.height / 2);
-		}
-	}
-	public override setCentre(dimension: Dimensions, v: number) {
-		switch (dimension) {
-			case "x":
-				this.x = v - this.width / 2;
-				break;
-			case "y":
-				this.y = v - this.height / 2;
-				break;
-		}
-	}
-	public override getFar(dimension: Dimensions, ofContent: boolean = false): number | undefined {
-		switch (dimension) {
-			case "x":
-				if (this._x2 === undefined) {
-					return undefined;
-				}
-				// if (ofContent) { return this.contentX + (this.contentWidth ? this.contentWidth : 0); }
-				return this.x2;
-			case "y":
-				if (this._y2 === undefined) {
-					return undefined;
-				}
-				// if (ofContent) { return this.contentY + (this.contentHeight ? this.contentHeight : 0); }
-				return this.y2;
-		}
-	}
-	public override setFar(dimension: Dimensions, v: number) {
-		switch (dimension) {
-			case "x":
-				this.x2 = v;
-				break;
-			case "y":
-				this.y2 = v;
-				break;
-		}
+	public override set y(v: number) {
+		let currY: number = this.y;  // Fixes problems
+		this.startY += v - currY;
+		this.endY += v - currY;
+		this._y = v;
 	}
 }

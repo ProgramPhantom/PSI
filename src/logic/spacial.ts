@@ -1,8 +1,7 @@
-import {SVG} from "@svgdotjs/svg.js";
-import logger, {Operations} from "./log";
-import Point, {ID, IPoint} from "./point";
-import {posPrecision} from "./util";
-import {Rect} from "@svgdotjs/svg.js";
+import { Rect, SVG } from "@svgdotjs/svg.js";
+import Point, { ID, IPoint } from "./point";
+
+console.log(`[ModuleLoad] Spacial`);
 
 export interface Bounds {
 	top: number;
@@ -11,18 +10,56 @@ export interface Bounds {
 	right: number;
 }
 
+export type Orientation = "top" | "bottom" | "both";
+
 export interface Size {
-	width?: number;
-	height?: number;
+	width: number;
+	height: number;
 }
 
+export type PointBind = Record<Dimensions, IBindingPayload>;
+
+export interface IMountConfig {
+	index?: number;
+	channelID?: ID;
+	sequenceID?: ID;
+
+	orientation: Orientation;
+	alignment: Record<Dimensions, SiteNames>;
+	noSections: number;
+}
+
+
+export interface IGridChildConfig {
+	coords?: {row: number, col: number}
+	alignment?: Record<Dimensions, SiteNames>
+	gridSize?: {noRows: number, noCols: number}
+	contribution?: Record<Dimensions, boolean>
+}
+
+export interface IAlignerConfig {
+	index?: number,
+	alignment?: SiteNames,
+	contribution?: {mainAxis: boolean, crossAxis: boolean}
+}
+
+export type PlacementConfiguration = {type: "free"} | 
+									 {type: "pulse"; config: IMountConfig} | 
+									 {type: "binds"; bindings: undefined} | 
+									 {type: "grid"; gridConfig: IGridChildConfig} |
+									 {type: "aligner", alignerConfig: IAlignerConfig} | 
+									 {type: "managed"}
+
+export type SizeConfiguration = Record<Dimensions, SizeMethod>
+
+
 export type PositionMethod = "controlled" | "free" | "partially-controlled";
-export type SizeMethod = "given" | "inherited";
+export type SizeMethod = "fixed" | "fit" | "grow";
 
 export type SiteNames = "here" | "centre" | "far";
 
 export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
-export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number | undefined;
+export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number;
 
 export interface IBindingRule {
 	anchorSiteGetter?: BinderGetFunction;
@@ -50,32 +87,56 @@ export interface IBindingPayload {
 
 export type Dimensions = "x" | "y";
 
+export interface IHaveSize {
+	computeSize: () => Size
+}
+
 export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
+
+	placementMode: PlacementConfiguration
+	sizeMode?: SizeConfiguration
 }
 
 export type UpdateNotification = (...args: any[]) => any;
 
-export default class Spacial extends Point implements ISpacial {
-	static override defaults: {[name: string]: ISpacial} = {
-		default: {
-			x: undefined,
-			y: undefined,
-			contentWidth: 0,
-			contentHeight: 0,
-			ref: "default-spacial"
-		}
-	};
+export default class Spacial extends Point implements ISpacial, IHaveSize {
+	static CreateUnion(...rects: Spacial[]): Spacial {
+		var size: Size = {width: 0, height: 0}
+		var top = Infinity;
+		var left = Infinity;
+		var bottom = -Infinity;
+		var right = -Infinity;
+
+		rects.forEach((r) => {
+			top = r.y < top ? r.y : top;
+			var far = r.getFar("y");
+			bottom = far > bottom ? far : bottom;
+			
+
+			left = r.x < left ? r.x : left;
+			var farX = r.getFar("x");
+			right = farX > right ? farX : right;
+		});
+
+		size.width = right - left;
+		size.height = bottom - top;
+
+		let result: Spacial = new Spacial(top, left, size.width, size.height, {type: "free"}, {x: "fixed", y: "fixed"})
+
+		return result
+	}
+	
 	get state(): ISpacial {
 		return {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
-
+			placementMode: this.placementMode,
+			sizeMode: this.sizeMode,
 			...super.state
 		};
 	}
-
 	public AnchorFunctions = {
 		here: {
 			get: this.getNear.bind(this),
@@ -90,24 +151,64 @@ export default class Spacial extends Point implements ISpacial {
 			set: this.setFar.bind(this)
 		}
 	};
-	protected _contentWidth?: number;
-	protected _contentHeight?: number;
 
-	override bindings: IBinding[] = [];
-	override bindingsToThis: IBinding[] = [];
+	protected _contentWidth: number;
+	protected _contentHeight: number;
+
+	public placementMode: PlacementConfiguration;
+	public sizeMode: SizeConfiguration;
+
+	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
+	bindingsToThis: IBinding[] = [];
 
 	constructor(
 		x?: number,
 		y?: number,
 		width?: number,
 		height?: number,
+		placementMode?: PlacementConfiguration,
+		sizeMode?: SizeConfiguration,
 		ref: string = "spacial",
 		id: ID | undefined = undefined
 	) {
 		super(x, y, ref, id);
 
-		width !== undefined ? (this._contentWidth = width) : null;
-		height !== undefined ? (this._contentHeight = height) : null;
+		this.placementMode = placementMode ?? {type: "free"}
+		this.sizeMode = sizeMode ?? {x: "fixed", y: "fixed"}
+
+		this._contentWidth = width ?? 0;
+		this._contentHeight = height ?? 0;
+	}
+
+	public computeSize(): Size {
+		// this.width = this.contentHeight;
+		// this.height = this.contentHeight;
+
+		return {width: this.width, height: this.height}
+	}
+
+	public computePositions(root: {x: number, y: number}) {
+		this.x = root.x;
+		this.y = root.y;
+
+		return
+	}
+
+	public growElement(containerSize: Size): Record<Dimensions, number> {
+		let dw: number = 0;
+		let dh: number = 0;
+
+
+		if (this.sizeMode.x === "grow") {
+			dw = containerSize.width - this.width;
+			this.width = containerSize.width;
+		}
+		if (this.sizeMode.y === "grow") {
+			dh = containerSize.height - this.height;
+			this.height = containerSize.height;
+		}
+
+		return {x: dw, y: dh}
 	}
 
 	public getHitbox(): Rect {
@@ -122,98 +223,59 @@ export default class Spacial extends Point implements ISpacial {
 		return hitbox;
 	}
 
-	public get contentX(): number {
+	public get cx(): number {
 		return this.x;
 	}
-	public set contentX(v: number) {
+	public set cx(v: number) {
 		throw new Error("not implemented");
-		// this._contentX = v;
 	}
 
-	public get contentY(): number {
+	public get cy(): number {
 		return this.y;
 	}
-	public set contentY(v: number) {
+	public set cy(v: number) {
 		throw new Error("not implemented");
-		// this._contentY = v;
 	}
 
-	get contentBounds(): Bounds {
-		var top = this.contentY;
-		var left = this.contentX;
-
-		var bottom = this.contentY + (this.contentHeight ? this.contentHeight : 0);
-		var right = this.contentX + (this.contentWidth ? this.contentWidth : 0);
-
-		return {top: top, right: right, bottom: bottom, left: left};
-	}
-
-	set contentDim(b: Size) {
+	set contentSize(b: Size) {
 		this._contentWidth = b.width;
 		this._contentHeight = b.height;
 	}
-	get contentDim(): Size {
-		return {width: this.contentWidth, height: this.contentWidth};
-
-		throw new Error("dimensions unset");
+	get contentSize(): Size {
+		return {width: this.contentWidth, height: this.contentHeight};
 	}
 
 	// ----------- Size --------------
-	get contentWidth(): number | undefined {
+	get contentWidth(): number {
 		return this._contentWidth;
 	}
-	set contentWidth(v: number | undefined) {
-		if (v !== this._contentWidth) {
-			this._contentWidth = v;
-			this.enforceBinding();
-		}
+	set contentWidth(v: number) {
+		this._contentWidth = v;
 	}
 
-	get contentHeight(): number | undefined {
+	get contentHeight(): number {
 		return this._contentHeight;
 	}
-	set contentHeight(v: number | undefined) {
-		if (v !== this.contentHeight) {
-			this._contentHeight = v;
-			this.enforceBinding();
-		}
+	set contentHeight(v: number) {
+		this._contentHeight = v;
 	}
 
 	get width(): number {
-		if (this.contentWidth !== undefined) {
-			return this.contentWidth;
-		}
-		throw new Error("Width unset");
+		return this.contentWidth;
 	}
-	set width(v: number | undefined) {
-		if (v === undefined) {
-			this.contentWidth = undefined;
-		} else {
-			var newContentWidth: number = v;
-
-			this.contentWidth = newContentWidth;
-		}
+	set width(v: number) {
+		this.contentWidth = v;
 	}
 	get height(): number {
-		if (this.contentHeight !== undefined) {
-			return this.contentHeight;
-		}
-		throw new Error("Dimensions undefined");
+		return this.contentHeight;
 	}
-	set height(v: number | undefined) {
-		if (v === undefined) {
-			this.contentHeight = undefined;
-		} else {
-			var newContentHeight: number = v;
-
-			this.contentHeight = newContentHeight;
-		}
+	set height(v: number) {
+		this.contentHeight = v;
 	}
 
-	public sizeSource: Record<Dimensions, SizeMethod> = {
-		x: "given",
-		y: "given"
-	};
+	get size(): Size {
+		return {width: this.width, height: this.height}
+	}
 
 	public clearBindings(dimension: Dimensions) {
 		var toRemove: IBinding[] = [];
@@ -263,7 +325,7 @@ export default class Spacial extends Point implements ISpacial {
 			if (b.targetObject === target && b.bindingRule.dimension === dimension) {
 				found = true;
 
-				if (b.targetObject.sizeSource[dimension] === "given") {
+				if (b.targetObject) {
 					// Not stretchy so this gets overridden
 					console.warn(
 						`Warning: overriding binding on dimension ${b.bindingRule.dimension} for anchor ${this.ref} to target ${target.ref}`
@@ -326,12 +388,6 @@ export default class Spacial extends Point implements ISpacial {
 	}
 
 	public enforceBinding() {
-		this.bindings
-			.map((b) => b.targetObject)
-			.forEach((e) => {
-				e.displaced = true;
-			});
-
 		for (const binding of this.bindings) {
 			var targetElement: Spacial = binding.targetObject;
 			var getter: BinderGetFunction =
@@ -368,57 +424,75 @@ export default class Spacial extends Point implements ISpacial {
 				binding.bindToContent
 			);
 
-			// This must happen BEFORE the element is positioned so the last element moved in the collection
-			// triggers the compute boundary
-			targetElement.displaced = false;
 
 			// Only go into the setter if it will change a value, massively reduces function calls.
 			// Alternative was doing the check inside the setter which still works but requires a function call
 			if (anchorBindCoord !== currentTargetPointPosition) {
 				// Use the correct setter on the target with this value
-				logger.operation(
-					Operations.BIND,
-					`(${this.ref})[${anchorBindCoord}, ${binding.bindingRule.anchorSiteName}] ${dimension}> (${targetElement.ref})[${currentTargetPointPosition}, ${binding.bindingRule.targetSiteName}]`,
-					this
-				);
 
 				setter(dimension, anchorBindCoord!); // SETTER MAY NEED INTERNAL BINDING FLAG?
 			}
 		}
 	}
 
-	subscribers: UpdateNotification[] = [];
+	public immediateBind(		
+		target: Spacial,
+		dimension: Dimensions,
+		anchorBindSide: keyof typeof this.AnchorFunctions,
+		targetBindSide: keyof typeof this.AnchorFunctions,
+		bindToContent: boolean = true) {
+		
+		var getter: BinderGetFunction =
+			this.AnchorFunctions[anchorBindSide].get;
+		var setter: BinderSetFunction =
+			target.AnchorFunctions[targetBindSide].set;
+		
+		var anchorValue: number = getter(dimension, bindToContent);
 
-	subscribe(toRun: UpdateNotification) {
-		if (this.ref === "label") {
+		setter(dimension, anchorValue);
+	}
+
+	public internalImmediateBind(
+		target: Spacial,
+		dimension: Dimensions,
+		alignment: keyof typeof this.AnchorFunctions,
+		bindToContent: boolean = true) {
+		
+		var getter: BinderGetFunction;
+		var setter: BinderSetFunction;
+
+		switch (alignment) {
+			case "here":
+				getter = this.AnchorFunctions["here"].get;
+				setter = target.AnchorFunctions["here"].set;
+				break;
+			case "centre":
+				getter = this.AnchorFunctions["centre"].get;
+				setter = target.AnchorFunctions["centre"].set;
+				break;
+			case "far":
+				getter = this.AnchorFunctions["far"].get;
+				setter = target.AnchorFunctions["far"].set;
+				break;
 		}
-		this.subscribers.push(toRun);
+
+		var anchorValue: number = getter(dimension, bindToContent);
+
+		setter(dimension, anchorValue);
 	}
 
-	notifyChange() {
-		this.subscribers?.forEach((s) => {
-			logger.broadcast(this, s.name.split(" ")[1]);
-			s();
-		});
-	}
 
 	// Anchors:
-	public getNear(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public getNear(dimension: Dimensions, ofContent: boolean = false): number {
 		switch (dimension) {
 			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
-					return this.contentX;
+					return this.cx;
 				}
 				return this._x;
 			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
-					return this.contentY;
+					return this.cy;
 				}
 				return this._y;
 		}
@@ -434,30 +508,24 @@ export default class Spacial extends Point implements ISpacial {
 		}
 	}
 
-	public getCentre(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public getCentre(dimension: Dimensions, ofContent: boolean = false): number {
 		switch (dimension) {
 			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return (
-						this.contentX
-						+ (this.contentWidth ? posPrecision(this.contentWidth / 2) : 0)
+						this.cx
+						+ this.contentWidth / 2
 					);
 				}
-				return this.x + posPrecision(this.width / 2);
+				return this.x + this.width / 2;
 			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
 					return (
-						this.contentY
-						+ (this.contentHeight ? posPrecision(this.contentHeight / 2) : 0)
+						this.cy
+						+ this.contentHeight / 2
 					);
 				}
-				return this.y + posPrecision(this.height / 2);
+				return this.y + this.height / 2;
 		}
 	}
 	public setCentre(dimension: Dimensions, v: number) {
@@ -471,22 +539,16 @@ export default class Spacial extends Point implements ISpacial {
 		}
 	}
 
-	public getFar(dimension: Dimensions, ofContent: boolean = false): number | undefined {
+	public getFar(dimension: Dimensions, ofContent: boolean = false): number {
 		switch (dimension) {
 			case "x":
-				if (this._x === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
-					return this.contentX + (this.contentWidth ? this.contentWidth : 0);
+					return this.cx + this.contentWidth;
 				}
 				return this.x2;
 			case "y":
-				if (this._y === undefined) {
-					return undefined;
-				}
 				if (ofContent) {
-					return this.contentY + (this.contentHeight ? this.contentHeight : 0);
+					return this.cy + this.contentHeight
 				}
 				return this.y2;
 		}
@@ -494,125 +556,29 @@ export default class Spacial extends Point implements ISpacial {
 	public setFar(dimension: Dimensions, v: number, stretch?: boolean) {
 		switch (dimension) {
 			case "x":
-				if (this.sizeSource.x === "inherited" || stretch) {
-					if (this._x === undefined) {
-						throw new Error(
-							`Trying to stretch element ${this.ref} with unset position`
-						);
-					}
-
-					var diff: number = v - this.x;
-					if (diff < 0) {
-						throw new Error(`Flipped element ${this.ref}`);
-					}
-					if (diff === 0) {
-						return;
-					}
-
-					this.width = diff;
-				} else {
-					this.x2 = v;
-				}
+				this.x2 = v;
 				break;
 			case "y":
-				if (this.sizeSource.y === "inherited" || stretch) {
-					if (this._y === undefined) {
-						throw new Error(
-							`Trying to stretch element ${this.ref} with unset position`
-						);
-					}
-
-					var diff: number = v - this.y;
-					if (diff < 0) {
-						throw new Error(`Flipped element ${this.ref}`);
-					}
-					if (diff === 0) {
-						return;
-					}
-
-					this.height = diff;
-				} else {
-					this.y2 = v;
-				}
+				this.y2 = v;
 				break;
-		}
-	}
-
-	get x(): number {
-		if (this._x !== undefined) {
-			return this._x;
-		}
-		throw new Error("x unset");
-	}
-	get y(): number {
-		if (this._y !== undefined) {
-			return this._y;
-		}
-		throw new Error("y unset");
-	}
-	protected set x(val: number | undefined) {
-		if (val !== this._x) {
-			this._x = val !== undefined ? posPrecision(val) : undefined;
-			this.enforceBinding();
-		}
-	}
-	protected set y(val: number | undefined) {
-		if (val !== this._y) {
-			this._y = val !== undefined ? posPrecision(val) : undefined;
-			this.enforceBinding();
 		}
 	}
 
 	// x2 y2
 	public get x2(): number {
-		if (this.definedHorizontally) {
-			return this.x + this.width;
-		}
-		throw new Error(`${this.ref} not defined horizontally`);
+		return this.x + this.width;
 	}
 	public set x2(v: number) {
-		if (this._contentWidth !== undefined) {
-			this.x = v - this.width;
-		}
+		this.x = v - this.width;
 	}
 	public get y2(): number {
-		if (this.definedVertically) {
-			return this.y + this.height;
-		}
-		throw new Error(`${this.ref} not defined vertically`);
+		return this.y + this.height;
 	}
 	public set y2(v: number) {
-		if (this._contentHeight !== undefined) {
-			this.y = v - this.height;
-		}
+		this.y = v - this.height;
 	}
 
-	// Helpers:
-	get hasDimensions(): boolean {
-		if (this.contentDim.height === undefined || !this.contentDim.height === undefined) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	get definedVertically(): boolean {
-		if (this._y !== undefined && this.contentHeight !== undefined) {
-			return true;
-		}
-		return false;
-	}
-	get definedHorizontally(): boolean {
-		if (this._x !== undefined && this.contentWidth !== undefined) {
-			return true;
-		}
-		return false;
-	}
-
-	get isResolved(): boolean {
-		return this.definedHorizontally && this.definedVertically;
-	}
-
+	
 	setSizeByDimension(v: number, dim: Dimensions) {
 		switch (dim) {
 			case "x":
@@ -631,15 +597,5 @@ export default class Spacial extends Point implements ISpacial {
 			case "y":
 				return this.height;
 		}
-	}
-
-	get positionMethod(): PositionMethod {
-		var method: PositionMethod = "free";
-		if (this.bindingsToThis.length >= 2) {
-			method = "controlled";
-		} else if ((this.bindingsToThis.length = 1)) {
-			method = "partially-controlled";
-		}
-		return method;
 	}
 }

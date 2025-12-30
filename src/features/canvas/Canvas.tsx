@@ -1,38 +1,30 @@
 import {
-	Checkbox,
 	Colors,
-	Dialog,
-	DialogBody,
 	EditableText,
 	HotkeyConfig,
 	Label,
 	Text,
 	useHotkeys
 } from "@blueprintjs/core";
-import React, {useEffect, useMemo, useRef, useState, useSyncExternalStore} from "react";
-import {TransformComponent, TransformWrapper} from "react-zoom-pan-pinch";
-import {IToolConfig, Tool} from "../../app/App";
-import {
-	AllComponentTypes,
-	AllElementIdentifiers,
-	UserComponentType
-} from "../../logic/diagramHandler";
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useDragLayer } from "react-dnd";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { IToolConfig, Tool } from "../../app/App";
 import ENGINE from "../../logic/engine";
-import {ID} from "../../logic/point";
-import {Visual} from "../../logic/visual";
+import Visual from "../../logic/visual";
 import Debug from "../debug/Debug";
 import CanvasDraggableElement from "../dnd/CanvasDraggableElement";
-import {CanvasDragLayer} from "../dnd/CanvasDragLayer";
-import {CanvasDropContainer} from "../dnd/CanvasDropContainer";
+import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
+import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
 import DropField from "../dnd/DropField";
-import {HitboxLayer} from "./HitboxLayer";
-import {LineTool, IDrawArrowConfig} from "./LineTool";
-import {DebugLayerDialog} from "./DebugLayerDialog";
-import {Element} from "@svgdotjs/svg.js";
-import {SVG} from "@svgdotjs/svg.js";
-import {useDragLayer} from "react-dnd";
+import { DebugLayerDialog } from "./DebugLayerDialog";
+import { HitboxLayer } from "./HitboxLayer";
+import { LineTool } from "./LineTool";
+import { AllComponentTypes } from "../../logic/point";
 
-const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
+console.log("Load module canvas");
+
+const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
 	// Types
 	svg: false,
 	text: false,
@@ -48,21 +40,11 @@ const DefaultDebugSelection: Record<AllElementIdentifiers, boolean> = {
 	label: false,
 	diagram: false,
 	"label-group": false,
-
-	// Named elements
-	"mounted-elements": false,
-	"label col | pulse columns": false,
-	"channel column": false,
-	"pulse columns": false,
-	"sequence column": false,
-	"label column": false,
-	bar: false,
-	root: false,
-	"top aligner": false,
-	"bottom aligner": false
+	"sequence-aligner": false,
+	grid: false,
 };
 
-export interface ISelectConfig extends IToolConfig {}
+export interface ISelectConfig extends IToolConfig { }
 
 interface ICanvasProps {
 	select: (element?: Visual) => void;
@@ -75,7 +57,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [debugDialogOpen, setDebugDialogOpen] = useState(false);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [debugSelectionTypes, setDebugSelectionTypes] =
-		useState<Record<AllElementIdentifiers, boolean>>(DefaultDebugSelection);
+		useState<Record<AllComponentTypes, boolean>>(DefaultDebugSelection);
 	const [zoom, setZoom] = useState(2);
 	const [dragging, setDragging] = useState(false);
 	const [fileName, setFileName] = useState(ENGINE.currentImageName);
@@ -92,13 +74,37 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					setDebugDialogOpen(!debugDialogOpen);
 				},
 				preventDefault: true
+			},
+			{
+				combo: "delete",
+				global: true,
+				label: "Delete selected element",
+				onKeyDown: () => {
+					if (props.selectedElement) {
+						ENGINE.handler.deleteVisual(props.selectedElement);
+						deselect();
+					}
+				},
+				preventDefault: true
+			},
+			{
+				combo: "backspace",
+				global: true,
+				label: "Delete selected element",
+				onKeyDown: () => {
+					if (props.selectedElement) {
+						ENGINE.handler.deleteVisual(props.selectedElement);
+						deselect();
+					}
+				},
+				preventDefault: true
 			}
 		],
-		[debugDialogOpen]
+		[debugDialogOpen, props.selectedElement]
 	);
-	const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
-	const handleSetDebugSelection = (type: AllElementIdentifiers) => {
-		var newDebugSelection: Record<AllElementIdentifiers, boolean> = {
+	const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+	const handleSetDebugSelection = (type: AllComponentTypes) => {
+		var newDebugSelection: Record<AllComponentTypes, boolean> = {
 			...debugSelectionTypes
 		};
 		newDebugSelection[type] = !newDebugSelection[type];
@@ -107,7 +113,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const handleDialogClose = (val: boolean) => {
 		setDebugDialogOpen(val);
 	};
-	const {isDragging} = useDragLayer((monitor) => ({
+	const { isDragging } = useDragLayer((monitor) => ({
 		isDragging: monitor.isDragging()
 	}));
 
@@ -130,6 +136,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		setFocusLevel(focusLevel + 1);
 		e.svg?.hide();
 	};
+
+	const reselect = (e: Visual) => {
+		deselect();
+		selectVisual(e);
+	}
 
 	const doubleClick = (click: React.MouseEvent<HTMLDivElement>) => {
 		var element: Visual | undefined = hoveredElement;
@@ -188,10 +199,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	var diagramWidth: number = 0;
 	var diagramHeight: number = 0;
-	if (ENGINE.handler.diagram.hasDimensions) {
-		diagramWidth = ENGINE.handler.diagram.width;
-		diagramHeight = ENGINE.handler.diagram.height;
-	}
+
+	diagramWidth = ENGINE.handler.diagram.width;
+	diagramHeight = ENGINE.handler.diagram.height;
+
 
 	return (
 		<>
@@ -207,6 +218,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				}}
 				onMouseUp={(e) => {
 					singleClick(e);
+					deselect();
 					setDragging(false);
 				}}
 				onDragEnd={() => {
@@ -220,7 +232,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						left: "10px",
 						zIndex: 100
 					}}>
-					<Label style={{fontSize: "10px", marginBottom: "0px"}}>filename</Label>
+					<Label style={{ fontSize: "10px", marginBottom: "0px" }}>filename</Label>
 					<EditableText
 						value={fileName}
 						onChange={handleFileNameChange}
@@ -258,8 +270,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						maxScale={5}
 						minScale={0.5}
 						disabled={dragging}
-						doubleClick={{disabled: true}}>
-						<TransformComponent wrapperStyle={{width: "100%", height: "100%"}}>
+						doubleClick={{ disabled: true }}>
+						<TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
 							{/* Large background grid that moves with transform */}
 							<div
 								style={{
@@ -309,7 +321,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 								{/* Hover highlight */}
 								{hoveredElement !== undefined
-								&& props.selectedTool.type === "select" ? (
+									&& props.selectedTool.type === "select" ? (
 									<>
 										<svg
 											style={{
@@ -362,6 +374,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											setDragging(true);
 										}}>
 										<CanvasDraggableElement
+											reselect={reselect}
 											name={selectedElement.ref}
 											element={selectedElement}
 											x={selectedElement.x}

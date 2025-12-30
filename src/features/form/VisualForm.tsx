@@ -1,6 +1,7 @@
 import {
 	ControlGroup,
 	FormGroup,
+	H6,
 	HTMLSelect,
 	InputGroup,
 	NumericInput,
@@ -8,10 +9,13 @@ import {
 	Slider
 } from "@blueprintjs/core";
 import React from "react";
-import {Controller, FieldErrors, useFormContext} from "react-hook-form";
-import {getByPath} from "../../logic/util";
-import {IVisual} from "../../logic/visual";
-import {FormRequirements} from "./FormDiagramInterface";
+import { Controller, FieldErrors, useFormContext } from "react-hook-form";
+import { getByPath } from "../../logic/util2";
+import { IVisual } from "../../logic/visual";
+import { FormRequirements } from "./FormBase";
+import { Switch } from "@blueprintjs/core";
+import { useWatch } from "react-hook-form";
+import { PlacementModeConfig } from "./PlacementModeConfigForm";
 
 interface IVisualFormProps extends FormRequirements {
 	widthDisplay?: boolean;
@@ -30,14 +34,14 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	var values: Partial<IVisual> = getByPath(formControls.getValues(), props.prefix);
 
 	var widthActive = props.target
-		? props.target.sizeSource.x === "inherited"
-			? false
-			: true
+		? props.target.sizeMode.x === "fixed"
+			? true
+			: false
 		: true;
 	var heightActive = props.target
-		? props.target.sizeSource.y === "inherited"
-			? false
-			: true
+		? props.target.sizeMode.y === "fixed"
+			? true
+			: false
 		: true;
 
 	var vals = formControls.getValues();
@@ -45,7 +49,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 		<ControlGroup vertical={true}>
 			{/* Reference */}
 			<FormGroup
-				style={{userSelect: "none"}}
+				style={{ userSelect: "none" }}
 				fill={false}
 				inline={true}
 				label="Reference"
@@ -55,7 +59,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				<Controller
 					control={formControls.control}
 					name={`${fullPrefix}ref`}
-					render={({field}) => (
+					render={({ field }) => (
 						<InputGroup
 							id="ref-input"
 							{...field}
@@ -82,7 +86,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}contentWidth`}
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									id="width-input"
@@ -97,8 +101,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 							)}
 							rules={{
 								required: "Width is required",
-								min: {value: 1, message: "Width must be at least 1"},
-								max: {value: 400, message: "Width cannot exceed 400"}
+								min: { value: 1, message: "Width must be at least 1" },
+								max: { value: 400, message: "Width cannot exceed 400" }
 							}}></Controller>
 					</FormGroup>
 				</>
@@ -118,7 +122,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}contentHeight`}
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									id="height-input"
@@ -133,8 +137,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 							)}
 							rules={{
 								required: "Height is required",
-								min: {value: 1, message: "Height must be at least 1"},
-								max: {value: 400, message: "Height cannot exceed 400"}
+								min: { value: 1, message: "Height must be at least 1" },
+								max: { value: 400, message: "Height cannot exceed 400" }
 							}}></Controller>
 					</FormGroup>
 				</>
@@ -143,169 +147,155 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 			)}
 
 			{/* Config */}
-			{vals.mountConfig !== undefined ? (
-				<>
-					<Section
-						style={{borderRadius: 0}}
-						collapseProps={{defaultIsOpen: false}}
-						compact={true}
-						title={"Config"}
-						collapsible={true}>
-						<ControlGroup vertical={true}>
-							{/* Orientation */}
-							<FormGroup
-								style={{padding: "4px 8px"}}
-								inline={true}
-								label="Orientation"
-								labelFor="text-input">
-								<Controller
-									control={formControls.control}
-									name="mountConfig.orientation"
-									render={({field}) => (
-										<HTMLSelect {...field} iconName="caret-down">
-											<option value={"top"}>Top</option>
-											<option value={"both"}>Both</option>
-											<option value={"bottom"}>Bottom</option>
-										</HTMLSelect>
-									)}></Controller>
-							</FormGroup>
-
-							{/* Alignment */}
-							<FormGroup
-								style={{padding: "4px 8px"}}
-								inline={true}
-								label="Alignment"
-								labelFor="text-input">
-								<Controller
-									control={formControls.control}
-									name="mountConfig.alignment"
-									render={({field}) => (
-										<HTMLSelect {...field} iconName="caret-down">
-											<option value={"here"}>Left</option>
-											<option value={"centre"}>Centre</option>
-											<option value={"far"}>Right</option>
-											<option value={"stretch"}>Stretch</option>
-										</HTMLSelect>
-									)}></Controller>
-							</FormGroup>
-
-							{/* No Sections */}
-							<FormGroup
-								style={{padding: "4px 8px", margin: 0}}
-								intent={errors?.mountConfig?.noSections ? "danger" : "none"}
-								helperText={errors?.mountConfig?.noSections?.message}
-								inline={true}
-								label="No. Sections"
-								labelFor="sections-input">
-								<Controller
-									control={formControls.control}
-									name="mountConfig.noSections"
-									render={({field}) => (
-										<NumericInput
-											{...field}
-											id="sections-input"
-											onValueChange={field.onChange}
-											min={1}
-											max={5}
-											size="small"
-											intent={
-												errors?.mountConfig?.noSections ? "danger" : "none"
-											}
-											allowNumericCharactersOnly={true}></NumericInput>
-									)}
-									rules={{
-										required: "No. sections is required",
-										min: {
-											value: 1,
-											message: "No. Sections must be at least 1"
-										},
-										max: {value: 5, message: "No. Sections cannot exceed 5"}
-									}}></Controller>
-							</FormGroup>
-						</ControlGroup>
-					</Section>
-				</>
-			) : (
-				<></>
-			)}
-
-			{/* Padding */}
-			<Section
-				style={{borderRadius: 0}}
-				collapseProps={{defaultIsOpen: false}}
+			{/* Placement Config */}
+			<Section icon="area-of-interest"
+				style={{ borderRadius: 0 }}
+				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
-				title={"Padding"}
+				title={"Placement"}
 				collapsible={true}>
-				<ControlGroup vertical={true} style={{gap: 10}}>
-					<FormGroup
-						style={{padding: "4px 16px"}}
-						label="Padding top"
-						labelFor="text-input">
+				<ControlGroup vertical={true}>
+					{/* Type Display */}
+					<div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
 						<Controller
 							control={formControls.control}
-							name="padding.0"
-							render={({field}) => (
-								<Slider {...field} min={0} max={30} labelStepSize={10}></Slider>
+							name={`${fullPrefix}placementMode.type`}
+							render={({ field }) => (
+								<div>Type: {field.value}</div>
 							)}></Controller>
-					</FormGroup>
+					</div>
 
-					<FormGroup
-						style={{padding: "4px 16px"}}
-						label="Padding right"
-						labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name="padding.1"
-							render={({field}) => (
-								<Slider {...field} max={30} min={0} labelStepSize={10}></Slider>
-							)}></Controller>
-					</FormGroup>
-
-					<FormGroup
-						style={{padding: "4px 16px"}}
-						label="Padding bottom"
-						labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name="padding.2"
-							render={({field}) => (
-								<Slider {...field} max={30} min={0} labelStepSize={10}></Slider>
-							)}></Controller>
-					</FormGroup>
-
-					<FormGroup
-						style={{padding: "4px 16px", margin: 0}}
-						label="Padding left"
-						labelFor="slider3">
-						<Controller
-							control={formControls.control}
-							name="padding.3"
-							render={({field}) => (
-								<Slider {...field} max={30} min={0} labelStepSize={10}></Slider>
-							)}></Controller>
-					</FormGroup>
+					{/* Dynamic Sub-forms */}
+					<PlacementModeConfig fullPrefix={fullPrefix} />
 				</ControlGroup>
 			</Section>
 
-			{/* Offset */}
-			<Section
-				style={{borderRadius: 0}}
-				collapseProps={{defaultIsOpen: false}}
+			{/* Padding */}
+			<Section icon="horizontal-inbetween"
+				style={{ borderRadius: 0, }}
+				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
-				title={"Offset"}
+				title={"Padding"}
 				collapsible={true}>
-				<ControlGroup vertical={true}>
+				<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", padding: "8px" }}>
 					<FormGroup
-						style={{padding: "4px 8px", margin: 0}}
+						style={{ margin: 0 }}
+						label="Top"
+						labelFor="padding-top-input">
+						<Controller
+							control={formControls.control}
+							name="padding.0"
+							render={({ field }) => (
+								<NumericInput
+									{...field}
+									id="padding-top-input"
+									onValueChange={field.onChange}
+									min={0}
+									size="small"
+									fill
+									allowNumericCharactersOnly={true}
+								/>
+							)}
+							rules={{
+								min: { value: 0, message: "Padding cannot be negative" }
+							}}
+						/>
+					</FormGroup>
+
+					<FormGroup
+						style={{ margin: 0 }}
+						label="Right"
+						labelFor="padding-right-input">
+						<Controller
+							control={formControls.control}
+							name="padding.1"
+							render={({ field }) => (
+								<NumericInput
+									{...field}
+									id="padding-right-input"
+									onValueChange={field.onChange}
+									min={0}
+									size="small"
+									fill
+									allowNumericCharactersOnly={true}
+								/>
+							)}
+							rules={{
+								min: { value: 0, message: "Padding cannot be negative" }
+							}}
+						/>
+					</FormGroup>
+
+					<FormGroup
+						style={{ margin: 0 }}
+						label="Bottom"
+						labelFor="padding-bottom-input">
+						<Controller
+							control={formControls.control}
+							name="padding.2"
+							render={({ field }) => (
+								<NumericInput
+									{...field}
+									id="padding-bottom-input"
+									onValueChange={field.onChange}
+									min={0}
+									size="small"
+									fill
+									allowNumericCharactersOnly={true}
+								/>
+							)}
+							rules={{
+								min: { value: 0, message: "Padding cannot be negative" }
+							}}
+						/>
+					</FormGroup>
+
+					<FormGroup
+						style={{ margin: 0 }}
+						label="Left"
+						labelFor="padding-left-input">
+						<Controller
+							control={formControls.control}
+							name="padding.3"
+							render={({ field }) => (
+								<NumericInput
+									{...field}
+									id="padding-left-input"
+									onValueChange={field.onChange}
+									min={0}
+									size="small"
+									fill
+									allowNumericCharactersOnly={true}
+								/>
+							)}
+							rules={{
+								min: { value: 0, message: "Padding cannot be negative" }
+							}}
+						/>
+					</FormGroup>
+				</div>
+			</Section>
+
+			{/* Offset */}
+			<Section icon="arrows-horizontal"
+				style={{ borderRadius: 0, padding: 0 }}
+				collapseProps={{ defaultIsOpen: false }}
+				compact={true}
+				title={
+					"Offset"
+				}
+				collapsible={true}>
+				<div style={{ display: "flex", gap: "10px", padding: "8px" }}>
+					<FormGroup
+						style={{ flex: 1, margin: 0 }}
 						intent={errors?.offset?.[0] ? "danger" : "none"}
 						helperText={errors?.offset?.[0]?.message}
-						inline={true}
-						label="Offset X"
+						label="X"
 						labelFor="offset0">
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}offset.0`}
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									id="offset0"
@@ -314,6 +304,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									min={-2000}
 									max={2000}
 									size="small"
+									fill
 									intent={errors?.offset?.[0] ? "danger" : "none"}
 									allowNumericCharactersOnly={true}></NumericInput>
 							)}
@@ -323,21 +314,20 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									value: -2000,
 									message: "Offset must be greater than -2000"
 								},
-								max: {value: 2000, message: "Offset cannot exceed 2000"}
+								max: { value: 2000, message: "Offset cannot exceed 2000" }
 							}}></Controller>
 					</FormGroup>
 
 					<FormGroup
-						style={{padding: "4px 8px", margin: 0}}
+						style={{ flex: 1, margin: 0 }}
 						intent={errors?.offset?.[1] ? "danger" : "none"}
 						helperText={errors?.offset?.[1]?.message}
-						inline={true}
-						label="Offset Y"
+						label="Y"
 						labelFor="offset1">
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}offset.1`}
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									id="offset1"
@@ -346,6 +336,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									min={-2000}
 									max={2000}
 									size="small"
+									fill
 									intent={errors?.offset?.[1] ? "danger" : "none"}
 									allowNumericCharactersOnly={true}></NumericInput>
 							)}
@@ -355,10 +346,10 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									value: -2000,
 									message: "Offset must be greater than -2000"
 								},
-								max: {value: 2000, message: "Offset cannot exceed 2000"}
+								max: { value: 2000, message: "Offset cannot exceed 2000" }
 							}}></Controller>
 					</FormGroup>
-				</ControlGroup>
+				</div>
 			</Section>
 		</ControlGroup>
 	);

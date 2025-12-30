@@ -1,8 +1,9 @@
-import {Element, SVG, Element as SVGElement} from "@svgdotjs/svg.js";
+import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
 import TeXToSVG from "tex-to-svg";
-import defaultText from "./default/text.json";
-import {cascadeID, FillObject, RecursivePartial, sizePrecision} from "./util";
-import {Display, IVisual, Visual} from "./visual";
+import { cascadeID } from "./util2";
+import Visual, { Display, IVisual } from "./visual";
+
+console.log("Load module text")
 
 export const EXTOPX = 38.314;
 export const SCALER = 5;
@@ -22,9 +23,6 @@ export interface ITextStyle {
 export type Position = "top" | "right" | "bottom" | "left" | "centre";
 
 export default class Text extends Visual implements IText {
-	static defaults: {[key: string]: IText} = {
-		default: {...(<IText>defaultText)}
-	};
 	get state(): IText {
 		return {
 			style: this.style,
@@ -40,22 +38,17 @@ export default class Text extends Visual implements IText {
 	text: string;
 	style: ITextStyle;
 
-	constructor(params: RecursivePartial<IText>, templateName: string = "default") {
-		var fullParams: IText = FillObject(params, Text.defaults[templateName]);
-		super(fullParams);
-		this.ref = "TEXT";
-		this.text = fullParams.text;
-		this.style = fullParams.style;
+	constructor(params: IText) {
+		super(params);
+		this.ref = "TEXT"
+		this.text = params.text;
+		this.style = params.style;
 
 		this.intrinsicSize = this.resolveDimensions();
 		this.wHRatio = this.intrinsicSize.width / this.intrinsicSize.height;
 
-		this.contentHeight = sizePrecision(
-			((this.intrinsicSize.height / SCALER) * this.style.fontSize) / EXTOPX
-		);
-		this.contentWidth = sizePrecision(
-			((this.intrinsicSize.width / SCALER) * this.style.fontSize) / EXTOPX
-		);
+		this.contentHeight = ((this.intrinsicSize.height / SCALER) * this.style.fontSize) / EXTOPX;
+		this.contentWidth = ((this.intrinsicSize.width / SCALER) * this.style.fontSize) / EXTOPX;
 
 		this.constructSVG();
 	}
@@ -158,11 +151,7 @@ export default class Text extends Visual implements IText {
 				this.svg.remove();
 			}
 
-			this.svg?.move(this.contentX, this.contentY);
-			this.svg?.attr({
-				"data-position": this.positionMethod,
-				"data-ownership": this.ownershipType
-			});
+			this.svg?.move(this.cx, this.cy);
 
 			if (this.svg) {
 				surface.add(this.svg);
@@ -174,3 +163,4 @@ export default class Text extends Visual implements IText {
 		return this.svg;
 	}
 }
+

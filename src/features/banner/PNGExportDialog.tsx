@@ -7,7 +7,7 @@ import {
 	InputGroup,
 	NumericInput
 } from "@blueprintjs/core";
-import {useState} from "react";
+import { useState } from "react";
 import ENGINE from "../../logic/engine";
 
 interface IPNGExportDialogProps {

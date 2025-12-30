@@ -8,15 +8,15 @@ import {
 	HTMLSelect,
 	InputGroup
 } from "@blueprintjs/core";
-import React, {useRef, useState} from "react";
-import {Controller, useFormContext} from "react-hook-form";
-import {myToaster} from "../../app/App";
+import React, { useRef, useState } from "react";
+import { Controller, useFormContext } from "react-hook-form";
 import SchemeManager from "../../logic/default";
 import ENGINE from "../../logic/engine";
-import {ISVGElement} from "../../logic/svgElement";
+import { ISVGElement } from "../../logic/svgElement";
 import UploadArea from "../UploadArea";
-import {FormRequirements} from "./FormDiagramInterface";
 import VisualForm from "./VisualForm";
+import { appToaster } from "../../app/Toaster";
+import { FormRequirements } from "./FormBase";
 
 interface ISVGElementFormProps extends FormRequirements {}
 
@@ -32,7 +32,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 		if (file.type === "image/svg+xml" || file.name.endsWith(".svg")) {
 			setSelectedFile(file);
 		} else {
-			myToaster.show({
+			appToaster.show({
 				message: "Please select an SVG file",
 				intent: "warning"
 			});
@@ -55,7 +55,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 					const svgString = e.target?.result as string;
 					ENGINE.schemeManager.addSVGStrData(svgString, svgReference.trim());
 
-					myToaster.show({
+					appToaster.show({
 						message: "SVG uploaded successfully",
 						intent: "success"
 					});
@@ -65,7 +65,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 					setSvgReference("");
 				} catch (error) {
 					console.error(error);
-					myToaster.show({
+					appToaster.show({
 						message: "Error uploading SVG file",
 						intent: "danger"
 					});
@@ -73,7 +73,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 			};
 			reader.readAsText(selectedFile);
 		} else {
-			myToaster.show({
+			appToaster.show({
 				message: "Please select an SVG file and provide a reference name",
 				intent: "warning"
 			});

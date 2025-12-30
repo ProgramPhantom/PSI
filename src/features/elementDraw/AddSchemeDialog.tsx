@@ -9,11 +9,11 @@ import {
 	Text
 } from "@blueprintjs/core";
 import React from "react";
-import {myToaster} from "../../app/App";
-import {IUserSchemeData} from "../../logic/default";
+import { IUserSchemeData } from "../../logic/default";
 import ENGINE from "../../logic/engine";
 import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
+import { appToaster } from "../../app/Toaster";
 
 interface AddSchemeDialogProps {
 	isOpen: boolean;
@@ -57,7 +57,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({isOpen, onClose, onSch
 					console.error(error);
 					setUploadedSchemeData(null);
 					setSvgUploads({});
-					myToaster.show({
+					appToaster.show({
 						message: "Invalid JSON file format. Please select a valid scheme file.",
 						intent: "danger"
 					});
@@ -65,7 +65,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({isOpen, onClose, onSch
 			};
 			reader.readAsText(file);
 		} else {
-			myToaster.show({
+			appToaster.show({
 				message: "Please select a JSON file",
 				intent: "warning"
 			});
@@ -112,13 +112,13 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({isOpen, onClose, onSch
 				ENGINE.addScheme(newSchemeName.trim(), uploadedSchemeData);
 				onSchemeCreated();
 				handleClose();
-				myToaster.show({
+				appToaster.show({
 					message: "Scheme created successfully from JSON file",
 					intent: "success"
 				});
 			} catch (error) {
 				console.error(error);
-				myToaster.show({
+				appToaster.show({
 					message: "Failed to create scheme from uploaded data.",
 					intent: "danger"
 				});

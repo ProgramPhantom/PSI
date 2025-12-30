@@ -1,0 +1,89 @@
+1) ../app/App.tsx > ../features/Form.tsx > ../features/form/FormDiagramInterface.tsx
+2) ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx
+3) ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx
+4) ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx
+5) ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx
+6) util.ts > line.ts > lineLike.ts > spacial.ts > point.ts
+7) util.ts > line.ts > lineLike.ts > spacial.ts
+8) util.ts > line.ts > lineLike.ts
+9) ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts
+10) ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts
+11) ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts
+12) ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts
+13) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > collection.ts
+14) visual.ts > hasComponents/labelGroup.ts > collection.ts
+15) ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > hasComponents/label.ts
+16) ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > hasComponents/label.ts
+17) line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > hasComponents/label.ts
+18) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > hasComponents/label.ts > text.ts
+19) visual.ts > hasComponents/labelGroup.ts > hasComponents/label.ts > text.ts
+20) ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts
+21) ../app/App.tsx > ../features/Form.tsx > ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx
+22) ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx 
+> ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts 
+> ../features/form/SVGElementForm.tsx
+23) ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx
+24) hasComponents/channel.ts > ../features/form/ChannelForm.tsx
+25) ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts
+26) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > grid.ts
+27) ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts
+28) ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx 
+> ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts 
+> ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > ../features/form/RectForm.tsx
+29) ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > ../features/form/RectForm.tsx
+30) rectElement.ts > ../features/form/RectForm.tsx
+31) ../app/App.tsx > ../features/Form.tsx > ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx > ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts     
+32) default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts
+33) hasComponents/channel.ts > rectElement.ts > diagramHandler.ts
+34) diagramHandler.ts > hasComponents/diagram.ts
+35) hasComponents/channel.ts > rectElement.ts > diagramHandler.ts > hasComponents/diagram.ts
+36) hasComponents/channel.ts > rectElement.ts > diagramHandler.ts > hasComponents/diagram.ts > hasComponents/sequence.ts
+37) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts > hasComponents/diagram.ts > hasComponents/sequence.ts
+38) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts > hasComponents/diagram.ts > hasComponents/sequenceAligner.ts > aligner.ts
+39) diagramHandler.ts > hasComponents/diagram.ts > hasComponents/sequenceAligner.ts
+40) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts > hasComponents/diagram.ts > hasComponents/sequenceAligner.ts
+41) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts > hasComponents/diagram.ts
+42) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts > hasComponents/diagram.ts
+43) hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts
+44) line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts
+45) rectElement.ts > diagramHandler.ts
+46) svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts
+47) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts
+48) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts > diagramHandler.ts
+49) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts
+50) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts > rectElement.ts     
+51) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts
+52) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > hasComponents/channel.ts
+53) hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts
+54) line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts
+55) ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx 
+> ../features/form/ArrowForm.tsx > ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts  
+> ../features/form/SVGElementForm.tsx > default.ts > space.ts
+56) ../features/form/VisualForm.tsx > util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > space.ts
+57) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > space.ts    
+58) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts > space.ts
+59) svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts
+60) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts
+61) visual.ts > hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > default.ts
+62) hasComponents/labelGroup.ts > svgElement.ts > ../features/form/SVGElementForm.tsx > engine.ts
+63) svgElement.ts > ../features/form/SVGElementForm.tsx > engine.ts
+64) svgElement.ts > ../features/form/SVGElementForm.tsx
+65) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts > svgElement.ts
+66) visual.ts > hasComponents/labelGroup.ts > svgElement.ts
+67) util.ts > line.ts > lineLike.ts > visual.ts > hasComponents/labelGroup.ts
+68) visual.ts > hasComponents/labelGroup.ts
+69) util.ts > line.ts
+70) ../features/form/FormDiagramInterface.tsx > ../features/form/LabelGroupComboForm.tsx > ../features/form/LabelListForm.tsx > ../features/form/LabelForm.tsx 
+> ../features/form/TextForm.tsx
+72) ../app/App.tsx > ../features/banner/Banner.tsx
+73) ../app/App.tsx > ../features/banner/Banner.tsx > ../features/banner/AnnotateDropdown.tsx
+74) ../app/App.tsx > ../features/banner/Banner.tsx > ../features/banner/AnnotateDropdown.tsx > ../features/canvas/LineTool.tsx
+75) ../features/canvas/LineTool.tsx > ../features/canvas/BindingsSelector.tsx
+76) ../app/App.tsx > ../features/banner/Banner.tsx > ../features/banner/LoadStateDialog.tsx
+77) ../app/App.tsx > ../features/canvas/Canvas.tsx
+78) ../app/App.tsx > ../features/canvas/Canvas.tsx > ../features/dnd/CanvasDragLayer.tsx > ../features/dnd/CanvasDraggableElement.tsx > ../features/dnd/CanvasDropContainer.tsx > ../features/dnd/TemplateDraggableElement.tsx
+79) ../features/dnd/CanvasDropContainer.tsx > ../features/dnd/TemplateDraggableElement.tsx
+80) ../features/dnd/CanvasDropContainer.tsx > ../features/dnd/TemplateDraggableElement.tsx > ../features/dnd/InsertArea.tsx
+81) ../features/dnd/TemplateDraggableElement.tsx > ../features/dnd/InsertArea.tsx
+82) ../app/App.tsx > ../features/elementDraw/ElementsDraw.tsx
+83) ../app/App.tsx > ../features/elementDraw/ElementsDraw.tsx > ../features/elementDraw/AddSchemeDialog.tsx

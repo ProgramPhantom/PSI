@@ -1,32 +1,15 @@
-import {Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon} from "@blueprintjs/core";
-import {useMemo, useRef, useState} from "react";
-import {ObjectInspector} from "react-inspector";
-import {myToaster} from "../../app/App";
-import {AllComponentTypes, Result, UserComponentType} from "../../logic/diagramHandler";
+import { Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon } from "@blueprintjs/core";
+import { useMemo, useRef, useState } from "react";
+import { ObjectInspector } from "react-inspector";
 import ENGINE from "../../logic/engine";
-import {IVisual, Visual} from "../../logic/visual";
-import {LabelGroupComboForm, SubmitButtonRef} from "./LabelGroupComboForm";
+import Visual, { IVisual } from "../../logic/visual";
+import { LabelGroupComboForm, SubmitButtonRef } from "./LabelGroupComboForm";
+import { AllComponentTypes, UserComponentType } from "../../logic/point";
+import { Result } from "../../logic/diagramHandler";
+import { appToaster } from "../../app/Toaster";
+import LabelGroup from "../../logic/hasComponents/labelGroup";
+import { FormHolderProps } from "./FormBase";
 
-interface FormHolderProps {
-	target?: Visual;
-	changeTarget: (val: Visual | undefined) => void;
-}
-
-export interface FormRequirements {
-	target?: Visual;
-	prefix?: string;
-}
-
-interface FormHolderProps {
-	target?: Visual;
-	targetType: AllComponentTypes;
-	changeTarget: (val: Visual | undefined) => void;
-}
-
-export interface FormRequirements {
-	target?: Visual;
-	prefix?: string;
-}
 
 type SubmissionFunction = (data: any, type: UserComponentType) => Result<any>;
 type DeleteFunction = (val: Visual, type: UserComponentType) => Result<any>;
@@ -41,8 +24,8 @@ type EffectGroup = {
 };
 
 function getCoreDefaults(target: Visual): IVisual {
-	if (Visual.isLabelGroup(target)) {
-		return target.components.coreChild.state;
+	if (LabelGroup.isLabelGroup(target)) {
+		return target.coreChild.state;
 	} else {
 		return target.state;
 	}
@@ -102,20 +85,20 @@ export function FormDiagramInterface(props: FormHolderProps) {
 				result = (targetFunction as SubmissionFunction)(values, masterType);
 				break;
 			case "modify":
-				result = (targetFunction as ModifyFunction)(values, masterType, props.target);
+				result = (targetFunction)(values, masterType, props.target);
 				break;
 			case "delete":
 				result = (targetFunction as DeleteFunction)(props.target, masterType);
 				break;
 			default:
-				myToaster.show({
+				appToaster.show({
 					message: `No '${effect}' method assigned to object type '${masterType}'`,
 					intent: "danger"
 				});
 		}
 
 		if (!result.ok) {
-			myToaster.show({
+			appToaster.show({
 				message: `Error creating element`,
 				intent: "danger"
 			});
@@ -180,7 +163,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 										"delete"
 									);
 									props.changeTarget(undefined);
-									myToaster.show({
+									appToaster.show({
 										message: `Deleted element '${props.target?.ref}'`,
 										intent: "danger",
 										timeout: 1000

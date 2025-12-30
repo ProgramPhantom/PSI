@@ -1,19 +1,16 @@
-import Channel, {IChannel} from "./hasComponents/channel";
-import defaultScheme from "./default/schemeSet.json";
-import {UserComponentType} from "./diagramHandler";
-import Diagram, {IDiagram} from "./hasComponents/diagram";
-import LabelGroup, {ILabelGroup} from "./hasComponents/labelGroup";
-import {ID} from "./point";
-import RectElement, {IRectElement} from "./rectElement";
-import Sequence, {ISequence} from "./hasComponents/sequence";
-import SVGElement, {ISVGElement} from "./svgElement";
-import {IText} from "./text";
-import {DeepMutable, DeepReadonly, mergeObjectsPreferNonEmpty} from "./util";
-import {Visual} from "./visual";
-import Space from "./space";
-import Label from "./hasComponents/label";
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
-import Line, {ILine} from "./line";
+import { DEFAULT_SCHEME_SET } from "./default/schemeSet";
+import type { IChannel } from "./hasComponents/channel";
+import { IDiagram } from "./hasComponents/diagram";
+import { ILabelGroup } from "./hasComponents/labelGroup";
+import { ISequence } from "./hasComponents/sequence";
+import { ISequenceAligner } from "./hasComponents/sequenceAligner";
+import { ILine } from "./line";
+import { ID, UserComponentType } from "./point";
+import { IRectElement } from "./rectElement";
+import { ISVGElement } from "./svgElement";
+import { IText } from "./text";
+
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
 const ASSET_SVGS: SVGDict = import.meta.glob("../assets/svg/*.svg", {
@@ -25,20 +22,9 @@ const ASSET_SVGS: SVGDict = import.meta.glob("../assets/svg/*.svg", {
 const svgPath: string = "\\src\\assets\\";
 var schemes: string[] = ["default"];
 
-const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
-	rect: RectElement,
-	svg: SVGElement,
-	channel: Channel,
-	diagram: Diagram,
-	line: Line,
-	sequence: Sequence,
-	space: Space,
-	"label-group": LabelGroup,
-	label: Label
-};
 
 export interface AppConfigSchemeData {
-	diagram: IDiagram;
+	diagram: ISequenceAligner;
 	sequence: ISequence;
 	channel: IChannel;
 	line: ILine;
@@ -108,7 +94,43 @@ export default class SchemeManager {
 		return Object.keys(this.allSchemes);
 	}
 	get allSVGDataRefs(): string[] {
-		return Object.keys(this.svgStrings);
+		return Object.keys(this.svgStrings ?? {});
+	}
+
+
+
+	get elementTypes(): Record<string, UserComponentType> {
+		var types: Record<string, UserComponentType> = {};
+
+		for (var scheme of this.schemesList) {
+			Object.keys(scheme.svgElements ?? {}).forEach((r) => {
+				types[r] = "svg";
+			});
+			Object.keys(scheme.rectElements ?? {}).forEach((r) => {
+				types[r] = "rect";
+			});
+			Object.keys(scheme.labelGroupElements ?? {}).forEach((r) => {
+				types[r] = "label-group";
+			});
+		}
+
+		return types;
+	}
+
+	constructor(emitChange: () => void) {
+		this.emitChange = () => {
+			this.saveToLocalStore();
+			emitChange();
+		};
+
+		var initialScheme: Record<string, IUserSchemeData> = JSON.parse(
+			JSON.stringify(DEFAULT_SCHEME_SET)
+		);
+
+		this.internalScheme = initialScheme[SchemeManager.InternalSchemeName];
+
+		this.userSchemeSet = this.getLocalSchemes();
+		this.loadSVGs();
 	}
 
 	public setUserScheme(name: string, schemeData: PartialUserSchemeData) {
@@ -138,40 +160,6 @@ export default class SchemeManager {
 	public deleteUserScheme(name: string) {
 		delete this._userSchemeSet[name];
 		this.emitChange();
-	}
-
-	get elementTypes(): Record<string, UserComponentType> {
-		var types: Record<string, UserComponentType> = {};
-
-		for (var scheme of this.schemesList) {
-			Object.keys(scheme.svgElements ?? {}).forEach((r) => {
-				types[r] = "svg";
-			});
-			Object.keys(scheme.rectElements ?? {}).forEach((r) => {
-				types[r] = "rect";
-			});
-			Object.keys(scheme.labelGroupElements ?? {}).forEach((r) => {
-				types[r] = "label-group";
-			});
-		}
-
-		return types;
-	}
-
-	constructor(emitChange: () => void) {
-		this.emitChange = () => {
-			this.saveToLocalStore();
-			emitChange();
-		};
-
-		var initialScheme: Record<string, IUserSchemeData> = JSON.parse(
-			JSON.stringify(defaultScheme)
-		);
-
-		this.internalScheme = initialScheme[SchemeManager.InternalSchemeName];
-
-		this.userSchemeSet = this.getLocalSchemes();
-		this.loadSVGs();
 	}
 
 	//// ----------------- LOADERS -------------------
@@ -408,3 +396,32 @@ export default class SchemeManager {
 	}
 	//// ----------------------------------------------
 }
+
+export type DeepReadonly<T> = {
+	readonly [P in keyof T]: DeepReadonly<T[P]>;
+};
+
+export function mergeObjectsPreferNonEmpty(obj1: any, obj2: any) {
+	const result = {};
+	for (const key of new Set([...Object.keys(obj1), ...Object.keys(obj2)])) {
+		const val1 = obj1[key];
+		const val2 = obj2[key];
+
+		// If val1 is empty object, use val2; otherwise use val1
+		if (
+			val1
+			&& typeof val1 === "object"
+			&& !Array.isArray(val1)
+			&& Object.keys(val1).length === 0
+		) {
+			result[key] = val2;
+		} else {
+			result[key] = val1 ?? val2; // fallback if val1 is null/undefined
+		}
+	}
+	return result;
+}
+
+export type DeepMutable<T> = {
+	-readonly [P in keyof T]: DeepMutable<T[P]>;
+};

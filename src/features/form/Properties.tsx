@@ -1,5 +1,5 @@
-import {Card, Divider, EditableText, Section, SectionCard, Text} from "@blueprintjs/core";
-import {Visual} from "../../logic/visual";
+import { Card, Divider, EditableText, Section, SectionCard, Text } from "@blueprintjs/core";
+import Visual from "../../logic/visual";
 
 interface IProperties {
 	target: Visual;

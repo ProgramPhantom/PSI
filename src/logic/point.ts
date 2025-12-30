@@ -1,9 +1,26 @@
-import {AllComponentTypes} from "./diagramHandler";
-import {Dimensions, IBinding} from "./spacial";
-import {posPrecision} from "./util";
-
 export type OwnershipType = "component" | "free";
 export type ID = string;
+
+console.log("Load module point")
+
+// All component types
+export type AllComponentTypes = UserComponentType | AbstractComponentTypes;
+
+// The types of component
+export type UserComponentType =
+	| DrawComponent
+	| "label-group"
+	| "label"
+	| "text"
+	| "line"
+	| "channel"
+	| "sequence-aligner"
+	| "sequence"
+	| "diagram";
+export type DrawComponent = "svg" | "rect" | "space";
+
+// Abstract component types (have no visual content)
+export type AbstractComponentTypes = "aligner" | "collection" | "lower-abstract" | "visual" | "grid";
 
 interface Shift {
 	dx?: number;
@@ -50,30 +67,26 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		};
 	}
 
-	protected _x?: number;
-	protected _y?: number;
+	protected _x: number;
+	protected _y: number;
 
 	private _id: ID;
 	public get id(): ID {
 		return this._id;
 	}
 	public set id(value: ID) {
+		if (this.ref === "BAR") {
+			console.log()
+		}
 		this._id = value;
 	}
 	public parentId: ID | undefined;
 
 	ref: string;
 
-	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
-	bindingsToThis: IBinding[] = [];
-
-	ownershipType: OwnershipType = "free";
-
-	displaced: boolean = false;
-
 	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined) {
-		this.x = x;
-		this.y = y;
+		this._x = x ?? 0;
+		this._y = y ?? 0;
 
 		this.ref = ref;
 
@@ -85,26 +98,16 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	}
 
 	get x(): number {
-		if (this._x !== undefined) {
-			return this._x;
-		}
-		throw new Error("x unset");
+		return this._x;
 	}
 	get y(): number {
-		if (this._y !== undefined) {
-			return this._y;
-		}
-		throw new Error("y unset");
+		return this._y;
 	}
-	protected set x(val: number | undefined) {
-		if (val !== this._x) {
-			this._x = val !== undefined ? posPrecision(val) : undefined;
-		}
+	public set x(val: number) {
+		this._x =  val;
 	}
-	protected set y(val: number | undefined) {
-		if (val !== this._y) {
-			this._y = val !== undefined ? posPrecision(val) : undefined;
-		}
+	public set y(val: number) {
+		this._y = val;
 	}
 
 	move({dx, dy}: Shift) {
@@ -114,22 +117,5 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	place({x, y}: {x?: number; y?: number}) {
 		x !== undefined ? (this.x = x) : {};
 		y !== undefined ? (this.y = y) : {};
-	}
-
-	// Helpers:
-	get hasPosition(): boolean {
-		if (this._x === undefined || this._y === undefined) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	getPositionByDimension(dim: Dimensions): number | undefined {
-		if (dim === "x") {
-			return this._x;
-		} else {
-			return this._y;
-		}
 	}
 }

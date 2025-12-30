@@ -1,504 +1,424 @@
-import Aligner from "../aligner";
-import Channel, {IChannel} from "./channel";
-import Collection, {ICollection, IHaveComponents} from "../collection";
-import defaultSequence from "../default/sequence.json";
-import {AllComponentTypes} from "../diagramHandler";
-import logger, {Operations, Processes} from "../log";
-import {ID} from "../point";
-import Space from "../space";
-import Spacial from "../spacial";
-import {FillObject, MarkAsComponent, RecursivePartial} from "../util";
-import {Visual} from "../visual";
+import { Element } from "@svgdotjs/svg.js";
+import Grid, { GridCell, IGrid } from "../grid";
+import { ID, UserComponentType } from "../point";
+import Spacial, { IGridChildConfig, IMountConfig, SiteNames, Size } from "../spacial";
+import Visual from "../visual";
+import Channel, { IChannel } from "./channel";
+import { G } from "@svgdotjs/svg.js";
 
-export interface ISequenceComponents extends Record<string, Spacial | Spacial[]> {
-	channels: Channel[];
+console.log("Load module sequence")
 
-	channelColumn: Aligner<Channel>;
-	pulseColumns: Aligner<Aligner<Visual>>;
-	labelColumn: Aligner<Visual>;
-	columns: Aligner<Aligner<Visual>>;
-}
-
-export interface ISequence extends ICollection {
+export interface ISequence extends IGrid {
 	channels: IChannel[];
 }
 
 export type OccupancyStatus = Visual | "." | undefined;
 
-export type SequenceNamedStructures =
-	| "channel column"
-	| "label column"
-	| "label col | pulse columns"
-	| "pulse columns";
 
-export default class Sequence extends Collection implements IHaveComponents<ISequenceComponents> {
-	static defaults: {[key: string]: ISequence} = {
-		default: {...(<any>defaultSequence)}
-	};
-	static ElementType: AllComponentTypes = "sequence";
+
+export default class Sequence extends Grid implements ISequence {
+	static ElementType: UserComponentType = "sequence";
 	get state(): ISequence {
 		return {
-			channels: this.components.channels.map((c) => c.state),
-
+			channels: this.channels.map((c) => c.state),
 			...super.state
 		};
 	}
 
-	components: ISequenceComponents;
+	channels: Channel[];
 
-	elementMatrix: OccupancyStatus[][] = [];
 
 	get channelsDict(): Record<ID, Channel> {
-		return Object.fromEntries(this.components.channels.map((item) => [item.id, item]));
+		return Object.fromEntries(this.channels.map((item) => [item.id, item]));
 	}
 	get channelIDs(): string[] {
-		return this.components.channels.map((c) => c.id);
+		return this.channels.map((c) => c.id);
+	}
+	get numChannels(): number {
+		return this.channels.length;
 	}
 	get allPulseElements(): Visual[] {
 		var elements: Visual[] = [];
-		this.components.channels.forEach((c) => {
-			elements.push(...c.components.mountedElements);
+		this.channels.forEach((c) => {
+			elements.push(...c.children);
 		});
 		return elements;
 	}
 
-	constructor(pParams: RecursivePartial<ISequence>, templateName: string = "default") {
-		var fullParams: ISequence = FillObject(pParams, Sequence.defaults[templateName]);
-		super(fullParams, templateName);
-		logger.processStart(Processes.INSTANTIATE, ``, this);
+	override get allElements(): Record<ID, Visual> {
+		var elements: Record<ID, Visual> = {[this.id]: this};
 
-		// ----- Create structure ----
-		// Channel column
-		var channelColumn: Aligner<Channel> = new Aligner<Channel>(
-			{
-				bindMainAxis: true,
-				axis: "y",
-				alignment: "here",
-				ref: "channel column"
-			},
-			"default"
-		);
-		this.add(channelColumn, undefined, true);
+		this.channels.forEach((c) => {
+			elements = {...elements, ...c.allElements};
+		});
+		return elements;
+	}
 
-		// All columns
-		var columns: Aligner<Aligner<Visual>> = new Aligner<Aligner<Visual>>(
-			{
-				axis: "x",
-				bindMainAxis: true,
-				alignment: "here",
-				ref: "label col | pulse columns"
-			},
-			"default"
-		);
-		this.add(columns, undefined, true);
+	constructor(params: ISequence) {
+		super(params);
 
-		// Label column
-		var labelColumn: Aligner<Visual> = new Aligner<Visual>(
-			{
-				axis: "y",
-				bindMainAxis: false,
-				alignment: "here",
-				y: 0,
-				ref: "label column"
-			},
-			"default"
-		);
-		columns.add(labelColumn);
+		this.channels = [];
 
-		// Pulse columns
-		var pulseColumns: Aligner<Aligner<Visual>> = new Aligner<Aligner<Visual>>(
-			{bindMainAxis: true, axis: "x", y: 0, ref: "pulse columns"},
-			"default"
-		);
-		columns.add(pulseColumns);
-
-		this.components = {
-			channelColumn: channelColumn,
-			channels: [],
-			columns: columns,
-			labelColumn: labelColumn,
-			pulseColumns: pulseColumns
-		};
-		MarkAsComponent(this.components);
-		// --------------------------
-
-		fullParams.channels.forEach((c) => {
+		params.channels.forEach((c) => {
 			var newChan = new Channel(c);
 			this.addChannel(newChan);
 		});
-
-		logger.processEnd(Processes.INSTANTIATE, ``, this);
 	}
 
-	clearEmptyColumns() {
-		this.components.pulseColumns.children.forEach((c) => {
-			if (c.children.length === 0) {
-				this.components.pulseColumns.remove(c);
-				console.warn("Clearing empty columns. Delete has not cleared up properly");
-			}
+	public override draw(surface: Element) {
+		if (this.svg) {
+			this.svg.remove();
+		}
+
+		var group = new G().id(this.id).attr({title: this.ref});
+		group.attr({
+			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
+		});
+
+		this.svg = group;
+
+		surface.add(this.svg);
+
+		this.channels.forEach((channel) => {
+			
+			channel.draw(this.svg!);
+			
 		});
 	}
 
-	checkMultiElementSplit(index: number): boolean {
-		var split: boolean = false;
-		var splitElements: Visual[] = [];
-		for (var channel of this.elementMatrix) {
-			var currChannel: OccupancyStatus[] = channel;
+	public override computeSize(): Size {
+		var size: Size = super.computeSize();
 
-			if (currChannel[index - 1] === undefined && currChannel[index] === undefined) {
-				continue;
-			}
-			if (
-				(currChannel[index - 1] instanceof Visual && currChannel[index] === ".")
-				|| (currChannel[index - 1] === "." && currChannel[index] === ".")
-			) {
-				split = true;
+		this.applySizesToChannels();
+		return size
+	}
 
-				// Find element
-				var elementSearch: OccupancyStatus = currChannel[index];
-				while (typeof elementSearch !== typeof Visual) {
-					index -= 1;
-					elementSearch = currChannel[index];
+	public override computePositions(root: {x: number, y: number}): void {
+		this.x = root.x;
+		this.y = root.y;
+
+		// Find dimension and positions of the cells.
+		this.computeCells();
+
+		// Update positions of columns and rows
+		this.gridSizes.columns.forEach((col, i) => {
+			col.x = this.cells[0][i].x;
+			col.y = this.cells[0][0].y;
+		})
+
+		this.gridSizes.rows.forEach((row, i) => {
+			row.y = this.cells[i][0].y;
+			row.x = this.cells[0][0].x;
+		})
+
+		// Now iterate through the gridMatrix and set the position of children
+		this.gridMatrix.forEach((row, row_index) => {
+			row.forEach((cell, column_index) => {
+				if (cell?.elements !== undefined && cell.sources === undefined) {
+					var cellRect: Spacial = this.cells[row_index][column_index];
+					var elements: Visual[] = cell.elements;
+
+					var gridConfig: IGridChildConfig;
+					for (let element of elements) {
+						if (element.placementMode.type === "grid") {
+							gridConfig = element.placementMode.gridConfig;
+						} else if (element.placementMode.type === "pulse") {
+							gridConfig = this.mountConfigToGridConfig(element.placementMode.config);
+						} else {
+							gridConfig = {
+								coords: {row: row_index, col: column_index},
+								alignment: {x: "here", y: "here"},
+								gridSize: {noRows: 1, noCols: 1}
+							}
+						}
+
+						var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
+
+						cellRect.internalImmediateBind(element, "x", alignment.x)
+						cellRect.internalImmediateBind(element, "y", alignment.y)
+						
+
+						element.computePositions({x: element.x, y: element.y});
+					}
 				}
-				splitElements.push(elementSearch as Visual);
-			}
-		}
-		return split;
+			})
+		})
+
+		this.applySizesToChannels();
 	}
 
-	addColumns(index: number, quantity: number = 1) {
-		// Check if addition of column will split a multi-column element (not allowed currently)
-		var split: boolean = this.checkMultiElementSplit(index);
-		if (split) {
-			console.warn(`Splitting element`);
+	public addPulse(pulse: Visual) {
+		if (pulse.placementMode.type !== "pulse") {
+			console.warn(`Cannot mount pulse with no pulse type config`)
+			return
 		}
 
-		// Calculate gap from index to leftmost column
-		var numColumns: number = this.components.pulseColumns.children.length;
-		var diff: number = Math.max(index - numColumns, 0);
+		var config: IMountConfig = pulse.placementMode.config;
 
-		var columnsToAdd: Aligner<Visual>[] = [];
+		var gridConfig: IGridChildConfig = this.mountConfigToGridConfig(config);
 
-		// ----- Catch up columns to index -----
-		for (var i = 0; i < diff; i++) {
-			this.addColumn(numColumns + i);
+		if (gridConfig.coords === undefined) {
+			return
 		}
 
-		// ----- Add additional columns defined by quantity (this adds index column) -----
-		for (var i = 0; i < quantity; i++) {
-			this.addColumn(index + i);
+		// Insert column if occupied:
+		if (gridConfig.coords && this.gridMatrix[gridConfig.coords.row][gridConfig.coords.col] !== undefined) {
+			this.insertEmptyColumn(gridConfig.coords.col);
 		}
+
+		this.addChildAtCoord(pulse, gridConfig.coords.row, gridConfig.coords.col);
+
+		// this.growChannels();
+		this.setChannelDimensions();
+		this.setChannelMatrices();
 	}
-
-	addColumn(index: number) {
-		var INDEX: number = index;
-
-		var newColumn: Aligner<Visual> = new Aligner<Visual>(
-			{
-				axis: "y",
-				bindMainAxis: false,
-				alignment: "centre",
-				ref: `column at ${INDEX}`,
-				minCrossAxis: 10
-			},
-			"default"
-		);
-		this.markComponent(newColumn);
-
-		// Add to positional columns
-		this.components.pulseColumns.add(newColumn, INDEX);
-
-		// Update indices after this new column:
-		// Update internal indexes of Positional elements in pos col:
-		this.components.channels.forEach((channel) => {
-			channel.shiftIndices(index, 1);
-		});
-
-		// Update element matrix
-		this.elementMatrix.forEach((c) => {
-			c.splice(index, 0, ...Array<Visual | undefined>(1).fill(undefined));
-		});
-	}
-
-	deleteColumns(index: number, ifEmpty: boolean = false, quantity: number = 1): boolean {
-		// Update positional indices of elements after this
-		var columnsRemoved: number = 0;
-		var targets: (Aligner<Visual> | undefined)[] = this.components.pulseColumns.children.slice(
-			index,
-			index + quantity
-		);
-
-		targets.forEach((t, i) => {
-			if (t && ((ifEmpty && t.children.length === 0) || !ifEmpty)) {
-				var INDEX: number = this.components.pulseColumns.children.indexOf(t);
-				this.components.pulseColumns.remove(t);
-				columnsRemoved += 1;
-
-				this.components.channels.forEach((channel) => {
-					channel.shiftIndices(INDEX, -1);
-				});
-				this.elementMatrix.forEach((c) => {
-					c.splice(INDEX, 1);
-				});
-			}
-		});
-
-		if (columnsRemoved > 0) {
-			return true;
-		}
-		return false;
-	}
-	// ------------------------
 
 	// Content Commands
-	addChannel(channel: Channel) {
-		this.markComponent(channel);
-		this.components.channelColumn.add(channel);
+	public addChannel(channel: Channel) {
+		this.channels.push(channel);
+		
+		// Add the three rows of this channel to the bottom of the 
+		// grid matrix;
 
-		// Set and initialise channel
-		this.components.channels.push(channel);
+		// First we need to expand the matrix (as this channel we are)
+		// adding  could be longer than the matrix:
 
-		var index = this.components.channels.length - 1;
-		channel.setPulseColumns(this.components.pulseColumns)
-		channel.setLabelColumn(this.components.labelColumn);
-
-		this.elementMatrix.splice(this.elementMatrix.length, 0, []);
-
-		channel.mountOccupancy = this.elementMatrix[index];
+		var channelLength: number = channel.numColumns;
+		this.setMatrixSize({row: undefined, col: channelLength-1}, true)
+		
+		// Note we don't care about the row as we will just append the 
+		// rows of the channel now, there's no need to expand it
+		
+		channel.getRows().forEach((row) => {
+			this.gridMatrix.push(row);
+		})
+	
 	}
 
-	deleteChannel(channel: Channel) {
-		if (!this.components.channels.includes(channel)) {
-			throw new Error(`Channel '${channel.ref}' does not belong to ${this.ref}`);
-		}
-		// The order is very important here
-		var index = this.components.channels.indexOf(channel);
+	public deleteChannel(channel: Channel) {
+		var channelIndex: number | undefined = this.locateChannel(channel);
 
-		if (channel.components.label) {
-			this.components.labelColumn.remove(channel.components.label);
+		if (channelIndex === undefined) {
+			console.warn(`Cannot find index of channel with ref ${channel.ref}`)
+			return
 		}
 
-		channel.remove(channel.components.bar);
+		this.channels.splice(channelIndex, 1);
+		
+		var channelStartRow = channelIndex * 3;
 
-		var noMounted = channel.components.mountedElements.length;
-		for (var i = 0; i < noMounted; i++) {
-			var element = channel.components.mountedElements[0];
-			if (element.mountConfig !== undefined) {
-				this.deleteMountedElement(element);
+		this.removeRow(channelStartRow);
+		this.removeRow(channelStartRow);
+		this.removeRow(channelStartRow);
+
+		// Matrix now may be over-long if the longest channel has 
+		// been deleted, hence we squeeze.
+		this.squeezeMatrix();
+	}
+
+	protected locateChannel(channel: Channel) {
+		return this.locateChannelById(channel.id);
+	}
+
+	protected locateChannelById(id: ID): number | undefined {
+		var channelIndex: number | undefined = undefined;
+
+		this.channels.forEach((child, index) => {
+			if (id === child.id) {
+				channelIndex = index;
 			}
-		}
+		});
 
-		this.components.channelColumn.remove(channel);
-
-		this.elementMatrix.splice(index, 1);
-		this.components.channels.splice(index, 1);
+		return channelIndex;
 	}
 
-	public addElement(element: Visual) {
-		if (element.isMountable) {
-			element.mountConfig!.mountOn = false;
-		}
+	/**
+	 * Applies grid slices and positional offsets to each channel in `this.channels`.
+	 *
+	 * For each channel at index `i` this method:
+	 * - computes a base `INDEX = i * 3` and extracts 3-item slices from `this.gridMatrix` and `this.cells`,
+	 *   plus a corresponding 3-item slice from `this.gridSizes.rows`.
+	 * - builds a `gridSizes` object that preserves `this.gridSizes.columns` and uses the extracted row slice.
+	 * - sets the channel's `x` to `this.contentX` and `y` to the `y` value of the first row in the row slice.
+	 * - calls `channel.setGrid(gridSlice, gridSizes, cellSlice)` to assign the extracted grid and cells.
+	 *
+	 * Side effects:
+	 * - Mutates each channel by setting `x`, `y`, and invoking `setGrid`.
+	 *
+	 * Preconditions:
+	 * - `this.gridMatrix`, `this.cells`, and `this.gridSizes.rows` must be aligned and long enough so that
+	 *   slicing `INDEX .. INDEX + 3` is valid for every channel.
+	 *
+	 * @private
+	 */
+	private applySizesToChannels() {
+		this.channels.forEach((channel, channel_index) => {
+			let INDEX: number = channel_index * 3;
 
-		// Add
+			let gridSlice = this.gridMatrix.slice(INDEX, INDEX+3);
+
+			let rowSizeSlice = this.gridSizes.rows.slice(INDEX, INDEX+3);
+			let gridSizes: {columns: Spacial[], rows: Spacial[]} = {rows: rowSizeSlice, columns: this.gridSizes.columns}
+
+			let cellSlice = this.cells.slice(INDEX, INDEX+3);
+
+			channel.x = this.cx;
+			channel.y = rowSizeSlice[0].y;
+
+			channel.setGrid(gridSlice, gridSizes, cellSlice);
+
+			let channelWidth: number = this.width;
+			let channelHeight: number = rowSizeSlice.reduce((h, row) => h + row.height, 0);
+
+			channel.width = channelWidth;
+			channel.height = channelHeight;
+		})
 	}
 
-	// @isMountable...
-	public mountElement(element: Visual, insert: boolean = false) {
-		logger.operation(Operations.ADD, `------- ADDING POSITIONAL ${element.ref} -------`, this);
-		if (element.mountConfig === undefined) {
-			throw new Error("Cannot mount element without mount config");
+	protected setChannelDimensions() {
+		this.channels.forEach((channel, channel_index) => {
+			// Currently channels are forced to be 3 rows so we leave that
+			// and just set the number of columns
+
+			// set matrix takes index
+			channel.setMatrixSize({col: this.numColumns-1});
+			channel.growBar();
+		})
+	}
+
+	protected setChannelMatrices() {
+		this.channels.forEach((channel, channel_index) => {
+			let INDEX: number = channel_index * 3;
+
+			let gridSlice = this.gridMatrix.slice(INDEX, INDEX+3);
+
+			channel.setMatrix(gridSlice);
+		})
+	}
+
+	private growChannels() {
+		this.channels.forEach((c) => {
+			if (c.bar.placementMode.type === "grid") {
+				c.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.numColumns-1}
+			}
+		})
+	}
+
+	public colHasPulse(col: GridCell[]): boolean {
+		let present: number = 0;
+
+		col.forEach((cell) => {
+			if (cell?.elements !== undefined) {
+				present += 1;
+			}
+		})
+
+		// Reliable?
+		if (present > this.numChannels) {
+			return true
 		}
-		element.mountConfig.mountOn = true;
+		
+		return false
+	}
 
-		var targetChannel: Channel = this.channelsDict[element.mountConfig?.channelID!];
-		if (targetChannel === undefined) {
-			throw new Error(`Cannot find channel width ID ${element.mountConfig.channelID}`);
+	protected mountConfigToGridConfig(mountConfig: IMountConfig): IGridChildConfig {
+		var channelId: ID | undefined = mountConfig.channelID;
+		
+		
+		// We now need to convert the mount config in the pulse's placement
+		// type into the exact coordinate in the grid to insert this element
+		var channelIndex: number = this.locateChannelById(channelId ?? "") ?? 0;
+		
+
+		
+		var row: number = 0;
+		var column: number = mountConfig.index ?? 0;  // Starting at 1 as we know the label goes there
+		var alignment: {x: SiteNames, y: SiteNames} = {x: "centre", y: "far"}
+
+		// --------- Row -------------
+		// Currently, channels ALWAYS have a height of 3 so that's how we find 
+		// our row number.
+		row = channelIndex * 3;
+		if (mountConfig.orientation === "both") {
+			row += 1
+		} else if (mountConfig.orientation === "bottom") {
+			row += 2
+			alignment = {x: "centre", y: "here"}
 		}
 
-		var numColumns = this.components.pulseColumns.children.length;
+		// ---------- Column ------------
+		// column += mountConfig.index;  // Shift along by index
 
-		var INDEX = element.mountConfig.index;
-		if (INDEX === undefined) {
-			INDEX = numColumns; // What?
+
+		return {
+			coords: {row: row, col: column},
+			alignment: alignment,
+			gridSize: {noRows: 1, noCols: mountConfig.noSections}
 		}
+	}
 
-		// INDEX limiting (decreases index when index is too high)
-		if (insert) {
-			INDEX = Math.min(INDEX, numColumns);
-		} else {
-			// Trying to place on non-existant column, behaviour is to insert at end
-			// if (INDEX > numColumns-1) {
-			//     INDEX = numColumns;
-			//     insert = true
+	public override insertEmptyColumn(index?: number) {
+		var newColumn: GridCell[] = Array<GridCell>(this.numRows).fill(undefined);
+		var index = index; 
+
+		if (index === undefined || index < 0 || index > this.numColumns) {
+			index = this.numColumns 
+		} 
+
+		for (let i = 0; i < this.numRows; i++) {
+      		this.gridMatrix[i].splice(index, 0, newColumn[i]);
+    	}
+
+		// Apply this to the channels
+		// This condition means this only happens when a channel is initialised.
+		if (this.numColumns >= 2) {
+			this.setChannelDimensions();
+			this.setChannelMatrices();
+
+			// // We need to move the bar sources back one and reset their size.
+			// if (index === 1) {
+			// 	this.channels.forEach((channel, channel_index) => {
+			// 		let INDEX: number = channel_index * 3;
+			// 		let bar_row: number = INDEX + 1;
+// 
+			// 		this.gridMatrix[bar_row][1] = this.gridMatrix[bar_row][2];
+			// 		this.gridMatrix[bar_row][2] = {elements: [channel.bar], sources: {[channel.bar.id]: {row: bar_row, col: 2}}};
+// 
+			// 		if (channel.bar.placementMode.type === "grid") {
+			// 			channel.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.numColumns-1}
+			// 		}
+			// 	})
 			// }
-			// INDEX = Math.max(Math.min(INDEX, numColumns-1), 0)  // Max stops going below 0
+
 		}
-		element.mountConfig.index = INDEX;
-		var endINDEX: number = INDEX + element.mountConfig.noSections - 1;
-
-		// Calculate how many columns to insert
-		var targetedOccupancy: OccupancyStatus[] = targetChannel.mountOccupancy.slice(
-			INDEX,
-			endINDEX + 1
-		);
-		var targetedColumns: Aligner<Visual>[] = this.components.pulseColumns.children.slice(
-			INDEX,
-			endINDEX + 1
-		);
-
-		var columnsToAdd: number = element.mountConfig.noSections;
-		for (var i = 0; i < targetedColumns.length; i++) {
-			var presence: Visual | "." | undefined = targetedOccupancy[i];
-
-			if (!presence) {
-				columnsToAdd -= 1;
-			} else {
-				break;
-			}
-		}
-		if (insert && columnsToAdd === 0) {
-			columnsToAdd += 1;
-		}
-
-		if (element.ref === "180") {
-			console.log();
-		}
-		// Insert columns
-		if (columnsToAdd > 0 || insert) {
-			this.addColumns(INDEX, columnsToAdd);
-		} else if (insert === false) {
-			// Check element is already there
-			if (targetChannel.mountOccupancy[INDEX] !== undefined) {
-				throw new Error(
-					`Cannot place element ${element.ref} at index ${element.mountConfig.index} as it is already occupied.`
-				);
-			}
-		}
-
-		if (element.mountConfig.noSections > 1) {
-			// Add dummies
-			// var width: number = element.width / element.mountConfig.noSections;
-
-			for (var i = 0; i < element.mountConfig.noSections; i++) {
-				var newSpace = new Space({
-					contentHeight: 0,
-					contentWidth: 10,
-					padding: [0, 0, 0, 0]
-				});
-
-				this.components.pulseColumns.children[INDEX + i].add(
-					newSpace,
-					undefined,
-					false,
-					true,
-					element.mountConfig.alignment
-				);
-				element.dummies.push(newSpace);
-			}
-
-			var startColumn: Aligner<Visual> = this.components.pulseColumns.children[INDEX];
-			var endColumn: Aligner<Visual> = this.components.pulseColumns.children[endINDEX];
-			// Stretch element
-			startColumn.bind(element, "x", "here", "here");
-			endColumn.bind(element, "x", "far", "far");
-		} else {
-			// Add the element to the sequence's column collection, this should trigger resizing of bars
-			this.components.pulseColumns.children[INDEX].add(
-				element,
-				undefined,
-				false,
-				false,
-				element.mountConfig.alignment
-			);
-			// This will set the X of the child ^^^ (the column should gain width immediately.)
-		}
-
-		// Add element to channel
-		targetChannel.mountElement(element);
-		// This should set the Y of the element ^^^
-
-		// When an element is modified to have less sections, the optimisation to not delete the column means that
-		// the unused column is not removed.
-		// this.clearEmptyColumns();  // TODO: this shouldn't be needed
-
-		// SET X of element
-		this.components.pulseColumns.children[INDEX].enforceBinding();
-		// NOTE: new column already has x set from this.insert column, meaning using this.positionalColumnCollection.children[0]
-		// Does not update position of new positional because of the change guards  // TODO: add "force bind" flag
-
-		// This makes sure multi-column elements correctly bind far to the endColumn. For some reason they don't if this isn't here
-		this.components.pulseColumns.children[endINDEX].enforceBinding();
-
-		var channelIndex = this.components.channels.indexOf(targetChannel);
-		this.elementMatrix[channelIndex][INDEX] = element;
-		this.elementMatrix[channelIndex].fill(".", INDEX + 1, endINDEX + 1);
+		
 	}
 
-	// @isMounted
-	// Remove column is set to false when modifyPositional is called.
-	public deleteMountedElement(target: Visual, removeColumn: boolean = true): boolean {
-		var channelID: string = target.mountConfig?.channelID!;
-		var channel: Channel | undefined = this.channelsDict[channelID];
-		var channelIndex: number = this.components.channels.indexOf(channel);
-		var INDEX: number;
-		var endINDEX: number;
-
-		if (target.mountConfig === undefined) {
-			throw new Error(`Cannot demount element ${target.ref} as it is not mountable`);
-		}
-		if (target.mountConfig!.index === undefined) {
-			throw new Error("Index not initialised");
-		}
-		if (channelID === undefined || channelID === null) {
-			throw new Error(`No channel owner found when deleting ${target.ref}`);
-		}
-
-		INDEX = target.mountConfig!.index;
-		endINDEX = INDEX + target.mountConfig.noSections - 1;
-
-		var startColumn: Aligner<Visual> = this.components.pulseColumns.children[INDEX];
-		var endColumn: Aligner<Visual> = this.components.pulseColumns.children[endINDEX];
-
-		startColumn.clearBindsTo(target, "x");
-		endColumn.clearBindsTo(target, "x");
-
-		channel.removeMountable(target);
-
-		this.elementMatrix[channelIndex].fill(
-			undefined,
-			INDEX,
-			INDEX + target.mountConfig.noSections
-		);
-
-		// Remove target from columns (and remove dummies if necessary)
-		try {
-			if (target.mountConfig.noSections > 1) {
-				for (var i = 0; i < target.mountConfig.noSections; i++) {
-					var selectedColumn = this.components.pulseColumns.children[INDEX + i];
-
-					selectedColumn.children.forEach((c) => {
-						if (target.dummies.includes(c)) {
-							selectedColumn.remove(c);
-						}
-					});
-				}
-				target.dummies = [];
-			} else {
-				this.components.pulseColumns.children[INDEX].remove(target);
-			}
-		} catch {
-			throw new Error(`Cannot remove pulse column at index ${INDEX}`);
-		}
-
-		// Remove columns
-		let removed = false;
-		if (removeColumn === true) {
-			removed = this.deleteColumns(INDEX, true, target.mountConfig.noSections); // True indicates only if empty.
+	public override removeColumn(index?: number, onlyIfEmpty: boolean=false) {
+		if (index === undefined || index < 0 || index > this.numColumns-1) {
+			var INDEX = this.numColumns - 1;
 		} else {
-			removed = this.deleteColumns(INDEX + 1, true, target.mountConfig.noSections - 1);
-			// Delete trailing columns (could be more efficient but this is elegant)
+			INDEX = index;
 		}
 
-		return removed;
+		if (INDEX === 1 && this.numColumns === 2) {
+			return
+		} else if (INDEX === 1) {
+			// deleting first col but there are trailing columns
+
+		}
+
+		var targetColumn: GridCell[] = this.getColumn(INDEX);
+		var empty: boolean = !this.colHasPulse(targetColumn);
+
+		if (onlyIfEmpty === true && empty === false) { return }
+
+		for (let i = 0; i < this.numRows; i++) {
+			this.gridMatrix[i].splice(INDEX, 1);
+		}
+
+		this.setChannelDimensions()
 	}
+
+
 }

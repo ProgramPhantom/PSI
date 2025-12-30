@@ -1,12 +1,14 @@
-import {Button, Checkbox, Classes, Icon, Navbar, Popover} from "@blueprintjs/core";
-import React, {useState} from "react";
-import {myToaster, Tool} from "../../app/App";
-import {IDiagram} from "../../logic/hasComponents/diagram";
+import { Button, Icon, Navbar } from "@blueprintjs/core";
+import React, { useState } from "react";
+import { Tool } from "../../app/App";
+import { defaultLine } from "../../logic/default/index";
 import ENGINE from "../../logic/engine";
-import {LoadStateDialog} from "./LoadStateDialog";
-import {PNGExportDialog} from "./PNGExportDialog";
-import {AnnotateDropdown} from "./AnnotateDropdown";
-import Line from "../../logic/line";
+import { IDiagram } from "../../logic/hasComponents/diagram";
+import { AnnotateDropdown } from "./AnnotateDropdown";
+import { LoadStateDialog } from "./LoadStateDialog";
+import { PNGExportDialog } from "./PNGExportDialog";
+import { ILineStyle } from "../../logic/line";
+import { appToaster } from "../../app/Toaster";
 
 export interface IBannerProps {
 	saveSVG: () => void;
@@ -27,7 +29,7 @@ export default function Banner(props: IBannerProps) {
 
 		navigator.clipboard.writeText(stateString);
 
-		myToaster.show({
+		appToaster.show({
 			message: "State copied to clipboard",
 			intent: "success"
 		});
@@ -41,14 +43,14 @@ export default function Banner(props: IBannerProps) {
 		} else {
 			props.setTool({
 				type: "arrow",
-				config: {lineStyle: Line.defaults["default"].lineStyle, mode: "bind"}
+				config: {lineStyle: defaultLine.lineStyle as ILineStyle, mode: "bind"}
 			});
 		}
 	};
 
 	const saveState = () => {
 		ENGINE.save();
-		myToaster.show({
+		appToaster.show({
 			message: "State saved to localStorage",
 			intent: "success"
 		});

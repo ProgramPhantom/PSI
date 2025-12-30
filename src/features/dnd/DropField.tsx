@@ -1,16 +1,20 @@
-import Aligner from "../../logic/aligner";
-import Channel from "../../logic/hasComponents/channel";
-import Diagram from "../../logic/hasComponents/diagram";
 import DiagramHandler from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import Sequence, {OccupancyStatus} from "../../logic/hasComponents/sequence";
-import {Visual} from "../../logic/visual";
-import InsertArea, {AddSpec} from "./InsertArea";
+import { GridCell } from "../../logic/grid";
+import Diagram from "../../logic/hasComponents/diagram";
+import Sequence from "../../logic/hasComponents/sequence";
+import Visual from "../../logic/visual";
+import InsertArea, { AddSpec } from "./InsertArea";
+
+interface Rect {x: number, y: number, width: number, height: number}
+
+
 
 class DiagramDropInterpreter {
 	public handler: DiagramHandler;
 	public insertAreas: AddSpec[];
 	private slitherWidth: number = 4;
+	private minHeight: number = 6
 
 	constructor(handler: DiagramHandler) {
 		this.handler = handler;
@@ -23,67 +27,61 @@ class DiagramDropInterpreter {
 		this.insertAreas = [];
 
 		var diagram: Diagram = this.handler.diagram;
-		var sequences: Sequence[] = this.handler.diagram.components.sequences;
-		var columnSets: Aligner<Visual>[] = sequences.map((s) => s.components.pulseColumns);
+		var sequences: Sequence[] = this.handler.diagram.sequences;
 		var newSlither: AddSpec;
 
+		// Iterate sequences
 		Object.entries(diagram.sequenceDict).forEach(([seqID, sequence]) => {
-			var channels = sequence.components.channels;
-			var columns: Aligner<Visual>[] = sequence.components.pulseColumns.children;
-			var noColumns = columns.length;
-			var noChannels = channels.length;
 
-			// Allowed Slither indexes
-			var slitherIndexes: boolean[] = Array<boolean>(noColumns).fill(true);
-			for (var channelIndex = 0; channelIndex < noChannels; channelIndex++) {
-				var channel: Channel = channels[channelIndex];
+			// For each channel
+			Object.entries(sequence.channelsDict).forEach(([channelId, channel], channelIndex) => {
+				var columns: Rect[] = channel.gridSizes.columns;
+				var noColumns = columns.length;
 
-				// Columns
+				// Allowed Slither indexes
+				var slitherIndexes: boolean[] = Array<boolean>(noColumns).fill(true);
+
+				// Compute indexes of the slithers
 				for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
-					let preOccupancy: OccupancyStatus =
-						sequence.elementMatrix[channelIndex][columnIndex - 1];
-					let hereOccupancy: OccupancyStatus =
-						sequence.elementMatrix[channelIndex][columnIndex];
+					let preOccupancy: GridCell =
+						channel.gridMatrix[0]?.[columnIndex - 1];
+					let hereOccupancy: GridCell =
+						channel.gridMatrix[0]?.[columnIndex];
 
 					if (
-						!(
-							preOccupancy === undefined
-							|| (preOccupancy === "." && hereOccupancy !== ".")
-							|| (preOccupancy instanceof Visual
-								&& hereOccupancy instanceof Visual
-								&& preOccupancy !== hereOccupancy)
-						)
+						(hereOccupancy?.sources !== undefined)
 					) {
 						slitherIndexes[columnIndex] = false;
 					}
 				}
-			}
+				
 
-			columns.forEach((column, columnIndex) => {
-				var heightTop;
-				var heightBottom;
-
-				Object.entries(sequence.channelsDict).forEach(([chanID, channel], channelIndex) => {
-					let occupied: boolean =
-						sequence.elementMatrix[channelIndex][columnIndex] === undefined
+				// Main slithers and place blocks
+				for (var columnIndex = 1; columnIndex < noColumns; columnIndex++) {
+					var column = columns[columnIndex];
+					let topOccupied: boolean =
+						channel.gridMatrix[0][columnIndex] === undefined
+							? false
+							: true;
+					let bottomOccupied: boolean = 
+					channel.gridMatrix[2][columnIndex] === undefined
 							? false
 							: true;
 
+					// SLITHERS
 					if (slitherIndexes[columnIndex]) {
 						// Insert start
 						// Top slither
 						newSlither = {
 							area: {
 								x: column.x - this.slitherWidth / 2,
-								y: channel.y,
+								y: channel.gridSizes.rows[0].y,
 								width: this.slitherWidth,
-								height:
-									channel.components.topAligner.contentHeight!
-									+ channel.padding[0]
+								height: channel.gridSizes.rows[0].height
 							},
 							index: columnIndex,
 							orientation: "top",
-							channelID: chanID,
+							channelID: channelId,
 							insert: true,
 							sequenceID: sequence.id
 						};
@@ -93,98 +91,79 @@ class DiagramDropInterpreter {
 						newSlither = {
 							area: {
 								x: column.x - this.slitherWidth / 2,
-								y: channel.components.bottomAligner.y,
+								y: channel.gridSizes.rows[2].y,
 								width: this.slitherWidth,
-								height:
-									channel.components.bottomAligner.contentHeight!
-									+ channel.padding[2]
+								height: channel.gridSizes.rows[2].height
 							},
 							index: columnIndex,
 							orientation: "bottom",
-							channelID: chanID,
+							channelID: channelId,
 							insert: true,
 							sequenceID: sequence.id
 						};
 						this.insertAreas.push(newSlither);
 					}
 
-					if (!occupied) {
+					var columnWidth = column.width;
+					// PLACE BLOCK
+					if (!topOccupied) {
 						// Top block
-						var columnWidth =
-							column.contentWidth === undefined ? 0 : column.contentWidth;
-						var upperAlignerHeight =
-							channel.components.topAligner.contentHeight === undefined
-								? 0
-								: channel.components.topAligner.contentHeight;
-						var lowerAlignerHeight =
-							channel.components.bottomAligner.contentHeight === undefined
-								? 0
-								: channel.components.bottomAligner.contentHeight;
 
-						let newBlock: AddSpec = {
+						var newBlock: AddSpec = {
 							area: {
 								x: column.x + this.slitherWidth / 2,
-								y: channel.contentY,
+								y: channel.gridSizes.rows[0].y,
 								width: columnWidth - this.slitherWidth,
-								height: upperAlignerHeight
+								height: channel.gridSizes.rows[0].height
 							},
 							index: columnIndex,
 							orientation: "top",
-							channelID: chanID,
-							sequenceID: seqID,
-							insert: false
-						};
-						this.insertAreas.push(newBlock);
-
-						// Bottom block
-						newBlock = {
-							area: {
-								x: column.x + this.slitherWidth / 2,
-								y: channel.components.bottomAligner.y,
-								width: columnWidth - this.slitherWidth,
-								height: lowerAlignerHeight
-							},
-							index: columnIndex,
-							orientation: "bottom",
-							channelID: chanID,
+							channelID: channelId,
 							sequenceID: seqID,
 							insert: false
 						};
 						this.insertAreas.push(newBlock);
 					}
-				});
-			});
 
-			// END SLITHERS
-			var column: Aligner<Visual> = columns[columns.length - 1];
-			var i = columns.length - 1;
-			if (column === undefined) {
-				// no positional columns yet
-				column = sequence.components.labelColumn;
-			}
-			// insert end slithers:
-			Object.entries(sequence.channelsDict).forEach(([name, channel]) => {
+					if (!bottomOccupied) {
+						// Bottom block
+						newBlock = {
+							area: {
+								x: column.x + this.slitherWidth / 2,
+								y: channel.gridSizes.rows[2].y,
+								width: columnWidth - this.slitherWidth,
+								height: channel.gridSizes.rows[2].height
+							},
+							index: columnIndex,
+							orientation: "bottom",
+							channelID: channelId,
+							sequenceID: seqID,
+							insert: false
+						};
+						this.insertAreas.push(newBlock);
+					}
+				};
+
+
+				// END SLITHERS
+				var column: Rect = columns[columns.length - 1];
+				var i = columns.length - 1;
+
+				// insert end slithers:
+				
 				// insert end slithers
-				var upperAlignerHeight =
-					channel.components.topAligner.contentHeight === undefined
-						? 0
-						: channel.components.topAligner.contentHeight;
-				var lowerAlignerHeight =
-					channel.components.bottomAligner.contentHeight === undefined
-						? 0
-						: channel.components.bottomAligner.contentHeight;
 
 				// Top slither
 				newSlither = {
 					area: {
-						x: (column.getFar("x") ?? 0) - this.slitherWidth / 2,
-						y: channel.y,
+						x: column.x + column.width - this.slitherWidth / 2,
+						y: channel.gridSizes.rows[0].y,
 						width: this.slitherWidth,
-						height: upperAlignerHeight
+						height: channel.gridSizes.rows[0].height
 					},
 					index: i + 1,
 					orientation: "top",
-					channelID: name,
+					channelID: channelId,
 					insert: true,
 					sequenceID: seqID
 				};
@@ -193,20 +172,21 @@ class DiagramDropInterpreter {
 				// bottom slither
 				newSlither = {
 					area: {
-						x: (column.getFar("x") ?? 0) - this.slitherWidth / 2,
-						y: channel.components.bottomAligner.y,
+						x: column.x + column.width - this.slitherWidth / 2,
+						y: channel.gridSizes.rows[2].y,
 						width: this.slitherWidth,
-						height: lowerAlignerHeight + channel.padding[2]
+						height: channel.gridSizes.rows[2].height
 					},
 					index: i + 1,
 					orientation: "bottom",
-					channelID: name,
+					channelID: channelId,
 					insert: true,
 					sequenceID: seqID
 				};
 				this.insertAreas.push(newSlither);
-			});
+			})
 		});
+	
 	}
 }
 

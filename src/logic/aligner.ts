@@ -1,332 +1,297 @@
-import Collection, {ICollection} from "./collection";
-import logger, {Processes} from "./log";
-import {Alignment} from "./mountable";
-import Spacial, {Dimensions} from "./spacial";
-import {FillObject, RecursivePartial} from "./util";
-import {Visual} from "./visual";
+import { Element } from "@svgdotjs/svg.js";
+import { ID } from "./point";
+import Spacial, { Dimensions, Size } from "./spacial";
+import Visual, { doesDraw, IVisual } from "./visual";
+import { G } from "@svgdotjs/svg.js";
+import Collection, { ICollection } from "./collection";
 
-export interface IAligner extends ICollection {
-	axis: Dimensions;
-	bindMainAxis: boolean;
-	alignment: Alignment;
+console.log("Load module aligner")
+
+export interface IAligner<T extends IVisual = IVisual> extends ICollection {
+	mainAxis: Dimensions;
 	minCrossAxis?: number;
+
+	children: T[]
 }
 
 // A collection where all elements are assumed to be in a stack arrangement (either vertically or horizontally)
 // Useful for getting the max width/height of multiple elements
-export default class Aligner<T extends Visual = Visual> extends Collection<T> {
-	static defaults: {[name: string]: IAligner} = {
-		default: {
-			axis: "x",
-			bindMainAxis: false,
-			alignment: "here",
-			minCrossAxis: 0,
-			contentWidth: 0,
-			contentHeight: 0,
-			x: undefined,
-			y: undefined,
-			offset: [0, 0],
-			padding: [0, 0, 0, 0],
-			ref: "default-aligner",
-			userChildren: []
-		}
-	};
+export default class Aligner<T extends Visual = Visual> extends Collection<T> implements IAligner {
+	get state(): IAligner {
+		return {
+			mainAxis: this.mainAxis,
+			minCrossAxis: this.minCrossAxis,
+			...super.state
+		};
+	}
+
+
+	get noChildren() {
+		return this.children.length;
+	}
 
 	mainAxis: Dimensions;
-	crossAxis: Dimensions;
+	get crossAxis(): Dimensions {
+		return this.mainAxis === "x" ? "y" : "x";
+	}
 
-	bindMainAxis: boolean;
-	alignment: Alignment;
 	minCrossAxis?: number;
 
-	constructor(params: RecursivePartial<IAligner>, templateName: string = "default") {
-		var fullParams: IAligner = FillObject<IAligner>(params, Aligner.defaults[templateName]);
-		super(fullParams, templateName);
+	cells: Spacial[];
 
-		this.mainAxis = fullParams.axis;
-		this.crossAxis = this.mainAxis === "x" ? "y" : "x";
+	constructor(params: IAligner) {
+		super(params);
 
-		this.bindMainAxis = fullParams.bindMainAxis;
-		this.alignment = fullParams.alignment;
-		this.minCrossAxis = fullParams.minCrossAxis;
+		this.mainAxis = params.mainAxis;
 
-		// This sets cross axis to minCrossAxis which is the expected value upon initialisation.
-		this.squeezeCrossAxis();
+		this.minCrossAxis = params.minCrossAxis;
+
+		this.cells = [];
 	}
 
-	add(
+	public draw(surface: Element): void {
+		if (this.svg) {
+			this.svg.remove();
+		}
+
+		var group = new G().id(this.id).attr({title: this.ref});
+		group.attr({
+			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
+		});
+
+		this.svg = group;
+
+		surface.add(this.svg);
+
+		this.children.forEach((uc) => {
+			if (doesDraw(uc)) {
+				uc.draw(this.svg!);
+			}
+		});
+	}
+
+	public computeSize(): Size {
+		this.children.forEach((c) => c.computeSize());
+
+		if (this.ref === "LABEL") {
+			console.log()
+		}
+
+		this.cells = Array.from({length: this.noChildren}, () => new Spacial());
+
+		// Compute intrinsic length of main axis:
+		// This is the sum of main axis lengths:
+		this.children.forEach((child, child_index) => {
+			let correspondingCell: Spacial = this.cells[child_index]
+			
+			let contribution: boolean = true;
+			if (child.placementMode.type === "aligner") {
+				if (child.placementMode.alignerConfig.contribution?.mainAxis === false) {
+					contribution = false;
+				}
+				if (child.sizeMode[this.mainAxis] === "grow") {
+					contribution = false;
+				}
+			}
+
+			if (contribution === true) {
+				correspondingCell.setSizeByDimension(child.getSizeByDimension(this.mainAxis), this.mainAxis) 
+			} else {
+				correspondingCell.setSizeByDimension(0, this.mainAxis)
+			}
+		})
+		let intrinsicLength: number = this.cells.reduce((l, cell) => l + cell.getSizeByDimension(this.mainAxis), 0)
+
+		// Find the cross axis length of the aligner;
+		// This is the max cross axis size of all elements;
+		let widths: number[] = [];
+		this.children.forEach((child) => {
+			let contribution: boolean = true;
+			if (child.placementMode.type === "aligner") {
+				if (child.placementMode.alignerConfig.contribution?.crossAxis === false) {
+					contribution = false;
+				}
+				if (child.sizeMode[this.crossAxis] === "grow") {
+					contribution = false;
+				}
+			}
+
+			if (contribution === true) {
+				widths.push(child.getSizeByDimension(this.crossAxis))
+			}
+		})
+		let intrinsicWidth: number = Math.max(...widths);
+		// Apply to cells:
+		this.cells.forEach((cell) => {
+			cell.setSizeByDimension(intrinsicWidth, this.crossAxis)
+		})
+
+
+		this.setSizeByDimension(intrinsicLength, this.mainAxis)
+		this.setSizeByDimension(intrinsicWidth, this.crossAxis)
+
+		return {width: this.width, height: this.height};
+	}
+
+	public computePositions(root: {x: number, y: number}): void {
+		this.x = root.x;
+		this.y = root.y;
+
+		var xCount = 0;
+		var yCount = 0;
+
+		if (this.ref === "LABEL") {
+			console.log()
+		}
+
+		// Yes this could be done with dimension setters
+		if (this.mainAxis === "x") {
+			this.children.forEach((child, child_index) => {
+				let targetCell = this.cells[child_index];
+
+				child.x = this.cx + xCount
+				
+				targetCell.x = child.x;
+				targetCell.y = this.cy;
+
+				xCount += child.width;
+
+				// TODO: allow for other alignments
+				this.internalImmediateBind(child, "y", "centre");
+
+				child.computePositions({x: child.x, y: child.y});
+			})
+		} else {  // this.mainAxis === "y"
+			this.children.forEach((child, child_index) => {
+				let targetCell = this.cells[child_index];
+
+				child.y = this.cy + yCount;
+				
+				targetCell.y = child.y;
+				targetCell.x = this.cx;
+				
+				yCount += child.height;
+			
+				this.internalImmediateBind(child, "x", "centre");
+
+				child.computePositions({x: child.x, y: child.y});
+			})
+		}
+	}
+
+	public override growElement(containerSize: Size): Record<Dimensions, number> {
+		let change: Record<Dimensions, number> = super.growElement(containerSize)
+		
+
+		if (this.ref === "LABEL") {
+			console.log()
+		}
+		
+
+		// Resize cells:
+		// Main axis:
+		let remainingMainAxisChange: number = change[this.mainAxis];
+		while (remainingMainAxisChange > 0) {
+			let smallestLength: number = this.children[0].getSizeByDimension(this.mainAxis);
+			let secondSmallestLength: number = Infinity;
+			let widthToAdd: number = remainingMainAxisChange;
+
+			this.children.forEach((child) => {
+				let childLength: number = child.getSizeByDimension(this.mainAxis);
+				if (childLength < smallestLength) {
+					secondSmallestLength = smallestLength
+					smallestLength = childLength;
+				}
+				if (childLength > smallestLength) {
+					secondSmallestLength = Math.min(secondSmallestLength, childLength)
+					widthToAdd = secondSmallestLength - smallestLength
+				}
+			})
+
+			widthToAdd = Math.min(widthToAdd, remainingMainAxisChange / this.noChildren);
+
+			this.children.forEach((child) => {
+				let childLength: number = child.getSizeByDimension(this.mainAxis);
+				if (childLength === smallestLength) { /// The smallest element
+					child.setSizeByDimension(widthToAdd, this.mainAxis);
+					remainingMainAxisChange -= widthToAdd;
+				}
+			})
+		} 
+		if (remainingMainAxisChange < 0) {
+			console.warn(`Aligner ${this.ref} is over spilling container on main axis`)
+		}
+
+		// Cross axis:
+		let remainingCrossAxisChange: number = change[this.crossAxis];
+		let containerCrossAxisSize: number = containerSize[this.crossAxis === "x" ? "width" : "height"]
+		if (remainingCrossAxisChange > 0) {
+			this.cells.forEach((cell) => {
+				cell.setSizeByDimension(containerCrossAxisSize, this.crossAxis)
+			})
+		} else if (remainingCrossAxisChange < 0) {
+			console.warn(`Aligner ${this.ref} is over spilling container on cross axis`)
+		}
+
+		
+		// TODO:
+		this.children.forEach((child, child_index) => {
+			let targetCell = this.cells[child_index];
+		
+			child.growElement(targetCell.contentSize);	
+		})
+
+		return change;
+	}
+
+	public add(
 		child: T,
 		index?: number,
-		bindHere: boolean = false,
-		setParentId: boolean = true,
-		alignItem: Alignment = "none"
 	) {
-		if (setParentId) {
-			child.parentId = this.id;
+		let INDEX: number = index ?? this.children.length;
+
+		this.children.splice(INDEX, 0, child)
+		
+		if (child.placementMode.type === "aligner") {
+			child.placementMode.alignerConfig.index = INDEX;
 		}
-		// AlignItem takes precedence
-		var alignChild: Alignment = alignItem !== "none" ? alignItem : this.alignment;
-		const INDEX = index !== undefined ? index : this.children.length;
-
-		// MAIN AXIS COMPUTE
-		if (this.bindMainAxis) {
-			var leftChild: T | undefined = this.children[INDEX - 1];
-			var rightChild: T | undefined = this.children[INDEX];
-
-			// child here bind
-			if (leftChild !== undefined) {
-				// Bind the before child to this child
-				if (rightChild !== undefined) {
-					// Release bind to post child if necessary
-					leftChild.clearBindsTo(rightChild);
-				}
-
-				leftChild.bind(child, this.mainAxis, "far", "here", undefined, undefined, false);
-				leftChild.enforceBinding(); // Needed for some reason
-			} else {
-				// this is the first element, bind to this
-				if (rightChild !== undefined) {
-					this.clearBindsTo(rightChild, "x");
-				}
-
-				this.bind(child, this.mainAxis, "here", "here", undefined);
-				this.enforceBinding();
-			}
-
-			// Child far bound
-			if (rightChild !== undefined) {
-				child.bind(
-					this.children[INDEX],
-					this.mainAxis,
-					"far",
-					"here",
-					undefined,
-					undefined,
-					false
-				);
-				child.enforceBinding();
-			}
-		}
-		this.children.splice(INDEX, 0, child);
-
-		// Cross axis
-		switch (alignChild) {
-			case "none":
-				break;
-			case "here":
-				this.bind(child, this.crossAxis, "here", "here", undefined);
-				break;
-			case "centre":
-				this.bind(child, this.crossAxis, "centre", "centre", undefined);
-				break;
-			case "far":
-				this.bind(child, this.crossAxis, "far", "far", undefined);
-				break;
-			case "stretch":
-				// child.sizeSource[this.crossAxis] = "inherited";
-				this.bind(child, this.crossAxis, "here", "here", undefined);
-				this.bind(child, this.crossAxis, "far", "far", undefined);
-				break;
-			default:
-				throw new Error(`Unknown element alignment '${alignChild}'`);
-		}
-
-		// Resize cross axis
-		//if (alignChild !== Alignment.none) {  // Optimisation AND is required
-		//    var crossAxisSizeChild = child.getSizeByDimension(this.crossAxis);
-		//    var crossAxisSize = this.getSizeByDimension(this.crossAxis);
-		//
-		//    if (crossAxisSizeChild > crossAxisSize) {
-		//        this.setSizeByDimension(child.getSizeByDimension(this.crossAxis), this.crossAxis);
-		//    } else {
-		//        // If this addition is a modification of the positional with max crossAxis size, crossAxis size will need decreasing:
-		//        // Aligner Special:
-		//        // Size of cross axis should be max cross axis of all elements:
-		//
-		//    }
-		//}
-		//this.squeezeCrossAxis();
-
-		this.enforceBinding();
-
-		// Child will tell this to update size when it changes size or position
-		child.subscribe(this.computeBoundary.bind(this));
-		this.computeBoundary();
+		child.parentId = this.id;
 	}
 
-	removeAt(index: number, quantity: number = 1): number {
-		var targets: (T | undefined)[] = this.children.slice(index, index + quantity);
-
-		if (targets.some((t) => (t = undefined))) {
-			throw new Error(`No child element exists at index ${index}`);
+	public removeAt(index: number): boolean {
+		if (index < 0 || index >= this.noChildren) {
+			console.warn(`Trying to remove child at index out of range in ${this.ref}`);
+			return false
 		}
 
-		var numRemoved: number = 0;
-		targets.forEach((target) => {
-			if (target !== undefined) {
-				this.remove(target);
-				numRemoved += 1;
-			}
-		});
-		return numRemoved;
+		this.children.slice(index, 1);
+		return true
 	}
 
-	remove(target: T): boolean {
-		var index: number | -1 = this.children.indexOf(target);
+	public remove(target: T): boolean {
+		var INDEX: number | undefined = this.locateChild(target);
 
-		if (index === -1) {
-			throw new Error(`Failed to remove child ${target.ref} from aligner ${this.ref}`);
-			return false;
+		if (INDEX === undefined) {
+			return false
 		}
 
-		// Update bindingsT
-		if (this.bindMainAxis) {
-			var preChild: T | undefined = this.children[index - 1];
-			var postChild: T | undefined = this.children[index + 1];
+		return this.removeAt(INDEX);
+	}
 
-			if (preChild !== undefined) {
-				// Remove binding to target
-				preChild.clearBindsTo(target);
 
-				if (postChild) {
-					preChild.bind(
-						postChild,
-						this.mainAxis,
-						"far",
-						"here",
-						undefined,
-						undefined,
-						false
-					);
-				}
-				preChild.enforceBinding();
-			} else {
-				// This element is bound to the inside of the aligner object
-				// Remove this binding to target:
-				this.clearBindsTo(target);
+	public locateChild(target: T): number | undefined {
+		return this.locateChildById(target.id);
+	}
 
-				if (postChild) {
-					// Rebind next element to this
-					this.bind(postChild, this.mainAxis, "here", "here");
-				}
-			}
-		}
+	protected locateChildById(id: ID): number | undefined {
+		var childIndex: number | undefined = undefined;
 
-		// Remove child and clear visual
-		this.children.forEach((c, i) => {
-			if (c === target) {
-				this.children.splice(i, 1);
-
-				if (c instanceof Visual) {
-					c.erase();
-				}
-
-				this.clearBindsTo(target);
+		this.children.forEach((child, index) => {
+			if (id === child.id) {
+				childIndex = index;
 			}
 		});
 
-		this.computeBoundary();
-		this.enforceBinding();
-
-		this.squeezeCrossAxis();
-		return true;
-	}
-
-	squeezeCrossAxis(): void {
-		var crossAxisSize = this.minCrossAxis !== undefined ? this.minCrossAxis : 0;
-
-		// Non aligned elements would break the following code,
-		// Currently, an element can only be non-aligned if the aligner is non-aligned.
-		if (this.alignment === "none") {
-			return;
-		}
-
-		this.children.forEach((c) => {
-			var childCrossAxisSize = c.getSizeByDimension(this.crossAxis);
-			if (childCrossAxisSize > crossAxisSize) {
-				crossAxisSize = childCrossAxisSize;
-			}
-		});
-
-		this.setSizeByDimension(crossAxisSize, this.crossAxis);
-	}
-
-	computeBoundary(): void {
-		logger.processStart(Processes.COMPUTE_BOUNDARY, ``, this);
-
-		var displacedElements = this.children.filter((f) => f.displaced === true);
-		if (displacedElements.length > 0) {
-			logger.performance(
-				`ABORT COMPUTE BOUNDRY ${this.ref} as ${displacedElements} have not been positioned`
-			);
-			return;
-		}
-
-		var top = Infinity;
-		var left = Infinity;
-		var bottom = -Infinity;
-		var right = -Infinity;
-
-		if (this.ref == "sequence") {
-		}
-
-		this.children.forEach((c) => {
-			if (c.definedVertically && c.sizeSource.y === "given") {
-				top = c.y < top ? c.y : top;
-
-				var far = c.getFar("y");
-				bottom = far === undefined ? -Infinity : far > bottom ? far : bottom;
-			}
-
-			if (c.definedHorizontally && c.sizeSource.x === "given") {
-				left = c.x < left ? c.x : left;
-
-				var farX = c.getFar("x");
-				right = farX === undefined ? -Infinity : farX > right ? farX : right;
-			}
-		});
-
-		// Include current location in boundary.
-		// This fixes a problem for the positional columns where the correct size of the boundary would be computed
-		// as if the collection was positioned at the top left element, but would not actually be in the correct location.
-		// if (this.definedVertically && this.contentY < top) {
-		//     top = this.contentY
-		// }
-		// if (this.definedHorizontally &&  this.contentX < left) {
-		//     left = this.contentX;
-		// }
-
-		var bounds = {top: top, right: right, bottom: bottom, left: left};
-		var width = right - left;
-		var height = bottom - top;
-
-		// Inflate cross axis
-		if (this.minCrossAxis !== undefined) {
-			var currCrossAxis = this.crossAxis === "x" ? width : height;
-
-			if (currCrossAxis < this.minCrossAxis) {
-				if (this.crossAxis === "x") {
-					width = this.minCrossAxis;
-				} else {
-					height = this.minCrossAxis;
-				}
-			}
-		}
-
-		if (width !== -Infinity) {
-			this.contentWidth = width;
-		} else {
-			this.contentWidth = 0;
-		}
-		if (height !== -Infinity) {
-			this.contentHeight = height;
-		} else {
-			this.contentHeight = 0;
-		}
-		logger.processEnd(
-			Processes.COMPUTE_BOUNDARY,
-			`Left: ${left}, Right: ${right}, Top: ${top}, Bottom: ${bottom}`,
-			this
-		);
+		return childIndex;
 	}
 }

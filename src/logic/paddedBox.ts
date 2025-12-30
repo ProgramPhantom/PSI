@@ -1,20 +1,9 @@
-import {ID} from "./point";
-import Spacial, {ISpacial} from "./spacial";
+import { ID } from "./point";
+import Spacial, { ISpacial, PlacementConfiguration, Size, SizeConfiguration } from "./spacial";
+
+console.log(`[ModuleLoad] PaddedBox`);
 
 type Padding = number | [number, number] | [number, number, number, number];
-type Offset = [number, number];
-
-interface Dim {
-	width?: number;
-	height?: number;
-}
-
-interface Bounds {
-	top: number;
-	bottom: number;
-	left: number;
-	right: number;
-}
 
 export interface IPaddedBox extends ISpacial {
 	padding: [number, number, number, number];
@@ -25,7 +14,6 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	get state(): IPaddedBox {
 		return {
 			padding: this.padding,
-
 			...super.state
 		};
 	}
@@ -38,10 +26,12 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		y?: number,
 		width?: number,
 		height?: number,
+		placementMode?: PlacementConfiguration,
+		sizeMode?: SizeConfiguration,
 		ref: string = PaddedBox.defaults["default"].ref,
 		id: ID | undefined = undefined
 	) {
-		super(x, y, width, height, ref, id);
+		super(x, y, width, height, placementMode, sizeMode, ref, id);
 
 		if (typeof padding === "number") {
 			this.padding = [padding, padding, padding, padding];
@@ -54,78 +44,63 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		}
 	}
 
-	public get contentX(): number {
+	public get cx(): number {
 		return this.x + this.padding[3];
 	}
-	public set contentX(v: number) {
+	public set cx(v: number) {
 		this.x = v - this.padding[3];
-		// this._contentX = v;
 	}
 
-	public get contentY(): number {
+	public get cy(): number {
 		return this.y + this.padding[0];
 	}
-	public set contentY(v: number) {
+	public set cy(v: number) {
 		this.y = v - this.padding[0];
-		// this._contentY = v;
 	}
 
-	get dim(): Dim {
-		return {width: this.width, height: this.height};
+	public get cx2(): number {
+		return this.x2 - this.padding[1];
+	}
+	public set cx2(v: number) {
+		this.x2 = v + this.padding[1];
 	}
 
-	get bounds(): Bounds {
-		if (this.hasPosition && this.hasDimensions) {
-			var top = this.y;
-			var left = this.x;
-
-			var bottom = this.y + this.height;
-			var right = this.x + this.width;
-
-			return {top: top, right: right, bottom: bottom, left: left};
-		}
-		throw new Error("Dimensions are unset");
+	public get cy2(): number {
+		return this.y2 - this.padding[2];
+	}
+	public set cy2(v: number) {
+		this.y2 = v + this.padding[2];
 	}
 
 	override get width(): number {
-		if (this._contentWidth !== undefined) {
-			return this.padding[3] + this._contentWidth + this.padding[1];
-		}
-		throw new Error("Width unset");
+		return this.padding[3] + this.contentWidth + this.padding[1];
 	}
-	override set width(v: number | undefined) {
-		if (v === undefined) {
-			this.contentWidth = undefined;
-		} else {
-			var newContentWidth: number = v - this.padding[1] - this.padding[3];
+	override set width(v: number) {
+		var newContentWidth: number = v - this.padding[1] - this.padding[3];
 
-			if (newContentWidth < 0) {
-				// Don't allow content height to go below 0
-				this.contentWidth = 0;
-			} else {
-				this.contentWidth = newContentWidth;
-			}
+		if (newContentWidth < 0) {
+			// Don't allow content height to go below 0
+			this.contentWidth = 0;
+		} else {
+			this.contentWidth = newContentWidth;
 		}
 	}
 
 	override get height(): number {
-		if (this._contentHeight !== undefined) {
-			return this.padding[0] + this._contentHeight + this.padding[2];
-		}
-		throw new Error("Dimensions undefined");
+		return this.padding[0] + this.contentHeight + this.padding[2];
 	}
-	override set height(v: number | undefined) {
-		if (v === undefined) {
-			this.contentHeight = undefined;
-		} else {
-			var newContentHeight: number = v - this.padding[0] - this.padding[2];
+	override set height(v: number) {
+		var newContentHeight: number = v - this.padding[0] - this.padding[2];
 
-			if (newContentHeight < 0) {
-				// Don't allow content height to go below 0
-				this.contentHeight = 0;
-			} else {
-				this.contentHeight = newContentHeight;
-			}
+		if (newContentHeight < 0) {
+			// Don't allow content height to go below 0
+			this.contentHeight = 0;
+		} else {
+			this.contentHeight = newContentHeight;
 		}
+	}
+
+	public get contentSize(): Size {
+		return {width: this.contentWidth, height: this.contentHeight}
 	}
 }

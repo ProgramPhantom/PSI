@@ -1,13 +1,19 @@
-import {Path} from "@svgdotjs/svg.js";
-import {useEffect, useRef, useState} from "react";
-import {ILine, ILineStyle} from "../../logic/line";
-import ENGINE from "../../logic/engine";
-import {Dimensions, IBindingPayload} from "../../logic/spacial";
-import {Visual} from "../../logic/visual";
-import BindingsSelector from "./BindingsSelector";
-import {IToolConfig, myToaster, Tool} from "../../app/App";
+import { Path } from "@svgdotjs/svg.js";
+import { useEffect, useRef, useState } from "react";
+import { IToolConfig, Tool } from "../../app/App";
 import Aligner from "../../logic/aligner";
-import {Result} from "../../logic/diagramHandler";
+import { Result } from "../../logic/diagramHandler";
+import ENGINE from "../../logic/engine";
+import { ILineStyle } from "../../logic/line";
+import Spacial, { IBindingPayload, PointBind } from "../../logic/spacial";
+import Visual from "../../logic/visual";
+import BindingsSelector from "./BindingsSelector";
+import { appToaster } from "../../app/Toaster";
+
+interface Rect {
+	x: number, y: number,
+	width: number, height: number
+}
 
 interface IDrawArrowProps {
 	hoveredElement: Visual | undefined;
@@ -20,7 +26,7 @@ export interface IDrawArrowConfig extends IToolConfig {
 	mode: "vertical" | "bind";
 }
 
-export type PointBind = Record<Dimensions, IBindingPayload>;
+
 
 export function LineTool(props: IDrawArrowProps) {
 	const [startCoords, setStartCoords] = useState<[number, number] | undefined>(undefined);
@@ -40,7 +46,7 @@ export function LineTool(props: IDrawArrowProps) {
 		);
 
 		if (result.ok == false) {
-			myToaster.show({
+			appToaster.show({
 				message: "Error adding line",
 				intent: "danger"
 			});
@@ -49,7 +55,7 @@ export function LineTool(props: IDrawArrowProps) {
 		props.setTool({type: "select", config: {}});
 	};
 
-	const placeVerticalLine = (col: Aligner<Visual>, far: boolean = false) => {
+	const placeVerticalLine = (col: Spacial, far: boolean = false) => {
 		var topBindingPayloadX: IBindingPayload = {
 			bindingRule: {
 				anchorSiteName: !far ? "here" : "far",
@@ -64,7 +70,7 @@ export function LineTool(props: IDrawArrowProps) {
 				targetSiteName: "here",
 				dimension: "y"
 			},
-			anchorObject: ENGINE.handler.diagram.components.sequences[0]!
+			anchorObject: ENGINE.handler.diagram.sequences[0]!
 		};
 
 		var bottomBindingPayloadX: IBindingPayload = {
@@ -81,18 +87,18 @@ export function LineTool(props: IDrawArrowProps) {
 				targetSiteName: "far",
 				dimension: "y"
 			},
-			anchorObject: ENGINE.handler.diagram.components.sequences[0]!
+			anchorObject: ENGINE.handler.diagram.sequences[0]!
 		};
 
 		selectBind(topBindingPayloadX, topBindingPayloadY);
 		selectBind(bottomBindingPayloadX, bottomBindingPayloadY);
 	};
 
-	const hoverPlaceVerticalLine = (col: Aligner<Visual>, far: boolean = false) => {
-		var x = !far ? col.x : col.getFar("x");
+	const hoverPlaceVerticalLine = (col: Spacial, far: boolean = false) => {
+		var x = col.x + col.width;
 
-		var topY = ENGINE.handler.diagram.components.sequences[0]!.contentY;
-		var bottomY = ENGINE.handler.diagram.components.sequences[0]!.getFar("y", true);
+		var topY = ENGINE.handler.diagram.sequences[0]!.cy;
+		var bottomY = ENGINE.handler.diagram.sequences[0]!.getFar("y", true);
 		setColumnHovered(true);
 
 		const p = new Path().attr({
@@ -176,9 +182,8 @@ export function LineTool(props: IDrawArrowProps) {
 		};
 	}, [startCoords, arrowIndicator]);
 
-	var columns = ENGINE.handler.diagram.components.sequences[0]!.components.pulseColumns.children;
-	var lastColumn =
-		ENGINE.handler.diagram.components.sequences[0]!.components.pulseColumns.children.at(-1);
+	var columns: Spacial[] = ENGINE.handler.diagram.sequences[0]!.gridSizes.columns;
+	var lastColumn: Spacial = columns[columns.length - 1];
 	return (
 		<>
 			<div style={{position: "absolute"}}>
@@ -201,7 +206,7 @@ export function LineTool(props: IDrawArrowProps) {
 											position: "absolute",
 											backgroundColor: "transparent",
 											width: "10px",
-											height: ENGINE.handler.diagram.components.sequences[0]
+											height: ENGINE.handler.diagram.sequences[0]
 												.height,
 											left: col.x,
 											top: 0,

@@ -1,9 +1,10 @@
-import {Checkbox, Dialog, DialogBody} from "@blueprintjs/core";
-import {AllElementIdentifiers} from "../../logic/diagramHandler";
+import { Checkbox, Dialog, DialogBody } from "@blueprintjs/core";
+import { AllComponentTypes } from "../../logic/point";
+
 
 interface IDebugLayerDialogProps {
-	debugSelection: Record<AllElementIdentifiers, boolean>;
-	setDebugSelection: (elementType: AllElementIdentifiers) => void;
+	debugSelection: Record<AllComponentTypes, boolean>;
+	setDebugSelection: (elementType: AllComponentTypes) => void;
 	open: boolean;
 	setOpen: (val: boolean) => void;
 }
@@ -23,50 +24,18 @@ export function DebugLayerDialog(props: IDebugLayerDialogProps) {
 			<DialogBody style={{}}>
 				<div style={{display: "flex", flexDirection: "column"}}>
 					<Checkbox
-						label="Pulse columns"
+						label="Pulses"
 						alignIndicator="end"
-						checked={props.debugSelection["pulse columns"]}
-						onChange={() => {
-							props.setDebugSelection("pulse columns");
-						}}></Checkbox>
-					<Checkbox
-						label="Elements"
-						alignIndicator="end"
-						checked={props.debugSelection["rect"]}
+						checked={props.debugSelection["svg"]}
 						onChange={() => {
 							props.setDebugSelection("svg");
 						}}></Checkbox>
-
-					<Checkbox
-						label="Label Column"
-						alignIndicator="end"
-						checked={props.debugSelection["label column"]}
-						onChange={() => {
-							props.setDebugSelection("label column");
-						}}></Checkbox>
-
 					<Checkbox
 						label="Channels"
 						alignIndicator="end"
 						checked={props.debugSelection["channel"]}
 						onChange={() => {
 							props.setDebugSelection("channel");
-						}}></Checkbox>
-
-					<Checkbox
-						label="Upper aligners"
-						alignIndicator="end"
-						checked={props.debugSelection["top aligner"]}
-						onChange={() => {
-							props.setDebugSelection("top aligner");
-						}}></Checkbox>
-
-					<Checkbox
-						label="Lower aligners"
-						alignIndicator="end"
-						checked={props.debugSelection["bottom aligner"]}
-						onChange={() => {
-							props.setDebugSelection("bottom aligner");
 						}}></Checkbox>
 
 					<Checkbox

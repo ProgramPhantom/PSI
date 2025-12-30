@@ -1,19 +1,13 @@
-import {Divider, EntityTitle, Tab, Tabs} from "@blueprintjs/core";
-import React, {useEffect, useImperativeHandle} from "react";
-import {DefaultValues, FormProvider, useForm} from "react-hook-form";
-import Channel from "../../logic/hasComponents/channel";
-import Diagram from "../../logic/hasComponents/diagram";
-import {AllComponentTypes, UserComponentType} from "../../logic/diagramHandler";
-import Label, {ILabel} from "../../logic/hasComponents/label";
-import LabelGroup, {ILabelGroup} from "../../logic/hasComponents/labelGroup";
-import Line from "../../logic/line";
-import RectElement from "../../logic/rectElement";
-import Sequence from "../../logic/hasComponents/sequence";
-import Space from "../../logic/space";
-import SVGElement from "../../logic/svgElement";
-import {IVisual, Visual} from "../../logic/visual";
-import {FormRequirements} from "./FormDiagramInterface";
-import LabelListForm, {LabelGroupLabels} from "./LabelListForm";
+import { Divider, EntityTitle, Tab, Tabs } from "@blueprintjs/core";
+import React, { useEffect, useImperativeHandle } from "react";
+import { DefaultValues, FormProvider, useForm } from "react-hook-form";
+import { ILabel } from "../../logic/hasComponents/label";
+import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
+import { AllComponentTypes, UserComponentType } from "../../logic/point";
+import Visual, { IVisual } from "../../logic/visual";
+import { FormRequirements } from "./FormBase";
+import { FORM_DEFAULTS } from "./formDataRegistry";
+import LabelListForm, { LabelGroupLabels } from "./LabelListForm";
 
 interface LabelGroupComboForm {
 	target?: Visual;
@@ -27,89 +21,77 @@ export type SubmitButtonRef = {
 	submit: () => void;
 };
 
-export interface FormBundle<T extends IVisual = IVisual> {
-	form: React.FC;
-	defaults: T;
-	allowLabels: boolean;
-}
 
-const correspondence: Partial<Record<UserComponentType, typeof Visual>> = {
-	rect: RectElement,
-	svg: SVGElement,
-	channel: Channel,
-	diagram: Diagram,
-	line: Line,
-	sequence: Sequence,
-	space: Space,
-	"label-group": LabelGroup,
-	label: Label
-};
+
 
 export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupComboForm>(
 	(props, ref) => {
 		var MasterForm: React.FC<FormRequirements>;
 		var ChildForm: React.FC<FormRequirements> | undefined;
-		var LabelForm: React.FC<FormRequirements> = Label.formData.form;
+		var LabelForm: React.FC<FormRequirements> = FORM_DEFAULTS["label"].form;
 
 		var masterDefaults: IVisual;
 		var childDefaults: IVisual | undefined;
-		var labelDefaults: LabelGroupLabels = {labels: []};
+		var labelDefaults: LabelGroupLabels = { labels: [] };
 
 		var allowLabels: boolean = true;
 		var parentType: AllComponentTypes;
 		var childType: UserComponentType | undefined = undefined;
+		var childTarget: Visual | undefined;
+
+		var targetIsLabelGroup: boolean = false;
+
 		if (props.target !== undefined) {
 			parentType = (props.target.constructor as typeof Visual).ElementType;
 
-			if (LabelGroup.isLabelGroup(props.target)) {
-				childType = (props.target.components.coreChild.constructor as typeof Visual)
-					.ElementType as UserComponentType;
-			}
-		} else {
-			parentType = props.objectType;
-		}
-
-		var targetIsLabelGroup: boolean = false;
-		if (props.target === undefined) {
-			// Use the object type to setup a clean form
-			MasterForm = correspondence[props.objectType].formData.form;
-			masterDefaults = correspondence[props.objectType].formData.defaults;
-			allowLabels = correspondence[props.objectType].formData.allowLabels;
-		} else {
-			MasterForm = (props.target.constructor as typeof Visual).formData.form;
+			MasterForm = FORM_DEFAULTS[props.objectType].form;
 			masterDefaults = props.target.state;
-			allowLabels = (props.target.constructor as typeof Visual).formData.allowLabels;
+			allowLabels = FORM_DEFAULTS[props.objectType].allowLabels;
 
 			if (LabelGroup.isLabelGroup(props.target)) {
-				ChildForm = (props.target.components.coreChild.constructor as typeof Visual)
-					.formData.form;
-				childDefaults = props.target.components.coreChild.state;
+				childType = (props.target.coreChild.constructor as typeof Visual)
+					.ElementType;
 
-				labelDefaults.labels = props.target.components.labels;
+				ChildForm = FORM_DEFAULTS[(props.target.coreChild.constructor as typeof Visual).ElementType].form;
+				childDefaults = props.target.coreChild.state;
+				childTarget = props.target.coreChild;
+
+				labelDefaults.labels = props.target.labels;
 
 				targetIsLabelGroup = true;
 			}
+		} else {
+			parentType = props.objectType;
+			// Use the object type to setup a clean form
+			MasterForm = FORM_DEFAULTS[props.objectType].form;
+			masterDefaults = FORM_DEFAULTS[props.objectType].defaults;
+			allowLabels = FORM_DEFAULTS[props.objectType].allowLabels;
 		}
+
+
+		console.log(masterDefaults)
+		console.log(childDefaults)
+		console.log(labelDefaults)
 
 		// Create form hook
 		const masterFormControls = useForm<IVisual>({
-			defaultValues: masterDefaults as DefaultValues<IVisual>,
+			defaultValues: { ...masterDefaults } as DefaultValues<IVisual>,
 			mode: "onChange"
 		});
 
 		// Create form hook
 		const childFormControls = useForm<IVisual>({
-			defaultValues: childDefaults as DefaultValues<IVisual>,
+			defaultValues: { ...childDefaults } as DefaultValues<IVisual>,
 			mode: "onChange"
 		});
 
 		// Create label hook form
 		const labelListControls = useForm<LabelGroupLabels>({
-			defaultValues: labelDefaults as DefaultValues<LabelGroupLabels>,
+			defaultValues: { ...labelDefaults } as DefaultValues<LabelGroupLabels>,
 			mode: "onChange"
 		});
 
-		var vals = childFormControls.getValues();
+
 
 		// Make sure form changes (this is needed for unknown reasons)
 		useEffect(() => {
@@ -134,7 +116,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 					// Convert into a label group!
 
 					// Normalise core child:
-					childFormData = {...masterFormData};
+					childFormData = { ...masterFormData };
 					childFormData.padding = [0, 0, 0, 0];
 					childFormData.offset = [0, 0];
 
@@ -142,8 +124,9 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChild: childFormData,
 						coreChildType: props.objectType as UserComponentType,
 						labels: labelListFormData,
-						userChildren: [],
-						...masterFormData
+						children: [],
+						...masterFormData,
+						sizeMode: { x: "fit", y: "fit" }
 					};
 
 					props.callback(result, "label-group");
@@ -151,8 +134,8 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 					props.callback(masterFormData, props.objectType);
 				}
 			} else {
-				// Already label type
 
+				// Already label type
 				if (labelListFormData.length > 0) {
 					// Still a label group
 					var result: ILabelGroup = {
@@ -160,7 +143,8 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						coreChild: childFormData,
 						coreChildType: (masterFormData as ILabelGroup).coreChildType,
 						labels: labelListFormData, // Override labels
-						userChildren: []
+						children: [],
+						sizeMode: { x: "fit", y: "fit" }
 					};
 					props.callback(result, "label-group");
 				} else {
@@ -170,7 +154,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			}
 		});
 
-		var vals = masterFormControls.getValues();
+
 		return (
 			<>
 				<form
@@ -183,56 +167,58 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						height: "100%"
 					}}>
 					<div
-						style={{overflowY: "scroll", flex: "1 1 0", padding: "4px"}}
+						style={{ overflowY: "auto", flex: "1 1 0" }}
 						id="form-fields">
-						<Tabs defaultSelectedTabId={"properties"}>
-							<Tab
-								style={{userSelect: "none", position: "sticky"}}
-								id={"properties"}
-								title={"Properties"}
-								panel={
-									<>
-										<FormProvider {...masterFormControls}>
-											<MasterForm target={props.target}></MasterForm>
-										</FormProvider>
-
-										{ChildForm ? (
-											<>
-												<Divider style={{margin: "16px 0px"}}></Divider>
-												<div style={{margin: "16px 4px"}}>
-													<EntityTitle
-														icon="add-child"
-														title={"Child object"}></EntityTitle>
-												</div>
-												<FormProvider {...childFormControls}>
-													<ChildForm
-														target={props.target}
-														prefix={"coreChild"}></ChildForm>
-												</FormProvider>
-											</>
-										) : (
-											<></>
-										)}
-									</>
-								}></Tab>
-
-							{allowLabels ? (
+						<div style={{ padding: "4px" }}>
+							<Tabs defaultSelectedTabId={"properties"}>
 								<Tab
-									style={{userSelect: "none"}}
-									id={"label"}
-									title={"Labels"}
+									style={{ userSelect: "none" }}
+									id={"properties"}
+									title={"Properties"}
 									panel={
 										<>
-											<FormProvider {...labelListControls}>
-												<LabelListForm
-													target={props.target}></LabelListForm>
+											<FormProvider {...masterFormControls}>
+												<MasterForm target={props.target}></MasterForm>
 											</FormProvider>
+
+											{ChildForm ? (
+												<>
+													<Divider></Divider>
+													<div style={{ padding: "16px 4px" }}>
+														<EntityTitle
+															icon="add-child"
+															title={"Child object"}></EntityTitle>
+													</div>
+													<FormProvider {...childFormControls}>
+														<ChildForm
+															target={childTarget}
+															prefix={"coreChild"}></ChildForm>
+													</FormProvider>
+												</>
+											) : (
+												<></>
+											)}
 										</>
 									}></Tab>
-							) : (
-								<></>
-							)}
-						</Tabs>
+
+								{allowLabels || targetIsLabelGroup ? (
+									<Tab
+										style={{ userSelect: "none" }}
+										id={"label"}
+										title={"Labels"}
+										panel={
+											<>
+												<FormProvider {...labelListControls}>
+													<LabelListForm
+														target={props.target}></LabelListForm>
+												</FormProvider>
+											</>
+										}></Tab>
+								) : (
+									<></>
+								)}
+							</Tabs>
+						</div>
 					</div>
 				</form>
 			</>
