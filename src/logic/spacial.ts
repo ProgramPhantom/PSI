@@ -95,7 +95,7 @@ export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
 
-	placementMode?: PlacementConfiguration
+	placementMode: PlacementConfiguration
 	sizeMode?: SizeConfiguration
 }
 

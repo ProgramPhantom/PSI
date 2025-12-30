@@ -277,13 +277,13 @@ export default class DiagramHandler implements IDraw {
 	// ------------------------------------------
 
 	public createVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
-		var element: Visual;
+		var element: Visual | undefined = undefined;
 
 		// NECESSARY to make element accept binding changes. X, Y persists when changing into a label
 		// so if this isn't done, element might not carry changes and update label position.
 		parameters.x = undefined;
 		parameters.y = undefined;
-		// parameters.id = undefined;
+		//parameters.id = undefined;
 
 		switch (type) {
 			case "svg":
@@ -341,7 +341,7 @@ export default class DiagramHandler implements IDraw {
 	}
 	@draws
 	public deleteVisual(target: Visual): Result<Visual> {
-		var result: Result<Visual>;
+		var result: Result<Visual> = {ok: false, error: `Problem deleting visual ${target.ref}`};
 
 		if (target.placementMode.type === "pulse") {
 			try {
@@ -377,7 +377,8 @@ export default class DiagramHandler implements IDraw {
 	public addChannel(element: Channel): Result<Channel> {
 		var result: Result<Channel>;
 
-		var sequence: Sequence | undefined = this.diagram.sequenceDict[element.sequenceID];
+
+		var sequence: Sequence | undefined = this.diagram.sequenceDict[element.sequenceID ?? ""];
 
 		if (sequence === undefined) {
 			result = {
@@ -399,7 +400,7 @@ export default class DiagramHandler implements IDraw {
 	public deleteChannel(target: Channel): Result<Channel> {
 		var result: Result<Channel>;
 
-		var sequence: Sequence | undefined = this.diagram.sequenceDict[target.sequenceID];
+		var sequence: Sequence | undefined = this.diagram.sequenceDict[target.sequenceID ?? ""];
 
 		if (sequence === undefined) {
 			result = {
@@ -501,6 +502,18 @@ export default class DiagramHandler implements IDraw {
 		}
 		
 		return {ok: true, value: target}
+	}
+
+
+	public addColumn(sequenceId: ID, index: number) {
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
+
+		if (sequence === undefined) {
+			console.warn(`Cannot insert column in sequence with id ${sequenceId}`)
+			return
+		}
+
+		sequence.insertEmptyColumn(index);
 	}
 }
 

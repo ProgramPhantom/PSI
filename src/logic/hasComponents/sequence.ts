@@ -357,7 +357,7 @@ export default class Sequence extends Grid implements ISequence {
 		}
 	}
 
-	protected override insertEmptyColumn(index?: number) {
+	public override insertEmptyColumn(index?: number) {
 		var newColumn: GridCell[] = Array<GridCell>(this.numRows).fill(undefined);
 		var index = index; 
 

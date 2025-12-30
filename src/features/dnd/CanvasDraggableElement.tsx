@@ -79,21 +79,26 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						//ENGINE.handler.moveElement(item.element, dropResult.x, dropResult.y);
 					} else if (isMountDrop(dropResult)) {
 						var result = dropResult as IMountAreaResult;
-						var targetChannel = ENGINE.handler.diagram.channelsDict[result.channelID];
-						var targetSequence = ENGINE.handler.diagram.sequenceDict[result.sequenceID];
 						let elementType = (item.element.constructor as typeof Visual).ElementType
 
-						var positionalElement;
 						if (item.element.placementMode.type === "pulse") {
 							var newMountConfig: IMountConfig = {
-								...item.element.placementMode.config!,
+								...item.element.placementMode.config,
 								orientation: result.orientation,
 								channelID: result.channelID,
 								sequenceID: result.sequenceID,
 								index: result.index
 							};
 
-							let newState: IVisual = {...item.element.state, placementMode: {type: "pulse", config: newMountConfig}}
+							let newState: IVisual = {...item.element.state}
+							newState.placementMode = {
+								type: "pulse", config: newMountConfig
+							}
+							
+							if (dropResult.insert === true) {
+								ENGINE.handler.addColumn(newState.placementMode.config.sequenceID ?? "", dropResult.index);
+							}
+							
 							let modifyResult = ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
 
 							if (modifyResult.ok === true) {

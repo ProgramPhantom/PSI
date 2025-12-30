@@ -93,6 +93,10 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					throw new Error(`Prefabs must have placement type of pulse currently.`)
 				}
 
+				if (dropResult.insert === true) {
+					ENGINE.handler.addColumn(singletonState.placementMode.config.sequenceID ?? "", dropResult.index);
+				}
+
 				var result: Result<Visual> = ENGINE.handler.addVisual(
 					singletonState,
 					elementType as UserComponentType
