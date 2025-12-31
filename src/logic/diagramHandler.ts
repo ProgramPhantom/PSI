@@ -293,6 +293,8 @@ export default class DiagramHandler implements IDraw {
 				element = new RectElement(parameters as IRectElement);
 				break;
 			case "label-group":
+				// Wipe the id of the core child (otherwise label group and core child would have same id)
+				(parameters as ILabelGroup).coreChild.id = undefined;
 				let coreChild: Result<Visual> = this.createVisual((parameters as ILabelGroup).coreChild, (parameters as ILabelGroup).coreChildType);
 				
 				if (coreChild.ok === true) {

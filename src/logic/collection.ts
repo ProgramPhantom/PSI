@@ -241,8 +241,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		var elements: Record<ID, Visual> = {[this.id]: this};
 
 		this.children.forEach((c) => {
-			elements = {...elements, ...c.allElements};
-			
+			let childElements = c.allElements;
+			elements = {...elements, ...childElements};
 		});
 		return elements;
 	}

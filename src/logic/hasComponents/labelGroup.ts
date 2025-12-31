@@ -58,8 +58,7 @@ export default class LabelGroup<T extends Visual = Visual>
 
 		this.placementMode = params.placementMode ?? {type: "free"};
 
-		// this.ref = "labelled-" + coreChild.ref;
-		this.ref = coreChild.ref;
+		this.ref = coreChild.ref + "-labelGroup";
 
 		this._coreChild = coreChild;
 		this.setCoreChild(coreChild);
@@ -73,6 +72,9 @@ export default class LabelGroup<T extends Visual = Visual>
 
 	private setCoreChild(child: T) {
 		this._coreChild = child;
+		this._coreChild.placementMode = {
+			type: "managed"
+		}
 
 		this.addChildAtCoord(child, 1, 1)
 	}

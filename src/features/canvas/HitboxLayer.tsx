@@ -18,9 +18,9 @@ type HoverBehaviour = "terminate" | "carry" | "conditional";
 // Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
 const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> = {
 	0: {
-		terminate: ["label-group", "channel", "line", ],
-		carry: ["text", "diagram", "lower-abstract", "svg", "rect"],
-		conditional: ["rect", "svg", "label"]
+		terminate: ["label-group", "channel" ],
+		carry: ["text", "lower-abstract", "svg", "rect"],
+		conditional: ["rect", "svg", "label", "diagram", ]
 	},
 	1: {
 		terminate: ["diagram", "label-group", "channel", "svg", "rect", "label-group"],
@@ -35,7 +35,7 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
 };
 
 export function HitboxLayer(props: IHitboxLayerProps) {
-	var drawSVG: Element | undefined = ENGINE.surface;
+	let drawSVG: Element | undefined = ENGINE.surface;
 	if (drawSVG === undefined) {
 		return <></>;
 	}
@@ -67,7 +67,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		freeRectArray: Rect[],
 		depth: number = BASE_LAYER
 	) => {
-		var thisElement: Visual = ENGINE.handler.identifyElement(root.id());
+		let thisElement: Visual | undefined = ENGINE.handler.identifyElement(root.id());
 
 		// Traverse the top surface
 		if (root.id() === ENGINE.SURFACE_ID) {
@@ -75,7 +75,11 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 				traverseDom(c, componentRectArray, freeRectArray, depth - 1);
 			});
 		} else if (thisElement !== undefined ) {
-			var thisLayer: Rect = thisElement.getHitbox().attr({zIndex: depth});
+			let thisLayer: Rect = thisElement.getHitbox().attr({zIndex: depth});
+
+			if (thisElement.ref === "LABELGROUP") {
+				console.log()
+			}
 
 			componentRectArray.push(thisLayer);
 
