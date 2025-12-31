@@ -812,24 +812,28 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	}
 
 	protected insertEmptyColumn(index?: number) {
-		var newColumn: GridCell<T>[] = Array<GridCell<T>>(this.numRows).fill(undefined);
-		var index = index; 
-
-		if (index === undefined || index < 0 || index > this.numColumns) {
-			index = this.numColumns 
-		} 
+		let newColumn: GridCell<T>[] = Array<GridCell<T>>(this.numRows).fill(undefined);
+		let INDEX: number | undefined = index; 
+		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns) {
+			INDEX = this.numColumns;
+		}
 
 		for (let i = 0; i < this.numRows; i++) {
-      		this.gridMatrix[i].splice(index, 0, newColumn[i]);
+      		this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
     	}
+
+		this.shiftElementColumnIndexes(INDEX, 1)
 	}
 	protected insertEmptyRow(index?: number): void {
 		var newRow: GridCell<T>[] = Array<GridCell<T>>(this.numColumns).fill(undefined)
-		if (index === undefined || index < 0 || index > this.numRows) {
-			this.gridMatrix.push(newRow);
-		} else {
-			this.gridMatrix.splice(index, 0, newRow);
+		let INDEX: number | undefined = index;
+		if (INDEX === undefined || INDEX < 0 || INDEX > this.numRows) {
+			INDEX = this.numRows;
 		}
+
+		this.gridMatrix.splice(INDEX, 0, newRow);
+
+		this.shiftElementRowIndexes(INDEX, 1);
   	}
 
 	public removeColumn(index?: number, onlyIfEmpty: boolean=false) {
@@ -848,6 +852,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			this.gridMatrix[i].splice(INDEX, 1);
 		}
 		
+		this.shiftElementColumnIndexes(INDEX, -1);
 	}
 	public removeRow(index?: number, onlyIfEmpty: boolean=false) {
 		if (index === undefined || index < 0 || index > this.numRows-1) {
@@ -861,7 +866,59 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		if (onlyIfEmpty === true && !empty) { return }
 
-		this.gridMatrix.splice(INDEX, 1);	
+		this.gridMatrix.splice(INDEX, 1);
+
+		this.shiftElementRowIndexes(INDEX, -1);
+	}
+
+	protected shiftElementColumnIndexes(from: number, amount: number=1) {
+		// Update grid indexes
+		for (let i=from; i<this.numColumns; i++) {
+			let col = this.getColumn(i);
+
+			for (let cell of col) {
+				if (cell?.elements !== undefined) {
+					cell.elements.forEach((cell) => {
+						if (cell.placementMode.type === "grid" && cell.placementMode.gridConfig.coords !== undefined) {
+							cell.placementMode.gridConfig.coords.col += amount;
+						}
+					})
+				}
+
+				if (cell?.sources !== undefined) {
+					Object.entries(cell.sources).forEach(([id, coord]) => {
+						if (coord.col >= from) {
+							coord.col += amount
+						}
+					})
+				}
+			}
+		}
+	}
+
+	protected shiftElementRowIndexes(from: number, amount: number=1) {
+		// Update grid indexes
+		for (let i=from; i<this.numRows; i++) {
+			let row = this.getRow(i);
+
+			for (let cell of row) {
+				if (cell?.elements !== undefined) {
+					cell.elements.forEach((cell) => {
+						if (cell.placementMode.type === "grid" && cell.placementMode.gridConfig.coords !== undefined) {
+							cell.placementMode.gridConfig.coords.row += amount;
+						}
+					})
+				}
+
+				if (cell?.sources !== undefined) {
+					Object.entries(cell.sources).forEach(([id, coord]) => {
+						if (coord.row >= from) {
+							coord.row += amount
+						}
+					})
+				}
+			}
+		}
 	}
 
 	/**

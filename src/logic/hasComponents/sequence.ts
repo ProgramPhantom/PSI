@@ -358,15 +358,15 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public override insertEmptyColumn(index?: number) {
-		var newColumn: GridCell[] = Array<GridCell>(this.numRows).fill(undefined);
-		var index = index; 
+		let newColumn: GridCell[] = Array<GridCell>(this.numRows).fill(undefined);
+		let INDEX: number | undefined = index; 
 
-		if (index === undefined || index < 0 || index > this.numColumns) {
-			index = this.numColumns 
+		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns) {
+			INDEX = this.numColumns 
 		} 
 
 		for (let i = 0; i < this.numRows; i++) {
-      		this.gridMatrix[i].splice(index, 0, newColumn[i]);
+      		this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
     	}
 
 		// Apply this to the channels
@@ -374,31 +374,15 @@ export default class Sequence extends Grid implements ISequence {
 		if (this.numColumns >= 2) {
 			this.setChannelDimensions();
 			this.setChannelMatrices();
-
-			// // We need to move the bar sources back one and reset their size.
-			// if (index === 1) {
-			// 	this.channels.forEach((channel, channel_index) => {
-			// 		let INDEX: number = channel_index * 3;
-			// 		let bar_row: number = INDEX + 1;
-// 
-			// 		this.gridMatrix[bar_row][1] = this.gridMatrix[bar_row][2];
-			// 		this.gridMatrix[bar_row][2] = {elements: [channel.bar], sources: {[channel.bar.id]: {row: bar_row, col: 2}}};
-// 
-			// 		if (channel.bar.placementMode.type === "grid") {
-			// 			channel.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.numColumns-1}
-			// 		}
-			// 	})
-			// }
-
 		}
 		
+		this.shiftElementColumnIndexes(INDEX, 1);
 	}
 
 	public override removeColumn(index?: number, onlyIfEmpty: boolean=false) {
-		if (index === undefined || index < 0 || index > this.numColumns-1) {
-			var INDEX = this.numColumns - 1;
-		} else {
-			INDEX = index;
+		let INDEX: number | undefined = index;
+		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns-1) {
+			INDEX = this.numColumns - 1;
 		}
 
 		if (INDEX === 1 && this.numColumns === 2) {
@@ -417,8 +401,36 @@ export default class Sequence extends Grid implements ISequence {
 			this.gridMatrix[i].splice(INDEX, 1);
 		}
 
-		this.setChannelDimensions()
+		this.setChannelDimensions();
+
+		this.shiftElementColumnIndexes(INDEX, -1);
 	}
 
+	protected override shiftElementColumnIndexes(from: number, amount: number=1) {
+		// Update grid indexes
+		for (let i=from; i<this.numColumns; i++) {
+			let col = this.getColumn(i);
+
+			for (let cell of col) {
+				if (cell?.elements !== undefined) {
+					cell.elements.forEach((cell) => {
+						if (cell.placementMode.type === "grid" && cell.placementMode.gridConfig.coords !== undefined) {
+							cell.placementMode.gridConfig.coords.col += amount;
+						} else if (cell.placementMode.type === "pulse" && cell.placementMode.config.index !== undefined) {
+							cell.placementMode.config.index += amount;
+						}
+					})
+				}
+
+				if (cell?.sources !== undefined) {
+					Object.entries(cell.sources).forEach(([id, coord]) => {
+						if (coord.col >= from) {
+							coord.col += amount
+						}
+					})
+				}
+			}
+		}
+	}
 
 }
