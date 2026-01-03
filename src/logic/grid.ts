@@ -388,7 +388,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		
 		let currElements: T[] | undefined = targetGridCell.elements ?? [];
 		let currSources: {[index: number]: { row: number; col: number }} | undefined = targetGridCell.sources ?? {};
-		let currGhosts: Ghost | undefined = targetGridCell.ghosts ?? [];
+		let currGhosts: Ghost[] | undefined = targetGridCell.ghosts ?? [];
 		
 		currElements.push(...(cell?.elements ?? []))
 		if (currElements.length === 0) {currElements = undefined} 

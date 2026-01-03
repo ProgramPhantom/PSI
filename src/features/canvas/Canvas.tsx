@@ -60,7 +60,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [zoom, setZoom] = useState(2);
 	const [dragging, setDragging] = useState(false);
 	const [fileName, setFileName] = useState(ENGINE.currentImageName);
-	const diagramSvgRef = useRef<HTMLDivElement | null>();
+	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [focusLevel, setFocusLevel] = useState(0);
 	const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(

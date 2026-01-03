@@ -31,8 +31,6 @@ const DEFAULT_SEQUENCE: ISequence = {
 				"thickness": 3,
 				"barStyle": {
 					"fill": "#000000",
-					"stroke": null,
-					"strokeWidth": null
 				}
 			},
 

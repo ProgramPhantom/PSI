@@ -40,7 +40,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		return <></>;
 	}
 	var hitboxSVG: Svg = SVG();
-	var hitboxSvgRef = useRef<SVGSVGElement | null>();
+	var hitboxSvgRef = useRef<SVGSVGElement | null>(null);
 
 	var componentRectArray: Rect[] = [];
 	var freeRectArray: Rect[] = [];

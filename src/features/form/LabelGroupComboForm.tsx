@@ -12,7 +12,7 @@ import LabelListForm, { LabelGroupLabels } from "./LabelListForm";
 interface LabelGroupComboForm {
 	target?: Visual;
 	objectType: UserComponentType;
-	callback: (val: IVisual | undefined, masterType: UserComponentType) => void;
+	callback: (val: IVisual, masterType: UserComponentType) => void;
 
 	ref?: React.RefObject<SubmitButtonRef>;
 }
@@ -28,7 +28,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 	(props, ref) => {
 		var MasterForm: React.FC<FormRequirements>;
 		var ChildForm: React.FC<FormRequirements> | undefined;
-		var LabelForm: React.FC<FormRequirements> = FORM_DEFAULTS["label"].form;
+		var LabelForm: React.FC<FormRequirements> = FORM_DEFAULTS["label"]!.form;
 
 		var masterDefaults: IVisual;
 		var childDefaults: IVisual | undefined;
@@ -44,15 +44,15 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 		if (props.target !== undefined) {
 			parentType = (props.target.constructor as typeof Visual).ElementType;
 
-			MasterForm = FORM_DEFAULTS[props.objectType].form;
+			MasterForm = FORM_DEFAULTS[props.objectType]!.form;
 			masterDefaults = props.target.state;
-			allowLabels = FORM_DEFAULTS[props.objectType].allowLabels;
+			allowLabels = FORM_DEFAULTS[props.objectType]!.allowLabels;
 
 			if (LabelGroup.isLabelGroup(props.target)) {
 				childType = (props.target.coreChild.constructor as typeof Visual)
 					.ElementType;
 
-				ChildForm = FORM_DEFAULTS[(props.target.coreChild.constructor as typeof Visual).ElementType].form;
+				ChildForm = FORM_DEFAULTS[(props.target.coreChild.constructor as typeof Visual).ElementType]!.form;
 				childDefaults = props.target.coreChild.state;
 				childTarget = props.target.coreChild;
 
@@ -63,9 +63,9 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 		} else {
 			parentType = props.objectType;
 			// Use the object type to setup a clean form
-			MasterForm = FORM_DEFAULTS[props.objectType].form;
-			masterDefaults = FORM_DEFAULTS[props.objectType].defaults;
-			allowLabels = FORM_DEFAULTS[props.objectType].allowLabels;
+			MasterForm = FORM_DEFAULTS[props.objectType]!.form;
+			masterDefaults = FORM_DEFAULTS[props.objectType]!.defaults;
+			allowLabels = FORM_DEFAULTS[props.objectType]!.allowLabels;
 		}
 
 
@@ -133,6 +133,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			} else {
 
 				// Already label type
+				childType = (masterFormData as ILabelGroup).coreChildType;
 				if (labelListFormData.length > 0) {
 					// Still a label group
 					var result: ILabelGroup = {

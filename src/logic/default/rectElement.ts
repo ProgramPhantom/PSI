@@ -8,8 +8,6 @@ export const DEFAULT_RECT_ELEMENT: IRectElement = {
 
 	"style": {
 		"fill": "#000000",
-		"stroke": null,
-		"strokeWidth": null
 	},
 	"placementMode": {"type": "free"},
 	"sizeMode": {x: "fit", y: "fit"},

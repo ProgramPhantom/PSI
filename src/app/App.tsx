@@ -225,7 +225,6 @@ function App() {
 					<Banner
 						saveSVG={SaveSVG}
 						savePNG={SavePNG}
-						openConsole={openConsole}
 						selectedTool={selectedTool}
 						setTool={setTool}></Banner>
 				</div>

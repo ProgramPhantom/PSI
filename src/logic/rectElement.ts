@@ -4,8 +4,8 @@ import Visual, { IDraw, IVisual } from "./visual";
 
 export interface IRectStyle {
 	fill: string;
-	stroke: string | null;
-	strokeWidth: number | null;
+	stroke?: string;
+	strokeWidth?: number;
 }
 
 export interface IRectElement extends IVisual {

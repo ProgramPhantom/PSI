@@ -69,7 +69,7 @@ export default class SchemeManager {
 	}
 
 	public internalScheme: IUserSchemeData;
-	public svgStrings: SVGDict | undefined;
+	public svgStrings: SVGDict = {};
 
 	private _userSchemeSet: SchemeSet = {};
 	public get schemesList(): DeepReadonly<PartialUserSchemeData[]> {
@@ -168,10 +168,11 @@ export default class SchemeManager {
 		// Get all svg data, from the assets and from internal storage:
 
 		var allSvgData: SVGDict = {};
+		var assetData: SVGDict = {};
 
 		// Try to load from assets:
 		try {
-			var assetData: SVGDict = await this.getAssetSVGs();
+			assetData = await this.getAssetSVGs();
 			allSvgData = {...assetData};
 		} catch {
 			console.warn(`Failed to load asset svg data`);
@@ -204,7 +205,7 @@ export default class SchemeManager {
 	private async getAssetSVGs(): Promise<SVGDict> {
 		var renamedSVGAssets = Object.fromEntries(
 			Object.entries(ASSET_SVGS).map(([path, content]) => {
-				const name = path.split("/").pop().replace(".svg", "");
+				const name = (path.split("/").pop() ?? "").replace(".svg", "");
 				return [name, content];
 			})
 		);
@@ -253,7 +254,7 @@ export default class SchemeManager {
 
 			// Iterate svg elements
 			for (var [name, svgElement] of Object.entries(scheme.svgElements)) {
-				if (this.svgStrings[svgElement.svgDataRef] === undefined) {
+				if (this.svgStrings?.[svgElement.svgDataRef] === undefined) {
 					// Missing, so add a
 					// this.svgStrings[svgElement.svgDataRef] = SchemeManager.MissingSVGAssetStr;
 				}
@@ -269,7 +270,7 @@ export default class SchemeManager {
 	//// ---------------------- MODIFIERS --------------
 	// Method for adding svg data to a scheme
 	public addSVGStrData(dataString: string, reference: string) {
-		if (this.svgStrings[reference] !== undefined) {
+		if (this.svgStrings?.[reference] !== undefined) {
 			console.warn(`Overriding svg ${reference}`);
 		}
 
@@ -283,8 +284,8 @@ export default class SchemeManager {
 			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
 		}
 
-		var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(
-			this.userSchemeSet
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
 		);
 		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
 
@@ -301,8 +302,8 @@ export default class SchemeManager {
 			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
 		}
 
-		var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(
-			this.userSchemeSet
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
 		);
 		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
 
@@ -322,8 +323,8 @@ export default class SchemeManager {
 			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
 		}
 
-		var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(
-			this.userSchemeSet
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
 		);
 		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
 
@@ -345,12 +346,14 @@ export default class SchemeManager {
 			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
 		}
 
-		var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(
-			this.userSchemeSet
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
 		);
 		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
 
-		delete selectedScheme.svgElements[data.ref];
+		if (selectedScheme.svgElements !== undefined) {
+			delete selectedScheme.svgElements[data.ref];
+		}
 		this.setUserScheme(schemeName, {
 			...selectedScheme,
 			svgElements: selectedScheme.svgElements
@@ -364,12 +367,14 @@ export default class SchemeManager {
 			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
 		}
 
-		var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(
-			this.userSchemeSet
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
 		);
 		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
 
-		delete selectedScheme.rectElements[data.ref];
+		if (selectedScheme.rectElements !== undefined) {
+			delete selectedScheme.rectElements[data.ref];
+		}
 		this.setUserScheme(schemeName, {
 			...selectedScheme,
 			rectElements: selectedScheme.rectElements
@@ -383,12 +388,14 @@ export default class SchemeManager {
 			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
 		}
 
-		var mutableSchemeSet: DeepMutable<Partial<IUserSchemeData>> = structuredClone(
-			this.userSchemeSet
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
 		);
 		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
 
-		delete selectedScheme.labelGroupElements[data.ref];
+		if (selectedScheme.labelGroupElements !== undefined) {
+			delete selectedScheme.labelGroupElements[data.ref];
+		}
 		this.setUserScheme(schemeName, {
 			...selectedScheme,
 			labelGroupElements: selectedScheme.labelGroupElements
@@ -402,7 +409,7 @@ export type DeepReadonly<T> = {
 };
 
 export function mergeObjectsPreferNonEmpty(obj1: any, obj2: any) {
-	const result = {};
+	const result: any = {};
 	for (const key of new Set([...Object.keys(obj1), ...Object.keys(obj2)])) {
 		const val1 = obj1[key];
 		const val2 = obj2[key];

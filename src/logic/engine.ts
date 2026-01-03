@@ -5,6 +5,8 @@ import { IDiagram } from "./hasComponents/diagram";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
+import Visual, { IVisual } from "./visual";
+import { AllComponentTypes } from "./point";
 
 
 export interface SchemeSingletonStore {
@@ -26,7 +28,7 @@ class ENGINE {
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
 		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
-		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager, ENGINE.ConstructSVGElement);
+		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager, ENGINE.ConstructElement);
 		console.log("SURFACE ATTACHED");
 	}
 	static get surface(): Svg {
@@ -107,7 +109,10 @@ class ENGINE {
 				svgSingletons.push(ENGINE.ConstructSVGElement(t as ISVGElement));
 			});
 			Object.values(scheme.labelGroupElements ?? {}).forEach((t) => {
-				labelGroupSingletons.push(new LabelGroup(t as ILabelGroup));
+				let labelGroup: Visual | undefined = this.ConstructElement(t, "label-group");
+				if (labelGroup !== undefined) {
+					labelGroupSingletons.push();
+				}
 			});
 
 			singletonCollections[schemeName] = {
@@ -142,7 +147,11 @@ class ENGINE {
 	) {
 		this.schemeManager.addLabelGroupData(data, schemeName);
 
-		this.singletons[schemeName].LABELGROUP_TEMPLATES.push(new LabelGroup(data));
+		let labelGroupSingleton: Visual | undefined = this.ConstructElement(data, "label-group") ;
+
+		if (labelGroupSingleton !== undefined) {
+			this.singletons[schemeName].LABELGROUP_TEMPLATES.push(labelGroupSingleton as LabelGroup);
+		}
 	}
 
 	static removeSVGSingleton(
@@ -213,6 +222,32 @@ class ENGINE {
 		}
 
 		return result;
+	}
+
+	static ConstructElement(parameters: IVisual, type: AllComponentTypes): Visual | undefined {
+		var element: Visual | undefined = undefined;
+
+		switch (type) {
+			case "svg":
+				element = ENGINE.ConstructSVGElement(parameters as ISVGElement);
+				break;
+			case "rect":
+				element = new RectElement(parameters as IRectElement);
+				break;
+			case "label-group":
+				// Wipe the id of the core child (otherwise label group and core child would have same id)
+				(parameters as ILabelGroup).coreChild.id = undefined;
+				let coreChild: Visual | undefined = ENGINE.ConstructElement((parameters as ILabelGroup).coreChild, (parameters as ILabelGroup).coreChildType);
+				
+				if (coreChild === undefined) {
+					break;
+				}
+
+				element = new LabelGroup(parameters as ILabelGroup, coreChild);
+				break;
+		}
+
+		return element
 	}
 }
 

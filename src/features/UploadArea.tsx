@@ -1,5 +1,5 @@
 import {Button, Icon} from "@blueprintjs/core";
-import React from "react";
+import React, { useRef } from "react";
 
 
 export interface UploadAreaProps {
@@ -24,7 +24,7 @@ const UploadArea: React.FC<UploadAreaProps> = ({
 	style
 }) => {
 	const [isDragOver, setIsDragOver] = React.useState(false);
-	const localInputRef = React.useRef<HTMLInputElement>(null);
+	const localInputRef = useRef<HTMLInputElement | null>(null);
 
 	const handleDragOver = (e: React.DragEvent) => {
 		e.preventDefault();

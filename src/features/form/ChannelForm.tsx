@@ -13,9 +13,7 @@ import { IChannel } from "../../logic/hasComponents/channel";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 
-interface ChannelFormProps extends FormRequirements {
-	onSubmit: (data: IChannel) => void;
-}
+interface ChannelFormProps extends FormRequirements {}
 
 const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 	const formControls = useFormContext<IChannel>();

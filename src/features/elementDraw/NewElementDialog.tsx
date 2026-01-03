@@ -29,7 +29,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 		mode: "onChange"
 	});
 
-	function addNewTemplate(values: IVisual, masterType: UserComponentType) {
+	const addNewTemplate = (values: IVisual, masterType: UserComponentType) => {
 		switch (masterType) {
 			case "svg":
 				ENGINE.addSVGSingleton(values as ISVGElement, props.schemeName);

@@ -90,7 +90,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 						name="svgDataRef"
 						render={({field}) => (
 							<HTMLSelect {...field} iconName="caret-down">
-								{Object.keys(ENGINE.schemeManager.svgStrings).map((ref) => {
+								{Object.keys(ENGINE.schemeManager.svgStrings ?? {}).map((ref) => {
 									return (
 										<option key={ref} value={ref}>
 											{ref}

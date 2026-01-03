@@ -17,8 +17,8 @@ function LabelForm(props: ILabelArrayFormProps) {
 	const [textOn, setTextOn] = useState<boolean>(formControls.getValues(`${fullPrefix}text`) !== undefined);
 	const [lineOn, setLineOn] = useState<boolean>(formControls.getValues(`${fullPrefix}line`) !== undefined);
 
-	const [textBackup, setTextBackup] = useState<IText>(undefined);
-	const [lineBackup, setLineBackup] = useState<ILine>(undefined);
+	const [textBackup, setTextBackup] = useState<IText | undefined>(undefined);
+	const [lineBackup, setLineBackup] = useState<ILine | undefined>(undefined);
 
 	const toggleText = () => {
 		if (textOn) {

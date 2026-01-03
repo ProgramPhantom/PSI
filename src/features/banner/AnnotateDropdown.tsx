@@ -68,7 +68,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 			hoverOpenDelay={500}
 			lazy={false}
 			renderTarget={({ isOpen, ...targetProps }) => (
-				<Button active={false}
+				<Button active={false} disabled={true}
 					{...targetProps}
 					onClick={(e) => selectTool()}
 					intent={props.selectedTool.type === "arrow" ? "primary" : "none"}
@@ -237,7 +237,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 
 						<FormGroup label="Thickness" inline={true}>
 							<Controller
-								name="lineStyle.thickness"
+								name="thickness"
 								control={control}
 								render={({ field }) => (
 									<NumericInput

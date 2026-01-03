@@ -14,8 +14,6 @@ export const DEFAULT_CHANNEL: IChannel = {
 		"thickness": 3,
 		"barStyle": {
 			"fill": "#000000",
-			"stroke": null,
-			"strokeWidth": null
 		}
 	},
 

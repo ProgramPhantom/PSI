@@ -33,7 +33,7 @@ function getCoreDefaults(target: Visual): IVisual {
 
 export function FormDiagramInterface(props: FormHolderProps) {
 	const ComponentFormEffectRegistry = useMemo<
-		Partial<Record<UserComponentType, EffectGroup>>
+		Partial<Record<UserComponentType, Partial<EffectGroup>>>
 	>(() => {
 		return {
 			svg: {
@@ -67,13 +67,13 @@ export function FormDiagramInterface(props: FormHolderProps) {
 	const submitRef = useRef<SubmitButtonRef>(null);
 
 	// Submit function
-	function dispatchFormEffect(
+	const dispatchFormEffect = (
 		values: IVisual,
 		masterType: UserComponentType,
 		effect: FormEffect
-	) {
+	) => {
 		var targetFunction: FormEffectFunction | undefined =
-			ComponentFormEffectRegistry[masterType][effect];
+			ComponentFormEffectRegistry[masterType]?.[effect];
 
 		if (targetFunction === undefined) {
 			throw new Error(`Not implemented`);
@@ -85,21 +85,24 @@ export function FormDiagramInterface(props: FormHolderProps) {
 				result = (targetFunction as SubmissionFunction)(values, masterType);
 				break;
 			case "modify":
+				if (props.target === undefined) {
+					throw new Error(`Calling modification function with no selected target`)
+				}
 				result = (targetFunction)(values, masterType, props.target);
 				break;
 			case "delete":
+				if (props.target === undefined) {
+					throw new Error(`Calling deletion function with no selected target`)
+				}
 				result = (targetFunction as DeleteFunction)(props.target, masterType);
 				break;
 			default:
-				appToaster.show({
-					message: `No '${effect}' method assigned to object type '${masterType}'`,
-					intent: "danger"
-				});
+				result = {ok: false, error: `No '${effect}' method assigned to object type '${masterType}'`}
 		}
 
 		if (!result.ok) {
 			appToaster.show({
-				message: `Error creating element`,
+				message: result.error,
 				intent: "danger"
 			});
 		}

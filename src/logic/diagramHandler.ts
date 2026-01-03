@@ -14,7 +14,7 @@ import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual } from "./visual";
 
 
-export type Result<T> = {ok: true; value: T} | {ok: false; error: string};
+export type Result<T = {}> = {ok: true; value: T} | {ok: false; error: string};
 
 type ConstructorFunction = (parameters: IVisual, ...args: any[]) => Result<any>;
 /**
@@ -53,7 +53,7 @@ export default class DiagramHandler implements IDraw {
 
 	surface?: Svg;
 	schemeManager: SchemeManager;
-	svgConstructor: (data: ISVGElement) => SVGElement
+	EngineConstructor: (data: IVisual, type: AllComponentTypes) => Visual | undefined
 
 	get id(): string {
 		var id: string = "";
@@ -77,11 +77,11 @@ export default class DiagramHandler implements IDraw {
 		return this.diagram.allElements;
 	}
 
-	constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager, SVGConstructor: ((data: ISVGElement) => SVGElement)) {
+	constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager, EngineConstructor: ((data: IVisual, type: AllComponentTypes) => Visual | undefined)) {
 		this.syncExternal = emitChange;
 		this.schemeManager = schemeManager;
 		this.surface = surface;
-		this.svgConstructor = SVGConstructor;
+		this.EngineConstructor = EngineConstructor;
 
 		var constructResult: Result<Diagram> = this.constructDiagram(
 			defaultDiagram
@@ -285,7 +285,7 @@ export default class DiagramHandler implements IDraw {
 
 		switch (type) {
 			case "svg":
-				element = this.svgConstructor(parameters as ISVGElement);
+				element = this.EngineConstructor(parameters as ISVGElement, type);
 				break;
 			case "rect":
 				element = new RectElement(parameters as IRectElement);

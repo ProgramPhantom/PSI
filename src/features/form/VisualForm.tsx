@@ -55,7 +55,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				label="Reference"
 				labelFor="ref-input"
 				intent={errors?.ref ? "danger" : "none"}
-				helperText={errors?.ref?.message.toString()}>
+				helperText={(errors?.ref?.message ?? "").toString()}>
 				<Controller
 					control={formControls.control}
 					name={`${fullPrefix}ref`}
@@ -79,7 +79,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				<>
 					<FormGroup
 						intent={errors?.contentWidth ? "danger" : "none"}
-						helperText={errors?.contentWidth?.message.toString()}
+						helperText={(errors?.contentWidth?.message ?? "").toString()}
 						inline={true}
 						label="Width"
 						labelFor="width-input">
@@ -115,7 +115,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				<>
 					<FormGroup
 						intent={errors?.contentHeight ? "danger" : "none"}
-						helperText={errors?.contentHeight?.message.toString()}
+						helperText={(errors?.contentHeight?.message ?? "").toString()}
 						inline={true}
 						label="Height"
 						labelFor="height-input">

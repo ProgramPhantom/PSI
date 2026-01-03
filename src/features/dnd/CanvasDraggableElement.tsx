@@ -118,8 +118,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 			[props.x, props.y, props.name]
 		);
 
-		var visualRef = useRef<SVGSVGElement>();
-		var visual = props.element.getInternalRepresentation().show();
+		var visualRef = useRef<SVGSVGElement | null>(null);
+		var visual = props.element.getInternalRepresentation()!.show();
 
 		// Removed the default preview?
 		useEffect(() => {
