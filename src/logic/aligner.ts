@@ -5,7 +5,6 @@ import Visual, { doesDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 
-console.log("Load module aligner")
 
 export interface IAligner<T extends IVisual = IVisual> extends ICollection {
 	mainAxis: Dimensions;
@@ -73,10 +72,6 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 	public computeSize(): Size {
 		this.children.forEach((c) => c.computeSize());
 
-		if (this.ref === "LABEL") {
-			console.log()
-		}
-
 		this.cells = Array.from({length: this.noChildren}, () => new Spacial());
 
 		// Compute intrinsic length of main axis:
@@ -140,10 +135,6 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		var xCount = 0;
 		var yCount = 0;
 
-		if (this.ref === "LABEL") {
-			console.log()
-		}
-
 		// Yes this could be done with dimension setters
 		if (this.mainAxis === "x") {
 			this.children.forEach((child, child_index) => {
@@ -181,11 +172,6 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 
 	public override growElement(containerSize: Size): Record<Dimensions, number> {
 		let change: Record<Dimensions, number> = super.growElement(containerSize)
-		
-
-		if (this.ref === "LABEL") {
-			console.log()
-		}
 		
 
 		// Resize cells:

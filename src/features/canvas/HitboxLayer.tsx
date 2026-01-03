@@ -77,10 +77,6 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		} else if (thisElement !== undefined ) {
 			let thisLayer: Rect = thisElement.getHitbox().attr({zIndex: depth});
 
-			if (thisElement.ref === "LABELGROUP") {
-				console.log()
-			}
-
 			componentRectArray.push(thisLayer);
 
 			if (
@@ -121,9 +117,6 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 				return currElement;
 			}
 
-			if (currElement.ref === "LINE") {
-				console.log();
-			}
 			var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual)
 				.ElementType;
 			var elementUpType: AllComponentTypes = (elementUp.constructor as typeof Visual)

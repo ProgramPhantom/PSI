@@ -39,8 +39,6 @@ export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 					return undefined;
 				}
 
-				console.log(monitor.getClientOffset());
-
 				// Get the client offset (absolute position) where the drop occurred
 				const clientOffset = monitor.getClientOffset();
 				if (!clientOffset) {

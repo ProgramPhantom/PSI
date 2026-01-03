@@ -1,7 +1,6 @@
 import { ID } from "./point";
 import Spacial, { ISpacial, PlacementConfiguration, Size, SizeConfiguration } from "./spacial";
 
-console.log(`[ModuleLoad] PaddedBox`);
 
 type Padding = number | [number, number] | [number, number, number, number];
 

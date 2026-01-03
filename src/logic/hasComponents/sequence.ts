@@ -6,7 +6,6 @@ import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
 import { G } from "@svgdotjs/svg.js";
 
-console.log("Load module sequence")
 
 export interface ISequence extends IGrid {
 	channels: IChannel[];

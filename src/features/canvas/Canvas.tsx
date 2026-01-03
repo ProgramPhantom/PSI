@@ -22,7 +22,6 @@ import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import { AllComponentTypes } from "../../logic/point";
 
-console.log("Load module canvas");
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
 	// Types

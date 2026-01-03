@@ -48,7 +48,6 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 	const handleSubmit = () => {
 		// Handle form submission here
-		console.log("Editing element:", selectedElement?.ref);
 		handleDialogClose();
 	};
 
@@ -58,7 +57,6 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 	const handleNewElementSubmit = () => {
 		// Handle new element form submission here
-		console.log("Creating new element");
 		handleNewElementDialogClose();
 	};
 

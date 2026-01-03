@@ -5,7 +5,6 @@ import { G } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 import { ID } from "./point";
 
-console.log(`[ModuleLoad] Grid`);
 
 export interface IGrid extends ICollection {
 	minHeight?: number,
@@ -355,10 +354,6 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 	public appendElementsAtCoord(cell: GridCell<T>, coords: {row: number, col: number}) {
 		if (Object.keys(cell ?? {}).length === 0) {return}
-
-		if (cell?.sources?.[0] !== undefined) {
-			console.log()
-		}
 		
 		this.setMatrixSize(coords, true);
 
@@ -998,7 +993,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		this.remove(child);
 
 		if (region === undefined) {
-			console.log(`Error positioning child ${child.ref}`)
+			console.warn(`Error positioning child ${child.ref}`)
 			return
 		}
 

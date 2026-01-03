@@ -23,7 +23,6 @@ interface IAnnotateDropdownProps {
 }
 
 export function AnnotateDropdown(props: IAnnotateDropdownProps) {
-	console.log(defaultLine)
 	const toolValue = useRef<IDrawArrowConfig>({
 		lineStyle: defaultLine.lineStyle as ILineStyle,
 		mode: "bind"

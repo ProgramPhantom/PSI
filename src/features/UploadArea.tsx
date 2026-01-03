@@ -1,7 +1,6 @@
 import {Button, Icon} from "@blueprintjs/core";
 import React from "react";
 
-console.log("Load module upload area")
 
 export interface UploadAreaProps {
 	selectedFile: File | null;

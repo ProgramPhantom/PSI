@@ -1,7 +1,6 @@
 export type OwnershipType = "component" | "free";
 export type ID = string;
 
-console.log("Load module point")
 
 // All component types
 export type AllComponentTypes = UserComponentType | AbstractComponentTypes;
@@ -75,9 +74,6 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		return this._id;
 	}
 	public set id(value: ID) {
-		if (this.ref === "BAR") {
-			console.log()
-		}
 		this._id = value;
 	}
 	public parentId: ID | undefined;

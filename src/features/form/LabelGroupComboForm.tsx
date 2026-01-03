@@ -69,9 +69,6 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 		}
 
 
-		console.log(masterDefaults)
-		console.log(childDefaults)
-		console.log(labelDefaults)
 
 		// Create form hook
 		const masterFormControls = useForm<IVisual>({

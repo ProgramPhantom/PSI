@@ -3,8 +3,6 @@ import TeXToSVG from "tex-to-svg";
 import { cascadeID } from "./util2";
 import Visual, { Display, IVisual } from "./visual";
 
-console.log("Load module text")
-
 export const EXTOPX = 38.314;
 export const SCALER = 5;
 

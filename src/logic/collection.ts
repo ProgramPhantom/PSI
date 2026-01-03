@@ -6,7 +6,6 @@ import Spacial, { Dimensions, Size } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 
-console.log("Load module collection")
 
 export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
 	obj: any

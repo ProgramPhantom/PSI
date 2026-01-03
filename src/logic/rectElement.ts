@@ -2,8 +2,6 @@ import { Element, Rect, SVG } from "@svgdotjs/svg.js";
 import { UserComponentType } from "./point";
 import Visual, { IDraw, IVisual } from "./visual";
 
-console.log("Load module rect element")
-
 export interface IRectStyle {
 	fill: string;
 	stroke: string | null;

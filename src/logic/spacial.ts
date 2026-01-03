@@ -1,7 +1,6 @@
 import { Rect, SVG } from "@svgdotjs/svg.js";
 import Point, { ID, IPoint } from "./point";
 
-console.log(`[ModuleLoad] Spacial`);
 
 export interface Bounds {
 	top: number;
@@ -403,10 +402,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 					binding.bindingRule.targetSiteName as keyof typeof targetElement.AnchorFunctions
 				].get;
 			var dimension: Dimensions = binding.bindingRule.dimension;
-
-			if (binding.hint === "'acquire' [far] x> 'default-label' [far] (stretch)") {
-				console.log();
-			}
 
 			// get the X coord of the location on the anchor
 			var anchorBindCoord: number | undefined = getter(dimension, binding.bindToContent);

@@ -2,7 +2,6 @@ import { Element } from "@svgdotjs/svg.js";
 import { Dimensions, Size } from "./spacial";
 import Visual, { IVisual } from "./visual";
 
-console.log("Load module line like")
 
 type Direction = "along" | "cross";
 

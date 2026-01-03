@@ -2,7 +2,6 @@ import {useRef, useState} from "react";
 import {Rnd} from "react-rnd";
 import Visual from "../logic/visual";
 
-console.log("Load module resizer")
 
 interface IResizer {
 	element: Visual;

@@ -2,8 +2,6 @@ import { Element } from "@svgdotjs/svg.js";
 import { UserComponentType } from "./point";
 import Visual, { IDraw, IVisual } from "./visual";
 
-console.log("Load module space")
-
 export interface ISpace extends IVisual {}
 
 export default class Space extends Visual implements ISpace, IDraw {

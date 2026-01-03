@@ -1,12 +1,8 @@
 import { G, Mask, Rect, Svg } from "@svgdotjs/svg.js";
-import Collection, { ICollection, IHaveComponents } from "../collection";
+import Aligner, { IAligner } from "../aligner";
 import Line, { ILine } from "../line";
 import { UserComponentType } from "../point";
-import Spacial, { Dimensions } from "../spacial";
 import Text, { IText, Position } from "../text";
-import Aligner, { IAligner } from "../aligner";
-
-console.log("Load module label")
 
 
 export type LabelTextPosition = "top" | "bottom" | "inline";

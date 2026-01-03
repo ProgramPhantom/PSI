@@ -4,8 +4,6 @@ import { UserComponentType } from "../point";
 import Visual, { IVisual } from "../visual";
 import Label, { ILabel } from "./label";
 
-console.log("Load module label group")
-
 
 export interface ILabelGroup extends IGrid {
 	labels: ILabel[];

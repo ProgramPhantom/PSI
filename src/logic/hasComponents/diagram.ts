@@ -5,7 +5,6 @@ import Channel from "./channel";
 import Sequence from "./sequence";
 import SequenceAligner, { ISequenceAligner } from "./sequenceAligner";
 
-console.log("Load module App")
 
 export interface IDiagram extends ICollection {
 	sequenceAligner: ISequenceAligner

@@ -3,7 +3,6 @@ import React from "react";
 import ENGINE from "../logic/engine";
 import {ISVGElement} from "../logic/svgElement";
 
-console.log("Load module svg upload list")
 
 export interface ISVGUploadListProps {
 	elements: Array<{name: string; element: ISVGElement}>;

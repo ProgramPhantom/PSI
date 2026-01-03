@@ -4,8 +4,6 @@ import { UserComponentType } from "../point";
 import Visual from "../visual";
 import Sequence, { ISequence } from "./sequence";
 
-console.log("Load module sequence aligner")
-
 export interface ISequenceAligner extends IAligner<ISequence> {
 	sequences: ISequence[]
 }

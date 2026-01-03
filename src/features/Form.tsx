@@ -4,7 +4,6 @@ import { AllComponentTypes } from "../logic/point";
 import Visual from "../logic/visual";
 import { FormDiagramInterface } from "./form/FormDiagramInterface";
 
-console.log("Load module form")
 
 interface IFormProps {
 	target?: Visual;

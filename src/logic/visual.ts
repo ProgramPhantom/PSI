@@ -4,8 +4,6 @@ import { ID, UserComponentType } from "./point";
 import { Size } from "./spacial";
 
 
-console.log("Load module visual")
-
 export type Offset = [number, number];
 
 export type Display = "none" | "block";

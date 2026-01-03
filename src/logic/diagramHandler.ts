@@ -13,7 +13,6 @@ import { IMountConfig, PlacementConfiguration, PointBind } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual } from "./visual";
 
-console.log("Load module diagram handler")
 
 export type Result<T> = {ok: true; value: T} | {ok: false; error: string};
 
@@ -217,7 +216,6 @@ export default class DiagramHandler implements IDraw {
 		// Delete element
 		let deleteResult: Result<Visual> = this.deleteVisual(target);
 		if (deleteResult.ok === false) {
-			console.log()
 			return deleteResult;
 		}
 		let id: ID = deleteResult.value.id;

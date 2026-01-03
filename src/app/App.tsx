@@ -14,7 +14,6 @@ import Visual from "../logic/visual";
 import { WelcomeSplash } from "./WelcomeSplash";
 import { appToaster } from "./Toaster";
 
-console.log("Load module App")
 
 
 
@@ -30,7 +29,6 @@ export interface IToolConfig {}
 export type Tool = {type: "select"; config: {}} | {type: "arrow"; config: IDrawArrowConfig};
 
 function App() {
-	console.log("CREATING APP");
 	console.info("Application initialized successfully");
 
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);

@@ -4,7 +4,6 @@ import RectElement, { IRectElement, IRectStyle } from "../rectElement";
 import Text, { IText } from "../text";
 import Visual, { IVisual } from "../visual";
 
-console.log("Load module Channel")
 
 export interface IChannel extends IGrid {
 	sequenceID?: ID;
