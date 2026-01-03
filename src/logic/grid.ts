@@ -17,13 +17,13 @@ export type GridCell<T extends Visual=Visual> = OccupiedCell<T> | undefined
 
 type Elements<T> = T[];
 type Sources = {[id: string]: { row: number; col: number }};
-type Ghosts = {size: {width: number, height: number}, owner?: ID}[];
+export type Ghost = {size: {width: number, height: number}, owner?: ID};
 type Extra = {width: number, height: number};
 
 interface OccupiedCell<T> {
   elements?: Elements<T>;  // The element if this is the “owning” cell
   sources?: Sources;  // If this cell is covered by another
-  ghosts?: Ghosts;  // Provide spacing to a cell
+  ghosts?: Ghost[];  // Provide spacing to a cell
   extra?: Extra;  // Applies additional width/height to the row/column
 }
 
@@ -369,10 +369,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		let cell: GridCell<T> = {elements: [child]}
 
-		this.appendElementsAtCoord(cell, {row: insertCoords.row, col: insertCoords.col});
+		this.appendCellAtCoord(cell, {row: insertCoords.row, col: insertCoords.col});
 	}
 
-	public appendElementsAtCoord(cell: GridCell<T>, coords: {row: number, col: number}) {
+	public appendCellAtCoord(cell: GridCell<T>, coords: {row: number, col: number}) {
 		if (Object.keys(cell ?? {}).length === 0) {return}
 		
 		this.setMatrixSize(coords, true);
@@ -385,6 +385,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		
 		let currElements: T[] | undefined = targetGridCell.elements ?? [];
 		let currSources: {[index: number]: { row: number; col: number }} | undefined = targetGridCell.sources ?? {};
+		let currGhosts: Ghost | undefined = targetGridCell.ghosts ?? [];
 		
 		currElements.push(...(cell?.elements ?? []))
 		if (currElements.length === 0) {currElements = undefined} 
@@ -404,13 +405,15 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		Object.assign(currSources, cell?.sources ?? {})
 		if (Object.keys(currSources).length === 0) {currSources = undefined}
 
-		let ghost: {size: {width: number, height: number}, owner?: ID}[] | undefined = cell?.ghosts;
+		currGhosts.push(...(cell?.ghosts ?? []))
+		if (currGhosts.length === 0) {currGhosts = undefined}
+
   		let extra: {width: number, height: number} | undefined = cell?.extra;
 
 		let finalCell: GridCell<T> = {
 			elements: currElements,
 			sources: currSources,
-			ghosts: ghost,
+			ghosts: currGhosts,
 			extra: extra
 		}
 
@@ -458,6 +461,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					cell.elements = undefined;
 				}
 				
+				// Remove source
 				if (cell.sources !== undefined && cell.sources[id] !== undefined) {
 					delete cell.sources[id]
 					if (Object.keys(cell.sources).length === 0) {
@@ -465,10 +469,18 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					}
 				}
 
+				// Remove owned ghosts
+				if (cell.ghosts !== undefined) {
+					cell.ghosts = cell.ghosts.filter(g => g.owner !== child.id)
+				}
+				if (cell.ghosts?.length === 0) {cell.ghosts = undefined};
+
+				// Set cell to undefined
 				if (Object.values(cell).every(v => v === undefined)) {
 					this.gridMatrix[row][col] = undefined
 				}
 
+				// Remove row/column
 				if (deleteIfEmpty?.row === true) {
 					this.removeRow(row, true)
 				}
@@ -595,7 +607,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 				
 				let toAppend: GridCell<T> = gridRegion[r][c];
 
-				this.appendElementsAtCoord(toAppend, {row: row, col: col});
+				this.appendCellAtCoord(toAppend, {row: row, col: col});
 			}
 		}
 	}

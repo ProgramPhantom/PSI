@@ -214,7 +214,7 @@ export default class DiagramHandler implements IDraw {
 		}
 		
 		// Delete element
-		let deleteResult: Result<Visual> = this.deleteVisual(target);
+		let deleteResult: Result<Visual> = this.deleteVisual(target, true);
 		if (deleteResult.ok === false) {
 			return deleteResult;
 		}
@@ -340,12 +340,12 @@ export default class DiagramHandler implements IDraw {
 		return {ok: true, value: element};
 	}
 	@draws
-	public deleteVisual(target: Visual): Result<Visual> {
+	public deleteVisual(target: Visual, modifying: boolean=false): Result<Visual> {
 		var result: Result<Visual> = {ok: false, error: `Problem deleting visual ${target.ref}`};
 
 		if (target.placementMode.type === "pulse") {
 			try {
-				this.diagram.deletePulse(target);
+				this.diagram.deletePulse(target, modifying);
 				result = {ok: true, value: target};
 			} catch (err) {
 				result = {ok: false, error: (err as Error).message}

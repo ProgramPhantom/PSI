@@ -1,5 +1,5 @@
 import { Element } from "@svgdotjs/svg.js";
-import Grid, { GridCell, IGrid } from "../grid";
+import Grid, { Ghost, GridCell, IGrid } from "../grid";
 import { ID, UserComponentType } from "../point";
 import Spacial, { Dimensions, IGridChildConfig, IMountConfig, PlacementConfiguration, SiteNames, Size } from "../spacial";
 import Visual from "../visual";
@@ -98,33 +98,45 @@ export default class Sequence extends Grid implements ISequence {
 		this.applySizesToChannels();
 	}
 
+	// Content Commands
 	public addPulse(pulse: Visual) {
 		if (pulse.placementMode.type !== "pulse") {
 			console.warn(`Cannot mount pulse with no pulse type config`)
 			return
 		}
 
-		var config: IMountConfig = pulse.placementMode.config;
-
 		var gridConfig: IGridChildConfig = this.pulseConfigToGridConfig(pulse.placementMode)!;
 
-		if (gridConfig.coords === undefined) {
-			return
+		if (gridConfig.coords === undefined) {return}
+		let targetChannel: Channel = this.channelsDict[pulse.placementMode.config.channelID ?? ""]
+		if (targetChannel === undefined) {
+			throw new Error(`Cannot find targeted channel with id ${pulse.placementMode.config.channelID}`);
 		}
 
-		// Insert column if occupied:
-		if (gridConfig.coords && this.gridMatrix[gridConfig.coords.row][gridConfig.coords.col] !== undefined) {
-			this.insertEmptyColumn(gridConfig.coords.col);
-		}
+		// // Insert column if occupied:
+		// if (gridConfig.coords && this.gridMatrix[gridConfig.coords.row][gridConfig.coords.col] !== undefined) {
+		// 	this.insertEmptyColumn(gridConfig.coords.col);
+		// }
 
 		this.addChildAtCoord(pulse, gridConfig.coords.row, gridConfig.coords.col);
 
 		// this.growChannels();
 		this.setChannelDimensions();
 		this.setChannelMatrices();
+
+				
+		// If this pulse is placed in the "both" orientation, it needs to create two ghosts
+		// above and below it to pad out the top and bottom row:
+		if (pulse.placementMode.config.orientation === "both") {
+			let barHeight: number = targetChannel.bar.height;
+			let ghostHeight: number = (pulse.height - barHeight)/2;
+
+			let ghost: Ghost = {size: {width: 0, height: ghostHeight}, owner: pulse.id}
+
+			targetChannel.addCentralElementGhosts(pulse.placementMode.config.index!, ghost, ghost);
+		}
 	}
 
-	// Content Commands
 	public addChannel(channel: Channel) {
 		this.channels.push(channel);
 		

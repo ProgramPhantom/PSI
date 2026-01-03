@@ -1,4 +1,4 @@
-import Grid, { IGrid } from "../grid";
+import Grid, { Ghost, IGrid } from "../grid";
 import { ID, UserComponentType } from "../point";
 import RectElement, { IRectElement, IRectStyle } from "../rectElement";
 import Text, { IText } from "../text";
@@ -104,5 +104,10 @@ export default class Channel extends Grid implements IChannel {
 
 		var region = this.getElementGridRegion(this.bar)!;
 		this.appendElementsInRegion(region, {row: 1, col: 1});
+	}
+
+	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {
+		this.appendCellAtCoord({ghosts: [top]}, {row: 0, col: col});
+		this.appendCellAtCoord({ghosts: [bottom]}, {row: 2, col: col});
 	}
 }

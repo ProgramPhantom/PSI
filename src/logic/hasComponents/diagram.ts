@@ -74,7 +74,7 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 		this.sequenceAligner.addPulse(pulse);
 	}
 
-	public deletePulse(pulse: Visual) {
-		this.sequenceAligner.deletePulse(pulse);
+	public deletePulse(pulse: Visual, holdColOpen: boolean=false) {
+		this.sequenceAligner.deletePulse(pulse, holdColOpen);
 	}
 }

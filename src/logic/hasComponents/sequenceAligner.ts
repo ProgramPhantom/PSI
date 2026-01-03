@@ -133,7 +133,7 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		targetSequence.addPulse(pulse);
 	}
 
-	public deletePulse(pulse: Visual) {
+	public deletePulse(pulse: Visual, holdColOpen: boolean=false) {
 		if (pulse.placementMode.type !== "pulse") {
 			console.warn(`Cannot remove pulse that is not of pulse position type`)
 			return
@@ -155,6 +155,6 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		
 		let targetSequence: Sequence = this.sequences[sequenceIndex];
 
-		targetSequence.remove(pulse, {row: false, col: true});
+		targetSequence.remove(pulse, {row: false, col: !holdColOpen});
 	}
 }
