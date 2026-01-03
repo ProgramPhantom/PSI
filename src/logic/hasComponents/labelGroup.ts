@@ -83,7 +83,10 @@ export default class LabelGroup<T extends Visual = Visual>
 		label.placementMode = {
 			type: "grid",
 			gridConfig: {
-				
+				contribution: {
+					x: true,
+					y: (this.placementMode.type === "pulse" && this.placementMode.config.orientation === "both") ? false : true
+				}
 			}
 		}
 

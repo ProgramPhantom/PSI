@@ -113,18 +113,11 @@ export default class Sequence extends Grid implements ISequence {
 			throw new Error(`Cannot find targeted channel with id ${pulse.placementMode.config.channelID}`);
 		}
 
-		// // Insert column if occupied:
-		// if (gridConfig.coords && this.gridMatrix[gridConfig.coords.row][gridConfig.coords.col] !== undefined) {
-		// 	this.insertEmptyColumn(gridConfig.coords.col);
-		// }
-
 		this.addChildAtCoord(pulse, gridConfig.coords.row, gridConfig.coords.col);
 
-		// this.growChannels();
 		this.setChannelDimensions();
 		this.setChannelMatrices();
 
-				
 		// If this pulse is placed in the "both" orientation, it needs to create two ghosts
 		// above and below it to pad out the top and bottom row:
 		if (pulse.placementMode.config.orientation === "both") {

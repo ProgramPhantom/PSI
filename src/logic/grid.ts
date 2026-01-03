@@ -340,10 +340,13 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
-				if (cell?.elements !== undefined && cell.sources === undefined) {
+				if (cell?.elements !== undefined) {
 					let cellRect: Spacial = this.cells[row_index][column_index];
 					
 					for (let child of cell.elements) {
+						// Skip unless this is an element source
+						if (!this.isCellElementSource(child, {row: row_index, col: column_index})) {continue}
+
 						let childBottomRight: {row: number, col: number} | undefined = this.getChildBottomRight(child);
 
 						// Create a rect union if the child is in multiple cells
@@ -448,14 +451,9 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					continue
 				}
 				
-				let elementIndex: number = cell.elements.indexOf(child);
 
-				if (elementIndex === -1) {
-					console.warn(`Erroneous form for element ${child.ref}`)
-					continue
-				}
 
-				cell.elements.splice(elementIndex, 1);
+				cell.elements = cell.elements.filter(el => el.id !== child.id);
 
 				if (cell.elements.length === 0) {
 					cell.elements = undefined;
@@ -539,6 +537,24 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 	}
 	public getRow(index: number): GridCell[] {
 		return this.gridMatrix[index];
+	}
+
+	protected isCellElementSource(child: T, cell: {row: number, col: number}): boolean {
+		let targetCell: GridCell<T> = this.gridMatrix[cell.row][cell.col];
+
+		if (targetCell?.elements === undefined) {
+			return false
+		}
+
+		if (targetCell.elements.indexOf(child) === -1) {
+			return false
+		}
+
+		if (targetCell.sources?.[child.id] !== undefined) {
+			return false
+		}
+
+		return true;
 	}
 
 	public getCells(): Spacial[] {
