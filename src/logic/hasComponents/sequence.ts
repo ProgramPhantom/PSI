@@ -1,7 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
 import Grid, { GridCell, IGrid } from "../grid";
 import { ID, UserComponentType } from "../point";
-import Spacial, { IGridChildConfig, IMountConfig, SiteNames, Size } from "../spacial";
+import Spacial, { Dimensions, IGridChildConfig, IMountConfig, PlacementConfiguration, SiteNames, Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
 import { G } from "@svgdotjs/svg.js";
@@ -86,62 +86,14 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public override computeSize(): Size {
-		var size: Size = super.computeSize();
+		var size: Size = super.computeSize(this.pulseConfigToGridConfig.bind(this));
 
 		this.applySizesToChannels();
 		return size
 	}
 
 	public override computePositions(root: {x: number, y: number}): void {
-		this.x = root.x;
-		this.y = root.y;
-
-		// Find dimension and positions of the cells.
-		this.computeCells();
-
-		// Update positions of columns and rows
-		this.gridSizes.columns.forEach((col, i) => {
-			col.x = this.cells[0][i].x;
-			col.y = this.cells[0][0].y;
-		})
-
-		this.gridSizes.rows.forEach((row, i) => {
-			row.y = this.cells[i][0].y;
-			row.x = this.cells[0][0].x;
-		})
-
-		// Now iterate through the gridMatrix and set the position of children
-		this.gridMatrix.forEach((row, row_index) => {
-			row.forEach((cell, column_index) => {
-				if (cell?.elements !== undefined && cell.sources === undefined) {
-					var cellRect: Spacial = this.cells[row_index][column_index];
-					var elements: Visual[] = cell.elements;
-
-					var gridConfig: IGridChildConfig;
-					for (let element of elements) {
-						if (element.placementMode.type === "grid") {
-							gridConfig = element.placementMode.gridConfig;
-						} else if (element.placementMode.type === "pulse") {
-							gridConfig = this.mountConfigToGridConfig(element.placementMode.config);
-						} else {
-							gridConfig = {
-								coords: {row: row_index, col: column_index},
-								alignment: {x: "here", y: "here"},
-								gridSize: {noRows: 1, noCols: 1}
-							}
-						}
-
-						var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
-
-						cellRect.internalImmediateBind(element, "x", alignment.x)
-						cellRect.internalImmediateBind(element, "y", alignment.y)
-						
-
-						element.computePositions({x: element.x, y: element.y});
-					}
-				}
-			})
-		})
+		super.computePositions(root, this.pulseConfigToGridConfig.bind(this));
 
 		this.applySizesToChannels();
 	}
@@ -154,7 +106,7 @@ export default class Sequence extends Grid implements ISequence {
 
 		var config: IMountConfig = pulse.placementMode.config;
 
-		var gridConfig: IGridChildConfig = this.mountConfigToGridConfig(config);
+		var gridConfig: IGridChildConfig = this.pulseConfigToGridConfig(pulse.placementMode)!;
 
 		if (gridConfig.coords === undefined) {
 			return
@@ -303,12 +255,13 @@ export default class Sequence extends Grid implements ISequence {
 		})
 	}
 
-	public colHasPulse(col: GridCell[]): boolean {
+	public colHasPulse(col: number): boolean {
+		var targetColumn: GridCell[] = this.getColumn(col);
 		let present: number = 0;
 
-		col.forEach((cell) => {
+		targetColumn.forEach((cell) => {
 			if (cell?.elements !== undefined) {
-				present += 1;
+				present += cell.elements.length;
 			}
 		})
 
@@ -320,8 +273,14 @@ export default class Sequence extends Grid implements ISequence {
 		return false
 	}
 
-	protected mountConfigToGridConfig(mountConfig: IMountConfig): IGridChildConfig {
-		var channelId: ID | undefined = mountConfig.channelID;
+	protected pulseConfigToGridConfig(placementMode: PlacementConfiguration): IGridChildConfig | undefined {
+		if (placementMode.type === "grid") {
+			return placementMode.gridConfig
+		} else if (placementMode.type !== "pulse") {
+			return undefined
+		}
+		
+		var channelId: ID | undefined = placementMode.config.channelID;
 		
 		
 		// We now need to convert the mount config in the pulse's placement
@@ -331,16 +290,19 @@ export default class Sequence extends Grid implements ISequence {
 
 		
 		var row: number = 0;
-		var column: number = mountConfig.index ?? 0;  // Starting at 1 as we know the label goes there
+		var column: number = placementMode.config.index ?? 0;  // Starting at 1 as we know the label goes there
 		var alignment: {x: SiteNames, y: SiteNames} = {x: "centre", y: "far"}
+		let contribution: Record<Dimensions, boolean> = {x: true, y: true};
 
 		// --------- Row -------------
 		// Currently, channels ALWAYS have a height of 3 so that's how we find 
 		// our row number.
 		row = channelIndex * 3;
-		if (mountConfig.orientation === "both") {
+		if (placementMode.config.orientation === "both") {
 			row += 1
-		} else if (mountConfig.orientation === "bottom") {
+			alignment = {x: "centre", y: "centre"}
+			contribution = {x: true, y: false}
+		} else if (placementMode.config.orientation === "bottom") {
 			row += 2
 			alignment = {x: "centre", y: "here"}
 		}
@@ -352,7 +314,8 @@ export default class Sequence extends Grid implements ISequence {
 		return {
 			coords: {row: row, col: column},
 			alignment: alignment,
-			gridSize: {noRows: 1, noCols: mountConfig.noSections}
+			gridSize: {noRows: 1, noCols: placementMode.config.noSections},
+			contribution: contribution
 		}
 	}
 
@@ -391,8 +354,7 @@ export default class Sequence extends Grid implements ISequence {
 
 		}
 
-		var targetColumn: GridCell[] = this.getColumn(INDEX);
-		var empty: boolean = !this.colHasPulse(targetColumn);
+		var empty: boolean = !this.colHasPulse(INDEX);
 
 		if (onlyIfEmpty === true && empty === false) { return }
 

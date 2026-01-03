@@ -1,9 +1,10 @@
 import { Element } from "@svgdotjs/svg.js";
-import Spacial, { Dimensions, IGridChildConfig, SiteNames, Size } from "./spacial";
+import Spacial, { Dimensions, IGridChildConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
 import Visual, { doesDraw, IDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 import { ID } from "./point";
+import { LengthenText } from "@blueprintjs/icons";
 
 
 export interface IGrid extends ICollection {
@@ -22,6 +23,10 @@ interface OccupiedCell<T> {
   ghost?: {width: number, height: number}  // Provide spacing to a cell
   extra?: {width: number, height: number}  // Applies additional width/height to the row/column
 }
+
+export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridChildConfig | undefined
+const IdentityPredicate: GridPlacementPredicate = (v) => v.type === "grid" ? v.gridConfig : undefined;
+
 
 export default class Grid<T extends Visual = Visual> extends Collection implements IDraw {
 	get state(): IGrid {
@@ -49,9 +54,12 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		
 		this.gridMatrix.forEach((row) => {
 			row.forEach((cell) => {
-				if (cell === undefined) {return}
-				if (cell.sources === undefined && cell.elements !== undefined) {
-					allChildren.push(...cell.elements);
+				if (cell?.elements !== undefined) {
+					cell.elements.forEach((child) => {
+						if (cell.sources?.[child.id] === undefined) {
+							allChildren.push(child);
+						}
+					})
 				}
 			})
 		})
@@ -98,12 +106,12 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		});
 	}
 
-	public computeSize(): Size {
+	public override computeSize(placementPredicate: GridPlacementPredicate=IdentityPredicate): Size {
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
 			child.computeSize();
 		}
-
+		super.computeSize()
 
 		// Compute the size of the grid by finding the maximum width and height
 		// element in each column and row, and then summing them up.
@@ -131,11 +139,12 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 				if (cell?.elements !== undefined) {
 					for (let child of cell.elements) {
+						let placementMode: IGridChildConfig | undefined = placementPredicate(child.placementMode);
 						var contributing: boolean = true;
 
 						// Manual contribution parameter
-						if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
-							&& child.placementMode.gridConfig.contribution.x === false
+						if (placementMode !== undefined && placementMode.contribution !== undefined
+							&& placementMode.contribution.x === false
 						) { contributing = false; }
 
 						// Grow elements do not provide size
@@ -145,7 +154,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 						// Compute partial width contribution (distribute evenly):
 						let width: number = child.width;
 
-						if (child.placementMode.type === "grid" && (child.placementMode.gridConfig.gridSize?.noCols ?? 0) > 1) {
+						if (placementMode !== undefined && (placementMode.gridSize?.noCols ?? 0) > 1) {
 							width = 0;
 						}
 
@@ -194,11 +203,12 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 				if (cell?.elements !== undefined) {
 					for (let child of cell.elements) {
+						let placementMode: IGridChildConfig | undefined = placementPredicate(child.placementMode);
 						let contributing: boolean = true;
 
 						// Manual contribution parameter
-						if (child.placementMode.type === "grid" && child.placementMode.gridConfig.contribution !== undefined
-							&& child.placementMode.gridConfig.contribution.y === false
+						if (placementMode !== undefined && placementMode.contribution !== undefined
+							&& placementMode.contribution.y === false
 						) { contributing = false; }
 
 						// Grow elements do not provide size
@@ -208,7 +218,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 						// Compute partial width contribution (distribute evenly):
 						let height: number = child.height;
 
-						if (child.placementMode.type === "grid" && (child.placementMode.gridConfig.gridSize?.noRows ?? 0) > 1) {
+						if (placementMode !== undefined && (placementMode.gridSize?.noRows ?? 0) > 1) {
 							height = 0;
 						}
 
@@ -266,7 +276,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return {width: this.width, height: this.height};
 	}
 
-	public computePositions(root: {x: number, y: number}): void {
+	public computePositions(root: {x: number, y: number}, placementPredicate: GridPlacementPredicate=IdentityPredicate): void {
 		this.x = root.x;
 		this.y = root.y;
 
@@ -291,15 +301,22 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					var cellRect: Spacial = this.cells[row_index][column_index];
 					
 					for (let element of cell.elements ?? []) {
-						var gridConfig: IGridChildConfig;
-						if (element.placementMode.type === "grid") {
-							gridConfig = element.placementMode.gridConfig;
-						} else {
+						// If this is a reference cell then we don't set the position:
+						if (cell.sources?.[element.id] !== undefined) {
+							continue
+						}
+
+						let gridConfig: IGridChildConfig | undefined = placementPredicate(element.placementMode);
+						if (gridConfig === undefined) {
 							gridConfig = {
 								coords: {row: row_index, col: column_index},
 								alignment: {x: "here", y: "here"},
 								gridSize: {noRows: 1, noCols: 1}
 							}
+						}
+
+						if (element.ref === "BAR") {
+							console.log()
 						}
 
 						var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
@@ -370,10 +387,14 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		if (currElements.length === 0) {currElements = undefined} 
 		else {
 			for (let child of currElements) {
-				if (child.placementMode.type === "grid") {
+				// Don't change child coord with coord of source cells
+				if (child.placementMode.type === "grid" && cell?.sources?.[child.id] === undefined) {
 					child.placementMode.gridConfig.coords = coords;
 				}
-				child.parentId = this.id;
+
+				if (child.parentId === undefined) {
+					child.parentId = this.id;
+				}
 			}
 		}
 
@@ -433,12 +454,16 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 				if (cell.elements.length === 0) {
 					cell.elements = undefined;
 				}
-				if (Object.values(cell).every(v => v === undefined)) {
-					this.gridMatrix[row][col] = undefined
-				}
-
+				
 				if (cell.sources !== undefined && cell.sources[id] !== undefined) {
 					delete cell.sources[id]
+					if (Object.keys(cell.sources).length === 0) {
+						cell.sources = undefined
+					}
+				}
+
+				if (Object.values(cell).every(v => v === undefined)) {
+					this.gridMatrix[row][col] = undefined
 				}
 
 				if (deleteIfEmpty?.row === true) {

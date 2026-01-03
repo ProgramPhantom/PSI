@@ -94,6 +94,10 @@ export default class Channel extends Grid implements IChannel {
 				coords: {
 					row: 1,
 					col: 1
+				},
+				alignment: {
+					x: "here",
+					y: "centre"
 				}
 			}
 		}
