@@ -1,10 +1,8 @@
-import { Element } from "@svgdotjs/svg.js";
-import Spacial, { Dimensions, IGridChildConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
-import Visual, { doesDraw, IDraw, IVisual } from "./visual";
-import { G } from "@svgdotjs/svg.js";
+import { Element, G } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 import { ID } from "./point";
-import { LengthenText } from "@blueprintjs/icons";
+import Spacial, { Dimensions, IGridChildConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
+import Visual, { doesDraw, IDraw } from "./visual";
 
 
 export interface IGrid extends ICollection {
@@ -17,11 +15,16 @@ export interface IGrid extends ICollection {
 
 export type GridCell<T extends Visual=Visual> = OccupiedCell<T> | undefined
 
+type Elements<T> = T[];
+type Sources = {[id: string]: { row: number; col: number }};
+type Ghosts = {size: {width: number, height: number}, owner?: ID}[];
+type Extra = {width: number, height: number};
+
 interface OccupiedCell<T> {
-  elements?: T[];               // The element if this is the “owning” cell
-  sources?: {[id: string]: { row: number; col: number }}; // If this cell is covered by another
-  ghost?: {width: number, height: number}  // Provide spacing to a cell
-  extra?: {width: number, height: number}  // Applies additional width/height to the row/column
+  elements?: Elements<T>;  // The element if this is the “owning” cell
+  sources?: Sources;  // If this cell is covered by another
+  ghosts?: Ghosts;  // Provide spacing to a cell
+  extra?: Extra;  // Applies additional width/height to the row/column
 }
 
 export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridChildConfig | undefined
@@ -129,8 +132,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			var extras: number[] = [];
 			for (let cell of colEntries) {
 				
-				if (cell?.ghost !== undefined) {
-					widths.push(cell.ghost.width);
+				if (cell?.ghosts !== undefined) {
+					widths.push(...cell.ghosts.map((g) => g.size.width));
 				}
 
 				if (cell?.extra !== undefined) {
@@ -175,7 +178,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			var colHeight = col.reduce((h, c) => {
 				let dh = 0;
 				if (c?.elements !== undefined) {
-					dh = Math.max(...c.elements.map(e => e.height), c.ghost?.height ?? 0);
+					dh = Math.max(...c.elements.map(e => e.height), ...(c.ghosts ?? []).map((g) => g.size.height));
 				}
 				return h + dh;
 			}, 0);
@@ -193,8 +196,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			var extras: number[] = [];
 			for (let cell of rowEntries) {
 
-				if (cell?.ghost !== undefined) {
-					heights.push(cell?.ghost.height);
+				if (cell?.ghosts !== undefined) {
+					heights.push(...cell?.ghosts.map(g => g.size.height));
 				}
 
 				if (cell?.extra !== undefined) {
@@ -240,7 +243,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 				let dw = 0;
 				if (c !== undefined && c.elements !== undefined) {
 					if (c?.elements !== undefined) {
-						dw = Math.max(...c.elements.map(e => e.width), c.ghost?.width ?? 0);
+						dw = Math.max(...c.elements.map(e => e.width), ...(c.ghosts ?? []).map((g) => g.size.width));
 					}
 				}
 				return w + dw;
@@ -401,13 +404,13 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		Object.assign(currSources, cell?.sources ?? {})
 		if (Object.keys(currSources).length === 0) {currSources = undefined}
 
-		let ghost: {width: number, height: number} | undefined = cell?.ghost;
+		let ghost: {size: {width: number, height: number}, owner?: ID}[] | undefined = cell?.ghosts;
   		let extra: {width: number, height: number} | undefined = cell?.extra;
 
 		let finalCell: GridCell<T> = {
 			elements: currElements,
 			sources: currSources,
-			ghost: ghost,
+			ghosts: ghost,
 			extra: extra
 		}
 

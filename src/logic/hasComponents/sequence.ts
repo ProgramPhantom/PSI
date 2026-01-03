@@ -349,10 +349,7 @@ export default class Sequence extends Grid implements ISequence {
 
 		if (INDEX === 1 && this.numColumns === 2) {
 			return
-		} else if (INDEX === 1) {
-			// deleting first col but there are trailing columns
-
-		}
+		} 
 
 		var empty: boolean = !this.colHasPulse(INDEX);
 
