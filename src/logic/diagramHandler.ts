@@ -9,7 +9,7 @@ import Sequence from "./hasComponents/sequence";
 import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
-import { IMountConfig, PlacementConfiguration, PointBind } from "./spacial";
+import { IPulseConfig, PlacementConfiguration, PointBind } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual } from "./visual";
 
@@ -208,7 +208,7 @@ export default class DiagramHandler implements IDraw {
 		type: AllComponentTypes,
 		target: Visual
 	): Result<Visual> {
-		var mountConfigCopy: IMountConfig | undefined;
+		var mountConfigCopy: IPulseConfig | undefined;
 		if (target.placementMode.type === "pulse") {
 			mountConfigCopy = target.placementMode.config;
 		}

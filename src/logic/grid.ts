@@ -20,7 +20,7 @@ type Sources = {[id: string]: { row: number; col: number }};
 export type Ghost = {size: {width: number, height: number}, owner?: ID};
 type Extra = {width: number, height: number};
 
-interface OccupiedCell<T> {
+export interface OccupiedCell<T> {
   elements?: Elements<T>;  // The element if this is the “owning” cell
   sources?: Sources;  // If this cell is covered by another
   ghosts?: Ghost[];  // Provide spacing to a cell
@@ -305,7 +305,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					
 					for (let element of cell.elements ?? []) {
 						// If this is a reference cell then we don't set the position:
-						if (cell.sources?.[element.id] !== undefined) {
+						if (!this.isCellElementSource(element, {row: row_index, col: column_index})) {
 							continue
 						}
 
@@ -318,8 +318,15 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 							}
 						}
 
-						if (element.ref === "BAR") {
+						if (element.ref === "trapezium") {
 							console.log()
+						}
+
+						let childBottomRight: {row: number, col: number} | undefined = this.getChildBottomRight(element);
+
+						// Create a rect union if the child is in multiple cells
+						if (childBottomRight !== undefined && (childBottomRight?.col !== column_index || childBottomRight?.row !== row_index)) {
+							cellRect = this.getPositionedCellUnion({row: row_index, col: column_index}, childBottomRight);
 						}
 
 						var alignment: {x: SiteNames, y: SiteNames} = gridConfig.alignment ?? {x: "here", y: "here"}
@@ -341,7 +348,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
 				if (cell?.elements !== undefined) {
-					let cellRect: Spacial = this.cells[row_index][column_index];
+					let cellRect: Size = this.cells[row_index][column_index];
 					
 					for (let child of cell.elements) {
 						// Skip unless this is an element source
@@ -351,10 +358,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 						// Create a rect union if the child is in multiple cells
 						if (childBottomRight !== undefined && (childBottomRight?.col !== column_index || childBottomRight?.row !== row_index)) {
-							cellRect = this.getMultiCellRect({row: row_index, col: column_index}, childBottomRight);
+							cellRect = this.getCellUnionSize({row: row_index, col: column_index}, childBottomRight);
 						}
 
-						child.growElement(cellRect.size);
+						child.growElement(cellRect);
 					}
 
 				}
@@ -370,9 +377,14 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 		var insertCoords: {row: number, col: number} = {row: row, col: column};
 
-		let cell: GridCell<T> = {elements: [child]}
+		var region: OccupiedCell<T>[][] | undefined = this.getElementGridRegion(child, {row: insertCoords.row, col: insertCoords.col});
 
-		this.appendCellAtCoord(cell, {row: insertCoords.row, col: insertCoords.col});
+		if (region === undefined) {
+			throw new Error(`Could not construct cell region for element ${child.ref}`)
+		}
+
+		this.appendElementsInRegion(region, {row: insertCoords.row, col: insertCoords.col})
+		// this.appendCellAtCoord(cell, {row: insertCoords.row, col: insertCoords.col});
 	}
 
 	public appendCellAtCoord(cell: GridCell<T>, coords: {row: number, col: number}) {
@@ -450,8 +462,6 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 					console.warn(`Erroneous form for element ${child.ref}`)
 					continue
 				}
-				
-
 
 				cell.elements = cell.elements.filter(el => el.id !== child.id);
 
@@ -741,9 +751,48 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return result;
 	}
 
-	public getMultiCellRect(topLeft: {row: number, col: number}, bottomRight: {row: number, col: number}): Spacial {
-		// Select
 
+	/**
+	 * Returns a positioned Spacial that is the geometric union of the
+	 * cells contained in the rectangle defined by topLeft and bottomRight
+	 * (inclusive). The returned Spacial carries x/y coordinates taken
+	 * from the component cells, so computePositions must have been run
+	 * before calling this method for meaningful absolute positions.
+	 *
+	 * @param topLeft - top-left cell coordinate (inclusive)
+	 * @param bottomRight - bottom-right cell coordinate (inclusive)
+	 * @throws Error if the provided coordinates are not in the expected order
+	 */
+	public getPositionedCellUnion(topLeft: {row: number, col: number}, bottomRight: {row: number, col: number}): Spacial {
+		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
+			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
+		}
+
+		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+
+		let union: Spacial = Spacial.CreateUnion(...cells);
+
+		// Returns a positioned union of the cells in the region specified. Will
+		// not return an expected result if cells have not been positioned
+		// TODO: throw error if cells have not been given position and this called.
+		return union;
+	}
+
+	
+	/**
+	 * Compute the combined size (width and height) of a rectangular region of
+	 * adjacent grid cells specified by top-left and bottom-right coordinates.
+	 *
+	 * This returns a object instance representing the size of the union of
+	 * cells in the region. The method assumes the cells in the region are adjacent and
+	 * simply sums their widths and heights.
+	 *
+	 * @param topLeft - top-left cell coordinate (inclusive)
+	 * @param bottomRight - bottom-right cell coordinate (inclusive)
+	 * @throws Error if the provided coordinates are not in the expected order
+	 * @returns Object sized to the union of the specified cells
+	 */
+	public getCellUnionSize(topLeft: {row: number, col: number}, bottomRight: {row: number, col: number}): Size {
 		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
 			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
 		}
@@ -753,7 +802,9 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		let width: number = cells.reduce((w, c) => w + c.width, 0);
 		let height: number = cells.reduce((h, c) => h + c.height, 0);
 
-		return new Spacial(0, 0, width, height);
+		// Returns *size* of cell union. Works only for adjacent cells, and can be used before
+		// computePositions has been run.
+		return {width: width, height: height};
 	}
 
 	protected isArrayEmpty(target: GridCell[]): boolean {

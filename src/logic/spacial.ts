@@ -18,7 +18,7 @@ export interface Size {
 
 export type PointBind = Record<Dimensions, IBindingPayload>;
 
-export interface IMountConfig {
+export interface IPulseConfig {
 	index?: number;
 	channelID?: ID;
 	sequenceID?: ID;
@@ -43,7 +43,7 @@ export interface IAlignerConfig {
 }
 
 export type PlacementConfiguration = {type: "free"} | 
-									 {type: "pulse"; config: IMountConfig} | 
+									 {type: "pulse"; config: IPulseConfig} | 
 									 {type: "binds"; bindings: undefined} | 
 									 {type: "grid"; gridConfig: IGridChildConfig} |
 									 {type: "aligner", alignerConfig: IAlignerConfig} | 
@@ -122,7 +122,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		size.width = right - left;
 		size.height = bottom - top;
 
-		let result: Spacial = new Spacial(top, left, size.width, size.height, {type: "free"}, {x: "fixed", y: "fixed"})
+		let result: Spacial = new Spacial(left, top, size.width, size.height, {type: "free"}, {x: "fixed", y: "fixed"})
 
 		return result
 	}

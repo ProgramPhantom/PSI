@@ -5,7 +5,7 @@ import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { HandleStyles } from "react-rnd";
 import ENGINE from "../../logic/engine";
-import { IMountConfig } from "../../logic/spacial";
+import { IPulseConfig } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
 import { IMountAreaResult, isMountDrop } from "./InsertArea";
@@ -82,7 +82,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						let elementType = (item.element.constructor as typeof Visual).ElementType
 
 						if (item.element.placementMode.type === "pulse") {
-							var newMountConfig: IMountConfig = {
+							var newMountConfig: IPulseConfig = {
 								...item.element.placementMode.config,
 								orientation: result.orientation,
 								channelID: result.channelID,

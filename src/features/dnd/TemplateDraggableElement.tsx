@@ -13,7 +13,7 @@ import { ISVGElement } from "../../logic/svgElement";
 import Visual, { IVisual } from "../../logic/visual";
 import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
 import { isMountDrop } from "./InsertArea";
-import { IMountConfig } from "../../logic/spacial";
+import { IPulseConfig } from "../../logic/spacial";
 import { appToaster } from "../../app/Toaster";
 
 const style: CSSProperties = {
@@ -74,7 +74,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				var singletonState: IVisual = structuredClone(props.element.state);
 				 
 				if (singletonState.placementMode.type === "pulse") {
-					let internalConfig: IMountConfig = singletonState.placementMode.config;
+					let internalConfig: IPulseConfig = singletonState.placementMode.config;
 					
 					singletonState.id = undefined;
 					singletonState.placementMode = {
@@ -110,7 +110,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				}
 			}
 
-			ENGINE.handler.draw();
+			// ENGINE.handler.draw();
 		},
 		collect: (monitor) => ({
 			isDragging: monitor.isDragging(),

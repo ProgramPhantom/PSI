@@ -1,7 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
-import Grid, { Ghost, GridCell, IGrid } from "../grid";
+import Grid, { Ghost, GridCell, IGrid, OccupiedCell } from "../grid";
 import { ID, UserComponentType } from "../point";
-import Spacial, { Dimensions, IGridChildConfig, IMountConfig, PlacementConfiguration, SiteNames, Size } from "../spacial";
+import Spacial, { Dimensions, IGridChildConfig, IPulseConfig, PlacementConfiguration, SiteNames, Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
 import { G } from "@svgdotjs/svg.js";
@@ -394,6 +394,27 @@ export default class Sequence extends Grid implements ISequence {
 				}
 			}
 		}
+	}
+
+	protected override getElementGridRegion(child: Visual, overridePosition?: { row: number; col: number; }): OccupiedCell<Visual>[][] | undefined {
+		var region: OccupiedCell<Visual>[][] | undefined;
+		if (child.placementMode.type === "pulse") {
+			let pulseConfig: IPulseConfig = child.placementMode.config;
+			let gridConfig: IGridChildConfig | undefined = this.pulseConfigToGridConfig(child.placementMode);
+
+			if (gridConfig === undefined) {
+				return undefined
+			}
+
+			child.placementMode = {type: "grid", gridConfig: gridConfig}
+
+			region = super.getElementGridRegion(child, overridePosition);
+			child.placementMode = {type: "pulse", config: pulseConfig}
+		} else if (child.placementMode) {
+			region = super.getElementGridRegion(child, overridePosition)
+		}
+
+		return region;
 	}
 
 }
