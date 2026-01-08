@@ -239,7 +239,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						multiline={false}
 						selectAllOnFocus={true}
 					/>
-					<p>{`${isDragging}`}</p>
 				</div>
 
 				<div
@@ -266,6 +265,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						centerOnInit={true}
 						limitToBounds={false}
 						centerZoomedOut={true}
+						
 						maxScale={5}
 						minScale={0.5}
 						disabled={dragging}
