@@ -35,8 +35,8 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
 };
 
 export function HitboxLayer(props: IHitboxLayerProps) {
-	let drawSVG: Element | undefined = ENGINE.surface;
-	if (drawSVG === undefined) {
+	let diagramSVG: Element | undefined = ENGINE.handler.diagram.svg;
+	if (diagramSVG === undefined) {
 		return <></>;
 	}
 	var hitboxSVG: Svg = SVG();
@@ -51,7 +51,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		componentRectArray = [];
 		freeRectArray = [];
 
-		traverseDom(drawSVG, componentRectArray, freeRectArray);
+		traverseDom(diagramSVG, componentRectArray, freeRectArray);
 
 		componentRectArray.forEach((r) => {
 			hitboxSVG.add(r);
@@ -69,15 +69,14 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	) => {
 		let thisElement: Visual | undefined = ENGINE.handler.identifyElement(root.id());
 
-		// Traverse the top surface
-		if (root.id() === ENGINE.SURFACE_ID) {
-			root.children().forEach((c) => {
-				traverseDom(c, componentRectArray, freeRectArray, depth - 1);
-			});
-		} else if (thisElement !== undefined ) {
+
+		if (thisElement !== undefined) {
 			let thisLayer: Rect = thisElement.getHitbox().attr({zIndex: depth});
 
-			componentRectArray.push(thisLayer);
+			// We don't want the diagram to be selectable.
+			if (thisElement.ref !== "diagram") {
+				componentRectArray.push(thisLayer);
+			}
 
 			if (
 				root.type !== "svg" || depth === BASE_LAYER
