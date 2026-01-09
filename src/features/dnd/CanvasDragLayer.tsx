@@ -27,7 +27,7 @@ function getItemStyles(
 		};
 	}
 
-	let {x, y} = currentOffset;
+	let { x, y } = currentOffset;
 
 	const transform = `translate(${x}px, ${y}px) `;
 	const s = `scale(${scale})`;
@@ -43,11 +43,12 @@ export interface CustomDragLayerProps {
 
 // Custom drag layer (for displaying drag preview)
 export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
-	const {itemType, isDragging, item, initialOffset, currentOffset} = useDragLayer((monitor) => ({
+	const { itemType, isDragging, item, initialOffset, currentOffset, clientOffset } = useDragLayer((monitor) => ({
 		item: monitor.getItem() as CanvasDraggableElementPayload,
 		itemType: monitor.getItemType(),
 		initialOffset: monitor.getInitialSourceClientOffset(),
 		currentOffset: monitor.getSourceClientOffset(),
+		clientOffset: monitor.getClientOffset(),
 		isDragging: monitor.isDragging()
 	}));
 
@@ -71,7 +72,7 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
 	}
 	return (
 		<div style={layerStyles}>
-			<div style={{...css, transformOrigin: "top left"}}>{renderItem()}</div>
+			<div style={{ ...css, transformOrigin: "top left" }}>{renderItem()}</div>
 		</div>
 	);
 };
