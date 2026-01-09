@@ -1,7 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
 import Grid, { Ghost, GridCell, IGrid, OccupiedCell } from "../grid";
 import { ID, UserComponentType } from "../point";
-import Spacial, { Dimensions, IGridChildConfig, IPulseConfig, PlacementConfiguration, SiteNames, Size } from "../spacial";
+import Spacial, { Dimensions, IGridChildConfig, IPulseConfig, Orientation, PlacementConfiguration, SiteNames, Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
 import { G } from "@svgdotjs/svg.js";
@@ -55,6 +55,10 @@ export default class Sequence extends Grid implements ISequence {
 
 	constructor(params: ISequence) {
 		super(params);
+		this.placementModeTranslators = {
+			get: this.pulseConfigToGridConfig.bind(this),
+			set: this.setPulseConfigViaGridConfig.bind(this)
+		}
 
 		this.channels = [];
 
@@ -86,14 +90,14 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public override computeSize(): Size {
-		var size: Size = super.computeSize(this.pulseConfigToGridConfig.bind(this));
+		var size: Size = super.computeSize();
 
 		this.applySizesToChannels();
 		return size
 	}
 
 	public override computePositions(root: {x: number, y: number}): void {
-		super.computePositions(root, this.pulseConfigToGridConfig.bind(this));
+		super.computePositions(root);
 
 		this.applySizesToChannels();
 	}
@@ -324,17 +328,48 @@ export default class Sequence extends Grid implements ISequence {
 		}
 	}
 
+	protected setPulseConfigViaGridConfig(child: Visual, config: IGridChildConfig) {
+		let numCols: number = config.gridSize?.noCols ?? 1;
+		let index: number = config.coords?.col ?? 1;
+
+		let channelIndex: number = Math.floor((config.coords?.row ?? 0) / 3);
+		let channel: Channel = this.channels[channelIndex];
+
+		let orientation: Orientation = "top";
+		let orientationIndex: number = (config.coords?.row ?? 0) % 3;
+		switch (orientationIndex) {
+			case 0:
+				orientation = "top";
+				break;
+			case 1: 
+				orientation = "both";
+				break;
+			case 2:
+				orientation = "bottom";
+				break;
+		}
+
+		let alignment: Record<Dimensions, SiteNames> = {
+			x: config.alignment?.x ?? "centre",
+			y: config.alignment?.y ?? "centre"
+		}
+
+		child.placementMode = {
+			type: "pulse",
+			config: {
+				noSections: numCols,
+				orientation: orientation,
+				alignment: alignment,
+
+				channelID: channel.id,
+				sequenceID: this.id,
+				index: index
+			}
+		}
+	}
+
 	public override insertEmptyColumn(index?: number) {
-		let newColumn: GridCell[] = Array<GridCell>(this.numRows).fill(undefined);
-		let INDEX: number | undefined = index; 
-
-		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns) {
-			INDEX = this.numColumns 
-		} 
-
-		for (let i = 0; i < this.numRows; i++) {
-      		this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
-    	}
+		super.insertEmptyColumn(index);
 
 		// Apply this to the channels
 		// This condition means this only happens when a channel is initialised.
@@ -342,8 +377,6 @@ export default class Sequence extends Grid implements ISequence {
 			this.setChannelDimensions();
 			this.setChannelMatrices();
 		}
-		
-		this.shiftElementColumnIndexes(INDEX, 1);
 	}
 
 	public override removeColumn(index?: number, onlyIfEmpty: boolean=false) {
@@ -367,33 +400,6 @@ export default class Sequence extends Grid implements ISequence {
 		this.setChannelDimensions();
 
 		this.shiftElementColumnIndexes(INDEX, -1);
-	}
-
-	protected override shiftElementColumnIndexes(from: number, amount: number=1) {
-		// Update grid indexes
-		for (let i=from; i<this.numColumns; i++) {
-			let col = this.getColumn(i);
-
-			for (let cell of col) {
-				if (cell?.elements !== undefined) {
-					cell.elements.forEach((cell) => {
-						if (cell.placementMode.type === "grid" && cell.placementMode.gridConfig.coords !== undefined) {
-							cell.placementMode.gridConfig.coords.col += amount;
-						} else if (cell.placementMode.type === "pulse" && cell.placementMode.config.index !== undefined) {
-							cell.placementMode.config.index += amount;
-						}
-					})
-				}
-
-				if (cell?.sources !== undefined) {
-					Object.entries(cell.sources).forEach(([id, coord]) => {
-						if (coord.col >= from) {
-							coord.col += amount
-						}
-					})
-				}
-			}
-		}
 	}
 
 	protected override getElementGridRegion(child: Visual, overridePosition?: { row: number; col: number; }): OccupiedCell<Visual>[][] | undefined {

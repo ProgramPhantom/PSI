@@ -28,10 +28,13 @@ export interface OccupiedCell<T> {
 }
 
 export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridChildConfig | undefined
-const IdentityPredicate: GridPlacementPredicate = (v) => v.type === "grid" ? v.gridConfig : undefined;
+export type GridPlacementSetter = (element: Visual, value: IGridChildConfig) => void
 
 
 export default class Grid<T extends Visual = Visual> extends Collection implements IDraw {
+	static IdentityGetter: GridPlacementPredicate = (v) => v.type === "grid" ? v.gridConfig : undefined;
+	static IdentitySetter: GridPlacementSetter = (e, v) => {e.placementMode = {type: "grid", gridConfig: v}}
+
 	get state(): IGrid {
 		return {
 			minHeight: this.min.height,
@@ -68,6 +71,11 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		})
 
 		return allChildren;
+	}
+
+	placementModeTranslators: {get: GridPlacementPredicate, set: GridPlacementSetter} = {
+		get: Grid.IdentityGetter,
+		set: Grid.IdentitySetter
 	}
 
 	private min: {width: number, height: number};
@@ -109,7 +117,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		});
 	}
 
-	public override computeSize(placementPredicate: GridPlacementPredicate=IdentityPredicate): Size {
+	public override computeSize(): Size {
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
 			child.computeSize();
@@ -142,7 +150,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 				if (cell?.elements !== undefined) {
 					for (let child of cell.elements) {
-						let placementMode: IGridChildConfig | undefined = placementPredicate(child.placementMode);
+						let placementMode: IGridChildConfig | undefined = this.placementModeTranslators.get(child.placementMode);
 						var contributing: boolean = true;
 
 						// Manual contribution parameter
@@ -206,7 +214,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 				if (cell?.elements !== undefined) {
 					for (let child of cell.elements) {
-						let placementMode: IGridChildConfig | undefined = placementPredicate(child.placementMode);
+						let placementMode: IGridChildConfig | undefined = this.placementModeTranslators.get(child.placementMode);
 						let contributing: boolean = true;
 
 						// Manual contribution parameter
@@ -279,7 +287,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		return {width: this.width, height: this.height};
 	}
 
-	public computePositions(root: {x: number, y: number}, placementPredicate: GridPlacementPredicate=IdentityPredicate): void {
+	public computePositions(root: {x: number, y: number}): void {
 		this.x = root.x;
 		this.y = root.y;
 
@@ -309,17 +317,13 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 							continue
 						}
 
-						let gridConfig: IGridChildConfig | undefined = placementPredicate(element.placementMode);
+						let gridConfig: IGridChildConfig | undefined = this.placementModeTranslators.get(element.placementMode);
 						if (gridConfig === undefined) {
 							gridConfig = {
 								coords: {row: row_index, col: column_index},
 								alignment: {x: "here", y: "here"},
 								gridSize: {noRows: 1, noCols: 1}
 							}
-						}
-
-						if (element.ref === "trapezium") {
-							console.log()
 						}
 
 						let childBottomRight: {row: number, col: number} | undefined = this.getChildBottomRight(element);
@@ -538,14 +542,14 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 		return columns;
 	}
-	public getColumn(index: number): GridCell[] {
+	public getColumn(index: number): GridCell<T>[] {
 		return this.gridMatrix.map((row) => row[index]);
 	}
 
 	public getRows(): GridCell<T>[][] {
 		return this.gridMatrix;
 	}
-	public getRow(index: number): GridCell[] {
+	public getRow(index: number): GridCell<T>[] {
 		return this.gridMatrix[index];
 	}
 
@@ -920,11 +924,39 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			INDEX = this.numColumns;
 		}
 
+		// Grow split elements by 1 in columns
+		let splitElements: T[][] = this.getColumnSplitElements(INDEX);
+		splitElements.forEach((row, row_index) => {
+			for (let element of row) {
+				let gridConfig: IGridChildConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+				
+				if (gridConfig !== undefined && gridConfig.gridSize !== undefined) {
+					// Grow
+					gridConfig.gridSize.noCols += 1;
+					this.placementModeTranslators.set(element, gridConfig);
+
+					// Add this element so that it spans over the gap
+					if (newColumn[row_index]?.sources === undefined) {
+						newColumn[row_index] = {sources: {[element.id]: gridConfig.coords ?? {row: 0, col: 0}}}
+					} else {
+						newColumn[row_index].sources[element.id] = gridConfig.coords ?? {row: 0, col: 0}
+					}
+
+
+					if (newColumn[row_index]?.elements === undefined) {
+						newColumn[row_index].elements = [element]
+					} else {
+						newColumn[row_index].elements.push(element)
+					}
+				}
+			}
+		})
+
 		for (let i = 0; i < this.numRows; i++) {
       		this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
     	}
 
-		this.shiftElementColumnIndexes(INDEX, 1)
+		this.shiftElementColumnIndexes(INDEX, 1);
 	}
 	protected insertEmptyRow(index?: number): void {
 		var newRow: GridCell<T>[] = Array<GridCell<T>>(this.numColumns).fill(undefined)
@@ -932,6 +964,34 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numRows) {
 			INDEX = this.numRows;
 		}
+
+		// Grow split elements by 1 in columns
+		let splitElements: T[][] = this.getRowSplitElements(INDEX);
+		splitElements.forEach((col, col_index) => {
+			for (let element of col) {
+				let gridConfig: IGridChildConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+				
+				if (gridConfig !== undefined && gridConfig.gridSize !== undefined) {
+					// Grow
+					gridConfig.gridSize.noRows += 1;
+					this.placementModeTranslators.set(element, gridConfig);
+
+					// Add this element so that it spans over the gap
+					if (newRow[col_index]?.sources === undefined) {
+						newRow[col_index] = {sources: {[element.id]: gridConfig.coords ?? {row: 0, col: 0}}}
+					} else {
+						newRow[col_index].sources[element.id] = gridConfig.coords ?? {row: 0, col: 0}
+					}
+
+
+					if (newRow[col_index]?.elements === undefined) {
+						newRow[col_index].elements = [element]
+					} else {
+						newRow[col_index].elements.push(element)
+					}
+				}
+			}
+		})
 
 		this.gridMatrix.splice(INDEX, 0, newRow);
 
@@ -975,18 +1035,24 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 
 	protected shiftElementColumnIndexes(from: number, amount: number=1) {
 		// Update grid indexes
-		for (let i=from; i<this.numColumns; i++) {
-			let col = this.getColumn(i);
+		for (let col_index=from; col_index<this.numColumns; col_index++) {
+			let col = this.getColumn(col_index);
 
-			for (let cell of col) {
+			// Go down the column
+			col.forEach((cell, row_index) => {
 				if (cell?.elements !== undefined) {
-					cell.elements.forEach((cell) => {
-						if (cell.placementMode.type === "grid" && cell.placementMode.gridConfig.coords !== undefined) {
-							cell.placementMode.gridConfig.coords.col += amount;
+					cell.elements.forEach((element) => {
+						if (!this.isCellElementSource(element, {row: row_index, col: col_index})) {return}
+						
+						let gridConfig: IGridChildConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+						if (gridConfig && gridConfig.coords !== undefined) {
+							gridConfig.coords.col += amount;
+							this.placementModeTranslators.set(element, gridConfig);
 						}
 					})
 				}
 
+				// Update sources
 				if (cell?.sources !== undefined) {
 					Object.entries(cell.sources).forEach(([id, coord]) => {
 						if (coord.col >= from) {
@@ -994,24 +1060,30 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 						}
 					})
 				}
-			}
+			})
 		}
 	}
 
 	protected shiftElementRowIndexes(from: number, amount: number=1) {
 		// Update grid indexes
-		for (let i=from; i<this.numRows; i++) {
-			let row = this.getRow(i);
+		for (let row_index=from; row_index<this.numRows; row_index++) {
+			let row = this.getRow(row_index);
 
-			for (let cell of row) {
+			// Go down the row
+			row.forEach((cell, col_index) => {
 				if (cell?.elements !== undefined) {
-					cell.elements.forEach((cell) => {
-						if (cell.placementMode.type === "grid" && cell.placementMode.gridConfig.coords !== undefined) {
-							cell.placementMode.gridConfig.coords.row += amount;
+					cell.elements.forEach((element) => {
+						if (!this.isCellElementSource(element, {row: row_index, col: col_index})) {return}
+						
+						let gridConfig: IGridChildConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+						if (gridConfig && gridConfig.coords !== undefined) {
+							gridConfig.coords.row += amount;
+							this.placementModeTranslators.set(element, gridConfig);
 						}
 					})
 				}
 
+				// Update sources
 				if (cell?.sources !== undefined) {
 					Object.entries(cell.sources).forEach(([id, coord]) => {
 						if (coord.row >= from) {
@@ -1019,7 +1091,7 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 						}
 					})
 				}
-			}
+			})
 		}
 	}
 
@@ -1138,5 +1210,53 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		region[0][0] = {elements: [child]};
 
 		return region
+	}
+
+	protected getColumnSplitElements(index: number): T[][] {
+		if (index > this.numColumns || index < 0) {
+			throw new Error(`Index ${index} is out of bounds`)
+		}
+
+		// Get elements which have a part on the left and right of the index (insertion index)
+		var elements: T[][] = Array.from({length: this.numRows}, () => []);
+
+		this.getRows().forEach((row, row_index) => {
+			let leftCell: GridCell<T> = row[index-1];
+			let rightCell: GridCell<T> = row[index];
+
+			for (let child of (leftCell?.elements ?? [])) {
+				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
+
+				if (childIndex !== -1) {
+					elements[row_index].push(child)
+				}
+			}
+		})
+
+		return elements;
+	}
+
+	protected getRowSplitElements(index: number): T[][] {
+		if (index > this.numRows || index < 0) {
+			throw new Error(`Index ${index} is out of bounds`)
+		}
+
+		// Get elements which have a part on the left and right of the index (insertion index)
+		var elements: T[][] = Array.from({length: this.numColumns}, () => []);
+
+		this.getColumns().forEach((col, col_index) => {
+			let leftCell: GridCell<T> = col[index-1];
+			let rightCell: GridCell<T> = col[index];
+
+			for (let child of (leftCell?.elements ?? [])) {
+				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
+
+				if (childIndex !== -1) {
+					elements[col_index].push(child);
+				}
+			}
+		})
+
+		return elements;
 	}
 }
