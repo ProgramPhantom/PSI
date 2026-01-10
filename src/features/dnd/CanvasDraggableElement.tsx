@@ -39,14 +39,14 @@ const handleStyle: React.CSSProperties = {
 };
 
 const hStyle: HandleStyles = {
-	topLeft: {...handleStyle, left: 0, top: 0},
-	top: {...handleStyle, left: "50%", top: 0},
-	topRight: {...handleStyle, left: "100%", top: 0},
-	left: {...handleStyle, left: 0, top: "50%"},
-	right: {...handleStyle, left: "100%", top: "50%"},
-	bottomLeft: {...handleStyle, left: 0, top: "100%"},
-	bottom: {...handleStyle, left: "50%", top: "100%"},
-	bottomRight: {...handleStyle, left: "100%", top: "100%"}
+	topLeft: { ...handleStyle, left: 0, top: 0 },
+	top: { ...handleStyle, left: "50%", top: 0 },
+	topRight: { ...handleStyle, left: "100%", top: 0 },
+	left: { ...handleStyle, left: 0, top: "50%" },
+	right: { ...handleStyle, left: "100%", top: "50%" },
+	bottomLeft: { ...handleStyle, left: 0, top: "100%" },
+	bottom: { ...handleStyle, left: "50%", top: "100%" },
+	bottomRight: { ...handleStyle, left: "100%", top: "100%" }
 };
 
 interface IDraggableElementProps {
@@ -65,10 +65,10 @@ export interface CanvasDraggableElementPayload {
 /* When an element on the canvas is selected, it is replaced by this, a draggable element */
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
-		const [{isDragging}, drag, preview] = useDrag(
+		const [{ isDragging }, drag, preview] = useDrag(
 			() => ({
 				type: ElementTypes.CANVAS_ELEMENT,
-				item: {element: props.element} as CanvasDraggableElementPayload,
+				item: { element: props.element } as CanvasDraggableElementPayload,
 				end: (item, monitor) => {
 					const dropResult = monitor.getDropResult<IDrop>();
 					if (dropResult === null) {
@@ -90,21 +90,21 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								index: result.index
 							};
 
-							let newState: IVisual = {...item.element.state}
+							let newState: IVisual = { ...item.element.state }
 							newState.placementMode = {
 								type: "pulse", config: newMountConfig
 							}
-							
+
 							if (dropResult.insert === true) {
 								ENGINE.handler.addColumn(newState.placementMode.config.sequenceID ?? "", dropResult.index);
 							}
-							
+
 							let modifyResult = ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
 
 							if (modifyResult.ok === true) {
 								props.reselect(modifyResult.value);
 							}
-							
+
 						} else {
 							throw Error("Not yet implemented"); // Converting an unmounted object into a mounted one.
 						}
@@ -123,7 +123,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 		// Removed the default preview?
 		useEffect(() => {
-			preview(getEmptyImage(), {captureDraggingState: true});
+			preview(getEmptyImage(), { captureDraggingState: true });
 		}, []);
 
 		useEffect(() => {
@@ -157,8 +157,25 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								height: "100%",
 								position: "absolute",
 								top: -props.element.offset[1],
-								left: -props.element.offset[0]
+								left: -props.element.offset[0],
+								overflow: "visible"
 							}}>
+							{props.element.padding.some((v) => v > 0) ? (
+								<rect
+									x={-props.element.padding[3]} // Left padding
+									y={-props.element.padding[0]} // Top padding
+									width={props.element.width}
+									height={props.element.height}
+									style={{
+										stroke: isDragging ? `none` : `${Colors.GRAY3}`,
+										strokeWidth: "1px",
+										fill: `${Colors.GRAY5}`,
+										fillOpacity: "10%",
+										strokeDasharray: "2 2"
+									}}></rect>
+							) : (
+								<></>
+							)}
 							<svg ref={visualRef}></svg>
 							<rect
 								style={{
