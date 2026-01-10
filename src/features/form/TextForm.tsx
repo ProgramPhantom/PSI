@@ -1,9 +1,10 @@
-import {ControlGroup, FormGroup, InputGroup, Section, Slider} from "@blueprintjs/core";
-import {Controller, useFormContext} from "react-hook-form";
+import { ControlGroup, FormGroup, InputGroup, Section, Slider } from "@blueprintjs/core";
+import { Controller, useFormContext } from "react-hook-form";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
+import { MathJax } from "better-react-mathjax";
 
-interface ITextFormProps extends FormRequirements {}
+interface ITextFormProps extends FormRequirements { }
 
 function TextForm(props: ITextFormProps) {
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
@@ -12,21 +13,30 @@ function TextForm(props: ITextFormProps) {
 
 	return (
 		<>
-			<div style={{width: "100%"}}>
+			<div style={{ width: "100%" }}>
 				<ControlGroup vertical={true}>
 					{/* Text */}
 					<FormGroup
-						style={{padding: "4px 8px", margin: 0}}
+						style={{ padding: "8px 0px" }}
 						fill={false}
-						inline={true}
-						label="Text"
-						helperText="LaTeX input"
+						inline={false}
+						label="Text (LaTeX)"
 						labelFor="text-input">
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}text`}
-							render={({field}) => (
-								<InputGroup {...field} id="text" placeholder="90o" size="small" />
+							render={({ field }) => (
+								<div style={{ display: "flex", flexDirection: "row" }}>
+									<InputGroup
+										{...field}
+										id="text"
+										placeholder="_1\textrm{H}"
+										size="small"
+									/>
+									<div style={{ marginLeft: "16px", display: "flex", alignItems: "center" }}>
+										<MathJax>{`\\(${field.value || ""}\\)`}</MathJax>
+									</div>
+								</div>
 							)}></Controller>
 					</FormGroup>
 
@@ -38,45 +48,45 @@ function TextForm(props: ITextFormProps) {
 
 					{/* Style */}
 					<Section
-						collapseProps={{defaultIsOpen: false}}
+						collapseProps={{ defaultIsOpen: false }}
 						compact={true}
 						title={"Style"}
 						collapsible={true}>
 						<FormGroup
-							style={{padding: "4px 8px", margin: 0}}
+							style={{ padding: "4px 8px", margin: 0 }}
 							inline={true}
 							label="Font Size"
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
 								name={`${fullPrefix}.style.fontSize`}
-								render={({field}) => (
+								render={({ field }) => (
 									<Slider {...field} max={60} min={0} labelStepSize={10}></Slider>
 								)}></Controller>
 						</FormGroup>
 
 						<FormGroup
-							style={{padding: "4px 8px", margin: 0}}
+							style={{ padding: "4px 8px", margin: 0 }}
 							inline={true}
 							label="Colour"
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
 								name={`${fullPrefix}.style.colour`}
-								render={({field}) => (
+								render={({ field }) => (
 									<input type={"color"} {...field}></input>
 								)}></Controller>
 						</FormGroup>
 
 						<FormGroup
-							style={{padding: "4px 8px", margin: 0}}
+							style={{ padding: "4px 8px", margin: 0 }}
 							inline={true}
 							label="Background"
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
 								name={`${fullPrefix}.style.background`}
-								render={({field: {onChange, onBlur, value, ref}}) => (
+								render={({ field: { onChange, onBlur, value, ref } }) => (
 									<input type={"color"}></input>
 								)}></Controller>
 						</FormGroup>

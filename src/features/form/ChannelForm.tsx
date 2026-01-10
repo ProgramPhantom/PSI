@@ -8,12 +8,13 @@ import {
 	Slider
 } from "@blueprintjs/core";
 import React from "react";
+import { MathJax } from "better-react-mathjax";
 import { Controller, useFormContext } from "react-hook-form";
 import { IChannel } from "../../logic/hasComponents/channel";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 
-interface ChannelFormProps extends FormRequirements {}
+interface ChannelFormProps extends FormRequirements { }
 
 const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 	const formControls = useFormContext<IChannel>();
@@ -25,19 +26,25 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 				<FormGroup
 					fill={false}
 					inline={true}
-					label="Label"
-					helperText="LaTeX"
+					label="LaTeX"
 					labelFor="text-input">
 					<Controller
 						control={formControls.control}
 						name={"label.text"}
-						render={({field}) => (
-							<InputGroup
-								{...field}
-								id="text"
-								placeholder="_1\textrm{H}"
-								size="small"
-							/>
+						render={({ field }) => (
+							<>
+								<div style={{ display: "flex", flexDirection: "row" }}>
+									<InputGroup
+										{...field}
+										id="text"
+										placeholder="_1\textrm{H}"
+										size="small"
+									/>
+									<div style={{ marginLeft: "16px", display: "flex", alignItems: "center" }}>
+										<MathJax>{`\\(${field.value || ""}\\)`}</MathJax>
+									</div>
+								</div>
+							</>
 						)}></Controller>
 				</FormGroup>
 
@@ -45,7 +52,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 
 				{/* Style stuff */}
 				<Section icon="style"
-					collapseProps={{defaultIsOpen: false}}
+					collapseProps={{ defaultIsOpen: false }}
 					compact={true}
 					title={"Style"}
 					collapsible={true}>
@@ -53,7 +60,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name="style.thickness"
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									onValueChange={field.onChange}
@@ -69,7 +76,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name="style.barStyle.fill"
-							render={({field}) => (
+							render={({ field }) => (
 								<input type={"color"} {...field}></input>
 							)}></Controller>
 					</FormGroup>
@@ -78,7 +85,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name="style.barStyle.stroke"
-							render={({field}) => (
+							render={({ field }) => (
 								<input type={"color"} {...field}></input>
 							)}></Controller>
 					</FormGroup>
@@ -87,7 +94,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 						<Controller
 							control={formControls.control}
 							name="style.barStyle.strokeWidth"
-							render={({field}) => (
+							render={({ field }) => (
 								<NumericInput
 									{...field}
 									onValueChange={field.onChange}
