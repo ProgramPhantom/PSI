@@ -9,9 +9,11 @@ import Sequence from "./hasComponents/sequence";
 import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
-import { IPulseConfig, PlacementConfiguration, PointBind } from "./spacial";
-import SVGElement, { ISVGElement } from "./svgElement";
+import { PlacementConfiguration, PointBind } from "./spacial";
+import { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual } from "./visual";
+
+import { sha256 } from 'js-sha256';
 
 
 export type Result<T = {}> = {ok: true; value: T} | {ok: false; error: string};
@@ -56,12 +58,7 @@ export default class DiagramHandler implements IDraw {
 	EngineConstructor: (data: IVisual, type: AllComponentTypes) => Visual | undefined
 
 	get id(): string {
-		var id: string = "";
-		this.diagram.children.forEach((s) => {
-			Object.keys(s.allElements).forEach((k) => {
-				id += k;
-			});
-		});
+		let id: string = sha256(JSON.stringify(this.diagram.state))
 		return id;
 	}
 	syncExternal: () => void;
