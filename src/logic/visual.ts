@@ -30,7 +30,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		};
 	}
 	get allElements(): Record<ID, Visual> {
-		return {[this.id]: this};
+		return { [this.id]: this };
 	}
 
 	private _dirty: boolean = true;
@@ -47,8 +47,9 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	flipped: boolean = false;
 
 	constructor(params: IVisual) {
-		super(params.padding, params.x, params.y, 
-			params.contentWidth, params.contentHeight, params.placementMode, params.sizeMode, params.ref, params.id);
+		super(params.padding, params.x, params.y,
+			params.contentWidth, params.contentHeight, params.placementMode,
+			params.placementControl, params.sizeMode, params.ref, params.id);
 
 		this.offset = params.offset;
 	}
@@ -64,7 +65,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		// Pass
 	}
 
-	public computePositions(root: {x: number, y: number}) {
+	public computePositions(root: { x: number, y: number }) {
 		super.computePositions(root);
 
 		if (this.placementMode.type === "pulse") {
@@ -87,7 +88,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		this.offset = [this.offset[0], -Math.abs(this.offset[1])]; // Strange entanglement error was happening here
 
 		this.svg?.children().forEach((c) => {
-			c.transform({flip: "y"});
+			c.transform({ flip: "y" });
 		});
 
 		this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
@@ -97,7 +98,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 
 	// Construct and SVG with children positioned relative to (0, 0)
 	getInternalRepresentation(): Element | undefined {
-		if (this.svg === undefined ) {return undefined}
+		if (this.svg === undefined) { return undefined }
 		var cloned: Element = this.svg.clone(true, true);
 		cloned.move(0, 0);
 

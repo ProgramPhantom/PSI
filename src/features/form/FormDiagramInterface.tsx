@@ -32,6 +32,7 @@ function getCoreDefaults(target: Visual): IVisual {
 }
 
 export function FormDiagramInterface(props: FormHolderProps) {
+	console.log("------ FORM RENDER (form diagram interface) -----")
 	const ComponentFormEffectRegistry = useMemo<
 		Partial<Record<UserComponentType, Partial<EffectGroup>>>
 	>(() => {

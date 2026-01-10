@@ -26,6 +26,7 @@ export type SubmitButtonRef = {
 
 export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupComboForm>(
 	(props, ref) => {
+		console.log("LAbel group combo form render");
 		var MasterForm: React.FC<FormRequirements>;
 		var ChildForm: React.FC<FormRequirements> | undefined;
 		var LabelForm: React.FC<FormRequirements> = FORM_DEFAULTS["label"]!.form;

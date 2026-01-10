@@ -1,5 +1,5 @@
 import { ID } from "./point";
-import Spacial, { ISpacial, PlacementConfiguration, Size, SizeConfiguration } from "./spacial";
+import Spacial, { ISpacial, PlacementConfiguration, PlacementControl, Size, SizeConfiguration } from "./spacial";
 
 
 type Padding = number | [number, number] | [number, number, number, number];
@@ -26,11 +26,12 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		width?: number,
 		height?: number,
 		placementMode?: PlacementConfiguration,
+		placementControl?: PlacementControl,
 		sizeMode?: SizeConfiguration,
 		ref: string = PaddedBox.defaults["default"].ref,
 		id: ID | undefined = undefined
 	) {
-		super(x, y, width, height, placementMode, sizeMode, ref, id);
+		super(x, y, width, height, placementMode, placementControl, sizeMode, ref, id);
 
 		if (typeof padding === "number") {
 			this.padding = [padding, padding, padding, padding];
@@ -100,6 +101,6 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	}
 
 	public get contentSize(): Size {
-		return {width: this.contentWidth, height: this.contentHeight}
+		return { width: this.contentWidth, height: this.contentHeight }
 	}
 }

@@ -87,12 +87,13 @@ export default class Channel extends Grid implements IChannel {
 		this.label.placementMode = {type: "grid", gridConfig: {alignment: {x: "centre", y: "centre"},
 															   coords: {row: 1, col: 0},
 															   contribution: {x: true, y: false}}}
+		this.label.ref = this.ref + "-label"
 											
 
 		this.bar = new RectElement(params.bar);
 		this.bar.placementMode = {type: "grid", gridConfig: {alignment: {x: "here", y: "centre"},
 														     coords: {row: 1, col: 1}}}
-		this.bar.ref = "BAR";
+		this.bar.ref = this.ref + "-bar";
 
 		this.initialiseChannel();
 	}

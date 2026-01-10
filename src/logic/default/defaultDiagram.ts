@@ -1,5 +1,6 @@
 import { IDiagram } from "../hasComponents/diagram";
 import { DEFAULT_BAR } from "./bar";
+import { DEFAULT_SEQUENCE } from "./sequence";
 
 
 export const DEFAULT_DIAGRAM: IDiagram = {
@@ -10,61 +11,15 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 		"contentHeight": 0,
 		"offset": [0, 0],
 		"padding": [0, 0, 0, 0],
-		"placementMode": {"type": "free"},
+		"placementMode": { "type": "free" },
 		"ref": "sequence-aligner",
 		"sequences": [],
 		"children": [
-			{
-				"placementMode": {"type": "managed"},
-				"ref": "sequence",
-				"x": 0,
-				"y": 0,
-				"minHeight": 0,
-				"minWidth": 10,
-				"padding": [0, 0, 0, 0],
-				"offset": [0, 0],
-
-				"children": [],
-				"channels": [
-					{
-						"padding": [10, 0, 10, 0],
-						"offset": [0, 0],
-						"ref": "my-channel",
-						"children": [],
-						"pulseElements": [],
-						"placementMode": {"type": "managed"},
-
-						"style": {
-							"thickness": 2,
-							"barStyle": {
-								"fill": "#000000",
-								"stroke": null,
-								"strokeWidth": null
-							}
-						},
-
-						"label": {
-							"offset": [0, 0],
-							"padding": [0, 5, 0, 0],
-							"ref": "channel-symbol",
-							"text": "^{1}\\mathrm{H}",
-							"placementMode": {"type": "managed"},
-							"style": {
-								"fontSize": 50,
-								"colour": "black",
-								"display": "block",
-								"background": null
-							}
-						},
-
-						"bar": DEFAULT_BAR
-					}
-				]
-			}
+			DEFAULT_SEQUENCE
 		]
 	},
 	"children": [],
-	"placementMode": {"type": "free"},
+	"placementMode": { "type": "free" },
 	"offset": [0, 0],
 	"padding": [10, 10, 10, 10],
 	"contentWidth": 87,

@@ -18,12 +18,12 @@ type HoverBehaviour = "terminate" | "carry" | "conditional";
 // Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
 const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> = {
 	0: {
-		terminate: ["label-group", "channel" ],
+		terminate: ["label-group", "channel"],
 		carry: ["text", "lower-abstract", "svg", "rect"],
-		conditional: ["rect", "svg", "label", "diagram", ]
+		conditional: ["rect", "svg", "label", "diagram",]
 	},
 	1: {
-		terminate: ["diagram", "label-group", "channel", "svg", "rect", "label-group"],
+		terminate: ["diagram", "label-group", "channel", "svg", "rect", "label-group", "text"],
 		carry: ["diagram"],
 		conditional: []
 	},
@@ -71,7 +71,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
 
 		if (thisElement !== undefined) {
-			let thisLayer: Rect = thisElement.getHitbox().attr({zIndex: depth});
+			let thisLayer: Rect = thisElement.getHitbox().attr({ zIndex: depth });
 
 			// We don't want the diagram to be selectable.
 			if (thisElement.ref !== "diagram") {

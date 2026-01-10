@@ -9,7 +9,6 @@ export const DEFAULT_RECT_ELEMENT: IRectElement = {
 	"style": {
 		"fill": "#000000",
 	},
-	"placementMode": {"type": "free"},
-	"sizeMode": {x: "fit", y: "fit"},
+	"sizeMode": { x: "fit", y: "fit" },
 	"ref": "rect-element"
 }

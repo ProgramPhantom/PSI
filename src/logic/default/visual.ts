@@ -9,5 +9,4 @@ export const DEFAULT_VISUAL: IVisual = {
 	"contentHeight": 0,
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
-	"placementMode": {"type": "managed"}
 }

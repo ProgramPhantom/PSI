@@ -1,20 +1,15 @@
 import {
 	ControlGroup,
 	FormGroup,
-	H6,
-	HTMLSelect,
 	InputGroup,
 	NumericInput,
-	Section,
-	Slider
+	Section
 } from "@blueprintjs/core";
 import React from "react";
 import { Controller, FieldErrors, useFormContext } from "react-hook-form";
 import { getByPath } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";
-import { Switch } from "@blueprintjs/core";
-import { useWatch } from "react-hook-form";
 import { PlacementModeConfig } from "./PlacementModeConfigForm";
 
 interface IVisualFormProps extends FormRequirements {
@@ -23,6 +18,7 @@ interface IVisualFormProps extends FormRequirements {
 }
 
 const VisualForm: React.FC<IVisualFormProps> = (props) => {
+	console.log("visual form render")
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
 	const formControls = useFormContext();
 
@@ -30,7 +26,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 		formControls.formState.errors,
 		props.prefix
 	);
-	var rawVals = formControls.getValues();
+
 	var values: Partial<IVisual> = getByPath(formControls.getValues(), props.prefix);
 
 	var widthActive = props.target
@@ -155,16 +151,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				title={"Placement"}
 				collapsible={true}>
 				<ControlGroup vertical={true}>
-					{/* Type Display */}
-					<div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}placementMode.type`}
-							render={({ field }) => (
-								<div>Type: {field.value}</div>
-							)}></Controller>
-					</div>
-
 					{/* Dynamic Sub-forms */}
 					<PlacementModeConfig fullPrefix={fullPrefix} />
 				</ControlGroup>

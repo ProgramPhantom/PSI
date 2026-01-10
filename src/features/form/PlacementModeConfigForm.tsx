@@ -17,9 +17,28 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
         control,
         name: `${fullPrefix}placementMode`
     });
+    const placementControl = useWatch({
+        control,
+        name: `${fullPrefix}placementControl`
+    });
+
+    let details: React.ReactNode;
+    let coreRow: React.ReactNode = (
+        <>
+            <div style={{ display: "flex", flexDirection: "row", margin: "4px 0px" }}>
+                <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
+                    Type: {type}
+                </div>
+                <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
+                    Control: {placementControl}
+                </div>
+            </div>
+        </>
+    );
+
 
     if (type === "pulse") {
-        return (
+        details = (
             <>
                 {/* Read-only fields */}
                 <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
@@ -89,7 +108,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
     }
 
     if (type === "grid") {
-        return (
+        details = (
             <>
                 <div style={{ display: "flex", gap: "10px", padding: "0 8px" }}>
                     <FormGroup style={{ flex: 1 }} label="Row">
@@ -189,7 +208,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
     }
 
     if (type === "aligner") {
-        return (
+        details = (
             <>
                 <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
                     Index: {placementMode?.alignerConfig?.index ?? "N/A"}
@@ -232,5 +251,10 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
         );
     }
 
-    return null;
+    return (
+        <>
+            {coreRow}
+            {placementControl === "auto" ? null : details}
+        </>
+    );
 };

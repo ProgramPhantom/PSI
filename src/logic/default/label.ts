@@ -7,7 +7,7 @@ export const DEFAULT_LABEL: ILabel = {
 
 	"offset": [0, 0],
 	"padding": [0, 0, 0, 0],
-	
+
 	"mainAxis": "x",
 
 	"text": {
@@ -25,11 +25,10 @@ export const DEFAULT_LABEL: ILabel = {
 			"display": "block"
 		},
 		"ref": "label-text",
-		"placementMode": {"type": "managed"}
 	},
 
 	"line": DEFAULT_LINE,
-	"placementMode": {"type": "free"},
+	"placementMode": { "type": "free" },
 	"ref": "label",
 
 	"labelConfig": {

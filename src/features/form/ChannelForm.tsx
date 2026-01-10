@@ -17,7 +17,10 @@ import { FormRequirements } from "./FormBase";
 interface ChannelFormProps extends FormRequirements { }
 
 const ChannelForm: React.FC<ChannelFormProps> = (props) => {
+	console.log("Channel from render")
 	const formControls = useFormContext<IChannel>();
+
+	let vals = formControls.getValues();
 
 	return (
 		<>

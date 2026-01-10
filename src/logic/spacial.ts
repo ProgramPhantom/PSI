@@ -30,30 +30,29 @@ export interface IPulseConfig {
 
 
 export interface IGridChildConfig {
-	coords?: {row: number, col: number}
+	coords?: { row: number, col: number }
 	alignment?: Record<Dimensions, SiteNames>
-	gridSize?: {noRows: number, noCols: number}
+	gridSize?: { noRows: number, noCols: number }
 	contribution?: Record<Dimensions, boolean>
 }
 
 export interface IAlignerConfig {
 	index?: number,
 	alignment?: SiteNames,
-	contribution?: {mainAxis: boolean, crossAxis: boolean}
+	contribution?: { mainAxis: boolean, crossAxis: boolean }
 }
 
-export type PlacementConfiguration = {type: "free"} | 
-									 {type: "pulse"; config: IPulseConfig} | 
-									 {type: "binds"; bindings: undefined} | 
-									 {type: "grid"; gridConfig: IGridChildConfig} |
-									 {type: "aligner", alignerConfig: IAlignerConfig} | 
-									 {type: "managed"}
+export type PlacementConfiguration = { type: "free" } |
+{ type: "pulse"; config: IPulseConfig } |
+{ type: "binds"; bindings: undefined } |
+{ type: "grid"; gridConfig: IGridChildConfig } |
+{ type: "aligner", alignerConfig: IAlignerConfig }
 
+export type PlacementControl = "auto" | "user";
+
+export type SizeMethod = "fixed" | "fit" | "grow";
 export type SizeConfiguration = Record<Dimensions, SizeMethod>
 
-
-export type PositionMethod = "controlled" | "free" | "partially-controlled";
-export type SizeMethod = "fixed" | "fit" | "grow";
 
 export type SiteNames = "here" | "centre" | "far";
 
@@ -94,7 +93,8 @@ export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
 
-	placementMode: PlacementConfiguration
+	placementMode?: PlacementConfiguration
+	placementControl?: PlacementControl
 	sizeMode?: SizeConfiguration
 }
 
@@ -102,7 +102,7 @@ export type UpdateNotification = (...args: any[]) => any;
 
 export default class Spacial extends Point implements ISpacial, IHaveSize {
 	static CreateUnion(...rects: Spacial[]): Spacial {
-		var size: Size = {width: 0, height: 0}
+		var size: Size = { width: 0, height: 0 }
 		var top = Infinity;
 		var left = Infinity;
 		var bottom = -Infinity;
@@ -112,7 +112,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			top = r.y < top ? r.y : top;
 			var far = r.getFar("y");
 			bottom = far > bottom ? far : bottom;
-			
+
 
 			left = r.x < left ? r.x : left;
 			var farX = r.getFar("x");
@@ -122,16 +122,17 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		size.width = right - left;
 		size.height = bottom - top;
 
-		let result: Spacial = new Spacial(left, top, size.width, size.height, {type: "free"}, {x: "fixed", y: "fixed"})
+		let result: Spacial = new Spacial(left, top, size.width, size.height, { type: "free" })
 
 		return result
 	}
-	
+
 	get state(): ISpacial {
 		return {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
 			placementMode: this.placementMode,
+			placementControl: this.placementControl,
 			sizeMode: this.sizeMode,
 			...super.state
 		};
@@ -155,6 +156,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	protected _contentHeight: number;
 
 	public placementMode: PlacementConfiguration;
+	public placementControl: PlacementControl;
 	public sizeMode: SizeConfiguration;
 
 	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
@@ -166,14 +168,16 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		width?: number,
 		height?: number,
 		placementMode?: PlacementConfiguration,
+		placementControl?: PlacementControl,
 		sizeMode?: SizeConfiguration,
 		ref: string = "spacial",
 		id: ID | undefined = undefined
 	) {
 		super(x, y, ref, id);
 
-		this.placementMode = placementMode ?? {type: "free"}
-		this.sizeMode = sizeMode ?? {x: "fixed", y: "fixed"}
+		this.placementMode = placementMode ?? { type: "free" }
+		this.placementControl = placementControl ?? "user";
+		this.sizeMode = sizeMode ?? { x: "fixed", y: "fixed" }
 
 		this._contentWidth = width ?? 0;
 		this._contentHeight = height ?? 0;
@@ -183,10 +187,10 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		// this.width = this.contentHeight;
 		// this.height = this.contentHeight;
 
-		return {width: this.width, height: this.height}
+		return { width: this.width, height: this.height }
 	}
 
-	public computePositions(root: {x: number, y: number}) {
+	public computePositions(root: { x: number, y: number }) {
 		this.x = root.x;
 		this.y = root.y;
 
@@ -207,14 +211,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			this.height = containerSize.height;
 		}
 
-		return {x: dw, y: dh}
+		return { x: dw, y: dh }
 	}
 
 	public getHitbox(): Rect {
 		var hitbox = SVG()
 			.rect()
 			.id(this.id + "-hitbox")
-			.attr({"data-editor": "hitbox", key: this.ref});
+			.attr({ "data-editor": "hitbox", key: this.ref });
 
 		hitbox.size(this.width, this.height);
 		hitbox.move(this.x, this.y);
@@ -241,7 +245,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this._contentHeight = b.height;
 	}
 	get contentSize(): Size {
-		return {width: this.contentWidth, height: this.contentHeight};
+		return { width: this.contentWidth, height: this.contentHeight };
 	}
 
 	// ----------- Size --------------
@@ -273,7 +277,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	get size(): Size {
-		return {width: this.width, height: this.height}
+		return { width: this.width, height: this.height }
 	}
 
 	public clearBindings(dimension: Dimensions) {
@@ -430,18 +434,18 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	}
 
-	public immediateBind(		
+	public immediateBind(
 		target: Spacial,
 		dimension: Dimensions,
 		anchorBindSide: keyof typeof this.AnchorFunctions,
 		targetBindSide: keyof typeof this.AnchorFunctions,
 		bindToContent: boolean = true) {
-		
+
 		var getter: BinderGetFunction =
 			this.AnchorFunctions[anchorBindSide].get;
 		var setter: BinderSetFunction =
 			target.AnchorFunctions[targetBindSide].set;
-		
+
 		var anchorValue: number = getter(dimension, bindToContent);
 
 		setter(dimension, anchorValue);
@@ -452,7 +456,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		dimension: Dimensions,
 		alignment: keyof typeof this.AnchorFunctions,
 		bindToContent: boolean = true) {
-		
+
 		var getter: BinderGetFunction;
 		var setter: BinderSetFunction;
 
@@ -573,7 +577,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.y = v - this.height;
 	}
 
-	
+
 	setSizeByDimension(v: number, dim: Dimensions) {
 		switch (dim) {
 			case "x":

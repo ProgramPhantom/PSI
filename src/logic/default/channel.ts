@@ -1,14 +1,18 @@
 import { IChannel } from "../hasComponents/channel";
+import { ISVGElement } from "../svgElement";
+import { DEFAULT_BAR } from "./bar";
+import { DEFAULT_CHIRPHILO } from "./svgPulse/chirphilo";
 
 export const DEFAULT_CHANNEL: IChannel = {
 	"padding": [10, 0, 10, 0],
 	"offset": [0, 0],
 	"ref": "my-channel",
 	"children": [],
-	"pulseElements": [],
-	"placementMode": {"type": "managed"},
-	"sizeMode": {"x": "fixed", "y": "fixed"},
-	
+	"pulseElements": [
+		DEFAULT_CHIRPHILO
+	],
+	"sizeMode": { "x": "fixed", "y": "fixed" },
+	"placementControl": "auto",
 
 	"style": {
 		"thickness": 3,
@@ -22,8 +26,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 		"padding": [0, 5, 0, 0],
 		"ref": "channel-symbol",
 		"text": "^{1}\\mathrm{H}",
-		"placementMode": {"type": "managed"},
-		"sizeMode": {"x": "fixed", "y": "fixed"},
+		"sizeMode": { "x": "fixed", "y": "fixed" },
 		"style": {
 			"fontSize": 50,
 			"colour": "black",
@@ -32,28 +35,5 @@ export const DEFAULT_CHANNEL: IChannel = {
 		}
 	},
 
-	"bar": {		
-		"padding": [0, 0, 0, 0],
-		"offset": [0, 0],
-
-		"contentWidth": 20,
-		"contentHeight": 3,
-
-		"placementMode": {"type": "grid", 
-			"gridConfig": {
-				"coords": {"row": 1, "col": 1},
-				"alignment": {"x": "here", "y": "here"},
-				"gridSize": {"noRows": 1, "noCols": 1}
-			}
-		},
-		"sizeMode": {"x": "grow", "y": "fixed"},
-
-		"style": {
-			"fill": "#000000",
-			"stroke": "black",
-			"strokeWidth": 0
-		},
-
-	"ref": "bar"
-	}
+	"bar": DEFAULT_BAR
 }
