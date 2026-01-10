@@ -15,7 +15,7 @@ export interface IGrid extends ICollection {
 
 export type GridCell<T extends Visual=Visual> = OccupiedCell<T> | undefined
 
-type Elements<T> = T[];
+export type Elements<T> = T[];
 type Sources = {[id: string]: { row: number; col: number }};
 export type Ghost = {size: {width: number, height: number}, owner?: ID};
 type Extra = {width: number, height: number};

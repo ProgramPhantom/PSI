@@ -17,6 +17,9 @@ export type OccupancyStatus = Visual | "." | undefined;
 
 export default class Sequence extends Grid implements ISequence {
 	static ElementType: UserComponentType = "sequence";
+	static isPulse(element: Visual): boolean {
+		return element.placementMode.type === "pulse"
+	}
 	get state(): ISequence {
 		return {
 			channels: this.channels.map((c) => c.state),
@@ -43,6 +46,7 @@ export default class Sequence extends Grid implements ISequence {
 		});
 		return elements;
 	}
+	
 
 	override get allElements(): Record<ID, Visual> {
 		var elements: Record<ID, Visual> = {[this.id]: this};
@@ -115,6 +119,12 @@ export default class Sequence extends Grid implements ISequence {
 		let targetChannel: Channel = this.channelsDict[pulse.placementMode.config.channelID ?? ""]
 		if (targetChannel === undefined) {
 			throw new Error(`Cannot find targeted channel with id ${pulse.placementMode.config.channelID}`);
+		}
+
+		let columnSpaces: number = targetChannel.getSpacesToNextPulse(pulse.placementMode.config.orientation, pulse.placementMode.config.index ?? 0);
+		while (columnSpaces < (gridConfig.gridSize?.noCols ?? 1)) {
+			this.insertEmptyColumn(pulse.placementMode.config.index);
+			columnSpaces += 1;
 		}
 
 		this.addChildAtCoord(pulse, gridConfig.coords.row, gridConfig.coords.col);
@@ -335,19 +345,9 @@ export default class Sequence extends Grid implements ISequence {
 		let channelIndex: number = Math.floor((config.coords?.row ?? 0) / 3);
 		let channel: Channel = this.channels[channelIndex];
 
-		let orientation: Orientation = "top";
-		let orientationIndex: number = (config.coords?.row ?? 0) % 3;
-		switch (orientationIndex) {
-			case 0:
-				orientation = "top";
-				break;
-			case 1: 
-				orientation = "both";
-				break;
-			case 2:
-				orientation = "bottom";
-				break;
-		}
+		
+		let orientationIndex: 0 | 1 | 2 = ((config.coords?.row ?? 0) % 3) as 0 | 1 | 2;
+		let orientation: Orientation = Channel.RowToOrientation(orientationIndex);
 
 		let alignment: Record<Dimensions, SiteNames> = {
 			x: config.alignment?.x ?? "centre",
@@ -423,4 +423,5 @@ export default class Sequence extends Grid implements ISequence {
 		return region;
 	}
 
+	
 }
