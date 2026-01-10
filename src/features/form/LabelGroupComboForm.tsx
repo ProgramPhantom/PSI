@@ -147,6 +147,8 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 					props.callback(result, "label-group");
 				} else {
 					// Change BACK into a non-label group
+					// Copy placement mode from label group into core child
+					childFormData.placementMode = props.target!.placementMode;
 					props.callback(childFormData, childType);
 				}
 			}

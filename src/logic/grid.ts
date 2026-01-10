@@ -381,6 +381,10 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		}
 		var insertCoords: {row: number, col: number} = {row: row, col: column};
 
+		if (child.placementMode.type === "grid") {
+			child.placementMode.gridConfig.coords = insertCoords;
+		}
+
 		var region: OccupiedCell<T>[][] | undefined = this.getElementGridRegion(child, {row: insertCoords.row, col: insertCoords.col});
 
 		if (region === undefined) {

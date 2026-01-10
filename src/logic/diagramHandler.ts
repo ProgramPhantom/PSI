@@ -208,24 +208,12 @@ export default class DiagramHandler implements IDraw {
 		type: AllComponentTypes,
 		target: Visual
 	): Result<Visual> {
-		var mountConfigCopy: IPulseConfig | undefined;
-		if (target.placementMode.type === "pulse") {
-			mountConfigCopy = target.placementMode.config;
-		}
-		
 		// Delete element
 		let deleteResult: Result<Visual> = this.deleteVisual(target, true);
 		if (deleteResult.ok === false) {
 			return deleteResult;
 		}
 		let id: ID = deleteResult.value.id;
-
-		// Copy hidden parameter channelID (this shouldn't be needed as it should take the state
-		// from the form. The hidden values should still be in the form.)
-		// if (mountConfigCopy !== undefined && parameters.placementMode.type === "pulse") {
-		// 	parameters.placementMode.config.channelID = mountConfigCopy.channelID;
-		// 	parameters.placementMode.config.index = mountConfigCopy.index;
-		// 
 
 		parameters.id = id;
 		var result: Result<Visual> = this.submitVisual(parameters, type);
