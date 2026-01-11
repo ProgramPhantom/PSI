@@ -156,8 +156,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								width: "100%",
 								height: "100%",
 								position: "absolute",
-								top: -props.element.offset[1],
-								left: -props.element.offset[0],
+								top: 0,
+								left: 0,
 								overflow: "visible"
 							}}>
 							{props.element.padding.some((v) => v > 0) ? (

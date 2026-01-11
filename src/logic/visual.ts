@@ -2,6 +2,8 @@ import { Element } from "@svgdotjs/svg.js";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { ID, UserComponentType } from "./point";
 import { Size } from "./spacial";
+import { Rect } from "@svgdotjs/svg.js";
+import { SVG } from "@svgdotjs/svg.js";
 
 
 export type Offset = [number, number];
@@ -105,10 +107,29 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return cloned;
 	}
 
-	get drawX(): number {
+	public get drawCX(): number {
 		return this.cx + this.offset[0];
 	}
-	get drawY(): number {
+	public get drawCY(): number {
 		return this.cy + this.offset[1];
+	}
+
+	public get drawX(): number {
+		return this.x + this.offset[0];
+	}
+	public get drawY(): number {
+		return this.y + this.offset[1];
+	}
+
+	public getHitbox(): Rect {
+		var hitbox = SVG()
+			.rect()
+			.id(this.id + "-hitbox")
+			.attr({ "data-editor": "hitbox", key: this.ref });
+
+		hitbox.size(this.width, this.height);
+		hitbox.move(this.drawX, this.drawY);
+		hitbox.fill(`transparent`).opacity(0.3);
+		return hitbox;
 	}
 }

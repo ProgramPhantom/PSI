@@ -265,7 +265,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						centerOnInit={true}
 						limitToBounds={false}
 						centerZoomedOut={true}
-						
+
 						maxScale={5}
 						minScale={0.5}
 						disabled={dragging}
@@ -327,8 +327,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 												width: `${hoveredElement.width}px`,
 												height: `${hoveredElement.height}`,
 												position: "absolute",
-												top: `${hoveredElement.y}px`,
-												left: `${hoveredElement.x}px`,
+												top: `${hoveredElement.drawY}px`,
+												left: `${hoveredElement.drawX}px`,
 												zIndex: 100,
 												vectorEffect: "non-scaling-stroke"
 											}}
@@ -366,8 +366,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											position: "absolute",
 											width: selectedElement.contentWidth,
 											height: selectedElement.contentHeight,
-											left: selectedElement.drawX,
-											top: selectedElement.drawY
+											left: selectedElement.drawCX,
+											top: selectedElement.drawCY
 										}}
 										onMouseDown={() => {
 											setDragging(true);

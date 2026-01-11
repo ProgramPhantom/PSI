@@ -11,7 +11,7 @@ const MISSING_ASSET: Record<string, string> = import.meta.glob("../assets/app/Mi
 });
 const MISSING_ASSET_SVG_DATA: string = MISSING_ASSET["../assets/app/MissingAsset2.svg"];
 
-interface ISVGStyle {}
+interface ISVGStyle { }
 
 export interface ISVGElement extends IVisual {
 	svgDataRef: string;
@@ -32,7 +32,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 	elementGroup: G = new G();
 	style: ISVGStyle;
 	svgDataRef: string;
-	
+
 
 	constructor(params: ISVGElement) {
 		super(params);
@@ -59,9 +59,9 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		this.elementGroup.id(this.id);
 
 		// Configure some attributes
-		this.svg.attr({preserveAspectRatio: "none"});
+		this.svg.attr({ preserveAspectRatio: "none" });
 		this.svg.children().forEach((c) => {
-			c.attr({"vector-effect": "non-scaling-stroke"});
+			c.attr({ "vector-effect": "non-scaling-stroke" });
 		});
 		cascadeID(this.svg, this.id);
 	}
@@ -71,11 +71,8 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 			this.svg = SVG(MISSING_ASSET_SVG_DATA);
 		}
 
-		var deltaX = -this.cy;
-		var deltaY = -this.cx
-
 		var internalSVG = this.svg?.clone(true, true);
-		internalSVG?.attr({style: "display: block;"}).move(this.offset[0], this.offset[1]);
+		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
 
 		return internalSVG;
 	}
@@ -100,15 +97,15 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 			// 	this.flipped = !this.flipped;
 			// 	this.verticalFlip();
 			// }
-// 
+			// 
 			// if (this.flipped) {
 			// 	this.offset = [this.offset[0], -Math.abs(this.offset[1])];
 			// } else {
 			// 	this.offset = [this.offset[0], Math.abs(this.offset[1])];
 			// }
-			
+
 			// Position, size and draw svg.
-			this.svg.move(this.drawX, this.drawY);
+			this.svg.move(this.drawCX, this.drawCY);
 			this.svg.size(this.contentWidth, this.contentHeight);
 
 			surface.add(this.svg);
@@ -122,7 +119,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		// https://stackoverflow.com/questions/65514861/transform-is-not-applied-on-embedded-svgs-chrome
 
 		//this.elementGroup.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: 0})
-		this.elementGroup.transform({flip: "y", origin: "center"}, true);
+		this.elementGroup.transform({ flip: "y", origin: "center" }, true);
 
 		this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
 		this.flipped = flipped
