@@ -14,5 +14,6 @@ export const DEFAULT_180S: ISVGElement = {
 	}},
 
 	"ref": "180",
-	"style": {}
+	"style": {},
+	"type": "svg"
 }

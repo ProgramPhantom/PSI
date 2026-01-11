@@ -14,5 +14,6 @@ export const DEFAULT_BAR: IRectElement = {
     "fill": "#000000",
     "stroke": "black",
     "strokeWidth": 0
-  }
+  },
+  "type": "rect"
 }

@@ -7,12 +7,15 @@ export const DEFAULT_ACQUIRE: ISVGElement = {
 	"contentWidth": 150,
 	"contentHeight": 75,
 
-	"placementMode": {"type": "pulse", "config": {
-		"alignment": {"x": "centre", "y": "far"},
-		"orientation": "top",
-		"noSections": 1,
-	}},
+	"placementMode": {
+		"type": "pulse", "config": {
+			"alignment": { "x": "centre", "y": "far" },
+			"orientation": "top",
+			"noSections": 1,
+		}
+	},
 
 	"ref": "acquire",
-	"style": {}
+	"style": {},
+	"type": "svg"
 }

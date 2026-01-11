@@ -222,6 +222,7 @@ export default class DiagramHandler implements IDraw {
 		var result: Result<Visual>;
 
 		switch (type) {
+			case "label":
 			case "rect":
 			case "svg":
 			case "label-group":
@@ -260,36 +261,10 @@ export default class DiagramHandler implements IDraw {
 	// ------------------------------------------
 
 	public createVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
-		var element: Visual | undefined = undefined;
-
-		// NECESSARY to make element accept binding changes. X, Y persists when changing into a label
-		// so if this isn't done, element might not carry changes and update label position.
-		parameters.x = undefined;
-		parameters.y = undefined;
-		//parameters.id = undefined;
-
-		switch (type) {
-			case "svg":
-				element = this.EngineConstructor(parameters as ISVGElement, type);
-				break;
-			case "rect":
-				element = new RectElement(parameters as IRectElement);
-				break;
-			case "label-group":
-				// Wipe the id of the core child (otherwise label group and core child would have same id)
-				(parameters as ILabelGroup).coreChild.id = undefined;
-				let coreChild: Result<Visual> = this.createVisual((parameters as ILabelGroup).coreChild, (parameters as ILabelGroup).coreChildType);
-				
-				if (coreChild.ok === true) {
-					element = new LabelGroup(parameters as ILabelGroup, coreChild.value);
-				}
-
-				break;
-			default:
-				return {
-					ok: false,
-					error: `Cannot instantiate visual with type ${type}`
-				};
+		try {
+			var element: Visual | undefined = this.EngineConstructor(parameters, type);
+		} catch (e) {
+			return {ok: false, error: (e as string)}
 		}
 
 		if (element === undefined) {

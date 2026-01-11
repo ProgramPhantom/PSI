@@ -30,7 +30,7 @@ export default class Text extends Visual implements IText {
 		};
 	}
 
-	intrinsicSize: {width: number; height: number};
+	intrinsicSize: { width: number; height: number };
 	wHRatio: number;
 
 	text: string;
@@ -38,7 +38,7 @@ export default class Text extends Visual implements IText {
 
 	constructor(params: IText) {
 		super(params);
-		this.ref = "TEXT"
+
 		this.text = params.text;
 		this.style = params.style;
 
@@ -58,7 +58,7 @@ export default class Text extends Visual implements IText {
 		var crudeSvg: SVGElement = SVG(SVGEquation);
 
 		var paths: SVGElement[] = crudeSvg.children()[0].children();
-		var pathDict: {[id: string]: SVGElement} = {};
+		var pathDict: { [id: string]: SVGElement } = {};
 		paths.forEach((p) => {
 			pathDict[p.id()] = p;
 		});
@@ -80,7 +80,7 @@ export default class Text extends Visual implements IText {
 
 						// Apply transform to path
 						if (childTransform !== undefined) {
-							pathToReplace.attr({transform: childTransform});
+							pathToReplace.attr({ transform: childTransform });
 						}
 
 						c.replace(pathToReplace);
@@ -98,9 +98,9 @@ export default class Text extends Visual implements IText {
 
 		this.svg = crudeSvg;
 
-		this.svg.attr({height: null, preserveAspectRatio: "xMinYMin"});
+		this.svg.attr({ height: null, preserveAspectRatio: "xMinYMin" });
 		this.svg.width(this.contentWidth!);
-		this.svg.attr({style: `color:${this.style.colour}`});
+		this.svg.attr({ style: `color:${this.style.colour}` });
 
 		var group = this.svg.children()[1];
 
@@ -117,13 +117,13 @@ export default class Text extends Visual implements IText {
 	// TODO: investigate this
 	// Sets this.width and this.height
 	// Currently needs to add and remove the svg to find these dimensions, not ideal
-	resolveDimensions(): {width: number; height: number} {
+	resolveDimensions(): { width: number; height: number } {
 		var SVGEquation: string = TeXToSVG(`${this.text}`);
 
 		var SVGobj: SVGElement = SVG(SVGEquation);
 
 		SVGobj.id("svgTempID");
-		SVGobj.attr({preserveAspectRatio: "xMinYMin"});
+		SVGobj.attr({ preserveAspectRatio: "xMinYMin" });
 
 		var exWidthString: string = <string>SVGobj.width();
 		var exHeightString: string = <string>SVGobj.height();
@@ -140,7 +140,7 @@ export default class Text extends Visual implements IText {
 
 		SVGobj.remove();
 
-		return {width: exWidth * EXTOPX, height: exHeight * EXTOPX};
+		return { width: exWidth * EXTOPX, height: exHeight * EXTOPX };
 	}
 
 	draw(surface: Element) {

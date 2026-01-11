@@ -12,8 +12,7 @@ export interface ILabelGroup extends IGrid {
 }
 
 export default class LabelGroup<T extends Visual = Visual>
-	extends Grid
-{
+	extends Grid {
 	static isLabelGroup(val: Visual): val is LabelGroup {
 		return (val as LabelGroup)?.coreChild !== undefined;
 	}
@@ -47,14 +46,14 @@ export default class LabelGroup<T extends Visual = Visual>
 		coreChild: T,
 	) {
 		super(params);
-		this.setMatrixSize({row: 2, col: 2})
+		this.setMatrixSize({ row: 2, col: 2 })
 
 		this.coreChildType = params.coreChildType;
 
 		var coreChild: T = coreChild;
 
 
-		this.placementMode = params.placementMode ?? {type: "free"};
+		this.placementMode = params.placementMode ?? { type: "free" };
 
 		this.ref = coreChild.ref + "-labelGroup";
 
@@ -73,7 +72,7 @@ export default class LabelGroup<T extends Visual = Visual>
 		this._coreChild.placementMode = {
 			type: "grid",
 			gridConfig: {
-				coords: {row: 1, col: 1}
+				coords: { row: 1, col: 1 }
 			}
 		}
 
@@ -82,7 +81,7 @@ export default class LabelGroup<T extends Visual = Visual>
 
 
 	addLabel(label: Label) {
-		
+
 		label.placementMode = {
 			type: "grid",
 			gridConfig: {
@@ -93,26 +92,26 @@ export default class LabelGroup<T extends Visual = Visual>
 			}
 		}
 
-		
+
 		switch (label.labelConfig.labelPosition) {
 			case "top":
-				label.placementMode.gridConfig.alignment = {x: "centre", y: "far"}
-				label.sizeMode = {x: "grow", y: "fixed"}
+				label.placementMode.gridConfig.alignment = { x: "centre", y: "far" }
+				label.sizeMode = { x: "grow", y: "fixed" }
 				this.addChildAtCoord(label, 0, 1);
 				break;
 			case "right":
-				label.placementMode.gridConfig.alignment = {x: "here", y: "centre"}
-				label.sizeMode = {x: "fixed", y: "grow"}
+				label.placementMode.gridConfig.alignment = { x: "here", y: "centre" }
+				label.sizeMode = { x: "fixed", y: "grow" }
 				this.addChildAtCoord(label, 1, 2);
 				break;
 			case "bottom":
-				label.placementMode.gridConfig.alignment = {x: "centre", y: "here"}
-				label.sizeMode = {x: "grow", y: "fixed"}
+				label.placementMode.gridConfig.alignment = { x: "centre", y: "here" }
+				label.sizeMode = { x: "grow", y: "fixed" }
 				this.addChildAtCoord(label, 2, 1);
 				break;
 			case "left":
-				label.placementMode.gridConfig.alignment = {x: "far", y: "centre"}
-				label.sizeMode = {x: "fixed", y: "grow"}
+				label.placementMode.gridConfig.alignment = { x: "far", y: "centre" }
+				label.sizeMode = { x: "fixed", y: "grow" }
 				this.addChildAtCoord(label, 1, 0);
 				break;
 			case "centre":

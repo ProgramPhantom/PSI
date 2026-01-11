@@ -1,6 +1,6 @@
 import { Button } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
-import React, { CSSProperties, useEffect, useState } from "react";
+import React, { CSSProperties, useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import SchemeManager from "../../logic/default";
@@ -15,6 +15,9 @@ import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
 import { isMountDrop } from "./InsertArea";
 import { IPulseConfig } from "../../logic/spacial";
 import { appToaster } from "../../app/Toaster";
+import { Element } from "@svgdotjs/svg.js";
+import { SVG } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 
 const style: CSSProperties = {
 	border: "1px solid #d3d8de",
@@ -53,9 +56,9 @@ interface IDraggableElementDropItem {
 /* When an element is selected, the svg on the canvas is hidden and the element is replaced
 by this. It is a different object that can be dragged. */
 const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (props) => {
-	const [{isDragging}, drag, preview] = useDrag(() => ({
+	const [{ isDragging }, drag, preview] = useDrag(() => ({
 		type: ElementTypes.PREFAB,
-		item: {element: props.element} as IDraggableElementDropItem,
+		item: { element: props.element } as IDraggableElementDropItem,
 		end: (item, monitor) => {
 			const dropResult = monitor.getDropResult<IDrop>();
 
@@ -72,25 +75,37 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				// ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
 				var elementType = (props.element.constructor as typeof Visual).ElementType;
 				var singletonState: IVisual = structuredClone(props.element.state);
-				 
-				if (singletonState.placementMode.type === "pulse") {
+
+				singletonState.id = undefined;
+				if (singletonState?.placementMode?.type === "pulse") {
 					let internalConfig: IPulseConfig = singletonState.placementMode.config;
-					
-					singletonState.id = undefined;
+
 					singletonState.placementMode = {
 						type: "pulse",
 						config: {
 							alignment: internalConfig.alignment,
 							noSections: internalConfig.noSections,
-							
+
 							orientation: dropResult.orientation,
 							channelID: dropResult.channelID,
 							sequenceID: dropResult.sequenceID,
 							index: dropResult.index
 						}
-					}; 
+					};
 				} else {
-					throw new Error(`Prefabs must have placement type of pulse currently.`)
+					singletonState.id = undefined;
+					singletonState.placementMode = {
+						type: "pulse",
+						config: {
+							alignment: {"x": "centre", "y": "far"},
+							noSections: 1,
+
+							orientation: dropResult.orientation,
+							channelID: dropResult.channelID,
+							sequenceID: dropResult.sequenceID,
+							index: dropResult.index
+						}
+					};
 				}
 
 				if (dropResult.insert === true) {
@@ -109,8 +124,6 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					});
 				}
 			}
-
-			// ENGINE.handler.draw();
 		},
 		collect: (monitor) => ({
 			isDragging: monitor.isDragging(),
@@ -118,22 +131,23 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 		})
 	}));
 	const [showBin, setShowBin] = useState<boolean>(false);
-
-	var elementType: AllComponentTypes = (props.element.constructor as typeof Visual).ElementType;
-
-	// Get visual
-	var copy = props.element.getInternalRepresentation();
-	// copy?.x(0);
-	// copy?.y(0);
-	// copy?.show();
-	// if (copy) {
-	//   copy.draggable(true)
-	// }
-
 	const opacity = isDragging ? 0.5 : 1;
 
+	// Get visual
+	const element = useRef<Element>(props.element.getInternalRepresentation()!)
+	var visualRef = useRef<SVGSVGElement | null>(null);
+
 	useEffect(() => {
-		preview(getEmptyImage(), {captureDraggingState: true});
+		if (visualRef.current) {
+			visualRef.current.appendChild(element.current.node);
+			visualRef.current.setAttribute("width", props.element.contentWidth.toString())
+			visualRef.current.setAttribute("height", props.element.contentHeight.toString())
+		}
+	}, [props.element]);
+
+
+	useEffect(() => {
+		preview(getEmptyImage(), { captureDraggingState: true });
 	}, []);
 
 	const handleDoubleClick = () => {
@@ -142,21 +156,13 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 		}
 	};
 
-	function deleteTemplate() {
-		switch (elementType) {
-			case "svg":
-				ENGINE.removeSVGSingleton(props.element.state as ISVGElement, props.schemeName);
-				break;
-			case "rect":
-				ENGINE.removeRectSingleton(props.element.state as IRectElement, props.schemeName);
-				break;
-			case "label-group":
-				ENGINE.removeLabelGroupSingleton(
-					props.element.state as ILabelGroup,
-					props.schemeName
-				);
-				break;
-		}
+	const deleteTemplate = () => {
+		ENGINE.removeSingleton(props.element.state, props.schemeName);
+
+		appToaster.show({
+			"message": `Deleted ${props.element.ref}`,
+			"intent": "success"
+		})
 	}
 
 	return (
@@ -210,17 +216,12 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				<></>
 			)}
 
-			<svg
-				style={{
-					width: props.element.contentWidth,
-					height: props.element.contentHeight,
-					maxWidth: "90%",
-					maxHeight: "90%",
-					marginBottom: "auto",
-					marginTop: "auto"
-				}}
-				dangerouslySetInnerHTML={{__html: copy?.svg()!}}
-			/>
+			<div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+				<svg ref={visualRef}
+					style={{ overflow: "scroll" }}></svg>
+			</div>
+
+
 			<span
 				style={{
 					fontSize: "12px",

@@ -7,11 +7,13 @@ export const DEFAULT_180H: IRectElement = {
 	"contentWidth": 10,
 	"contentHeight": 40,
 
-	"placementMode": {"type": "pulse", "config": {
-		"alignment": {"x": "centre", "y": "far"},
-		"orientation": "top",
-		"noSections": 1,
-	}},
+	"placementMode": {
+		"type": "pulse", "config": {
+			"alignment": { "x": "centre", "y": "far" },
+			"orientation": "top",
+			"noSections": 1,
+		}
+	},
 
 	"style": {
 		"fill": "#ffffff",
@@ -19,6 +21,7 @@ export const DEFAULT_180H: IRectElement = {
 		"strokeWidth": 1
 	},
 
-	"ref": "180-pulse"
+	"ref": "180-pulse",
+	"type": "rect"
 }
 

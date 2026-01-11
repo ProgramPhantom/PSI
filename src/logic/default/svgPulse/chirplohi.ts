@@ -7,12 +7,15 @@ export const DEFAULT_CHIRPLOHI: ISVGElement = {
 	"contentWidth": 50,
 	"contentHeight": 20,
 
-	"placementMode": {"type": "pulse", "config": {
-		"alignment": {"x": "centre", "y": "far"},
-		"orientation": "top",
-		"noSections": 1,
-	}},
+	"placementMode": {
+		"type": "pulse", "config": {
+			"alignment": { "x": "centre", "y": "far" },
+			"orientation": "top",
+			"noSections": 1,
+		}
+	},
 
 	"ref": "chirplohi",
-	"style": {}
+	"style": {},
+	"type": "svg"
 }

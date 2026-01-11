@@ -3,6 +3,7 @@ import { DEFAULT_SCHEME_SET } from "./default/schemeSet";
 import type { IChannel } from "./hasComponents/channel";
 import { IDiagram } from "./hasComponents/diagram";
 import { ILabelGroup } from "./hasComponents/labelGroup";
+import { ILabel } from "./hasComponents/label";
 import { ISequence } from "./hasComponents/sequence";
 import { ISequenceAligner } from "./hasComponents/sequenceAligner";
 import { ILine } from "./line";
@@ -10,6 +11,7 @@ import { ID, UserComponentType } from "./point";
 import { IRectElement } from "./rectElement";
 import { ISVGElement } from "./svgElement";
 import { IText } from "./text";
+import { IVisual } from "./visual";
 
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
@@ -46,6 +48,7 @@ export interface IUserSchemeData {
 	svgElements: Record<string, ISVGElement> | undefined;
 	rectElements: Record<string, IRectElement> | undefined;
 	labelGroupElements: Record<string, ILabelGroup> | undefined;
+	labelElements: Record<string, ILabel> | undefined;
 
 	line: Record<string, ILine> | undefined;
 	text: Record<string, IText> | undefined;
@@ -57,6 +60,15 @@ export type SchemeSet = Record<string, Partial<IUserSchemeData>>;
 export type SVGDict = Record<string, string>;
 export type PartialUserSchemeData = Partial<IUserSchemeData>;
 
+/**
+ * Manages application schemes and SVG assets.
+ *
+ * Responsibilities:
+ * - Load SVG assets from built assets and localStorage
+ * - Maintain internal and user-defined scheme collections
+ * - Provide helpers to add/remove SVG/rect/label/label-group data
+ * - Persist schemes and SVG strings to localStorage and emit change notifications
+ */
 export default class SchemeManager {
 	static InternalSchemeName: string = "internal";
 	static SchemeSetStorageName: string = "schemeSet";
@@ -90,14 +102,21 @@ export default class SchemeManager {
 			[SchemeManager.InternalSchemeName]: this.internalScheme
 		};
 	}
+	get allElements(): IVisual[] {
+		let allElements: IVisual[] = [];
+
+		Object.entries(this.allSchemes).forEach(([schemeName, scheme]) => {
+			allElements.push(...this.allElementsInScheme(schemeName))
+		});
+		return allElements
+	}
+
 	get allSchemeNames(): string[] {
 		return Object.keys(this.allSchemes);
 	}
 	get allSVGDataRefs(): string[] {
 		return Object.keys(this.svgStrings ?? {});
 	}
-
-
 
 	get elementTypes(): Record<string, UserComponentType> {
 		var types: Record<string, UserComponentType> = {};
@@ -112,9 +131,27 @@ export default class SchemeManager {
 			Object.keys(scheme.labelGroupElements ?? {}).forEach((r) => {
 				types[r] = "label-group";
 			});
+			Object.keys(scheme.labelElements ?? {}).forEach((r) => {
+				types[r] = "label";
+			});
 		}
 
 		return types;
+	}
+
+	allElementsInScheme(schemeName: string): IVisual[] {
+		if (this.allSchemes[schemeName] === undefined) {
+			return []
+		}
+
+		let targetScheme: Partial<IUserSchemeData> = this.allSchemes[schemeName];
+		let allElements: IVisual[] = [];
+
+		Object.values(targetScheme).forEach((elementDict) => {
+			allElements.push(...Object.values(elementDict))
+		})
+
+		return allElements;
 	}
 
 	constructor(emitChange: () => void) {
@@ -162,7 +199,7 @@ export default class SchemeManager {
 		this.emitChange();
 	}
 
-	//// ----------------- LOADERS -------------------
+	//// ----------------- SVG LOADERS -------------------
 	// Goes through all schemes and makes sure they have their associated svg data.
 	public async loadSVGs() {
 		// Get all svg data, from the assets and from internal storage:
@@ -173,7 +210,7 @@ export default class SchemeManager {
 		// Try to load from assets:
 		try {
 			assetData = await this.getAssetSVGs();
-			allSvgData = {...assetData};
+			allSvgData = { ...assetData };
 		} catch {
 			console.warn(`Failed to load asset svg data`);
 		}
@@ -189,17 +226,6 @@ export default class SchemeManager {
 
 		this.svgStrings = allSvgData;
 		// Confirm that every svg in each scheme has a corresponding svg data collected above
-	}
-
-	private saveToLocalStore() {
-		localStorage.setItem(SchemeManager.SchemeSetStorageName, JSON.stringify(this.allSchemes));
-
-		if (this.svgStrings !== undefined) {
-			localStorage.setItem(
-				SchemeManager.SVGStringsStorageName,
-				JSON.stringify(this.svgStrings)
-			);
-		}
 	}
 
 	private async getAssetSVGs(): Promise<SVGDict> {
@@ -227,6 +253,26 @@ export default class SchemeManager {
 		// TODO: add validation.
 
 		return storedData;
+	}
+
+
+	/**
+	 * Persist current schemes and SVG strings to localStorage.
+	 *
+	 * Writes the combined scheme set (including the internal scheme) to
+	 * SchemeManager.SchemeSetStorageName and the collected SVG string map to
+	 * SchemeManager.SVGStringsStorageName. Operation is wrapped in a try/catch
+	 * to avoid throwing if localStorage is unavailable or quota limits are hit.
+	 */
+	private saveToLocalStore() {
+		localStorage.setItem(SchemeManager.SchemeSetStorageName, JSON.stringify(this.allSchemes));
+
+		if (this.svgStrings !== undefined) {
+			localStorage.setItem(
+				SchemeManager.SVGStringsStorageName,
+				JSON.stringify(this.svgStrings)
+			);
+		}
 	}
 
 	// Load scheme data from local storage
@@ -279,6 +325,64 @@ export default class SchemeManager {
 	}
 
 	// Add
+	public addElementData(data: IVisual, schemeName: string = SchemeManager.InternalSchemeName) {
+		if (this.userSchemeSet[schemeName] === undefined) {
+			throw new Error(`Cannot add element template to non-existent scheme ${schemeName}`);
+		}
+
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
+		);
+		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+		switch (data.type) {
+			case "svg":
+				if (selectedScheme.svgElements === undefined) {
+					selectedScheme.svgElements = {};
+				}
+				this.setUserScheme(schemeName, {
+					...selectedScheme,
+					svgElements: { ...selectedScheme.svgElements, [data.ref]: data as ISVGElement }
+				});
+				break
+			case "rect":
+				if (selectedScheme.rectElements === undefined) {
+					selectedScheme.rectElements = {};
+				}
+				this.setUserScheme(schemeName, {
+					...selectedScheme,
+					rectElements: { ...selectedScheme.rectElements, [data.ref]: data as IRectElement }
+				});
+				break;
+			case "label-group":
+				if (selectedScheme.labelGroupElements === undefined) {
+					selectedScheme.labelGroupElements = {};
+				}
+				this.setUserScheme(schemeName, {
+					...selectedScheme,
+					labelGroupElements: {
+						...selectedScheme.labelGroupElements,
+						[data.ref]: data as ILabelGroup
+					}
+				});
+				break;
+			case "label":
+				if (selectedScheme.labelElements === undefined) {
+					selectedScheme.labelElements = {};
+				}
+				this.setUserScheme(schemeName, {
+					...selectedScheme,
+					labelElements: {
+						...selectedScheme.labelElements,
+						[data.ref]: data as ILabel
+					}
+				});
+				break;
+			default:
+				throw new Error(`Cannot add element data with undefined element type`)
+		}
+	}
+
 	public addSVGData(data: ISVGElement, schemeName: string = SchemeManager.InternalSchemeName) {
 		if (this.userSchemeSet[schemeName] === undefined) {
 			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
@@ -294,7 +398,7 @@ export default class SchemeManager {
 		}
 		this.setUserScheme(schemeName, {
 			...selectedScheme,
-			svgElements: {...selectedScheme.svgElements, [data.ref]: data}
+			svgElements: { ...selectedScheme.svgElements, [data.ref]: data }
 		});
 	}
 	public addRectData(data: IRectElement, schemeName: string = SchemeManager.InternalSchemeName) {
@@ -312,7 +416,7 @@ export default class SchemeManager {
 		}
 		this.setUserScheme(schemeName, {
 			...selectedScheme,
-			rectElements: {...selectedScheme.rectElements, [data.ref]: data}
+			rectElements: { ...selectedScheme.rectElements, [data.ref]: data }
 		});
 	}
 	public addLabelGroupData(
@@ -339,8 +443,85 @@ export default class SchemeManager {
 			}
 		});
 	}
+	public addLabelData(
+		data: ILabel,
+		schemeName: string = SchemeManager.InternalSchemeName
+	) {
+		if (this.userSchemeSet[schemeName] === undefined) {
+			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
+		}
+
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
+		);
+		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+		if (selectedScheme.labelElements === undefined) {
+			selectedScheme.labelElements = {};
+		}
+		this.setUserScheme(schemeName, {
+			...selectedScheme,
+			labelElements: {
+				...selectedScheme.labelElements,
+				[data.ref]: data
+			}
+		});
+	}
 
 	// Remove
+
+	public removeElementData(data: IVisual, schemeName: string = SchemeManager.InternalSchemeName) {
+		if (this.userSchemeSet[schemeName] === undefined) {
+			throw new Error(`Cannot remove element template to non-existent scheme ${schemeName}`);
+		}
+
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
+		);
+		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+		switch (data.type) {
+			case "svg":
+				if (selectedScheme.svgElements !== undefined) {
+					delete selectedScheme.svgElements[data.ref];
+				}
+				this.setUserScheme(schemeName, {
+					...selectedScheme,
+					svgElements: selectedScheme.svgElements
+				});
+				break
+			case "rect":
+				if (selectedScheme.rectElements !== undefined) {
+					delete selectedScheme.rectElements[data.ref];
+				}
+				this.setUserScheme(schemeName, {
+					...selectedScheme,
+					rectElements: selectedScheme.rectElements
+				});
+				break;
+			case "label-group":
+				if (selectedScheme.labelGroupElements !== undefined) {
+					delete selectedScheme.labelGroupElements[data.ref];
+				}
+				this.setUserScheme(schemeName, {
+					...selectedScheme,
+					labelGroupElements: selectedScheme.labelGroupElements
+				});
+				break;
+			case "label":
+				if (selectedScheme.labelElements !== undefined) {
+					delete selectedScheme.labelElements[data.ref];
+				}
+				this.setUserScheme(schemeName, {
+					...selectedScheme,
+					labelElements: selectedScheme.labelElements
+				});
+				break;
+			default:
+				throw new Error(`Cannot add element data with undefined element type`)
+		}
+	}
+
 	public removeSVGData(data: ISVGElement, schemeName: string = SchemeManager.InternalSchemeName) {
 		if (this.userSchemeSet[schemeName] === undefined) {
 			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
@@ -401,13 +582,42 @@ export default class SchemeManager {
 			labelGroupElements: selectedScheme.labelGroupElements
 		});
 	}
+	public removeLabelData(
+		data: ILabel,
+		schemeName: string = SchemeManager.InternalSchemeName
+	) {
+		if (this.userSchemeSet[schemeName] === undefined) {
+			throw new Error(`Cannot add svg template to non-existent scheme ${schemeName}`);
+		}
+
+		var mutableSchemeSet: DeepMutable<SchemeSet> = structuredClone<DeepMutable<SchemeSet>>(
+			this.userSchemeSet as DeepMutable<SchemeSet>
+		);
+		var selectedScheme: Partial<IUserSchemeData> = mutableSchemeSet[schemeName];
+
+		if (selectedScheme.labelElements !== undefined) {
+			delete selectedScheme.labelElements[data.ref];
+		}
+		this.setUserScheme(schemeName, {
+			...selectedScheme,
+			labelElements: selectedScheme.labelElements
+		});
+	}
 	//// ----------------------------------------------
 }
 
+
+/**
+ * DeepReadonly<T> makes all nested properties readonly.
+ */
 export type DeepReadonly<T> = {
 	readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
+/**
+ * Merge two objects preferring non-empty object values from obj1.
+ * If a value in obj1 is an empty object ({}), the value from obj2 is used.
+ */
 export function mergeObjectsPreferNonEmpty(obj1: any, obj2: any) {
 	const result: any = {};
 	for (const key of new Set([...Object.keys(obj1), ...Object.keys(obj2)])) {
@@ -429,6 +639,9 @@ export function mergeObjectsPreferNonEmpty(obj1: any, obj2: any) {
 	return result;
 }
 
+/**
+ * DeepMutable<T> makes all nested properties mutable (non-readonly).
+ */
 export type DeepMutable<T> = {
 	-readonly [P in keyof T]: DeepMutable<T[P]>;
 };

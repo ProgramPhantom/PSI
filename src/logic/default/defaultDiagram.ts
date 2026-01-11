@@ -16,7 +16,8 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 		"sequences": [],
 		"children": [
 			DEFAULT_SEQUENCE
-		]
+		],
+		"type": "sequence-aligner"
 	},
 	"children": [],
 	"placementMode": { "type": "free" },

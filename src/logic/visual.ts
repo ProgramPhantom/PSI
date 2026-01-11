@@ -81,6 +81,12 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return
 	}
 
+	protected computeSelf() {
+		this.computeSize();
+		this.growElement(this.size);
+		this.computePositions({x: 0, y: 0});
+	}
+
 	protected setVerticalFlip(flipped: boolean) {
 		if (this.flipped === flipped) {
 			return

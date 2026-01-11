@@ -55,6 +55,11 @@ export function FormDiagramInterface(props: FormHolderProps) {
 				submit: ENGINE.handler.submitVisual.bind(ENGINE.handler),
 				delete: ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
 			},
+			label: {
+				submit: ENGINE.handler.submitVisual.bind(ENGINE.handler),
+				modify: ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
+				delete: ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
+			}
 		};
 	}, [ENGINE.handler]);
 

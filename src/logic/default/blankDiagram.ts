@@ -9,12 +9,13 @@ export const BLANK_DIAGRAM: IDiagram = {
 		"contentHeight": 0,
 		"offset": [0, 0],
 		"padding": [0, 0, 0, 0],
-		"placementMode": {"type": "free"},
+		"placementMode": { "type": "free" },
 		"ref": "sequence-aligner",
 		"sequences": [],
-		"children": []
+		"children": [],
+		"type": "sequence-aligner"
 	},
-	"placementMode": {"type": "free"},
+	"placementMode": { "type": "free" },
 	"children": [],
 	"offset": [0, 0],
 	"padding": [0, 0, 0, 0],

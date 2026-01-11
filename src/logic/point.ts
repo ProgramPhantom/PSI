@@ -34,7 +34,7 @@ export interface Place {
 export interface IElement {
 	ref: string;
 	id?: ID;
-	type?: AllComponentTypes;
+	type: AllComponentTypes;
 }
 
 export interface IPoint extends IElement {
@@ -47,15 +47,7 @@ export interface IHaveState<T extends IPoint> {
 }
 
 export default class Point implements IPoint, IHaveState<IPoint> {
-	static defaults: {[name: string]: IPoint} = {
-		default: {
-			x: undefined,
-			y: undefined,
-			ref: "default"
-		}
-	};
 	static ElementType: AllComponentTypes = "lower-abstract";
-
 	get state(): IPoint {
 		return {
 			x: this._x,
@@ -79,6 +71,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	public parentId: ID | undefined;
 
 	ref: string;
+	public type: AllComponentTypes;
 
 	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined) {
 		this._x = x ?? 0;
@@ -91,6 +84,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		} else {
 			this._id = id;
 		}
+
+		this.type = (this.constructor as typeof Point).ElementType
 	}
 
 	get x(): number {

@@ -38,7 +38,7 @@ export default class Label extends Aligner implements ILabel {
 	constructor(params: ILabel) {
 		super(params);
 		this.labelConfig = params.labelConfig;
-		this.ref = "LABEL"
+
 		if (params.text) {
 			// Create text
 			var text: Text = new Text(params.text);
@@ -93,17 +93,17 @@ export default class Label extends Aligner implements ILabel {
 						type: "aligner",
 						alignerConfig: {
 							alignment: "centre",
-							contribution: {mainAxis: false, crossAxis: true}
+							contribution: { mainAxis: false, crossAxis: true }
 						}
 					}
 					this.add(this.line)
 					break;
 				case "bottom":
 					this.add(this.line, 0);
-				
+
 			}
 		}
-		
+
 
 		// this.arrangeContent(orientationSelect);
 	}
@@ -114,7 +114,7 @@ export default class Label extends Aligner implements ILabel {
 		}
 
 		// Todo: sort ts out, label children need to be groupedLa
-		var group = new G().id(this.id).attr({title: this.ref});
+		var group = new G().id(this.id).attr({ title: this.ref });
 
 		// Clip
 
@@ -125,8 +125,8 @@ export default class Label extends Aligner implements ILabel {
 		if (this.text) {
 			this.text.draw(group);
 
-			const SPILL_PADDING = 4;
-			const TEXT_PADDING = 1;
+			const SPILL_PADDING = 1;
+			const TEXT_PADDING = 0;
 
 			if (
 				this.line
@@ -135,13 +135,13 @@ export default class Label extends Aligner implements ILabel {
 			) {
 				var maskID: string = this.id + "-MASK";
 				var visibleArea = new Rect()
-					.move(this.x - SPILL_PADDING, this.y - SPILL_PADDING)
-					.size(this.width + 2 * SPILL_PADDING, this.height + 2 * SPILL_PADDING)
+					.move(this.cx - SPILL_PADDING, this.cy - SPILL_PADDING)
+					.size(this.contentWidth + 2 * SPILL_PADDING, this.contentHeight + 2 * SPILL_PADDING)
 					.fill("white");
 				var blockedArea = new Rect()
 					.move(
-						this.text.x - TEXT_PADDING,
-						this.text.y - TEXT_PADDING
+						this.text.cx - TEXT_PADDING,
+						this.text.cy - TEXT_PADDING
 					)
 					.size(
 						(this.text.contentWidth ?? 0) + 2 * TEXT_PADDING,
@@ -153,13 +153,13 @@ export default class Label extends Aligner implements ILabel {
 					.add(visibleArea)
 					.add(blockedArea)
 					.id(maskID)
-					.attr({"mask-type": "luminance", maskUnits: "userSpaceOnUse"});
+					.attr({ "mask-type": "luminance", maskUnits: "userSpaceOnUse" });
 
 				// VERY IMPORTANT: use "useSpaceOnUse" to follow the user coordinates not some random bs coord system
 
 				group.add(newMask);
 
-				this.line.svg.attr({mask: `url(#${maskID})`});
+				this.line.svg.attr({ mask: `url(#${maskID})` });
 			}
 		}
 

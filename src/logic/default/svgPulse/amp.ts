@@ -7,12 +7,15 @@ export const DEFAULT_AMP: ISVGElement = {
 	"contentWidth": 15,
 	"contentHeight": 40,
 
-	"placementMode": {"type": "pulse", "config": {
-		"alignment": {"x": "centre", "y": "far"},
-		"orientation": "top",
-		"noSections": 1,
-	}},
+	"placementMode": {
+		"type": "pulse", "config": {
+			"alignment": { "x": "centre", "y": "far" },
+			"orientation": "top",
+			"noSections": 1,
+		}
+	},
 
 	"ref": "amp",
-	"style": {}
+	"style": {},
+	"type": "svg"
 }

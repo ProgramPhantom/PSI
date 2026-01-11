@@ -12,5 +12,6 @@ export const DEFAULT_SEQUENCE: ISequence = {
 
 	"channels": [DEFAULT_CHANNEL],
 	"children": [],
-	"placementControl": "auto"
+	"placementControl": "auto",
+	"type": "sequence"
 }

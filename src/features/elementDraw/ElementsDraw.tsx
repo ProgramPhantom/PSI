@@ -15,14 +15,14 @@ import {
 import React, { useRef, useState, useSyncExternalStore } from "react";
 import { ObjectInspector } from "react-inspector";
 import SchemeManager, { SchemeSet } from "../../logic/default";
-import ENGINE, { SchemeSingletonStore } from "../../logic/engine";
+import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import AddSchemeDialog from "./AddSchemeDialog";
 import NewElementDialog from "./NewElementDialog";
 import { appToaster } from "../../app/Toaster";
 
-interface IElementDrawProps {}
+interface IElementDrawProps { }
 
 const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -93,7 +93,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	// (Dialog behavior moved to AddSchemeDialog)
 
 	return (
-		<div style={{height: "100%", overflow: "hidden"}}>
+		<div style={{ height: "100%", overflow: "hidden" }}>
 			<Section
 				style={{
 					padding: "0px",
@@ -125,7 +125,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 							heading={H5}></EntityTitle>
 					</div>
 
-					<Divider style={{margin: "4px 8px 0 8px"}} />
+					<Divider style={{ margin: "4px 8px 0 8px" }} />
 
 					<div
 						style={{
@@ -145,22 +145,19 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
                                                       overflow: "auto" }`}</style>
 
 							{Object.entries(schemeState).map(([schemeName, singletonDict]) => {
-								var singletons: SchemeSingletonStore | undefined =
+								var singletons: Visual[] | undefined =
 									ENGINE.singletons[schemeName];
 								if (singletons === undefined) {
 									return <></>;
 								}
 
-								var noElements: number =
-									singletons.SVG_TEMPLATES.length
-									+ singletons.RECT_TEMPLATES.length
-									+ singletons.LABELGROUP_TEMPLATES.length;
+								var noElements: number = singletons.length;
 								return (
 									<Tab
 										key={schemeName}
 										title={schemeName}
-										style={{width: "100%", overflow: "auto"}}
-										tagProps={{round: true}}
+										style={{ width: "100%", overflow: "auto" }}
+										tagProps={{ round: true }}
 										tagContent={noElements}
 										id={schemeName}
 										panel={
@@ -186,7 +183,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 													}}>
 													{/* Plus button for adding new elements */}
 													{schemeName
-													!== SchemeManager.InternalSchemeName ? (
+														!== SchemeManager.InternalSchemeName ? (
 														<div
 															style={{
 																width: "120px",
@@ -244,31 +241,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 														<></>
 													)}
 
-													{singletons.RECT_TEMPLATES.map((s) => {
-														return (
-															<TemplateDraggableElement
-																key={s.ref}
-																element={s}
-																onDoubleClick={
-																	handleElementDoubleClick
-																}
-																schemeName={schemeName}
-															/>
-														);
-													})}
-													{singletons.SVG_TEMPLATES.map((s) => {
-														return (
-															<TemplateDraggableElement
-																key={s.ref}
-																element={s}
-																onDoubleClick={
-																	handleElementDoubleClick
-																}
-																schemeName={schemeName}
-															/>
-														);
-													})}
-													{singletons.LABELGROUP_TEMPLATES.map((s) => {
+													{singletons.map((s) => {
 														return (
 															<TemplateDraggableElement
 																key={s.ref}

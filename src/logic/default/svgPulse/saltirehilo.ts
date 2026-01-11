@@ -7,12 +7,15 @@ export const DEFAULT_SALTIREHILO: ISVGElement = {
 	"contentWidth": 50,
 	"contentHeight": 20,
 
-	"placementMode": {"type": "pulse", "config": {
-		"alignment": {"x": "centre", "y": "far"},
-		"orientation": "top",
-		"noSections": 1,
-	}},
+	"placementMode": {
+		"type": "pulse", "config": {
+			"alignment": { "x": "centre", "y": "far" },
+			"orientation": "top",
+			"noSections": 1,
+		}
+	},
 
 	"ref": "saltirehilo",
-	"style": {}
+	"style": {},
+	"type": "svg"
 }

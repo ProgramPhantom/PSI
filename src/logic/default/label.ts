@@ -25,6 +25,7 @@ export const DEFAULT_LABEL: ILabel = {
 			"display": "block"
 		},
 		"ref": "label-text",
+		"type": "text"
 	},
 
 	"line": DEFAULT_LINE,
@@ -35,5 +36,6 @@ export const DEFAULT_LABEL: ILabel = {
 		"labelPosition": "top",
 		"textPosition": "bottom"
 	},
-	"children": []
+	"children": [],
+	"type": "label"
 }

@@ -6,8 +6,9 @@ export const DEFAULT_SPACE: ISpace = {
 
 	"contentWidth": 50,
 	"contentHeight": 50,
-	"placementMode": {"type": "free"},
-	"sizeMode": {x: "fit", y: "fit"},
+	"placementMode": { "type": "free" },
+	"sizeMode": { x: "fit", y: "fit" },
 
-	"ref": "space"
+	"ref": "space",
+	"type": "space"
 }

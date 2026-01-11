@@ -2,6 +2,7 @@ import { Button, Dialog, DialogBody, DialogFooter, Tab, Tabs } from "@blueprintj
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import ENGINE from "../../logic/engine";
+import { ILabel } from "../../logic/hasComponents/label";
 import { ILabelGroup } from "../../logic/hasComponents/labelGroup";
 import { UserComponentType } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
@@ -21,29 +22,16 @@ export default function NewElementDialog(props: INewElementDialog) {
 	const submitRef = useRef<SubmitButtonRef>(null);
 
 	const rectFormControls = useForm<IRectElement>({
-		defaultValues: {contentWidth: 50, contentHeight: 50},
+		defaultValues: { contentWidth: 50, contentHeight: 50 },
 		mode: "onChange"
 	});
 	const svgFormControls = useForm<ISVGElement>({
-		defaultValues: {contentWidth: 50, contentHeight: 50,},
+		defaultValues: { contentWidth: 50, contentHeight: 50, },
 		mode: "onChange"
 	});
 
-	const addNewTemplate = (values: IVisual, masterType: UserComponentType) => {
-		switch (masterType) {
-			case "svg":
-				ENGINE.addSVGSingleton(values as ISVGElement, props.schemeName);
-				break;
-			case "rect":
-				ENGINE.addRectSingleton(values as IRectElement, props.schemeName);
-				break;
-			case "label-group":
-				ENGINE.addLabelGroupSingleton(values as ILabelGroup, props.schemeName);
-				break;
-			default:
-				throw new Error(`Not implemented`);
-		}
-
+	const addNewTemplate = (values: IVisual) => {
+		ENGINE.addSingleton(values, props.schemeName);
 		props.close();
 	}
 
@@ -51,14 +39,14 @@ export default function NewElementDialog(props: INewElementDialog) {
 		<>
 			{/* New Element Dialog */}
 			<Dialog
-				style={{width: "600px", height: "700px"}}
+				style={{ width: "600px", height: "60vh" }}
 				isOpen={props.isOpen}
 				onClose={props.close}
 				title="Add New Template Element"
 				canOutsideClickClose={true}
 				canEscapeKeyClose={true}>
 				<DialogBody>
-					<Tabs
+					<Tabs vertical={true}
 						id="newElementTabs"
 						defaultSelectedTabId="rect"
 						selectedTabId={tabId}
@@ -76,6 +64,16 @@ export default function NewElementDialog(props: INewElementDialog) {
 						<Tab
 							id="svg"
 							title="SVG"
+							panel={
+								<LabelGroupComboForm
+									ref={submitRef}
+									objectType={tabId}
+									callback={addNewTemplate}></LabelGroupComboForm>
+							}
+						/>
+						<Tab
+							id="label"
+							title="Label"
 							panel={
 								<LabelGroupComboForm
 									ref={submitRef}

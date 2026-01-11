@@ -12,5 +12,6 @@ export const DEFAULT_SVG_ELEMENT: ISVGElement = {
 
 	},
 
-	"ref": "svg-pulse"
+	"ref": "svg-pulse",
+	"type": "svg"
 }

@@ -6,6 +6,7 @@ import TextForm from "./TextForm";
 import { FormRequirements } from "./FormBase";
 import { IText } from "../../logic/text";
 import { ILine } from "../../logic/line";
+import VisualForm from "./VisualForm";
 
 interface ILabelArrayFormProps extends FormRequirements { }
 
@@ -44,6 +45,8 @@ function LabelForm(props: ILabelArrayFormProps) {
 
 	return (
 		<>
+			<VisualForm target={props.target} heightDisplay={false} widthDisplay={false}></VisualForm>
+
 			{/* Position */}
 			<FormGroup
 				style={{ padding: "4px 8px", }}

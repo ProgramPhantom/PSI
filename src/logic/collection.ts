@@ -5,6 +5,7 @@ import RectElement, { IRectElement } from "./rectElement";
 import Spacial, { Dimensions, Size } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
+import { Svg } from "@svgdotjs/svg.js";
 
 
 export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
@@ -198,15 +199,14 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 	// Construct and SVG with children positioned relative to (0, 0)
 	override getInternalRepresentation(): Element | undefined {
-		try {
-			var deltaX = -this.cx;
-			var deltaY = -this.cy;
-		} catch (err) {
-			var deltaX = 0;
-			var deltaY = 0;
-		}
+		var deltaX = -this.cx;
+		var deltaY = -this.cy;
 
-		//
+		if (this.svg === undefined) {
+			this.computeSelf();
+			let temporaryCanvas: Element = SVG();
+			this.draw(temporaryCanvas);
+		}
 
 		var internalSVG = this.svg?.clone(true, true);
 		internalSVG

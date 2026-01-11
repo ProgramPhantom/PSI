@@ -6,11 +6,13 @@ export const DEFAULT_90H: IRectElement = {
 	"contentWidth": 7,
 	"contentHeight": 50,
 
-	"placementMode": {"type": "pulse", "config": {
-		"alignment": {"x": "centre", "y": "far"},
-		"orientation": "top",
-		"noSections": 1,
-	}},
+	"placementMode": {
+		"type": "pulse", "config": {
+			"alignment": { "x": "centre", "y": "far" },
+			"orientation": "top",
+			"noSections": 1,
+		}
+	},
 
 	"style": {
 		"fill": "#000000",
@@ -18,6 +20,7 @@ export const DEFAULT_90H: IRectElement = {
 		"strokeWidth": 0
 	},
 
-	"ref": "90-pulse"
+	"ref": "90-pulse",
+	"type": "rect"
 }
 

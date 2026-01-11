@@ -28,7 +28,7 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		placementMode?: PlacementConfiguration,
 		placementControl?: PlacementControl,
 		sizeMode?: SizeConfiguration,
-		ref: string = PaddedBox.defaults["default"].ref,
+		ref: string = "padded-box",
 		id: ID | undefined = undefined
 	) {
 		super(x, y, width, height, placementMode, placementControl, sizeMode, ref, id);

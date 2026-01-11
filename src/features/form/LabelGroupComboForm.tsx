@@ -95,7 +95,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			masterFormControls.reset(masterDefaults);
 			childFormControls.reset(childDefaults);
 			labelListControls.reset(labelDefaults);
-		}, [props.target]);
+		}, [props.target, props.objectType]);
 
 		// Jiggery pokery.
 		useImperativeHandle(ref, () => ({

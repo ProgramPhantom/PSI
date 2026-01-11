@@ -13,5 +13,6 @@ export const DEFAULT_LINE: ILine = {
 		"stroke": "black",
 		"dashing": [0, 0],
 		"headStyle": ["default", "default"]
-	}
+	},
+	"type": "line"
 }

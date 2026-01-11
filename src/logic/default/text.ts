@@ -16,5 +16,6 @@ export const DEFAULT_TEXT: IText = {
 		"display": "block"
 	},
 
-	"sizeMode": { x: "fit", y: "fit" }
+	"sizeMode": { x: "fit", y: "fit" },
+	"type": "text"
 }

@@ -25,8 +25,10 @@ export const DEFAULT_CHANNEL: IChannel = {
 			"colour": "black",
 			"display": "block",
 			"background": null
-		}
+		},
+		"type": "label"
 	},
 
-	"bar": DEFAULT_BAR
+	"bar": DEFAULT_BAR,
+	"type": "channel"
 }
