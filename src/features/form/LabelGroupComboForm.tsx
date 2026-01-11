@@ -1,4 +1,4 @@
-import { Divider, EntityTitle, Tab, Tabs } from "@blueprintjs/core";
+import { Divider, EntityTitle, Section, Tab, Tabs } from "@blueprintjs/core";
 import React, { useEffect, useImperativeHandle } from "react";
 import { DefaultValues, FormProvider, useForm } from "react-hook-form";
 import { ILabel } from "../../logic/hasComponents/label";
@@ -8,6 +8,7 @@ import Visual, { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";
 import { FORM_DEFAULTS } from "./formDataRegistry";
 import LabelListForm, { LabelGroupLabels } from "./LabelListForm";
+import FormDivider from "./FormDivider";
 
 interface LabelGroupComboForm {
 	target?: Visual;
@@ -26,7 +27,6 @@ export type SubmitButtonRef = {
 
 export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupComboForm>(
 	(props, ref) => {
-		console.log("LAbel group combo form render");
 		var MasterForm: React.FC<FormRequirements>;
 		var ChildForm: React.FC<FormRequirements> | undefined;
 		var LabelForm: React.FC<FormRequirements> = FORM_DEFAULTS["label"]!.form;
@@ -90,7 +90,6 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 		});
 
 
-
 		// Make sure form changes (this is needed for unknown reasons)
 		useEffect(() => {
 			masterFormControls.reset(masterDefaults);
@@ -105,9 +104,9 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 		// Submit function
 		const onSubmit = masterFormControls.handleSubmit((data) => {
-			var masterFormData: IVisual = masterFormControls.getValues();
-			var childFormData: IVisual | undefined = childFormControls.getValues();
-			var labelListFormData: ILabel[] = labelListControls.getValues().labels;
+			var masterFormData: IVisual = structuredClone(masterFormControls.getValues());
+			var childFormData: IVisual | undefined = structuredClone(childFormControls.getValues());
+			var labelListFormData: ILabel[] = structuredClone(labelListControls.getValues().labels);
 
 			if (targetIsLabelGroup === false) {
 				if (labelListFormData.length > 0) {
@@ -184,17 +183,21 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 											{ChildForm ? (
 												<>
-													<Divider></Divider>
-													<div style={{ padding: "16px 4px" }}>
-														<EntityTitle
-															icon="add-child"
-															title={"Child object"}></EntityTitle>
-													</div>
-													<FormProvider {...childFormControls}>
-														<ChildForm
-															target={childTarget}
-															prefix={"coreChild"}></ChildForm>
-													</FormProvider>
+													<FormDivider title="Primary Child"></FormDivider>
+													<Section icon="cube-edit"
+														style={{ borderRadius: 0 }}
+														collapseProps={{ defaultIsOpen: false }}
+														compact={true}
+														title={"Child"}
+														collapsible={true}>
+														<div style={{ padding: "8px" }}>
+															<FormProvider {...childFormControls}>
+																<ChildForm
+																	target={childTarget}
+																	prefix={"coreChild"}></ChildForm>
+															</FormProvider>
+														</div>
+													</Section>
 												</>
 											) : (
 												<></>

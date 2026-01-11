@@ -18,7 +18,6 @@ interface IVisualFormProps extends FormRequirements {
 }
 
 const VisualForm: React.FC<IVisualFormProps> = (props) => {
-	console.log("visual form render")
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
 	const formControls = useFormContext();
 
@@ -170,7 +169,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						labelFor="padding-top-input">
 						<Controller
 							control={formControls.control}
-							name="padding.0"
+							name={`${fullPrefix}padding.0`}
 							render={({ field }) => (
 								<NumericInput
 									{...field}
@@ -194,7 +193,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						labelFor="padding-right-input">
 						<Controller
 							control={formControls.control}
-							name="padding.1"
+							name={`${fullPrefix}padding.1`}
 							render={({ field }) => (
 								<NumericInput
 									{...field}
@@ -218,7 +217,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						labelFor="padding-bottom-input">
 						<Controller
 							control={formControls.control}
-							name="padding.2"
+							name={`${fullPrefix}padding.2`}
 							render={({ field }) => (
 								<NumericInput
 									{...field}
@@ -242,7 +241,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						labelFor="padding-left-input">
 						<Controller
 							control={formControls.control}
-							name="padding.3"
+							name={`${fullPrefix}padding.3`}
 							render={({ field }) => (
 								<NumericInput
 									{...field}

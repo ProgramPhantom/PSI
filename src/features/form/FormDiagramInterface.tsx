@@ -32,7 +32,6 @@ function getCoreDefaults(target: Visual): IVisual {
 }
 
 export function FormDiagramInterface(props: FormHolderProps) {
-	console.log("------ FORM RENDER (form diagram interface) -----")
 	const ComponentFormEffectRegistry = useMemo<
 		Partial<Record<UserComponentType, Partial<EffectGroup>>>
 	>(() => {
@@ -98,7 +97,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 				result = (targetFunction as DeleteFunction)(props.target, masterType);
 				break;
 			default:
-				result = {ok: false, error: `No '${effect}' method assigned to object type '${masterType}'`}
+				result = { ok: false, error: `No '${effect}' method assigned to object type '${masterType}'` }
 		}
 
 		if (!result.ok) {
@@ -111,8 +110,8 @@ export function FormDiagramInterface(props: FormHolderProps) {
 
 	return (
 		<>
-			<div style={{display: "flex", flexDirection: "row", width: "100%"}}>
-				<div style={{width: "100%"}}>
+			<div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+				<div style={{ width: "100%" }}>
 					<div
 						style={{
 							width: "100%",
@@ -131,7 +130,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 											onClick={() => {
 												setIsDialogOpen(true);
 											}}
-											style={{cursor: "help"}}></Icon>
+											style={{ cursor: "help" }}></Icon>
 									}
 									heading={H5}></EntityTitle>
 							</>
@@ -145,7 +144,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 											onClick={() => {
 												setIsDialogOpen(true);
 											}}
-											style={{cursor: "help"}}></Icon>
+											style={{ cursor: "help" }}></Icon>
 									}
 									heading={H5}></EntityTitle>
 							</>
@@ -178,7 +177,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 						)}
 					</div>
 
-					<Divider style={{margin: "0 0 16px 0"}}></Divider>
+					<Divider style={{ margin: "0 0 16px 0" }}></Divider>
 				</div>
 			</div>
 
@@ -214,7 +213,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 					}}>
 					<Divider></Divider>
 					<Button
-						style={{width: "80%", margin: "auto", alignSelf: "center"}}
+						style={{ width: "80%", margin: "auto", alignSelf: "center" }}
 						onClick={() => submitRef.current?.submit()}
 						text={props.target !== undefined ? "Apply" : "Add"}
 						icon={props.target !== undefined ? "tick" : "add"}></Button>
@@ -223,7 +222,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 
 			{/* DEBUG: Inspect object dialog */}
 			<Dialog
-				style={{width: "800px", height: "500px"}}
+				style={{ width: "800px", height: "500px" }}
 				isOpen={isDialogOpen}
 				onClose={() => {
 					setIsDialogOpen(false);
@@ -232,25 +231,25 @@ export function FormDiagramInterface(props: FormHolderProps) {
 				canOutsideClickClose={true}
 				canEscapeKeyClose={true}
 				icon="wrench">
-				<DialogBody style={{overflowY: "scroll"}}>
-					<div style={{display: "flex", flexDirection: "column"}}>
+				<DialogBody style={{ overflowY: "scroll" }}>
+					<div style={{ display: "flex", flexDirection: "column" }}>
 						<EntityTitle title={"State"} icon="wrench-time"></EntityTitle>
 
 						<ObjectInspector data={props.target}></ObjectInspector>
 
-						<Divider style={{marginBottom: "8px"}}></Divider>
+						<Divider style={{ marginBottom: "8px" }}></Divider>
 						<EntityTitle title={"Bindings"} icon="bring-data"></EntityTitle>
 
 						<ObjectInspector
 							data={props.target?.bindings.map((b) => b)}></ObjectInspector>
 
-						<Divider style={{marginBottom: "8px"}}></Divider>
+						<Divider style={{ marginBottom: "8px" }}></Divider>
 						<EntityTitle title={"Binds to this"} icon="bring-forward"></EntityTitle>
 
 						<ObjectInspector
 							data={props.target?.bindingsToThis.map((b) => b)}></ObjectInspector>
 
-						<Divider style={{marginBottom: "8px"}}></Divider>
+						<Divider style={{ marginBottom: "8px" }}></Divider>
 						<EntityTitle title={"All elements"} icon="zoom-in"></EntityTitle>
 
 						<ObjectInspector data={ENGINE.handler.allElements}></ObjectInspector>

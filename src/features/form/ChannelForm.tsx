@@ -1,111 +1,58 @@
 import {
 	ControlGroup,
 	Divider,
-	FormGroup,
-	InputGroup,
-	NumericInput,
 	Section,
-	Slider
 } from "@blueprintjs/core";
 import React from "react";
-import { MathJax } from "better-react-mathjax";
-import { Controller, useFormContext } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { IChannel } from "../../logic/hasComponents/channel";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
+import TextForm from "./TextForm";
+import RectForm from "./RectForm";
+import FormDivider from "./FormDivider";
 
 interface ChannelFormProps extends FormRequirements { }
 
 const ChannelForm: React.FC<ChannelFormProps> = (props) => {
-	console.log("Channel from render")
 	const formControls = useFormContext<IChannel>();
-
-	let vals = formControls.getValues();
 
 	return (
 		<>
 			<ControlGroup vertical={true}>
-				{/* Text */}
-				<FormGroup
-					fill={false}
-					inline={true}
-					label="LaTeX"
-					labelFor="text-input">
-					<Controller
-						control={formControls.control}
-						name={"label.text"}
-						render={({ field }) => (
-							<>
-								<div style={{ display: "flex", flexDirection: "row" }}>
-									<InputGroup
-										{...field}
-										id="text"
-										placeholder="_1\textrm{H}"
-										size="small"
-									/>
-									<div style={{ marginLeft: "16px", display: "flex", alignItems: "center" }}>
-										<MathJax>{`\\(${field.value || ""}\\)`}</MathJax>
-									</div>
-								</div>
-							</>
-						)}></Controller>
-				</FormGroup>
+
+				<FormDivider title="Channel" />
 
 				<VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
 
-				{/* Style stuff */}
-				<Section icon="style"
+				<FormDivider title="Label" />
+				<Section icon="label"
+					style={{ borderRadius: 0 }}
 					collapseProps={{ defaultIsOpen: false }}
 					compact={true}
-					title={"Style"}
+					title={"Label"}
 					collapsible={true}>
-					<FormGroup label="Thickness" labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name="style.thickness"
-							render={({ field }) => (
-								<NumericInput
-									{...field}
-									onValueChange={field.onChange}
-									min={1}
-									small={true}
-									fill={true}></NumericInput>
-							)}></Controller>
-					</FormGroup>
-
-					<Divider></Divider>
-
-					<FormGroup inline={true} label="Fill" labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name="style.barStyle.fill"
-							render={({ field }) => (
-								<input type={"color"} {...field}></input>
-							)}></Controller>
-					</FormGroup>
-
-					<FormGroup inline={true} label="Stroke" labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name="style.barStyle.stroke"
-							render={({ field }) => (
-								<input type={"color"} {...field}></input>
-							)}></Controller>
-					</FormGroup>
-
-					<FormGroup inline={true} label="Stroke Width" labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name="style.barStyle.strokeWidth"
-							render={({ field }) => (
-								<NumericInput
-									{...field}
-									onValueChange={field.onChange}
-									min={1}
-									small={true}></NumericInput>
-							)}></Controller>
-					</FormGroup>
+					<div style={{ padding: "8px" }}>
+						<TextForm prefix="label" target={props.target} />
+					</div>
 				</Section>
+
+
+				<FormDivider title="Bar" />
+				<Section icon="rectangle"
+					style={{ borderRadius: 0 }}
+					collapseProps={{ defaultIsOpen: false }}
+					compact={true}
+					title={"Bar"}
+					collapsible={true}>
+					<div style={{ padding: "8px" }}>
+						<RectForm prefix="bar" target={props.target} />
+					</div>
+				</Section>
+
+
+
+
 			</ControlGroup>
 		</>
 	);

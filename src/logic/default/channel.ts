@@ -14,13 +14,6 @@ export const DEFAULT_CHANNEL: IChannel = {
 	"sizeMode": { "x": "fixed", "y": "fixed" },
 	"placementControl": "auto",
 
-	"style": {
-		"thickness": 3,
-		"barStyle": {
-			"fill": "#000000",
-		}
-	},
-
 	"label": {
 		"offset": [0, 0],
 		"padding": [0, 5, 0, 0],

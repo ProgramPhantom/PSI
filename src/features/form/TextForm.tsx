@@ -47,7 +47,7 @@ function TextForm(props: ITextFormProps) {
 						prefix={props.prefix}></VisualForm>
 
 					{/* Style */}
-					<Section
+					<Section icon="style"
 						collapseProps={{ defaultIsOpen: false }}
 						compact={true}
 						title={"Style"}

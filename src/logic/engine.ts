@@ -147,7 +147,7 @@ class ENGINE {
 	) {
 		this.schemeManager.addLabelGroupData(data, schemeName);
 
-		let labelGroupSingleton: Visual | undefined = this.ConstructElement(data, "label-group") ;
+		let labelGroupSingleton: Visual | undefined = this.ConstructElement(data, "label-group");
 
 		if (labelGroupSingleton !== undefined) {
 			this.singletons[schemeName].LABELGROUP_TEMPLATES.push(labelGroupSingleton as LabelGroup);
@@ -238,7 +238,7 @@ class ENGINE {
 				// Wipe the id of the core child (otherwise label group and core child would have same id)
 				(parameters as ILabelGroup).coreChild.id = undefined;
 				let coreChild: Visual | undefined = ENGINE.ConstructElement((parameters as ILabelGroup).coreChild, (parameters as ILabelGroup).coreChildType);
-				
+
 				if (coreChild === undefined) {
 					break;
 				}
