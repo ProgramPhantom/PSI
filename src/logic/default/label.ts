@@ -33,7 +33,6 @@ export const DEFAULT_LABEL: ILabel = {
 	"ref": "label",
 
 	"labelConfig": {
-		"labelPosition": "top",
 		"textPosition": "bottom"
 	},
 	"children": [],

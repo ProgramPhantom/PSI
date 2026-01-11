@@ -3,12 +3,12 @@ import Aligner, { IAligner } from "../aligner";
 import Line, { ILine } from "../line";
 import { UserComponentType } from "../point";
 import Text, { IText, Position } from "../text";
+import { Dimensions } from "../spacial";
 
 
 export type LabelTextPosition = "top" | "bottom" | "inline";
 
 export interface ILabelConfig {
-	labelPosition: Position;
 	textPosition: LabelTextPosition;
 }
 
@@ -34,6 +34,20 @@ export default class Label extends Aligner implements ILabel {
 	text?: Text;
 
 	labelConfig: ILabelConfig;
+
+	public override get mainAxis(): Dimensions {
+		return super.mainAxis;
+	}
+	public override set mainAxis(value: Dimensions) {
+		super.mainAxis = value;
+
+		if (this.line !== undefined) {
+			this.line.sizeMode = {
+				x: this.crossAxis === "x" ? "grow" : "fixed",
+				y: this.crossAxis === "y" ? "grow" : "fixed"
+			}
+		}
+	}
 
 	constructor(params: ILabel) {
 		super(params);
@@ -65,17 +79,7 @@ export default class Label extends Aligner implements ILabel {
 			this.line = line;
 		}
 
-
-		switch (this.labelConfig.labelPosition) {
-			case "top":
-			case "bottom":
-				this.mainAxis = "y";
-				break;
-			case "left":
-			case "right":
-				this.mainAxis = "x";
-				break;
-		}
+		this.mainAxis = "y";
 
 		if (this.line !== undefined) {
 			// Make line span side:
@@ -103,9 +107,6 @@ export default class Label extends Aligner implements ILabel {
 
 			}
 		}
-
-
-		// this.arrangeContent(orientationSelect);
 	}
 
 	draw(surface: Svg) {
@@ -125,7 +126,7 @@ export default class Label extends Aligner implements ILabel {
 		if (this.text) {
 			this.text.draw(group);
 
-			const SPILL_PADDING = 1;
+			const SPILL_PADDING = 16;
 			const TEXT_PADDING = 0;
 
 			if (

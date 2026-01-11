@@ -9,6 +9,7 @@ import { FormRequirements } from "./FormBase";
 import { FORM_DEFAULTS } from "./formDataRegistry";
 import LabelListForm, { LabelGroupLabels } from "./LabelListForm";
 import FormDivider from "./FormDivider";
+import { Position } from "../../logic/text";
 
 interface LabelGroupComboForm {
 	target?: Visual;
@@ -33,7 +34,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 		var masterDefaults: IVisual;
 		var childDefaults: IVisual | undefined;
-		var labelDefaults: LabelGroupLabels = { labels: [] };
+		var labelDefaults: LabelGroupLabels = { labels: {} };
 
 		var allowLabels: boolean = true;
 		var parentType: AllComponentTypes;
@@ -57,7 +58,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 				childDefaults = props.target.coreChild.state;
 				childTarget = props.target.coreChild;
 
-				labelDefaults.labels = props.target.labels;
+				labelDefaults.labels = props.target.labelsState;
 
 				targetIsLabelGroup = true;
 			}
@@ -106,10 +107,11 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 		const onSubmit = masterFormControls.handleSubmit((data) => {
 			var masterFormData: IVisual = structuredClone(masterFormControls.getValues());
 			var childFormData: IVisual | undefined = structuredClone(childFormControls.getValues());
-			var labelListFormData: ILabel[] = structuredClone(labelListControls.getValues().labels);
+			let vals = labelListControls.getValues();
+			var labelListFormData: Partial<Record<Position, ILabel>> = structuredClone(vals.labels);
 
 			if (targetIsLabelGroup === false) {
-				if (labelListFormData.length > 0) {
+				if (Object.keys(labelListFormData).length > 0) {
 					// Convert into a label group!
 
 					// Normalise core child:
@@ -134,7 +136,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 				// Already label type
 				childType = (masterFormData as ILabelGroup).coreChildType;
-				if (labelListFormData.length > 0) {
+				if (Object.keys(labelListFormData).length > 0) {
 					// Still a label group
 					var result: ILabelGroup = {
 						...masterFormData,

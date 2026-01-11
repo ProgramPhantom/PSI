@@ -61,7 +61,11 @@ export default abstract class LineLike extends Visual {
 
 
 	public override computeSize(): Size {
-		return this.computeBoundingBox();
+		let boundingBox: Size = this.computeBoundingBox();
+
+		// this.width = boundingBox.width;
+		// this.height = boundingBox.height;
+		return boundingBox;
 	}
 
 	public override computePositions(root: { x: number; y: number; }): void {

@@ -29,7 +29,13 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		return this.children.length;
 	}
 
-	mainAxis: Dimensions;
+	private _mainAxis: Dimensions;
+	public get mainAxis(): Dimensions {
+		return this._mainAxis;
+	}
+	public set mainAxis(value: Dimensions) {
+		this._mainAxis = value;
+	}
 	get crossAxis(): Dimensions {
 		return this.mainAxis === "x" ? "y" : "x";
 	}
@@ -41,7 +47,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 	constructor(params: IAligner) {
 		super(params);
 
-		this.mainAxis = params.mainAxis;
+		this._mainAxis = params.mainAxis;
 
 		this.minCrossAxis = params.minCrossAxis;
 
@@ -70,6 +76,9 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 	}
 
 	public computeSize(): Size {
+		if (this.ref === "label") {
+			console.log()
+		}
 		this.children.forEach((c) => c.computeSize());
 
 		this.cells = Array.from({length: this.noChildren}, () => new Spacial());

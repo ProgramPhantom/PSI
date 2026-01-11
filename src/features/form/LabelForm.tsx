@@ -47,7 +47,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 	return (
 		<>
 			<div style={{ marginTop: "8px" }}>
-				<VisualForm target={props.target} heightDisplay={false} widthDisplay={false}></VisualForm>
+				<VisualForm target={props.target} prefix={fullPrefix} heightDisplay={false} widthDisplay={false}></VisualForm>
 			</div>
 
 
@@ -55,25 +55,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 				vertical={true}
 				style={{ padding: "4px 0px", marginBottom: "0px" }}
 			>
-				{/* Position */}
-				<FormGroup
-					style={{ padding: "4px 0px", }}
-					fill={false}
-					inline={true}
-					label="Position"
-					labelFor="text-input">
-					<Controller
-						control={formControls.control}
-						name={`${fullPrefix}labelConfig.labelPosition`}
-						render={({ field }) => (
-							<HTMLSelect {...field} iconName="caret-down">
-								<option value={"top"}>Top</option>
-								<option value={"bottom"}>Bottom</option>
-								<option value={"left"}>Left</option>
-								<option value={"right"}>Right</option>
-							</HTMLSelect>
-						)}></Controller>
-				</FormGroup>
+
 
 				{/* Text position */}
 				<FormGroup style={{ padding: "4px 0px", }}

@@ -9,11 +9,6 @@ import { DEFAULT_TEXT } from "./text";
 import { DEFAULT_VISUAL } from "./visual";
 
 
-// export const mountableElements: {[name: string]: any} = {
-// 	...svgPulses,
-// 	...simplePulses,
-// };
-
 export const defaultVisual = DEFAULT_VISUAL;
 export const defaultSpace = DEFAULT_SPACE;
 export const defaultSvgElement = DEFAULT_SVG_ELEMENT
