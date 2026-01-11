@@ -1,6 +1,7 @@
 import {
 	ControlGroup,
 	FormGroup,
+	Icon,
 	InputGroup,
 	NumericInput,
 	Section
@@ -11,6 +12,7 @@ import { getByPath } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";
 import { PlacementModeConfig } from "./PlacementModeConfigForm";
+import InformationLabel from "./help/InformationLabel";
 
 interface IVisualFormProps extends FormRequirements {
 	widthDisplay?: boolean;
@@ -47,7 +49,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				style={{ userSelect: "none" }}
 				fill={false}
 				inline={true}
-				label="Reference"
+				label={(<InformationLabel text="Reference" helpType="ref" />)}
 				labelFor="ref-input"
 				intent={errors?.ref ? "danger" : "none"}
 				helperText={(errors?.ref?.message ?? "").toString()}>
@@ -147,7 +149,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				style={{ borderRadius: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
-				title={"Placement"}
+				title={(<InformationLabel text="Placement" helpType="placementMode" />)}
 				collapsible={true}>
 				<ControlGroup vertical={true}>
 					{/* Dynamic Sub-forms */}
