@@ -3,7 +3,7 @@ import LineLike, { ILineLike } from "./lineLike";
 import { UserComponentType } from "./point";
 
 
-export type HeadStyle = "default" | "thin" | "none";
+export type HeadStyle = "default"
 
 export interface ILineStyle {
 	headStyle: [HeadStyle, HeadStyle];
@@ -44,7 +44,7 @@ export default class Line extends LineLike implements ILine {
 		var hitbox = SVG()
 			.rect()
 			.id(this.id + "-hitbox")
-			.attr({"data-editor": "hitbox", key: this.ref});
+			.attr({ "data-editor": "hitbox", key: this.ref });
 
 		var hitboxHeight: number = this.thickness + LineLike.HitboxPadding;
 		hitbox.size(this.length, hitboxHeight);

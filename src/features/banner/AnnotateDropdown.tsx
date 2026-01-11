@@ -128,14 +128,6 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 														text="Default"
 														onClick={() => field.onChange("default")}
 													/>
-													<MenuItem
-														text="Thin"
-														onClick={() => field.onChange("thin")}
-													/>
-													<MenuItem
-														text="None"
-														onClick={() => field.onChange("none")}
-													/>
 												</Menu>
 											}>
 											<Button

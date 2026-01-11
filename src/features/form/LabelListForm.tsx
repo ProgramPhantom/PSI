@@ -52,9 +52,11 @@ function LabelListForm(props: ILabelMapProps) {
 										remove(index);
 									}}></Button>
 							}>
-							<SectionCard>
-								<LabelForm prefix={`labels.${index}`}></LabelForm>
-							</SectionCard>
+								<div style={{padding: "8px"}}>
+									<LabelForm prefix={`labels.${index}`}></LabelForm>
+								</div>
+								
+							
 						</Section>
 					</>
 				))}

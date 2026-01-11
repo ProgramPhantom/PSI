@@ -1,4 +1,4 @@
-import { Button, FormGroup, HTMLSelect, Section, SectionCard } from "@blueprintjs/core";
+import { Button, ControlGroup, FormGroup, HTMLSelect, Section, SectionCard } from "@blueprintjs/core";
 import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import ArrowForm from "./ArrowForm";
@@ -7,6 +7,7 @@ import { FormRequirements } from "./FormBase";
 import { IText } from "../../logic/text";
 import { ILine } from "../../logic/line";
 import VisualForm from "./VisualForm";
+import FormDivider from "./FormDivider";
 
 interface ILabelArrayFormProps extends FormRequirements { }
 
@@ -45,49 +46,57 @@ function LabelForm(props: ILabelArrayFormProps) {
 
 	return (
 		<>
-			<VisualForm target={props.target} heightDisplay={false} widthDisplay={false}></VisualForm>
+			<div style={{ marginTop: "8px" }}>
+				<VisualForm target={props.target} heightDisplay={false} widthDisplay={false}></VisualForm>
+			</div>
 
-			{/* Position */}
-			<FormGroup
-				style={{ padding: "4px 8px", }}
-				fill={false}
-				inline={true}
-				label="Position"
-				labelFor="text-input">
-				<Controller
-					control={formControls.control}
-					name={`${fullPrefix}labelConfig.labelPosition`}
-					render={({ field }) => (
-						<HTMLSelect {...field} iconName="caret-down">
-							<option value={"top"}>Top</option>
-							<option value={"bottom"}>Bottom</option>
-							<option value={"left"}>Left</option>
-							<option value={"right"}>Right</option>
-						</HTMLSelect>
-					)}></Controller>
-			</FormGroup>
 
-			{/* Text position */}
-			<FormGroup
-				style={{ padding: "4px 8px" }}
-				fill={false}
-				inline={true}
-				label="Text Position"
-				labelFor="text-input">
-				<Controller
-					control={formControls.control}
-					name={`${fullPrefix}labelConfig.textPosition`}
-					render={({ field }) => (
-						<HTMLSelect {...field} iconName="caret-down">
-							<option value={"top"}>Top</option>
-							<option value={"inline"}>Inline</option>
-							<option value={"bottom"}>Bottom</option>
-						</HTMLSelect>
-					)}></Controller>
-			</FormGroup>
+			<ControlGroup
+				vertical={true}
+				style={{ padding: "4px 0px", marginBottom: "0px" }}
+			>
+				{/* Position */}
+				<FormGroup
+					style={{ padding: "4px 0px", }}
+					fill={false}
+					inline={true}
+					label="Position"
+					labelFor="text-input">
+					<Controller
+						control={formControls.control}
+						name={`${fullPrefix}labelConfig.labelPosition`}
+						render={({ field }) => (
+							<HTMLSelect {...field} iconName="caret-down">
+								<option value={"top"}>Top</option>
+								<option value={"bottom"}>Bottom</option>
+								<option value={"left"}>Left</option>
+								<option value={"right"}>Right</option>
+							</HTMLSelect>
+						)}></Controller>
+				</FormGroup>
 
+				{/* Text position */}
+				<FormGroup style={{ padding: "4px 0px", }}
+					fill={false}
+					inline={true}
+					label="Text Position"
+					labelFor="text-input">
+					<Controller
+						control={formControls.control}
+						name={`${fullPrefix}labelConfig.textPosition`}
+						render={({ field }) => (
+							<HTMLSelect {...field} iconName="caret-down">
+								<option value={"top"}>Top</option>
+								<option value={"inline"}>Inline</option>
+								<option value={"bottom"}>Bottom</option>
+							</HTMLSelect>
+						)}></Controller>
+				</FormGroup>
+			</ControlGroup>
+
+			<FormDivider title="Text" topMargin={0}></FormDivider>
 			{/* Text form */}
-			<Section
+			<Section icon="text-highlight"
 				style={{ padding: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
@@ -107,8 +116,9 @@ function LabelForm(props: ILabelArrayFormProps) {
 				</SectionCard>
 			</Section>
 
+			<FormDivider title="Arrow"></FormDivider>
 			{/* Arrow form */}
-			<Section
+			<Section icon="arrow-top-left"
 				style={{ padding: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
