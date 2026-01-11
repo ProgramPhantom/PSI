@@ -1,5 +1,5 @@
-import { Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon } from "@blueprintjs/core";
-import { useMemo, useRef, useState } from "react";
+import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon, Tooltip } from "@blueprintjs/core";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ObjectInspector } from "react-inspector";
 import ENGINE from "../../logic/engine";
 import Visual, { IVisual } from "../../logic/visual";
@@ -53,18 +53,26 @@ export function FormDiagramInterface(props: FormHolderProps) {
 			},
 			channel: {
 				submit: ENGINE.handler.submitVisual.bind(ENGINE.handler),
-				modify: ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
 				delete: ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
 			},
-			line: {
-				submit: ENGINE.handler.createLine.bind(ENGINE.handler),
-				delete: ENGINE.handler.deleteVisual.bind(ENGINE.handler)
-			}
 		};
 	}, [ENGINE.handler]);
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const submitRef = useRef<SubmitButtonRef>(null);
+	var [submissionValid, setSubmissionValid] = useState<boolean>(true);
+
+	useEffect(() => {
+		if (props.target !== undefined) {
+			if (ComponentFormEffectRegistry[props.targetType as UserComponentType]?.modify === undefined) {
+				setSubmissionValid(false)
+			} else {
+				setSubmissionValid(true)
+			}
+		} else {
+			setSubmissionValid(true)
+		}
+	}, [props.target])
 
 	// Submit function
 	const dispatchFormEffect = (
@@ -206,17 +214,25 @@ export function FormDiagramInterface(props: FormHolderProps) {
 						width: "100%",
 						alignSelf: "center",
 						margin: "4px 2px 18px 2px",
+						padding: "0px 4px 0px 4px",
 						height: "30px",
 						marginTop: "auto",
 						display: "flex",
 						flexDirection: "column"
 					}}>
 					<Divider></Divider>
-					<Button
-						style={{ width: "80%", margin: "auto", alignSelf: "center" }}
-						onClick={() => submitRef.current?.submit()}
-						text={props.target !== undefined ? "Apply" : "Add"}
-						icon={props.target !== undefined ? "tick" : "add"}></Button>
+
+
+					<Tooltip
+						content={`Modification for ${props.targetType} is not yet implemented`}
+						disabled={submissionValid} position="top">
+						<AnchorButton
+							style={{ width: "100%" }}
+							disabled={!submissionValid}
+							onClick={() => submitRef.current?.submit()}
+							text={props.target !== undefined ? "Apply" : "Add"}
+							icon={props.target !== undefined ? "tick" : "add"}></AnchorButton>
+					</Tooltip>
 				</div>
 			</div>
 
