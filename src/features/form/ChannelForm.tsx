@@ -21,7 +21,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 		<>
 			<ControlGroup vertical={true}>
 
-				<FormDivider title="Channel" />
+				<FormDivider title="Channel" topMargin={0} />
 
 				<VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
 

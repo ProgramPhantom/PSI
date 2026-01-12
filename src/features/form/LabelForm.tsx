@@ -1,5 +1,5 @@
 import { Button, ControlGroup, FormGroup, HTMLSelect, Section, SectionCard } from "@blueprintjs/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import ArrowForm from "./ArrowForm";
 import TextForm from "./TextForm";
@@ -15,9 +15,17 @@ function LabelForm(props: ILabelArrayFormProps) {
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
 	const formControls = useFormContext();
 	let vals = formControls.getValues();
+	let textVal = formControls.getValues(`${fullPrefix}text`)
 
 	const [textOn, setTextOn] = useState<boolean>(formControls.getValues(`${fullPrefix}text`) !== undefined);
+	useEffect(() => {
+		setTextOn(formControls.getValues(`${fullPrefix}text`) !== undefined)
+	}, [props.target])
+
 	const [lineOn, setLineOn] = useState<boolean>(formControls.getValues(`${fullPrefix}line`) !== undefined);
+	useEffect(() => {
+		setLineOn(formControls.getValues(`${fullPrefix}line`) !== undefined)
+	}, [props.target])
 
 	const [textBackup, setTextBackup] = useState<IText | undefined>(undefined);
 	const [lineBackup, setLineBackup] = useState<ILine | undefined>(undefined);

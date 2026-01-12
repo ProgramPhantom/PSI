@@ -126,7 +126,7 @@ export default class Label extends Aligner implements ILabel {
 		if (this.text) {
 			this.text.draw(group);
 
-			const SPILL_PADDING = 16;
+			const SPILL_PADDING = 1;
 			const TEXT_PADDING = 0;
 
 			if (
