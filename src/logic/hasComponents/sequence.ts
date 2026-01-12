@@ -141,6 +141,9 @@ export default class Sequence extends Grid implements ISequence {
 			let ghost: Ghost = {size: {width: 0, height: ghostHeight}, owner: pulse.id}
 
 			targetChannel.addCentralElementGhosts(pulse.placementMode.config.index!, ghost, ghost);
+
+			let channelIndex: number = this.getChannelIndex(targetChannel) ?? 0;
+			let channelRow: number = channelIndex * 3;
 		}
 	}
 
@@ -166,7 +169,7 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public deleteChannel(channel: Channel) {
-		var channelIndex: number | undefined = this.locateChannel(channel);
+		var channelIndex: number | undefined = this.getChannelIndex(channel);
 
 		if (channelIndex === undefined) {
 			console.warn(`Cannot find index of channel with ref ${channel.ref}`)
@@ -186,11 +189,11 @@ export default class Sequence extends Grid implements ISequence {
 		this.squeezeMatrix();
 	}
 
-	protected locateChannel(channel: Channel) {
-		return this.locateChannelById(channel.id);
+	protected getChannelIndex(channel: Channel): number | undefined {
+		return this.getChannelIndexById(channel.id);
 	}
 
-	protected locateChannelById(id: ID): number | undefined {
+	protected getChannelIndexById(id: ID): number | undefined {
 		var channelIndex: number | undefined = undefined;
 
 		this.channels.forEach((child, index) => {
@@ -304,7 +307,7 @@ export default class Sequence extends Grid implements ISequence {
 		
 		// We now need to convert the mount config in the pulse's placement
 		// type into the exact coordinate in the grid to insert this element
-		var channelIndex: number = this.locateChannelById(channelId ?? "") ?? 0;
+		var channelIndex: number = this.getChannelIndexById(channelId ?? "") ?? 0;
 		
 
 		
@@ -326,16 +329,23 @@ export default class Sequence extends Grid implements ISequence {
 			alignment = {x: "centre", y: "here"}
 		}
 
-		// ---------- Column ------------
-		// column += mountConfig.index;  // Shift along by index
-
-
-		return {
+		let gridConfig: IGridChildConfig = {
 			coords: {row: row, col: column},
 			alignment: alignment,
 			gridSize: {noRows: 1, noCols: placementMode.config.noSections},
-			contribution: contribution
+			contribution: contribution,
 		}
+
+		// Inform of ghosts that have been placed by addPulse process.
+		if (placementMode.config.orientation === "both") {
+			gridConfig.ownedGhosts = [
+				{row: row-1, col: column},
+				{row: row+1, col: column}
+			]
+		}
+
+
+		return gridConfig
 	}
 
 	protected setPulseConfigViaGridConfig(child: Visual, config: IGridChildConfig) {

@@ -33,7 +33,8 @@ export interface IGridChildConfig {
 	coords?: { row: number, col: number }
 	alignment?: Record<Dimensions, SiteNames>
 	gridSize?: { noRows: number, noCols: number }
-	contribution?: Record<Dimensions, boolean>
+	contribution?: Record<Dimensions, boolean>,
+	ownedGhosts?: {row: number, col: number}[]
 }
 
 export interface IAlignerConfig {

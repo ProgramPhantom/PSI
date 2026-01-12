@@ -507,7 +507,21 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 			}
 		}
 
+		// Clean up ghosts:
+		// Ghosts can be placed by an element outside of it's region, hence we use the 
+		// owned ghosts properties to clear these up.
+		let gridConfig: IGridChildConfig | undefined = this.placementModeTranslators.get(child.placementMode);
+		(gridConfig?.ownedGhosts ?? []).forEach((ownedGhost) => {
+			let cell: GridCell<T> = this.getCell({row: ownedGhost.row, col: ownedGhost.col});
 
+			if (cell?.ghosts !== undefined) {
+				cell.ghosts = cell.ghosts.filter((ghost) => ghost.owner !== child.id)
+				if (cell.ghosts.length === 0) {
+					cell.ghosts = undefined;
+				}
+				this.setCellUndefinedIfEmpty({row: ownedGhost.row, col: ownedGhost.col})
+			}
+		})
 	}
 
 	public deleteCellAtCoord(coords: { row: number, col: number }, deleteIfEmpty?: { row: boolean, col: boolean }) {
@@ -1266,5 +1280,12 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 		})
 
 		return elements;
+	}
+
+	private setCellUndefinedIfEmpty(coords: {row: number, col: number}) {
+		let cell: GridCell<T> = this.getCell({row: coords.row, col: coords.col})
+		if (cell !== undefined && Object.values(cell).every(v => v === undefined)) {
+			this.gridMatrix[coords.row][coords.col] = undefined
+		}
 	}
 }

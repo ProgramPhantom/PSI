@@ -76,7 +76,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					}
 
 					if (isCanvasDrop(dropResult)) {
-						//ENGINE.handler.moveElement(item.element, dropResult.x, dropResult.y);
+						// ENGINE.handler.moveElement(item.element, dropResult.x, dropResult.y);
 					} else if (isMountDrop(dropResult)) {
 						var result = dropResult as IMountAreaResult;
 						let elementType = (item.element.constructor as typeof Visual).ElementType
@@ -84,7 +84,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						if (item.element.placementMode.type === "pulse") {
 							var newMountConfig: IPulseConfig = {
 								...item.element.placementMode.config,
-								orientation: result.orientation,
+								orientation: item.element.placementMode.config.orientation === "both" ? "both" : result.orientation,
 								channelID: result.channelID,
 								sequenceID: result.sequenceID,
 								index: result.index

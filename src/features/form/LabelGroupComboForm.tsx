@@ -111,7 +111,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			var labelListFormData: Partial<Record<Position, ILabel>> = structuredClone(vals.labels);
 
 			if (targetIsLabelGroup === false) {
-				if (Object.keys(labelListFormData).length > 0) {
+				if (Object.keys(labelListFormData ?? {}).length > 0) {
 					// Convert into a label group!
 
 					// Normalise core child:
@@ -136,7 +136,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 				// Already label type
 				childType = (masterFormData as ILabelGroup).coreChildType;
-				if (Object.keys(labelListFormData).length > 0) {
+				if (Object.keys(labelListFormData ?? {}).length > 0) {
 					// Still a label group
 					var result: ILabelGroup = {
 						...masterFormData,

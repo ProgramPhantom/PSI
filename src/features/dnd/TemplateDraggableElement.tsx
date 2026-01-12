@@ -86,7 +86,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 							alignment: internalConfig.alignment,
 							noSections: internalConfig.noSections,
 
-							orientation: dropResult.orientation,
+							orientation: singletonState.placementMode.config.orientation === "both" ? "both" : dropResult.orientation,
 							channelID: dropResult.channelID,
 							sequenceID: dropResult.sequenceID,
 							index: dropResult.index

@@ -43,13 +43,17 @@ class DiagramDropInterpreter {
 
 				// Compute indexes of the slithers
 				for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
-					let preOccupancy: GridCell =
-						channel.gridMatrix[0]?.[columnIndex - 1];
-					let hereOccupancy: GridCell =
+					let hereOccupancyTop: GridCell =
 						channel.gridMatrix[0]?.[columnIndex];
+					let middleOccupied: boolean = 
+						(channel.gridMatrix[1][columnIndex]?.elements ?? []).length > 1;
+					let hereOccupancyBottom: GridCell =
+						channel.gridMatrix[2]?.[columnIndex];
 
 					if (
-						(hereOccupancy?.sources !== undefined)
+						(hereOccupancyTop?.sources !== undefined ||
+						 hereOccupancyBottom?.sources !== undefined
+						)
 					) {
 						slitherIndexes[columnIndex] = false;
 					}
@@ -63,6 +67,8 @@ class DiagramDropInterpreter {
 						channel.gridMatrix[0][columnIndex] === undefined
 							? false
 							: true;
+					let middleOccupied: boolean = 
+						(channel.gridMatrix[1][columnIndex]?.elements ?? []).length > 1;
 					let bottomOccupied: boolean = 
 					channel.gridMatrix[2][columnIndex] === undefined
 							? false
@@ -106,7 +112,7 @@ class DiagramDropInterpreter {
 
 					var columnWidth = column.width;
 					// PLACE BLOCK
-					if (!topOccupied) {
+					if (!topOccupied && !middleOccupied) {
 						// Top block
 
 						var newBlock: AddSpec = {
@@ -125,7 +131,7 @@ class DiagramDropInterpreter {
 						this.insertAreas.push(newBlock);
 					}
 
-					if (!bottomOccupied) {
+					if (!bottomOccupied && !middleOccupied) {
 						// Bottom block
 						newBlock = {
 							area: {
@@ -148,11 +154,6 @@ class DiagramDropInterpreter {
 				// END SLITHERS
 				var column: Rect = columns[columns.length - 1];
 				var i = columns.length - 1;
-
-				// insert end slithers:
-				
-				// insert end slithers
-
 				// Top slither
 				newSlither = {
 					area: {

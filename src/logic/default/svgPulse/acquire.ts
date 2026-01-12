@@ -10,7 +10,7 @@ export const DEFAULT_ACQUIRE: ISVGElement = {
 	"placementMode": {
 		"type": "pulse", "config": {
 			"alignment": { "x": "centre", "y": "far" },
-			"orientation": "top",
+			"orientation": "both",
 			"noSections": 1,
 		}
 	},
