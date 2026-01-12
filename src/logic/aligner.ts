@@ -73,6 +73,8 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 				uc.draw(this.svg!);
 			}
 		});
+
+		super.draw(surface);
 	}
 
 	public computeSize(): Size {

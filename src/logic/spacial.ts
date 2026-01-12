@@ -26,6 +26,7 @@ export interface IPulseConfig {
 	orientation: Orientation;
 	alignment: Record<Dimensions, SiteNames>;
 	noSections: number;
+	clipBar?: boolean;
 }
 
 
@@ -34,7 +35,7 @@ export interface IGridChildConfig {
 	alignment?: Record<Dimensions, SiteNames>
 	gridSize?: { noRows: number, noCols: number }
 	contribution?: Record<Dimensions, boolean>,
-	ownedGhosts?: {row: number, col: number}[]
+	ownedGhosts?: { row: number, col: number }[]
 }
 
 export interface IAlignerConfig {

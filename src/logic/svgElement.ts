@@ -110,6 +110,8 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 
 			surface.add(this.svg);
 		}
+
+		super.draw(surface);
 	}
 
 	public override setVerticalFlip(flipped: boolean) {

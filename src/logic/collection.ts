@@ -94,6 +94,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 				uc.draw(this.svg!);
 			}
 		});
+
+		super.draw(surface)
 	}
 
 	public getHitbox(): Rect {

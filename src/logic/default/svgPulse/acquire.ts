@@ -12,6 +12,7 @@ export const DEFAULT_ACQUIRE: ISVGElement = {
 			"alignment": { "x": "centre", "y": "far" },
 			"orientation": "both",
 			"noSections": 1,
+			"clipBar": true
 		}
 	},
 

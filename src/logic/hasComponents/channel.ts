@@ -1,5 +1,5 @@
 import Grid, { Elements, Ghost, GridCell, IGrid } from "../grid";
-import { ID, UserComponentType } from "../point";
+import { BAR_MASK_ID, ID, UserComponentType } from "../point";
 import RectElement, { IRectElement, IRectStyle } from "../rectElement";
 import { Orientation } from "../spacial";
 import Text, { IText } from "../text";
@@ -89,6 +89,7 @@ export default class Channel extends Grid implements IChannel {
 
 
 		this.bar = new RectElement(params.bar);
+		this.bar.maskId = BAR_MASK_ID;
 		this.bar.placementMode = {
 			type: "grid", gridConfig: {
 				alignment: { x: "here", y: "centre" },

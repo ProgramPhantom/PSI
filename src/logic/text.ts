@@ -155,6 +155,8 @@ export default class Text extends Visual implements IText {
 				surface.add(this.svg);
 			}
 		}
+
+		super.draw(surface);
 	}
 
 	getInternalRepresentation(): SVGElement | undefined {

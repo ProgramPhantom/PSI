@@ -103,6 +103,16 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                         )}
                     />
                 </FormGroup>
+
+				<FormGroup style={{ padding: "4px 8px" }} inline label="Clip Channel Bar">
+                    <Controller
+                        control={control}
+                        name={`${fullPrefix}placementMode.config.clipBar`}
+                        render={({ field }) => (
+                            <Switch {...field} onChange={field.onChange} checked={field.value}  />
+                        )}
+                    />
+                </FormGroup>
             </>
         );
     }

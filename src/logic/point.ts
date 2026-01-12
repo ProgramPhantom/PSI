@@ -1,5 +1,6 @@
 export type OwnershipType = "component" | "free";
 export type ID = string;
+export const BAR_MASK_ID = "global-bar-mask";
 
 
 // All component types
@@ -95,17 +96,17 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		return this._y;
 	}
 	public set x(val: number) {
-		this._x =  val;
+		this._x = val;
 	}
 	public set y(val: number) {
 		this._y = val;
 	}
 
-	move({dx, dy}: Shift) {
+	move({ dx, dy }: Shift) {
 		this.x += dx ? dx : 0;
 		this.y += dy ? dy : 0;
 	}
-	place({x, y}: {x?: number; y?: number}) {
+	place({ x, y }: { x?: number; y?: number }) {
 		x !== undefined ? (this.x = x) : {};
 		y !== undefined ? (this.y = y) : {};
 	}

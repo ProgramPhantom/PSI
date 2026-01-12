@@ -6,6 +6,7 @@ export interface IRectStyle {
 	fill: string;
 	stroke?: string;
 	strokeWidth?: number;
+	mask?: string;
 }
 
 export interface IRectElement extends IVisual {
@@ -30,7 +31,7 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 
 		this.svg = SVG()
 			.rect(this.contentWidth, this.contentHeight)
-			.attr({fill: this.style.fill, stroke: this.style.stroke})
+			.attr({ fill: this.style.fill, stroke: this.style.stroke })
 			.attr({
 				"stroke-width": this.style.strokeWidth,
 				"shape-rendering": "crispEdges"
@@ -42,22 +43,32 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 			if (this.svg) {
 				try {
 					this.svg.remove();
-				} catch {}
+				} catch { }
 			}
 
 			this.svg = new Rect()
 				.size(this.contentWidth, this.contentHeight)
-				.attr({fill: this.style.fill, stroke: this.style.stroke})
+				.attr({ fill: this.style.fill, stroke: this.style.stroke })
 				.move(this.cx + this.offset[0], this.cy + this.offset[1])
 				.attr({
 					"stroke-width": this.style.strokeWidth,
 					"shape-rendering": "crispEdges",
 				});
+
+			if (this.style.mask) {
+				var mask = surface.root().findOne("#" + this.style.mask);
+				if (mask) {
+					this.svg.attr({ mask: "url(#" + this.style.mask + ")" });
+				}
+			}
+
 			surface.add(this.svg);
 
 			// Do we want elements to have our ID system or the SVGjs ID system?
 			this.svg.id(this.id);
 		}
+
+		super.draw(surface)
 	}
 
 	public static isRectElement(obj: any): obj is SVGElement {

@@ -1,9 +1,10 @@
-import { Element } from "@svgdotjs/svg.js";
+import { Element, Mask } from "@svgdotjs/svg.js";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
-import { ID, UserComponentType } from "./point";
+import { BAR_MASK_ID, ID, UserComponentType } from "./point";
 import { Size } from "./spacial";
 import { Rect } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
+import { Svg } from "@svgdotjs/svg.js";
 
 
 export type Offset = [number, number];
@@ -45,6 +46,8 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 
 	offset: [number, number];
 	svg?: Element;
+	maskId?: string;
+	maskBlock?: Rect;
 
 	flipped: boolean = false;
 
@@ -56,7 +59,44 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		this.offset = params.offset;
 	}
 
-	abstract draw(surface: Element): void;
+	draw(surface: Element): void {
+		// Add mask
+		if (this.maskId !== undefined) {
+			this.svg?.attr({ "mask": `url(#${this.maskId})` })
+		}
+
+		// Add to mask
+		if (this.placementMode.type === "pulse" && this.placementMode.config.clipBar) {
+			// Find (or create) the mask
+			var mask = surface.root().findOne("#" + BAR_MASK_ID) as Mask;
+			if (!mask) {
+				mask = surface.root().mask().id(BAR_MASK_ID);
+				// Add a white rectangle to the mask to allow everything ELSE to show
+				// This white rect must be large enough to cover the whole canvas
+				// We can try adding a very large rect? Or wait for channel to init it?
+				// Assuming channel/canvas setup handles the "base" white mask or we add a large white rect here.
+				// Based on "indiscriminately clips everything under its self", standard SVG mask behavior:
+				// White = show, Black = hide.
+				// So we need a white background.
+				mask.add(surface.root().rect(100000, 100000).move(-50000, -50000).fill("#fff"));
+			} 
+
+			let block: Rect | undefined= this.maskBlock;
+			if (block === undefined) {
+				// Add SELF to the mask as BLACK to hide bar under self.
+				// Clone internal rep	
+				let blockedArea = new Rect().size(this.width, this.height).move(this.drawX, this.drawY)
+					.attr({ fill: "#000", opacity: 1, stroke: "none" }).id(`mask-${this.id}`);
+					// Not allowed query selectors that start with a digit.
+				
+				
+				this.maskBlock = blockedArea;
+				mask.add(this.maskBlock)
+			} else {
+				block.size(this.width, this.height).move(this.drawX, this.drawY)
+			}
+		}
+	}
 
 	erase(): void {
 		this.svg?.remove();
@@ -84,7 +124,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	protected computeSelf() {
 		this.computeSize();
 		this.growElement(this.size);
-		this.computePositions({x: 0, y: 0});
+		this.computePositions({ x: 0, y: 0 });
 	}
 
 	protected setVerticalFlip(flipped: boolean) {

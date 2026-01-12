@@ -83,8 +83,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					singletonState.placementMode = {
 						type: "pulse",
 						config: {
-							alignment: internalConfig.alignment,
-							noSections: internalConfig.noSections,
+							...internalConfig,
 
 							orientation: singletonState.placementMode.config.orientation === "both" ? "both" : dropResult.orientation,
 							channelID: dropResult.channelID,

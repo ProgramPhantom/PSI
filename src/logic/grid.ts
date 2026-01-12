@@ -115,6 +115,8 @@ export default class Grid<T extends Visual = Visual> extends Collection implemen
 				uc.draw(this.svg!);
 			}
 		});
+
+		super.draw(surface);
 	}
 
 	public override computeSize(): Size {

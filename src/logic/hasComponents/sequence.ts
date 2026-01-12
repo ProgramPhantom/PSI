@@ -364,6 +364,11 @@ export default class Sequence extends Grid implements ISequence {
 			y: config.alignment?.y ?? "centre"
 		}
 
+		let clipBar: boolean = false;
+		if (child.placementMode.type === "pulse" && child.placementMode.config.clipBar === true) {
+			clipBar = true;
+		}
+
 		child.placementMode = {
 			type: "pulse",
 			config: {
@@ -373,7 +378,8 @@ export default class Sequence extends Grid implements ISequence {
 
 				channelID: channel.id,
 				sequenceID: this.id,
-				index: index
+				index: index,
+				clipBar: clipBar
 			}
 		}
 	}

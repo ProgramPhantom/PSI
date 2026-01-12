@@ -321,6 +321,13 @@ export default class DiagramHandler implements IDraw {
 			// TODO
 		}
 
+		if (target.svg) {
+			target.svg.remove();
+		}
+		if (target.maskBlock) {
+			target.maskBlock.remove();
+		}
+
 		return result;
 	}
 	public deleteVisualByID(targetId: ID): Result<Visual> {
