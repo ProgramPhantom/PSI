@@ -102,7 +102,7 @@ export function LineTool(props: IDrawArrowProps) {
 		setColumnHovered(true);
 
 		const p = new Path().attr({
-			strokeWidth: props.config.lineStyle.thickness,
+			strokeWidth: 4,
 			stroke: props.config.lineStyle.stroke,
 			d: `M ${x} ${topY} L ${x} ${bottomY}`,
 			"stroke-dasharray": `${props.config.lineStyle.dashing[0]} ${props.config.lineStyle.dashing[1]}`
@@ -120,7 +120,7 @@ export function LineTool(props: IDrawArrowProps) {
 			setStartCoords([startX, startY]);
 
 			const p = new Path().attr({
-				"stroke-width": props.config.lineStyle.thickness,
+				"stroke-width": 5,
 				stroke: props.config.lineStyle.stroke,
 				d: `M ${startX} ${startY} L ${startX} ${startY}`,
 				"stroke-dasharray": `${props.config.lineStyle.dashing[0]} ${props.config.lineStyle.dashing[1]}`

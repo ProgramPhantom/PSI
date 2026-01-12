@@ -227,25 +227,7 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 							</div>
 						</FormGroup>
 
-						<FormGroup label="Thickness" inline={true}>
-							<Controller
-								name="thickness"
-								control={control}
-								render={({ field }) => (
-									<NumericInput
-										value={field.value}
-										onValueChange={
-											(num /* number */, str /* string */) =>
-												field.onChange(num) // send number to RHF
-										}
-										min={1}
-										stepSize={1}
-										buttonPosition="none"
-										style={{ width: 80 }}
-									/>
-								)}
-							/>
-						</FormGroup>
+						
 					</ControlGroup>
 				</form>
 			}></Popover>
