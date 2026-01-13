@@ -18,14 +18,20 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 			sizeMode: this.sizeMode
 		};
 	}
+	override get allElements(): Record<ID, Visual> {
+		var elements: Record<ID, Visual> = { [this.id]: this };
+
+		this.children.forEach((c) => {
+			let childElements = c.allElements;
+			elements = { ...elements, ...childElements };
+		});
+		return elements;
+	}
 
 	private _children: T[] = [];
 	get children(): T[] {
 		return this._children;
 	};
-	set children(val: T[]) {
-		this._children = val;
-	}
 
 	declare public sizeMode: Record<Dimensions, ContainerSizeMethod>;
 
@@ -47,7 +53,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	}
 
 
-	// COMPUTE
+	// ---------------- Compute -------------------------
 	public computeSize(): Size {
 		var size: Size = { width: 0, height: 0 }
 
@@ -99,8 +105,10 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 		return sizeDiff;
 	}
+	// --------------------------------------------------
 
 
+	// ----------------- Visual methods -----------------
 	draw(surface: Element) {
 		if (this.svg) {
 			this.svg.remove();
@@ -156,6 +164,27 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		return internalSVG;
 	}
 
+	get dirty(): boolean {
+		var isDirty = false;
+		this.children.forEach((c) => {
+			if (c instanceof Visual && (c as Visual).dirty) {
+				isDirty = true;
+			}
+		});
+
+		return isDirty;
+	}
+	set dirty(v: boolean) {
+		this.children?.forEach((c) => {
+			if (c instanceof Visual) {
+				(c as Visual).dirty = v;
+			}
+		});
+	}
+	// --------------------------------------------------
+
+
+	// ----------------- Collection methods -------------
 	add(child: T) {
 		child.parentId = this.id;
 
@@ -190,36 +219,10 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 			this.remove(c);
 		});
 	}
+	// --------------------------------------------------
 
 
-	get dirty(): boolean {
-		var isDirty = false;
-		this.children.forEach((c) => {
-			if (c instanceof Visual && (c as Visual).dirty) {
-				isDirty = true;
-			}
-		});
-
-		return isDirty;
-	}
-	set dirty(v: boolean) {
-		this.children?.forEach((c) => {
-			if (c instanceof Visual) {
-				(c as Visual).dirty = v;
-			}
-		});
-	}
-
-	override get allElements(): Record<ID, Visual> {
-		var elements: Record<ID, Visual> = { [this.id]: this };
-
-		this.children.forEach((c) => {
-			let childElements = c.allElements;
-			elements = { ...elements, ...childElements };
-		});
-		return elements;
-	}
-
+	// ----------------- Collection helpers -------------
 	public has(id: ID): boolean {
 		return this.children.filter((c) => c.id === id).length > 0;
 	}
@@ -235,6 +238,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 		return index;
 	}
+	// --------------------------------------------------
 }
 
 
