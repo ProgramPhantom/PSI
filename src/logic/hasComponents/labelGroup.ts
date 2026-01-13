@@ -121,25 +121,25 @@ export default class LabelGroup<T extends Visual = Visual>
 		switch (position) {
 			case "top":
 				label.placementMode.gridConfig.alignment = { x: "centre", y: "far" }
-				label.sizeMode = { x: "grow", y: "fixed" }
+				label.sizeMode = { x: "grow", y: "fit" }
 				label.mainAxis = "y";
 				this.addChildAtCoord(label, 0, 1);
 				break;
 			case "right":
 				label.placementMode.gridConfig.alignment = { x: "here", y: "centre" }
-				label.sizeMode = { x: "fixed", y: "grow" }
+				label.sizeMode = { x: "fit", y: "grow" }
 				label.mainAxis = "x";
 				this.addChildAtCoord(label, 1, 2);
 				break;
 			case "bottom":
 				label.placementMode.gridConfig.alignment = { x: "centre", y: "here" }
-				label.sizeMode = { x: "grow", y: "fixed" }
+				label.sizeMode = { x: "grow", y: "fit" }
 				label.mainAxis = "y";
 				this.addChildAtCoord(label, 2, 1);
 				break;
 			case "left":
 				label.placementMode.gridConfig.alignment = { x: "far", y: "centre" }
-				label.sizeMode = { x: "fixed", y: "grow" }
+				label.sizeMode = { x: "fit", y: "grow" }
 				label.mainAxis = "x";
 				this.addChildAtCoord(label, 1, 0);
 				break;

@@ -11,7 +11,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 	"pulseElements": [
 		DEFAULT_CHIRPHILO
 	],
-	"sizeMode": { "x": "fixed", "y": "fixed" },
+	"sizeMode": { "x": "fit", "y": "fit" },
 	"placementControl": "auto",
 
 	"label": {

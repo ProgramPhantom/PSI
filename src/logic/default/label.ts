@@ -2,12 +2,9 @@ import { ILabel } from "../hasComponents/label";
 import { DEFAULT_LINE } from "./line";
 
 export const DEFAULT_LABEL: ILabel = {
-	"contentWidth": 0,
-	"contentHeight": 0,
-
 	"offset": [0, 0],
 	"padding": [0, 0, 0, 0],
-
+	"sizeMode": {x: "fit", y: "fit"},
 	"mainAxis": "x",
 
 	"text": {

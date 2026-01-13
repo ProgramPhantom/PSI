@@ -22,15 +22,15 @@ export default function NewElementDialog(props: INewElementDialog) {
 	const submitRef = useRef<SubmitButtonRef>(null);
 
 	const rectFormControls = useForm<IRectElement>({
-		defaultValues: { contentWidth: 50, contentHeight: 50 },
+		
 		mode: "onChange"
 	});
 	const svgFormControls = useForm<ISVGElement>({
-		defaultValues: { contentWidth: 50, contentHeight: 50, },
+		
 		mode: "onChange"
 	});
 
-	const addNewTemplate = (values: IVisual) => {
+	const addNewTemplate = (values: IVisual, masterType: UserComponentType) => {
 		ENGINE.addSingleton(values, props.schemeName);
 		props.close();
 	}
@@ -89,7 +89,9 @@ export default function NewElementDialog(props: INewElementDialog) {
 						<>
 							<Button text="Cancel" onClick={() => props.close()} variant="minimal" />
 							<Button
-								onClick={() => submitRef.current?.submit()}
+								onClick={() => {
+									submitRef.current?.submit();
+								}}
 								text="Submit"
 								intent="primary"
 							/>

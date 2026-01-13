@@ -157,6 +157,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 		});
 
 
+		let vals = masterFormControls.getValues();
 		return (
 			<>
 				<form

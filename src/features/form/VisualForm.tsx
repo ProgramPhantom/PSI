@@ -1,13 +1,14 @@
 import {
 	ControlGroup,
 	FormGroup,
+	HTMLSelect,
 	Icon,
 	InputGroup,
 	NumericInput,
 	Section
 } from "@blueprintjs/core";
-import React from "react";
-import { Controller, FieldErrors, useFormContext } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { Controller, FieldErrors, useFormContext, useWatch } from "react-hook-form";
 import { getByPath } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";
@@ -20,26 +21,35 @@ interface IVisualFormProps extends FormRequirements {
 }
 
 const VisualForm: React.FC<IVisualFormProps> = (props) => {
-	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
+	var fullPrefix = props.prefix !== undefined && props.prefix !== "" ? `${props.prefix}.` : "";
 	const formControls = useFormContext();
+
+	const [widthActive, setWidthActive] = useState(true);
+	const [heightActive, setHeightActive] = useState(true);
 
 	var errors: Partial<FieldErrors<IVisual>> | undefined = getByPath(
 		formControls.formState.errors,
 		props.prefix
 	);
 
-	var values: Partial<IVisual> = getByPath(formControls.getValues(), props.prefix);
+	const control = formControls.control;
+	const watchedSizeModeX = useWatch({
+		control,
+		name: `${fullPrefix}sizeMode.x`
+	});
+	const watchedSizeModeY = useWatch({
+		control,
+		name: `${fullPrefix}sizeMode.y`
+	});
 
-	var widthActive = props.target
-		? props.target.sizeMode.x === "fixed"
-			? true
-			: false
-		: true;
-	var heightActive = props.target
-		? props.target.sizeMode.y === "fixed"
-			? true
-			: false
-		: true;
+	useEffect(() => {
+		const currentX = watchedSizeModeX ?? props.target?.sizeMode.x ?? "fixed";
+		const currentY = watchedSizeModeY ?? props.target?.sizeMode.y ?? "fixed";
+
+		setWidthActive(currentX === "fixed" ? true : false);
+		setHeightActive(currentY === "fixed" ? true : false);
+	}, [props.target, watchedSizeModeX, watchedSizeModeY]);
+
 
 	var vals = formControls.getValues();
 	return (
@@ -71,77 +81,114 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 			</FormGroup>
 
 			{/* Width and height */}
-			{/* Content Width */}
-			{vals.contentWidth !== undefined && props.widthDisplay ? (
-				<>
-					<FormGroup
-						intent={errors?.contentWidth ? "danger" : "none"}
-						helperText={(errors?.contentWidth?.message ?? "").toString()}
-						inline={true}
-						label="Width"
-						labelFor="width-input">
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}contentWidth`}
-							render={({ field }) => (
-								<NumericInput
-									{...field}
-									id="width-input"
-									onValueChange={field.onChange}
-									min={1}
-									max={400}
-									size="small"
-									disabled={!widthActive}
-									title={!widthActive ? "Width inherited" : ""}
-									intent={errors?.contentWidth ? "danger" : "none"}
-									allowNumericCharactersOnly={true}></NumericInput>
-							)}
-							rules={{
-								required: "Width is required",
-								min: { value: 1, message: "Width must be at least 1" },
-								max: { value: 400, message: "Width cannot exceed 400" }
-							}}></Controller>
-					</FormGroup>
-				</>
-			) : (
-				<></>
-			)}
 
-			{/* Content Height */}
-			{vals.contentHeight !== undefined && props.heightDisplay ? (
-				<>
-					<FormGroup
-						intent={errors?.contentHeight ? "danger" : "none"}
-						helperText={(errors?.contentHeight?.message ?? "").toString()}
-						inline={true}
-						label="Height"
-						labelFor="height-input">
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}contentHeight`}
-							render={({ field }) => (
-								<NumericInput
-									{...field}
-									id="height-input"
-									onValueChange={field.onChange}
-									min={1}
-									max={400}
-									size="small"
-									disabled={!widthActive}
-									title={!heightActive ? "Height inherited" : ""}
-									intent={errors?.contentHeight ? "danger" : "none"}
-									allowNumericCharactersOnly={true}></NumericInput>
-							)}
-							rules={{
-								required: "Height is required",
-								min: { value: 1, message: "Height must be at least 1" },
-								max: { value: 400, message: "Height cannot exceed 400" }
-							}}></Controller>
-					</FormGroup>
-				</>
-			) : (
-				<></>
-			)}
+			<div style={{ display: "flex", gap: "10px", paddingBottom: "8px" }}>
+				{/* Content Width */}
+				{props.widthDisplay !== false && (
+					<>
+						<FormGroup style={{ flex: 1, margin: 0 }}
+							intent={errors?.contentWidth ? "danger" : "none"}
+							helperText={(errors?.contentWidth?.message ?? "").toString()}
+							label={!widthActive ? "Height (inherited)" : "Height"}
+							labelFor="width-input">
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}contentWidth`}
+								render={({ field }) => (
+									<NumericInput fill
+										{...field}
+										id="width-input"
+										onValueChange={field.onChange}
+										min={1} 
+										max={10000}
+										size="small"
+										disabled={!widthActive}
+										
+										title={!widthActive ? "Width inherited" : ""}
+										intent={errors?.contentWidth ? "danger" : "none"}
+										allowNumericCharactersOnly={true}></NumericInput>
+								)}
+								rules={{
+									required: {value: widthActive, message: "Width required"},
+									min: { value: widthActive ? 1 : 0, message: "Width must be at least 1" },
+									max: { value: 10000, message: "Width cannot exceed 10000" },
+									
+								}}></Controller>
+						</FormGroup>
+					</>
+				)}
+
+				{/* Content Height */}
+				{props.heightDisplay !== false && (
+					<>
+						<FormGroup style={{ flex: 1, margin: 0 }}
+							intent={errors?.contentHeight ? "danger" : "none"}
+							helperText={(errors?.contentHeight?.message ?? "").toString()}
+							label={!heightActive ? "Height (inherited)" : "Height"} defaultValue={"unset"}
+							labelFor="height-input"> 
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}contentHeight`}
+								render={({ field }) => (
+									<NumericInput fill
+										{...field}
+										id="height-input"
+										onValueChange={field.onChange}
+										min={1}
+										max={10000}
+										size="small"
+										disabled={!heightActive}
+										title={!heightActive ? "Height inherited" : ""}
+										intent={errors?.contentHeight ? "danger" : "none"}
+										></NumericInput>
+								)}
+								rules={{
+									required: {value: heightActive, message: "Height required"},
+									min: { value: heightActive ? 1 : 0, message: "Height must be at least 1" },
+									max: { value: 10000, message: "Height cannot exceed 10000" },
+								}}></Controller>
+						</FormGroup>
+					</>
+				)}
+			</div>
+
+			{/* Size Mode */}
+			<div style={{ display: "flex", gap: "10px", paddingBottom: "8px" }}>
+				<FormGroup
+					style={{ flex: 1, margin: 0 }}
+					label={(<InformationLabel text="Width Mode" helpType="sizeMode"></InformationLabel>)}
+					labelFor="size-mode-x">
+					<Controller
+						control={formControls.control}
+						name={`${fullPrefix}sizeMode.x`}
+						render={({ field }) => (
+							<HTMLSelect
+								{...field}
+								id="size-mode-x"
+								fill
+								options={["fixed", "fit", "grow"]}
+							/>
+						)}
+					/>
+				</FormGroup>
+				<FormGroup
+					style={{ flex: 1, margin: 0 }}
+					label={(<InformationLabel text="Height Mode" helpType="sizeMode"></InformationLabel>)}
+					labelFor="size-mode-y">
+					<Controller
+						control={formControls.control}
+						name={`${fullPrefix}sizeMode.y`}
+						render={({ field }) => (
+							<HTMLSelect
+								{...field}
+								id="size-mode-y"
+								fill
+								options={["fixed", "fit", "grow"]}
+							/>
+						)}
+					/>
+				</FormGroup>
+			</div>
 
 			{/* Config */}
 			{/* Placement Config */}

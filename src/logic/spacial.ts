@@ -52,7 +52,8 @@ export type PlacementConfiguration = { type: "free" } |
 
 export type PlacementControl = "auto" | "user";
 
-export type SizeMethod = "fixed" | "fit" | "grow";
+export type ContainerSizeMethod = "fit" | "grow"
+export type SizeMethod = "fixed" | ContainerSizeMethod
 export type SizeConfiguration = Record<Dimensions, SizeMethod>
 
 

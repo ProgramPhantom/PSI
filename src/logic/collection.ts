@@ -2,10 +2,9 @@ import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
-import Spacial, { Dimensions, Size } from "./spacial";
+import Spacial, { ContainerSizeMethod, Dimensions, Size } from "./spacial";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
-import { Svg } from "@svgdotjs/svg.js";
 
 
 export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
@@ -20,6 +19,8 @@ export interface IHaveComponents<C extends Record<string, Spacial | Spacial[]>> 
 
 export interface ICollection extends IVisual {
 	children: IVisual[];
+
+	sizeMode?:  Record<Dimensions, ContainerSizeMethod>
 }
 
 export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
@@ -46,7 +47,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	get state(): ICollection {
 		return {
 			children: this.children.map((c) => c.state),
-			...super.state
+			...super.state,
+			sizeMode: this.sizeMode
 		};
 	}
 
@@ -57,6 +59,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	set children(val: T[]) {
 		this._children = val;
 	}
+
+	declare public sizeMode: Record<Dimensions, ContainerSizeMethod>;
 
 	constructor(
 		params: ICollection,

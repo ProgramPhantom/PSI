@@ -15,5 +15,11 @@ export function getByPath(obj: any, path: string | undefined) {
 	if (path === undefined) {
 		return obj;
 	}
+	if (path.endsWith(".")) {
+		path = path.substring(0, path.length - 1);
+	}
+	if (path === "") {
+		return obj
+	}
 	return path.split(".").reduce((acc, key) => acc?.[key], obj);
 }

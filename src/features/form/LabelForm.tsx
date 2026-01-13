@@ -55,7 +55,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 	return (
 		<>
 			<div style={{ marginTop: "8px" }}>
-				<VisualForm target={props.target} prefix={fullPrefix} heightDisplay={false} widthDisplay={false}></VisualForm>
+				<VisualForm target={props.target} prefix={fullPrefix} widthDisplay={true} heightDisplay={true}></VisualForm>
 			</div>
 
 
