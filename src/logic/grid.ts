@@ -55,25 +55,8 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 			return this.gridMatrix[0].length;
 		}
 	}
-	override get children(): T[] {
-		var allChildren: T[] = [];
 
-		this.gridMatrix.forEach((row) => {
-			row.forEach((cell) => {
-				if (cell?.elements !== undefined) {
-					cell.elements.forEach((child) => {
-						if (cell.sources?.[child.id] === undefined) {
-							allChildren.push(child);
-						}
-					})
-				}
-			})
-		})
-
-		return allChildren;
-	}
-
-	placementModeTranslators: { get: GridPlacementPredicate, set: GridPlacementSetter } = {
+	protected placementModeTranslators: { get: GridPlacementPredicate, set: GridPlacementSetter } = {
 		get: Grid.IdentityGetter,
 		set: Grid.IdentitySetter
 	}
@@ -82,8 +65,8 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 
 	protected gridMatrix: GridCell<T>[][] = [];
 
-	public gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
-	cells: Spacial[][];
+	protected gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
+	protected cells: Spacial[][];
 
 	constructor(params: IGrid) {
 		super(params);
@@ -94,29 +77,8 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	}
 
 
-	public draw(surface: Element) {
-		if (this.svg) {
-			this.svg.remove();
-		}
-
-		var group = new G().id(this.id).attr({ title: this.ref });
-		group.attr({
-			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
-		});
-
-		this.svg = group;
-
-		surface.add(this.svg);
-
-		this.children.forEach((uc) => {
-			if (doesDraw(uc)) {
-				uc.draw(this.svg!);
-			}
-		});
-
-		super.draw(surface);
-	}
-
+	// ---------------- Compute Methods ----------------
+	//#region 
 	public override computeSize(): Size {
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
@@ -375,6 +337,173 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		return change;
 	}
 
+
+	// ------ Helpers ---------
+	/**
+	 * Computes the positions and dimensions of cells in a grid layout.
+	 * Initializes the cells array with Spacial objects representing each cell's geometry.
+	 * Each cell's position is calculated based on cumulative widths (x-axis) and heights (y-axis)
+	 * from the grid's content origin point (contentX, contentY).
+	 * 
+	 * The computation uses:
+	 * - gridSizes.rows[].height for row heights
+	 * - gridSizes.columns[].width for column widths
+	 * 
+	 * @protected
+	 * @returns {void}
+	 */
+	protected computeCells() {
+		// First let's generate the sizes and positions of each cell
+
+		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new Spacial()));
+
+		var xCount: number = 0;
+		var yCount: number = 0;
+
+
+		for (var row = 0; row < this.numRows; row++) {
+			xCount = 0;
+			var rowHeight: number = this.gridSizes.rows[row].height;
+
+			for (var col = 0; col < this.numColumns; col++) {
+				var colWidth: number = this.gridSizes.columns[col].width;
+
+				this.cells[row][col] = new Spacial(this.cx + xCount, this.cy + yCount, colWidth, rowHeight)
+
+				xCount += colWidth;
+			}
+
+			yCount += rowHeight;
+		}
+	}
+
+	protected applyCellSizes() {
+		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new Spacial()));
+
+		this.gridSizes.rows.forEach((row, row_index) => {
+			this.gridSizes.columns.forEach((column, column_index) => {
+				let targetCell = this.cells[row_index][column_index];
+
+				targetCell.width = column.width;
+				targetCell.height = row.height;
+			})
+		})
+	}
+
+	/**
+	 * Returns a positioned Spacial that is the geometric union of the
+	 * cells contained in the rectangle defined by topLeft and bottomRight
+	 * (inclusive). The returned Spacial carries x/y coordinates taken
+	 * from the component cells, so computePositions must have been run
+	 * before calling this method for meaningful absolute positions.
+	 *
+	 * @param topLeft - top-left cell coordinate (inclusive)
+	 * @param bottomRight - bottom-right cell coordinate (inclusive)
+	 * @throws Error if the provided coordinates are not in the expected order
+	 */
+	public getPositionedCellUnion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial {
+		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
+			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
+		}
+
+		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+
+		let union: Spacial = Spacial.CreateUnion(...cells);
+
+		// Returns a positioned union of the cells in the region specified. Will
+		// not return an expected result if cells have not been positioned
+		// TODO: throw error if cells have not been given position and this called.
+		return union;
+	}
+
+	/**
+	 * Compute the combined size (width and height) of a rectangular region of
+	 * adjacent grid cells specified by top-left and bottom-right coordinates.
+	 *
+	 * This returns a object instance representing the size of the union of
+	 * cells in the region. The method assumes the cells in the region are adjacent and
+	 * simply sums their widths and heights.
+	 *
+	 * @param topLeft - top-left cell coordinate (inclusive)
+	 * @param bottomRight - bottom-right cell coordinate (inclusive)
+	 * @throws Error if the provided coordinates are not in the expected order
+	 * @returns Object sized to the union of the specified cells
+	 */
+	public getCellUnionSize(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Size {
+		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
+			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
+		}
+
+		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+
+		let width: number = cells.reduce((w, c) => w + c.width, 0);
+		let height: number = cells.reduce((h, c) => h + c.height, 0);
+
+		// Returns *size* of cell union. Works only for adjacent cells, and can be used before
+		// computePositions has been run.
+		return { width: width, height: height };
+	}
+	//#endregion
+	// -------------------------------------------------
+
+	// ---------------- Draw Methods ----------------
+	//#region 
+	public draw(surface: Element) {
+		if (this.svg) {
+			this.svg.remove();
+		}
+
+		var group = new G().id(this.id).attr({ title: this.ref });
+		group.attr({
+			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
+		});
+
+		this.svg = group;
+
+		surface.add(this.svg);
+
+		this.children.forEach((uc) => {
+			if (doesDraw(uc)) {
+				uc.draw(this.svg!);
+			}
+		});
+
+		super.draw(surface);
+	}
+	//#endregion
+	// -------------------------------------------------
+
+	// ---------------- Add Methods ----------------
+	//#region
+	public appendElementsInRegion(gridRegion: GridCell<T>[][], coords?: { row: number, col: number }) {
+		if (gridRegion.length === 0 || gridRegion[0].length === 0) { return }
+		if (coords === undefined) {
+			coords = { row: 0, col: 0 }
+		}
+
+		let noRows: number = gridRegion.length;
+		let noCols: number = gridRegion[0].length;
+
+		let leftCol: number = coords.col;
+		let rightCol: number = coords.col + noCols - 1;
+
+		let topRow: number = coords.row;
+		let bottomRow: number = coords.row + noRows - 1;
+
+		this.setMatrixSize({ row: bottomRow, col: rightCol }, true);
+
+		for (let r = 0; r < noRows; r++) {
+			for (let c = 0; c < noCols; c++) {
+				let row: number = r + topRow;
+				let col: number = c + leftCol;
+
+				let toAppend: GridCell<T> = gridRegion[r][c];
+
+				this.appendCellAtCoord(toAppend, { row: row, col: col });
+			}
+		}
+	}
+
 	public addChildAtCoord(child: T, row: number, column?: number) {
 		if (column === undefined) {
 			column = this.getFirstAvailableCell().col;
@@ -447,6 +576,48 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		this.gridMatrix[coords.row][coords.column] = gridEntry;
 	}
 
+	public setGrid(grid: GridCell<T>[][], sizes: { columns: Spacial[], rows: Spacial[] }, cells: Spacial[][]) {
+		this.gridMatrix = grid;
+		this.gridSizes = sizes;
+		this.cells = cells;
+	}
+
+	public setMatrix(matrix: GridCell<T>[][]) {
+		this.gridMatrix = matrix;
+	}
+
+	public setMatrixRegion(gridRegion: GridCell<T>[][], coords?: { row: number, col: number }) {
+		if (gridRegion.length === 0 || gridRegion[0].length === 0) { return }
+		if (coords === undefined) {
+			coords = { row: 0, col: 0 }
+		}
+
+		let noRows: number = gridRegion.length;
+		let noCols: number = gridRegion[0].length;
+
+		let leftCol: number = coords.col;
+		let rightCol: number = coords.col + noCols - 1;
+
+		let topRow: number = coords.row;
+		let bottomRow: number = coords.row + noRows - 1;
+
+
+		this.setMatrixSize({ row: bottomRow, col: rightCol }, true);
+
+		for (let r = 0; r < noRows; r++) {
+			for (let c = 0; c < noCols; c++) {
+				let row: number = r + topRow;
+				let col: number = c + leftCol;
+
+				this.gridMatrix[row][col] = gridRegion[r][c]
+			}
+		}
+	}
+	//#endregion
+	// -------------------------------------------------
+
+	// ---------------- Remove Methods ----------------
+	//#region 
 	public remove(child: T, deleteIfEmpty?: { row: boolean, col: boolean }) {
 		// First we need to locate this child in the matrix:
 		var topLeft: { row: number, col: number } | undefined = this.locateGridChild(child);
@@ -544,7 +715,332 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		// Cut off empty trailing rows and columns
 		this.squeezeMatrix();
 	}
+	//#endregion
+	// -----------------------------------------------
 
+
+	// --------------- Matrix Size --------------------
+	//#region 
+	public matchRowLengths() {
+		var maxRowLength = Math.max(...this.getRows().map(row => row.length));
+
+		this.getRows().forEach((row) => {
+			var rowLength = row.length;
+			var diff = rowLength - maxRowLength;
+
+			if (diff > 0) {
+				row.push(...(new Array<undefined>(diff).fill(undefined)))
+			}
+
+		})
+	}
+
+	/**
+	 * Expands the matrix by inserting empty rows and/or columns until the provided
+	 * zero-based coordinate (row, col) is within the matrix bounds. This method
+	 * mutates the underlying grid state by calling insertEmptyRow() and
+	 * insertEmptyColumn() as needed.
+	 *
+	 * @protected
+	 *
+	 * @param coords - An object with zero-based `row` and `col` indices that must be contained by the matrix.
+	 *                 If the coordinate is already within bounds, no changes are made.
+	 *
+	 * @remarks
+	 * - The method computes how many additional rows and columns are required and
+	 *   inserts them one at a time until the coordinate is reachable. The coords
+	 *   parameter is *not* the number of rows and columns to be added.
+	 * - Negative indices or non-integer values are not explicitly validated here;
+	 *   callers should provide valid, non-negative integer indices.
+	 * - Complexity is proportional to the number of inserted rows and columns.
+	 *
+	 * @example
+	 * // ensure coordinate (5, 3) exists; will insert rows/columns as needed
+	 * this.expandMatrix({ row: 5, col: 3 });
+	 */
+	public setMatrixSize(coords: { row?: number, col?: number }, onlyGrow: boolean = false) {
+		var rowDiff: number = coords.row !== undefined ? coords.row - this.numRows + 1 : 0;
+		var colDiff: number = coords.col !== undefined ? coords.col - this.numColumns + 1 : 0;
+
+		// There are missing rows needed to add this coord
+		while (rowDiff >= 1) {
+			this.insertEmptyRow()
+			rowDiff -= 1
+		}
+
+		while (colDiff >= 1) {
+			this.insertEmptyColumn();
+			colDiff -= 1
+		}
+
+		if (onlyGrow === false) {
+			// Or if negative, we need to remove rows
+			while (rowDiff < 0) {
+				this.removeRow();
+				rowDiff += 1
+			}
+
+			while (colDiff < 0) {
+				this.removeColumn();
+				colDiff += 1
+			}
+		}
+	}
+
+	protected squeezeMatrix() {
+		var trailingRow: GridCell[] = this.getRow(this.numRows - 1)
+		var trailingColumn: GridCell[] = this.getColumn(this.numColumns - 1)
+
+		var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
+		var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
+
+		while (trailingRowEmpty === true) {
+			this.removeRow();
+			var trailingRow: GridCell[] = this.getRow(this.numRows - 1);
+			var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
+		}
+
+		while (trailingColumnEmpty === true) {
+			this.removeColumn();
+			var trailingColumn: GridCell[] = this.getColumn(this.numColumns - 1);
+			var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
+		}
+	}
+
+	protected insertEmptyColumn(index?: number) {
+		let newColumn: GridCell<T>[] = Array<GridCell<T>>(this.numRows).fill(undefined);
+		let INDEX: number | undefined = index;
+		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns) {
+			INDEX = this.numColumns;
+		}
+
+		// Grow split elements by 1 in columns
+		let splitElements: T[][] = this.getColumnSplitElements(INDEX);
+		splitElements.forEach((row, row_index) => {
+			for (let element of row) {
+				let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+
+				if (gridConfig !== undefined && gridConfig.gridSize !== undefined) {
+					// Grow
+					gridConfig.gridSize.noCols += 1;
+					this.placementModeTranslators.set(element, gridConfig);
+
+					// Add this element so that it spans over the gap
+					if (newColumn[row_index]?.sources === undefined) {
+						newColumn[row_index] = { sources: { [element.id]: gridConfig.coords ?? { row: 0, col: 0 } } }
+					} else {
+						newColumn[row_index].sources[element.id] = gridConfig.coords ?? { row: 0, col: 0 }
+					}
+
+
+					if (newColumn[row_index]?.elements === undefined) {
+						newColumn[row_index].elements = [element]
+					} else {
+						newColumn[row_index].elements.push(element)
+					}
+				}
+			}
+		})
+
+		for (let i = 0; i < this.numRows; i++) {
+			this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
+		}
+
+		this.shiftElementColumnIndexes(INDEX, 1);
+	}
+
+	protected insertEmptyRow(index?: number): void {
+		var newRow: GridCell<T>[] = Array<GridCell<T>>(this.numColumns).fill(undefined)
+		let INDEX: number | undefined = index;
+		if (INDEX === undefined || INDEX < 0 || INDEX > this.numRows) {
+			INDEX = this.numRows;
+		}
+
+		// Grow split elements by 1 in columns
+		let splitElements: T[][] = this.getRowSplitElements(INDEX);
+		splitElements.forEach((col, col_index) => {
+			for (let element of col) {
+				let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+
+				if (gridConfig !== undefined && gridConfig.gridSize !== undefined) {
+					// Grow
+					gridConfig.gridSize.noRows += 1;
+					this.placementModeTranslators.set(element, gridConfig);
+
+					// Add this element so that it spans over the gap
+					if (newRow[col_index]?.sources === undefined) {
+						newRow[col_index] = { sources: { [element.id]: gridConfig.coords ?? { row: 0, col: 0 } } }
+					} else {
+						newRow[col_index].sources[element.id] = gridConfig.coords ?? { row: 0, col: 0 }
+					}
+
+
+					if (newRow[col_index]?.elements === undefined) {
+						newRow[col_index].elements = [element]
+					} else {
+						newRow[col_index].elements.push(element)
+					}
+				}
+			}
+		})
+
+		this.gridMatrix.splice(INDEX, 0, newRow);
+
+		this.shiftElementRowIndexes(INDEX, 1);
+	}
+
+	public removeColumn(index?: number, onlyIfEmpty: boolean = false) {
+		if (index === undefined || index < 0 || index > this.numColumns - 1) {
+			var INDEX = this.numColumns - 1;
+		} else {
+			INDEX = index;
+		}
+
+		var targetColumn: GridCell[] = this.getColumn(INDEX);
+		var empty: boolean = this.isArrayEmpty(targetColumn)
+
+		if (onlyIfEmpty === true && empty === true) { return }
+
+		for (let i = 0; i < this.numRows; i++) {
+			this.gridMatrix[i].splice(INDEX, 1);
+		}
+
+		this.shiftElementColumnIndexes(INDEX, -1);
+	}
+
+	public removeRow(index?: number, onlyIfEmpty: boolean = false) {
+		if (index === undefined || index < 0 || index > this.numRows - 1) {
+			var INDEX = this.numRows - 1;
+		} else {
+			INDEX = index;
+		}
+
+		var targetRow: GridCell<T>[] = this.gridMatrix[INDEX];
+		var empty: boolean = this.isArrayEmpty(targetRow)
+
+		if (onlyIfEmpty === true && !empty) { return }
+
+		this.gridMatrix.splice(INDEX, 1);
+
+		this.shiftElementRowIndexes(INDEX, -1);
+	}
+
+	// --- Helpers ----
+	protected getColumnSplitElements(index: number): T[][] {
+		if (index > this.numColumns || index < 0) {
+			throw new Error(`Index ${index} is out of bounds`)
+		}
+
+		// Get elements which have a part on the left and right of the index (insertion index)
+		var elements: T[][] = Array.from({ length: this.numRows }, () => []);
+
+		this.getRows().forEach((row, row_index) => {
+			let leftCell: GridCell<T> = row[index - 1];
+			let rightCell: GridCell<T> = row[index];
+
+			for (let child of (leftCell?.elements ?? [])) {
+				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
+
+				if (childIndex !== -1) {
+					elements[row_index].push(child)
+				}
+			}
+		})
+
+		return elements;
+	}
+
+	protected getRowSplitElements(index: number): T[][] {
+		if (index > this.numRows || index < 0) {
+			throw new Error(`Index ${index} is out of bounds`)
+		}
+
+		// Get elements which have a part on the left and right of the index (insertion index)
+		var elements: T[][] = Array.from({ length: this.numColumns }, () => []);
+
+		this.getColumns().forEach((col, col_index) => {
+			let leftCell: GridCell<T> = col[index - 1];
+			let rightCell: GridCell<T> = col[index];
+
+			for (let child of (leftCell?.elements ?? [])) {
+				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
+
+				if (childIndex !== -1) {
+					elements[col_index].push(child);
+				}
+			}
+		})
+
+		return elements;
+	}
+
+	protected shiftElementColumnIndexes(from: number, amount: number = 1) {
+		// Update grid indexes
+		for (let col_index = from; col_index < this.numColumns; col_index++) {
+			let col = this.getColumn(col_index);
+
+			// Go down the column
+			col.forEach((cell, row_index) => {
+				if (cell?.elements !== undefined) {
+					cell.elements.forEach((element) => {
+						if (!this.isCellElementSource(element, { row: row_index, col: col_index })) { return }
+
+						let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+						if (gridConfig && gridConfig.coords !== undefined) {
+							gridConfig.coords.col += amount;
+							this.placementModeTranslators.set(element, gridConfig);
+						}
+					})
+				}
+
+				// Update sources
+				if (cell?.sources !== undefined) {
+					Object.entries(cell.sources).forEach(([id, coord]) => {
+						if (coord.col >= from) {
+							coord.col += amount
+						}
+					})
+				}
+			})
+		}
+	}
+
+	protected shiftElementRowIndexes(from: number, amount: number = 1) {
+		// Update grid indexes
+		for (let row_index = from; row_index < this.numRows; row_index++) {
+			let row = this.getRow(row_index);
+
+			// Go down the row
+			row.forEach((cell, col_index) => {
+				if (cell?.elements !== undefined) {
+					cell.elements.forEach((element) => {
+						if (!this.isCellElementSource(element, { row: row_index, col: col_index })) { return }
+
+						let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+						if (gridConfig && gridConfig.coords !== undefined) {
+							gridConfig.coords.row += amount;
+							this.placementModeTranslators.set(element, gridConfig);
+						}
+					})
+				}
+
+				// Update sources
+				if (cell?.sources !== undefined) {
+					Object.entries(cell.sources).forEach(([id, coord]) => {
+						if (coord.row >= from) {
+							coord.row += amount
+						}
+					})
+				}
+			})
+		}
+	}
+	//#endregion
+	// -------------------------------------------------
+
+
+	// ----------------- Acessors -----------------------
+	//#region 
 	public getColumns(): GridCell<T>[][] {
 		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
 			return [];
@@ -560,6 +1056,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 
 		return columns;
 	}
+
 	public getColumn(index: number): GridCell<T>[] {
 		return this.gridMatrix.map((row) => row[index]);
 	}
@@ -567,6 +1064,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	public getRows(): GridCell<T>[][] {
 		return this.gridMatrix;
 	}
+
 	public getRow(index: number): GridCell<T>[] {
 		return this.gridMatrix[index];
 	}
@@ -575,107 +1073,8 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		return this.gridMatrix[coords.row][coords.col];
 	}
 
-	protected isCellElementSource(child: T, cell: { row: number, col: number }): boolean {
-		let targetCell: GridCell<T> = this.gridMatrix[cell.row][cell.col];
-
-		if (targetCell?.elements === undefined) {
-			return false
-		}
-
-		if (targetCell.elements.indexOf(child) === -1) {
-			return false
-		}
-
-		if (targetCell.sources?.[child.id] !== undefined) {
-			return false
-		}
-
-		return true;
-	}
-
 	public getCells(): Spacial[] {
 		return this.cells.flat();
-	}
-
-	public setGrid(grid: GridCell<T>[][], sizes: { columns: Spacial[], rows: Spacial[] }, cells: Spacial[][]) {
-		this.gridMatrix = grid;
-		this.gridSizes = sizes;
-		this.cells = cells;
-	}
-
-	public setMatrix(matrix: GridCell<T>[][]) {
-		this.gridMatrix = matrix;
-	}
-
-	public setMatrixRegion(gridRegion: GridCell<T>[][], coords?: { row: number, col: number }) {
-		if (gridRegion.length === 0 || gridRegion[0].length === 0) { return }
-		if (coords === undefined) {
-			coords = { row: 0, col: 0 }
-		}
-
-		let noRows: number = gridRegion.length;
-		let noCols: number = gridRegion[0].length;
-
-		let leftCol: number = coords.col;
-		let rightCol: number = coords.col + noCols - 1;
-
-		let topRow: number = coords.row;
-		let bottomRow: number = coords.row + noRows - 1;
-
-
-		this.setMatrixSize({ row: bottomRow, col: rightCol }, true);
-
-		for (let r = 0; r < noRows; r++) {
-			for (let c = 0; c < noCols; c++) {
-				let row: number = r + topRow;
-				let col: number = c + leftCol;
-
-				this.gridMatrix[row][col] = gridRegion[r][c]
-			}
-		}
-	}
-
-	public appendElementsInRegion(gridRegion: GridCell<T>[][], coords?: { row: number, col: number }) {
-		if (gridRegion.length === 0 || gridRegion[0].length === 0) { return }
-		if (coords === undefined) {
-			coords = { row: 0, col: 0 }
-		}
-
-		let noRows: number = gridRegion.length;
-		let noCols: number = gridRegion[0].length;
-
-		let leftCol: number = coords.col;
-		let rightCol: number = coords.col + noCols - 1;
-
-		let topRow: number = coords.row;
-		let bottomRow: number = coords.row + noRows - 1;
-
-		this.setMatrixSize({ row: bottomRow, col: rightCol }, true);
-
-		for (let r = 0; r < noRows; r++) {
-			for (let c = 0; c < noCols; c++) {
-				let row: number = r + topRow;
-				let col: number = c + leftCol;
-
-				let toAppend: GridCell<T> = gridRegion[r][c];
-
-				this.appendCellAtCoord(toAppend, { row: row, col: col });
-			}
-		}
-	}
-
-	public matchRowLengths() {
-		var maxRowLength = Math.max(...this.getRows().map(row => row.length));
-
-		this.getRows().forEach((row) => {
-			var rowLength = row.length;
-			var diff = rowLength - maxRowLength;
-
-			if (diff > 0) {
-				row.push(...(new Array<undefined>(diff).fill(undefined)))
-			}
-
-		})
 	}
 
 	protected locateGridChild(target: T): { row: number, col: number } | undefined {
@@ -776,63 +1175,71 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 
 		return result;
 	}
+	//#endregion
+	// -----------------------------------------------
 
 
-	/**
-	 * Returns a positioned Spacial that is the geometric union of the
-	 * cells contained in the rectangle defined by topLeft and bottomRight
-	 * (inclusive). The returned Spacial carries x/y coordinates taken
-	 * from the component cells, so computePositions must have been run
-	 * before calling this method for meaningful absolute positions.
-	 *
-	 * @param topLeft - top-left cell coordinate (inclusive)
-	 * @param bottomRight - bottom-right cell coordinate (inclusive)
-	 * @throws Error if the provided coordinates are not in the expected order
-	 */
-	public getPositionedCellUnion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial {
-		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
-			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
+	// -------------- Child sizing -------------------
+	//#region 
+	public setChildSize(child: T, size: { noRows: number, noCols: number }) {
+		let location: { row: number, col: number } | undefined = this.locateGridChild(child)
+
+		if (location === undefined) {
+			console.warn(`Cannot locate child for size change ${child.ref}`)
+			return
 		}
 
-		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
-
-		let union: Spacial = Spacial.CreateUnion(...cells);
-
-		// Returns a positioned union of the cells in the region specified. Will
-		// not return an expected result if cells have not been positioned
-		// TODO: throw error if cells have not been given position and this called.
-		return union;
-	}
-
-
-	/**
-	 * Compute the combined size (width and height) of a rectangular region of
-	 * adjacent grid cells specified by top-left and bottom-right coordinates.
-	 *
-	 * This returns a object instance representing the size of the union of
-	 * cells in the region. The method assumes the cells in the region are adjacent and
-	 * simply sums their widths and heights.
-	 *
-	 * @param topLeft - top-left cell coordinate (inclusive)
-	 * @param bottomRight - bottom-right cell coordinate (inclusive)
-	 * @throws Error if the provided coordinates are not in the expected order
-	 * @returns Object sized to the union of the specified cells
-	 */
-	public getCellUnionSize(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Size {
-		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
-			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
+		if (child.placementMode.type === "grid") {
+			child.placementMode.config.gridSize = { noRows: size.noRows, noCols: size.noCols }
 		}
 
-		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+		let region: OccupiedCell<T>[][] | undefined = this.getElementGridRegion(child);
+		if (region === undefined) {
+			return
+		}
 
-		let width: number = cells.reduce((w, c) => w + c.width, 0);
-		let height: number = cells.reduce((h, c) => h + c.height, 0);
-
-		// Returns *size* of cell union. Works only for adjacent cells, and can be used before
-		// computePositions has been run.
-		return { width: width, height: height };
+		this.remove(child);
+		this.appendElementsInRegion(region, location);
 	}
 
+	protected getElementGridRegion(child: T, overridePosition?: { row: number, col: number }): OccupiedCell<T>[][] | undefined {
+		if (child.placementMode.type !== "grid") {
+			console.warn(`Trying to position non-grid placement element ${child.ref} in grid ${this.ref}`)
+			return
+		}
+
+		let topLeft: { row: number, col: number } | undefined = child.placementMode.config.coords;
+		if (topLeft === undefined) {
+			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
+			return
+		}
+
+		let bottomRight: { row: number, col: number } = {
+			row: topLeft.row + (child.placementMode.config.gridSize?.noRows ?? 1) - 1,
+			col: topLeft.col + (child.placementMode.config.gridSize?.noCols ?? 1) - 1
+		};
+
+
+		let root: { row: number, col: number } = overridePosition ?? topLeft
+		child.placementMode.config.coords = root;
+
+		// Construct region
+		let entry: OccupiedCell<T> = { elements: [child], sources: { [child.id]: root } }
+		let region: OccupiedCell<T>[][] =
+			Array<OccupiedCell<T>[]>(child.placementMode.config.gridSize?.noRows ?? 1)
+				.fill(Array<OccupiedCell<T>>(child.placementMode.config.gridSize?.noCols ?? 1).fill(entry))
+
+		// Put the top left back to just the element:
+		region[0][0] = { elements: [child] };
+
+		return region
+	}
+	//#endregion
+	// -----------------------------------------------
+
+
+	// ---------------- Helpers ---------------------
+	//#region 
 	protected isArrayEmpty(target: GridCell[]): boolean {
 		return !target.some((c) => c !== undefined)
 	}
@@ -868,326 +1275,33 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		return count;
 	}
 
-	/**
-	 * Expands the matrix by inserting empty rows and/or columns until the provided
-	 * zero-based coordinate (row, col) is within the matrix bounds. This method
-	 * mutates the underlying grid state by calling insertEmptyRow() and
-	 * insertEmptyColumn() as needed.
-	 *
-	 * @protected
-	 *
-	 * @param coords - An object with zero-based `row` and `col` indices that must be contained by the matrix.
-	 *                 If the coordinate is already within bounds, no changes are made.
-	 *
-	 * @remarks
-	 * - The method computes how many additional rows and columns are required and
-	 *   inserts them one at a time until the coordinate is reachable. The coords
-	 *   parameter is *not* the number of rows and columns to be added.
-	 * - Negative indices or non-integer values are not explicitly validated here;
-	 *   callers should provide valid, non-negative integer indices.
-	 * - Complexity is proportional to the number of inserted rows and columns.
-	 *
-	 * @example
-	 * // ensure coordinate (5, 3) exists; will insert rows/columns as needed
-	 * this.expandMatrix({ row: 5, col: 3 });
-	 */
-	public setMatrixSize(coords: { row?: number, col?: number }, onlyGrow: boolean = false) {
-		var rowDiff: number = coords.row !== undefined ? coords.row - this.numRows + 1 : 0;
-		var colDiff: number = coords.col !== undefined ? coords.col - this.numColumns + 1 : 0;
+	protected isCellElementSource(child: T, cell: { row: number, col: number }): boolean {
+		let targetCell: GridCell<T> = this.gridMatrix[cell.row][cell.col];
 
-		// There are missing rows needed to add this coord
-		while (rowDiff >= 1) {
-			this.insertEmptyRow()
-			rowDiff -= 1
+		if (targetCell?.elements === undefined) {
+			return false
 		}
 
-		while (colDiff >= 1) {
-			this.insertEmptyColumn();
-			colDiff -= 1
+		if (targetCell.elements.indexOf(child) === -1) {
+			return false
 		}
 
-		if (onlyGrow === false) {
-			// Or if negative, we need to remove rows
-			while (rowDiff < 0) {
-				this.removeRow();
-				rowDiff += 1
-			}
-
-			while (colDiff < 0) {
-				this.removeColumn();
-				colDiff += 1
-			}
-		}
-	}
-	protected squeezeMatrix() {
-		var trailingRow: GridCell[] = this.getRow(this.numRows - 1)
-		var trailingColumn: GridCell[] = this.getColumn(this.numColumns - 1)
-
-		var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
-		var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
-
-		while (trailingRowEmpty === true) {
-			this.removeRow();
-			var trailingRow: GridCell[] = this.getRow(this.numRows - 1);
-			var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
+		if (targetCell.sources?.[child.id] !== undefined) {
+			return false
 		}
 
-		while (trailingColumnEmpty === true) {
-			this.removeColumn();
-			var trailingColumn: GridCell[] = this.getColumn(this.numColumns - 1);
-			var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
-		}
+		return true;
 	}
 
-	protected insertEmptyColumn(index?: number) {
-		let newColumn: GridCell<T>[] = Array<GridCell<T>>(this.numRows).fill(undefined);
-		let INDEX: number | undefined = index;
-		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns) {
-			INDEX = this.numColumns;
-		}
-
-		// Grow split elements by 1 in columns
-		let splitElements: T[][] = this.getColumnSplitElements(INDEX);
-		splitElements.forEach((row, row_index) => {
-			for (let element of row) {
-				let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
-
-				if (gridConfig !== undefined && gridConfig.gridSize !== undefined) {
-					// Grow
-					gridConfig.gridSize.noCols += 1;
-					this.placementModeTranslators.set(element, gridConfig);
-
-					// Add this element so that it spans over the gap
-					if (newColumn[row_index]?.sources === undefined) {
-						newColumn[row_index] = { sources: { [element.id]: gridConfig.coords ?? { row: 0, col: 0 } } }
-					} else {
-						newColumn[row_index].sources[element.id] = gridConfig.coords ?? { row: 0, col: 0 }
-					}
-
-
-					if (newColumn[row_index]?.elements === undefined) {
-						newColumn[row_index].elements = [element]
-					} else {
-						newColumn[row_index].elements.push(element)
-					}
-				}
-			}
-		})
-
-		for (let i = 0; i < this.numRows; i++) {
-			this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
-		}
-
-		this.shiftElementColumnIndexes(INDEX, 1);
-	}
-	protected insertEmptyRow(index?: number): void {
-		var newRow: GridCell<T>[] = Array<GridCell<T>>(this.numColumns).fill(undefined)
-		let INDEX: number | undefined = index;
-		if (INDEX === undefined || INDEX < 0 || INDEX > this.numRows) {
-			INDEX = this.numRows;
-		}
-
-		// Grow split elements by 1 in columns
-		let splitElements: T[][] = this.getRowSplitElements(INDEX);
-		splitElements.forEach((col, col_index) => {
-			for (let element of col) {
-				let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
-
-				if (gridConfig !== undefined && gridConfig.gridSize !== undefined) {
-					// Grow
-					gridConfig.gridSize.noRows += 1;
-					this.placementModeTranslators.set(element, gridConfig);
-
-					// Add this element so that it spans over the gap
-					if (newRow[col_index]?.sources === undefined) {
-						newRow[col_index] = { sources: { [element.id]: gridConfig.coords ?? { row: 0, col: 0 } } }
-					} else {
-						newRow[col_index].sources[element.id] = gridConfig.coords ?? { row: 0, col: 0 }
-					}
-
-
-					if (newRow[col_index]?.elements === undefined) {
-						newRow[col_index].elements = [element]
-					} else {
-						newRow[col_index].elements.push(element)
-					}
-				}
-			}
-		})
-
-		this.gridMatrix.splice(INDEX, 0, newRow);
-
-		this.shiftElementRowIndexes(INDEX, 1);
-	}
-
-	public removeColumn(index?: number, onlyIfEmpty: boolean = false) {
-		if (index === undefined || index < 0 || index > this.numColumns - 1) {
-			var INDEX = this.numColumns - 1;
-		} else {
-			INDEX = index;
-		}
-
-		var targetColumn: GridCell[] = this.getColumn(INDEX);
-		var empty: boolean = this.isArrayEmpty(targetColumn)
-
-		if (onlyIfEmpty === true && empty === true) { return }
-
-		for (let i = 0; i < this.numRows; i++) {
-			this.gridMatrix[i].splice(INDEX, 1);
-		}
-
-		this.shiftElementColumnIndexes(INDEX, -1);
-	}
-	public removeRow(index?: number, onlyIfEmpty: boolean = false) {
-		if (index === undefined || index < 0 || index > this.numRows - 1) {
-			var INDEX = this.numRows - 1;
-		} else {
-			INDEX = index;
-		}
-
-		var targetRow: GridCell<T>[] = this.gridMatrix[INDEX];
-		var empty: boolean = this.isArrayEmpty(targetRow)
-
-		if (onlyIfEmpty === true && !empty) { return }
-
-		this.gridMatrix.splice(INDEX, 1);
-
-		this.shiftElementRowIndexes(INDEX, -1);
-	}
-
-	protected shiftElementColumnIndexes(from: number, amount: number = 1) {
-		// Update grid indexes
-		for (let col_index = from; col_index < this.numColumns; col_index++) {
-			let col = this.getColumn(col_index);
-
-			// Go down the column
-			col.forEach((cell, row_index) => {
-				if (cell?.elements !== undefined) {
-					cell.elements.forEach((element) => {
-						if (!this.isCellElementSource(element, { row: row_index, col: col_index })) { return }
-
-						let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
-						if (gridConfig && gridConfig.coords !== undefined) {
-							gridConfig.coords.col += amount;
-							this.placementModeTranslators.set(element, gridConfig);
-						}
-					})
-				}
-
-				// Update sources
-				if (cell?.sources !== undefined) {
-					Object.entries(cell.sources).forEach(([id, coord]) => {
-						if (coord.col >= from) {
-							coord.col += amount
-						}
-					})
-				}
-			})
+	private setCellUndefinedIfEmpty(coords: { row: number, col: number }) {
+		let cell: GridCell<T> = this.getCell({ row: coords.row, col: coords.col })
+		if (cell !== undefined && Object.values(cell).every(v => v === undefined)) {
+			this.gridMatrix[coords.row][coords.col] = undefined
 		}
 	}
+	//#endregion
+	// -----------------------------------------------
 
-	protected shiftElementRowIndexes(from: number, amount: number = 1) {
-		// Update grid indexes
-		for (let row_index = from; row_index < this.numRows; row_index++) {
-			let row = this.getRow(row_index);
-
-			// Go down the row
-			row.forEach((cell, col_index) => {
-				if (cell?.elements !== undefined) {
-					cell.elements.forEach((element) => {
-						if (!this.isCellElementSource(element, { row: row_index, col: col_index })) { return }
-
-						let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
-						if (gridConfig && gridConfig.coords !== undefined) {
-							gridConfig.coords.row += amount;
-							this.placementModeTranslators.set(element, gridConfig);
-						}
-					})
-				}
-
-				// Update sources
-				if (cell?.sources !== undefined) {
-					Object.entries(cell.sources).forEach(([id, coord]) => {
-						if (coord.row >= from) {
-							coord.row += amount
-						}
-					})
-				}
-			})
-		}
-	}
-
-	/**
-	 * Computes the positions and dimensions of cells in a grid layout.
-	 * Initializes the cells array with Spacial objects representing each cell's geometry.
-	 * Each cell's position is calculated based on cumulative widths (x-axis) and heights (y-axis)
-	 * from the grid's content origin point (contentX, contentY).
-	 * 
-	 * The computation uses:
-	 * - gridSizes.rows[].height for row heights
-	 * - gridSizes.columns[].width for column widths
-	 * 
-	 * @protected
-	 * @returns {void}
-	 */
-	protected computeCells() {
-		// First let's generate the sizes and positions of each cell
-
-		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new Spacial()));
-
-		var xCount: number = 0;
-		var yCount: number = 0;
-
-
-		for (var row = 0; row < this.numRows; row++) {
-			xCount = 0;
-			var rowHeight: number = this.gridSizes.rows[row].height;
-
-			for (var col = 0; col < this.numColumns; col++) {
-				var colWidth: number = this.gridSizes.columns[col].width;
-
-				this.cells[row][col] = new Spacial(this.cx + xCount, this.cy + yCount, colWidth, rowHeight)
-
-				xCount += colWidth;
-			}
-
-			yCount += rowHeight;
-		}
-	}
-
-	protected applyCellSizes() {
-		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new Spacial()));
-
-		this.gridSizes.rows.forEach((row, row_index) => {
-			this.gridSizes.columns.forEach((column, column_index) => {
-				let targetCell = this.cells[row_index][column_index];
-
-				targetCell.width = column.width;
-				targetCell.height = row.height;
-			})
-		})
-	}
-
-	public setChildSize(child: T, size: { noRows: number, noCols: number }) {
-		let location: { row: number, col: number } | undefined = this.locateGridChild(child)
-
-		if (location === undefined) {
-			console.warn(`Cannot locate child for size change ${child.ref}`)
-			return
-		}
-
-		if (child.placementMode.type === "grid") {
-			child.placementMode.config.gridSize = { noRows: size.noRows, noCols: size.noCols }
-		}
-
-		let region: OccupiedCell<T>[][] | undefined = this.getElementGridRegion(child);
-		if (region === undefined) {
-			return
-		}
-
-		this.remove(child);
-		this.appendElementsInRegion(region, location);
-	}
 
 	public positionElement(child: T, position: { row: number, col: number }) {
 		let region: GridCell<T>[][] | undefined = this.getElementGridRegion(child, position);
@@ -1199,93 +1313,5 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		}
 
 		this.appendElementsInRegion(region, position);
-	}
-
-	protected getElementGridRegion(child: T, overridePosition?: { row: number, col: number }): OccupiedCell<T>[][] | undefined {
-		if (child.placementMode.type !== "grid") {
-			console.warn(`Trying to position non-grid placement element ${child.ref} in grid ${this.ref}`)
-			return
-		}
-
-		let topLeft: { row: number, col: number } | undefined = child.placementMode.config.coords;
-		if (topLeft === undefined) {
-			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
-			return
-		}
-
-		let bottomRight: { row: number, col: number } = {
-			row: topLeft.row + (child.placementMode.config.gridSize?.noRows ?? 1) - 1,
-			col: topLeft.col + (child.placementMode.config.gridSize?.noCols ?? 1) - 1
-		};
-
-
-		let root: { row: number, col: number } = overridePosition ?? topLeft
-		child.placementMode.config.coords = root;
-
-		// Construct region
-		let entry: OccupiedCell<T> = { elements: [child], sources: { [child.id]: root } }
-		let region: OccupiedCell<T>[][] =
-			Array<OccupiedCell<T>[]>(child.placementMode.config.gridSize?.noRows ?? 1)
-				.fill(Array<OccupiedCell<T>>(child.placementMode.config.gridSize?.noCols ?? 1).fill(entry))
-
-		// Put the top left back to just the element:
-		region[0][0] = { elements: [child] };
-
-		return region
-	}
-
-	protected getColumnSplitElements(index: number): T[][] {
-		if (index > this.numColumns || index < 0) {
-			throw new Error(`Index ${index} is out of bounds`)
-		}
-
-		// Get elements which have a part on the left and right of the index (insertion index)
-		var elements: T[][] = Array.from({ length: this.numRows }, () => []);
-
-		this.getRows().forEach((row, row_index) => {
-			let leftCell: GridCell<T> = row[index - 1];
-			let rightCell: GridCell<T> = row[index];
-
-			for (let child of (leftCell?.elements ?? [])) {
-				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
-
-				if (childIndex !== -1) {
-					elements[row_index].push(child)
-				}
-			}
-		})
-
-		return elements;
-	}
-
-	protected getRowSplitElements(index: number): T[][] {
-		if (index > this.numRows || index < 0) {
-			throw new Error(`Index ${index} is out of bounds`)
-		}
-
-		// Get elements which have a part on the left and right of the index (insertion index)
-		var elements: T[][] = Array.from({ length: this.numColumns }, () => []);
-
-		this.getColumns().forEach((col, col_index) => {
-			let leftCell: GridCell<T> = col[index - 1];
-			let rightCell: GridCell<T> = col[index];
-
-			for (let child of (leftCell?.elements ?? [])) {
-				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
-
-				if (childIndex !== -1) {
-					elements[col_index].push(child);
-				}
-			}
-		})
-
-		return elements;
-	}
-
-	private setCellUndefinedIfEmpty(coords: { row: number, col: number }) {
-		let cell: GridCell<T> = this.getCell({ row: coords.row, col: coords.col })
-		if (cell !== undefined && Object.values(cell).every(v => v === undefined)) {
-			this.gridMatrix[coords.row][coords.col] = undefined
-		}
 	}
 }
