@@ -2,14 +2,14 @@
 import Aligner, { IAligner } from "../aligner";
 import { DEFAULT_SEQUENCE } from "../default/sequence";
 import { UserComponentType } from "../point";
-import Visual from "../visual";
+import Visual, { AlignerElement, PulseElement } from "../visual";
 import Sequence, { ISequence } from "./sequence";
 
 export interface ISequenceAligner extends IAligner<ISequence> {
 	sequences: ISequence[]
 }
 
-export default class SequenceAligner extends Aligner<Sequence> implements ISequenceAligner {
+export default class SequenceAligner extends Aligner<AlignerElement<Sequence>> implements ISequenceAligner {
 	static ElementType: UserComponentType = "sequence-aligner";
 
 	get state(): ISequenceAligner {
@@ -19,7 +19,7 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		};
 	}
 
-	get sequences(): Sequence[] {
+	get sequences(): AlignerElement<Sequence>[] {
 		return this.children;
 	}
 
@@ -28,18 +28,18 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 
 		// Initial sequence:
 		if (params.children.length === 0) {
-			var startSequence = new Sequence(DEFAULT_SEQUENCE);
+			var startSequence = new Sequence(DEFAULT_SEQUENCE) as AlignerElement<Sequence>;
 			this.add(startSequence);
 		}
 
 		params.children.forEach((s) => {
-			var newSeq = new Sequence(s);
+			var newSeq = new Sequence(s) as AlignerElement<Sequence>;
 			this.add(newSeq);
 		});
 	}
 
 	// Adding
-	public addPulse(pulse: Visual) {
+	public addPulse(pulse: PulseElement) {
 		if (pulse.placementMode.type !== "pulse") {
 			console.warn(`Cannot mount pulse with no pulse type config`)
 			return
@@ -65,7 +65,7 @@ export default class SequenceAligner extends Aligner<Sequence> implements ISeque
 		targetSequence.addPulse(pulse);
 	}
 
-	public deletePulse(pulse: Visual, holdColOpen: boolean = false) {
+	public deletePulse(pulse: PulseElement, holdColOpen: boolean = false) {
 		if (pulse.placementMode.type !== "pulse") {
 			console.warn(`Cannot remove pulse that is not of pulse position type`)
 			return

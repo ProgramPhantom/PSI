@@ -4,6 +4,7 @@ import Line, { ILine } from "../line";
 import { UserComponentType } from "../point";
 import Text, { IText, Position } from "../text";
 import { Dimensions } from "../spacial";
+import { AlignerElement } from "../visual";
 
 
 export type LabelTextPosition = "top" | "bottom" | "inline";
@@ -30,8 +31,8 @@ export default class Label extends Aligner implements ILabel {
 	}
 	static ElementType: UserComponentType = "label";
 
-	line?: Line;
-	text?: Text;
+	line?: AlignerElement<Line>;
+	text?: AlignerElement<Text>;
 
 	labelConfig: ILabelConfig;
 
@@ -55,10 +56,10 @@ export default class Label extends Aligner implements ILabel {
 
 		if (params.text) {
 			// Create text
-			var text: Text = new Text(params.text);
+			var text: AlignerElement<Text> = new Text(params.text) as AlignerElement<Text>;
 			text.placementMode = {
 				type: "aligner",
-				alignerConfig: {
+				config: {
 					alignment: "centre"
 				}
 			}
@@ -69,10 +70,10 @@ export default class Label extends Aligner implements ILabel {
 
 		if (params.line) {
 			// Create line
-			let line: Line = new Line(params.line);
+			let line: AlignerElement<Line> = new Line(params.line) as AlignerElement<Line>;
 			line.placementMode = {
 				type: "aligner",
-				alignerConfig: {
+				config: {
 					alignment: "centre"
 				}
 			}
@@ -95,7 +96,7 @@ export default class Label extends Aligner implements ILabel {
 				case "inline":
 					this.line.placementMode = {
 						type: "aligner",
-						alignerConfig: {
+						config: {
 							alignment: "centre",
 							contribution: { mainAxis: false, crossAxis: true }
 						}

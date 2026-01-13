@@ -1,7 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
 import { ID } from "./point";
 import Spacial, { Dimensions, Size } from "./spacial";
-import Visual, { doesDraw, IVisual } from "./visual";
+import Visual, { AlignerElement, doesDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 
@@ -13,9 +13,10 @@ export interface IAligner<T extends IVisual = IVisual> extends ICollection {
 	children: T[]
 }
 
+
 // A collection where all elements are assumed to be in a stack arrangement (either vertically or horizontally)
 // Useful for getting the max width/height of multiple elements
-export default class Aligner<T extends Visual = Visual> extends Collection<T> implements IAligner {
+export default class Aligner<T extends AlignerElement = AlignerElement> extends Collection<T> implements IAligner {
 	get state(): IAligner {
 		return {
 			mainAxis: this.mainAxis,
@@ -59,7 +60,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 			this.svg.remove();
 		}
 
-		var group = new G().id(this.id).attr({title: this.ref});
+		var group = new G().id(this.id).attr({ title: this.ref });
 		group.attr({
 			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
 		});
@@ -83,16 +84,16 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		}
 		this.children.forEach((c) => c.computeSize());
 
-		this.cells = Array.from({length: this.noChildren}, () => new Spacial());
+		this.cells = Array.from({ length: this.noChildren }, () => new Spacial());
 
 		// Compute intrinsic length of main axis:
 		// This is the sum of main axis lengths:
 		this.children.forEach((child, child_index) => {
 			let correspondingCell: Spacial = this.cells[child_index]
-			
+
 			let contribution: boolean = true;
 			if (child.placementMode.type === "aligner") {
-				if (child.placementMode.alignerConfig.contribution?.mainAxis === false) {
+				if (child.placementMode.config.contribution?.mainAxis === false) {
 					contribution = false;
 				}
 				if (child.sizeMode[this.mainAxis] === "grow") {
@@ -101,7 +102,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 			}
 
 			if (contribution === true) {
-				correspondingCell.setSizeByDimension(child.getSizeByDimension(this.mainAxis), this.mainAxis) 
+				correspondingCell.setSizeByDimension(child.getSizeByDimension(this.mainAxis), this.mainAxis)
 			} else {
 				correspondingCell.setSizeByDimension(0, this.mainAxis)
 			}
@@ -114,7 +115,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		this.children.forEach((child) => {
 			let contribution: boolean = true;
 			if (child.placementMode.type === "aligner") {
-				if (child.placementMode.alignerConfig.contribution?.crossAxis === false) {
+				if (child.placementMode.config.contribution?.crossAxis === false) {
 					contribution = false;
 				}
 				if (child.sizeMode[this.crossAxis] === "grow") {
@@ -136,10 +137,10 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		this.setSizeByDimension(intrinsicLength, this.mainAxis)
 		this.setSizeByDimension(intrinsicWidth, this.crossAxis)
 
-		return {width: this.width, height: this.height};
+		return { width: this.width, height: this.height };
 	}
 
-	public computePositions(root: {x: number, y: number}): void {
+	public computePositions(root: { x: number, y: number }): void {
 		this.x = root.x;
 		this.y = root.y;
 
@@ -152,7 +153,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 				let targetCell = this.cells[child_index];
 
 				child.x = this.cx + xCount
-				
+
 				targetCell.x = child.x;
 				targetCell.y = this.cy;
 
@@ -161,29 +162,29 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 				// TODO: allow for other alignments
 				this.internalImmediateBind(child, "y", "centre");
 
-				child.computePositions({x: child.x, y: child.y});
+				child.computePositions({ x: child.x, y: child.y });
 			})
 		} else {  // this.mainAxis === "y"
 			this.children.forEach((child, child_index) => {
 				let targetCell = this.cells[child_index];
 
 				child.y = this.cy + yCount;
-				
+
 				targetCell.y = child.y;
 				targetCell.x = this.cx;
-				
+
 				yCount += child.height;
-			
+
 				this.internalImmediateBind(child, "x", "centre");
 
-				child.computePositions({x: child.x, y: child.y});
+				child.computePositions({ x: child.x, y: child.y });
 			})
 		}
 	}
 
 	public override growElement(containerSize: Size): Record<Dimensions, number> {
 		let change: Record<Dimensions, number> = super.growElement(containerSize)
-		
+
 
 		// Resize cells:
 		// Main axis:
@@ -214,7 +215,7 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 					remainingMainAxisChange -= widthToAdd;
 				}
 			})
-		} 
+		}
 		if (remainingMainAxisChange < 0) {
 			console.warn(`Aligner ${this.ref} is over spilling container on main axis`)
 		}
@@ -230,12 +231,12 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 			console.warn(`Aligner ${this.ref} is over spilling container on cross axis`)
 		}
 
-		
+
 		// TODO:
 		this.children.forEach((child, child_index) => {
 			let targetCell = this.cells[child_index];
-		
-			child.growElement(targetCell.contentSize);	
+
+			child.growElement(targetCell.contentSize);
 		})
 
 		return change;
@@ -248,9 +249,9 @@ export default class Aligner<T extends Visual = Visual> extends Collection<T> im
 		let INDEX: number = index ?? this.children.length;
 
 		this.children.splice(INDEX, 0, child)
-		
+
 		if (child.placementMode.type === "aligner") {
-			child.placementMode.alignerConfig.index = INDEX;
+			child.placementMode.config.index = INDEX;
 		}
 		child.parentId = this.id;
 	}

@@ -1,49 +1,16 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
-import Line, { ILine } from "./line";
-import { AllComponentTypes, ID } from "./point";
-import RectElement, { IRectElement } from "./rectElement";
-import Spacial, { ContainerSizeMethod, Dimensions, Size } from "./spacial";
-import SVGElement, { ISVGElement } from "./svgElement";
+import { ID } from "./point";
+import { ContainerSizeMethod, Dimensions, Size } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 
-
-export function HasComponents<T extends Record<string, Spacial | Spacial[]>>(
-	obj: any
-): obj is IHaveComponents<T> {
-	return (obj as any).components !== undefined;
-}
-
-export interface IHaveComponents<C extends Record<string, Spacial | Spacial[]>> {
-	components: C;
-}
 
 export interface ICollection extends IVisual {
 	children: IVisual[];
 
-	sizeMode?:  Record<Dimensions, ContainerSizeMethod>
+	sizeMode?: Record<Dimensions, ContainerSizeMethod>
 }
 
 export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
-	static CreateChild(values: IVisual, type: AllComponentTypes): Visual {
-		// I would LOVE to do this with a registry defined at the top level but it's causing
-		// a circular dependency error which is impossible to fix...
-		var element: Visual;
-		switch (type) {
-			case "svg":
-				element = new SVGElement(values as ISVGElement);
-				break;
-			case "rect":
-				element = new RectElement(values as IRectElement);
-				break;
-			case "line":
-				element = new Line(values as ILine);
-				break;
-			default:
-				throw new Error(`Not implemented`);
-		}
-		return element;
-	}
-
 	get state(): ICollection {
 		return {
 			children: this.children.map((c) => c.state),
@@ -79,12 +46,67 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		// });
 	}
 
+
+	// COMPUTE
+	public computeSize(): Size {
+		var size: Size = { width: 0, height: 0 }
+
+		var top = Infinity;
+		var left = Infinity;
+		var bottom = -Infinity;
+		var right = -Infinity;
+
+		this.children.forEach((c) => {
+			c.computeSize();
+
+			top = c.y < top ? c.y : top;
+			var far = c.getFar("y");
+			bottom = far > bottom ? far : bottom;
+
+
+			left = c.x < left ? c.x : left;
+			var farX = c.getFar("x");
+			right = farX > right ? farX : right;
+		});
+
+		size.width = right - left;
+		size.height = bottom - top;
+
+		this.contentWidth = size.width;
+		this.contentHeight = size.height;
+
+		return { width: this.width, height: this.height }
+	}
+
+	public computePositions(root: { x: number; y: number; }): void {
+		this.x = root.x;
+		this.y = root.y;
+
+		this.children.forEach((c) => {
+			c.computePositions({ x: this.cx, y: this.cy })
+		})
+	}
+
+	public override growElement(containerSize: Size): Record<Dimensions, number> {
+		let sizeDiff = super.growElement(containerSize)
+
+		// TODO:
+		this.children.forEach((child) => {
+			if (child.placementMode.type === "free") {
+				child.growElement(this.size);
+			}
+		})
+
+		return sizeDiff;
+	}
+
+
 	draw(surface: Element) {
 		if (this.svg) {
 			this.svg.remove();
 		}
 
-		var group = new G().id(this.id).attr({title: this.ref});
+		var group = new G().id(this.id).attr({ title: this.ref });
 		group.attr({
 			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
 		});
@@ -106,13 +128,32 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		var collectionHitbox = SVG()
 			.rect()
 			.id(this.id + "-hitbox")
-			.attr({"data-editor": "hitbox", key: this.ref});
+			.attr({ "data-editor": "hitbox", key: this.ref });
 
 		collectionHitbox.size(this.width, this.height);
 		collectionHitbox.move(this.x, this.y);
 		collectionHitbox.fill(`transparent`).opacity(0.3);
 
 		return collectionHitbox;
+	}
+
+	// Construct and SVG with children positioned relative to (0, 0)
+	override getInternalRepresentation(): Element | undefined {
+		var deltaX = -this.cx;
+		var deltaY = -this.cy;
+
+		if (this.svg === undefined) {
+			this.computeSelf();
+			let temporaryCanvas: Element = SVG();
+			this.draw(temporaryCanvas);
+		}
+
+		var internalSVG = this.svg?.clone(true, true);
+		internalSVG
+			?.attr({ style: "display: block;" })
+			.attr({ transform: `translate(${deltaX}, ${deltaY})` });
+
+		return internalSVG;
 	}
 
 	add(child: T) {
@@ -151,79 +192,6 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	}
 
 
-	computeSize(): Size {
-		var size: Size = {width: 0, height: 0}
-
-		var top = Infinity;
-		var left = Infinity;
-		var bottom = -Infinity;
-		var right = -Infinity;
-
-		this.children.forEach((c) => {
-			c.computeSize();
-
-			top = c.y < top ? c.y : top;
-			var far = c.getFar("y");
-			bottom = far > bottom ? far : bottom;
-			
-
-			left = c.x < left ? c.x : left;
-			var farX = c.getFar("x");
-			right = farX > right ? farX : right;
-		});
-
-		size.width = right - left;
-		size.height = bottom - top;
-
-		this.contentWidth = size.width;
-		this.contentHeight = size.height;
-
-		return {width: this.width, height: this.height}
-	}
-
-	public computePositions(root: { x: number; y: number; }): void {
-		this.x = root.x;
-		this.y = root.y;
-
-		this.children.forEach((c) => {
-			c.computePositions({x: this.cx, y: this.cy})
-		})
-	}
-
-	public override growElement(containerSize: Size): Record<Dimensions, number> {
-		let sizeDiff = super.growElement(containerSize)
-
-		// TODO:
-		this.children.forEach((child) => {
-			if (child.placementMode.type === "free") {
-				child.growElement(this.size);
-			}
-		})
-
-		return sizeDiff;
-	}
-
-	// Construct and SVG with children positioned relative to (0, 0)
-	override getInternalRepresentation(): Element | undefined {
-		var deltaX = -this.cx;
-		var deltaY = -this.cy;
-
-		if (this.svg === undefined) {
-			this.computeSelf();
-			let temporaryCanvas: Element = SVG();
-			this.draw(temporaryCanvas);
-		}
-
-		var internalSVG = this.svg?.clone(true, true);
-		internalSVG
-			?.attr({style: "display: block;"})
-			.attr({transform: `translate(${deltaX}, ${deltaY})`});
-
-		return internalSVG;
-	}
-
-	
-
 	get dirty(): boolean {
 		var isDirty = false;
 		this.children.forEach((c) => {
@@ -243,11 +211,11 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 	}
 
 	override get allElements(): Record<ID, Visual> {
-		var elements: Record<ID, Visual> = {[this.id]: this};
+		var elements: Record<ID, Visual> = { [this.id]: this };
 
 		this.children.forEach((c) => {
 			let childElements = c.allElements;
-			elements = {...elements, ...childElements};
+			elements = { ...elements, ...childElements };
 		});
 		return elements;
 	}

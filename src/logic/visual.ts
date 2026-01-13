@@ -1,7 +1,7 @@
 import { Element, Mask } from "@svgdotjs/svg.js";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { BAR_MASK_ID, ID, UserComponentType } from "./point";
-import { Size } from "./spacial";
+import { IAlignerConfig, IGridConfig, IPulseConfig, Size } from "./spacial";
 import { Rect } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { Svg } from "@svgdotjs/svg.js";
@@ -23,6 +23,12 @@ export interface IDraw {
 export function doesDraw(object: any): object is IDraw {
 	return "draw" in object;
 }
+
+export type PulseElement<T extends Visual = Visual> = T & { placementMode: { type: "pulse"; config: IPulseConfig } };
+export type GridElement<T extends Visual = Visual> = T & { placementMode: { type: "grid"; config: IGridConfig } };
+export type AlignerElement<T extends Visual = Visual> = T & { placementMode: { type: "aligner"; config: IAlignerConfig } };
+export type FreeElement<T extends Visual = Visual> = T & { placementMode: { type: "free" } };
+export type BindsElement<T extends Visual = Visual> = T & { placementMode: { type: "binds"; bindings: undefined } };
 
 export default abstract class Visual extends PaddedBox implements IVisual {
 	static ElementType: UserComponentType = "rect";
@@ -79,17 +85,17 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 				// White = show, Black = hide.
 				// So we need a white background.
 				mask.add(surface.root().rect(100000, 100000).move(-50000, -50000).fill("#fff"));
-			} 
+			}
 
-			let block: Rect | undefined= this.maskBlock;
+			let block: Rect | undefined = this.maskBlock;
 			if (block === undefined) {
 				// Add SELF to the mask as BLACK to hide bar under self.
 				// Clone internal rep	
 				let blockedArea = new Rect().size(this.width, this.height).move(this.drawX, this.drawY)
 					.attr({ fill: "#000", opacity: 1, stroke: "none" }).id(`mask-${this.id}`);
-					// Not allowed query selectors that start with a digit.
-				
-				
+				// Not allowed query selectors that start with a digit.
+
+
 				this.maskBlock = blockedArea;
 				mask.add(this.maskBlock)
 			} else {

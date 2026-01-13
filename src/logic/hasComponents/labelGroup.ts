@@ -2,7 +2,7 @@ import Collection from "../collection";
 import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
 import { Position } from "../text";
-import Visual, { IVisual } from "../visual";
+import Visual, { GridElement, IVisual } from "../visual";
 import Label, { ILabel } from "./label";
 
 
@@ -12,7 +12,7 @@ export interface ILabelGroup extends IGrid {
 	coreChildType: UserComponentType;
 }
 
-export default class LabelGroup<T extends Visual = Visual>
+export default class LabelGroup<T extends GridElement = GridElement>
 	extends Grid {
 	static isLabelGroup(val: Visual): val is LabelGroup {
 		return (val as LabelGroup)?.coreChild !== undefined;
@@ -27,13 +27,13 @@ export default class LabelGroup<T extends Visual = Visual>
 		};
 	}
 
-	get labels(): Partial<Record<Position, Label>> {
-		let record: Partial<Record<Position, Label>> = {};
+	get labels(): Partial<Record<Position, GridElement<Label>>> {
+		let record: Partial<Record<Position, GridElement<Label>>> = {};
 
-		let top: Label | undefined = this.getCell({ row: 0, col: 1 })?.elements?.[0] as Label;
-		let bottom: Label | undefined = this.getCell({ row: 2, col: 1 })?.elements?.[0] as Label;
-		let left: Label | undefined = this.getCell({ row: 1, col: 0 })?.elements?.[0] as Label;
-		let right: Label | undefined = this.getCell({ row: 1, col: 2 })?.elements?.[0] as Label;
+		let top: GridElement<Label> | undefined = this.getCell({ row: 0, col: 1 })?.elements?.[0] as GridElement<Label>;
+		let bottom: GridElement<Label> | undefined = this.getCell({ row: 2, col: 1 })?.elements?.[0] as GridElement<Label>;
+		let left: GridElement<Label> | undefined = this.getCell({ row: 1, col: 0 })?.elements?.[0] as GridElement<Label>;
+		let right: GridElement<Label> | undefined = this.getCell({ row: 1, col: 2 })?.elements?.[0] as GridElement<Label>;
 
 		record["top"] = top;
 		record["bottom"] = bottom;
@@ -86,7 +86,7 @@ export default class LabelGroup<T extends Visual = Visual>
 		this.setCoreChild(coreChild);
 
 		Object.entries(params.labels)?.forEach(([position, label]) => {
-			var newLabel = new Label(label);
+			var newLabel = new Label(label) as GridElement<Label>;
 
 			this.addLabel(newLabel, position as Position);
 		});
@@ -96,7 +96,7 @@ export default class LabelGroup<T extends Visual = Visual>
 		this._coreChild = child;
 		this._coreChild.placementMode = {
 			type: "grid",
-			gridConfig: {
+			config: {
 				coords: { row: 1, col: 1 }
 			}
 		}
@@ -105,11 +105,11 @@ export default class LabelGroup<T extends Visual = Visual>
 	}
 
 
-	addLabel(label: Label, position: Position) {
+	addLabel(label: GridElement<Label>, position: Position) {
 
 		label.placementMode = {
 			type: "grid",
-			gridConfig: {
+			config: {
 				contribution: {
 					x: true,
 					y: (this.placementMode.type === "pulse" && this.placementMode.config.orientation === "both") ? false : true
@@ -120,25 +120,25 @@ export default class LabelGroup<T extends Visual = Visual>
 
 		switch (position) {
 			case "top":
-				label.placementMode.gridConfig.alignment = { x: "centre", y: "far" }
+				label.placementMode.config.alignment = { x: "centre", y: "far" }
 				label.sizeMode = { x: "grow", y: "fit" }
 				label.mainAxis = "y";
 				this.addChildAtCoord(label, 0, 1);
 				break;
 			case "right":
-				label.placementMode.gridConfig.alignment = { x: "here", y: "centre" }
+				label.placementMode.config.alignment = { x: "here", y: "centre" }
 				label.sizeMode = { x: "fit", y: "grow" }
 				label.mainAxis = "x";
 				this.addChildAtCoord(label, 1, 2);
 				break;
 			case "bottom":
-				label.placementMode.gridConfig.alignment = { x: "centre", y: "here" }
+				label.placementMode.config.alignment = { x: "centre", y: "here" }
 				label.sizeMode = { x: "grow", y: "fit" }
 				label.mainAxis = "y";
 				this.addChildAtCoord(label, 2, 1);
 				break;
 			case "left":
-				label.placementMode.gridConfig.alignment = { x: "far", y: "centre" }
+				label.placementMode.config.alignment = { x: "far", y: "centre" }
 				label.sizeMode = { x: "fit", y: "grow" }
 				label.mainAxis = "x";
 				this.addChildAtCoord(label, 1, 0);

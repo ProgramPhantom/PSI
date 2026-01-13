@@ -3,7 +3,8 @@ import { BAR_MASK_ID, ID, UserComponentType } from "../point";
 import RectElement, { IRectElement, IRectStyle } from "../rectElement";
 import { Orientation } from "../spacial";
 import Text, { IText } from "../text";
-import Visual, { IVisual } from "../visual";
+import Visual, { GridElement, IVisual } from "../visual";
+import { SequenceElement } from "./sequence";
 
 
 export interface IChannel extends IGrid {
@@ -16,7 +17,7 @@ export interface IChannel extends IGrid {
 
 
 
-export default class Channel extends Grid implements IChannel {
+export default class Channel extends Grid<SequenceElement> implements IChannel {
 	static ElementType: UserComponentType = "channel";
 	static OrientationToRow(orientation: Orientation): 0 | 1 | 2 {
 		let row: 0 | 1 | 2 = 0
@@ -69,29 +70,30 @@ export default class Channel extends Grid implements IChannel {
 
 	sequenceID?: ID;
 
-	label: Text;
-	bar: RectElement;
+	label: GridElement<Text>;
+	bar: GridElement<RectElement>;
 
 	constructor(params: IChannel) {
 		super(params);
 
 		this.sequenceID = params.sequenceID;
 
-		this.label = new Text(params.label);
+		this.label = new Text(params.label) as GridElement<Text>;
 		this.label.placementMode = {
-			type: "grid", gridConfig: {
+			type: "grid", config: {
 				alignment: { x: "centre", y: "centre" },
 				coords: { row: 1, col: 0 },
 				contribution: { x: true, y: false }
 			}
 		}
-		this.label.ref = this.ref + "-label"
+		this.label.ref = this.ref + "-label";
+		this.label = this.label as GridElement<Text>;
 
 
-		this.bar = new RectElement(params.bar);
+		this.bar = new RectElement(params.bar) as GridElement<RectElement>;
 		this.bar.maskId = BAR_MASK_ID;
 		this.bar.placementMode = {
-			type: "grid", gridConfig: {
+			type: "grid", config: {
 				alignment: { x: "here", y: "centre" },
 				coords: { row: 1, col: 1 }
 			}
@@ -129,7 +131,7 @@ export default class Channel extends Grid implements IChannel {
 
 		this.bar.placementMode = {
 			type: "grid",
-			gridConfig: {
+			config: {
 				gridSize: {
 					noCols: this.numColumns - 1,
 					noRows: 1

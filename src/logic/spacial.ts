@@ -30,7 +30,7 @@ export interface IPulseConfig {
 }
 
 
-export interface IGridChildConfig {
+export interface IGridConfig {
 	coords?: { row: number, col: number }
 	alignment?: Record<Dimensions, SiteNames>
 	gridSize?: { noRows: number, noCols: number }
@@ -47,8 +47,10 @@ export interface IAlignerConfig {
 export type PlacementConfiguration = { type: "free" } |
 { type: "pulse"; config: IPulseConfig } |
 { type: "binds"; bindings: undefined } |
-{ type: "grid"; gridConfig: IGridChildConfig } |
-{ type: "aligner", alignerConfig: IAlignerConfig }
+{ type: "grid"; config: IGridConfig } |
+{ type: "aligner", config: IAlignerConfig }
+
+
 
 export type PlacementControl = "auto" | "user";
 

@@ -1,8 +1,8 @@
 import { Element } from "@svgdotjs/svg.js";
 import Grid, { Ghost, GridCell, IGrid, OccupiedCell } from "../grid";
 import { ID, UserComponentType } from "../point";
-import Spacial, { Dimensions, IGridChildConfig, IPulseConfig, Orientation, PlacementConfiguration, SiteNames, Size } from "../spacial";
-import Visual from "../visual";
+import Spacial, { Dimensions, IGridConfig, IPulseConfig, Orientation, PlacementConfiguration, SiteNames, Size } from "../spacial";
+import Visual, { GridElement, PulseElement } from "../visual";
 import Channel, { IChannel } from "./channel";
 import { G } from "@svgdotjs/svg.js";
 
@@ -14,8 +14,8 @@ export interface ISequence extends IGrid {
 export type OccupancyStatus = Visual | "." | undefined;
 
 
-
-export default class Sequence extends Grid implements ISequence {
+export type SequenceElement = PulseElement | GridElement;
+export default class Sequence<T extends SequenceElement = SequenceElement> extends Grid<SequenceElement> implements ISequence {
 	static ElementType: UserComponentType = "sequence";
 	static isPulse(element: Visual): boolean {
 		return element.placementMode.type === "pulse"
@@ -46,13 +46,13 @@ export default class Sequence extends Grid implements ISequence {
 		});
 		return elements;
 	}
-	
+
 
 	override get allElements(): Record<ID, Visual> {
-		var elements: Record<ID, Visual> = {[this.id]: this};
+		var elements: Record<ID, Visual> = { [this.id]: this };
 
 		this.channels.forEach((c) => {
-			elements = {...elements, ...c.allElements};
+			elements = { ...elements, ...c.allElements };
 		});
 		return elements;
 	}
@@ -77,7 +77,7 @@ export default class Sequence extends Grid implements ISequence {
 			this.svg.remove();
 		}
 
-		var group = new G().id(this.id).attr({title: this.ref});
+		var group = new G().id(this.id).attr({ title: this.ref });
 		group.attr({
 			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
 		});
@@ -87,9 +87,9 @@ export default class Sequence extends Grid implements ISequence {
 		surface.add(this.svg);
 
 		this.channels.forEach((channel) => {
-			
+
 			channel.draw(this.svg!);
-			
+
 		});
 	}
 
@@ -100,22 +100,22 @@ export default class Sequence extends Grid implements ISequence {
 		return size
 	}
 
-	public override computePositions(root: {x: number, y: number}): void {
+	public override computePositions(root: { x: number, y: number }): void {
 		super.computePositions(root);
 
 		this.applySizesToChannels();
 	}
 
 	// Content Commands
-	public addPulse(pulse: Visual) {
+	public addPulse(pulse: T) {
 		if (pulse.placementMode.type !== "pulse") {
 			console.warn(`Cannot mount pulse with no pulse type config`)
 			return
 		}
 
-		var gridConfig: IGridChildConfig = this.pulseConfigToGridConfig(pulse.placementMode)!;
+		var gridConfig: IGridConfig = this.pulseConfigToGridConfig(pulse.placementMode)!;
 
-		if (gridConfig.coords === undefined) {return}
+		if (gridConfig.coords === undefined) { return }
 		let targetChannel: Channel = this.channelsDict[pulse.placementMode.config.channelID ?? ""]
 		if (targetChannel === undefined) {
 			throw new Error(`Cannot find targeted channel with id ${pulse.placementMode.config.channelID}`);
@@ -136,9 +136,9 @@ export default class Sequence extends Grid implements ISequence {
 		// above and below it to pad out the top and bottom row:
 		if (pulse.placementMode.config.orientation === "both") {
 			let barHeight: number = targetChannel.bar.height;
-			let ghostHeight: number = (pulse.height - barHeight)/2;
+			let ghostHeight: number = (pulse.height - barHeight) / 2;
 
-			let ghost: Ghost = {size: {width: 0, height: ghostHeight}, owner: pulse.id}
+			let ghost: Ghost = { size: { width: 0, height: ghostHeight }, owner: pulse.id }
 
 			targetChannel.addCentralElementGhosts(pulse.placementMode.config.index!, ghost, ghost);
 
@@ -149,7 +149,7 @@ export default class Sequence extends Grid implements ISequence {
 
 	public addChannel(channel: Channel) {
 		this.channels.push(channel);
-		
+
 		// Add the three rows of this channel to the bottom of the 
 		// grid matrix;
 
@@ -157,15 +157,15 @@ export default class Sequence extends Grid implements ISequence {
 		// adding  could be longer than the matrix:
 
 		var channelLength: number = channel.numColumns;
-		this.setMatrixSize({row: undefined, col: channelLength-1}, true)
-		
+		this.setMatrixSize({ row: undefined, col: channelLength - 1 }, true)
+
 		// Note we don't care about the row as we will just append the 
 		// rows of the channel now, there's no need to expand it
-		
+
 		channel.getRows().forEach((row) => {
 			this.gridMatrix.push(row);
 		})
-	
+
 	}
 
 	public deleteChannel(channel: Channel) {
@@ -177,7 +177,7 @@ export default class Sequence extends Grid implements ISequence {
 		}
 
 		this.channels.splice(channelIndex, 1);
-		
+
 		var channelStartRow = channelIndex * 3;
 
 		this.removeRow(channelStartRow);
@@ -228,12 +228,12 @@ export default class Sequence extends Grid implements ISequence {
 		this.channels.forEach((channel, channel_index) => {
 			let INDEX: number = channel_index * 3;
 
-			let gridSlice = this.gridMatrix.slice(INDEX, INDEX+3);
+			let gridSlice = this.gridMatrix.slice(INDEX, INDEX + 3);
 
-			let rowSizeSlice = this.gridSizes.rows.slice(INDEX, INDEX+3);
-			let gridSizes: {columns: Spacial[], rows: Spacial[]} = {rows: rowSizeSlice, columns: this.gridSizes.columns}
+			let rowSizeSlice = this.gridSizes.rows.slice(INDEX, INDEX + 3);
+			let gridSizes: { columns: Spacial[], rows: Spacial[] } = { rows: rowSizeSlice, columns: this.gridSizes.columns }
 
-			let cellSlice = this.cells.slice(INDEX, INDEX+3);
+			let cellSlice = this.cells.slice(INDEX, INDEX + 3);
 
 			channel.x = this.cx;
 			channel.y = rowSizeSlice[0].y;
@@ -254,7 +254,7 @@ export default class Sequence extends Grid implements ISequence {
 			// and just set the number of columns
 
 			// set matrix takes index
-			channel.setMatrixSize({col: this.numColumns-1});
+			channel.setMatrixSize({ col: this.numColumns - 1 });
 			channel.growBar();
 		})
 	}
@@ -263,7 +263,7 @@ export default class Sequence extends Grid implements ISequence {
 		this.channels.forEach((channel, channel_index) => {
 			let INDEX: number = channel_index * 3;
 
-			let gridSlice = this.gridMatrix.slice(INDEX, INDEX+3);
+			let gridSlice = this.gridMatrix.slice(INDEX, INDEX + 3);
 
 			channel.setMatrix(gridSlice);
 		})
@@ -272,7 +272,7 @@ export default class Sequence extends Grid implements ISequence {
 	private growChannels() {
 		this.channels.forEach((c) => {
 			if (c.bar.placementMode.type === "grid") {
-				c.bar.placementMode.gridConfig.gridSize = {noRows: 1, noCols: this.numColumns-1}
+				c.bar.placementMode.config.gridSize = { noRows: 1, noCols: this.numColumns - 1 }
 			}
 		})
 	}
@@ -291,30 +291,30 @@ export default class Sequence extends Grid implements ISequence {
 		if (present > this.numChannels) {
 			return true
 		}
-		
+
 		return false
 	}
 
-	protected pulseConfigToGridConfig(placementMode: PlacementConfiguration): IGridChildConfig | undefined {
+	protected pulseConfigToGridConfig(placementMode: PlacementConfiguration): IGridConfig | undefined {
 		if (placementMode.type === "grid") {
-			return placementMode.gridConfig
+			return placementMode.config
 		} else if (placementMode.type !== "pulse") {
 			return undefined
 		}
-		
+
 		var channelId: ID | undefined = placementMode.config.channelID;
-		
-		
+
+
 		// We now need to convert the mount config in the pulse's placement
 		// type into the exact coordinate in the grid to insert this element
 		var channelIndex: number = this.getChannelIndexById(channelId ?? "") ?? 0;
-		
 
-		
+
+
 		var row: number = 0;
 		var column: number = placementMode.config.index ?? 0;  // Starting at 1 as we know the label goes there
-		var alignment: {x: SiteNames, y: SiteNames} = {x: "centre", y: "far"}
-		let contribution: Record<Dimensions, boolean> = {x: true, y: true};
+		var alignment: { x: SiteNames, y: SiteNames } = { x: "centre", y: "far" }
+		let contribution: Record<Dimensions, boolean> = { x: true, y: true };
 
 		// --------- Row -------------
 		// Currently, channels ALWAYS have a height of 3 so that's how we find 
@@ -322,25 +322,25 @@ export default class Sequence extends Grid implements ISequence {
 		row = channelIndex * 3;
 		if (placementMode.config.orientation === "both") {
 			row += 1
-			alignment = {x: "centre", y: "centre"}
-			contribution = {x: true, y: false}
+			alignment = { x: "centre", y: "centre" }
+			contribution = { x: true, y: false }
 		} else if (placementMode.config.orientation === "bottom") {
 			row += 2
-			alignment = {x: "centre", y: "here"}
+			alignment = { x: "centre", y: "here" }
 		}
 
-		let gridConfig: IGridChildConfig = {
-			coords: {row: row, col: column},
+		let gridConfig: IGridConfig = {
+			coords: { row: row, col: column },
 			alignment: alignment,
-			gridSize: {noRows: 1, noCols: placementMode.config.noSections},
+			gridSize: { noRows: 1, noCols: placementMode.config.noSections },
 			contribution: contribution,
 		}
 
 		// Inform of ghosts that have been placed by addPulse process.
 		if (placementMode.config.orientation === "both") {
 			gridConfig.ownedGhosts = [
-				{row: row-1, col: column},
-				{row: row+1, col: column}
+				{ row: row - 1, col: column },
+				{ row: row + 1, col: column }
 			]
 		}
 
@@ -348,14 +348,14 @@ export default class Sequence extends Grid implements ISequence {
 		return gridConfig
 	}
 
-	protected setPulseConfigViaGridConfig(child: Visual, config: IGridChildConfig) {
+	protected setPulseConfigViaGridConfig(child: Visual, config: IGridConfig) {
 		let numCols: number = config.gridSize?.noCols ?? 1;
 		let index: number = config.coords?.col ?? 1;
 
 		let channelIndex: number = Math.floor((config.coords?.row ?? 0) / 3);
 		let channel: Channel = this.channels[channelIndex];
 
-		
+
 		let orientationIndex: 0 | 1 | 2 = ((config.coords?.row ?? 0) % 3) as 0 | 1 | 2;
 		let orientation: Orientation = Channel.RowToOrientation(orientationIndex);
 
@@ -395,15 +395,15 @@ export default class Sequence extends Grid implements ISequence {
 		}
 	}
 
-	public override removeColumn(index?: number, onlyIfEmpty: boolean=false) {
+	public override removeColumn(index?: number, onlyIfEmpty: boolean = false) {
 		let INDEX: number | undefined = index;
-		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns-1) {
+		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns - 1) {
 			INDEX = this.numColumns - 1;
 		}
 
 		if (INDEX === 1 && this.numColumns === 2) {
 			return
-		} 
+		}
 
 		var empty: boolean = !this.colHasPulse(INDEX);
 
@@ -418,20 +418,20 @@ export default class Sequence extends Grid implements ISequence {
 		this.shiftElementColumnIndexes(INDEX, -1);
 	}
 
-	protected override getElementGridRegion(child: Visual, overridePosition?: { row: number; col: number; }): OccupiedCell<Visual>[][] | undefined {
-		var region: OccupiedCell<Visual>[][] | undefined;
+	protected override getElementGridRegion(child: SequenceElement, overridePosition?: { row: number; col: number; }): OccupiedCell<SequenceElement>[][] | undefined {
+		var region: OccupiedCell<SequenceElement>[][] | undefined;
 		if (child.placementMode.type === "pulse") {
 			let pulseConfig: IPulseConfig = child.placementMode.config;
-			let gridConfig: IGridChildConfig | undefined = this.pulseConfigToGridConfig(child.placementMode);
+			let gridConfig: IGridConfig | undefined = this.pulseConfigToGridConfig(child.placementMode);
 
 			if (gridConfig === undefined) {
 				return undefined
 			}
 
-			child.placementMode = {type: "grid", gridConfig: gridConfig}
+			child.placementMode = { type: "grid", config: gridConfig }
 
 			region = super.getElementGridRegion(child, overridePosition);
-			child.placementMode = {type: "pulse", config: pulseConfig}
+			child.placementMode = { type: "pulse", config: pulseConfig }
 		} else if (child.placementMode) {
 			region = super.getElementGridRegion(child, overridePosition)
 		}
@@ -439,5 +439,5 @@ export default class Sequence extends Grid implements ISequence {
 		return region;
 	}
 
-	
+
 }
