@@ -210,7 +210,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.sizeMode = params.sizeMode ?? { x: "fixed", y: "fixed" }
 		
 		if (params.pulseData !== undefined) {
-			this.pulseData = params.pulseData;
+			this._pulseData = params.pulseData;
 			this.setGridConfigUsingPulseData(params.pulseData);
 		}
 		

@@ -120,12 +120,27 @@ export default class Channel extends Grid implements IChannel {
 			ghosts: [{ size: { width: 0, height: 10 } }],
 			extra: { width: 0, height: this.padding[2] }
 		}, { row: 2, column: 0 })
+
+		this.growBar();
 	}
 
 	public override add(child: GridElement) {
 		if (isPulse(child)) {
 			this.setGridConfigViaPulseData(child, child.pulseData);
+
+			// If this pulse is placed in the "both" orientation, it needs to create two ghosts
+			// above and below it to pad out the top and bottom row:
+			if (child.pulseData.orientation === "both") {
+				let barHeight: number = this.bar.height;
+				let ghostHeight: number = (child.height - barHeight) / 2;
+
+				let ghost: Ghost = { size: { width: 0, height: ghostHeight }, owner: child.id }
+
+				this.addCentralElementGhosts(child.pulseData.index!, ghost, ghost);
+			}
 		}
+
+		
 
 		super.add(child);
 	}
