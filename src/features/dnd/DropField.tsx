@@ -20,7 +20,13 @@ class DiagramDropInterpreter {
 		this.handler = handler;
 
 		this.insertAreas = [];
-		this.computeAreas();
+
+		try {
+			this.computeAreas();
+		} catch (e) {
+			console.warn(`Failed to compute drop field`)
+		}
+		
 	}
 
 	computeAreas() {

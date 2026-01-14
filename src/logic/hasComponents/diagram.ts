@@ -1,4 +1,4 @@
-import Collection, { ICollection } from "../collection";
+import Collection, { ICollection, RolesDict } from "../collection";
 import { ID, UserComponentType } from "../point";
 import Visual, { IVisual, PulseElement } from "../visual";
 import Channel from "./channel";
@@ -55,13 +55,18 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 	// ----------------------------------------------------
 
 	get sequenceAligner(): SequenceAligner {
-		let sequenceAligner: IVisual | undefined = this.children.find((c) => c.type === "sequence-aligner");
+		let sequenceAligner: SequenceAligner | undefined = this.roles["sequence-aligner"].object as SequenceAligner | undefined;
 
 		if (sequenceAligner === undefined) {
-			throw new Error(`Diagram is missing required child "sequence-aligner"`)
+			throw new Error(`Cannot find required child 'sequence-aligner' in ${this.ref}`)
 		}
+		return sequenceAligner
+	}
 
-		return sequenceAligner as SequenceAligner;
+	roles: RolesDict = {
+		"sequence-aligner": {
+			object: undefined
+		}
 	}
 
 	constructor(params: IDiagram) {

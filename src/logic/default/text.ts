@@ -4,7 +4,7 @@ export const DEFAULT_TEXT: IText = {
 	"ref": "default-text",
 	"contentWidth": 10,
 	"contentHeight": 10,
-
+	"placementControl": "auto",
 	"text": "^{1}\\textrm{H}",
 	"padding": [0, 5, 0, 0],
 	"offset": [0, 0],

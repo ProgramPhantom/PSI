@@ -86,6 +86,10 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					singletonState.pulseData.channelID = dropResult.channelID;
 					singletonState.pulseData.sequenceID = dropResult.sequenceID;
 					singletonState.pulseData.index = dropResult.index;
+					
+					if (singletonState.pulseData.orientation !== "both") {
+						singletonState.pulseData.orientation = dropResult.orientation;
+					}
 				}
 
 				var result: Result<Visual> = ENGINE.handler.createAndAdd(

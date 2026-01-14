@@ -1,2392 +1,317 @@
 {
-    "sequenceAligner": {
-        "sequences": [
-            {
-                "channels": [
-                    {
-                        "sequenceID": null,
-                        "style": {
-                            "thickness": 2,
-                            "barStyle": {
-                                "fill": "#000000",
-                                "stroke": null,
-                                "strokeWidth": null
-                            }
-                        },
-                        "label": {
-                            "style": {
-                                "fontSize": 50,
-                                "colour": "black",
-                                "display": "block",
-                                "background": null
-                            },
-                            "text": "^{1}\\mathrm{H}",
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                5,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 26.85,
-                            "contentHeight": 20,
-                            "placementMode": {
-                                "type": "grid",
-                                "gridConfig": {
-                                    "alignment": {
-                                        "x": "centre",
-                                        "y": "centre"
-                                    },
-                                    "coords": {
-                                        "row": 1,
-                                        "col": 0
-                                    },
-                                    "contribution": {
-                                        "x": true,
-                                        "y": false
-                                    }
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 10,
-                            "y": 31.5,
-                            "ref": "TEXT",
-                            "id": "7b24057e7c1c7",
-                            "type": "rect"
-                        },
-                        "bar": {
-                            "style": {
-                                "fill": "#000000",
-                                "stroke": "black",
-                                "strokeWidth": 0
-                            },
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 100,
-                            "contentHeight": 3,
-                            "placementMode": {
-                                "type": "grid",
-                                "gridConfig": {
-                                    "alignment": {
-                                        "x": "here",
-                                        "y": "centre"
-                                    },
-                                    "coords": {
-                                        "row": 1,
-                                        "col": 1
-                                    },
-                                    "gridSize": {
-                                        "noRows": 1,
-                                        "noCols": 2
-                                    }
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "grow",
-                                "y": "fixed"
-                            },
-                            "x": 41.85,
-                            "y": 40,
-                            "ref": "DEFAULT_BAR",
-                            "id": "SvgjsRect1515",
-                            "type": "rect"
-                        },
-                        "pulseElements": [
-                            {
-                                "svgDataRef": "chirphilo",
-                                "style": {},
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 50,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "pulse",
-                                    "config": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "far"
-                                        },
-                                        "noSections": 1,
-                                        "orientation": "top",
-                                        "channelID": "1ba940508d04d",
-                                        "sequenceID": "dfb3291dac6bd",
-                                        "index": 1
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 41.849999999999994,
-                                "y": 20,
-                                "ref": "chirplohi",
-                                "id": "SvgjsSvg1360",
-                                "type": "svg"
-                            },
-                            {
-                                "svgDataRef": "saltirehilo",
-                                "style": {},
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 50,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "pulse",
-                                    "config": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "far"
-                                        },
-                                        "noSections": 1,
-                                        "orientation": "top",
-                                        "channelID": "1ba940508d04d",
-                                        "sequenceID": "dfb3291dac6bd",
-                                        "index": 2
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 91.85,
-                                "y": 20,
-                                "ref": "saltirehilo",
-                                "id": "SvgjsSvg1513",
-                                "type": "svg"
-                            }
-                        ],
-                        "minHeight": 0,
-                        "minWidth": 0,
-                        "numRows": 3,
-                        "numColumns": 3,
-                        "children": [
-                            {
-                                "svgDataRef": "chirphilo",
-                                "style": {},
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 50,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "pulse",
-                                    "config": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "far"
-                                        },
-                                        "noSections": 1,
-                                        "orientation": "top",
-                                        "channelID": "1ba940508d04d",
-                                        "sequenceID": "dfb3291dac6bd",
-                                        "index": 1
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 41.849999999999994,
-                                "y": 20,
-                                "ref": "chirplohi",
-                                "id": "SvgjsSvg1360",
-                                "type": "svg"
-                            },
-                            {
-                                "svgDataRef": "saltirehilo",
-                                "style": {},
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 50,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "pulse",
-                                    "config": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "far"
-                                        },
-                                        "noSections": 1,
-                                        "orientation": "top",
-                                        "channelID": "1ba940508d04d",
-                                        "sequenceID": "dfb3291dac6bd",
-                                        "index": 2
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 91.85,
-                                "y": 20,
-                                "ref": "saltirehilo",
-                                "id": "SvgjsSvg1513",
-                                "type": "svg"
-                            },
-                            {
-                                "style": {
-                                    "fontSize": 50,
-                                    "colour": "black",
-                                    "display": "block",
-                                    "background": null
-                                },
-                                "text": "^{1}\\mathrm{H}",
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    5,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 26.85,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "grid",
-                                    "gridConfig": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "centre"
-                                        },
-                                        "coords": {
-                                            "row": 1,
-                                            "col": 0
-                                        },
-                                        "contribution": {
-                                            "x": true,
-                                            "y": false
-                                        }
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 10,
-                                "y": 31.5,
-                                "ref": "TEXT",
-                                "id": "7b24057e7c1c7",
-                                "type": "rect"
-                            },
-                            {
-                                "style": {
-                                    "fill": "#000000",
-                                    "stroke": "black",
-                                    "strokeWidth": 0
-                                },
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 100,
-                                "contentHeight": 3,
-                                "placementMode": {
-                                    "type": "grid",
-                                    "gridConfig": {
-                                        "alignment": {
-                                            "x": "here",
-                                            "y": "centre"
-                                        },
-                                        "coords": {
-                                            "row": 1,
-                                            "col": 1
-                                        },
-                                        "gridSize": {
-                                            "noRows": 1,
-                                            "noCols": 2
-                                        }
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "grow",
-                                    "y": "fixed"
-                                },
-                                "x": 41.85,
-                                "y": 40,
-                                "ref": "DEFAULT_BAR",
-                                "id": "SvgjsRect1515",
-                                "type": "rect"
-                            }
-                        ],
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            10,
-                            0,
-                            10,
-                            0
-                        ],
-                        "contentWidth": 131.85,
-                        "contentHeight": 33,
-                        "placementMode": {
-                            "type": "managed"
-                        },
-                        "sizeMode": {
-                            "x": "fixed",
-                            "y": "fixed"
-                        },
-                        "x": 10,
-                        "y": 10,
-                        "ref": "my-channel",
-                        "id": "1ba940508d04d",
-                        "type": "channel"
-                    }
-                ],
-                "minHeight": 0,
-                "minWidth": 20,
-                "numRows": 3,
-                "numColumns": 3,
-                "children": [
-                    {
-                        "svgDataRef": "chirphilo",
-                        "style": {},
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 50,
-                        "contentHeight": 20,
-                        "placementMode": {
-                            "type": "pulse",
-                            "config": {
-                                "alignment": {
-                                    "x": "centre",
-                                    "y": "far"
-                                },
-                                "noSections": 1,
-                                "orientation": "top",
-                                "channelID": "1ba940508d04d",
-                                "sequenceID": "dfb3291dac6bd",
-                                "index": 1
-                            }
-                        },
-                        "sizeMode": {
-                            "x": "fixed",
-                            "y": "fixed"
-                        },
-                        "x": 41.849999999999994,
-                        "y": 20,
-                        "ref": "chirplohi",
-                        "id": "SvgjsSvg1360",
-                        "type": "svg"
-                    },
-                    {
-                        "svgDataRef": "saltirehilo",
-                        "style": {},
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 50,
-                        "contentHeight": 20,
-                        "placementMode": {
-                            "type": "pulse",
-                            "config": {
-                                "alignment": {
-                                    "x": "centre",
-                                    "y": "far"
-                                },
-                                "noSections": 1,
-                                "orientation": "top",
-                                "channelID": "1ba940508d04d",
-                                "sequenceID": "dfb3291dac6bd",
-                                "index": 2
-                            }
-                        },
-                        "sizeMode": {
-                            "x": "fixed",
-                            "y": "fixed"
-                        },
-                        "x": 91.85,
-                        "y": 20,
-                        "ref": "saltirehilo",
-                        "id": "SvgjsSvg1513",
-                        "type": "svg"
-                    },
-                    {
-                        "style": {
-                            "fontSize": 50,
-                            "colour": "black",
-                            "display": "block",
-                            "background": null
-                        },
-                        "text": "^{1}\\mathrm{H}",
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            5,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 26.85,
-                        "contentHeight": 20,
-                        "placementMode": {
-                            "type": "grid",
-                            "gridConfig": {
-                                "alignment": {
-                                    "x": "centre",
-                                    "y": "centre"
-                                },
-                                "coords": {
-                                    "row": 1,
-                                    "col": 0
-                                },
-                                "contribution": {
-                                    "x": true,
-                                    "y": false
-                                }
-                            }
-                        },
-                        "sizeMode": {
-                            "x": "fixed",
-                            "y": "fixed"
-                        },
-                        "x": 10,
-                        "y": 31.5,
-                        "ref": "TEXT",
-                        "id": "7b24057e7c1c7",
-                        "type": "rect"
-                    },
-                    {
-                        "style": {
-                            "fill": "#000000",
-                            "stroke": "black",
-                            "strokeWidth": 0
-                        },
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 100,
-                        "contentHeight": 3,
-                        "placementMode": {
-                            "type": "grid",
-                            "gridConfig": {
-                                "alignment": {
-                                    "x": "here",
-                                    "y": "centre"
-                                },
-                                "coords": {
-                                    "row": 1,
-                                    "col": 1
-                                },
-                                "gridSize": {
-                                    "noRows": 1,
-                                    "noCols": 2
-                                }
-                            }
-                        },
-                        "sizeMode": {
-                            "x": "grow",
-                            "y": "fixed"
-                        },
-                        "x": 41.85,
-                        "y": 40,
-                        "ref": "DEFAULT_BAR",
-                        "id": "SvgjsRect1515",
-                        "type": "rect"
-                    }
-                ],
-                "offset": [
-                    0,
-                    0
-                ],
-                "padding": [
-                    0,
-                    0,
-                    0,
-                    0
-                ],
-                "contentWidth": 131.85,
-                "contentHeight": 53,
-                "placementMode": {
-                    "type": "managed"
-                },
-                "sizeMode": {
-                    "x": "fixed",
-                    "y": "fixed"
-                },
-                "x": 10,
-                "y": 10,
-                "ref": "sequence",
-                "id": "dfb3291dac6bd",
-                "type": "sequence"
-            }
-        ],
-        "children": [
-            {
-                "channels": [
-                    {
-                        "sequenceID": null,
-                        "style": {
-                            "thickness": 2,
-                            "barStyle": {
-                                "fill": "#000000",
-                                "stroke": null,
-                                "strokeWidth": null
-                            }
-                        },
-                        "label": {
-                            "style": {
-                                "fontSize": 50,
-                                "colour": "black",
-                                "display": "block",
-                                "background": null
-                            },
-                            "text": "^{1}\\mathrm{H}",
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                5,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 26.85,
-                            "contentHeight": 20,
-                            "placementMode": {
-                                "type": "grid",
-                                "gridConfig": {
-                                    "alignment": {
-                                        "x": "centre",
-                                        "y": "centre"
-                                    },
-                                    "coords": {
-                                        "row": 1,
-                                        "col": 0
-                                    },
-                                    "contribution": {
-                                        "x": true,
-                                        "y": false
-                                    }
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 10,
-                            "y": 31.5,
-                            "ref": "TEXT",
-                            "id": "7b24057e7c1c7",
-                            "type": "rect"
-                        },
-                        "bar": {
-                            "style": {
-                                "fill": "#000000",
-                                "stroke": "black",
-                                "strokeWidth": 0
-                            },
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 100,
-                            "contentHeight": 3,
-                            "placementMode": {
-                                "type": "grid",
-                                "gridConfig": {
-                                    "alignment": {
-                                        "x": "here",
-                                        "y": "centre"
-                                    },
-                                    "coords": {
-                                        "row": 1,
-                                        "col": 1
-                                    },
-                                    "gridSize": {
-                                        "noRows": 1,
-                                        "noCols": 2
-                                    }
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "grow",
-                                "y": "fixed"
-                            },
-                            "x": 41.85,
-                            "y": 40,
-                            "ref": "DEFAULT_BAR",
-                            "id": "SvgjsRect1515",
-                            "type": "rect"
-                        },
-                        "pulseElements": [
-                            {
-                                "svgDataRef": "chirphilo",
-                                "style": {},
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 50,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "pulse",
-                                    "config": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "far"
-                                        },
-                                        "noSections": 1,
-                                        "orientation": "top",
-                                        "channelID": "1ba940508d04d",
-                                        "sequenceID": "dfb3291dac6bd",
-                                        "index": 1
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 41.849999999999994,
-                                "y": 20,
-                                "ref": "chirplohi",
-                                "id": "SvgjsSvg1360",
-                                "type": "svg"
-                            },
-                            {
-                                "svgDataRef": "saltirehilo",
-                                "style": {},
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 50,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "pulse",
-                                    "config": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "far"
-                                        },
-                                        "noSections": 1,
-                                        "orientation": "top",
-                                        "channelID": "1ba940508d04d",
-                                        "sequenceID": "dfb3291dac6bd",
-                                        "index": 2
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 91.85,
-                                "y": 20,
-                                "ref": "saltirehilo",
-                                "id": "SvgjsSvg1513",
-                                "type": "svg"
-                            }
-                        ],
-                        "minHeight": 0,
-                        "minWidth": 0,
-                        "numRows": 3,
-                        "numColumns": 3,
-                        "children": [
-                            {
-                                "svgDataRef": "chirphilo",
-                                "style": {},
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 50,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "pulse",
-                                    "config": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "far"
-                                        },
-                                        "noSections": 1,
-                                        "orientation": "top",
-                                        "channelID": "1ba940508d04d",
-                                        "sequenceID": "dfb3291dac6bd",
-                                        "index": 1
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 41.849999999999994,
-                                "y": 20,
-                                "ref": "chirplohi",
-                                "id": "SvgjsSvg1360",
-                                "type": "svg"
-                            },
-                            {
-                                "svgDataRef": "saltirehilo",
-                                "style": {},
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 50,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "pulse",
-                                    "config": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "far"
-                                        },
-                                        "noSections": 1,
-                                        "orientation": "top",
-                                        "channelID": "1ba940508d04d",
-                                        "sequenceID": "dfb3291dac6bd",
-                                        "index": 2
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 91.85,
-                                "y": 20,
-                                "ref": "saltirehilo",
-                                "id": "SvgjsSvg1513",
-                                "type": "svg"
-                            },
-                            {
-                                "style": {
-                                    "fontSize": 50,
-                                    "colour": "black",
-                                    "display": "block",
-                                    "background": null
-                                },
-                                "text": "^{1}\\mathrm{H}",
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    5,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 26.85,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "grid",
-                                    "gridConfig": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "centre"
-                                        },
-                                        "coords": {
-                                            "row": 1,
-                                            "col": 0
-                                        },
-                                        "contribution": {
-                                            "x": true,
-                                            "y": false
-                                        }
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 10,
-                                "y": 31.5,
-                                "ref": "TEXT",
-                                "id": "7b24057e7c1c7",
-                                "type": "rect"
-                            },
-                            {
-                                "style": {
-                                    "fill": "#000000",
-                                    "stroke": "black",
-                                    "strokeWidth": 0
-                                },
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 100,
-                                "contentHeight": 3,
-                                "placementMode": {
-                                    "type": "grid",
-                                    "gridConfig": {
-                                        "alignment": {
-                                            "x": "here",
-                                            "y": "centre"
-                                        },
-                                        "coords": {
-                                            "row": 1,
-                                            "col": 1
-                                        },
-                                        "gridSize": {
-                                            "noRows": 1,
-                                            "noCols": 2
-                                        }
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "grow",
-                                    "y": "fixed"
-                                },
-                                "x": 41.85,
-                                "y": 40,
-                                "ref": "DEFAULT_BAR",
-                                "id": "SvgjsRect1515",
-                                "type": "rect"
-                            }
-                        ],
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            10,
-                            0,
-                            10,
-                            0
-                        ],
-                        "contentWidth": 131.85,
-                        "contentHeight": 33,
-                        "placementMode": {
-                            "type": "managed"
-                        },
-                        "sizeMode": {
-                            "x": "fixed",
-                            "y": "fixed"
-                        },
-                        "x": 10,
-                        "y": 10,
-                        "ref": "my-channel",
-                        "id": "1ba940508d04d",
-                        "type": "channel"
-                    }
-                ],
-                "minHeight": 0,
-                "minWidth": 20,
-                "numRows": 3,
-                "numColumns": 3,
-                "children": [
-                    {
-                        "svgDataRef": "chirphilo",
-                        "style": {},
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 50,
-                        "contentHeight": 20,
-                        "placementMode": {
-                            "type": "pulse",
-                            "config": {
-                                "alignment": {
-                                    "x": "centre",
-                                    "y": "far"
-                                },
-                                "noSections": 1,
-                                "orientation": "top",
-                                "channelID": "1ba940508d04d",
-                                "sequenceID": "dfb3291dac6bd",
-                                "index": 1
-                            }
-                        },
-                        "sizeMode": {
-                            "x": "fixed",
-                            "y": "fixed"
-                        },
-                        "x": 41.849999999999994,
-                        "y": 20,
-                        "ref": "chirplohi",
-                        "id": "SvgjsSvg1360",
-                        "type": "svg"
-                    },
-                    {
-                        "svgDataRef": "saltirehilo",
-                        "style": {},
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 50,
-                        "contentHeight": 20,
-                        "placementMode": {
-                            "type": "pulse",
-                            "config": {
-                                "alignment": {
-                                    "x": "centre",
-                                    "y": "far"
-                                },
-                                "noSections": 1,
-                                "orientation": "top",
-                                "channelID": "1ba940508d04d",
-                                "sequenceID": "dfb3291dac6bd",
-                                "index": 2
-                            }
-                        },
-                        "sizeMode": {
-                            "x": "fixed",
-                            "y": "fixed"
-                        },
-                        "x": 91.85,
-                        "y": 20,
-                        "ref": "saltirehilo",
-                        "id": "SvgjsSvg1513",
-                        "type": "svg"
-                    },
-                    {
-                        "style": {
-                            "fontSize": 50,
-                            "colour": "black",
-                            "display": "block",
-                            "background": null
-                        },
-                        "text": "^{1}\\mathrm{H}",
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            5,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 26.85,
-                        "contentHeight": 20,
-                        "placementMode": {
-                            "type": "grid",
-                            "gridConfig": {
-                                "alignment": {
-                                    "x": "centre",
-                                    "y": "centre"
-                                },
-                                "coords": {
-                                    "row": 1,
-                                    "col": 0
-                                },
-                                "contribution": {
-                                    "x": true,
-                                    "y": false
-                                }
-                            }
-                        },
-                        "sizeMode": {
-                            "x": "fixed",
-                            "y": "fixed"
-                        },
-                        "x": 10,
-                        "y": 31.5,
-                        "ref": "TEXT",
-                        "id": "7b24057e7c1c7",
-                        "type": "rect"
-                    },
-                    {
-                        "style": {
-                            "fill": "#000000",
-                            "stroke": "black",
-                            "strokeWidth": 0
-                        },
-                        "offset": [
-                            0,
-                            0
-                        ],
-                        "padding": [
-                            0,
-                            0,
-                            0,
-                            0
-                        ],
-                        "contentWidth": 100,
-                        "contentHeight": 3,
-                        "placementMode": {
-                            "type": "grid",
-                            "gridConfig": {
-                                "alignment": {
-                                    "x": "here",
-                                    "y": "centre"
-                                },
-                                "coords": {
-                                    "row": 1,
-                                    "col": 1
-                                },
-                                "gridSize": {
-                                    "noRows": 1,
-                                    "noCols": 2
-                                }
-                            }
-                        },
-                        "sizeMode": {
-                            "x": "grow",
-                            "y": "fixed"
-                        },
-                        "x": 41.85,
-                        "y": 40,
-                        "ref": "DEFAULT_BAR",
-                        "id": "SvgjsRect1515",
-                        "type": "rect"
-                    }
-                ],
-                "offset": [
-                    0,
-                    0
-                ],
-                "padding": [
-                    0,
-                    0,
-                    0,
-                    0
-                ],
-                "contentWidth": 131.85,
-                "contentHeight": 53,
-                "placementMode": {
-                    "type": "managed"
-                },
-                "sizeMode": {
-                    "x": "fixed",
-                    "y": "fixed"
-                },
-                "x": 10,
-                "y": 10,
-                "ref": "sequence",
-                "id": "dfb3291dac6bd",
-                "type": "sequence"
-            }
-        ],
-        "mainAxis": "y",
-        "minCrossAxis": 0,
-        "offset": [
-            0,
-            0
-        ],
-        "padding": [
-            0,
-            0,
-            0,
-            0
-        ],
-        "contentWidth": 131.85,
-        "contentHeight": 53,
-        "placementMode": {
-            "type": "free"
-        },
-        "sizeMode": {
-            "x": "fixed",
-            "y": "fixed"
-        },
-        "x": 10,
-        "y": 10,
-        "ref": "sequence-aligner",
-        "id": "ec5cf2e429b98",
-        "type": "sequence-aligner"
-    },
     "children": [
         {
-            "sequences": [
-                {
-                    "channels": [
-                        {
-                            "sequenceID": null,
-                            "style": {
-                                "thickness": 2,
-                                "barStyle": {
-                                    "fill": "#000000",
-                                    "stroke": null,
-                                    "strokeWidth": null
-                                }
-                            },
-                            "label": {
-                                "style": {
-                                    "fontSize": 50,
-                                    "colour": "black",
-                                    "display": "block",
-                                    "background": null
-                                },
-                                "text": "^{1}\\mathrm{H}",
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    5,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 26.85,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "grid",
-                                    "gridConfig": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "centre"
-                                        },
-                                        "coords": {
-                                            "row": 1,
-                                            "col": 0
-                                        },
-                                        "contribution": {
-                                            "x": true,
-                                            "y": false
-                                        }
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 10,
-                                "y": 31.5,
-                                "ref": "TEXT",
-                                "id": "7b24057e7c1c7",
-                                "type": "rect"
-                            },
-                            "bar": {
-                                "style": {
-                                    "fill": "#000000",
-                                    "stroke": "black",
-                                    "strokeWidth": 0
-                                },
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 100,
-                                "contentHeight": 3,
-                                "placementMode": {
-                                    "type": "grid",
-                                    "gridConfig": {
-                                        "alignment": {
-                                            "x": "here",
-                                            "y": "centre"
-                                        },
-                                        "coords": {
-                                            "row": 1,
-                                            "col": 1
-                                        },
-                                        "gridSize": {
-                                            "noRows": 1,
-                                            "noCols": 2
-                                        }
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "grow",
-                                    "y": "fixed"
-                                },
-                                "x": 41.85,
-                                "y": 40,
-                                "ref": "DEFAULT_BAR",
-                                "id": "SvgjsRect1515",
-                                "type": "rect"
-                            },
-                            "pulseElements": [
-                                {
-                                    "svgDataRef": "chirphilo",
-                                    "style": {},
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 50,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "pulse",
-                                        "config": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "far"
-                                            },
-                                            "noSections": 1,
-                                            "orientation": "top",
-                                            "channelID": "1ba940508d04d",
-                                            "sequenceID": "dfb3291dac6bd",
-                                            "index": 1
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 41.849999999999994,
-                                    "y": 20,
-                                    "ref": "chirplohi",
-                                    "id": "SvgjsSvg1360",
-                                    "type": "svg"
-                                },
-                                {
-                                    "svgDataRef": "saltirehilo",
-                                    "style": {},
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 50,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "pulse",
-                                        "config": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "far"
-                                            },
-                                            "noSections": 1,
-                                            "orientation": "top",
-                                            "channelID": "1ba940508d04d",
-                                            "sequenceID": "dfb3291dac6bd",
-                                            "index": 2
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 91.85,
-                                    "y": 20,
-                                    "ref": "saltirehilo",
-                                    "id": "SvgjsSvg1513",
-                                    "type": "svg"
-                                }
-                            ],
-                            "minHeight": 0,
-                            "minWidth": 0,
-                            "numRows": 3,
-                            "numColumns": 3,
-                            "children": [
-                                {
-                                    "svgDataRef": "chirphilo",
-                                    "style": {},
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 50,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "pulse",
-                                        "config": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "far"
-                                            },
-                                            "noSections": 1,
-                                            "orientation": "top",
-                                            "channelID": "1ba940508d04d",
-                                            "sequenceID": "dfb3291dac6bd",
-                                            "index": 1
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 41.849999999999994,
-                                    "y": 20,
-                                    "ref": "chirplohi",
-                                    "id": "SvgjsSvg1360",
-                                    "type": "svg"
-                                },
-                                {
-                                    "svgDataRef": "saltirehilo",
-                                    "style": {},
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 50,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "pulse",
-                                        "config": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "far"
-                                            },
-                                            "noSections": 1,
-                                            "orientation": "top",
-                                            "channelID": "1ba940508d04d",
-                                            "sequenceID": "dfb3291dac6bd",
-                                            "index": 2
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 91.85,
-                                    "y": 20,
-                                    "ref": "saltirehilo",
-                                    "id": "SvgjsSvg1513",
-                                    "type": "svg"
-                                },
-                                {
-                                    "style": {
-                                        "fontSize": 50,
-                                        "colour": "black",
-                                        "display": "block",
-                                        "background": null
-                                    },
-                                    "text": "^{1}\\mathrm{H}",
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        5,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 26.85,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "grid",
-                                        "gridConfig": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "centre"
-                                            },
-                                            "coords": {
-                                                "row": 1,
-                                                "col": 0
-                                            },
-                                            "contribution": {
-                                                "x": true,
-                                                "y": false
-                                            }
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 10,
-                                    "y": 31.5,
-                                    "ref": "TEXT",
-                                    "id": "7b24057e7c1c7",
-                                    "type": "rect"
-                                },
-                                {
-                                    "style": {
-                                        "fill": "#000000",
-                                        "stroke": "black",
-                                        "strokeWidth": 0
-                                    },
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 100,
-                                    "contentHeight": 3,
-                                    "placementMode": {
-                                        "type": "grid",
-                                        "gridConfig": {
-                                            "alignment": {
-                                                "x": "here",
-                                                "y": "centre"
-                                            },
-                                            "coords": {
-                                                "row": 1,
-                                                "col": 1
-                                            },
-                                            "gridSize": {
-                                                "noRows": 1,
-                                                "noCols": 2
-                                            }
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "grow",
-                                        "y": "fixed"
-                                    },
-                                    "x": 41.85,
-                                    "y": 40,
-                                    "ref": "DEFAULT_BAR",
-                                    "id": "SvgjsRect1515",
-                                    "type": "rect"
-                                }
-                            ],
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                10,
-                                0,
-                                10,
-                                0
-                            ],
-                            "contentWidth": 131.85,
-                            "contentHeight": 33,
-                            "placementMode": {
-                                "type": "managed"
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 10,
-                            "y": 10,
-                            "ref": "my-channel",
-                            "id": "1ba940508d04d",
-                            "type": "channel"
-                        }
-                    ],
-                    "minHeight": 0,
-                    "minWidth": 20,
-                    "numRows": 3,
-                    "numColumns": 3,
-                    "children": [
-                        {
-                            "svgDataRef": "chirphilo",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 50,
-                            "contentHeight": 20,
-                            "placementMode": {
-                                "type": "pulse",
-                                "config": {
-                                    "alignment": {
-                                        "x": "centre",
-                                        "y": "far"
-                                    },
-                                    "noSections": 1,
-                                    "orientation": "top",
-                                    "channelID": "1ba940508d04d",
-                                    "sequenceID": "dfb3291dac6bd",
-                                    "index": 1
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 41.849999999999994,
-                            "y": 20,
-                            "ref": "chirplohi",
-                            "id": "SvgjsSvg1360",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "saltirehilo",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 50,
-                            "contentHeight": 20,
-                            "placementMode": {
-                                "type": "pulse",
-                                "config": {
-                                    "alignment": {
-                                        "x": "centre",
-                                        "y": "far"
-                                    },
-                                    "noSections": 1,
-                                    "orientation": "top",
-                                    "channelID": "1ba940508d04d",
-                                    "sequenceID": "dfb3291dac6bd",
-                                    "index": 2
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 91.85,
-                            "y": 20,
-                            "ref": "saltirehilo",
-                            "id": "SvgjsSvg1513",
-                            "type": "svg"
-                        },
-                        {
-                            "style": {
-                                "fontSize": 50,
-                                "colour": "black",
-                                "display": "block",
-                                "background": null
-                            },
-                            "text": "^{1}\\mathrm{H}",
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                5,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 26.85,
-                            "contentHeight": 20,
-                            "placementMode": {
-                                "type": "grid",
-                                "gridConfig": {
-                                    "alignment": {
-                                        "x": "centre",
-                                        "y": "centre"
-                                    },
-                                    "coords": {
-                                        "row": 1,
-                                        "col": 0
-                                    },
-                                    "contribution": {
-                                        "x": true,
-                                        "y": false
-                                    }
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 10,
-                            "y": 31.5,
-                            "ref": "TEXT",
-                            "id": "7b24057e7c1c7",
-                            "type": "rect"
-                        },
-                        {
-                            "style": {
-                                "fill": "#000000",
-                                "stroke": "black",
-                                "strokeWidth": 0
-                            },
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 100,
-                            "contentHeight": 3,
-                            "placementMode": {
-                                "type": "grid",
-                                "gridConfig": {
-                                    "alignment": {
-                                        "x": "here",
-                                        "y": "centre"
-                                    },
-                                    "coords": {
-                                        "row": 1,
-                                        "col": 1
-                                    },
-                                    "gridSize": {
-                                        "noRows": 1,
-                                        "noCols": 2
-                                    }
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "grow",
-                                "y": "fixed"
-                            },
-                            "x": 41.85,
-                            "y": 40,
-                            "ref": "DEFAULT_BAR",
-                            "id": "SvgjsRect1515",
-                            "type": "rect"
-                        }
-                    ],
-                    "offset": [
-                        0,
-                        0
-                    ],
-                    "padding": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "contentWidth": 131.85,
-                    "contentHeight": 53,
-                    "placementMode": {
-                        "type": "managed"
-                    },
-                    "sizeMode": {
-                        "x": "fixed",
-                        "y": "fixed"
-                    },
-                    "x": 10,
-                    "y": 10,
-                    "ref": "sequence",
-                    "id": "dfb3291dac6bd",
-                    "type": "sequence"
-                }
-            ],
-            "children": [
-                {
-                    "channels": [
-                        {
-                            "sequenceID": null,
-                            "style": {
-                                "thickness": 2,
-                                "barStyle": {
-                                    "fill": "#000000",
-                                    "stroke": null,
-                                    "strokeWidth": null
-                                }
-                            },
-                            "label": {
-                                "style": {
-                                    "fontSize": 50,
-                                    "colour": "black",
-                                    "display": "block",
-                                    "background": null
-                                },
-                                "text": "^{1}\\mathrm{H}",
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    5,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 26.85,
-                                "contentHeight": 20,
-                                "placementMode": {
-                                    "type": "grid",
-                                    "gridConfig": {
-                                        "alignment": {
-                                            "x": "centre",
-                                            "y": "centre"
-                                        },
-                                        "coords": {
-                                            "row": 1,
-                                            "col": 0
-                                        },
-                                        "contribution": {
-                                            "x": true,
-                                            "y": false
-                                        }
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "fixed",
-                                    "y": "fixed"
-                                },
-                                "x": 10,
-                                "y": 31.5,
-                                "ref": "TEXT",
-                                "id": "7b24057e7c1c7",
-                                "type": "rect"
-                            },
-                            "bar": {
-                                "style": {
-                                    "fill": "#000000",
-                                    "stroke": "black",
-                                    "strokeWidth": 0
-                                },
-                                "offset": [
-                                    0,
-                                    0
-                                ],
-                                "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    0
-                                ],
-                                "contentWidth": 100,
-                                "contentHeight": 3,
-                                "placementMode": {
-                                    "type": "grid",
-                                    "gridConfig": {
-                                        "alignment": {
-                                            "x": "here",
-                                            "y": "centre"
-                                        },
-                                        "coords": {
-                                            "row": 1,
-                                            "col": 1
-                                        },
-                                        "gridSize": {
-                                            "noRows": 1,
-                                            "noCols": 2
-                                        }
-                                    }
-                                },
-                                "sizeMode": {
-                                    "x": "grow",
-                                    "y": "fixed"
-                                },
-                                "x": 41.85,
-                                "y": 40,
-                                "ref": "DEFAULT_BAR",
-                                "id": "SvgjsRect1515",
-                                "type": "rect"
-                            },
-                            "pulseElements": [
-                                {
-                                    "svgDataRef": "chirphilo",
-                                    "style": {},
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 50,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "pulse",
-                                        "config": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "far"
-                                            },
-                                            "noSections": 1,
-                                            "orientation": "top",
-                                            "channelID": "1ba940508d04d",
-                                            "sequenceID": "dfb3291dac6bd",
-                                            "index": 1
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 41.849999999999994,
-                                    "y": 20,
-                                    "ref": "chirplohi",
-                                    "id": "SvgjsSvg1360",
-                                    "type": "svg"
-                                },
-                                {
-                                    "svgDataRef": "saltirehilo",
-                                    "style": {},
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 50,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "pulse",
-                                        "config": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "far"
-                                            },
-                                            "noSections": 1,
-                                            "orientation": "top",
-                                            "channelID": "1ba940508d04d",
-                                            "sequenceID": "dfb3291dac6bd",
-                                            "index": 2
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 91.85,
-                                    "y": 20,
-                                    "ref": "saltirehilo",
-                                    "id": "SvgjsSvg1513",
-                                    "type": "svg"
-                                }
-                            ],
-                            "minHeight": 0,
-                            "minWidth": 0,
-                            "numRows": 3,
-                            "numColumns": 3,
-                            "children": [
-                                {
-                                    "svgDataRef": "chirphilo",
-                                    "style": {},
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 50,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "pulse",
-                                        "config": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "far"
-                                            },
-                                            "noSections": 1,
-                                            "orientation": "top",
-                                            "channelID": "1ba940508d04d",
-                                            "sequenceID": "dfb3291dac6bd",
-                                            "index": 1
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 41.849999999999994,
-                                    "y": 20,
-                                    "ref": "chirplohi",
-                                    "id": "SvgjsSvg1360",
-                                    "type": "svg"
-                                },
-                                {
-                                    "svgDataRef": "saltirehilo",
-                                    "style": {},
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 50,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "pulse",
-                                        "config": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "far"
-                                            },
-                                            "noSections": 1,
-                                            "orientation": "top",
-                                            "channelID": "1ba940508d04d",
-                                            "sequenceID": "dfb3291dac6bd",
-                                            "index": 2
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 91.85,
-                                    "y": 20,
-                                    "ref": "saltirehilo",
-                                    "id": "SvgjsSvg1513",
-                                    "type": "svg"
-                                },
-                                {
-                                    "style": {
-                                        "fontSize": 50,
-                                        "colour": "black",
-                                        "display": "block",
-                                        "background": null
-                                    },
-                                    "text": "^{1}\\mathrm{H}",
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        5,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 26.85,
-                                    "contentHeight": 20,
-                                    "placementMode": {
-                                        "type": "grid",
-                                        "gridConfig": {
-                                            "alignment": {
-                                                "x": "centre",
-                                                "y": "centre"
-                                            },
-                                            "coords": {
-                                                "row": 1,
-                                                "col": 0
-                                            },
-                                            "contribution": {
-                                                "x": true,
-                                                "y": false
-                                            }
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "fixed",
-                                        "y": "fixed"
-                                    },
-                                    "x": 10,
-                                    "y": 31.5,
-                                    "ref": "TEXT",
-                                    "id": "7b24057e7c1c7",
-                                    "type": "rect"
-                                },
-                                {
-                                    "style": {
-                                        "fill": "#000000",
-                                        "stroke": "black",
-                                        "strokeWidth": 0
-                                    },
-                                    "offset": [
-                                        0,
-                                        0
-                                    ],
-                                    "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ],
-                                    "contentWidth": 100,
-                                    "contentHeight": 3,
-                                    "placementMode": {
-                                        "type": "grid",
-                                        "gridConfig": {
-                                            "alignment": {
-                                                "x": "here",
-                                                "y": "centre"
-                                            },
-                                            "coords": {
-                                                "row": 1,
-                                                "col": 1
-                                            },
-                                            "gridSize": {
-                                                "noRows": 1,
-                                                "noCols": 2
-                                            }
-                                        }
-                                    },
-                                    "sizeMode": {
-                                        "x": "grow",
-                                        "y": "fixed"
-                                    },
-                                    "x": 41.85,
-                                    "y": 40,
-                                    "ref": "DEFAULT_BAR",
-                                    "id": "SvgjsRect1515",
-                                    "type": "rect"
-                                }
-                            ],
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                10,
-                                0,
-                                10,
-                                0
-                            ],
-                            "contentWidth": 131.85,
-                            "contentHeight": 33,
-                            "placementMode": {
-                                "type": "managed"
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 10,
-                            "y": 10,
-                            "ref": "my-channel",
-                            "id": "1ba940508d04d",
-                            "type": "channel"
-                        }
-                    ],
-                    "minHeight": 0,
-                    "minWidth": 20,
-                    "numRows": 3,
-                    "numColumns": 3,
-                    "children": [
-                        {
-                            "svgDataRef": "chirphilo",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 50,
-                            "contentHeight": 20,
-                            "placementMode": {
-                                "type": "pulse",
-                                "config": {
-                                    "alignment": {
-                                        "x": "centre",
-                                        "y": "far"
-                                    },
-                                    "noSections": 1,
-                                    "orientation": "top",
-                                    "channelID": "1ba940508d04d",
-                                    "sequenceID": "dfb3291dac6bd",
-                                    "index": 1
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 41.849999999999994,
-                            "y": 20,
-                            "ref": "chirplohi",
-                            "id": "SvgjsSvg1360",
-                            "type": "svg"
-                        },
-                        {
-                            "svgDataRef": "saltirehilo",
-                            "style": {},
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 50,
-                            "contentHeight": 20,
-                            "placementMode": {
-                                "type": "pulse",
-                                "config": {
-                                    "alignment": {
-                                        "x": "centre",
-                                        "y": "far"
-                                    },
-                                    "noSections": 1,
-                                    "orientation": "top",
-                                    "channelID": "1ba940508d04d",
-                                    "sequenceID": "dfb3291dac6bd",
-                                    "index": 2
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 91.85,
-                            "y": 20,
-                            "ref": "saltirehilo",
-                            "id": "SvgjsSvg1513",
-                            "type": "svg"
-                        },
-                        {
-                            "style": {
-                                "fontSize": 50,
-                                "colour": "black",
-                                "display": "block",
-                                "background": null
-                            },
-                            "text": "^{1}\\mathrm{H}",
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                5,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 26.85,
-                            "contentHeight": 20,
-                            "placementMode": {
-                                "type": "grid",
-                                "gridConfig": {
-                                    "alignment": {
-                                        "x": "centre",
-                                        "y": "centre"
-                                    },
-                                    "coords": {
-                                        "row": 1,
-                                        "col": 0
-                                    },
-                                    "contribution": {
-                                        "x": true,
-                                        "y": false
-                                    }
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "fixed",
-                                "y": "fixed"
-                            },
-                            "x": 10,
-                            "y": 31.5,
-                            "ref": "TEXT",
-                            "id": "7b24057e7c1c7",
-                            "type": "rect"
-                        },
-                        {
-                            "style": {
-                                "fill": "#000000",
-                                "stroke": "black",
-                                "strokeWidth": 0
-                            },
-                            "offset": [
-                                0,
-                                0
-                            ],
-                            "padding": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ],
-                            "contentWidth": 100,
-                            "contentHeight": 3,
-                            "placementMode": {
-                                "type": "grid",
-                                "gridConfig": {
-                                    "alignment": {
-                                        "x": "here",
-                                        "y": "centre"
-                                    },
-                                    "coords": {
-                                        "row": 1,
-                                        "col": 1
-                                    },
-                                    "gridSize": {
-                                        "noRows": 1,
-                                        "noCols": 2
-                                    }
-                                }
-                            },
-                            "sizeMode": {
-                                "x": "grow",
-                                "y": "fixed"
-                            },
-                            "x": 41.85,
-                            "y": 40,
-                            "ref": "DEFAULT_BAR",
-                            "id": "SvgjsRect1515",
-                            "type": "rect"
-                        }
-                    ],
-                    "offset": [
-                        0,
-                        0
-                    ],
-                    "padding": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "contentWidth": 131.85,
-                    "contentHeight": 53,
-                    "placementMode": {
-                        "type": "managed"
-                    },
-                    "sizeMode": {
-                        "x": "fixed",
-                        "y": "fixed"
-                    },
-                    "x": 10,
-                    "y": 10,
-                    "ref": "sequence",
-                    "id": "dfb3291dac6bd",
-                    "type": "sequence"
-                }
-            ],
             "mainAxis": "y",
             "minCrossAxis": 0,
+            "children": [
+                {
+                    "minHeight": 0,
+                    "minWidth": 10,
+                    "numRows": 3,
+                    "numColumns": 2,
+                    "children": [
+                        {
+                            "label": {
+                                "style": {
+                                    "fontSize": 55,
+                                    "colour": "black",
+                                    "background": null,
+                                    "display": "block"
+                                },
+                                "text": "^{1}\\textrm{C}",
+                                "offset": [
+                                    0,
+                                    0
+                                ],
+                                "padding": [
+                                    0,
+                                    5,
+                                    0,
+                                    0
+                                ],
+                                "contentWidth": 29.535,
+                                "contentHeight": 22,
+                                "placementMode": {
+                                    "type": "grid",
+                                    "config": {
+                                        "alignment": {
+                                            "x": "centre",
+                                            "y": "centre"
+                                        },
+                                        "coords": {
+                                            "row": 1,
+                                            "col": 0
+                                        },
+                                        "contribution": {
+                                            "x": true,
+                                            "y": false
+                                        }
+                                    }
+                                },
+                                "placementControl": "auto",
+                                "sizeMode": {
+                                    "x": "fit",
+                                    "y": "fit"
+                                },
+                                "x": 10,
+                                "y": 20.5,
+                                "ref": "my-channel-label",
+                                "id": "a908fb156b4fe",
+                                "type": "rect",
+                                "parentId": "a5ec1b8f642d68"
+                            },
+                            "bar": {
+                                "style": {
+                                    "fill": "#000000",
+                                    "stroke": "black",
+                                    "strokeWidth": 0
+                                },
+                                "offset": [
+                                    0,
+                                    0
+                                ],
+                                "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                                "contentWidth": 10,
+                                "contentHeight": 3,
+                                "placementMode": {
+                                    "type": "grid",
+                                    "config": {
+                                        "gridSize": {
+                                            "noCols": 1,
+                                            "noRows": 1
+                                        },
+                                        "coords": {
+                                            "row": 1,
+                                            "col": 1
+                                        },
+                                        "alignment": {
+                                            "x": "here",
+                                            "y": "centre"
+                                        }
+                                    }
+                                },
+                                "placementControl": "auto",
+                                "sizeMode": {
+                                    "x": "grow",
+                                    "y": "fixed"
+                                },
+                                "x": 44.535,
+                                "y": 30,
+                                "ref": "my-channel-bar",
+                                "id": "3940786b493d5",
+                                "type": "rect",
+                                "parentId": "a5ec1b8f642d68"
+                            },
+                            "minHeight": 0,
+                            "minWidth": 0,
+                            "numRows": 3,
+                            "numColumns": 2,
+                            "children": [
+                                {
+                                    "style": {
+                                        "fontSize": 55,
+                                        "colour": "black",
+                                        "background": null,
+                                        "display": "block"
+                                    },
+                                    "text": "^{1}\\textrm{H}",
+                                    "offset": [
+                                        0,
+                                        0
+                                    ],
+                                    "padding": [
+                                        0,
+                                        5,
+                                        0,
+                                        0
+                                    ],
+                                    "contentWidth": 29.535,
+                                    "contentHeight": 22,
+                                    "placementMode": {
+                                        "type": "grid",
+                                        "config": {
+                                            "alignment": {
+                                                "x": "centre",
+                                                "y": "centre"
+                                            },
+                                            "coords": {
+                                                "row": 1,
+                                                "col": 0
+                                            },
+                                            "contribution": {
+                                                "x": true,
+                                                "y": false
+                                            }
+                                        }
+                                    },
+                                    "placementControl": "auto",
+                                    "sizeMode": {
+                                        "x": "fit",
+                                        "y": "fit"
+                                    },
+                                    "x": 10,
+                                    "y": 20.5,
+                                    "ref": "my-channel-label",
+                                    "id": "a908fb156b4fe",
+                                    "type": "rect",
+                                    "parentId": "a5ec1b8f642d68"
+                                },
+                                {
+                                    "style": {
+                                        "fill": "#000000",
+                                        "stroke": "black",
+                                        "strokeWidth": 0
+                                    },
+                                    "offset": [
+                                        0,
+                                        0
+                                    ],
+                                    "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "contentWidth": 10,
+                                    "contentHeight": 3,
+                                    "placementMode": {
+                                        "type": "grid",
+                                        "config": {
+                                            "gridSize": {
+                                                "noCols": 1,
+                                                "noRows": 1
+                                            },
+                                            "coords": {
+                                                "row": 1,
+                                                "col": 1
+                                            },
+                                            "alignment": {
+                                                "x": "here",
+                                                "y": "centre"
+                                            }
+                                        }
+                                    },
+                                    "placementControl": "auto",
+                                    "sizeMode": {
+                                        "x": "grow",
+                                        "y": "fixed"
+                                    },
+                                    "x": 44.535,
+                                    "y": 30,
+                                    "ref": "my-channel-bar",
+                                    "id": "3940786b493d5",
+                                    "type": "rect",
+                                    "parentId": "a5ec1b8f642d68"
+                                },
+                                {
+                                    "style": {
+                                        "fill": "#000000",
+                                        "stroke": "black",
+                                        "strokeWidth": 0
+                                    },
+                                    "offset": [
+                                        0,
+                                        0
+                                    ],
+                                    "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "contentWidth": 10,
+                                    "contentHeight": 3,
+                                    "placementMode": {
+                                        "type": "grid",
+                                        "config": {
+                                            "gridSize": {
+                                                "noCols": 1,
+                                                "noRows": 1
+                                            },
+                                            "coords": {
+                                                "row": 1,
+                                                "col": 1
+                                            },
+                                            "alignment": {
+                                                "x": "here",
+                                                "y": "centre"
+                                            }
+                                        }
+                                    },
+                                    "placementControl": "auto",
+                                    "sizeMode": {
+                                        "x": "grow",
+                                        "y": "fixed"
+                                    },
+                                    "x": 44.535,
+                                    "y": 30,
+                                    "ref": "my-channel-bar",
+                                    "id": "3940786b493d5",
+                                    "type": "rect",
+                                    "parentId": "a5ec1b8f642d68"
+                                }
+                            ],
+                            "offset": [
+                                0,
+                                0
+                            ],
+                            "padding": [
+                                10,
+                                0,
+                                10,
+                                0
+                            ],
+                            "contentWidth": 44.535,
+                            "contentHeight": 23,
+                            "placementMode": {
+                                "type": "free"
+                            },
+                            "placementControl": "auto",
+                            "sizeMode": {
+                                "x": "fit",
+                                "y": "fit"
+                            },
+                            "x": 10,
+                            "y": 10,
+                            "ref": "my-channel",
+                            "id": "a5ec1b8f642d68",
+                            "type": "channel",
+                            "parentId": "af87912kas83"
+                        }
+                    ],
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "padding": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "contentWidth": 44.535,
+                    "contentHeight": 43,
+                    "placementMode": {
+                        "type": "free"
+                    },
+                    "placementControl": "auto",
+                    "sizeMode": {
+                        "x": "fixed",
+                        "y": "fixed"
+                    },
+                    "x": 10,
+                    "y": 10,
+                    "ref": "sequence",
+                    "id": "af87912kas83",
+                    "type": "sequence",
+                    "parentId": "856723473246"
+                }
+            ],
             "offset": [
                 0,
                 0
@@ -2397,11 +322,12 @@
                 0,
                 0
             ],
-            "contentWidth": 131.85,
-            "contentHeight": 53,
+            "contentWidth": 44.535,
+            "contentHeight": 43,
             "placementMode": {
                 "type": "free"
             },
+            "placementControl": "user",
             "sizeMode": {
                 "x": "fixed",
                 "y": "fixed"
@@ -2409,8 +335,9 @@
             "x": 10,
             "y": 10,
             "ref": "sequence-aligner",
-            "id": "ec5cf2e429b98",
-            "type": "sequence-aligner"
+            "id": "856723473246",
+            "type": "sequence-aligner",
+            "parentId": "c8014d41f304e"
         }
     ],
     "offset": [
@@ -2423,11 +350,12 @@
         10,
         10
     ],
-    "contentWidth": 131.85,
-    "contentHeight": 53,
+    "contentWidth": 44.535,
+    "contentHeight": 43,
     "placementMode": {
         "type": "free"
     },
+    "placementControl": "user",
     "sizeMode": {
         "x": "fixed",
         "y": "fixed"

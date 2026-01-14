@@ -18,14 +18,14 @@ type HoverBehaviour = "terminate" | "carry" | "conditional";
 // Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
 const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> = {
 	0: {
-		terminate: ["label-group", "channel", "svg", "rect"],
-		carry: ["text", "lower-abstract", "svg", "rect"],
-		conditional: ["rect", "svg", "label", "diagram",]
+		terminate: ["channel"],
+		carry: ["text", "lower-abstract"],
+		conditional: ["rect", "svg", "label", "diagram", "label-group", ]
 	},
 	1: {
-		terminate: ["diagram", "label-group", "channel", "svg", "rect", "label-group", "text"],
+		terminate: ["label-group", "label-group", "text", "channel"],
 		carry: ["diagram"],
-		conditional: []
+		conditional: ["svg", "rect"]
 	},
 	2: {
 		terminate: ["diagram", "label-group"],
@@ -124,7 +124,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			if (terminators.includes(currElementType)) {
 				return currElement;
 			}
-			if (conditional.includes(currElementType) && !terminators.includes(elementUpType)) {
+			if (conditional.includes(currElementType) && terminators.includes(elementUpType)) {
 				return currElement;
 			}
 

@@ -1,18 +1,19 @@
 import { Element, Svg, SVG } from "@svgdotjs/svg.js";
+import Collection, { ICollection } from "./collection";
 import SchemeManager, { IUserSchemeData } from "./default";
 import DiagramHandler, { Result } from "./diagramHandler";
-import { IDiagram } from "./hasComponents/diagram";
-import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
+import Grid, { IGrid } from "./grid";
+import Channel, { IChannel } from "./hasComponents/channel";
+import Diagram, { IDiagram } from "./hasComponents/diagram";
 import Label, { ILabel } from "./hasComponents/label";
+import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
+import Sequence, { ISequence } from "./hasComponents/sequence";
+import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
+import { AllComponentTypes } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
-import Visual, { IVisual } from "./visual";
-import { AllComponentTypes } from "./point";
-import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
-import Collection, { ICollection } from "./collection";
-import Grid, { IGrid } from "./grid";
-import Sequence, { ISequence } from "./hasComponents/sequence";
-import Channel, { IChannel } from "./hasComponents/channel";
+import Text, { IText } from "./text";
+import Visual, { GridElement, IVisual } from "./visual";
 
 
 //                                    scheme name
@@ -79,8 +80,10 @@ class ENGINE {
 
 			if (!result.ok) {
 				console.warn(`Could not construct diagram from internal state`);
-				this.handler.freshDiagram();
+				this.handler.resetDiagram();
 			}
+		} else {
+			this.handler.resetDiagram();
 		}
 	}
 	static async loadSVGData() {
@@ -193,7 +196,7 @@ class ENGINE {
 					break;
 				}
 
-				element = new LabelGroup(parameters as ILabelGroup, coreChild);
+				element = new LabelGroup(parameters as ILabelGroup, coreChild as GridElement);
 				break;
 			case "label":
 				element = new Label(parameters as ILabel);
@@ -213,11 +216,45 @@ class ENGINE {
 			case "channel":
 				element = new Channel(parameters as IChannel);
 				break;
+			case "text":
+				element = new Text(parameters as IText);
+				break;
+			case "diagram":
+				element = new Diagram(parameters as IDiagram);
+				break;
+			
 			default:
 				element = undefined;
 		}
 
+		if (element !== undefined && Collection.isCollection(parameters)) {
+			parameters.children.forEach(c => {
+				c.parentId = parameters.id;
+				ENGINE.BuildSection(c, element!)
+			})
+		}
+
 		return element
+	}
+
+	// ----- Construct diagram from state ------
+	static BuildSection(params: IVisual, parent: Visual) {
+		if (parent === undefined) {
+			throw new Error(`Cannot find parent to element ${params.ref}, with parent id ${params.parentId}`)
+		}
+
+		let element: Visual | undefined = ENGINE.ConstructElement(params, params.type as AllComponentTypes);
+
+		if (element === undefined) {
+			throw new Error(`Error instantiating element ${params.ref}`)
+		}
+
+		if (Collection.isCollection(parent)) {
+			parent.add(element);
+		}
+		
+
+
 	}
 }
 

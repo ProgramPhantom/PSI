@@ -6,6 +6,7 @@ import { DEFAULT_SEQUENCE } from "./sequence";
 
 export const DEFAULT_DIAGRAM: IDiagram = {
 	"children": [{
+		"role": "sequence-aligner",
 		"id": "856723473246",
 		"mainAxis": "y",
 		"minCrossAxis": 0,
@@ -21,6 +22,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 		],
 		"type": "sequence-aligner"
 	} as ISequenceAligner],
+
 	"placementMode": { "type": "free" },
 	"offset": [0, 0],
 	"padding": [10, 10, 10, 10],

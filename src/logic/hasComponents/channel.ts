@@ -1,3 +1,4 @@
+import { RolesDict } from "../collection";
 import Grid, { Elements, Ghost, GridCell, IGrid } from "../grid";
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
 import RectElement, { IRectElement } from "../rectElement";
@@ -8,8 +9,6 @@ import Visual, { GridElement } from "../visual";
 
 export interface IChannel extends IGrid {
 	sequenceID?: ID;
-	label: IText,
-	bar: IRectElement,
 }
 
 
@@ -51,8 +50,6 @@ export default class Channel extends Grid implements IChannel {
 	get state(): IChannel {
 		return {
 			sequenceID: this.sequenceID,
-			label: this.label.state,
-			bar: this.bar.state,
 			...super.state
 		};
 	}
@@ -61,38 +58,34 @@ export default class Channel extends Grid implements IChannel {
 		return this.children.filter((v) => isPulse(v))
 	}
 
+	get label(): GridElement<Text> | undefined {
+		let label: GridElement<Text> | undefined = this.roles["label"].object as GridElement<Text> | undefined;
+
+		return label
+	}
+	get bar(): GridElement<RectElement> | undefined {
+		let bar: GridElement<RectElement> | undefined = this.roles["bar"].object as GridElement<RectElement> | undefined;
+
+		return bar
+	}
+
+	roles: RolesDict = {
+		"label": {
+			object: undefined,
+			initialiser: this.initialiseLabel.bind(this)
+		},
+		"bar": {
+			object: undefined,
+			initialiser: this.initialiseBar.bind(this)
+		}
+	}
 
 	sequenceID?: ID;
-
-	label: GridElement<Text>;
-	bar: GridElement<RectElement>;
 
 	constructor(params: IChannel) {
 		super(params);
 
 		this.sequenceID = params.sequenceID;
-
-		this.label = new Text(params.label) as GridElement<Text>;
-		this.label.placementMode = {
-			type: "grid", config: {
-				alignment: { x: "centre", y: "centre" },
-				coords: { row: 1, col: 0 },
-				contribution: { x: true, y: false }
-			}
-		}
-		this.label.ref = this.ref + "-label";
-		this.label = this.label as GridElement<Text>;
-
-
-		this.bar = new RectElement(params.bar) as GridElement<RectElement>;
-		this.bar.maskId = BAR_MASK_ID;
-		this.bar.placementMode = {
-			type: "grid", config: {
-				alignment: { x: "here", y: "centre" },
-				coords: { row: 1, col: 1 }
-			}
-		}
-		this.bar.ref = this.ref + "-bar";
 
 		this.initialiseChannel();
 	}
@@ -109,9 +102,6 @@ export default class Channel extends Grid implements IChannel {
 		this.insertEmptyColumn();
 		this.insertEmptyColumn();
 
-		this.add(this.label);
-		this.add(this.bar);
-
 		this.setMatrixAtCoord({
 			ghosts: [{ size: { width: 0, height: 10 } }],
 			extra: { width: 0, height: this.padding[0] }
@@ -121,7 +111,6 @@ export default class Channel extends Grid implements IChannel {
 			extra: { width: 0, height: this.padding[2] }
 		}, { row: 2, column: 0 })
 
-		this.growBar();
 	}
 
 	public override add(child: GridElement) {
@@ -131,20 +120,20 @@ export default class Channel extends Grid implements IChannel {
 			// If this pulse is placed in the "both" orientation, it needs to create two ghosts
 			// above and below it to pad out the top and bottom row:
 			if (child.pulseData.orientation === "both") {
-				let barHeight: number = this.bar.height;
+				let barHeight: number = this.bar?.height ?? 0;
 				let ghostHeight: number = (child.height - barHeight) / 2;
 
 				let ghost: Ghost = { size: { width: 0, height: ghostHeight }, owner: child.id }
 
 				this.addCentralElementGhosts(child.pulseData.index!, ghost, ghost);
 			}
+
+			this.growBar()
 		}
 
 		
 
 		super.add(child);
-
-		this.growBar()
 	}
 
 	public remove(child: GridElement, deleteIfEmpty?: { row: boolean, col: boolean }, modifying?: boolean) {
@@ -161,6 +150,10 @@ export default class Channel extends Grid implements IChannel {
 	public growBar() {
 		//this.setChildSize(this.bar, {noRows: 1, noCols: this.numColumns-1});
 		//this.positionElement(this.bar, {row: 1, col: 1})
+		if (this.bar === undefined) {
+			return
+		}
+
 		this.remove(this.bar)
 
 		this.bar.placementMode = {
@@ -213,6 +206,26 @@ export default class Channel extends Grid implements IChannel {
 		return spaces;
 	}
 
+	private initialiseBar(bar: Visual) {
+		bar.maskId = BAR_MASK_ID;
+		bar.placementMode = {
+			type: "grid", config: {
+				alignment: { x: "here", y: "centre" },
+				coords: { row: 1, col: 1 }
+			}
+		}
+		bar.ref = this.ref + "-bar";
+	}
+
+	private initialiseLabel(label: Visual) {
+		label.placementMode = {
+			type: "grid", config: {
+				alignment: { x: "centre", y: "centre" },
+				coords: { row: 1, col: 0 },
+				contribution: { x: true, y: false }
+			}
+		}
+	}
 
 	// -------------- Translation functions -------------
 	//#region 

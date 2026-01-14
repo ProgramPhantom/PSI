@@ -12,6 +12,8 @@ import Visual, { IDraw, IVisual } from "./visual";
 
 import { sha256 } from 'js-sha256';
 import Collection from "./collection.ts";
+import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
+import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 
 
 export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
@@ -78,21 +80,7 @@ export default class DiagramHandler implements IDraw {
 		this.surface = surface;
 		this.EngineConstructor = EngineConstructor;
 
-		var constructResult: Result<Diagram> = this.constructDiagram(
-			defaultDiagram
-		);
-
-		if (constructResult.ok) {
-			this.diagram = constructResult.value;
-		} else {
-			appToaster.show({
-				message: "Error loading diagram",
-				intent: "danger"
-			});
-			this.diagram = new Diagram(defaultDiagram);
-		}
-
-		this.draw();
+		this.diagram = this.emptyDiagram();
 	}
 
 	draw() {
@@ -134,61 +122,31 @@ export default class DiagramHandler implements IDraw {
 		}
 	}
 
-	// ----- Construct diagram from state ------
+
+
 	@draws
 	public constructDiagram(state: IDiagram): Result<Diagram> {
 		this.erase();
 
-		try {
-			var newDiagram: Diagram = new Diagram(state);
-		} catch (err) {
-			return { ok: false, error: (err as Error).message };
+		let newDiagram: Diagram | undefined = this.EngineConstructor(state, "diagram") as Diagram | undefined;
+			
+		if (newDiagram === undefined) {
+			return { ok: false, error: `Failed to create diagram` };
 		}
+
 		this.diagram = newDiagram;
-
-		try {
-			// Create and mount pulses.
-
-			const instantiateChildren = (params: IVisual) => {
-				let parent: Collection | undefined = this.diagram.allElements[params.parentId ?? ""] as Collection | undefined;
-				if (parent === undefined) {
-					throw new Error(`Cannot find parent to element ${params.ref}, with parent id ${params.parentId}`)
-				}
-
-				let element: Result<Visual> | undefined = this.createVisual(params, params.type as AllComponentTypes);
-
-				if (element.ok === false) {
-					throw new Error(`Error instantiating element ${params.ref}`)
-				}
-
-				parent.add(element.value);
-
-				// Create children of this new element
-				if (Collection.isCollection(params)) {
-					params.children.forEach((c) => {
-						c.parentId = element.value.id;
-
-						instantiateChildren(c);
-					});
-				}
-			}
-
-			// Skip diagram
-			state.children.forEach((c) => {
-				c.parentId = this.diagram.id;
-				instantiateChildren(c);
-			});
-
-		} catch (err) {
-			return { ok: false, error: (err as Error).message };
-		}
 
 		return { ok: true, value: newDiagram };
 	}
 
 	@draws
-	freshDiagram() {
-		this.diagram = new Diagram(<any>defaultDiagram);
+	resetDiagram() {
+		this.constructDiagram(DEFAULT_DIAGRAM);
+	}
+
+	@draws
+	emptyDiagram(): Diagram {
+		return new Diagram(BLANK_DIAGRAM)
 	}
 
 	// ---- Form interfaces ----
@@ -196,9 +154,6 @@ export default class DiagramHandler implements IDraw {
 		var result: Result<Visual>;
 		switch (type) {
 			case "channel":
-				(parameters as IChannel).sequenceID = this.diagram.sequenceIDs[0];
-				result = this.submitChannel(parameters as IChannel);
-				break;
 			case "rect":
 			case "svg":
 			case "label-group":
@@ -224,8 +179,13 @@ export default class DiagramHandler implements IDraw {
 		type: AllComponentTypes,
 		target: Visual
 	): Result<Visual> {
+		let removeCol: boolean = true;
+		if (isPulse(target)) {
+			removeCol = parameters.pulseData?.index === target.pulseData.index ? false : true
+		}
+
 		// Delete element
-		let deleteResult: Result<Visual> = this.remove(target, true);
+		let deleteResult: Result<Visual> = this.remove(target, removeCol);
 		if (deleteResult.ok === false) {
 			return deleteResult;
 		}
@@ -245,10 +205,10 @@ export default class DiagramHandler implements IDraw {
 			case "rect":
 			case "svg":
 			case "label-group":
-				result = this.remove(target);
-				break;
 			case "channel":
-				result = this.deleteChannel(target as Channel);
+				result = this.remove(target, true);
+				break;
+
 				break;
 			default:
 				throw new Error(`Cannot delete component of type ${type}`);
@@ -257,6 +217,7 @@ export default class DiagramHandler implements IDraw {
 		return result;
 	}
 
+	/*
 	public submitChannel(parameters: IChannel): Result<Channel> {
 		if (parameters.sequenceID === undefined) {
 			return {
@@ -276,6 +237,7 @@ export default class DiagramHandler implements IDraw {
 
 		return this.addChannel(newChannel);
 	}
+		*/
 
 	// ------------------------------------------
 
@@ -319,7 +281,7 @@ export default class DiagramHandler implements IDraw {
 		return { ok: true, value: element };
 	}
 	@draws
-	public remove(target: Visual, modifying: boolean=false): Result<Visual> {
+	public remove(target: Visual, removeCol: boolean = false): Result<Visual> {
 		var result: Result<Visual> = { ok: false, error: `Problem deleting visual ${target.ref}` };
 
 		// Parent Id can never be atomic
@@ -340,7 +302,7 @@ export default class DiagramHandler implements IDraw {
 			let targetSequence: Sequence | undefined = this.allElements[target.pulseData.sequenceID ?? 0] as Sequence | undefined;
 
 			if (targetSequence !== undefined) {
-				targetSequence.removeColumn(target.pulseData.index, !modifying)
+				targetSequence.removeColumn(target.pulseData.index, removeCol === false ? false : "if-empty")
 			}
 		}
 
@@ -364,6 +326,7 @@ export default class DiagramHandler implements IDraw {
 	// ----------------------------
 
 	// ------- Channel stuff ---------
+	/*
 	@draws
 	public addChannel(element: Channel): Result<Channel> {
 		var result: Result<Channel>;
@@ -408,7 +371,7 @@ export default class DiagramHandler implements IDraw {
 		result = { ok: true, value: target };
 		return result
 	}
-
+	*/
 	// ----------- Annotation stuff ------------------
 	@draws
 	public createLine(
@@ -491,6 +454,8 @@ export default class DiagramHandler implements IDraw {
 		} catch (err) {
 			return { ok: false, error: (err as Error).message };
 		}
+
+
 
 		return { ok: true, value: target }
 	}

@@ -1,6 +1,7 @@
 import Collection from "../collection";
 import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
+import { isPulse } from "../spacial";
 import { Position } from "../text";
 import Visual, { GridElement, IVisual } from "../visual";
 import Label, { ILabel } from "./label";
@@ -58,8 +59,8 @@ export default class LabelGroup
 		return record
 	}
 
-	private _coreChild: T;
-	get coreChild(): T {
+	private _coreChild: GridElement;
+	get coreChild(): GridElement {
 		return this._coreChild;
 	}
 
@@ -68,14 +69,14 @@ export default class LabelGroup
 
 	constructor(
 		params: ILabelGroup,
-		coreChild: T,
+		coreChild: GridElement,
 	) {
 		super(params);
 		this.setMatrixSize({ row: 2, col: 2 })
 
 		this.coreChildType = params.coreChildType;
 
-		var coreChild: T = coreChild;
+		var coreChild: GridElement = coreChild;
 
 
 		this.placementMode = params.placementMode ?? { type: "free" };
@@ -92,7 +93,7 @@ export default class LabelGroup
 		});
 	}
 
-	private setCoreChild(child: T) {
+	private setCoreChild(child: GridElement) {
 		this._coreChild = child;
 		this._coreChild.placementMode = {
 			type: "grid",
@@ -101,7 +102,7 @@ export default class LabelGroup
 			}
 		}
 
-		this.addChildAtCoord(child, 1, 1)
+		this.add(child);
 	}
 
 
@@ -112,7 +113,7 @@ export default class LabelGroup
 			config: {
 				contribution: {
 					x: true,
-					y: (this.placementMode.type === "pulse" && this.placementMode.config.orientation === "both") ? false : true
+					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
 				}
 			}
 		}
@@ -121,27 +122,31 @@ export default class LabelGroup
 		switch (position) {
 			case "top":
 				label.placementMode.config.alignment = { x: "centre", y: "far" }
+				label.placementMode.config.coords = {row: 0, col: 1}
 				label.sizeMode = { x: "grow", y: "fit" }
 				label.mainAxis = "y";
-				this.addChildAtCoord(label, 0, 1);
+				this.add(label);
 				break;
 			case "right":
 				label.placementMode.config.alignment = { x: "here", y: "centre" }
+				label.placementMode.config.coords = {row: 1, col: 2}
 				label.sizeMode = { x: "fit", y: "grow" }
 				label.mainAxis = "x";
-				this.addChildAtCoord(label, 1, 2);
+				this.add(label);
 				break;
 			case "bottom":
 				label.placementMode.config.alignment = { x: "centre", y: "here" }
+				label.placementMode.config.coords = {row: 2, col: 1}
 				label.sizeMode = { x: "grow", y: "fit" }
 				label.mainAxis = "y";
-				this.addChildAtCoord(label, 2, 1);
+				this.add(label);
 				break;
 			case "left":
 				label.placementMode.config.alignment = { x: "far", y: "centre" }
+				label.placementMode.config.coords = {row: 1, col: 0}
 				label.sizeMode = { x: "fit", y: "grow" }
 				label.mainAxis = "x";
-				this.addChildAtCoord(label, 1, 0);
+				this.add(label);
 				break;
 			case "centre":
 				throw new Error("Not implemented");

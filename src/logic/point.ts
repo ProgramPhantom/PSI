@@ -37,6 +37,7 @@ export interface IElement {
 	id?: ID;
 	type: AllComponentTypes;
 	parentId?: ID;
+	role?: string
 }
 
 export interface IPoint extends IElement {
@@ -57,7 +58,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 			ref: this.ref,
 			id: this.id,
 			type: (this.constructor as typeof Point).ElementType,
-			parentId: this.parentId
+			parentId: this.parentId,
+			role: this.role
 		};
 	}
 
@@ -74,6 +76,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	public parentId: ID | undefined;
 
 	ref: string;
+	role?: string;
 	public type: AllComponentTypes;
 
 	constructor(params: IPoint) {
@@ -81,6 +84,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		this._y = params.y ?? 0;
 
 		this.ref = params.ref;
+		this.role = params.role;
 
 		if (params.id === undefined) {
 			this._id = Math.random().toString(16).slice(2);

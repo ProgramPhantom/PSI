@@ -22,6 +22,7 @@ await ENGINE.loadSVGData();
 ENGINE.surface = SVG().attr({"pointer-events": "bounding-box"});
 
 ENGINE.loadDiagramState();
+
 ENGINE.createSingletons();
 
 export interface IToolConfig {}

@@ -6,7 +6,7 @@ import Visual, { AlignerElement, PulseElement } from "../visual";
 import Sequence, { ISequence } from "./sequence";
 
 export interface ISequenceAligner extends IAligner<ISequence> {
-	sequences: ISequence[]
+
 }
 
 export default class SequenceAligner extends Aligner<AlignerElement<Sequence>> implements ISequenceAligner {
@@ -14,8 +14,8 @@ export default class SequenceAligner extends Aligner<AlignerElement<Sequence>> i
 
 	get state(): ISequenceAligner {
 		return {
-			sequences: this.sequences.map(s => s.state),
-			...super.state as IAligner<ISequence>
+			...super.state,
+			children: this.children.map(c => c.state)
 		};
 	}
 
@@ -26,15 +26,5 @@ export default class SequenceAligner extends Aligner<AlignerElement<Sequence>> i
 	constructor(params: ISequenceAligner) {
 		super(params);
 
-		// Initial sequence:
-		if (params.children.length === 0) {
-			var startSequence = new Sequence(DEFAULT_SEQUENCE) as AlignerElement<Sequence>;
-			this.add(startSequence);
-		}
-
-		params.children.forEach((s) => {
-			var newSeq = new Sequence(s) as AlignerElement<Sequence>;
-			this.add(newSeq);
-		});
 	}
 }

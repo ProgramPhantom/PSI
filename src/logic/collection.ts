@@ -10,8 +10,10 @@ export interface ICollection<C extends IVisual = IVisual> extends IVisual {
 	sizeMode?: Record<Dimensions, ContainerSizeMethod>
 }
 
+export type RolesDict = Record<string, {object: Visual | undefined, initialiser?: (object: Visual) => void}>;
+
 export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C> {
-	static isCollection(v: IVisual): v is ICollection {
+	static isCollection(v: IVisual): v is Collection {
 		return (v as any).children !== undefined;
 	}
 
@@ -36,6 +38,8 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	get children(): C[] {
 		return this._children;
 	};
+
+	public roles: RolesDict = {};
 
 	declare public sizeMode: Record<Dimensions, ContainerSizeMethod>;
 
@@ -197,6 +201,14 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		child.parentId = this.id;
 
 		this.children.push(child);
+
+		if (child.role !== undefined && Object.keys(this.roles).includes(child.role ?? "") && this.roles[child.role].object === undefined) {
+			this.roles[child.role].object = child;
+
+			if (this.roles[child.role].initialiser !== undefined) {
+				this.roles[child.role].initialiser!(child);
+			}
+		}
 	}
 
 	erase(): void {

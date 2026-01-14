@@ -96,6 +96,10 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							newState.pulseData!.sequenceID = dropResult.sequenceID;
 							newState.pulseData!.index = dropResult.index;
 
+							if (newState.pulseData!.orientation !== "both") {
+								newState.pulseData!.orientation = dropResult.orientation;
+							}
+
 							newState.parentId = dropResult.channelID;
 
 							if (dropResult.insert === true) {
