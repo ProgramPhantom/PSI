@@ -529,7 +529,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		else {
 			for (let child of currElements) {
 				// Don't change child coord with coord of source cells
-				if (child.placementMode.type === "grid" && cell?.sources?.[child.id] === undefined) {
+				if (cell?.sources?.[child.id] === undefined) {
 					child.placementMode.config.coords = coords;
 				}
 

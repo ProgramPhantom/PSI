@@ -142,7 +142,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
-			placementMode: this.placementMode,
+			placementMode: this._placementMode,
 			placementControl: this.placementControl,
 			sizeMode: this.sizeMode,
 			pulseData: this.pulseData,
@@ -167,11 +167,27 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	protected _contentWidth: number;
 	protected _contentHeight: number;
 
-	public placementMode: PlacementConfiguration;
+	private _placementMode: PlacementConfiguration;
+	public get placementMode() {
+		return this._placementMode;
+	}
+	public set placementMode(value: PlacementConfiguration) {
+		this._placementMode = value;
+	}
+
 	public placementControl: PlacementControl;
 	public sizeMode: SizeConfiguration;
 
-	public pulseData?: IPulseConfig;
+	private _pulseData?: IPulseConfig | undefined;
+	public get pulseData(): IPulseConfig | undefined {
+		if (this.placementMode?.type === "grid" && this._pulseData !== undefined) {
+			this.updatePulseDataFromGridConfig();
+		}
+		return this._pulseData;
+	}
+	public set pulseData(value: IPulseConfig | undefined) {
+		this._pulseData = value;
+	}
 
 	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
 	bindingsToThis: IBinding[] = [];
@@ -189,7 +205,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	) {
 		super(params);
 
-		this.placementMode = params.placementMode ?? { type: "free" }
+		this._placementMode = params.placementMode ?? { type: "free" }
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ?? { x: "fixed", y: "fixed" }
 		this.pulseData = params.pulseData;
@@ -610,6 +626,38 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				return this.width;
 			case "y":
 				return this.height;
+		}
+	}
+
+	private updatePulseDataFromGridConfig() {
+		if (this.placementMode?.type === "grid") {
+
+			let orientation: Orientation = "top";
+			switch (this.placementMode.config.coords?.row) {
+				case 0:
+					orientation = "top";
+					break;
+				case 1:
+					orientation = "both";
+					break;
+				case 2:
+					orientation = "bottom";
+					break;
+			}
+
+
+			this._pulseData = {
+				channelID: this._pulseData?.channelID,
+				sequenceID: this._pulseData?.sequenceID,
+
+				noSections: this.placementMode.config.gridSize?.noRows ?? 1,
+				index: this.placementMode.config.coords?.col ?? 0,
+				orientation: orientation,
+				alignment: {
+					x: this.placementMode.config.alignment?.x ?? "centre",
+					y: this.placementMode.config.alignment?.y ?? "far"
+				}
+			}
 		}
 	}
 }
