@@ -9,7 +9,7 @@ export const DEFAULT_ACQUIRE: ISVGElement = {
 
 	"pulseData": {
 		"alignment": { "x": "centre", "y": "far" },
-		"orientation": "top",
+		"orientation": "both",
 		"noSections": 1,
 		"clipBar": true
 	},

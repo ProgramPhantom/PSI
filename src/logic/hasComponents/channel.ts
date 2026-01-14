@@ -143,6 +143,8 @@ export default class Channel extends Grid implements IChannel {
 		
 
 		super.add(child);
+
+		this.growBar()
 	}
 
 	public growBar() {
@@ -168,7 +170,7 @@ export default class Channel extends Grid implements IChannel {
 			}
 		}
 
-		this.add(this.bar);
+		super.add(this.bar);
 	}
 
 	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {

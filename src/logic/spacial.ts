@@ -654,8 +654,9 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			this._pulseData = {
 				channelID: this._pulseData?.channelID,
 				sequenceID: this._pulseData?.sequenceID,
+				clipBar: this._pulseData?.clipBar,
 
-				noSections: this.placementMode.config.gridSize?.noRows ?? 1,
+				noSections: this.placementMode.config.gridSize?.noCols ?? 1,
 				index: this.placementMode.config.coords?.col ?? 0,
 				orientation: orientation,
 				alignment: {
