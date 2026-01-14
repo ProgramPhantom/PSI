@@ -225,7 +225,7 @@ export default class DiagramHandler implements IDraw {
 		target: Visual
 	): Result<Visual> {
 		// Delete element
-		let deleteResult: Result<Visual> = this.remove(target);
+		let deleteResult: Result<Visual> = this.remove(target, true);
 		if (deleteResult.ok === false) {
 			return deleteResult;
 		}
@@ -319,7 +319,7 @@ export default class DiagramHandler implements IDraw {
 		return { ok: true, value: element };
 	}
 	@draws
-	public remove(target: Visual): Result<Visual> {
+	public remove(target: Visual, modifying: boolean=false): Result<Visual> {
 		var result: Result<Visual> = { ok: false, error: `Problem deleting visual ${target.ref}` };
 
 		// Parent Id can never be atomic
@@ -334,6 +334,14 @@ export default class DiagramHandler implements IDraw {
 			result = { ok: true, value: target };
 		} catch (err) {
 			result = { ok: false, error: (err as Error).message }
+		}
+
+		if (isPulse(target)) {
+			let targetSequence: Sequence | undefined = this.allElements[target.pulseData.sequenceID ?? 0] as Sequence | undefined;
+
+			if (targetSequence !== undefined) {
+				targetSequence.removeColumn(target.pulseData.index, !modifying)
+			}
 		}
 
 

@@ -96,6 +96,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							newState.pulseData!.sequenceID = dropResult.sequenceID;
 							newState.pulseData!.index = dropResult.index;
 
+							newState.parentId = dropResult.channelID;
+
 							if (dropResult.insert === true) {
 								ENGINE.handler.addColumn(dropResult.sequenceID ?? "", dropResult.index);
 							}

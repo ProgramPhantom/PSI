@@ -303,6 +303,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 				if (cell?.elements !== undefined) {
 					let cellRect: Size = this.cells[row_index][column_index];
 
+					if (cellRect === undefined) {
+						throw new Error(`Index out of bounds row ${row_index}, col: ${column_index}`)
+					}
+
 					for (let child of cell.elements) {
 						// Skip unless this is an element source
 						if (!this.isCellElementSource(child, { row: row_index, col: column_index })) { continue }
@@ -880,7 +884,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		this.shiftElementRowIndexes(INDEX, 1);
 	}
 
-	public removeColumn(index?: number, onlyIfEmpty: boolean = false) {
+	public removeColumn(index?: number, remove: true | false | "if-empty" = false) {
 		if (index === undefined || index < 0 || index > this.numColumns - 1) {
 			var INDEX = this.numColumns - 1;
 		} else {
@@ -890,7 +894,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		var targetColumn: GridCell[] = this.getColumn(INDEX);
 		var empty: boolean = this.isArrayEmpty(targetColumn)
 
-		if (onlyIfEmpty === true && empty === true) { return }
+		if (remove === false) {return}
+		if (remove === "if-empty"  && empty === false) { return }
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);

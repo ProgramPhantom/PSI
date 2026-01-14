@@ -140,8 +140,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	}
 
 	public getHitbox(): Rect {
-		var collectionHitbox = SVG()
-			.rect()
+		var collectionHitbox = new Rect()
 			.id(this.id + "-hitbox")
 			.attr({ "data-editor": "hitbox", key: this.ref });
 

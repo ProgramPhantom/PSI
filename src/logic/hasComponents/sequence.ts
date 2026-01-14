@@ -303,7 +303,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		}
 	}
 
-	public override removeColumn(index?: number, onlyIfEmpty: boolean = false) {
+	public override removeColumn(index?: number, remove: true | false | "if-empty" = false) {
 		let INDEX: number | undefined = index;
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns - 1) {
 			INDEX = this.numColumns - 1;
@@ -315,7 +315,8 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 		var empty: boolean = !this.colHasPulse(INDEX);
 
-		if (onlyIfEmpty === true && empty === false) { return }
+		if (remove === false) {return}
+		if (remove === "if-empty"  && empty === false) { return }
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);

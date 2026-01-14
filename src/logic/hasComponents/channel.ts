@@ -147,6 +147,17 @@ export default class Channel extends Grid implements IChannel {
 		this.growBar()
 	}
 
+	public remove(child: GridElement, deleteIfEmpty?: { row: boolean, col: boolean }, modifying?: boolean) {
+		//let remove: {row: boolean, col: boolean } = {row: false, col: isPulse(child)}
+		//
+		//// Never remove the first pulse column
+		//if (this.numColumns === 2) {
+		//	remove.col = false
+		//}
+		
+		super.remove(child)
+	}
+
 	public growBar() {
 		//this.setChildSize(this.bar, {noRows: 1, noCols: this.numColumns-1});
 		//this.positionElement(this.bar, {row: 1, col: 1})
