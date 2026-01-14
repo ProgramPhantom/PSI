@@ -6,12 +6,10 @@ export const DEFAULT_90H: IRectElement = {
 	"contentWidth": 7,
 	"contentHeight": 50,
 
-	"placementMode": {
-		"type": "pulse", "config": {
-			"alignment": { "x": "centre", "y": "far" },
-			"orientation": "top",
-			"noSections": 1,
-		}
+	"pulseData": {
+		"alignment": { "x": "centre", "y": "far" },
+		"orientation": "top",
+		"noSections": 1,
 	},
 
 	"style": {

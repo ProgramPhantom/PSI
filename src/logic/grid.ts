@@ -13,14 +13,14 @@ export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 	numColumns?: number
 }
 
-export type GridCell<T extends GridPulseElement = GridPulseElement> = OccupiedCell<T> | undefined
+export type GridCell<T extends GridElement = GridElement> = OccupiedCell<T> | undefined
 
 export type Elements<T> = T[];
 type Sources = { [id: string]: { row: number; col: number } };
 export type Ghost = { size: { width: number, height: number }, owner?: ID };
 type Extra = { width: number, height: number };
 
-export interface OccupiedCell<M extends GridPulseElement = GridPulseElement> {
+export interface OccupiedCell<M extends GridElement = GridElement> {
 	elements?: Elements<M>;  // The element if this is the “owning” cell
 	sources?: Sources;  // If this cell is covered by another
 	ghosts?: Ghost[];  // Provide spacing to a cell
@@ -30,13 +30,9 @@ export interface OccupiedCell<M extends GridPulseElement = GridPulseElement> {
 export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridConfig | undefined
 export type GridPlacementSetter = (element: Visual, value: IGridConfig) => void
 
-type GridPulseElement = PulseElement | GridElement;
+
 export default class Grid<C extends Visual = Visual> extends Collection<C> implements IDraw {
-	static IdentityGetter: GridPlacementPredicate = (v) => v.type === "grid" ? v.config : undefined;
-	static IdentitySetter: GridPlacementSetter = (e, v) => { e.placementMode = { type: "grid", config: v } }
-	static isGridPulseElement = (e: Visual): e is GridPulseElement => e.placementMode.type === "grid" || e.placementMode.type === "pulse"
 	static isGridElement = (e: Visual): e is GridElement => e.placementMode.type === "grid"
-	static isPulseElement = (e: Visual): e is PulseElement => e.placementMode.type === "pulse"
 
 	get state(): IGrid {
 		return {
@@ -59,17 +55,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		}
 	}
 
-	protected placementModeTranslators: { get: GridPlacementPredicate, set: GridPlacementSetter } = {
-		get: Grid.IdentityGetter,
-		set: Grid.IdentitySetter
-	}
-
 	private min: { width: number, height: number };
 
-	protected gridMatrix: GridCell<GridPulseElement>[][] = [];
+	protected gridMatrix: GridCell<GridElement>[][] = [];
 
-	readonly gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
-	readonly cells: Spacial[][];
+	public gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
+	public cells: Spacial[][];
 
 	constructor(params: IGrid) {
 		super(params);
@@ -115,7 +106,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 
 				if (cell?.elements !== undefined) {
 					for (let child of cell.elements) {
-						let placementMode: IGridConfig | undefined = this.placementModeTranslators.get(child.placementMode);
+						let placementMode: IGridConfig | undefined = child.placementMode.config;
 						var contributing: boolean = true;
 
 						// Manual contribution parameter
@@ -179,7 +170,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 
 				if (cell?.elements !== undefined) {
 					for (let child of cell.elements) {
-						let placementMode: IGridConfig | undefined = this.placementModeTranslators.get(child.placementMode);
+						let placementMode: IGridConfig | undefined = child.placementMode.config;
 						let contributing: boolean = true;
 
 						// Manual contribution parameter
@@ -282,14 +273,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 							continue
 						}
 
-						let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
-						if (gridConfig === undefined) {
-							gridConfig = {
-								coords: { row: row_index, col: column_index },
-								alignment: { x: "here", y: "here" },
-								gridSize: { noRows: 1, noCols: 1 }
-							}
-						}
+						let gridConfig: IGridConfig = element.placementMode.config;
 
 						let childBottomRight: { row: number, col: number } | undefined = this.getElementBottomRight(element);
 
@@ -371,7 +355,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 			for (var col = 0; col < this.numColumns; col++) {
 				var colWidth: number = this.gridSizes.columns[col].width;
 
-				this.cells[row][col] = new Spacial(this.cx + xCount, this.cy + yCount, colWidth, rowHeight)
+				this.cells[row][col] = new Spacial({
+					contentWidth: colWidth,
+					contentHeight: rowHeight,
+					x: this.cx + xCount,
+					y: this.cy + yCount,
+					ref: "grid-cell",
+					type: "lower-abstract"
+				})
 
 				xCount += colWidth;
 			}
@@ -460,7 +451,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	public override add(child: C) {
 		super.add(child);
 
-		if (Grid.isGridPulseElement(child)) {
+		if (Grid.isGridElement(child)) {
 			this.addElement(child);
 		}
 	}
@@ -494,20 +485,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		}
 	}
 
-	public addElement(child: GridPulseElement) {
-		let gridConfig: IGridConfig;
-		if (Grid.isGridElement(child)) {
-			gridConfig = child.placementMode.config;
-		} else {
-			gridConfig = this.placementModeTranslators.get(child.placementMode) !;
-		}
-		
-		let insertCoords: { row: number, col: number } | undefined = gridConfig?.coords;
+	public addElement(child: GridElement) {
+
+		let insertCoords: { row: number, col: number } | undefined = child.placementMode.config.coords;
 		if (insertCoords === undefined) {
 			throw new Error(`Adding grid child ${child.ref} with unspecified coords`)
 		}
 
-		
 		var region: OccupiedCell[][] | undefined = this.getElementGridRegion(child, { row: insertCoords.row, col: insertCoords.col });
 
 		if (region === undefined) {
@@ -517,17 +501,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		this.appendElementsInRegion(region, { row: insertCoords.row, col: insertCoords.col })
 	}
 
-	public addElementAtCoord(child: GridPulseElement, coords: {row: number, col: number}) {
+	public addElementAtCoord(child: GridElement, coords: { row: number, col: number }) {
 		var insertCoords: { row: number, col: number } = coords;
 
-		let gridConfig: IGridConfig;
-		if (Grid.isGridElement(child)) {
-			gridConfig = child.placementMode.config;
-		} else {
-			gridConfig = this.placementModeTranslators.get(child.placementMode) !;
-		}
-		gridConfig.coords = insertCoords;
-		this.placementModeTranslators.set(child, gridConfig);
+		child.placementMode.config.coords = insertCoords;
 
 		this.addElement(child);
 	}
@@ -543,7 +520,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 			targetGridCell = {};
 		}
 
-		let currElements: GridPulseElement[] | undefined = targetGridCell.elements ?? [];
+		let currElements: GridElement[] | undefined = targetGridCell.elements ?? [];
 		let currSources: { [index: number]: { row: number; col: number } } | undefined = targetGridCell.sources ?? {};
 		let currGhosts: Ghost[] | undefined = targetGridCell.ghosts ?? [];
 
@@ -629,12 +606,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	public remove(child: C, deleteIfEmpty?: { row: boolean, col: boolean }) {
 		super.remove(child)
 
-		if (Grid.isGridPulseElement(child)) {
+		if (Grid.isGridElement(child)) {
 			this.removeMatrix(child, deleteIfEmpty)
 		}
 	}
 
-	private removeMatrix(child: GridPulseElement, deleteIfEmpty?: { row: boolean, col: boolean }) {
+	private removeMatrix(child: GridElement, deleteIfEmpty?: { row: boolean, col: boolean }) {
 		// First we need to locate this child in the matrix:
 		var topLeft: { row: number, col: number } | undefined = this.locateElement(child);
 		let bottomRight: { row: number, col: number } | undefined = this.getElementBottomRight(child);
@@ -697,7 +674,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		// Clean up ghosts:
 		// Ghosts can be placed by an element outside of it's region, hence we use the 
 		// owned ghosts properties to clear these up.
-		let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(child.placementMode);
+		let gridConfig: IGridConfig = child.placementMode.config;
 		(gridConfig?.ownedGhosts ?? []).forEach((ownedGhost) => {
 			let cell: GridCell = this.getCell({ row: ownedGhost.row, col: ownedGhost.col });
 
@@ -831,15 +808,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		}
 
 		// Grow split elements by 1 in columns
-		let splitElements: GridPulseElement[][] = this.getColumnSplitElements(INDEX);
+		let splitElements: GridElement[][] = this.getColumnSplitElements(INDEX);
 		splitElements.forEach((row, row_index) => {
 			for (let element of row) {
-				let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+				let gridConfig: IGridConfig = element.placementMode.config;
 
-				if (gridConfig !== undefined && gridConfig.gridSize !== undefined) {
+				if (gridConfig.gridSize !== undefined) {
 					// Grow
 					gridConfig.gridSize.noCols += 1;
-					this.placementModeTranslators.set(element, gridConfig);
 
 					// Add this element so that it spans over the gap
 					if (newColumn[row_index]?.sources === undefined) {
@@ -873,15 +849,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		}
 
 		// Grow split elements by 1 in columns
-		let splitElements: GridPulseElement[][] = this.getRowSplitElements(INDEX);
+		let splitElements: GridElement[][] = this.getRowSplitElements(INDEX);
 		splitElements.forEach((col, col_index) => {
 			for (let element of col) {
-				let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
+				let gridConfig: IGridConfig = element.placementMode.config;
 
-				if (gridConfig !== undefined && gridConfig.gridSize !== undefined) {
+				if (gridConfig.gridSize !== undefined) {
 					// Grow
 					gridConfig.gridSize.noRows += 1;
-					this.placementModeTranslators.set(element, gridConfig);
 
 					// Add this element so that it spans over the gap
 					if (newRow[col_index]?.sources === undefined) {
@@ -942,13 +917,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	}
 
 	// --- Helpers ----
-	protected getColumnSplitElements(index: number): GridPulseElement[][] {
+	protected getColumnSplitElements(index: number): GridElement[][] {
 		if (index > this.numColumns || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
 		}
 
 		// Get elements which have a part on the left and right of the index (insertion index)
-		var elements: GridPulseElement[][] = Array.from({ length: this.numRows }, () => []);
+		var elements: GridElement[][] = Array.from({ length: this.numRows }, () => []);
 
 		this.getRows().forEach((row, row_index) => {
 			let leftCell: GridCell = row[index - 1];
@@ -966,13 +941,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		return elements;
 	}
 
-	protected getRowSplitElements(index: number): GridPulseElement[][] {
+	protected getRowSplitElements(index: number): GridElement[][] {
 		if (index > this.numRows || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
 		}
 
 		// Get elements which have a part on the left and right of the index (insertion index)
-		var elements: GridPulseElement[][] = Array.from({ length: this.numColumns }, () => []);
+		var elements: GridElement[][] = Array.from({ length: this.numColumns }, () => []);
 
 		this.getColumns().forEach((col, col_index) => {
 			let leftCell: GridCell = col[index - 1];
@@ -1001,10 +976,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 					cell.elements.forEach((element) => {
 						if (!this.isCellElementSource(element, { row: row_index, col: col_index })) { return }
 
-						let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
-						if (gridConfig && gridConfig.coords !== undefined) {
+						let gridConfig: IGridConfig = element.placementMode.config;
+						if (gridConfig.coords !== undefined) {
 							gridConfig.coords.col += amount;
-							this.placementModeTranslators.set(element, gridConfig);
 						}
 					})
 				}
@@ -1032,10 +1006,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 					cell.elements.forEach((element) => {
 						if (!this.isCellElementSource(element, { row: row_index, col: col_index })) { return }
 
-						let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
-						if (gridConfig && gridConfig.coords !== undefined) {
+						let gridConfig: IGridConfig = element.placementMode.config;
+						if (gridConfig.coords !== undefined) {
 							gridConfig.coords.row += amount;
-							this.placementModeTranslators.set(element, gridConfig);
 						}
 					})
 				}
@@ -1093,7 +1066,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		return this.cells.flat();
 	}
 
-	protected locateElement(target: GridPulseElement): { row: number, col: number } | undefined {
+	protected locateElement(target: GridElement): { row: number, col: number } | undefined {
 		var coords: { row: number, col: number } | undefined = undefined;
 
 		this.gridMatrix.forEach((row, row_index) => {
@@ -1133,7 +1106,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		return coords;
 	}
 
-	public getElementBottomRight(child: GridPulseElement): { row: number, col: number } | undefined {
+	public getElementBottomRight(child: GridElement): { row: number, col: number } | undefined {
 		let location: { row: number, col: number } | undefined = this.locateElement(child);
 
 		if (location === undefined) { return undefined }
@@ -1197,7 +1170,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 
 	// -------------- Child sizing -------------------
 	//#region 
-	public setElementSize(child: GridPulseElement, size: { noRows: number, noCols: number }) {
+	public setElementSize(child: GridElement, size: { noRows: number, noCols: number }) {
 		let location: { row: number, col: number } | undefined = this.locateElement(child)
 
 		if (location === undefined) {
@@ -1218,13 +1191,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		this.appendElementsInRegion(region, location);
 	}
 
-	protected getElementGridRegion(element: GridPulseElement, overridePosition?: { row: number, col: number }): OccupiedCell[][] | undefined {
-		let gridConfig: IGridConfig;
-		if (Grid.isGridElement(element)) {
-			gridConfig = element.placementMode.config;
-		} else {
-			gridConfig = this.placementModeTranslators.get(element.placementMode) !;
-		}
+	protected getElementGridRegion(element: GridElement, overridePosition?: { row: number, col: number }): OccupiedCell[][] | undefined {
+		let gridConfig: IGridConfig = element.placementMode.config;
 
 		let topLeft: { row: number, col: number } | undefined = gridConfig.coords;
 		if (topLeft === undefined) {
@@ -1241,10 +1209,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		let root: { row: number, col: number } = overridePosition ?? topLeft
 		gridConfig.coords = root;
 
-		if (element.placementMode.type === "pulse") {
-			this.placementModeTranslators.set(element, gridConfig)
-		}
-
 		// Construct region
 		let entry: OccupiedCell = { elements: [element], sources: { [element.id]: root } }
 		let region: OccupiedCell[][] =
@@ -1254,7 +1218,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		// Put the top left back to just the element:
 		region[0][0] = { elements: [element] };
 
-	
+
 		return region
 	}
 	//#endregion
@@ -1298,7 +1262,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		return count;
 	}
 
-	protected isCellElementSource(child: GridPulseElement, cell: { row: number, col: number }): boolean {
+	protected isCellElementSource(child: GridElement, cell: { row: number, col: number }): boolean {
 		let targetCell: GridCell = this.gridMatrix[cell.row][cell.col];
 
 		if (targetCell?.elements === undefined) {
@@ -1326,7 +1290,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	// -----------------------------------------------
 
 
-	public positionElement(child: GridPulseElement, position: { row: number, col: number }) {
+	public positionElement(child: GridElement, position: { row: number, col: number }) {
 		let region: GridCell[][] | undefined = this.getElementGridRegion(child, position);
 		this.removeMatrix(child);
 

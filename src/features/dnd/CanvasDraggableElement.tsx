@@ -5,7 +5,7 @@ import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { HandleStyles } from "react-rnd";
 import ENGINE from "../../logic/engine";
-import { IPulseConfig } from "../../logic/spacial";
+import { IPulseConfig, isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
 import { IMountAreaResult, isMountDrop } from "./InsertArea";
@@ -81,22 +81,25 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						var result = dropResult as IMountAreaResult;
 						let elementType = (item.element.constructor as typeof Visual).ElementType
 
-						if (item.element.placementMode.type === "pulse") {
-							var newMountConfig: IPulseConfig = {
-								...item.element.placementMode.config,
-								orientation: item.element.placementMode.config.orientation === "both" ? "both" : result.orientation,
-								channelID: result.channelID,
-								sequenceID: result.sequenceID,
-								index: result.index
-							};
+						if (isPulse(item.element)) {
+							// var newMountConfig: IPulseConfig = {
+							// 	...item.element.placementMode.config,
+							// 	orientation: item.element.placementMode.config.orientation === "both" ? "both" : result.orientation,
+							// 	channelID: result.channelID,
+							// 	sequenceID: result.sequenceID,
+							// 	index: result.index
+							// };
 
 							let newState: IVisual = { ...item.element.state }
-							newState.placementMode = {
-								type: "pulse", config: newMountConfig
-							}
 
 							if (dropResult.insert === true) {
-								ENGINE.handler.addColumn(newState.placementMode.config.sequenceID ?? "", dropResult.index);
+								ENGINE.handler.addColumn(dropResult.sequenceID ?? "", dropResult.index);
+							}
+
+							if (isPulse(newState)) {
+								newState.pulseData.channelID = dropResult.channelID;
+								newState.pulseData.sequenceID = dropResult.sequenceID;
+								newState.pulseData.index = dropResult.index;
 							}
 
 							let modifyResult = ENGINE.handler.submitModifyVisual(newState, elementType, item.element);

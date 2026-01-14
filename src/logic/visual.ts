@@ -1,7 +1,7 @@
 import { Element, Mask } from "@svgdotjs/svg.js";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { BAR_MASK_ID, ID, UserComponentType } from "./point";
-import { IAlignerConfig, IGridConfig, IPulseConfig, Size } from "./spacial";
+import { IAlignerConfig, IGridConfig, IPulseConfig, isPulse, Size } from "./spacial";
 import { Rect } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { Svg } from "@svgdotjs/svg.js";
@@ -70,7 +70,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		}
 
 		// Add to mask
-		if (this.placementMode.type === "pulse" && this.placementMode.config.clipBar) {
+		if (isPulse(this) && this.pulseData.clipBar) {
 			// Find (or create) the mask
 			var mask = surface.root().findOne("#" + BAR_MASK_ID) as Mask;
 			if (!mask) {
@@ -114,8 +114,8 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	public computePositions(root: { x: number, y: number }) {
 		super.computePositions(root);
 
-		if (this.placementMode.type === "pulse") {
-			if (this.placementMode.config.orientation === "bottom") {
+		if (isPulse(this)) {
+			if (this.pulseData.orientation === "bottom") {
 				this.setVerticalFlip(true);
 			} else {
 				this.setVerticalFlip(false)

@@ -13,7 +13,7 @@ import { ISVGElement } from "../../logic/svgElement";
 import Visual, { IVisual } from "../../logic/visual";
 import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
 import { isMountDrop } from "./InsertArea";
-import { IPulseConfig } from "../../logic/spacial";
+import { IPulseConfig, isPulse } from "../../logic/spacial";
 import { appToaster } from "../../app/Toaster";
 import { Element } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
@@ -76,40 +76,16 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				var elementType = (props.element.constructor as typeof Visual).ElementType;
 				var singletonState: IVisual = structuredClone(props.element.state);
 
-				singletonState.id = undefined;
-				if (singletonState?.placementMode?.type === "pulse") {
-					let internalConfig: IPulseConfig = singletonState.placementMode.config;
-
-					singletonState.placementMode = {
-						type: "pulse",
-						config: {
-							...internalConfig,
-
-							orientation: singletonState.placementMode.config.orientation === "both" ? "both" : dropResult.orientation,
-							channelID: dropResult.channelID,
-							sequenceID: dropResult.sequenceID,
-							index: dropResult.index
-						}
-					};
-				} else {
-					singletonState.id = undefined;
-					singletonState.placementMode = {
-						type: "pulse",
-						config: {
-							alignment: { "x": "centre", "y": "far" },
-							noSections: 1,
-
-							orientation: dropResult.orientation,
-							channelID: dropResult.channelID,
-							sequenceID: dropResult.sequenceID,
-							index: dropResult.index
-						}
-					};
-				}
+				singletonState.id = undefined;  // Required
 				singletonState.parentId = dropResult.channelID;
-
 				if (dropResult.insert === true) {
-					ENGINE.handler.addColumn(singletonState.placementMode.config.sequenceID ?? "", dropResult.index);
+					ENGINE.handler.addColumn(dropResult.sequenceID ?? "", dropResult.index);
+				}
+
+				if (isPulse(singletonState)) {
+					singletonState.pulseData.channelID = dropResult.channelID;
+					singletonState.pulseData.sequenceID = dropResult.sequenceID;
+					singletonState.pulseData.index = dropResult.index;
 				}
 
 				var result: Result<Visual> = ENGINE.handler.createAndAdd(

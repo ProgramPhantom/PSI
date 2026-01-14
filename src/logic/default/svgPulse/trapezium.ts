@@ -7,12 +7,10 @@ export const DEFAULT_TRAPEZIUM: ISVGElement = {
 	"contentWidth": 60,
 	"contentHeight": 10,
 
-	"placementMode": {
-		"type": "pulse", "config": {
-			"alignment": { "x": "centre", "y": "far" },
-			"orientation": "top",
-			"noSections": 1,
-		}
+	"pulseData": {
+		"alignment": { "x": "centre", "y": "far" },
+		"orientation": "top",
+		"noSections": 1,
 	},
 
 	"ref": "trapezium",

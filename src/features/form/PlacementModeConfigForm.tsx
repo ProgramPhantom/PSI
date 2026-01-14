@@ -21,6 +21,10 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
         control,
         name: `${fullPrefix}placementControl`
     });
+    const pulseData = useWatch({
+        control,
+        name: `${fullPrefix}pulseData`
+    });
 
     let details: React.ReactNode;
     let coreRow: React.ReactNode = (
@@ -37,22 +41,22 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
     );
 
 
-    if (type === "pulse") {
+    if (pulseData) {
         details = (
             <>
                 {/* Read-only fields */}
                 <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span>Index: {placementMode?.config?.index ?? "-"}</span>
-                        <span>ChannelID: {placementMode?.config?.channelID ?? "-"}</span>
-                        <span>SequenceID: {placementMode?.config?.sequenceID ?? "-"}</span>
+                        <span>Index: {pulseData?.index ?? "-"}</span>
+                        <span>ChannelID: {pulseData?.channelID ?? "-"}</span>
+                        <span>SequenceID: {pulseData?.sequenceID ?? "-"}</span>
                     </div>
                 </div>
 
                 <FormGroup style={{ padding: "4px 8px" }} inline label="Orientation">
                     <Controller
                         control={control}
-                        name={`${fullPrefix}placementMode.config.orientation`}
+                        name={`${fullPrefix}pulseData.orientation`}
                         defaultValue="top"
                         render={({ field }) => (
                             <HTMLSelect {...field} iconName="caret-down" fill>
@@ -67,7 +71,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                 <FormGroup style={{ padding: "4px 8px" }} inline label="Align X">
                     <Controller
                         control={control}
-                        name={`${fullPrefix}placementMode.config.alignment.x`}
+                        name={`${fullPrefix}pulseData.alignment.x`}
                         defaultValue="here"
                         render={({ field }) => (
                             <HTMLSelect {...field} iconName="caret-down" fill>
@@ -81,7 +85,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                 <FormGroup style={{ padding: "4px 8px" }} inline label="Align Y">
                     <Controller
                         control={control}
-                        name={`${fullPrefix}placementMode.config.alignment.y`}
+                        name={`${fullPrefix}pulseData.alignment.y`}
                         defaultValue="here"
                         render={({ field }) => (
                             <HTMLSelect {...field} iconName="caret-down" fill>
@@ -96,7 +100,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                 <FormGroup style={{ padding: "4px 8px" }} inline label="No. Sections">
                     <Controller
                         control={control}
-                        name={`${fullPrefix}placementMode.config.noSections`}
+                        name={`${fullPrefix}pulseData.noSections`}
                         defaultValue={1}
                         render={({ field }) => (
                             <NumericInput {...field} onValueChange={field.onChange} min={1} max={10} size="small" fill />
@@ -104,20 +108,18 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                     />
                 </FormGroup>
 
-				<FormGroup style={{ padding: "4px 8px" }} inline label="Clip Channel Bar">
+                <FormGroup style={{ padding: "4px 8px" }} inline label="Clip Channel Bar">
                     <Controller
                         control={control}
-                        name={`${fullPrefix}placementMode.config.clipBar`}
+                        name={`${fullPrefix}pulseData.clipBar`}
                         render={({ field }) => (
-                            <Switch {...field} onChange={field.onChange} checked={field.value}  />
+                            <Switch {...field} onChange={field.onChange} checked={field.value} />
                         )}
                     />
                 </FormGroup>
             </>
         );
-    }
-
-    if (type === "grid") {
+    } else if (type === "grid") {
         details = (
             <>
                 <div style={{ display: "flex", gap: "10px", padding: "0 8px" }}>
@@ -215,9 +217,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                 </div>
             </>
         );
-    }
-
-    if (type === "aligner") {
+    } else if (type === "aligner") {
         details = (
             <>
                 <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>

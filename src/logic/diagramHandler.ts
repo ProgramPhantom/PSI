@@ -7,7 +7,7 @@ import Diagram, { IDiagram } from "./hasComponents/diagram";
 import Sequence from "./hasComponents/sequence";
 import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
-import { PointBind } from "./spacial";
+import { isPulse, PointBind } from "./spacial";
 import Visual, { IDraw, IVisual } from "./visual";
 
 import { sha256 } from 'js-sha256';
@@ -203,8 +203,8 @@ export default class DiagramHandler implements IDraw {
 			case "svg":
 			case "label-group":
 				// Temporary as we only allow one sequence currently.
-				if (parameters.placementMode?.type === "pulse") {
-					parameters.placementMode.config.sequenceID = this.diagram.sequenceIDs[0];
+				if (isPulse(parameters)) {
+					parameters.pulseData.sequenceID = this.diagram.sequenceIDs[0];
 				}
 
 				result = this.createAndAdd(parameters, type);
@@ -329,23 +329,13 @@ export default class DiagramHandler implements IDraw {
 			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
 		}
 
-		if (target.placementMode.type === "pulse") {
-			try {
-				parent.remove(target);
-				result = { ok: true, value: target };
-			} catch (err) {
-				result = { ok: false, error: (err as Error).message }
-			}
-		} else if (target.placementMode.type === "free") {
-			try {
-				this.diagram.remove(target);
-				result = { ok: true, value: target };
-			} catch (err) {
-				result = { ok: false, error: (err as Error).message }
-			}
-		} else if (target.placementMode.type === "binds") {
-			// TODO
+		try {
+			parent.remove(target);
+			result = { ok: true, value: target };
+		} catch (err) {
+			result = { ok: false, error: (err as Error).message }
 		}
+
 
 		if (target.svg) {
 			target.svg.remove();

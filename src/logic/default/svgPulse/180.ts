@@ -7,11 +7,11 @@ export const DEFAULT_180S: ISVGElement = {
 	"contentWidth": 50,
 	"contentHeight": 50,
 
-	"placementMode": {"type": "pulse", "config": {
-		"alignment": {"x": "centre", "y": "far"},
+	"pulseData": {
+		"alignment": { "x": "centre", "y": "far" },
 		"orientation": "top",
 		"noSections": 1,
-	}},
+	},
 
 	"ref": "180",
 	"style": {},

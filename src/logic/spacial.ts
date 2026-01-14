@@ -28,7 +28,9 @@ export interface IPulseConfig {
 	noSections: number;
 	clipBar?: boolean;
 }
-
+export const isPulse = (element: ISpacial): element is ISpacial & { pulseData: IPulseConfig } => {
+	return element.pulseData !== undefined
+}
 
 export interface IGridConfig {
 	coords?: { row: number, col: number }
@@ -45,7 +47,6 @@ export interface IAlignerConfig {
 }
 
 export type PlacementConfiguration = { type: "free" } |
-{ type: "pulse"; config: IPulseConfig } |
 { type: "binds"; bindings: undefined } |
 { type: "grid"; config: IGridConfig } |
 { type: "aligner", config: IAlignerConfig }
@@ -101,6 +102,7 @@ export interface ISpacial extends IPoint {
 	placementMode?: PlacementConfiguration
 	placementControl?: PlacementControl
 	sizeMode?: SizeConfiguration
+	pulseData?: IPulseConfig
 }
 
 export type UpdateNotification = (...args: any[]) => any;
@@ -143,6 +145,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			placementMode: this.placementMode,
 			placementControl: this.placementControl,
 			sizeMode: this.sizeMode,
+			pulseData: this.pulseData,
 			...super.state
 		};
 	}
@@ -174,13 +177,22 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	bindingsToThis: IBinding[] = [];
 
 	constructor(
-		params: ISpacial
+		params: ISpacial = {
+			contentWidth: 0,
+			contentHeight: 0,
+			placementMode: { type: "free" },
+			placementControl: "user",
+			sizeMode: { x: "fixed", y: "fixed" },
+			ref: "spacial",
+			type: "lower-abstract",
+		}
 	) {
 		super(params);
 
 		this.placementMode = params.placementMode ?? { type: "free" }
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ?? { x: "fixed", y: "fixed" }
+		this.pulseData = params.pulseData;
 
 		this._contentWidth = params.contentWidth ?? 0;
 		this._contentHeight = params.contentHeight ?? 0;

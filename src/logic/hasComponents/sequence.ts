@@ -14,12 +14,8 @@ export interface ISequence extends IGrid<IChannel> {
 export type OccupancyStatus = Visual | "." | undefined;
 
 
-export type SequenceElement = PulseElement | GridElement;
 export default class Sequence extends Grid<Channel> implements ISequence {
 	static ElementType: UserComponentType = "sequence";
-	static isPulse(element: Visual): boolean {
-		return element.placementMode.type === "pulse"
-	}
 	get state(): ISequence {
 		return {
 			...super.state,
@@ -57,10 +53,6 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 	constructor(params: ISequence) {
 		super(params);
-		this.placementModeTranslators = {
-			get: this.pulseConfigToGridConfig.bind(this),
-			set: this.setPulseConfigViaGridConfig.bind(this)
-		}
 	}
 
 	// --------------- Compute Methods ---------------
@@ -213,14 +205,8 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 	// -------------- Translation functions -------------
 	//#region 
-	protected pulseConfigToGridConfig(placementMode: PlacementConfiguration): IGridConfig | undefined {
-		if (placementMode.type === "grid") {
-			return placementMode.config
-		} else if (placementMode.type !== "pulse") {
-			return undefined
-		}
-
-		var channelId: ID | undefined = placementMode.config.channelID;
+	protected pulseDataToGridConfig(data: IPulseConfig): IGridConfig | undefined {
+		var channelId: ID | undefined = data.channelID;
 
 
 		// We now need to convert the mount config in the pulse's placement
@@ -230,7 +216,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 
 		var row: number = 0;
-		var column: number = placementMode.config.index ?? 0;  // Starting at 1 as we know the label goes there
+		var column: number = data.index ?? 0;  // Starting at 1 as we know the label goes there
 		var alignment: { x: SiteNames, y: SiteNames } = { x: "centre", y: "far" }
 		let contribution: Record<Dimensions, boolean> = { x: true, y: true };
 
@@ -238,11 +224,11 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		// Currently, channels ALWAYS have a height of 3 so that's how we find 
 		// our row number.
 		row = channelIndex * 3;
-		if (placementMode.config.orientation === "both") {
+		if (data.orientation === "both") {
 			row += 1
 			alignment = { x: "centre", y: "centre" }
 			contribution = { x: true, y: false }
-		} else if (placementMode.config.orientation === "bottom") {
+		} else if (data.orientation === "bottom") {
 			row += 2
 			alignment = { x: "centre", y: "here" }
 		}
@@ -250,12 +236,12 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		let gridConfig: IGridConfig = {
 			coords: { row: row, col: column },
 			alignment: alignment,
-			gridSize: { noRows: 1, noCols: placementMode.config.noSections },
+			gridSize: { noRows: 1, noCols: data.noSections },
 			contribution: contribution,
 		}
 
 		// Inform of ghosts that have been placed by addPulse process.
-		if (placementMode.config.orientation === "both") {
+		if (data.orientation === "both") {
 			gridConfig.ownedGhosts = [
 				{ row: row - 1, col: column },
 				{ row: row + 1, col: column }
@@ -266,13 +252,15 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		return gridConfig
 	}
 
-	protected setPulseConfigViaGridConfig(child: Visual, config: IGridConfig) {
+	protected setPulseDataViaGridConfig(child: Visual, config: IGridConfig) {
 		let numCols: number = config.gridSize?.noCols ?? 1;
 		let index: number = config.coords?.col ?? 1;
 
-		let channelIndex: number = Math.floor((config.coords?.row ?? 0) / 3);
-		let channel: Channel = this.children[channelIndex];
+		let channel: Channel | undefined = this.getChildById(child.parentId ?? "")
 
+		if (channel === undefined) {
+			throw new Error(`Cannot find channel for pulse ${child.id}`)
+		}
 
 		let orientationIndex: 0 | 1 | 2 = ((config.coords?.row ?? 0) % 3) as 0 | 1 | 2;
 		let orientation: Orientation = Channel.RowToOrientation(orientationIndex);
@@ -283,22 +271,19 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		}
 
 		let clipBar: boolean = false;
-		if (child.placementMode.type === "pulse" && child.placementMode.config.clipBar === true) {
+		if (child.pulseData !== undefined && child.pulseData.clipBar === true) {
 			clipBar = true;
 		}
 
-		child.placementMode = {
-			type: "pulse",
-			config: {
-				noSections: numCols,
-				orientation: orientation,
-				alignment: alignment,
+		child.pulseData = {
+			noSections: numCols,
+			orientation: orientation,
+			alignment: alignment,
 
-				channelID: channel.id,
-				sequenceID: this.id,
-				index: index,
-				clipBar: clipBar
-			}
+			channelID: channel.id,
+			sequenceID: this.id,
+			index: index,
+			clipBar: clipBar
 		}
 	}
 	//#endregion
@@ -339,27 +324,6 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		this.setChannelDimensions();
 
 		this.shiftElementColumnIndexes(INDEX, -1);
-	}
-
-	protected override getElementGridRegion(child: SequenceElement, overridePosition?: { row: number; col: number; }): OccupiedCell<SequenceElement>[][] | undefined {
-		var region: OccupiedCell<SequenceElement>[][] | undefined;
-		if (child.placementMode.type === "pulse") {
-			let pulseConfig: IPulseConfig = child.placementMode.config;
-			let gridConfig: IGridConfig | undefined = this.pulseConfigToGridConfig(child.placementMode);
-
-			if (gridConfig === undefined) {
-				return undefined
-			}
-
-			child.placementMode = { type: "grid", config: gridConfig }
-
-			region = super.getElementGridRegion(child, overridePosition);
-			child.placementMode = { type: "pulse", config: pulseConfig }
-		} else if (child.placementMode) {
-			region = super.getElementGridRegion(child, overridePosition)
-		}
-
-		return region;
 	}
 	//#endregion
 	// -----------------------------------------------

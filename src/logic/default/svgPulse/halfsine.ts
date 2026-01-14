@@ -7,12 +7,10 @@ export const DEFAULT_HALFSINE: ISVGElement = {
 	"contentWidth": 15,
 	"contentHeight": 20,
 
-	"placementMode": {
-		"type": "pulse", "config": {
-			"alignment": { "x": "centre", "y": "far" },
-			"orientation": "top",
-			"noSections": 1,
-		}
+	"pulseData": {
+		"alignment": { "x": "centre", "y": "far" },
+		"orientation": "top",
+		"noSections": 1,
 	},
 
 	"ref": "halfsine",

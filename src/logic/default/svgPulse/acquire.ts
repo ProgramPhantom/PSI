@@ -7,13 +7,11 @@ export const DEFAULT_ACQUIRE: ISVGElement = {
 	"contentWidth": 150,
 	"contentHeight": 75,
 
-	"placementMode": {
-		"type": "pulse", "config": {
-			"alignment": { "x": "centre", "y": "far" },
-			"orientation": "both",
-			"noSections": 1,
-			"clipBar": true
-		}
+	"pulseData": {
+		"alignment": { "x": "centre", "y": "far" },
+		"orientation": "top",
+		"noSections": 1,
+		"clipBar": true
 	},
 
 	"ref": "acquire",
