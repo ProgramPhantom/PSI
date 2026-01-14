@@ -44,11 +44,11 @@ class DiagramDropInterpreter {
 				// Compute indexes of the slithers
 				for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
 					let hereOccupancyTop: GridCell =
-						channel.gridMatrix[0]?.[columnIndex];
+						channel.getCell({row: 0, col: columnIndex})
 					let middleOccupied: boolean = 
-						(channel.gridMatrix[1][columnIndex]?.elements ?? []).length > 1;
+						(channel.getCell({row: 1, col: columnIndex})?.elements ?? []).length > 1;
 					let hereOccupancyBottom: GridCell =
-						channel.gridMatrix[2]?.[columnIndex];
+						channel.getCell({row: 2, col: columnIndex});
 
 					if (
 						(hereOccupancyTop?.sources !== undefined ||
@@ -64,13 +64,13 @@ class DiagramDropInterpreter {
 				for (var columnIndex = 1; columnIndex < noColumns; columnIndex++) {
 					var column = columns[columnIndex];
 					let topOccupied: boolean =
-						channel.gridMatrix[0][columnIndex] === undefined
+						channel.getCell({row: 0, col: columnIndex}) === undefined
 							? false
 							: true;
 					let middleOccupied: boolean = 
-						(channel.gridMatrix[1][columnIndex]?.elements ?? []).length > 1;
+						(channel.getCell({row: 1, col: columnIndex})?.elements ?? []).length > 1;
 					let bottomOccupied: boolean = 
-					channel.gridMatrix[2][columnIndex] === undefined
+					channel.getCell({row: 2, col: columnIndex}) === undefined
 							? false
 							: true;
 

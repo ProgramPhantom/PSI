@@ -12,7 +12,7 @@ export interface ILabelGroup extends IGrid {
 	coreChildType: UserComponentType;
 }
 
-export default class LabelGroup<T extends GridElement = GridElement>
+export default class LabelGroup
 	extends Grid {
 	static isLabelGroup(val: Visual): val is LabelGroup {
 		return (val as LabelGroup)?.coreChild !== undefined;

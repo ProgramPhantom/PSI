@@ -80,7 +80,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				label: "Delete selected element",
 				onKeyDown: () => {
 					if (props.selectedElement) {
-						ENGINE.handler.deleteVisual(props.selectedElement);
+						ENGINE.handler.remove(props.selectedElement);
 						deselect();
 					}
 				},
@@ -92,7 +92,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				label: "Delete selected element",
 				onKeyDown: () => {
 					if (props.selectedElement) {
-						ENGINE.handler.deleteVisual(props.selectedElement);
+						ENGINE.handler.remove(props.selectedElement);
 						deselect();
 					}
 				},

@@ -1,10 +1,12 @@
 import { IDiagram } from "../hasComponents/diagram";
+import { ISequenceAligner } from "../hasComponents/sequenceAligner";
 import { DEFAULT_BAR } from "./bar";
 import { DEFAULT_SEQUENCE } from "./sequence";
 
 
 export const DEFAULT_DIAGRAM: IDiagram = {
-	"sequenceAligner": {
+	"children": [{
+		"id": "856723473246",
 		"mainAxis": "y",
 		"minCrossAxis": 0,
 		"contentWidth": 0,
@@ -18,8 +20,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 			DEFAULT_SEQUENCE
 		],
 		"type": "sequence-aligner"
-	},
-	"children": [],
+	} as ISequenceAligner],
 	"placementMode": { "type": "free" },
 	"offset": [0, 0],
 	"padding": [10, 10, 10, 10],

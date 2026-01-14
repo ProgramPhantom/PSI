@@ -176,9 +176,10 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		placementControl?: PlacementControl,
 		sizeMode?: SizeConfiguration,
 		ref: string = "spacial",
-		id: ID | undefined = undefined
+		id: ID | undefined = undefined,
+		parentId: ID | undefined = undefined
 	) {
-		super(x, y, ref, id);
+		super(x, y, ref, id, parentId);
 
 		this.placementMode = placementMode ?? { type: "free" }
 		this.placementControl = placementControl ?? "user";

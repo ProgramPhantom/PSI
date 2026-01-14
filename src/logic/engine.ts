@@ -8,6 +8,11 @@ import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Visual, { IVisual } from "./visual";
 import { AllComponentTypes } from "./point";
+import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
+import Collection, { ICollection } from "./collection";
+import Grid, { IGrid } from "./grid";
+import Sequence, { ISequence } from "./hasComponents/sequence";
+import Channel, { IChannel } from "./hasComponents/channel";
 
 
 //                                    scheme name
@@ -192,6 +197,21 @@ class ENGINE {
 				break;
 			case "label":
 				element = new Label(parameters as ILabel);
+				break;
+			case "sequence-aligner":
+				element = new SequenceAligner(parameters as ISequenceAligner);
+				break;
+			case "collection":
+				element = new Collection(parameters as ICollection);
+				break;
+			case "grid":
+				element = new Grid(parameters as IGrid);
+				break
+			case "sequence":
+				element = new Sequence(parameters as ISequence);
+				break;
+			case "channel":
+				element = new Channel(parameters as IChannel);
 				break;
 			default:
 				element = undefined;

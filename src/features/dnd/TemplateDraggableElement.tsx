@@ -96,7 +96,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					singletonState.placementMode = {
 						type: "pulse",
 						config: {
-							alignment: {"x": "centre", "y": "far"},
+							alignment: { "x": "centre", "y": "far" },
 							noSections: 1,
 
 							orientation: dropResult.orientation,
@@ -106,19 +106,20 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 						}
 					};
 				}
+				singletonState.parentId = dropResult.channelID;
 
 				if (dropResult.insert === true) {
 					ENGINE.handler.addColumn(singletonState.placementMode.config.sequenceID ?? "", dropResult.index);
 				}
 
-				var result: Result<Visual> = ENGINE.handler.addVisual(
+				var result: Result<Visual> = ENGINE.handler.createAndAdd(
 					singletonState,
 					elementType as UserComponentType
 				);
 
 				if (result.ok === false) {
 					appToaster.show({
-						message: `Cannot mount pulse ${singletonState.ref}`,
+						message: `Cannot add pulse '${singletonState.ref}'`,
 						intent: "danger"
 					});
 				}

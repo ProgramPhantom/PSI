@@ -4,13 +4,17 @@ import { ContainerSizeMethod, Dimensions, Size } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 
 
-export interface ICollection extends IVisual {
-	children: IVisual[];
+export interface ICollection<C extends IVisual = IVisual> extends IVisual {
+	children: C[];
 
 	sizeMode?: Record<Dimensions, ContainerSizeMethod>
 }
 
-export default class Collection<T extends Visual = Visual> extends Visual implements IDraw {
+export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C> {
+	static isCollection(v: IVisual): v is ICollection {
+		return (v as any).children !== undefined;
+	}
+
 	get state(): ICollection {
 		return {
 			children: this.children.map((c) => c.state),
@@ -28,8 +32,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		return elements;
 	}
 
-	private _children: T[] = [];
-	get children(): T[] {
+	protected _children: C[] = [];
+	get children(): C[] {
 		return this._children;
 	};
 
@@ -54,6 +58,7 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 
 	// ---------------- Compute -------------------------
+	//#region 
 	public computeSize(): Size {
 		var size: Size = { width: 0, height: 0 }
 
@@ -105,10 +110,12 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 		return sizeDiff;
 	}
+	//#endregion
 	// --------------------------------------------------
 
 
 	// ----------------- Visual methods -----------------
+	//#region 
 	draw(surface: Element) {
 		if (this.svg) {
 			this.svg.remove();
@@ -181,11 +188,13 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 			}
 		});
 	}
+	//#endregion
 	// --------------------------------------------------
 
 
 	// ----------------- Collection methods -------------
-	add(child: T) {
+	//#region 
+	add(child: C) {
 		child.parentId = this.id;
 
 		this.children.push(child);
@@ -199,8 +208,8 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 		});
 	}
 
-	remove(child: T) {
-		var index: number | undefined = this.locateChild(child);
+	remove(child: C) {
+		var index: number | undefined = this.childIndex(child);
 
 		if (index === undefined) {
 			console.warn(`Cannot find child to remove ${child.ref} in ${this.ref}`)
@@ -219,15 +228,17 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 			this.remove(c);
 		});
 	}
+	//#endregion
 	// --------------------------------------------------
 
 
 	// ----------------- Collection helpers -------------
+	//#region 
 	public has(id: ID): boolean {
 		return this.children.filter((c) => c.id === id).length > 0;
 	}
 
-	public locateChild(target: T): number | undefined {
+	public childIndex(target: C): number | undefined {
 		var index: number | undefined;
 
 		this.children.forEach((c, i) => {
@@ -238,6 +249,15 @@ export default class Collection<T extends Visual = Visual> extends Visual implem
 
 		return index;
 	}
+
+	public childIndexById(id: ID): number | undefined {
+		return this.children.findIndex((c) => c.id === id);
+	}
+
+	public getChildById(id: ID): C | undefined {
+		return this.children.find((c) => c.id === id);
+	}
+	//#endregion
 	// --------------------------------------------------
 }
 

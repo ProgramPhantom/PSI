@@ -55,29 +55,6 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		this.cells = [];
 	}
 
-	public draw(surface: Element): void {
-		if (this.svg) {
-			this.svg.remove();
-		}
-
-		var group = new G().id(this.id).attr({ title: this.ref });
-		group.attr({
-			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
-		});
-
-		this.svg = group;
-
-		surface.add(this.svg);
-
-		this.children.forEach((uc) => {
-			if (doesDraw(uc)) {
-				uc.draw(this.svg!);
-			}
-		});
-
-		super.draw(surface);
-	}
-
 	public computeSize(): Size {
 		if (this.ref === "label") {
 			console.log()
@@ -267,7 +244,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	}
 
 	public remove(target: T): boolean {
-		var INDEX: number | undefined = this.locateChild(target);
+		var INDEX: number | undefined = this.childIndex(target);
 
 		if (INDEX === undefined) {
 			return false
@@ -277,7 +254,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	}
 
 
-	public locateChild(target: T): number | undefined {
+	public childIndex(target: T): number | undefined {
 		return this.locateChildById(target.id);
 	}
 

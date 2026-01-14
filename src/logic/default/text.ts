@@ -5,12 +5,12 @@ export const DEFAULT_TEXT: IText = {
 	"contentWidth": 10,
 	"contentHeight": 10,
 
-	"text": "\\textrm{H}",
-	"padding": [0, 0, 2, 0],
+	"text": "^{1}\\textrm{H}",
+	"padding": [0, 5, 0, 0],
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 15,
+		"fontSize": 55,
 		"colour": "black",
 		"background": null,
 		"display": "block"

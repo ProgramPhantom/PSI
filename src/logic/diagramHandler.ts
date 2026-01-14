@@ -4,19 +4,17 @@ import SchemeManager from "./default";
 import { defaultDiagram } from "./default/index.ts";
 import Channel, { IChannel } from "./hasComponents/channel";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
-import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import Sequence from "./hasComponents/sequence";
 import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
-import RectElement, { IRectElement } from "./rectElement";
-import { PlacementConfiguration, PointBind } from "./spacial";
-import { ISVGElement } from "./svgElement";
+import { PointBind } from "./spacial";
 import Visual, { IDraw, IVisual } from "./visual";
 
 import { sha256 } from 'js-sha256';
+import Collection from "./collection.ts";
 
 
-export type Result<T = {}> = {ok: true; value: T} | {ok: false; error: string};
+export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
 
 type ConstructorFunction = (parameters: IVisual, ...args: any[]) => Result<any>;
 /**
@@ -118,7 +116,7 @@ export default class DiagramHandler implements IDraw {
 	computeDiagram() {
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);
-		this.diagram.computePositions({x: 0, y: 0});
+		this.diagram.computePositions({ x: 0, y: 0 });
 	}
 
 	// ---------- Element identification ----------
@@ -144,27 +142,48 @@ export default class DiagramHandler implements IDraw {
 		try {
 			var newDiagram: Diagram = new Diagram(state);
 		} catch (err) {
-			return {ok: false, error: (err as Error).message};
+			return { ok: false, error: (err as Error).message };
 		}
 		this.diagram = newDiagram;
 
 		try {
 			// Create and mount pulses.
-			state.sequenceAligner.children.forEach((s) => {
-				s.channels.forEach((c) => {
-					c.pulseElements.forEach((m) => {
-						if (m.type === undefined) {
-							console.warn(`Element data is missing type: ${m.ref}`);
-						}
-						this.addVisual(m, m.type as AllComponentTypes);
+
+			const instantiateChildren = (params: IVisual) => {
+				let parent: Collection | undefined = this.diagram.allElements[params.parentId ?? ""] as Collection | undefined;
+				if (parent === undefined) {
+					throw new Error(`Cannot find parent to element ${params.ref}, with parent id ${params.parentId}`)
+				}
+
+				let element: Result<Visual> | undefined = this.createVisual(params, params.type as AllComponentTypes);
+
+				if (element.ok === false) {
+					throw new Error(`Error instantiating element ${params.ref}`)
+				}
+
+				parent.add(element.value);
+
+				// Create children of this new element
+				if (Collection.isCollection(params)) {
+					params.children.forEach((c) => {
+						c.parentId = element.value.id;
+
+						instantiateChildren(c);
 					});
-				});
+				}
+			}
+
+			// Skip diagram
+			state.children.forEach((c) => {
+				c.parentId = this.diagram.id;
+				instantiateChildren(c);
 			});
+
 		} catch (err) {
-			return {ok: false, error: (err as Error).message};
+			return { ok: false, error: (err as Error).message };
 		}
 
-		return {ok: true, value: newDiagram};
+		return { ok: true, value: newDiagram };
 	}
 
 	@draws
@@ -188,7 +207,7 @@ export default class DiagramHandler implements IDraw {
 					parameters.placementMode.config.sequenceID = this.diagram.sequenceIDs[0];
 				}
 
-				result = this.addVisual(parameters, type);
+				result = this.createAndAdd(parameters, type);
 				break;
 			default:
 				result = {
@@ -206,7 +225,7 @@ export default class DiagramHandler implements IDraw {
 		target: Visual
 	): Result<Visual> {
 		// Delete element
-		let deleteResult: Result<Visual> = this.deleteVisual(target, true);
+		let deleteResult: Result<Visual> = this.remove(target);
 		if (deleteResult.ok === false) {
 			return deleteResult;
 		}
@@ -226,7 +245,7 @@ export default class DiagramHandler implements IDraw {
 			case "rect":
 			case "svg":
 			case "label-group":
-				result = this.deleteVisual(target);
+				result = this.remove(target);
 				break;
 			case "channel":
 				result = this.deleteChannel(target as Channel);
@@ -264,25 +283,25 @@ export default class DiagramHandler implements IDraw {
 		try {
 			var element: Visual | undefined = this.EngineConstructor(parameters, type);
 		} catch (e) {
-			return {ok: false, error: (e as string)}
+			return { ok: false, error: (e as string) }
 		}
 
 		if (element === undefined) {
-			return {ok: false, error: `Cannot instantiate visual of type ${type}`}
+			return { ok: false, error: `Cannot instantiate visual of type ${type}` }
 		} else {
-			return {ok: true, value: element}
+			return { ok: true, value: element }
 		}
 	}
 
 	// ---------- Visual interaction (generic) -----------
 	@draws
-	public addVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
+	public createAndAdd(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
 		var elementResult: Result<Visual> = this.createVisual(parameters, type);
 
 		if (elementResult.ok === false) {
 			return elementResult;
 		} else {
-			return this.placeVisual(elementResult.value);
+			return this.add(elementResult.value);
 		}
 	}
 	@draws
@@ -294,28 +313,35 @@ export default class DiagramHandler implements IDraw {
 			element.y = y;
 
 		} catch (err) {
-			return {ok: false, error: (err as Error).message};
+			return { ok: false, error: (err as Error).message };
 		}
 
-		return {ok: true, value: element};
+		return { ok: true, value: element };
 	}
 	@draws
-	public deleteVisual(target: Visual, modifying: boolean=false): Result<Visual> {
-		var result: Result<Visual> = {ok: false, error: `Problem deleting visual ${target.ref}`};
+	public remove(target: Visual): Result<Visual> {
+		var result: Result<Visual> = { ok: false, error: `Problem deleting visual ${target.ref}` };
+
+		// Parent Id can never be atomic
+		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
+
+		if (parent === undefined) {
+			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
+		}
 
 		if (target.placementMode.type === "pulse") {
 			try {
-				this.diagram.deletePulse(target, modifying);
-				result = {ok: true, value: target};
+				parent.remove(target);
+				result = { ok: true, value: target };
 			} catch (err) {
-				result = {ok: false, error: (err as Error).message}
+				result = { ok: false, error: (err as Error).message }
 			}
 		} else if (target.placementMode.type === "free") {
 			try {
 				this.diagram.remove(target);
-				result = {ok: true, value: target};
+				result = { ok: true, value: target };
 			} catch (err) {
-				result = {ok: false, error: (err as Error).message}
+				result = { ok: false, error: (err as Error).message }
 			}
 		} else if (target.placementMode.type === "binds") {
 			// TODO
@@ -330,12 +356,12 @@ export default class DiagramHandler implements IDraw {
 
 		return result;
 	}
-	public deleteVisualByID(targetId: ID): Result<Visual> {
+	public removeByID(targetId: ID): Result<Visual> {
 		var target: Visual | undefined = this.identifyElement(targetId);
 		if (target === undefined) {
-			return {ok: false, error: `Element with id ${targetId} not found`};
+			return { ok: false, error: `Element with id ${targetId} not found` };
 		}
-		return this.deleteVisual(target);
+		return this.remove(target);
 	}
 	// ----------------------------
 
@@ -355,11 +381,11 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		try {
-			sequence.addChannel(element);
+			sequence.add(element);
 		} catch (err) {
-			result = {ok: false, error: (err as Error).message};
+			result = { ok: false, error: (err as Error).message };
 		}
-		result = {ok: true, value: element};
+		result = { ok: true, value: element };
 		return result;
 	}
 
@@ -377,11 +403,11 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		try {
-			sequence.deleteChannel(target);
+			sequence.remove(target);
 		} catch (err) {
-			result = {ok: false, error: (err as Error).message};
+			result = { ok: false, error: (err as Error).message };
 		}
-		result = {ok: true, value: target};
+		result = { ok: true, value: target };
 		return result
 	}
 
@@ -395,7 +421,7 @@ export default class DiagramHandler implements IDraw {
 		try {
 			var newLine: Line = new Line(pParams as ILine);
 		} catch (err) {
-			return {ok: false, error: `Cannot instantiate line ${pParams.ref}`};
+			return { ok: false, error: `Cannot instantiate line ${pParams.ref}` };
 		}
 
 		try {
@@ -441,7 +467,7 @@ export default class DiagramHandler implements IDraw {
 			endBinds["x"].anchorObject.enforceBinding();
 			endBinds["y"].anchorObject.enforceBinding();
 		} catch (err) {
-			return {ok: false, error: `Cannot bind line`};
+			return { ok: false, error: `Cannot bind line` };
 		}
 
 		// try {
@@ -450,25 +476,25 @@ export default class DiagramHandler implements IDraw {
 		// 	return {ok: false, error: (err as Error).message};
 		// }
 
-		return {ok: true, value: newLine};
+		return { ok: true, value: newLine };
 	}
 
 	// -------------- Placement ----------------
-	private placeVisual(target: Visual): Result<Visual> {
-		var placementMode: PlacementConfiguration = target.placementMode;
-		try {
-			if (placementMode.type === "pulse") {
-				this.diagram.addPulse(target);
-			} else if (placementMode.type === "binds") {
-				// TODO
-			} else if (placementMode.type === "free") {
-				// Do nothing I believe.
-			}
-		} catch (err) {
-			return {ok: false, error: (err as Error).message};
+	private add(target: Visual): Result<Visual> {
+		// Parent Id can never be atomic
+		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
+
+		if (parent === undefined) {
+			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
 		}
-		
-		return {ok: true, value: target}
+
+		try {
+			parent.add(target);
+		} catch (err) {
+			return { ok: false, error: (err as Error).message };
+		}
+
+		return { ok: true, value: target }
 	}
 
 
@@ -487,8 +513,8 @@ export default class DiagramHandler implements IDraw {
 
 export type RecursivePartial<T> = {
 	[P in keyof T]?: T[P] extends (infer U)[]
-		? RecursivePartial<U>[]
-		: T[P] extends object | undefined
-			? RecursivePartial<T[P]>
-			: T[P];
+	? RecursivePartial<U>[]
+	: T[P] extends object | undefined
+	? RecursivePartial<T[P]>
+	: T[P];
 };

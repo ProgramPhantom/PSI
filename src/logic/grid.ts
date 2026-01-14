@@ -2,10 +2,10 @@ import { Element, G } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 import { ID } from "./point";
 import Spacial, { Dimensions, IGridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
-import Visual, { doesDraw, GridElement, IDraw, PulseElement } from "./visual";
+import Visual, { doesDraw, GridElement, IDraw, IVisual, PulseElement } from "./visual";
 
 
-export interface IGrid extends ICollection {
+export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 	minHeight?: number,
 	minWidth?: number,
 
@@ -13,15 +13,15 @@ export interface IGrid extends ICollection {
 	numColumns?: number
 }
 
-export type GridCell<T extends Visual = Visual> = OccupiedCell<T> | undefined
+export type GridCell<T extends GridPulseElement = GridPulseElement> = OccupiedCell<T> | undefined
 
 export type Elements<T> = T[];
 type Sources = { [id: string]: { row: number; col: number } };
 export type Ghost = { size: { width: number, height: number }, owner?: ID };
 type Extra = { width: number, height: number };
 
-export interface OccupiedCell<T> {
-	elements?: Elements<T>;  // The element if this is the “owning” cell
+export interface OccupiedCell<M extends GridPulseElement = GridPulseElement> {
+	elements?: Elements<M>;  // The element if this is the “owning” cell
 	sources?: Sources;  // If this cell is covered by another
 	ghosts?: Ghost[];  // Provide spacing to a cell
 	extra?: Extra;  // Applies additional width/height to the row/column
@@ -31,9 +31,12 @@ export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridConf
 export type GridPlacementSetter = (element: Visual, value: IGridConfig) => void
 
 type GridPulseElement = PulseElement | GridElement;
-export default class Grid<T extends GridPulseElement = GridPulseElement> extends Collection<T> implements IDraw {
+export default class Grid<C extends Visual = Visual> extends Collection<C> implements IDraw {
 	static IdentityGetter: GridPlacementPredicate = (v) => v.type === "grid" ? v.config : undefined;
 	static IdentitySetter: GridPlacementSetter = (e, v) => { e.placementMode = { type: "grid", config: v } }
+	static isGridPulseElement = (e: Visual): e is GridPulseElement => e.placementMode.type === "grid" || e.placementMode.type === "pulse"
+	static isGridElement = (e: Visual): e is GridElement => e.placementMode.type === "grid"
+	static isPulseElement = (e: Visual): e is PulseElement => e.placementMode.type === "pulse"
 
 	get state(): IGrid {
 		return {
@@ -63,10 +66,10 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 
 	private min: { width: number, height: number };
 
-	protected gridMatrix: GridCell<T>[][] = [];
+	protected gridMatrix: GridCell<GridPulseElement>[][] = [];
 
-	protected gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
-	protected cells: Spacial[][];
+	readonly gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
+	readonly cells: Spacial[][];
 
 	constructor(params: IGrid) {
 		super(params);
@@ -84,18 +87,18 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		for (let child of this.children) {
 			child.computeSize();
 		}
-		super.computeSize()
+		// super.computeSize()
 
 		// Compute the size of the grid by finding the maximum width and height
 		// element in each column and row, and then summing them up.
 
-		var gridColumns: GridCell<T>[][] = this.getColumns();
-		var gridRows: GridCell<T>[][] = this.gridMatrix;
+		var gridColumns: GridCell[][] = this.getColumns();
+		var gridRows: GridCell[][] = this.gridMatrix;
 
 		// Let's compute the width and height of each column
 		var columnRects: Spacial[] = Array.from({ length: gridColumns.length }, () => new Spacial())
 		gridColumns.forEach((col, i) => {
-			var colEntries: GridCell<T>[] = col.filter((cell) => cell !== undefined);
+			var colEntries: GridCell[] = col.filter((cell) => cell !== undefined);
 
 			// Find width of column
 			var widths: number[] = [];
@@ -159,7 +162,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		// Now lets compute the width and height of each row
 		var rowRects: Spacial[] = Array.from({ length: gridRows.length }, () => new Spacial())
 		gridRows.forEach((row, i) => {
-			var rowEntries: GridCell<T>[] = row.filter((cell) => cell !== undefined);
+			var rowEntries: OccupiedCell[] = row.filter((cell) => cell !== undefined);
 
 			// Find height of the row
 			var heights: number[] = [];
@@ -288,7 +291,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 							}
 						}
 
-						let childBottomRight: { row: number, col: number } | undefined = this.getChildBottomRight(element);
+						let childBottomRight: { row: number, col: number } | undefined = this.getElementBottomRight(element);
 
 						// Create a rect union if the child is in multiple cells
 						if (childBottomRight !== undefined && (childBottomRight?.col !== column_index || childBottomRight?.row !== row_index)) {
@@ -320,7 +323,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 						// Skip unless this is an element source
 						if (!this.isCellElementSource(child, { row: row_index, col: column_index })) { continue }
 
-						let childBottomRight: { row: number, col: number } | undefined = this.getChildBottomRight(child);
+						let childBottomRight: { row: number, col: number } | undefined = this.getElementBottomRight(child);
 
 						// Create a rect union if the child is in multiple cells
 						if (childBottomRight !== undefined && (childBottomRight?.col !== column_index || childBottomRight?.row !== row_index)) {
@@ -448,34 +451,21 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 
 	// ---------------- Draw Methods ----------------
 	//#region 
-	public draw(surface: Element) {
-		if (this.svg) {
-			this.svg.remove();
-		}
 
-		var group = new G().id(this.id).attr({ title: this.ref });
-		group.attr({
-			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
-		});
-
-		this.svg = group;
-
-		surface.add(this.svg);
-
-		this.children.forEach((uc) => {
-			if (doesDraw(uc)) {
-				uc.draw(this.svg!);
-			}
-		});
-
-		super.draw(surface);
-	}
 	//#endregion
 	// -------------------------------------------------
 
 	// ---------------- Add Methods ----------------
 	//#region
-	public appendElementsInRegion(gridRegion: GridCell<T>[][], coords?: { row: number, col: number }) {
+	public override add(child: C) {
+		super.add(child);
+
+		if (Grid.isGridPulseElement(child)) {
+			this.addElement(child);
+		}
+	}
+
+	public appendElementsInRegion(gridRegion: GridCell[][], coords?: { row: number, col: number }) {
 		if (gridRegion.length === 0 || gridRegion[0].length === 0) { return }
 		if (coords === undefined) {
 			coords = { row: 0, col: 0 }
@@ -497,45 +487,63 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 				let row: number = r + topRow;
 				let col: number = c + leftCol;
 
-				let toAppend: GridCell<T> = gridRegion[r][c];
+				let toAppend: GridCell = gridRegion[r][c];
 
 				this.appendCellAtCoord(toAppend, { row: row, col: col });
 			}
 		}
 	}
 
-	public addChildAtCoord(child: T, row: number, column?: number) {
-		if (column === undefined) {
-			column = this.getFirstAvailableCell().col;
+	public addElement(child: GridPulseElement) {
+		let gridConfig: IGridConfig;
+		if (Grid.isGridElement(child)) {
+			gridConfig = child.placementMode.config;
+		} else {
+			gridConfig = this.placementModeTranslators.get(child.placementMode) !;
 		}
-		var insertCoords: { row: number, col: number } = { row: row, col: column };
-
-		if (child.placementMode.type === "grid") {
-			child.placementMode.config.coords = insertCoords;
+		
+		let insertCoords: { row: number, col: number } | undefined = gridConfig?.coords;
+		if (insertCoords === undefined) {
+			throw new Error(`Adding grid child ${child.ref} with unspecified coords`)
 		}
 
-		var region: OccupiedCell<T>[][] | undefined = this.getElementGridRegion(child, { row: insertCoords.row, col: insertCoords.col });
+		
+		var region: OccupiedCell[][] | undefined = this.getElementGridRegion(child, { row: insertCoords.row, col: insertCoords.col });
 
 		if (region === undefined) {
 			throw new Error(`Could not construct cell region for element ${child.ref}`)
 		}
 
 		this.appendElementsInRegion(region, { row: insertCoords.row, col: insertCoords.col })
-		// this.appendCellAtCoord(cell, {row: insertCoords.row, col: insertCoords.col});
 	}
 
-	public appendCellAtCoord(cell: GridCell<T>, coords: { row: number, col: number }) {
+	public addElementAtCoord(child: GridPulseElement, coords: {row: number, col: number}) {
+		var insertCoords: { row: number, col: number } = coords;
+
+		let gridConfig: IGridConfig;
+		if (Grid.isGridElement(child)) {
+			gridConfig = child.placementMode.config;
+		} else {
+			gridConfig = this.placementModeTranslators.get(child.placementMode) !;
+		}
+		gridConfig.coords = insertCoords;
+		this.placementModeTranslators.set(child, gridConfig);
+
+		this.addElement(child);
+	}
+
+	public appendCellAtCoord(cell: GridCell, coords: { row: number, col: number }) {
 		if (Object.keys(cell ?? {}).length === 0) { return }
 
 		this.setMatrixSize(coords, true);
 
-		let targetGridCell: GridCell<T> = this.gridMatrix[coords.row][coords.col];
+		let targetGridCell: GridCell = this.gridMatrix[coords.row][coords.col];
 
 		if (targetGridCell === undefined) {
 			targetGridCell = {};
 		}
 
-		let currElements: T[] | undefined = targetGridCell.elements ?? [];
+		let currElements: GridPulseElement[] | undefined = targetGridCell.elements ?? [];
 		let currSources: { [index: number]: { row: number; col: number } } | undefined = targetGridCell.sources ?? {};
 		let currGhosts: Ghost[] | undefined = targetGridCell.ghosts ?? [];
 
@@ -562,7 +570,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 
 		let extra: { width: number, height: number } | undefined = cell?.extra;
 
-		let finalCell: GridCell<T> = {
+		let finalCell: GridCell = {
 			elements: currElements,
 			sources: currSources,
 			ghosts: currGhosts,
@@ -572,21 +580,21 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		this.gridMatrix[coords.row][coords.col] = finalCell;
 	}
 
-	public setMatrixAtCoord(gridEntry: GridCell<T>, coords: { row: number, column: number }) {
+	public setMatrixAtCoord(gridEntry: GridCell, coords: { row: number, column: number }) {
 		this.gridMatrix[coords.row][coords.column] = gridEntry;
 	}
 
-	public setGrid(grid: GridCell<T>[][], sizes: { columns: Spacial[], rows: Spacial[] }, cells: Spacial[][]) {
+	public setGrid(grid: GridCell[][], sizes: { columns: Spacial[], rows: Spacial[] }, cells: Spacial[][]) {
 		this.gridMatrix = grid;
 		this.gridSizes = sizes;
 		this.cells = cells;
 	}
 
-	public setMatrix(matrix: GridCell<T>[][]) {
+	public setMatrix(matrix: GridCell[][]) {
 		this.gridMatrix = matrix;
 	}
 
-	public setMatrixRegion(gridRegion: GridCell<T>[][], coords?: { row: number, col: number }) {
+	public setMatrixRegion(gridRegion: GridCell[][], coords?: { row: number, col: number }) {
 		if (gridRegion.length === 0 || gridRegion[0].length === 0) { return }
 		if (coords === undefined) {
 			coords = { row: 0, col: 0 }
@@ -618,10 +626,18 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 
 	// ---------------- Remove Methods ----------------
 	//#region 
-	public remove(child: T, deleteIfEmpty?: { row: boolean, col: boolean }) {
+	public remove(child: C, deleteIfEmpty?: { row: boolean, col: boolean }) {
+		super.remove(child)
+
+		if (Grid.isGridPulseElement(child)) {
+			this.removeMatrix(child, deleteIfEmpty)
+		}
+	}
+
+	private removeMatrix(child: GridPulseElement, deleteIfEmpty?: { row: boolean, col: boolean }) {
 		// First we need to locate this child in the matrix:
-		var topLeft: { row: number, col: number } | undefined = this.locateGridChild(child);
-		let bottomRight: { row: number, col: number } | undefined = this.getChildBottomRight(child);
+		var topLeft: { row: number, col: number } | undefined = this.locateElement(child);
+		let bottomRight: { row: number, col: number } | undefined = this.getElementBottomRight(child);
 		if (topLeft === undefined || bottomRight === undefined) {
 			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
 			return
@@ -683,7 +699,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		// owned ghosts properties to clear these up.
 		let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(child.placementMode);
 		(gridConfig?.ownedGhosts ?? []).forEach((ownedGhost) => {
-			let cell: GridCell<T> = this.getCell({ row: ownedGhost.row, col: ownedGhost.col });
+			let cell: GridCell = this.getCell({ row: ownedGhost.row, col: ownedGhost.col });
 
 			if (cell?.ghosts !== undefined) {
 				cell.ghosts = cell.ghosts.filter((ghost) => ghost.owner !== child.id)
@@ -808,14 +824,14 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	}
 
 	protected insertEmptyColumn(index?: number) {
-		let newColumn: GridCell<T>[] = Array<GridCell<T>>(this.numRows).fill(undefined);
+		let newColumn: GridCell[] = Array<GridCell>(this.numRows).fill(undefined);
 		let INDEX: number | undefined = index;
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns) {
 			INDEX = this.numColumns;
 		}
 
 		// Grow split elements by 1 in columns
-		let splitElements: T[][] = this.getColumnSplitElements(INDEX);
+		let splitElements: GridPulseElement[][] = this.getColumnSplitElements(INDEX);
 		splitElements.forEach((row, row_index) => {
 			for (let element of row) {
 				let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
@@ -850,14 +866,14 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	}
 
 	protected insertEmptyRow(index?: number): void {
-		var newRow: GridCell<T>[] = Array<GridCell<T>>(this.numColumns).fill(undefined)
+		var newRow: GridCell[] = Array<GridCell>(this.numColumns).fill(undefined)
 		let INDEX: number | undefined = index;
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numRows) {
 			INDEX = this.numRows;
 		}
 
 		// Grow split elements by 1 in columns
-		let splitElements: T[][] = this.getRowSplitElements(INDEX);
+		let splitElements: GridPulseElement[][] = this.getRowSplitElements(INDEX);
 		splitElements.forEach((col, col_index) => {
 			for (let element of col) {
 				let gridConfig: IGridConfig | undefined = this.placementModeTranslators.get(element.placementMode);
@@ -915,7 +931,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 			INDEX = index;
 		}
 
-		var targetRow: GridCell<T>[] = this.gridMatrix[INDEX];
+		var targetRow: GridCell[] = this.gridMatrix[INDEX];
 		var empty: boolean = this.isArrayEmpty(targetRow)
 
 		if (onlyIfEmpty === true && !empty) { return }
@@ -926,17 +942,17 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	}
 
 	// --- Helpers ----
-	protected getColumnSplitElements(index: number): T[][] {
+	protected getColumnSplitElements(index: number): GridPulseElement[][] {
 		if (index > this.numColumns || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
 		}
 
 		// Get elements which have a part on the left and right of the index (insertion index)
-		var elements: T[][] = Array.from({ length: this.numRows }, () => []);
+		var elements: GridPulseElement[][] = Array.from({ length: this.numRows }, () => []);
 
 		this.getRows().forEach((row, row_index) => {
-			let leftCell: GridCell<T> = row[index - 1];
-			let rightCell: GridCell<T> = row[index];
+			let leftCell: GridCell = row[index - 1];
+			let rightCell: GridCell = row[index];
 
 			for (let child of (leftCell?.elements ?? [])) {
 				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
@@ -950,17 +966,17 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		return elements;
 	}
 
-	protected getRowSplitElements(index: number): T[][] {
+	protected getRowSplitElements(index: number): GridPulseElement[][] {
 		if (index > this.numRows || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
 		}
 
 		// Get elements which have a part on the left and right of the index (insertion index)
-		var elements: T[][] = Array.from({ length: this.numColumns }, () => []);
+		var elements: GridPulseElement[][] = Array.from({ length: this.numColumns }, () => []);
 
 		this.getColumns().forEach((col, col_index) => {
-			let leftCell: GridCell<T> = col[index - 1];
-			let rightCell: GridCell<T> = col[index];
+			let leftCell: GridCell = col[index - 1];
+			let rightCell: GridCell = col[index];
 
 			for (let child of (leftCell?.elements ?? [])) {
 				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
@@ -1039,45 +1055,45 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	// -------------------------------------------------
 
 
-	// ----------------- Acessors -----------------------
+	// ----------------- Accessors -----------------------
 	//#region 
-	public getColumns(): GridCell<T>[][] {
+	public getColumns(): GridCell[][] {
 		if (this.gridMatrix.length === 0 || this.gridMatrix[0].length === 0) {
 			return [];
 		}
 
 		const numCols = this.gridMatrix[0].length;
-		const columns: GridCell<T>[][] = [];
+		const columns: GridCell[][] = [];
 
 		for (let col = 0; col < numCols; col++) {
-			const column: GridCell<T>[] = this.gridMatrix.map(row => row[col]);
+			const column: GridCell[] = this.gridMatrix.map(row => row[col]);
 			columns.push(column);
 		}
 
 		return columns;
 	}
 
-	public getColumn(index: number): GridCell<T>[] {
+	public getColumn(index: number): GridCell[] {
 		return this.gridMatrix.map((row) => row[index]);
 	}
 
-	public getRows(): GridCell<T>[][] {
+	public getRows(): GridCell[][] {
 		return this.gridMatrix;
 	}
 
-	public getRow(index: number): GridCell<T>[] {
+	public getRow(index: number): GridCell[] {
 		return this.gridMatrix[index];
 	}
 
-	public getCell(coords: { row: number, col: number }): GridCell<T> {
-		return this.gridMatrix[coords.row][coords.col];
+	public getCell(coords: { row: number, col: number }): GridCell {
+		return this.gridMatrix[coords.row]?.[coords.col];
 	}
 
 	public getCells(): Spacial[] {
 		return this.cells.flat();
 	}
 
-	protected locateGridChild(target: T): { row: number, col: number } | undefined {
+	protected locateElement(target: GridPulseElement): { row: number, col: number } | undefined {
 		var coords: { row: number, col: number } | undefined = undefined;
 
 		this.gridMatrix.forEach((row, row_index) => {
@@ -1117,8 +1133,8 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		return coords;
 	}
 
-	public getChildBottomRight(child: T): { row: number, col: number } | undefined {
-		let location: { row: number, col: number } | undefined = this.locateGridChild(child);
+	public getElementBottomRight(child: GridPulseElement): { row: number, col: number } | undefined {
+		let location: { row: number, col: number } | undefined = this.locateElement(child);
 
 		if (location === undefined) { return undefined }
 
@@ -1140,13 +1156,13 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		return { row: bottom, col: right }
 	}
 
-	public getMatrixInRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): GridCell<T>[] {
+	public getMatrixInRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): GridCell[] {
 		// Check valid input:
 		if (topLeft.row < bottomRight.row || topLeft.col < bottomRight.col) {
 			return []
 		}
 
-		let result: GridCell<T>[] = [];
+		let result: GridCell[] = [];
 
 		for (let r = topLeft.row; r <= bottomRight.row; r++) {
 			for (let c = topLeft.col; c <= bottomRight.col; c++) {
@@ -1181,57 +1197,64 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 
 	// -------------- Child sizing -------------------
 	//#region 
-	public setChildSize(child: T, size: { noRows: number, noCols: number }) {
-		let location: { row: number, col: number } | undefined = this.locateGridChild(child)
+	public setElementSize(child: GridPulseElement, size: { noRows: number, noCols: number }) {
+		let location: { row: number, col: number } | undefined = this.locateElement(child)
 
 		if (location === undefined) {
 			console.warn(`Cannot locate child for size change ${child.ref}`)
 			return
 		}
 
-		if (child.placementMode.type === "grid") {
+		if (Grid.isGridElement(child)) {
 			child.placementMode.config.gridSize = { noRows: size.noRows, noCols: size.noCols }
 		}
 
-		let region: OccupiedCell<T>[][] | undefined = this.getElementGridRegion(child);
+		let region: OccupiedCell[][] | undefined = this.getElementGridRegion(child);
 		if (region === undefined) {
 			return
 		}
 
-		this.remove(child);
+		this.removeMatrix(child);
 		this.appendElementsInRegion(region, location);
 	}
 
-	protected getElementGridRegion(child: T, overridePosition?: { row: number, col: number }): OccupiedCell<T>[][] | undefined {
-		if (child.placementMode.type !== "grid") {
-			console.warn(`Trying to position non-grid placement element ${child.ref} in grid ${this.ref}`)
-			return
+	protected getElementGridRegion(element: GridPulseElement, overridePosition?: { row: number, col: number }): OccupiedCell[][] | undefined {
+		let gridConfig: IGridConfig;
+		if (Grid.isGridElement(element)) {
+			gridConfig = element.placementMode.config;
+		} else {
+			gridConfig = this.placementModeTranslators.get(element.placementMode) !;
 		}
 
-		let topLeft: { row: number, col: number } | undefined = child.placementMode.config.coords;
+		let topLeft: { row: number, col: number } | undefined = gridConfig.coords;
 		if (topLeft === undefined) {
-			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
+			console.warn(`Cannot locate child ${element.ref} in grid object ${this.ref}`)
 			return
 		}
 
 		let bottomRight: { row: number, col: number } = {
-			row: topLeft.row + (child.placementMode.config.gridSize?.noRows ?? 1) - 1,
-			col: topLeft.col + (child.placementMode.config.gridSize?.noCols ?? 1) - 1
+			row: topLeft.row + (gridConfig.gridSize?.noRows ?? 1) - 1,
+			col: topLeft.col + (gridConfig.gridSize?.noCols ?? 1) - 1
 		};
 
 
 		let root: { row: number, col: number } = overridePosition ?? topLeft
-		child.placementMode.config.coords = root;
+		gridConfig.coords = root;
+
+		if (element.placementMode.type === "pulse") {
+			this.placementModeTranslators.set(element, gridConfig)
+		}
 
 		// Construct region
-		let entry: OccupiedCell<T> = { elements: [child], sources: { [child.id]: root } }
-		let region: OccupiedCell<T>[][] =
-			Array<OccupiedCell<T>[]>(child.placementMode.config.gridSize?.noRows ?? 1)
-				.fill(Array<OccupiedCell<T>>(child.placementMode.config.gridSize?.noCols ?? 1).fill(entry))
+		let entry: OccupiedCell = { elements: [element], sources: { [element.id]: root } }
+		let region: OccupiedCell[][] =
+			Array<OccupiedCell[]>(gridConfig.gridSize?.noRows ?? 1)
+				.fill(Array<OccupiedCell>(gridConfig.gridSize?.noCols ?? 1).fill(entry))
 
 		// Put the top left back to just the element:
-		region[0][0] = { elements: [child] };
+		region[0][0] = { elements: [element] };
 
+	
 		return region
 	}
 	//#endregion
@@ -1245,10 +1268,10 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	}
 
 	protected isCellEmptyAt(coords: { row: number, col: number }): boolean {
-		let cellRow: GridCell<T>[] = this.gridMatrix[coords.row];
+		let cellRow: GridCell[] = this.gridMatrix[coords.row];
 		if (cellRow === undefined) { return true }
 
-		let cell: GridCell<T> = cellRow[coords.col];
+		let cell: GridCell = cellRow[coords.col];
 
 		if (cell === undefined) {
 			return true
@@ -1257,14 +1280,14 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		return false
 	}
 
-	protected numChildrenOverArea(topLeft: { row: number, col: number }, size: { noRows: number, noCols: number }): number {
+	protected numElementsOverArea(topLeft: { row: number, col: number }, size: { noRows: number, noCols: number }): number {
 		let count: number = 0;
 		let right: number = topLeft.col + size.noCols - 1;
 		let bottom: number = topLeft.row + size.noRows - 1;
 
 		for (let r = topLeft.row; r <= bottom; r++) {
 			for (let c = topLeft.col; c <= right; c++) {
-				let cell: GridCell<T> = this.gridMatrix[r][c];
+				let cell: GridCell = this.gridMatrix[r][c];
 
 				if (cell !== undefined && cell.sources === undefined) {
 					count += 1;
@@ -1275,8 +1298,8 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 		return count;
 	}
 
-	protected isCellElementSource(child: T, cell: { row: number, col: number }): boolean {
-		let targetCell: GridCell<T> = this.gridMatrix[cell.row][cell.col];
+	protected isCellElementSource(child: GridPulseElement, cell: { row: number, col: number }): boolean {
+		let targetCell: GridCell = this.gridMatrix[cell.row][cell.col];
 
 		if (targetCell?.elements === undefined) {
 			return false
@@ -1294,7 +1317,7 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	}
 
 	private setCellUndefinedIfEmpty(coords: { row: number, col: number }) {
-		let cell: GridCell<T> = this.getCell({ row: coords.row, col: coords.col })
+		let cell: GridCell = this.getCell({ row: coords.row, col: coords.col })
 		if (cell !== undefined && Object.values(cell).every(v => v === undefined)) {
 			this.gridMatrix[coords.row][coords.col] = undefined
 		}
@@ -1303,9 +1326,9 @@ export default class Grid<T extends GridPulseElement = GridPulseElement> extends
 	// -----------------------------------------------
 
 
-	public positionElement(child: T, position: { row: number, col: number }) {
-		let region: GridCell<T>[][] | undefined = this.getElementGridRegion(child, position);
-		this.remove(child);
+	public positionElement(child: GridPulseElement, position: { row: number, col: number }) {
+		let region: GridCell[][] | undefined = this.getElementGridRegion(child, position);
+		this.removeMatrix(child);
 
 		if (region === undefined) {
 			console.warn(`Error positioning child ${child.ref}`)

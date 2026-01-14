@@ -29,9 +29,10 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 		placementControl?: PlacementControl,
 		sizeMode?: SizeConfiguration,
 		ref: string = "padded-box",
-		id: ID | undefined = undefined
+		id: ID | undefined = undefined,
+		parentId: ID | undefined = undefined
 	) {
-		super(x, y, width, height, placementMode, placementControl, sizeMode, ref, id);
+		super(x, y, width, height, placementMode, placementControl, sizeMode, ref, id, parentId);
 
 		if (typeof padding === "number") {
 			this.padding = [padding, padding, padding, padding];

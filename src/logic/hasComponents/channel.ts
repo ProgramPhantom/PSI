@@ -1,9 +1,9 @@
 import Grid, { Elements, Ghost, GridCell, IGrid } from "../grid";
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
-import RectElement, { IRectElement, IRectStyle } from "../rectElement";
-import { Orientation } from "../spacial";
+import RectElement, { IRectElement } from "../rectElement";
+import { Dimensions, IGridConfig, Orientation, PlacementConfiguration, SiteNames, Size } from "../spacial";
 import Text, { IText } from "../text";
-import Visual, { GridElement, IVisual } from "../visual";
+import Visual, { GridElement } from "../visual";
 import { SequenceElement } from "./sequence";
 
 
@@ -11,8 +11,6 @@ export interface IChannel extends IGrid {
 	sequenceID?: ID;
 	label: IText,
 	bar: IRectElement,
-
-	pulseElements: IVisual[]
 }
 
 
@@ -58,13 +56,12 @@ export default class Channel extends Grid<SequenceElement> implements IChannel {
 			sequenceID: this.sequenceID,
 			label: this.label.state,
 			bar: this.bar.state,
-			pulseElements: this.pulseElements.map((p) => p.state),
 			...super.state
 		};
 	}
 
 	get pulseElements(): Visual[] {
-		return this.children.filter((v) => v.placementMode.type === "pulse")
+		return this.children.filter((v) => Grid.isPulseElement(v))
 	}
 
 
@@ -75,6 +72,10 @@ export default class Channel extends Grid<SequenceElement> implements IChannel {
 
 	constructor(params: IChannel) {
 		super(params);
+		this.placementModeTranslators = {
+			get: this.pulseConfigToGridConfig,
+			set: this.setPulseConfigViaGridConfig
+		}
 
 		this.sequenceID = params.sequenceID;
 
@@ -103,6 +104,10 @@ export default class Channel extends Grid<SequenceElement> implements IChannel {
 		this.initialiseChannel();
 	}
 
+	override computeSize(): Size {
+		return super.computeSize();
+	}
+
 	private initialiseChannel() {
 		this.insertEmptyRow();
 		this.insertEmptyRow();
@@ -111,8 +116,8 @@ export default class Channel extends Grid<SequenceElement> implements IChannel {
 		this.insertEmptyColumn();
 		this.insertEmptyColumn();
 
-		this.addChildAtCoord(this.label, 1, 0);
-		this.addChildAtCoord(this.bar, 1, 1);
+		this.add(this.label);
+		this.add(this.bar);
 
 		this.setMatrixAtCoord({
 			ghosts: [{ size: { width: 0, height: 10 } }],
@@ -122,6 +127,10 @@ export default class Channel extends Grid<SequenceElement> implements IChannel {
 			ghosts: [{ size: { width: 0, height: 10 } }],
 			extra: { width: 0, height: this.padding[2] }
 		}, { row: 2, column: 0 })
+	}
+
+	public override add(child: SequenceElement) {
+		super.add(child);
 	}
 
 	public growBar() {
@@ -179,4 +188,92 @@ export default class Channel extends Grid<SequenceElement> implements IChannel {
 
 		return spaces;
 	}
+
+
+	// -------------- Translation functions -------------
+	//#region 
+	protected pulseConfigToGridConfig(placementMode: PlacementConfiguration): IGridConfig | undefined {
+		if (placementMode.type === "grid") {
+			return placementMode.config
+		} else if (placementMode.type !== "pulse") {
+			return undefined
+		}
+
+		var channelId: ID | undefined = placementMode.config.channelID;
+
+
+		var row: number = 0;
+		var column: number = placementMode.config.index ?? 0;  // Starting at 1 as we know the label goes there
+		var alignment: { x: SiteNames, y: SiteNames } = { x: "centre", y: "far" }
+		let contribution: Record<Dimensions, boolean> = { x: true, y: true };
+
+		// --------- Row -------------
+		// Currently, channels ALWAYS have a height of 3 so that's how we find 
+		// our row number.
+		row = Channel.OrientationToRow(placementMode.config.orientation)
+		if (placementMode.config.orientation === "both") {
+			row += 1
+			alignment = { x: "centre", y: "centre" }
+			contribution = { x: true, y: false }
+		} else if (placementMode.config.orientation === "bottom") {
+			row += 2
+			alignment = { x: "centre", y: "here" }
+		}
+
+		let gridConfig: IGridConfig = {
+			coords: { row: row, col: column },
+			alignment: alignment,
+			gridSize: { noRows: 1, noCols: placementMode.config.noSections },
+			contribution: contribution,
+		}
+
+		// Inform of ghosts that have been placed by addPulse process.
+		if (placementMode.config.orientation === "both") {
+			gridConfig.ownedGhosts = [
+				{ row: row - 1, col: column },
+				{ row: row + 1, col: column }
+			]
+		}
+
+
+		return gridConfig
+	}
+
+	protected setPulseConfigViaGridConfig(child: Visual, config: IGridConfig) {
+		let numCols: number = config.gridSize?.noCols ?? 1;
+		let index: number = config.coords?.col ?? 1;
+
+		let channelIndex: number = Math.floor((config.coords?.row ?? 0) / 3);
+		let channel: Channel = this;
+
+
+		let orientationIndex: 0 | 1 | 2 = ((config.coords?.row ?? 0) % 3) as 0 | 1 | 2;
+		let orientation: Orientation = Channel.RowToOrientation(orientationIndex);
+
+		let alignment: Record<Dimensions, SiteNames> = {
+			x: config.alignment?.x ?? "centre",
+			y: config.alignment?.y ?? "centre"
+		}
+
+		let clipBar: boolean = false;
+		if (child.placementMode.type === "pulse" && child.placementMode.config.clipBar === true) {
+			clipBar = true;
+		}
+
+		child.placementMode = {
+			type: "pulse",
+			config: {
+				noSections: numCols,
+				orientation: orientation,
+				alignment: alignment,
+
+				channelID: channel.id,
+				sequenceID: this.id,
+				index: index,
+				clipBar: clipBar
+			}
+		}
+	}
+	//#endregion
+	// -------------------------------------------------
 }

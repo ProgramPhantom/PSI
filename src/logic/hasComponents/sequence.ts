@@ -7,41 +7,39 @@ import Channel, { IChannel } from "./channel";
 import { G } from "@svgdotjs/svg.js";
 
 
-export interface ISequence extends IGrid {
-	channels: IChannel[];
+export interface ISequence extends IGrid<IChannel> {
+
 }
 
 export type OccupancyStatus = Visual | "." | undefined;
 
 
 export type SequenceElement = PulseElement | GridElement;
-export default class Sequence<T extends SequenceElement = SequenceElement> extends Grid<SequenceElement> implements ISequence {
+export default class Sequence extends Grid<Channel> implements ISequence {
 	static ElementType: UserComponentType = "sequence";
 	static isPulse(element: Visual): boolean {
 		return element.placementMode.type === "pulse"
 	}
 	get state(): ISequence {
 		return {
-			channels: this.channels.map((c) => c.state),
-			...super.state
+			...super.state,
+			children: this.children.map((c) => c.state),
 		};
 	}
 
-	channels: Channel[];
-
 
 	get channelsDict(): Record<ID, Channel> {
-		return Object.fromEntries(this.channels.map((item) => [item.id, item]));
+		return Object.fromEntries(this.children.map((item) => [item.id, item]));
 	}
 	get channelIDs(): string[] {
-		return this.channels.map((c) => c.id);
+		return this.children.map((c) => c.id);
 	}
 	get numChannels(): number {
-		return this.channels.length;
+		return this.children.length;
 	}
 	get allPulseElements(): Visual[] {
 		var elements: Visual[] = [];
-		this.channels.forEach((c) => {
+		this.children.forEach((c) => {
 			elements.push(...c.children);
 		});
 		return elements;
@@ -51,7 +49,7 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 	override get allElements(): Record<ID, Visual> {
 		var elements: Record<ID, Visual> = { [this.id]: this };
 
-		this.channels.forEach((c) => {
+		this.children.forEach((c) => {
 			elements = { ...elements, ...c.allElements };
 		});
 		return elements;
@@ -63,36 +61,10 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 			get: this.pulseConfigToGridConfig.bind(this),
 			set: this.setPulseConfigViaGridConfig.bind(this)
 		}
-
-		this.channels = [];
-
-		params.channels.forEach((c) => {
-			var newChan = new Channel(c);
-			this.addChannel(newChan);
-		});
 	}
 
-	public override draw(surface: Element) {
-		if (this.svg) {
-			this.svg.remove();
-		}
-
-		var group = new G().id(this.id).attr({ title: this.ref });
-		group.attr({
-			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
-		});
-
-		this.svg = group;
-
-		surface.add(this.svg);
-
-		this.channels.forEach((channel) => {
-
-			channel.draw(this.svg!);
-
-		});
-	}
-
+	// --------------- Compute Methods ---------------
+	//#region
 	public override computeSize(): Size {
 		var size: Size = super.computeSize();
 
@@ -105,78 +77,51 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 
 		this.applySizesToChannels();
 	}
+	//#endregion
+	// -----------------------------------------------
 
-	// Content Commands
-	public addPulse(pulse: T) {
-		if (pulse.placementMode.type !== "pulse") {
-			console.warn(`Cannot mount pulse with no pulse type config`)
-			return
-		}
+	// --------------- Draw Methods ----------------
+	//#region
 
-		var gridConfig: IGridConfig = this.pulseConfigToGridConfig(pulse.placementMode)!;
+	//#endregion
+	// -----------------------------------------------
 
-		if (gridConfig.coords === undefined) { return }
-		let targetChannel: Channel = this.channelsDict[pulse.placementMode.config.channelID ?? ""]
-		if (targetChannel === undefined) {
-			throw new Error(`Cannot find targeted channel with id ${pulse.placementMode.config.channelID}`);
-		}
 
-		let columnSpaces: number = targetChannel.getSpacesToNextPulse(pulse.placementMode.config.orientation, pulse.placementMode.config.index ?? 0);
-		while (columnSpaces < (gridConfig.gridSize?.noCols ?? 1)) {
-			this.insertEmptyColumn(pulse.placementMode.config.index);
-			columnSpaces += 1;
-		}
-
-		this.addChildAtCoord(pulse, gridConfig.coords.row, gridConfig.coords.col);
-
-		this.setChannelDimensions();
-		this.setChannelMatrices();
-
-		// If this pulse is placed in the "both" orientation, it needs to create two ghosts
-		// above and below it to pad out the top and bottom row:
-		if (pulse.placementMode.config.orientation === "both") {
-			let barHeight: number = targetChannel.bar.height;
-			let ghostHeight: number = (pulse.height - barHeight) / 2;
-
-			let ghost: Ghost = { size: { width: 0, height: ghostHeight }, owner: pulse.id }
-
-			targetChannel.addCentralElementGhosts(pulse.placementMode.config.index!, ghost, ghost);
-
-			let channelIndex: number = this.getChannelIndex(targetChannel) ?? 0;
-			let channelRow: number = channelIndex * 3;
-		}
-	}
-
-	public addChannel(channel: Channel) {
-		this.channels.push(channel);
-
+	// ----------------- Add Methods -----------------
+	//#region
+	public override add(child: Channel) {
+		// super.add(child);
+		this.children.push(child);
 		// Add the three rows of this channel to the bottom of the 
 		// grid matrix;
 
 		// First we need to expand the matrix (as this channel we are)
 		// adding  could be longer than the matrix:
 
-		var channelLength: number = channel.numColumns;
+		var channelLength: number = child.numColumns;
 		this.setMatrixSize({ row: undefined, col: channelLength - 1 }, true)
 
 		// Note we don't care about the row as we will just append the 
 		// rows of the channel now, there's no need to expand it
 
-		channel.getRows().forEach((row) => {
+		child.getRows().forEach((row) => {
 			this.gridMatrix.push(row);
 		})
-
 	}
+	//#endregion
+	// -----------------------------------------------
 
-	public deleteChannel(channel: Channel) {
-		var channelIndex: number | undefined = this.getChannelIndex(channel);
+
+	// --------------- Remove methods ----------------
+	//#region 
+	public override remove(channel: Channel) {
+		var channelIndex: number | undefined = this.childIndex(channel);
+		super.remove(channel)
 
 		if (channelIndex === undefined) {
 			console.warn(`Cannot find index of channel with ref ${channel.ref}`)
 			return
 		}
-
-		this.channels.splice(channelIndex, 1);
 
 		var channelStartRow = channelIndex * 3;
 
@@ -186,25 +131,20 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 
 		// Matrix now may be over-long if the longest channel has 
 		// been deleted, hence we squeeze.
-		this.squeezeMatrix();
+		this.squeezeMatrix();  // TODO: is this why channel deletion is bugging?
 	}
+	//#endregion
+	// ----------------------------------------------
 
-	protected getChannelIndex(channel: Channel): number | undefined {
-		return this.getChannelIndexById(channel.id);
-	}
 
-	protected getChannelIndexById(id: ID): number | undefined {
-		var channelIndex: number | undefined = undefined;
+	// ------------ Accessors ---------------------
+	//#region 
 
-		this.channels.forEach((child, index) => {
-			if (id === child.id) {
-				channelIndex = index;
-			}
-		});
+	//#endregion
+	// -------------------------------------------
 
-		return channelIndex;
-	}
-
+	// -------------- Channel interaction -------------
+	//#region 
 	/**
 	 * Applies grid slices and positional offsets to each channel in `this.channels`.
 	 *
@@ -225,7 +165,7 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 	 * @private
 	 */
 	private applySizesToChannels() {
-		this.channels.forEach((channel, channel_index) => {
+		this.children.forEach((channel, channel_index) => {
 			let INDEX: number = channel_index * 3;
 
 			let gridSlice = this.gridMatrix.slice(INDEX, INDEX + 3);
@@ -249,7 +189,7 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 	}
 
 	protected setChannelDimensions() {
-		this.channels.forEach((channel, channel_index) => {
+		this.children.forEach((channel, channel_index) => {
 			// Currently channels are forced to be 3 rows so we leave that
 			// and just set the number of columns
 
@@ -260,7 +200,7 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 	}
 
 	protected setChannelMatrices() {
-		this.channels.forEach((channel, channel_index) => {
+		this.children.forEach((channel, channel_index) => {
 			let INDEX: number = channel_index * 3;
 
 			let gridSlice = this.gridMatrix.slice(INDEX, INDEX + 3);
@@ -268,33 +208,11 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 			channel.setMatrix(gridSlice);
 		})
 	}
+	//#endregion
+	// ----------------------------------------------
 
-	private growChannels() {
-		this.channels.forEach((c) => {
-			if (c.bar.placementMode.type === "grid") {
-				c.bar.placementMode.config.gridSize = { noRows: 1, noCols: this.numColumns - 1 }
-			}
-		})
-	}
-
-	public colHasPulse(col: number): boolean {
-		var targetColumn: GridCell[] = this.getColumn(col);
-		let present: number = 0;
-
-		targetColumn.forEach((cell) => {
-			if (cell?.elements !== undefined) {
-				present += cell.elements.length;
-			}
-		})
-
-		// Reliable?
-		if (present > this.numChannels) {
-			return true
-		}
-
-		return false
-	}
-
+	// -------------- Translation functions -------------
+	//#region 
 	protected pulseConfigToGridConfig(placementMode: PlacementConfiguration): IGridConfig | undefined {
 		if (placementMode.type === "grid") {
 			return placementMode.config
@@ -307,7 +225,7 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 
 		// We now need to convert the mount config in the pulse's placement
 		// type into the exact coordinate in the grid to insert this element
-		var channelIndex: number = this.getChannelIndexById(channelId ?? "") ?? 0;
+		var channelIndex: number = this.childIndexById(channelId ?? "") ?? 0;
 
 
 
@@ -353,7 +271,7 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 		let index: number = config.coords?.col ?? 1;
 
 		let channelIndex: number = Math.floor((config.coords?.row ?? 0) / 3);
-		let channel: Channel = this.channels[channelIndex];
+		let channel: Channel = this.children[channelIndex];
 
 
 		let orientationIndex: 0 | 1 | 2 = ((config.coords?.row ?? 0) % 3) as 0 | 1 | 2;
@@ -383,7 +301,12 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 			}
 		}
 	}
+	//#endregion
+	// -------------------------------------------------
 
+
+	// --------------- Behaviour overrides -------------
+	//#region 
 	public override insertEmptyColumn(index?: number) {
 		super.insertEmptyColumn(index);
 
@@ -438,6 +361,28 @@ export default class Sequence<T extends SequenceElement = SequenceElement> exten
 
 		return region;
 	}
+	//#endregion
+	// -----------------------------------------------
 
+	// --------------- Helpers -----------------------
+	//#region 
+	private colHasPulse(col: number): boolean {
+		var targetColumn: GridCell[] = this.getColumn(col);
+		let present: number = 0;
 
+		targetColumn.forEach((cell) => {
+			if (cell?.elements !== undefined) {
+				present += cell.elements.length;
+			}
+		})
+
+		// Reliable?
+		if (present > this.numChannels) {
+			return true
+		}
+
+		return false
+	}
+	//#endregion
+	// -----------------------------------------------
 }

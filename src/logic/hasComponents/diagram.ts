@@ -1,13 +1,12 @@
 import Collection, { ICollection } from "../collection";
 import { ID, UserComponentType } from "../point";
-import Visual, { PulseElement } from "../visual";
+import Visual, { IVisual, PulseElement } from "../visual";
 import Channel from "./channel";
 import Sequence from "./sequence";
 import SequenceAligner, { ISequenceAligner } from "./sequenceAligner";
 
 
 export interface IDiagram extends ICollection {
-	sequenceAligner: ISequenceAligner
 }
 
 
@@ -15,7 +14,6 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 	static ElementType: UserComponentType = "diagram";
 	get state(): IDiagram {
 		return {
-			sequenceAligner: this.sequenceAligner.state,
 			...super.state
 		};
 	}
@@ -41,7 +39,7 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 		return channels;
 	}
 	get channels(): Channel[] {
-		return this.sequenceAligner.children.map((s) => s.channels).flat();
+		return this.sequenceAligner.children.map((s) => s.children).flat();
 	}
 	get channelIDs(): string[] {
 		return this.sequenceAligner.children.map((s) => s.channelIDs).flat();
@@ -56,25 +54,17 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 	}
 	// ----------------------------------------------------
 
-	sequenceAligner: SequenceAligner;
+	get sequenceAligner(): SequenceAligner {
+		let sequenceAligner: IVisual | undefined = this.children.find((c) => c.type === "sequence-aligner");
+
+		if (sequenceAligner === undefined) {
+			throw new Error(`Diagram is missing required child "sequence-aligner"`)
+		}
+
+		return sequenceAligner as SequenceAligner;
+	}
 
 	constructor(params: IDiagram) {
 		super(params);
-
-		this.sequenceAligner = new SequenceAligner(params.sequenceAligner);
-		this.add(this.sequenceAligner);
-	}
-
-	// Adding
-	public addSequence(sequence: Sequence) {
-		this.add(sequence);
-	}
-
-	public addPulse(pulse: PulseElement) {
-		this.sequenceAligner.addPulse(pulse);
-	}
-
-	public deletePulse(pulse: PulseElement, holdColOpen: boolean = false) {
-		this.sequenceAligner.deletePulse(pulse, holdColOpen);
 	}
 }

@@ -60,7 +60,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	constructor(params: IVisual) {
 		super(params.padding, params.x, params.y,
 			params.contentWidth, params.contentHeight, params.placementMode,
-			params.placementControl, params.sizeMode, params.ref, params.id);
+			params.placementControl, params.sizeMode, params.ref, params.id, params.parentId);
 
 		this.offset = params.offset;
 	}

@@ -36,6 +36,7 @@ export interface IElement {
 	ref: string;
 	id?: ID;
 	type: AllComponentTypes;
+	parentId?: ID;
 }
 
 export interface IPoint extends IElement {
@@ -55,7 +56,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 			y: this._y,
 			ref: this.ref,
 			id: this.id,
-			type: (this.constructor as typeof Point).ElementType
+			type: (this.constructor as typeof Point).ElementType,
+			parentId: this.parentId
 		};
 	}
 
@@ -74,7 +76,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	ref: string;
 	public type: AllComponentTypes;
 
-	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined) {
+	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined, parentId: ID | undefined = undefined) {
 		this._x = x ?? 0;
 		this._y = y ?? 0;
 
@@ -87,6 +89,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		}
 
 		this.type = (this.constructor as typeof Point).ElementType
+		this.parentId = parentId;
 	}
 
 	get x(): number {
