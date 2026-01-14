@@ -20,29 +20,11 @@ export default abstract class PaddedBox extends Spacial implements IPaddedBox {
 	padding: [number, number, number, number] = [0, 0, 0, 0];
 
 	constructor(
-		padding: Padding = 0,
-		x?: number,
-		y?: number,
-		width?: number,
-		height?: number,
-		placementMode?: PlacementConfiguration,
-		placementControl?: PlacementControl,
-		sizeMode?: SizeConfiguration,
-		ref: string = "padded-box",
-		id: ID | undefined = undefined,
-		parentId: ID | undefined = undefined
+		params: IPaddedBox
 	) {
-		super(x, y, width, height, placementMode, placementControl, sizeMode, ref, id, parentId);
+		super(params);
 
-		if (typeof padding === "number") {
-			this.padding = [padding, padding, padding, padding];
-		} else if (typeof this.padding === "object") {
-			if (padding.length === 2) {
-				this.padding = [padding[0], padding[1], padding[0], padding[1]];
-			} else {
-				this.padding = padding;
-			}
-		}
+		this.padding = [params.padding[0], params.padding[1], params.padding[2], params.padding[3]];
 	}
 
 	public get cx(): number {

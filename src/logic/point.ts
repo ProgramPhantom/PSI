@@ -76,20 +76,20 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	ref: string;
 	public type: AllComponentTypes;
 
-	constructor(x?: number, y?: number, ref: string = "point", id: ID | undefined = undefined, parentId: ID | undefined = undefined) {
-		this._x = x ?? 0;
-		this._y = y ?? 0;
+	constructor(params: IPoint) {
+		this._x = params.x ?? 0;
+		this._y = params.y ?? 0;
 
-		this.ref = ref;
+		this.ref = params.ref;
 
-		if (id === undefined) {
+		if (params.id === undefined) {
 			this._id = Math.random().toString(16).slice(2);
 		} else {
-			this._id = id;
+			this._id = params.id;
 		}
 
 		this.type = (this.constructor as typeof Point).ElementType
-		this.parentId = parentId;
+		this.parentId = params.parentId;
 	}
 
 	get x(): number {

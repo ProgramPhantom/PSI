@@ -127,7 +127,11 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		size.width = right - left;
 		size.height = bottom - top;
 
-		let result: Spacial = new Spacial(left, top, size.width, size.height, { type: "free" })
+		let result: Spacial = new Spacial(
+			{
+				x: left, y: top, contentWidth: size.width, contentHeight: size.height, placementMode: { type: "free" }, ref: "union",
+				type: "lower-abstract"
+			})
 
 		return result
 	}
@@ -164,29 +168,22 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	public placementControl: PlacementControl;
 	public sizeMode: SizeConfiguration;
 
+	public pulseData?: IPulseConfig;
+
 	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
 	bindingsToThis: IBinding[] = [];
 
 	constructor(
-		x?: number,
-		y?: number,
-		width?: number,
-		height?: number,
-		placementMode?: PlacementConfiguration,
-		placementControl?: PlacementControl,
-		sizeMode?: SizeConfiguration,
-		ref: string = "spacial",
-		id: ID | undefined = undefined,
-		parentId: ID | undefined = undefined
+		params: ISpacial
 	) {
-		super(x, y, ref, id, parentId);
+		super(params);
 
-		this.placementMode = placementMode ?? { type: "free" }
-		this.placementControl = placementControl ?? "user";
-		this.sizeMode = sizeMode ?? { x: "fixed", y: "fixed" }
+		this.placementMode = params.placementMode ?? { type: "free" }
+		this.placementControl = params.placementControl ?? "user";
+		this.sizeMode = params.sizeMode ?? { x: "fixed", y: "fixed" }
 
-		this._contentWidth = width ?? 0;
-		this._contentHeight = height ?? 0;
+		this._contentWidth = params.contentWidth ?? 0;
+		this._contentHeight = params.contentHeight ?? 0;
 	}
 
 	public computeSize(): Size {
