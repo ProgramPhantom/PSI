@@ -485,7 +485,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		}
 	}
 
-	public addElement(child: GridElement) {
+	private addElement(child: GridElement) {
 
 		let insertCoords: { row: number, col: number } | undefined = child.placementMode.config.coords;
 		if (insertCoords === undefined) {

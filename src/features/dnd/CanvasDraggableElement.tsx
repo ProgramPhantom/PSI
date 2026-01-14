@@ -92,15 +92,14 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 							let newState: IVisual = { ...item.element.state }
 
+							newState.pulseData!.channelID = dropResult.channelID;
+							newState.pulseData!.sequenceID = dropResult.sequenceID;
+							newState.pulseData!.index = dropResult.index;
+
 							if (dropResult.insert === true) {
 								ENGINE.handler.addColumn(dropResult.sequenceID ?? "", dropResult.index);
 							}
 
-							if (isPulse(newState)) {
-								newState.pulseData.channelID = dropResult.channelID;
-								newState.pulseData.sequenceID = dropResult.sequenceID;
-								newState.pulseData.index = dropResult.index;
-							}
 
 							let modifyResult = ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
 

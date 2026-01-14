@@ -208,7 +208,12 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this._placementMode = params.placementMode ?? { type: "free" }
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ?? { x: "fixed", y: "fixed" }
-		this.pulseData = params.pulseData;
+		
+		if (params.pulseData !== undefined) {
+			this.pulseData = params.pulseData;
+			this.setGridConfigUsingPulseData(params.pulseData);
+		}
+		
 
 		this._contentWidth = params.contentWidth ?? 0;
 		this._contentHeight = params.contentHeight ?? 0;
@@ -658,6 +663,36 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 					y: this.placementMode.config.alignment?.y ?? "far"
 				}
 			}
+		}
+	}
+
+	public setGridConfigUsingPulseData(pulseData: IPulseConfig) {
+		if (!isPulse(this) || this.placementMode.type !== "grid") {
+			return
+		}
+
+		let row: 0 | 1 | 2 = 0
+		switch (pulseData.orientation) {
+			case "top":
+				row = 0;
+				break;
+			case "both":
+				row = 1;
+				break;
+			case "bottom":
+				row = 2;
+				break;
+		}
+	
+
+		this.placementMode.config = {
+			"alignment": pulseData?.alignment,
+			"coords": {row: row, col: pulseData?.index ?? 0},
+			"gridSize": {noRows: 1, noCols: pulseData?.noSections ?? 1},
+			
+			"ownedGhosts": this.placementMode.config.ownedGhosts,
+			"contribution": this.placementMode.config.contribution,
+
 		}
 	}
 }

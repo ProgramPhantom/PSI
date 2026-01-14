@@ -153,8 +153,7 @@ export default class Channel extends Grid implements IChannel {
 			}
 		}
 
-		var region = this.getElementGridRegion(this.bar)!;
-		this.appendElementsInRegion(region, { row: 1, col: 1 });
+		this.add(this.bar);
 	}
 
 	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {
