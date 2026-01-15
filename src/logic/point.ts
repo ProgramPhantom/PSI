@@ -57,7 +57,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 			y: this._y,
 			ref: this.ref,
 			id: this.id,
-			type: (this.constructor as typeof Point).ElementType,
+			type: this.type,
 			parentId: this.parentId,
 			role: this.role
 		};
@@ -92,7 +92,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 			this._id = params.id;
 		}
 
-		this.type = (this.constructor as typeof Point).ElementType
+		this.type = params.type
 		this.parentId = params.parentId;
 	}
 
