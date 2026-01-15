@@ -66,15 +66,20 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				return;
 			}
 
+			var elementType = (props.element.constructor as typeof Visual).ElementType;
+			var singletonState: IVisual = structuredClone(props.element.state);
+
 			if (isCanvasDrop(dropResult)) {
-				return;
-				// console.log(`Adding element at ${dropResult.x}, ${dropResult.y}`)
-				//
-				// ENGINE.handler.addElementFromTemplate({x: dropResult.x, y: dropResult.y}, props.element.ref);
+				singletonState.x = dropResult.x;
+				singletonState.y = dropResult.y;
+
+				singletonState.placementMode = {
+					type: "free"
+				}
+
+				ENGINE.handler.createAndAdd(singletonState, elementType);
 			} else if (isMountDrop(dropResult)) {
 				// ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
-				var elementType = (props.element.constructor as typeof Visual).ElementType;
-				var singletonState: IVisual = structuredClone(props.element.state);
 
 				singletonState.id = undefined;  // Required
 				singletonState.parentId = dropResult.channelID;

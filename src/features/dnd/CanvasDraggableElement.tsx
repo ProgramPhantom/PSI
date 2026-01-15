@@ -75,12 +75,16 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						return;
 					}
 
-					if (isCanvasDrop(dropResult)) {
-						// ENGINE.handler.moveElement(item.element, dropResult.x, dropResult.y);
-					} else if (isMountDrop(dropResult)) {
-						var result = dropResult as IMountAreaResult;
-						let elementType = (item.element.constructor as typeof Visual).ElementType
+					let elementType = (item.element.constructor as typeof Visual).ElementType
 
+					if (isCanvasDrop(dropResult)) {
+						item.element.x = dropResult.x;
+						item.element.y = dropResult.y;
+
+						let newState: IVisual = { ...item.element.state }
+
+						ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
+					} else if (isMountDrop(dropResult)) {
 						if (isPulse(item.element)) {
 							// var newMountConfig: IPulseConfig = {
 							// 	...item.element.placementMode.config,

@@ -258,6 +258,10 @@ export default class DiagramHandler implements IDraw {
 	// ---------- Visual interaction (generic) -----------
 	@draws
 	public createAndAdd(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
+		if (parameters.placementMode?.type === "free") {
+			parameters.parentId = this.diagram.id;
+		}
+
 		var elementResult: Result<Visual> = this.createVisual(parameters, type);
 
 		if (elementResult.ok === false) {

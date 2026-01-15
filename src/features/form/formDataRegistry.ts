@@ -1,5 +1,5 @@
 
-import { defaultChannel, defaultLabel, defaultRectElement, defaultSpace, defaultSvgElement, defaultText, defaultVisual } from "../../logic/default/index";
+import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultSvgElement, defaultText, defaultVisual } from "../../logic/default/index";
 import { ILabel } from "../../logic/hasComponents/label";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
@@ -67,6 +67,11 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	"channel": {
 		form: ChannelForm,
 		defaults: defaultChannel,
+		allowLabels: false
+	},
+	"diagram": {
+		form: VisualForm,
+		defaults: defaultDiagram,
 		allowLabels: false
 	}
 }
