@@ -68,6 +68,7 @@ function InsertArea(props: {areaSpec: AddSpec; key: string}) {
 		width: `${props.areaSpec.area.width}px`,
 
 		backgroundColor: "transparent",
+		visibility: canDrop ? "visible" : "hidden",
 		position: "absolute",
 		top: `${props.areaSpec.area.y}px`,
 		left: `${props.areaSpec.area.x}px`,
@@ -78,7 +79,7 @@ function InsertArea(props: {areaSpec: AddSpec; key: string}) {
 	return (
 		<div
 			ref={drop}
-			style={{...style, backgroundColor}}
+			style={{...style, backgroundColor, pointerEvents: "visiblePainted",}}
 			data-testid={props.areaSpec.channelID + props.areaSpec.index}
 			key={props.key}></div>
 	);
