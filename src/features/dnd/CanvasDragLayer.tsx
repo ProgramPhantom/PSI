@@ -3,7 +3,7 @@ import type { XYCoord } from "react-dnd";
 import { useDragLayer } from "react-dnd";
 import { CanvasDraggableElementPayload } from "./CanvasDraggableElement";
 import { ElementDragPreview } from "./ElementDragPreview";
-import { ElementTypes } from "./TemplateDraggableElement";
+import { DragElementTypes } from "./CanvasDropContainer";
 
 const layerStyles: CSSProperties = {
 	position: "fixed",
@@ -53,19 +53,12 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
 	}));
 
 	function renderItem() {
-		switch (itemType) {
-			case ElementTypes.CANVAS_ELEMENT:
-				return <ElementDragPreview element={item.element} />;
-			case ElementTypes.PREFAB:
-				return <ElementDragPreview element={item.element} />;
-			default:
-				return null;
-		}
+		return <ElementDragPreview element={item.element} />;
 	}
 
 	var css;
 
-	if (itemType === ElementTypes.PREFAB) {
+	if (itemType === DragElementTypes.PREFAB) {
 		css = getItemStyles(initialOffset, clientOffset, props.scale);
 	} else {
 		css = getItemStyles(initialOffset, currentOffset, props.scale);

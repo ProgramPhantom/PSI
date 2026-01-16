@@ -1,6 +1,5 @@
 import type { CSSProperties, FC, ReactNode } from "react";
 import { useDrop } from "react-dnd";
-import { ElementTypes } from "./TemplateDraggableElement";
 
 const styles: CSSProperties = {
 	width: "100%",
@@ -26,12 +25,20 @@ export interface IDrop {
 	dropEffect: DropEffect;
 }
 
+export const DragElementTypes = {
+	PREFAB: "prefab",
+	PULSE: "pulse",
+	OTHER: "other",
+	FREE: "free",
+	FIXED: "fixed"
+}
+
 /* This is a drop target that covers the entire canvas for collecting drops that are intended
 for movements of elements. */
 export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 	const [, drop] = useDrop(
 		() => ({
-			accept: [ElementTypes.CANVAS_ELEMENT, ElementTypes.PREFAB],
+			accept: [DragElementTypes.PULSE, DragElementTypes.FREE],
 			drop(item: ICanvasDropResult, monitor) {
 				// Allow drop to be handled by insertAreas
 				const didDrop = monitor.didDrop();

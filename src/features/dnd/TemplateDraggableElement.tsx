@@ -1,23 +1,18 @@
 import { Button } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
+import { Element } from "@svgdotjs/svg.js";
 import React, { CSSProperties, useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
+import { appToaster } from "../../app/Toaster";
 import SchemeManager from "../../logic/default";
 import { Result } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import { ILabelGroup } from "../../logic/hasComponents/labelGroup";
-import { AllComponentTypes, UserComponentType } from "../../logic/point";
-import { IRectElement } from "../../logic/rectElement";
-import { ISVGElement } from "../../logic/svgElement";
+import { UserComponentType } from "../../logic/point";
+import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
-import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
+import { DragElementTypes, IDrop, isCanvasDrop } from "./CanvasDropContainer";
 import { isMountDrop } from "./InsertArea";
-import { IPulseConfig, isPulse } from "../../logic/spacial";
-import { appToaster } from "../../app/Toaster";
-import { Element } from "@svgdotjs/svg.js";
-import { SVG } from "@svgdotjs/svg.js";
-import { Svg } from "@svgdotjs/svg.js";
 
 const style: CSSProperties = {
 	border: "1px solid #d3d8de",
@@ -38,10 +33,8 @@ const style: CSSProperties = {
 	justifyContent: "center"
 };
 
-export const ElementTypes = {
-	PREFAB: "pulse",
-	CANVAS_ELEMENT: "real_element"
-};
+
+ 
 
 interface ITemplateDraggableElementProps {
 	element: Visual;
@@ -57,7 +50,7 @@ interface IDraggableElementDropItem {
 by this. It is a different object that can be dragged. */
 const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (props) => {
 	const [{ isDragging }, drag, preview] = useDrag(() => ({
-		type: ElementTypes.PREFAB,
+		type: DragElementTypes.PREFAB,
 		item: { element: props.element } as IDraggableElementDropItem,
 		end: (item, monitor) => {
 			const dropResult = monitor.getDropResult<IDrop>();

@@ -49,8 +49,8 @@ export interface IAlignerConfig {
 export type PlacementConfiguration = { type: "free" } |
 { type: "binds"; bindings: undefined } |
 { type: "grid"; config: IGridConfig } |
-{ type: "aligner", config: IAlignerConfig }
-
+{ type: "aligner", config: IAlignerConfig } | 
+{type: "channel"}
 
 
 export type PlacementControl = "auto" | "user";

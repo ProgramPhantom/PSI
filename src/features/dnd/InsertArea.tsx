@@ -2,8 +2,7 @@ import { Colors } from "@blueprintjs/core";
 import { CSSProperties } from "react";
 import { useDrop } from "react-dnd";
 import { ID } from "../../logic/point";
-import { IDrop } from "./CanvasDropContainer";
-import { ElementTypes } from "./TemplateDraggableElement";
+import { DragElementTypes, IDrop } from "./CanvasDropContainer";
 import { Orientation } from "../../logic/spacial";
 
 interface Rect {
@@ -36,7 +35,7 @@ export function isMountDrop(object: IDrop): object is IMountAreaResult {
 
 function InsertArea(props: {areaSpec: AddSpec; key: string}) {
 	const [{canDrop, isOver}, drop] = useDrop(() => ({
-		accept: [ElementTypes.PREFAB, ElementTypes.CANVAS_ELEMENT],
+		accept: [DragElementTypes.PULSE, DragElementTypes.PREFAB],
 		drop: () =>
 			({
 				index: props.areaSpec.index,

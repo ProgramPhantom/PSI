@@ -2,7 +2,7 @@ import { ISVGElement } from "../../svgElement"
 
 export const DEFAULT_CHIRPLOHI: ISVGElement = {
 	"padding": [0, 0, 0, 0],
-	"offset": [0, 0],
+	"offset": [0, 1],
 	"svgDataRef": "chirplohi",
 	"contentWidth": 50,
 	"contentHeight": 20,

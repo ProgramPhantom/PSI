@@ -99,6 +99,9 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		child.getRows().forEach((row) => {
 			this.gridMatrix.push(row);
 		})
+
+		child.placementControl = "auto";
+		child.placementMode = {type: "channel"}
 	}
 	//#endregion
 	// -----------------------------------------------
@@ -187,7 +190,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 			// set matrix takes index
 			channel.setMatrixSize({ col: this.numColumns - 1 });
-			channel.growBar();
+			channel.sizeBar();
 		})
 	}
 

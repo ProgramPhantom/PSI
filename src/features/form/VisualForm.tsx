@@ -89,7 +89,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						<FormGroup style={{ flex: 1, margin: 0 }}
 							intent={errors?.contentWidth ? "danger" : "none"}
 							helperText={(errors?.contentWidth?.message ?? "").toString()}
-							label={!widthActive ? "Width (inherited)" : "Height"}
+							label={!widthActive ? "Width (inherited)" : "Width"}
 							labelFor="width-input">
 							<Controller
 								control={formControls.control}

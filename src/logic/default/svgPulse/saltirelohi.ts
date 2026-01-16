@@ -2,7 +2,7 @@ import { ISVGElement } from "../../svgElement"
 
 export const DEFAULT_SALTIRELOHI: ISVGElement = {
 	"padding": [0, 0, 0, 0],
-	"offset": [0, 0],
+	"offset": [0, 1],
 	"svgDataRef": "saltirelohi",
 	"contentWidth": 50,
 	"contentHeight": 20,

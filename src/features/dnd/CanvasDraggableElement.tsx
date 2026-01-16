@@ -5,11 +5,10 @@ import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { HandleStyles } from "react-rnd";
 import ENGINE from "../../logic/engine";
-import { IPulseConfig, isPulse } from "../../logic/spacial";
+import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
-import { IDrop, isCanvasDrop } from "./CanvasDropContainer";
-import { IMountAreaResult, isMountDrop } from "./InsertArea";
-import { ElementTypes } from "./TemplateDraggableElement";
+import { DragElementTypes, IDrop, isCanvasDrop } from "./CanvasDropContainer";
+import { isMountDrop } from "./InsertArea";
 
 
 const style: CSSProperties = {
@@ -68,9 +67,19 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
 		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
 
+		// Compute drag element type:
+		let dragElementType = DragElementTypes.OTHER;
+		if (isPulse(props.element)) {
+			dragElementType = DragElementTypes.PULSE
+		} else if (props.element.placementControl === "auto") {
+			dragElementType = DragElementTypes.FIXED;
+		} else if (props.element.placementMode.type === "free") {
+			dragElementType = DragElementTypes.FREE
+		}
+
 		const [{ isDragging }, drag, preview] = useDrag(
 			() => ({
-				type: ElementTypes.CANVAS_ELEMENT,
+				type: dragElementType,
 				item: () => ({
 					element: props.element,
 					offset: offsetRef.current
@@ -94,6 +103,9 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 						let newState: IVisual = { ...item.element.state }
 						newState.parentId = ENGINE.handler.diagram.id;
+						newState.placementMode = {
+							type: "free",
+						}
 
 						ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
 					} else if (isMountDrop(dropResult)) {

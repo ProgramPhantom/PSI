@@ -86,6 +86,7 @@ export default class Channel extends Grid implements IChannel {
 		super(params);
 
 		this.sequenceID = params.sequenceID;
+		this.parentId = params.sequenceID;
 
 		this.initialiseChannel();
 	}
@@ -128,7 +129,7 @@ export default class Channel extends Grid implements IChannel {
 				this.addCentralElementGhosts(child.pulseData.index!, ghost, ghost);
 			}
 
-			this.growBar()
+			this.sizeBar()
 		}
 
 		
@@ -147,9 +148,7 @@ export default class Channel extends Grid implements IChannel {
 		super.remove(child)
 	}
 
-	public growBar() {
-		//this.setChildSize(this.bar, {noRows: 1, noCols: this.numColumns-1});
-		//this.positionElement(this.bar, {row: 1, col: 1})
+	public sizeBar() {
 		if (this.bar === undefined) {
 			return
 		}
@@ -209,9 +208,20 @@ export default class Channel extends Grid implements IChannel {
 	private initialiseBar(bar: Visual) {
 		bar.maskId = BAR_MASK_ID;
 		bar.placementMode = {
-			type: "grid", config: {
-				alignment: { x: "here", y: "centre" },
-				coords: { row: 1, col: 1 }
+			type: "grid",
+			config: {
+				gridSize: {
+					noCols: this.numColumns - 1,
+					noRows: 1
+				},
+				coords: {
+					row: 1,
+					col: 1
+				},
+				alignment: {
+					x: "here",
+					y: "centre"
+				}
 			}
 		}
 		bar.ref = this.ref + "-bar";

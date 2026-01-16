@@ -6,7 +6,7 @@ export const DEFAULT_BAR: IRectElement = {
   "contentHeight": 3,
   "padding": [0, 0, 0, 0],
   "offset": [0, 0],
-  "placementMode": { "type": "free" },
+
   "sizeMode": { "x": "grow", "y": "fixed" },
   "placementControl": "auto",
 
