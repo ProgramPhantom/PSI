@@ -92,9 +92,12 @@ export default class DiagramHandler implements IDraw {
 
 		this.surface.add(new Rect().move(0, 0).id("diagram-root"));
 
+		this.surface.viewbox(this.diagram.x, this.diagram.y, this.diagram.width, this.diagram.height);
 		this.surface.size(`${this.diagram.width}px`, `${this.diagram.height}px`);
 		this.diagram.draw(this.surface);
 		this.syncExternal();
+
+
 	}
 
 	erase() {
@@ -129,7 +132,7 @@ export default class DiagramHandler implements IDraw {
 		this.erase();
 
 		let newDiagram: Diagram | undefined = this.EngineConstructor(state, "diagram") as Diagram | undefined;
-			
+
 		if (newDiagram === undefined) {
 			return { ok: false, error: `Failed to create diagram` };
 		}
@@ -258,10 +261,6 @@ export default class DiagramHandler implements IDraw {
 	// ---------- Visual interaction (generic) -----------
 	@draws
 	public createAndAdd(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
-		if (parameters.placementMode?.type === "free") {
-			parameters.parentId = this.diagram.id;
-		}
-
 		var elementResult: Result<Visual> = this.createVisual(parameters, type);
 
 		if (elementResult.ok === false) {

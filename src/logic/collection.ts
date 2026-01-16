@@ -10,7 +10,7 @@ export interface ICollection<C extends IVisual = IVisual> extends IVisual {
 	sizeMode?: Record<Dimensions, ContainerSizeMethod>
 }
 
-export type RolesDict = Record<string, {object: Visual | undefined, initialiser?: (object: Visual) => void}>;
+export type RolesDict = Record<string, { object: Visual | undefined, initialiser?: (object: Visual) => void }>;
 
 export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C> {
 	static isCollection(v: IVisual): v is Collection {
@@ -100,6 +100,18 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		this.children.forEach((c) => {
 			c.computePositions({ x: this.cx, y: this.cy })
 		})
+
+		if (this.placementMode.type === "free") {
+			let topLeft: { x: number, y: number } = this.getTopLeft();
+
+			if (topLeft.x < this.x) {
+				this.cx = topLeft.x;
+			}
+
+			if (topLeft.y < this.y) {
+				this.cy = topLeft.y;
+			}
+		}
 	}
 
 	public override growElement(containerSize: Size): Record<Dimensions, number> {
@@ -268,8 +280,22 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	public getChildById(id: ID): C | undefined {
 		return this.children.find((c) => c.id === id);
 	}
+
+	public getTopLeft(): { x: number, y: number } {
+		let top: number = Infinity
+		let left: number = Infinity
+
+		this.children.forEach((c) => {
+			if (c.y < top) {
+				top = c.y
+			}
+			if (c.x < left) {
+				left = c.x
+			}
+		})
+
+		return { x: left, y: top }
+	}
 	//#endregion
 	// --------------------------------------------------
 }
-
-

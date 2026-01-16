@@ -227,8 +227,10 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public computePositions(root: { x: number, y: number }) {
-		this.x = root.x;
-		this.y = root.y;
+		if (this.placementMode.type !== "free") {
+			this.x = root.x;
+			this.y = root.y;
+		}
 
 		return
 	}

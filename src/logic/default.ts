@@ -379,7 +379,7 @@ export default class SchemeManager {
 				});
 				break;
 			default:
-				throw new Error(`Cannot add element data with undefined element type`)
+				console.warn(`Cannot add element data with undefined element type`)
 		}
 	}
 

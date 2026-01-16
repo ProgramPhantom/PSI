@@ -60,15 +60,21 @@ interface IDraggableElementProps {
 
 export interface CanvasDraggableElementPayload {
 	element: Visual;
+	offset?: { x: number, y: number };
 }
 
 /* When an element on the canvas is selected, it is replaced by this, a draggable element */
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
+		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
+
 		const [{ isDragging }, drag, preview] = useDrag(
 			() => ({
 				type: ElementTypes.CANVAS_ELEMENT,
-				item: { element: props.element } as CanvasDraggableElementPayload,
+				item: () => ({
+					element: props.element,
+					offset: offsetRef.current
+				} as CanvasDraggableElementPayload),
 				end: (item, monitor) => {
 					const dropResult = monitor.getDropResult<IDrop>();
 					if (dropResult === null) {
@@ -78,10 +84,16 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					let elementType = (item.element.constructor as typeof Visual).ElementType
 
 					if (isCanvasDrop(dropResult)) {
-						item.element.x = dropResult.x;
-						item.element.y = dropResult.y;
+						const scale = ENGINE.surface.node.getScreenCTM()?.a ?? 1;
+
+						const offsetX = item.offset?.x ?? 0;
+						const offsetY = item.offset?.y ?? 0;
+
+						item.element.x = dropResult.x - (offsetX / scale);
+						item.element.y = dropResult.y - (offsetY / scale);
 
 						let newState: IVisual = { ...item.element.state }
+						newState.parentId = ENGINE.handler.diagram.id;
 
 						ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
 					} else if (isMountDrop(dropResult)) {
@@ -158,6 +170,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					}}>
 					<div
 						ref={drag}
+						onMouseDown={(e) => {
+							const rect = e.currentTarget.getBoundingClientRect();
+							offsetRef.current = {
+								x: e.clientX - rect.left,
+								y: e.clientY - rect.top
+							};
+						}}
 						style={{
 							height: props.element.contentHeight,
 							width: props.element.contentWidth

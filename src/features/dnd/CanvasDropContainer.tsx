@@ -42,13 +42,13 @@ export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 				// Get the client offset (absolute position) where the drop occurred
 				const clientOffset = monitor.getClientOffset();
 				if (!clientOffset) {
-					return {dropEffect: "move", x: 0, y: 0};
+					return { dropEffect: "move", x: 0, y: 0 };
 				}
 
 				// Get the drawDiv element which contains the actual image content
 				const drawDiv = document.getElementById("diagram-root") as HTMLElement;
 				if (!drawDiv) {
-					return {dropEffect: "move", x: clientOffset.x, y: clientOffset.y};
+					return { dropEffect: "move", x: clientOffset.x, y: clientOffset.y };
 				}
 
 				const drawDivRect = drawDiv.getBoundingClientRect();
@@ -59,7 +59,7 @@ export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 				const relativeX = (clientOffset.x - drawDivRect.left) / props.scale;
 				const relativeY = (clientOffset.y - drawDivRect.top) / props.scale;
 
-				return {dropEffect: "move", x: relativeX, y: relativeY};
+				return { dropEffect: "move", x: relativeX, y: relativeY };
 			}
 		}),
 		[props.scale]

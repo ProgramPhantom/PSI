@@ -106,7 +106,10 @@ class ENGINE {
 			var singletons: Visual[] = [];
 
 			this.schemeManager.allElementsInScheme(schemeName).forEach((element) => {
-				let singleton: Visual | undefined = ENGINE.ConstructElement(element, element.type!);
+				let clonedData: IVisual = structuredClone(element);
+
+				clonedData.id = undefined;
+				let singleton: Visual | undefined = ENGINE.ConstructElement(clonedData, element.type!);
 				if (singleton !== undefined) {
 					singletons.push(singleton)
 				}
@@ -122,10 +125,12 @@ class ENGINE {
 		data: IVisual,
 		schemeName: string = SchemeManager.InternalSchemeName
 	) {
-		this.schemeManager.addElementData(data, schemeName);
+		let clonedData: IVisual = structuredClone(data);
+		clonedData.id = undefined;
+		this.schemeManager.addElementData(clonedData, schemeName);
 
 
-		let singleton: Visual | undefined = ENGINE.ConstructElement(data, data.type!);
+		let singleton: Visual | undefined = ENGINE.ConstructElement(clonedData, data.type!);
 		if (singleton !== undefined) {
 			this.singletons[schemeName].push(singleton)
 		}

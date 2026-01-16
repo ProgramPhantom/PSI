@@ -1,4 +1,4 @@
-import { Element, Rect, Svg, SVG } from "@svgdotjs/svg.js";
+import { Element, G, Rect, Svg, SVG } from "@svgdotjs/svg.js";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes, ID } from "../../logic/point";
@@ -20,12 +20,12 @@ const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> =
 	0: {
 		terminate: ["channel", "diagram"],
 		carry: ["text", "lower-abstract"],
-		conditional: ["rect", "svg", "label", "diagram", "label-group", ]
+		conditional: ["rect", "svg", "label", "diagram", "label-group",]
 	},
 	1: {
-		terminate: ["label-group", "label-group", "text", "channel"],
+		terminate: ["label-group", "label-group", "text", "channel", "svg", "rect"],
 		carry: ["diagram"],
-		conditional: ["svg", "rect"]
+		conditional: []
 	},
 	2: {
 		terminate: ["diagram", "label-group"],
@@ -39,7 +39,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	if (diagramSVG === undefined) {
 		return <></>;
 	}
-	var hitboxSVG: Svg = SVG();
+	var hitboxSVG: G = new G();
 	var hitboxSvgRef = useRef<SVGSVGElement | null>(null);
 
 	var componentRectArray: Rect[] = [];
@@ -47,7 +47,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
 	// Create hitboxes
 	const createHitboxDom = () => {
-		hitboxSVG = SVG();
+		hitboxSVG = new G();
 		componentRectArray = [];
 		freeRectArray = [];
 
@@ -163,9 +163,10 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	}, [store]);
 	return (
 		<>
-			<svg
+			<svg id="hitbox-layer"
 				ref={hitboxSvgRef}
 				key={"hitbox"}
+				viewBox={`${ENGINE.handler.diagram.x} ${ENGINE.handler.diagram.y} ${ENGINE.handler.diagram.width} ${ENGINE.handler.diagram.height}`}
 				style={{
 					position: "absolute",
 					left: 0,

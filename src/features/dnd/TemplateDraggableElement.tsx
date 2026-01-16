@@ -69,6 +69,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 			var elementType = (props.element.constructor as typeof Visual).ElementType;
 			var singletonState: IVisual = structuredClone(props.element.state);
 
+			singletonState.id = undefined;  // Required
 			if (isCanvasDrop(dropResult)) {
 				singletonState.x = dropResult.x;
 				singletonState.y = dropResult.y;
@@ -76,12 +77,12 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				singletonState.placementMode = {
 					type: "free"
 				}
+				singletonState.parentId = ENGINE.handler.diagram.id;
 
 				ENGINE.handler.createAndAdd(singletonState, elementType);
 			} else if (isMountDrop(dropResult)) {
 				// ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
 
-				singletonState.id = undefined;  // Required
 				singletonState.parentId = dropResult.channelID;
 				if (dropResult.insert === true) {
 					ENGINE.handler.addColumn(dropResult.sequenceID ?? "", dropResult.index);
@@ -91,7 +92,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					singletonState.pulseData.channelID = dropResult.channelID;
 					singletonState.pulseData.sequenceID = dropResult.sequenceID;
 					singletonState.pulseData.index = dropResult.index;
-					
+
 					if (singletonState.pulseData.orientation !== "both") {
 						singletonState.pulseData.orientation = dropResult.orientation;
 					}
