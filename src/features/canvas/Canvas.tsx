@@ -8,7 +8,7 @@ import {
 } from "@blueprintjs/core";
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
-import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
@@ -52,6 +52,44 @@ interface ICanvasProps {
 	setTool: (tool: Tool) => void;
 }
 
+const SeamlessPanner = () => {
+	const { instance, setTransform } = useControls();
+	const prevDiagramX = useRef(ENGINE.handler.diagram.x);
+	const prevDiagramY = useRef(ENGINE.handler.diagram.y);
+	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+
+	useEffect(() => {
+		const currentX = ENGINE.handler.diagram.x;
+		const currentY = ENGINE.handler.diagram.y;
+		const dx = currentX - prevDiagramX.current;
+		const dy = currentY - prevDiagramY.current;
+
+		const { positionX, positionY, scale } = instance.transformState;
+		let newX = positionX;
+		let newY = positionY;
+		let transformed = false;
+
+		if (dx !== 0 && (currentX < 0 || prevDiagramX.current < 0)) {
+			newX = positionX + dx * scale;
+			transformed = true;
+		}
+
+		if (dy !== 0 && (currentY < 0 || prevDiagramY.current < 0)) {
+			newY = positionY + dy * scale;
+			transformed = true;
+		}
+
+		if (transformed) {
+			setTransform(newX, newY, scale, 0);
+		}
+
+		prevDiagramX.current = currentX;
+		prevDiagramY.current = currentY;
+	}, [store, instance, setTransform]);
+
+	return null;
+};
+
 const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [debugDialogOpen, setDebugDialogOpen] = useState(false);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
@@ -63,6 +101,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [focusLevel, setFocusLevel] = useState(0);
+
+
+
 	const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
 		() => [
 			{
@@ -117,6 +158,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	}));
 
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+
+
 
 	let selectedElement = props.selectedElement;
 
@@ -203,6 +246,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	diagramHeight = ENGINE.handler.diagram.height;
 
 
+
+
 	return (
 		<>
 			<div
@@ -256,6 +301,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						<Text>Hovered: none</Text>
 					)}
 				</div>
+
+
 				<CanvasDropContainer scale={zoom}>
 					<TransformWrapper
 						initialScale={zoom}
@@ -265,12 +312,15 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						centerOnInit={true}
 						limitToBounds={false}
 						centerZoomedOut={true}
-
 						maxScale={5}
 						minScale={0.5}
-						disabled={dragging}
+						panning={{ excluded: ["nopan"] }}
 						doubleClick={{ disabled: true }}>
-						<TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+
+
+						<TransformComponent wrapperStyle={{
+							width: "100%", height: "100%", position: "absolute",
+						}}>
 							{/* Large background grid that moves with transform */}
 							<div
 								style={{
@@ -287,19 +337,116 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 									zIndex: -1
 								}}></div>
 
+
+
 							<div
 								style={{
 									width: "100%",
 									height: "100%",
 									display: "inline-block",
 									position: "relative",
-									border: "dashed",
+									/*border: "dashed",
 									borderWidth: "0.2px",
-									borderColor: "#0000003d"
+									borderColor: "#0000003d" */
 								}}
 								onMouseLeave={() => stopHover()}>
-								{/* Hitbox layer */}
 
+
+
+
+								{/* Transformed Overlay Layer */}
+								<div className="nopan"
+									style={{
+										position: "absolute",
+										top: 0,
+										left: 0,
+										width: "100%",
+										height: "100%",
+										zIndex: 20000,
+										pointerEvents: "none",
+										transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
+											}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0
+											}px)`
+									}}>
+
+									{/* Draggable elements */}
+									{selectedElement !== undefined && (
+										<div
+											className="nopan"
+											style={{
+												position: "absolute",
+												width: selectedElement.contentWidth,
+												height: selectedElement.contentHeight,
+												left: selectedElement.drawCX,
+												top: selectedElement.drawCY,
+												pointerEvents: "auto"
+											}}
+											onMouseDown={() => {
+												setDragging(true);
+											}}>
+											<CanvasDraggableElement
+												reselect={reselect}
+												name={selectedElement.ref}
+												element={selectedElement}
+												x={selectedElement.x}
+												y={selectedElement.y}></CanvasDraggableElement>
+										</div>
+									)}
+
+									{/* Hover highlight */}
+									{(hoveredElement !== undefined
+										&& props.selectedTool.type === "select") && (
+											<>
+												<svg
+													style={{
+														width: `${hoveredElement.width}px`,
+														height: `${hoveredElement.height}`,
+														position: "absolute",
+														top: `${hoveredElement.drawY}px`,
+														left: `${hoveredElement.drawX}px`,
+														zIndex: 100,
+														vectorEffect: "non-scaling-stroke"
+													}}
+													pointerEvents={"none"}>
+													<rect
+														width={"100%"}
+														height={"100%"}
+														style={{
+															stroke: `${Colors.BLUE3}`,
+															strokeWidth: "1px",
+															fill: `none`,
+															strokeDasharray: "1 1"
+														}}></rect>
+												</svg>
+											</>
+										)}
+
+									{/* Tools */}
+									{props.selectedTool.type === "arrow" ? (
+										<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+											<LineTool
+												hoveredElement={hoveredElement}
+												config={props.selectedTool.config}
+												setTool={props.setTool}></LineTool>
+										</div>
+									) : (
+										<></>
+									)}
+
+									{/* Drop field */}
+									<div className="nopan" style={{ pointerEvents: "auto" }}>
+										<DropField></DropField>
+									</div>
+
+									{/* Debug layers */}
+									<Debug
+										debugGroupSelection={debugSelectionTypes}
+										debugSelection={debugElements}></Debug>
+
+								</div>
+
+
+								{/* Hitbox layer */}
 								{!isDragging ? (
 									<HitboxLayer
 										focusLevel={focusLevel}
@@ -308,86 +455,17 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 									<></>
 								)}
 
-								{/* Tools */}
-								{props.selectedTool.type === "arrow" ? (
-									<LineTool
-										hoveredElement={hoveredElement}
-										config={props.selectedTool.config}
-										setTool={props.setTool}></LineTool>
-								) : (
-									<></>
-								)}
-
-								{/* Hover highlight */}
-								{hoveredElement !== undefined
-									&& props.selectedTool.type === "select" ? (
-									<>
-										<svg
-											style={{
-												width: `${hoveredElement.width}px`,
-												height: `${hoveredElement.height}`,
-												position: "absolute",
-												top: `${hoveredElement.drawY}px`,
-												left: `${hoveredElement.drawX}px`,
-												zIndex: 100,
-												vectorEffect: "non-scaling-stroke"
-											}}
-											pointerEvents={"none"}>
-											<rect
-												width={"100%"}
-												height={"100%"}
-												style={{
-													stroke: `${Colors.BLUE3}`,
-													strokeWidth: "1px",
-													fill: `none`,
-													strokeDasharray: "1 1"
-												}}></rect>
-										</svg>
-									</>
-								) : (
-									<></>
-								)}
-
 								{/* Image */}
 								<div id="drawDiv" ref={diagramSvgRef}></div>
-
-								{/* Drop field */}
-								<DropField></DropField>
-
-								{/* Debug layers */}
-								<Debug
-									debugGroupSelection={debugSelectionTypes}
-									debugSelection={debugElements}></Debug>
-
-								{/* Draggable elements */}
-								{selectedElement !== undefined ? (
-									<div
-										style={{
-											position: "absolute",
-											width: selectedElement.contentWidth,
-											height: selectedElement.contentHeight,
-											left: selectedElement.drawCX,
-											top: selectedElement.drawCY
-										}}
-										onMouseDown={() => {
-											setDragging(true);
-										}}>
-										<CanvasDraggableElement
-											reselect={reselect}
-											name={selectedElement.ref}
-											element={selectedElement}
-											x={selectedElement.x}
-											y={selectedElement.y}></CanvasDraggableElement>
-									</div>
-								) : (
-									<></>
-								)}
 							</div>
 						</TransformComponent>
+
+						<SeamlessPanner />
 					</TransformWrapper>
 
 					<CanvasDragLayer scale={zoom} />
 				</CanvasDropContainer>
+
 			</div>
 
 			<DebugLayerDialog
