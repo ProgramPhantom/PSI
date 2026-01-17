@@ -49,13 +49,13 @@ const GridDebug: React.FC<IGridDebug> = (props) => {
 				</p>
 			</div>
 
-			{props.element.getCells().map((c) => {
+			{props.element.getCells().map((c, cell_index) => {
 				if (c.width === 0 || c.height === 0) {
 					return <></>
 				}
 				
 				return (
-					<div
+					<div key={cell_index}
 						style={{
 							width: c.width,
 							height: c.height,

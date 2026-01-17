@@ -27,9 +27,9 @@ const Debug: React.FC<IDebug> = (props) => {
 					case "channel":
 						return ENGINE.handler.diagram.channels.map((c) => {
 							return (
-								<PaddedBoxDebug
+								<GridDebug
 									element={c}
-									contentColour={Colors.BLUE4}></PaddedBoxDebug>
+									contentColour={Colors.BLUE4}></GridDebug>
 							);
 						});
 					case "sequence":

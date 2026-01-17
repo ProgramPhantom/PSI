@@ -127,11 +127,9 @@ export default class Channel extends Grid implements IChannel {
 
 				this.addCentralElementGhosts(child.pulseData.index!, ghost, ghost);
 			}
-
-			this.sizeBar()
 		}
 
-		
+		this.sizeBar()
 
 		super.add(child);
 	}
@@ -202,6 +200,11 @@ export default class Channel extends Grid implements IChannel {
 		}
 
 		return spaces;
+	}
+
+	public override insertEmptyColumn(index?: number): void {
+		super.insertEmptyColumn(index)
+		this.sizeBar();
 	}
 
 	private initialiseBar(bar: Visual) {

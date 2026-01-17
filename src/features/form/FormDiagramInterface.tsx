@@ -1,83 +1,22 @@
 import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon, Tooltip } from "@blueprintjs/core";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ObjectInspector } from "react-inspector";
-import ENGINE from "../../logic/engine";
-import Visual, { IVisual } from "../../logic/visual";
-import { LabelGroupComboForm, SubmitButtonRef } from "./LabelGroupComboForm";
-import { AllComponentTypes, UserComponentType } from "../../logic/point";
-import { Result } from "../../logic/diagramHandler";
 import { appToaster } from "../../app/Toaster";
-import LabelGroup from "../../logic/hasComponents/labelGroup";
+import { Result } from "../../logic/diagramHandler";
+import ENGINE from "../../logic/engine";
+import { UserComponentType } from "../../logic/point";
+import { IVisual } from "../../logic/visual";
 import { FormHolderProps } from "./FormBase";
+import { LabelGroupComboForm, SubmitButtonRef } from "./LabelGroupComboForm";
 
-
-type SubmissionFunction = (data: any, type: UserComponentType) => Result<any>;
-type DeleteFunction = (val: Visual, type: UserComponentType) => Result<any>;
-type ModifyFunction = (data: any, type: UserComponentType, target: Visual) => Result<any>;
 
 type FormEffect = "submit" | "delete" | "modify";
-type FormEffectFunction = SubmissionFunction | DeleteFunction | ModifyFunction;
-type EffectGroup = {
-	submit: SubmissionFunction;
-	modify?: ModifyFunction;
-	delete: DeleteFunction;
-};
 
-function getCoreDefaults(target: Visual): IVisual {
-	if (LabelGroup.isLabelGroup(target)) {
-		return target.coreChild.state;
-	} else {
-		return target.state;
-	}
-}
 
 export function FormDiagramInterface(props: FormHolderProps) {
-	const ComponentFormEffectRegistry = useMemo<
-		Partial<Record<UserComponentType, Partial<EffectGroup>>>
-	>(() => {
-		return {
-			svg: {
-				submit: ENGINE.handler.submitVisual.bind(ENGINE.handler),
-				modify: ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
-				delete: ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
-			},
-			rect: {
-				submit: ENGINE.handler.submitVisual.bind(ENGINE.handler),
-				modify: ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
-				delete: ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
-			},
-			"label-group": {
-				submit: ENGINE.handler.submitVisual.bind(ENGINE.handler),
-				modify: ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
-				delete: ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
-			},
-			channel: {
-				submit: ENGINE.handler.submitVisual.bind(ENGINE.handler),
-				delete: ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
-			},
-			label: {
-				submit: ENGINE.handler.submitVisual.bind(ENGINE.handler),
-				modify: ENGINE.handler.submitModifyVisual.bind(ENGINE.handler),
-				delete: ENGINE.handler.submitDeleteVisual.bind(ENGINE.handler)
-			}
-		};
-	}, [ENGINE.handler]);
-
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const submitRef = useRef<SubmitButtonRef>(null);
 	var [submissionValid, setSubmissionValid] = useState<boolean>(true);
-
-	useEffect(() => {
-		if (props.target !== undefined) {
-			if (ComponentFormEffectRegistry[props.targetType as UserComponentType]?.modify === undefined) {
-				setSubmissionValid(false)
-			} else {
-				setSubmissionValid(true)
-			}
-		} else {
-			setSubmissionValid(true)
-		}
-	}, [props.target])
 
 	// Submit function
 	const dispatchFormEffect = (
@@ -85,29 +24,23 @@ export function FormDiagramInterface(props: FormHolderProps) {
 		masterType: UserComponentType,
 		effect: FormEffect
 	) => {
-		var targetFunction: FormEffectFunction | undefined =
-			ComponentFormEffectRegistry[masterType]?.[effect];
-
-		if (targetFunction === undefined) {
-			throw new Error(`Not implemented`);
-		}
 
 		var result: Result<any>;
 		switch (effect) {
 			case "submit":
-				result = (targetFunction as SubmissionFunction)(values, masterType);
+				result = (ENGINE.handler.createAndAdd)(values, masterType);
 				break;
 			case "modify":
 				if (props.target === undefined) {
 					throw new Error(`Calling modification function with no selected target`)
 				}
-				result = (targetFunction)(values, masterType, props.target);
+				result = (ENGINE.handler.submitModifyVisual)(values, masterType, props.target);
 				break;
 			case "delete":
 				if (props.target === undefined) {
 					throw new Error(`Calling deletion function with no selected target`)
 				}
-				result = (targetFunction as DeleteFunction)(props.target, masterType);
+				result = (ENGINE.handler.submitDeleteVisual)(props.target, masterType);
 				break;
 			default:
 				result = { ok: false, error: `No '${effect}' method assigned to object type '${masterType}'` }
@@ -207,6 +140,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 					ref={submitRef}
 					objectType={props.targetType as UserComponentType}
 					target={props.target}
+					changeTarget={props.changeTarget}
 					callback={(val: IVisual, masterType: UserComponentType) => {
 						props.target
 							? dispatchFormEffect(val, masterType, "modify")

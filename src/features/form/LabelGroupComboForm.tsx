@@ -1,4 +1,4 @@
-import { Divider, EntityTitle, Section, Tab, Tabs } from "@blueprintjs/core";
+import { Button, Divider, EntityTitle, Section, Tab, Tabs } from "@blueprintjs/core";
 import React, { useEffect, useImperativeHandle } from "react";
 import { DefaultValues, FormProvider, useForm } from "react-hook-form";
 import { ILabel } from "../../logic/hasComponents/label";
@@ -8,8 +8,10 @@ import Visual, { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";
 import { FORM_DEFAULTS } from "./formDataRegistry";
 import LabelListForm, { LabelGroupLabels } from "./LabelListForm";
+import Collection from "../../logic/collection";
 import FormDivider from "./FormDivider";
 import { Position } from "../../logic/text";
+import { CollectionChildrenList } from "./CollectionChildrenList";
 
 interface LabelGroupComboForm {
 	target?: Visual;
@@ -17,6 +19,8 @@ interface LabelGroupComboForm {
 	callback: (val: IVisual, masterType: UserComponentType) => void;
 
 	ref?: React.RefObject<SubmitButtonRef>;
+
+	changeTarget: (val: Visual | undefined) => void;
 }
 
 export type SubmitButtonRef = {
@@ -37,6 +41,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			allowLabels: boolean;
 			targetIsLabelGroup: boolean;
 			childTarget: Visual | undefined;
+			targetIsCollection: boolean;
 		}
 
 		const [formState, setFormState] = React.useState<FormState | null>(null);
@@ -54,7 +59,10 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			var childType: UserComponentType | undefined = undefined;
 			var childTarget: Visual | undefined;
 
+
+
 			var targetIsLabelGroup: boolean = false;
+			var targetIsCollection: boolean = false;
 
 			if (props.target !== undefined) {
 				parentType = (props.target.constructor as typeof Visual).ElementType;
@@ -75,6 +83,10 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 					targetIsLabelGroup = true;
 				}
+
+				if (Collection.isCollection(props.target)) {
+					targetIsCollection = true;
+				}
 			} else {
 				parentType = props.objectType;
 				// Use the object type to setup a clean form
@@ -82,9 +94,6 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 				masterDefaults = structuredClone(FORM_DEFAULTS[props.objectType]!.defaults);
 				allowLabels = FORM_DEFAULTS[props.objectType]!.allowLabels;
 			}
-
-			console.log(`Setting form with values ${JSON.stringify(masterDefaults)}`);
-
 			setFormState({
 				MasterForm,
 				ChildForm,
@@ -93,7 +102,9 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 				labelDefaults,
 				allowLabels,
 				targetIsLabelGroup,
-				childTarget
+
+				childTarget,
+				targetIsCollection
 			});
 
 		}, [props.target, props.objectType]);
@@ -179,10 +190,10 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 		});
 
 		if (!formState) {
-			return <div>Loading...</div>;
+			return <div></div>;
 		}
 
-		const { MasterForm, ChildForm, allowLabels, targetIsLabelGroup, childTarget } = formState;
+		const { MasterForm, ChildForm, allowLabels, targetIsLabelGroup, childTarget, targetIsCollection } = formState;
 
 		return (
 			<>
@@ -246,6 +257,18 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 														target={props.target}></LabelListForm>
 												</FormProvider>
 											</>
+										}></Tab>
+								) : (
+									<></>
+								)}
+
+								{targetIsCollection ? (
+									<Tab
+										style={{ userSelect: "none" }}
+										id={"children"}
+										title={"Children"}
+										panel={
+											<CollectionChildrenList target={props.target as Collection} changeTarget={props.changeTarget} />
 										}></Tab>
 								) : (
 									<></>

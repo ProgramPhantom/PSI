@@ -1,4 +1,4 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 
@@ -13,9 +13,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 	<DndProvider backend={HTML5Backend} debugMode={true}>
 		<HotkeysProvider>
 			<MathJaxContext>
-				
+				<StrictMode>
 					<App />
-				
+				</StrictMode>
 			</MathJaxContext>
 		</HotkeysProvider>
 	</DndProvider>
