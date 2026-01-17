@@ -28,75 +28,95 @@ export type SubmitButtonRef = {
 
 export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupComboForm>(
 	(props, ref) => {
-		var MasterForm: React.FC<FormRequirements>;
-		var ChildForm: React.FC<FormRequirements> | undefined;
-		var LabelForm: React.FC<FormRequirements> = FORM_DEFAULTS["label"]!.form;
-
-		var masterDefaults: IVisual;
-		var childDefaults: IVisual | undefined;
-		var labelDefaults: LabelGroupLabels = { labels: {} };
-
-		var allowLabels: boolean = true;
-		var parentType: AllComponentTypes;
-		var childType: UserComponentType | undefined = undefined;
-		var childTarget: Visual | undefined;
-
-		var targetIsLabelGroup: boolean = false;
-
-		if (props.target !== undefined) {
-			parentType = (props.target.constructor as typeof Visual).ElementType;
-
-			MasterForm = FORM_DEFAULTS[props.objectType]!.form;
-			masterDefaults = props.target.state;
-			allowLabels = FORM_DEFAULTS[props.objectType]!.allowLabels;
-
-			if (LabelGroup.isLabelGroup(props.target)) {
-				childType = (props.target.coreChild.constructor as typeof Visual)
-					.ElementType;
-
-				ChildForm = FORM_DEFAULTS[(props.target.coreChild.constructor as typeof Visual).ElementType]!.form;
-				childDefaults = props.target.coreChild.state;
-				childTarget = props.target.coreChild;
-
-				labelDefaults.labels = props.target.labelsState;
-
-				targetIsLabelGroup = true;
-			}
-		} else {
-			parentType = props.objectType;
-			// Use the object type to setup a clean form
-			MasterForm = FORM_DEFAULTS[props.objectType]!.form;
-			masterDefaults = FORM_DEFAULTS[props.objectType]!.defaults;
-			allowLabels = FORM_DEFAULTS[props.objectType]!.allowLabels;
+		interface FormState {
+			MasterForm: React.FC<FormRequirements>;
+			ChildForm: React.FC<FormRequirements> | undefined;
+			masterDefaults: IVisual | undefined;
+			childDefaults: IVisual | undefined;
+			labelDefaults: LabelGroupLabels;
+			allowLabels: boolean;
+			targetIsLabelGroup: boolean;
+			childTarget: Visual | undefined;
 		}
 
+		const [formState, setFormState] = React.useState<FormState | null>(null);
+
+		useEffect(() => {
+			var MasterForm: React.FC<FormRequirements>;
+			var ChildForm: React.FC<FormRequirements> | undefined;
+
+			var masterDefaults: IVisual;
+			var childDefaults: IVisual | undefined;
+			var labelDefaults: LabelGroupLabels = { labels: {} };
+
+			var allowLabels: boolean = true;
+			var parentType: AllComponentTypes;
+			var childType: UserComponentType | undefined = undefined;
+			var childTarget: Visual | undefined;
+
+			var targetIsLabelGroup: boolean = false;
+
+			if (props.target !== undefined) {
+				parentType = (props.target.constructor as typeof Visual).ElementType;
+
+				MasterForm = FORM_DEFAULTS[props.objectType]!.form;
+				masterDefaults = structuredClone(props.target.state);
+				allowLabels = FORM_DEFAULTS[props.objectType]!.allowLabels;
+
+				if (LabelGroup.isLabelGroup(props.target)) {
+					childType = (props.target.coreChild.constructor as typeof Visual)
+						.ElementType;
+
+					ChildForm = FORM_DEFAULTS[(props.target.coreChild.constructor as typeof Visual).ElementType]!.form;
+					childDefaults = structuredClone(props.target.coreChild.state);
+					childTarget = props.target.coreChild;
+
+					labelDefaults.labels = structuredClone(props.target.labelsState);
+
+					targetIsLabelGroup = true;
+				}
+			} else {
+				parentType = props.objectType;
+				// Use the object type to setup a clean form
+				MasterForm = FORM_DEFAULTS[props.objectType]!.form;
+				masterDefaults = structuredClone(FORM_DEFAULTS[props.objectType]!.defaults);
+				allowLabels = FORM_DEFAULTS[props.objectType]!.allowLabels;
+			}
+
+			console.log(`Setting form with values ${JSON.stringify(masterDefaults)}`);
+
+			setFormState({
+				MasterForm,
+				ChildForm,
+				masterDefaults,
+				childDefaults,
+				labelDefaults,
+				allowLabels,
+				targetIsLabelGroup,
+				childTarget
+			});
+
+		}, [props.target, props.objectType]);
 
 
 		// Create form hook
 		const masterFormControls = useForm<IVisual>({
-			defaultValues: { ...masterDefaults } as DefaultValues<IVisual>,
+			values: formState?.masterDefaults,
 			mode: "onChange"
 		});
 
 		// Create form hook
 		const childFormControls = useForm<IVisual>({
-			defaultValues: { ...childDefaults } as DefaultValues<IVisual>,
+			values: formState?.childDefaults,
 			mode: "onChange"
 		});
 
 		// Create label hook form
 		const labelListControls = useForm<LabelGroupLabels>({
-			defaultValues: { ...labelDefaults } as DefaultValues<LabelGroupLabels>,
+			values: formState?.labelDefaults,
 			mode: "onChange"
 		});
 
-
-		// Make sure form changes (this is needed for unknown reasons)
-		useEffect(() => {
-			masterFormControls.reset(masterDefaults);
-			childFormControls.reset(childDefaults);
-			labelListControls.reset(labelDefaults);
-		}, [props.target, props.objectType]);
 
 		// Jiggery pokery.
 		useImperativeHandle(ref, () => ({
@@ -105,12 +125,14 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 
 		// Submit function
 		const onSubmit = masterFormControls.handleSubmit((data) => {
+			if (!formState) return;
+
 			var masterFormData: IVisual = structuredClone(masterFormControls.getValues());
 			var childFormData: IVisual | undefined = structuredClone(childFormControls.getValues());
 			let vals = labelListControls.getValues();
 			var labelListFormData: Partial<Record<Position, ILabel>> = structuredClone(vals.labels);
 
-			if (targetIsLabelGroup === false) {
+			if (formState.targetIsLabelGroup === false) {
 				if (Object.keys(labelListFormData ?? {}).length > 0) {
 					// Convert into a label group!
 
@@ -135,12 +157,12 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			} else {
 
 				// Already label type
-				childType = (masterFormData as ILabelGroup).coreChildType;
+				// childType = (masterFormData as ILabelGroup).coreChildType;
 				if (Object.keys(labelListFormData ?? {}).length > 0) {
 					// Still a label group
 					var result: ILabelGroup = {
 						...masterFormData,
-						coreChild: childFormData,
+						coreChild: childFormData!,
 						coreChildType: (masterFormData as ILabelGroup).coreChildType,
 						labels: labelListFormData, // Override labels
 						children: [],
@@ -150,14 +172,18 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 				} else {
 					// Change BACK into a non-label group
 					// Copy placement mode from label group into core child
-					childFormData.placementMode = props.target!.placementMode;
-					props.callback(childFormData, childType);
+					childFormData!.placementMode = props.target!.placementMode;
+					props.callback(childFormData!, (masterFormData as ILabelGroup).coreChildType);
 				}
 			}
 		});
 
+		if (!formState) {
+			return <div>Loading...</div>;
+		}
 
-		let vals = masterFormControls.getValues();
+		const { MasterForm, ChildForm, allowLabels, targetIsLabelGroup, childTarget } = formState;
+
 		return (
 			<>
 				<form

@@ -49,7 +49,6 @@ export default class Channel extends Grid implements IChannel {
 
 	get state(): IChannel {
 		return {
-			sequenceID: this.sequenceID,
 			...super.state
 		};
 	}
@@ -80,13 +79,13 @@ export default class Channel extends Grid implements IChannel {
 		}
 	}
 
-	sequenceID?: ID;
-
 	constructor(params: IChannel) {
 		super(params);
 
-		this.sequenceID = params.sequenceID;
-		this.parentId = params.sequenceID;
+		if (params.sequenceID !== undefined) {
+			
+		}
+	
 
 		this.initialiseChannel();
 	}

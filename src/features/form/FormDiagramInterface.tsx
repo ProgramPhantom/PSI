@@ -203,6 +203,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 					padding: "0px"
 				}}>
 				<LabelGroupComboForm
+					key={props.target ? props.target.id : "defaults"}
 					ref={submitRef}
 					objectType={props.targetType as UserComponentType}
 					target={props.target}

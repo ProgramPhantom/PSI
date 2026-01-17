@@ -311,7 +311,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						}}
 						centerOnInit={true}
 						limitToBounds={false}
-						centerZoomedOut={true}
+						
 						maxScale={5}
 						minScale={0.5}
 						panning={{ excluded: ["nopan"] }}

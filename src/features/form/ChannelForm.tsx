@@ -3,7 +3,7 @@ import {
 	Divider,
 	Section,
 } from "@blueprintjs/core";
-import React from "react";
+import React, { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { IChannel } from "../../logic/hasComponents/channel";
 import VisualForm from "./VisualForm";
@@ -11,17 +11,53 @@ import { FormRequirements } from "./FormBase";
 import TextForm from "./TextForm";
 import RectForm from "./RectForm";
 import FormDivider from "./FormDivider";
+import ENGINE from "../../logic/engine";
+import { FormGroup, HTMLSelect } from "@blueprintjs/core";
+import { Controller } from "react-hook-form";
 
 interface ChannelFormProps extends FormRequirements { }
 
 const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 	const formControls = useFormContext<IChannel>();
 
+	// Auto populate sequence if not set (yes this is required... 😩)
+	// HTMLSelect breaks if undefined is passed, and defaultValue doesn't work
+	useEffect(() => {
+		if (!formControls.getValues("parentId") && ENGINE.handler.diagram.sequences.length > 0) {
+			formControls.setValue("parentId", ENGINE.handler.diagram.sequences[0].id);
+		}
+	}, [formControls]);
+
+	let vals = formControls.getValues();
 	return (
 		<>
 			<ControlGroup vertical={true}>
 
 				<FormDivider title="Channel" topMargin={0} />
+
+				<FormGroup
+					label="Sequence"
+					labelFor="sequence-select"
+					style={{ marginBottom: "10px", }}
+				>
+					<Controller defaultValue={ENGINE.handler.diagram.sequences[0]?.id}
+						control={formControls.control}
+						name="parentId"
+						render={({ field }) => (
+							<HTMLSelect
+								{...field}
+								id="sequence-select"
+								fill={true}
+								options={[
+									...ENGINE.handler.diagram.sequences.map((seq) => ({
+										label: `${seq.ref} (id: ${seq.id})`,
+										value: seq.id,
+									})),
+								]}
+							/>
+						)}
+					/>
+				</FormGroup>
 
 				<VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
 

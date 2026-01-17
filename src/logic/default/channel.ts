@@ -15,8 +15,6 @@ export const DEFAULT_CHANNEL: IChannel = {
 	],
 
 	"sizeMode": { "x": "fit", "y": "fit" },
-	"placementControl": "auto",
 	
 	"type": "channel",
-
 }

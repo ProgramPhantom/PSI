@@ -13,9 +13,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 	<DndProvider backend={HTML5Backend} debugMode={true}>
 		<HotkeysProvider>
 			<MathJaxContext>
-				<React.StrictMode>
+				
 					<App />
-				</React.StrictMode>
+				
 			</MathJaxContext>
 		</HotkeysProvider>
 	</DndProvider>

@@ -99,20 +99,17 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										{...field}
 										id="width-input"
 										onValueChange={field.onChange}
-										min={1} 
-										max={10000}
 										size="small"
 										disabled={!widthActive}
-										
 										title={!widthActive ? "Width inherited" : ""}
 										intent={errors?.contentWidth ? "danger" : "none"}
 										allowNumericCharactersOnly={true}></NumericInput>
 								)}
 								rules={{
-									required: {value: widthActive, message: "Width required"},
+									required: { value: widthActive, message: "Width required" },
 									min: { value: widthActive ? 1 : 0, message: "Width must be at least 1" },
 									max: { value: 10000, message: "Width cannot exceed 10000" },
-									
+
 								}}></Controller>
 						</FormGroup>
 					</>
@@ -125,7 +122,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 							intent={errors?.contentHeight ? "danger" : "none"}
 							helperText={(errors?.contentHeight?.message ?? "").toString()}
 							label={!heightActive ? "Height (inherited)" : "Height"} defaultValue={"unset"}
-							labelFor="height-input"> 
+							labelFor="height-input">
 							<Controller
 								control={formControls.control}
 								name={`${fullPrefix}contentHeight`}
@@ -134,16 +131,14 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										{...field}
 										id="height-input"
 										onValueChange={field.onChange}
-										min={1}
-										max={10000}
 										size="small"
 										disabled={!heightActive}
 										title={!heightActive ? "Height inherited" : ""}
 										intent={errors?.contentHeight ? "danger" : "none"}
-										></NumericInput>
+									></NumericInput>
 								)}
 								rules={{
-									required: {value: heightActive, message: "Height required"},
+									required: { value: heightActive, message: "Height required" },
 									min: { value: heightActive ? 1 : 0, message: "Height must be at least 1" },
 									max: { value: 10000, message: "Height cannot exceed 10000" },
 								}}></Controller>
@@ -224,7 +219,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									{...field}
 									id="padding-top-input"
 									onValueChange={field.onChange}
-									min={0}
 									size="small"
 									fill
 									allowNumericCharactersOnly={true}
@@ -248,7 +242,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									{...field}
 									id="padding-right-input"
 									onValueChange={field.onChange}
-									min={0}
 									size="small"
 									fill
 									allowNumericCharactersOnly={true}
@@ -272,7 +265,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									{...field}
 									id="padding-bottom-input"
 									onValueChange={field.onChange}
-									min={0}
 									size="small"
 									fill
 									allowNumericCharactersOnly={true}
@@ -296,7 +288,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									{...field}
 									id="padding-left-input"
 									onValueChange={field.onChange}
-									min={0}
 									size="small"
 									fill
 									allowNumericCharactersOnly={true}
@@ -335,8 +326,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									id="offset0"
 									onBlur={field.onChange}
 									onValueChange={field.onChange}
-									min={-2000}
-									max={2000}
+
 									size="small"
 									fill
 									intent={errors?.offset?.[0] ? "danger" : "none"}
@@ -367,8 +357,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									id="offset1"
 									onBlur={field.onChange}
 									onValueChange={field.onChange}
-									min={-2000}
-									max={2000}
+
 									size="small"
 									fill
 									intent={errors?.offset?.[1] ? "danger" : "none"}
