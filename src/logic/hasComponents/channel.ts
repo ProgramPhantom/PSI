@@ -248,7 +248,7 @@ export default class Channel extends Grid implements IChannel {
 	protected setGridConfigViaPulseData(child: Visual, data: IPulseConfig) {
 		var row: number = Channel.OrientationToRow(data.orientation);
 		var column: number = data.index ?? 0;  // Starting at 1 as we know the label goes there
-		var alignment: { x: SiteNames, y: SiteNames } = { x: "centre", y: "far" }
+		var alignment: { x: SiteNames, y: SiteNames } = { x: data.alignment.x, y: data.alignment.y }
 		let contribution: Record<Dimensions, boolean> = { x: true, y: true };
 
 		// --------- Row -------------

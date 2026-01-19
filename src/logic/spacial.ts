@@ -670,7 +670,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public setGridConfigUsingPulseData(pulseData: IPulseConfig) {
-		if (!isPulse(this) || this.placementMode.type !== "grid") {
+		if (this._pulseData === undefined || this.placementMode.type !== "grid") {
 			return
 		}
 
@@ -697,5 +697,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			"contribution": this.placementMode.config.contribution,
 
 		}
+		
 	}
 }
