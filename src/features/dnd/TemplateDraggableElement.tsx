@@ -12,7 +12,7 @@ import { UserComponentType } from "../../logic/point";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { DragElementTypes, IDrop, isCanvasDrop } from "./CanvasDropContainer";
-import { isMountDrop } from "./InsertArea";
+import { isMountDrop } from "./ChannelInsertArea";
 
 const style: CSSProperties = {
 	border: "1px solid #d3d8de",

@@ -19,8 +19,8 @@ export interface ICanvasDropResult extends IDrop {
 export function isCanvasDrop(object: IDrop): object is ICanvasDropResult {
 	return object.dropEffect === "move";
 }
-
 export type DropEffect = "move" | "insert";
+
 export interface IDrop {
 	dropEffect: DropEffect;
 }

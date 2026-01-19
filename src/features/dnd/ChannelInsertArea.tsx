@@ -33,7 +33,7 @@ export function isMountDrop(object: IDrop): object is IMountAreaResult {
 	return object.dropEffect === "insert";
 }
 
-function InsertArea(props: {areaSpec: AddSpec; key: string}) {
+function ChannelInsertArea(props: {areaSpec: AddSpec; key: string}) {
 	const [{canDrop, isOver}, drop] = useDrop(() => ({
 		accept: [DragElementTypes.PULSE, DragElementTypes.PREFAB],
 		drop: () =>
@@ -84,4 +84,4 @@ function InsertArea(props: {areaSpec: AddSpec; key: string}) {
 	);
 }
 
-export default InsertArea;
+export default ChannelInsertArea;

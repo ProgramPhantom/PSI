@@ -8,7 +8,7 @@ import ENGINE from "../../logic/engine";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { DragElementTypes, IDrop, isCanvasDrop } from "./CanvasDropContainer";
-import { isMountDrop } from "./InsertArea";
+import { isMountDrop } from "./ChannelInsertArea";
 
 
 const style: CSSProperties = {

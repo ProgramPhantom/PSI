@@ -1,27 +1,27 @@
 import {
+	Button,
 	Colors,
 	EditableText,
 	HotkeyConfig,
 	Label,
 	Text,
-	useHotkeys,
-	Button
+	useHotkeys
 } from "@blueprintjs/core";
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
 import ENGINE from "../../logic/engine";
+import { AllComponentTypes } from "../../logic/point";
 import Visual from "../../logic/visual";
 import Debug from "../debug/Debug";
 import CanvasDraggableElement from "../dnd/CanvasDraggableElement";
 import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
 import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
-import DropField from "../dnd/DropField";
+import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import { DebugLayerDialog } from "./DebugLayerDialog";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
-import { AllComponentTypes } from "../../logic/point";
 
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
@@ -452,7 +452,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 									{/* Drop field */}
 									<div className="nopan" style={{ pointerEvents: "auto" }}>
-										<DropField></DropField>
+										<SequencesPulseDropField></SequencesPulseDropField>
 									</div>
 
 									{/* Debug layers */}
