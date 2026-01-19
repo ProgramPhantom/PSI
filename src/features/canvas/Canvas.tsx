@@ -4,7 +4,8 @@ import {
 	HotkeyConfig,
 	Label,
 	Text,
-	useHotkeys
+	useHotkeys,
+	Button
 } from "@blueprintjs/core";
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
@@ -101,6 +102,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [focusLevel, setFocusLevel] = useState(0);
+
+	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 
 
 
@@ -302,16 +305,30 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					)}
 				</div>
 
+				<div
+					style={{
+						position: "absolute",
+						top: "10px",
+						right: "10px",
+						zIndex: 100
+					}}>
+					<Button
+						icon="target"
+						onClick={() => transformComponentRef.current?.centerView()}
+					/>
+				</div>
+
 
 				<CanvasDropContainer scale={zoom}>
 					<TransformWrapper
+						ref={transformComponentRef}
 						initialScale={zoom}
 						onZoomStop={(z) => {
 							setZoom(z.state.scale);
 						}}
 						centerOnInit={true}
 						limitToBounds={false}
-						
+
 						maxScale={5}
 						minScale={0.5}
 						panning={{ excluded: ["nopan"] }}
