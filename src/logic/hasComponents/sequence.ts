@@ -58,6 +58,9 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 	// --------------- Compute Methods ---------------
 	//#region
 	public override computeSize(): Size {
+		// Do this so if Channels self added a column
+		this.setChannelDimensions();
+
 		var size: Size = super.computeSize();
 
 		this.applySizesToChannels();
@@ -185,13 +188,14 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 	}
 
 	protected setChannelDimensions() {
+		let longestChannel: number = Math.max(...this.children.map((c) => c.numColumns));
+
 		this.children.forEach((channel, channel_index) => {
 			// Currently channels are forced to be 3 rows so we leave that
 			// and just set the number of columns
 
 			// set matrix takes index
-			channel.setMatrixSize({ col: this.numColumns - 1 });
-			channel.sizeBar();
+			channel.setMatrixSize({ col: longestChannel -1 });
 		})
 	}
 
