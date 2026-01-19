@@ -52,7 +52,11 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	}, [props.target, watchedSizeModeX, watchedSizeModeY]);
 
 
-	const isCollection = props.target && Collection.isCollection(props.target);
+	let theseVals: IVisual | undefined = getByPath(
+		formControls.getValues(),
+		fullPrefix
+	);
+	const isCollection = theseVals && Collection.isCollection(theseVals);
 	const sizeOptions = isCollection ? ["fit", "grow"] : ["fixed", "fit", "grow"];
 
 	var vals = formControls.getValues();

@@ -81,9 +81,10 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 	// ----------------- Add Methods -----------------
 	//#region
-	public override add(child: Channel) {
+	public override add(child: Channel, index?: number) {
+		let CHILD_INDEX: number = index ?? this.numChildren;
 		// super.add(child);
-		this.children.push(child);
+		this.children.splice(CHILD_INDEX, 0, child);
 		// Add the three rows of this channel to the bottom of the 
 		// grid matrix;
 
@@ -96,8 +97,8 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		// Note we don't care about the row as we will just append the 
 		// rows of the channel now, there's no need to expand it
 
-		child.getRows().forEach((row) => {
-			this.gridMatrix.push(row);
+		child.getRows().forEach((row, row_index) => {
+			this.gridMatrix.splice((CHILD_INDEX*3) + row_index, 0, row)
 		})
 
 		child.placementControl = "auto";

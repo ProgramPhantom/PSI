@@ -452,8 +452,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 
 	// ---------------- Add Methods ----------------
 	//#region
-	public override add(child: C) {
-		super.add(child);
+	public override add(child: C, index?: number) {
+		super.add(child, index);
 
 		if (Grid.isGridElement(child)) {
 			this.addElement(child);

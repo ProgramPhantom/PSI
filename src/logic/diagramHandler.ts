@@ -187,6 +187,18 @@ export default class DiagramHandler implements IDraw {
 			removeCol = parameters.pulseData?.index === target.pulseData.index ? false : true
 		}
 
+		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
+
+		if (parent === undefined) {
+			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
+		}
+
+		let childIndex: number | undefined = parent.childIndex(target);
+
+		if (childIndex === undefined) {
+			return {ok: false, error: `Child ${target.ref} does not exist on parent ${parent.ref}`}
+		}
+
 		// Delete element
 		let deleteResult: Result<Visual> = this.remove(target, removeCol);
 		if (deleteResult.ok === false) {
@@ -195,7 +207,7 @@ export default class DiagramHandler implements IDraw {
 		let id: ID = deleteResult.value.id;
 
 		parameters.id = id;
-		var result: Result<Visual> = this.submitVisual(parameters, type);
+		var result: Result<Visual> = this.createAndAdd(parameters, type, childIndex);
 
 		return result;
 	}
@@ -260,13 +272,13 @@ export default class DiagramHandler implements IDraw {
 
 	// ---------- Visual interaction (generic) -----------
 	@draws
-	public createAndAdd(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
+	public createAndAdd(parameters: IVisual, type: AllComponentTypes, index?: number): Result<Visual> {
 		var elementResult: Result<Visual> = this.createVisual(parameters, type);
 
 		if (elementResult.ok === false) {
 			return elementResult;
 		} else {
-			return this.add(elementResult.value);
+			return this.add(elementResult.value, index);
 		}
 	}
 	@draws
@@ -444,7 +456,7 @@ export default class DiagramHandler implements IDraw {
 	}
 
 	// -------------- Placement ----------------
-	private add(target: Visual): Result<Visual> {
+	private add(target: Visual, index?: number): Result<Visual> {
 		// Parent Id can never be atomic
 		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
 
@@ -453,7 +465,7 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		try {
-			parent.add(target);
+			parent.add(target, index);
 		} catch (err) {
 			return { ok: false, error: (err as Error).message };
 		}

@@ -210,10 +210,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 	// ----------------- Collection methods -------------
 	//#region 
-	add(child: C) {
+	add(child: C, index?: number) {
 		child.parentId = this.id;
 
-		this.children.push(child);
+		this.children.splice(index ?? this.numChildren, 0, child);
 
 		if (child.role !== undefined && Object.keys(this.roles).includes(child.role ?? "") && this.roles[child.role].object === undefined) {
 			this.roles[child.role].object = child;
@@ -296,6 +296,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		})
 
 		return { x: left, y: top }
+	}
+
+	public get numChildren(): number {
+		return this.children.length;
 	}
 	//#endregion
 	// --------------------------------------------------
