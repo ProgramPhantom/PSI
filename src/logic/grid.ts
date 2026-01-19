@@ -785,22 +785,22 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	}
 
 	protected squeezeMatrix() {
-		var trailingRow: GridCell[] = this.getRow(this.numRows - 1)
-		var trailingColumn: GridCell[] = this.getColumn(this.numColumns - 1)
+		var trailingRow: GridCell[] | undefined = this.getRow(this.numRows - 1) ?? []
+		var trailingColumn: GridCell[] | undefined = this.getColumn(this.numColumns - 1) ?? []
 
 		var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
 		var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
 
-		while (trailingRowEmpty === true) {
+		while (trailingRowEmpty === true && trailingRow !== undefined) {
 			this.removeRow();
-			var trailingRow: GridCell[] = this.getRow(this.numRows - 1);
-			var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
+			trailingRow = this.getRow(this.numRows - 1);
+			trailingRowEmpty = this.isArrayEmpty(trailingRow ?? []);
 		}
 
-		while (trailingColumnEmpty === true) {
+		while (trailingColumnEmpty === true && trailingColumn !== undefined) {
 			this.removeColumn();
-			var trailingColumn: GridCell[] = this.getColumn(this.numColumns - 1);
-			var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
+			trailingColumn = this.getColumn(this.numColumns - 1);
+			trailingColumnEmpty = this.isArrayEmpty(trailingColumn ?? []);
 		}
 	}
 
@@ -891,7 +891,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 			INDEX = index;
 		}
 
-		var targetColumn: GridCell[] = this.getColumn(INDEX);
+		var targetColumn: GridCell[] | undefined = this.getColumn(INDEX);
+		if (targetColumn === undefined) {return}
+
 		var empty: boolean = this.isArrayEmpty(targetColumn)
 
 		if (remove === false) {return}
@@ -911,7 +913,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 			INDEX = index;
 		}
 
-		var targetRow: GridCell[] = this.gridMatrix[INDEX];
+		var targetRow: GridCell[] | undefined = this.getRow(INDEX);
+		if (targetRow === undefined) {return}
+
 		var empty: boolean = this.isArrayEmpty(targetRow)
 
 		if (onlyIfEmpty === true && !empty) { return }
@@ -973,7 +977,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	protected shiftElementColumnIndexes(from: number, amount: number = 1) {
 		// Update grid indexes
 		for (let col_index = from; col_index < this.numColumns; col_index++) {
-			let col = this.getColumn(col_index);
+			let col: GridCell[] = this.getColumn(col_index) ?? [];
 
 			// Go down the column
 			col.forEach((cell, row_index) => {
@@ -1003,7 +1007,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	protected shiftElementRowIndexes(from: number, amount: number = 1) {
 		// Update grid indexes
 		for (let row_index = from; row_index < this.numRows; row_index++) {
-			let row = this.getRow(row_index);
+			let row: GridCell[] = this.getRow(row_index) ?? [];
 
 			// Go down the row
 			row.forEach((cell, col_index) => {
@@ -1051,7 +1055,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		return columns;
 	}
 
-	public getColumn(index: number): GridCell[] {
+	public getColumn(index: number): GridCell[] | undefined {
+		if (index >= this.numColumns || index < 0) {return undefined}
 		return this.gridMatrix.map((row) => row[index]);
 	}
 
@@ -1059,7 +1064,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		return this.gridMatrix;
 	}
 
-	public getRow(index: number): GridCell[] {
+	public getRow(index: number): GridCell[] | undefined {
 		return this.gridMatrix[index];
 	}
 
@@ -1233,7 +1238,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	// ---------------- Helpers ---------------------
 	//#region 
 	protected isArrayEmpty(target: GridCell[]): boolean {
-		return !target.some((c) => c !== undefined)
+		return !target .some((c) => c !== undefined)
 	}
 
 	protected isCellEmptyAt(coords: { row: number, col: number }): boolean {

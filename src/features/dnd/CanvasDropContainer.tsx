@@ -38,7 +38,7 @@ for movements of elements. */
 export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 	const [, drop] = useDrop(
 		() => ({
-			accept: [DragElementTypes.PULSE, DragElementTypes.FREE],
+			accept: [DragElementTypes.PULSE, DragElementTypes.FREE, DragElementTypes.PREFAB],
 			drop(item: ICanvasDropResult, monitor) {
 				// Allow drop to be handled by insertAreas
 				const didDrop = monitor.didDrop();

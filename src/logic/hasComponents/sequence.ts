@@ -335,7 +335,9 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 	// --------------- Helpers -----------------------
 	//#region 
 	private colHasPulse(col: number): boolean {
-		var targetColumn: GridCell[] = this.getColumn(col);
+		var targetColumn: GridCell[] | undefined= this.getColumn(col);
+		if (targetColumn === undefined) {return false}
+
 		let present: number = 0;
 
 		targetColumn.forEach((cell) => {

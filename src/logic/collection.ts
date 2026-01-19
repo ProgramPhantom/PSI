@@ -20,6 +20,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	get state(): ICollection {
 		return {
 			children: this.children.map((c) => c.state),
+			
 			...super.state,
 			sizeMode: this.sizeMode
 		};

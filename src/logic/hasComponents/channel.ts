@@ -180,7 +180,11 @@ export default class Channel extends Grid implements IChannel {
 
 	public getSpacesToNextPulse(orientation: Orientation, index: number): number {
 		let rowIndex: 0 | 1 | 2 = Channel.OrientationToRow(orientation);
-		let row: GridCell[] = this.getRow(rowIndex);
+		let row: GridCell[] | undefined = this.getRow(rowIndex);
+		if (row === undefined) {
+			throw new Error(`Row with index ${index} undefined`)
+		}
+
 		let colIndex: number = index;
 
 		let spaces: number = 0;

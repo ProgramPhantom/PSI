@@ -38,26 +38,26 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 	}
 
 	draw(surface: Element) {
-		if (this.dirty) {
-			if (this.svg) {
-				try {
-					this.svg.remove();
-				} catch { }
-			}
-
-			this.svg = new Rect()
-				.size(this.contentWidth, this.contentHeight)
-				.attr({ fill: this.style.fill, stroke: this.style.stroke })
-				.move(this.cx + this.offset[0], this.cy + this.offset[1])
-				.attr({
-					"stroke-width": this.style.strokeWidth,
-					"shape-rendering": "crispEdges",
-				});
-			surface.add(this.svg);
-
-			// Do we want elements to have our ID system or the SVGjs ID system?
-			this.svg.id(this.id);
+		
+		if (this.svg) {
+			try {
+				this.svg.remove();
+			} catch { }
 		}
+
+		this.svg = new Rect()
+			.size(this.contentWidth, this.contentHeight)
+			.attr({ fill: this.style.fill, stroke: this.style.stroke })
+			.move(this.cx + this.offset[0], this.cy + this.offset[1])
+			.attr({
+				"stroke-width": this.style.strokeWidth,
+				"shape-rendering": "crispEdges",
+			});
+		surface.add(this.svg);
+
+		// Do we want elements to have our ID system or the SVGjs ID system?
+		this.svg.id(this.id);
+		
 
 		super.draw(surface)
 	}
