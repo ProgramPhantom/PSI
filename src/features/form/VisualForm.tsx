@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import { Controller, FieldErrors, useFormContext, useWatch } from "react-hook-form";
 import { getByPath } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
+import Collection from "../../logic/collection";
 import { FormRequirements } from "./FormBase";
 import { PlacementModeConfig } from "./PlacementModeConfigForm";
 import InformationLabel from "./help/InformationLabel";
@@ -50,6 +51,9 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 		setHeightActive(currentY === "fixed" ? true : false);
 	}, [props.target, watchedSizeModeX, watchedSizeModeY]);
 
+
+	const isCollection = props.target && Collection.isCollection(props.target);
+	const sizeOptions = isCollection ? ["fit", "grow"] : ["fixed", "fit", "grow"];
 
 	var vals = formControls.getValues();
 	return (
@@ -161,7 +165,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 								{...field}
 								id="size-mode-x"
 								fill
-								options={["fixed", "fit", "grow"]}
+								options={sizeOptions}
 							/>
 						)}
 					/>
@@ -178,7 +182,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 								{...field}
 								id="size-mode-y"
 								fill
-								options={["fixed", "fit", "grow"]}
+								options={sizeOptions}
 							/>
 						)}
 					/>
