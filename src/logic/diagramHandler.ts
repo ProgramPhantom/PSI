@@ -88,16 +88,31 @@ export default class DiagramHandler implements IDraw {
 			throw new Error("Svg surface not attached!");
 		}
 
-		this.computeDiagram();
+		try {
+			this.computeDiagram();
+		} catch (err) {
+			appToaster.show({
+				"intent": "danger",
+				"message": `Compute error: ${(err as string)}`
+			})
+		}
+		
 
 		this.surface.add(new Rect().move(0, 0).id("diagram-root"));
 
 		this.surface.viewbox(this.diagram.x, this.diagram.y, this.diagram.width, this.diagram.height);
 		this.surface.size(`${this.diagram.width}px`, `${this.diagram.height}px`);
-		this.diagram.draw(this.surface);
+		
+		try {
+			this.diagram.draw(this.surface);
+		} catch (err) {
+			appToaster.show({
+				"intent": "danger",
+				"message": `Draw error: ${(err as string)}`
+			})
+		}
+		
 		this.syncExternal();
-
-
 	}
 
 	erase() {
