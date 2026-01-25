@@ -11,8 +11,8 @@ export const DEFAULT_CHANNEL: IChannel = {
 	"ref": "my-channel",
 	
 	"children": [
-		{...DEFAULT_CHANNEL_TEXT, role: "label"},
-		{...DEFAULT_BAR, role: "bar"}
+		DEFAULT_CHANNEL_TEXT,
+		DEFAULT_BAR
 	],
 
 	"sizeMode": { "x": "fit", "y": "fit" },

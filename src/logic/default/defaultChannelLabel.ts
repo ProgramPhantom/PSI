@@ -17,5 +17,6 @@ export const DEFAULT_CHANNEL_TEXT: IText = {
 	},
 
 	"sizeMode": { x: "fit", y: "fit" },
-	"type": "text"
+	"type": "text",
+	"role": "label"
 }

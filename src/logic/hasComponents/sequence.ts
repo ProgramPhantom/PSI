@@ -62,7 +62,8 @@ export default class Sequence extends Grid<Channel> implements ISequence, ICanAd
 	//#region
 	public override computeSize(): Size {
 		// Do this so if Channels self added a column
-		this.setChannelDimensions();
+		this.deleteEmptyColumns();
+		this.synchroniseChannels();
 
 		var size: Size = super.computeSize();
 
@@ -194,7 +195,7 @@ export default class Sequence extends Grid<Channel> implements ISequence, ICanAd
 		})
 	}
 
-	protected setChannelDimensions() {
+	protected synchroniseChannels() {
 		let longestChannel: number = Math.max(...this.children.map((c) => c.numColumns));
 
 		this.children.forEach((channel, channel_index) => {
@@ -203,106 +204,11 @@ export default class Sequence extends Grid<Channel> implements ISequence, ICanAd
 
 			// set matrix takes index
 			channel.setMatrixSize({ col: longestChannel - 1 });
-		})
-	}
-
-	protected setChannelMatrices() {
-		this.children.forEach((channel, channel_index) => {
-			let INDEX: number = channel_index * 3;
-
-			let gridSlice = this.gridMatrix.slice(INDEX, INDEX + 3);
-
-			channel.setMatrix(gridSlice);
+			channel.sizeBar();
 		})
 	}
 	//#endregion
 	// ----------------------------------------------
-
-	// -------------- Translation functions -------------
-	//#region 
-	protected pulseDataToGridConfig(data: IPulseConfig): IGridConfig | undefined {
-		var channelId: ID | undefined = data.channelID;
-
-
-		// We now need to convert the mount config in the pulse's placement
-		// type into the exact coordinate in the grid to insert this element
-		var channelIndex: number = this.childIndexById(channelId ?? "") ?? 0;
-
-
-
-		var row: number = 0;
-		var column: number = data.index ?? 0;  // Starting at 1 as we know the label goes there
-		var alignment: { x: SiteNames, y: SiteNames } = { x: "centre", y: "far" }
-		let contribution: Record<Dimensions, boolean> = { x: true, y: true };
-
-		// --------- Row -------------
-		// Currently, channels ALWAYS have a height of 3 so that's how we find 
-		// our row number.
-		row = channelIndex * 3;
-		if (data.orientation === "both") {
-			row += 1
-			alignment = { x: "centre", y: "centre" }
-			contribution = { x: true, y: false }
-		} else if (data.orientation === "bottom") {
-			row += 2
-			alignment = { x: "centre", y: "here" }
-		}
-
-		let gridConfig: IGridConfig = {
-			coords: { row: row, col: column },
-			alignment: alignment,
-			gridSize: { noRows: 1, noCols: data.noSections },
-			contribution: contribution,
-		}
-
-		// Inform of ghosts that have been placed by addPulse process.
-		if (data.orientation === "both") {
-			gridConfig.ownedGhosts = [
-				{ row: row - 1, col: column },
-				{ row: row + 1, col: column }
-			]
-		}
-
-
-		return gridConfig
-	}
-
-	protected setPulseDataViaGridConfig(child: Visual, config: IGridConfig) {
-		let numCols: number = config.gridSize?.noCols ?? 1;
-		let index: number = config.coords?.col ?? 1;
-
-		let channel: Channel | undefined = this.getChildById(child.parentId ?? "")
-
-		if (channel === undefined) {
-			throw new Error(`Cannot find channel for pulse ${child.id}`)
-		}
-
-		let orientationIndex: 0 | 1 | 2 = ((config.coords?.row ?? 0) % 3) as 0 | 1 | 2;
-		let orientation: Orientation = Channel.RowToOrientation(orientationIndex);
-
-		let alignment: Record<Dimensions, SiteNames> = {
-			x: config.alignment?.x ?? "centre",
-			y: config.alignment?.y ?? "centre"
-		}
-
-		let clipBar: boolean = false;
-		if (child.pulseData !== undefined && child.pulseData.clipBar === true) {
-			clipBar = true;
-		}
-
-		child.pulseData = {
-			noSections: numCols,
-			orientation: orientation,
-			alignment: alignment,
-
-			channelID: channel.id,
-			sequenceID: this.id,
-			index: index,
-			clipBar: clipBar
-		}
-	}
-	//#endregion
-	// -------------------------------------------------
 
 
 	// --------------- Behaviour overrides -------------
@@ -313,12 +219,11 @@ export default class Sequence extends Grid<Channel> implements ISequence, ICanAd
 		// Apply this to the channels
 		// This condition means this only happens when a channel is initialised.
 		if (this.numColumns >= 2) {
-			this.setChannelDimensions();
-			this.setChannelMatrices();
+			this.synchroniseChannels();
 		}
 	}
 
-	public override removeColumn(index?: number, remove: true | false | "if-empty" = false) {
+	public override removeColumn(index?: number, remove: true | "if-empty" = true) {
 		let INDEX: number | undefined = index;
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns - 1) {
 			INDEX = this.numColumns - 1;
@@ -330,14 +235,13 @@ export default class Sequence extends Grid<Channel> implements ISequence, ICanAd
 
 		var empty: boolean = !this.colHasPulse(INDEX);
 
-		if (remove === false) { return }
 		if (remove === "if-empty" && empty === false) { return }
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);
 		}
 
-		this.setChannelDimensions();
+		this.synchroniseChannels();
 
 		this.shiftElementColumnIndexes(INDEX, -1);
 	}
@@ -350,20 +254,20 @@ export default class Sequence extends Grid<Channel> implements ISequence, ICanAd
 		var targetColumn: GridCell[] | undefined = this.getColumn(col);
 		if (targetColumn === undefined) { return false }
 
-		let present: number = 0;
+		return targetColumn.some((cell) => (cell?.elements ?? []).some(e => e.role !== "bar"));
+	}
 
-		targetColumn.forEach((cell) => {
-			if (cell?.elements !== undefined) {
-				present += cell.elements.length;
+	private deleteEmptyColumns() {
+		// Never removes column 1 or 2
+		let index: number = 2;
+
+		while (index < this.numColumns) {
+			if (!this.colHasPulse(index)) {
+				this.removeColumn(index);
+			} else {
+				index++
 			}
-		})
-
-		// Reliable?
-		if (present > this.numChannels) {
-			return true
 		}
-
-		return false
 	}
 	//#endregion
 	// -----------------------------------------------
