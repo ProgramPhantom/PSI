@@ -149,6 +149,24 @@ export default function Banner(props: IBannerProps) {
 					/>
 
 					<Navbar.Divider />
+					<Button
+						size="small"
+						variant="minimal"
+						icon="undo"
+						text="Undo"
+						disabled={!ENGINE.handler.canUndo}
+						onClick={() => ENGINE.handler.undo()}
+					/>
+					<Button
+						size="small"
+						variant="minimal"
+						icon="redo"
+						text="Redo"
+						disabled={!ENGINE.handler.canRedo}
+						onClick={() => ENGINE.handler.redo()}
+					/>
+
+					<Navbar.Divider />
 					<Navbar.Divider />
 					<AnnotateDropdown
 						selectedTool={props.selectedTool}

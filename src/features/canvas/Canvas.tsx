@@ -22,6 +22,7 @@ import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import { DebugLayerDialog } from "./DebugLayerDialog";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
+import GridDropField from "../dnd/GridDropField";
 
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
@@ -124,7 +125,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				label: "Delete selected element",
 				onKeyDown: () => {
 					if (props.selectedElement) {
-						ENGINE.handler.remove(props.selectedElement);
+						ENGINE.handler.act({
+							type: "remove",
+							input: {
+								child: props.selectedElement
+							}
+						})
 						deselect();
 					}
 				},
@@ -136,12 +142,39 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				label: "Delete selected element",
 				onKeyDown: () => {
 					if (props.selectedElement) {
-						ENGINE.handler.remove(props.selectedElement);
+						ENGINE.handler.act({
+							type: "remove",
+							input: {
+								child: props.selectedElement
+							}
+						})
 						deselect();
 					}
 				},
 				preventDefault: true
-			}
+			},
+			{
+				combo: "ctrl+z",
+				global: true,
+				label: "Undo",
+				onKeyDown: () => {
+					if (ENGINE.handler.canUndo) {
+						ENGINE.handler.undo();
+					}
+				},
+				preventDefault: true
+			},
+			{
+				combo: "ctrl+y",
+				global: true,
+				label: "Redo",
+				onKeyDown: () => {
+					if (ENGINE.handler.canRedo) {
+						ENGINE.handler.redo();
+					}
+				},
+				preventDefault: true
+			},
 		],
 		[debugDialogOpen, props.selectedElement]
 	);
@@ -161,8 +194,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	}));
 
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
-
-
 
 	let selectedElement = props.selectedElement;
 
@@ -452,7 +483,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 									{/* Drop field */}
 									<div className="nopan" style={{ pointerEvents: "auto" }}>
-										<SequencesPulseDropField></SequencesPulseDropField>
+										<SequencesPulseDropField ></SequencesPulseDropField>
 									</div>
 
 									{/* Debug layers */}

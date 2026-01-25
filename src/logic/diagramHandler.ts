@@ -1,24 +1,18 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
+import { sha256 } from 'js-sha256';
 import { appToaster } from "../app/Toaster";
+import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } from "./collection.ts";
 import SchemeManager from "./default";
-import { defaultDiagram } from "./default/index.ts";
-import Channel, { IChannel } from "./hasComponents/channel";
+import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
+import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
-import Sequence from "./hasComponents/sequence";
+import Sequence, { AddBlockDispatchData, CanAddBlock } from "./hasComponents/sequence";
 import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
 import { isPulse, PointBind } from "./spacial";
 import Visual, { IDraw, IVisual } from "./visual";
 
-import { sha256 } from 'js-sha256';
-import Collection from "./collection.ts";
-import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
-import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 
-
-export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
-
-type ConstructorFunction = (parameters: IVisual, ...args: any[]) => Result<any>;
 /**
  * Decorator that automatically calls this.draw() after a method execution,
  * but only if the method returns a Result object with ok: true
@@ -47,10 +41,78 @@ function draws(
 }
 
 
+type AddEdit = { type: "add", data: AddDispatchData, parentId: ID }
+type RemoveEdit = { type: "remove", data: RemoveDispatchData, parentId: ID }
+type AddBlockEdit = { type: "addBlock", data: AddBlockDispatchData, parentId: ID }
 
+type Edit = AddEdit | RemoveEdit | AddBlockEdit
+
+
+type CreateAndAddInput = { parameters: IVisual, index?: number }
+type CreateAndModifyInput = { parameters: IVisual, target: Visual }
+type ModifyInput = { child: Visual, target: Visual }
+type AddInput = AddDispatchData
+type RemoveInput = RemoveDispatchData
+
+
+export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
+
+export type ActionResult<T extends keyof Actions> =
+	| { ok: true; undo: { action: Actions[T]["undoAction"], data: UndoData<T> } }
+	| { ok: false; error: string };
+
+
+type DispatchAction<Type extends keyof Actions> = (parameters: InputData<Type>) => ActionResult<Type>;
+type InputData<T extends keyof Actions> = Actions[T]["inputData"]
+type UndoData<T extends keyof Actions> = Actions[Actions[T]["undoAction"]]["inputData"];
+
+type Actions = {
+	"createAndAdd": {
+		inputData: CreateAndAddInput,
+		undoAction: "remove"
+	},
+	"createAndModify": {
+		inputData: CreateAndModifyInput,
+		undoAction: "modify"
+	},
+	"modify": {
+		inputData: ModifyInput,
+		undoAction: "modify"
+	},
+
+
+	"add": {
+		inputData: AddInput,
+		undoAction: "remove"
+	},
+	"remove": {
+		inputData: RemoveInput,
+		undoAction: "add"
+	}
+}
+type ActionNames = keyof Actions;
+
+
+type ActionRegistry = {
+	[K in ActionNames]: DispatchAction<K>
+}
+
+interface IDispatchAction<T extends ActionNames> {
+	type: T,
+	input: InputData<T>;
+}
+
+interface ICompletedAction<T extends ActionNames> extends IDispatchAction<T> {
+	result: ActionResult<T>;
+	duration?: number
+}
+
+type AnyCompletedAction = { [K in keyof Actions]: ICompletedAction<K> }[keyof Actions];
 
 
 export default class DiagramHandler implements IDraw {
+	static MAX_UNDO_DEPTH = 25;
+
 	public diagram: Diagram;
 
 	surface?: Svg;
@@ -74,6 +136,28 @@ export default class DiagramHandler implements IDraw {
 		return this.diagram.allElements;
 	}
 
+	get canUndo(): boolean {
+		return this.undoStack.length > 0 ? true : false;
+	}
+
+	get canRedo(): boolean {
+		return this.redoStack.length > 0 ? true : false;
+	}
+
+	public undoStack: AnyCompletedAction[] = [];
+	public redoStack: AnyCompletedAction[] = [];
+
+	public ActionRegistry: ActionRegistry = {
+		"add": this.add.bind(this),
+		"createAndAdd": this.createAndAdd.bind(this),
+
+		"modify": this.modify.bind(this),
+		"createAndModify": this.createAndModify.bind(this),
+
+		"remove": this.remove.bind(this),
+	}
+
+
 	constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager, EngineConstructor: ((data: IVisual, type: AllComponentTypes) => Visual | undefined)) {
 		this.syncExternal = emitChange;
 		this.schemeManager = schemeManager;
@@ -96,13 +180,13 @@ export default class DiagramHandler implements IDraw {
 				"message": `Compute error: ${(err as string)}`
 			})
 		}
-		
+
 
 		this.surface.add(new Rect().move(0, 0).id("diagram-root"));
 
 		this.surface.viewbox(this.diagram.x, this.diagram.y, this.diagram.width, this.diagram.height);
 		this.surface.size(`${this.diagram.width}px`, `${this.diagram.height}px`);
-		
+
 		try {
 			this.diagram.draw(this.surface);
 		} catch (err) {
@@ -111,7 +195,7 @@ export default class DiagramHandler implements IDraw {
 				"message": `Draw error: ${(err as string)}`
 			})
 		}
-		
+
 		this.syncExternal();
 	}
 
@@ -140,13 +224,17 @@ export default class DiagramHandler implements IDraw {
 		}
 	}
 
-
-
 	@draws
 	public constructDiagram(state: IDiagram): Result<Diagram> {
 		this.erase();
 
-		let newDiagram: Diagram | undefined = this.EngineConstructor(state, "diagram") as Diagram | undefined;
+		let newDiagram: Diagram | undefined = undefined;
+		try {
+			newDiagram = this.EngineConstructor(state, "diagram") as Diagram | undefined;
+		} catch (err) {
+			return { ok: false, error: (err as string) }
+		}
+
 
 		if (newDiagram === undefined) {
 			return { ok: false, error: `Failed to create diagram` };
@@ -158,118 +246,250 @@ export default class DiagramHandler implements IDraw {
 	}
 
 	@draws
-	resetDiagram() {
+	public resetDiagram() {
 		this.constructDiagram(DEFAULT_DIAGRAM);
 	}
 
 	@draws
-	emptyDiagram(): Diagram {
+	public emptyDiagram(): Diagram {
 		return new Diagram(BLANK_DIAGRAM)
 	}
 
-	// ---- Form interfaces ----
-	public submitVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
-		var result: Result<Visual>;
-		switch (type) {
-			case "channel":
-			case "rect":
-			case "svg":
-			case "label-group":
-				// Temporary as we only allow one sequence currently.
-				if (isPulse(parameters)) {
-					parameters.pulseData.sequenceID = this.diagram.sequenceIDs[0];
-				}
-
-				result = this.createAndAdd(parameters, type);
-				break;
-			default:
-				result = {
-					ok: false,
-					error: `No implementation to instantiate type ${type} from form submission`
-				};
-		}
-
-		return result;
+	@draws
+	private dispatchAction<T extends ActionNames>(action: T, data: InputData<T>): ActionResult<T> {
+		const handler = this.ActionRegistry[action] as DispatchAction<T>;
+		return handler(data);
 	}
 
-	public submitModifyVisual(
-		parameters: IVisual,
-		type: AllComponentTypes,
-		target: Visual
-	): Result<Visual> {
-		let removeCol: boolean = true;
-		if (isPulse(target)) {
-			removeCol = parameters.pulseData?.index === target.pulseData.index ? false : true
+
+	public act<T extends ActionNames>(action: IDispatchAction<T>) {
+		let actionResult: ActionResult<T> = this.dispatchAction(
+			action.type,
+			action.input
+		)
+
+		if (actionResult.ok === false) {
+			appToaster.show({
+				"message": actionResult.error,
+				"intent": "danger",
+			})
+		} else {
+			let dispatchedAction: ICompletedAction<T> = {
+				type: action.type,
+				result: actionResult,
+				input: action.input,
+			}
+
+			if (this.undoStack.length >= DiagramHandler.MAX_UNDO_DEPTH) {
+				this.undoStack.shift();
+			}
+			this.undoStack.push(dispatchedAction as AnyCompletedAction);
+			this.redoStack = [];
+		}
+	}
+
+	public undo() {
+		let action = this.undoStack.pop()
+
+		if (action?.result.ok === true) {
+			this.dispatchAction(
+				action.result.undo.action,
+				action.result.undo.data
+			);
+			this.redoStack.push(action);
+
+			appToaster.show({
+				intent: "success",
+				"message": "Undo",
+				"icon": "undo",
+			})
+		}
+	}
+
+	public redo() {
+		let action = this.redoStack.pop();
+
+		if (action?.result.ok === true) {
+			this.dispatchAction(
+				action.type,
+				action.input
+			);
+			this.undoStack.push(action);
+
+			appToaster.show({
+				intent: "success",
+				"message": "Redo",
+				"icon": "redo"
+			})
+		}
+	}
+
+
+	private editDiagram(edit: Edit): Result<Visual> {
+		let result: Result<Visual> = { ok: false, error: "Something went wrong" };
+
+		let parent: Visual | undefined = this.diagram.allElements[edit.parentId ?? ""];
+
+		if (parent === undefined) {
+			return { ok: false, error: `Cannot find target parent for edit ${edit.type}` }
 		}
 
-		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
+		// Check target is capable of making this edit:
 
+		try {
+			switch (edit.type) {
+				case "add":
+					if (!CanAdd(parent)) {
+						result = { ok: false, error: `Parent ${parent.ref}` }
+					} else {
+						parent.add({ ...edit.data });
+						result = { ok: true, value: parent }
+					}
+					break;
+				case "remove":
+					if (!CanRemove(parent)) {
+						result = { ok: false, error: `Parent ${parent.ref}` }
+					} else {
+						parent.remove({ ...edit.data });
+						result = { ok: true, value: parent }
+					}
+					break;
+				case "addBlock":
+					if (!CanAddBlock(parent)) {
+						result = { ok: false, error: `Parent ${parent.ref}` }
+					} else {
+						parent.addBlock({ ...edit.data });
+						result = { ok: true, value: parent }
+					}
+					break;
+			}
+		} catch (err) {
+			result = { ok: false, error: (err as string) }
+		}
+
+		return result
+	}
+
+
+	// ------------- ACTIONS ---------------------
+	//#region 
+	protected add({ child, index }: AddInput): ActionResult<"add"> {
+		let editResult: Result<Visual> = this.editDiagram({
+			type: "add",
+			data: { child: child, index: index },
+			parentId: child.parentId ?? ""
+		})
+
+		if (editResult.ok === false) {
+			return editResult
+		}
+
+		return { ok: true, undo: { action: "remove", data: { child: child } } }
+	}
+
+	protected createAndAdd({ parameters, index }: CreateAndAddInput): ActionResult<"createAndAdd"> {
+		var elementResult: Result<Visual> = this.createVisual(parameters, parameters.type);
+
+		if (elementResult.ok === false) {
+			return { ok: false, error: elementResult.error };
+		}
+
+		let addResult: ActionResult<"add"> = this.add({ child: elementResult.value, index });
+		if (addResult.ok === false) {
+			return addResult
+		}
+
+		// Important, means redo action instantiates with the same id.
+		parameters.id = elementResult.value.id;
+
+		return { ok: true, undo: { action: "remove", data: { child: elementResult.value } } }
+	}
+
+	protected remove({ child }: RemoveInput): ActionResult<"remove"> {
+		let editResult: Result<Visual> = this.editDiagram({
+			type: "remove",
+			data: { child: child },
+			parentId: child.parentId ?? ""
+		})
+
+
+		if (child.svg) {
+			child.svg.remove();
+		}
+		if (child.maskBlock) {
+			child.maskBlock.remove();
+		}
+
+		if (editResult.ok === false) {
+			return editResult
+		}
+
+		return {
+			ok: true,
+			undo: { action: "add", data: { child: child } }
+		}
+	}
+
+	protected modify({ child, target }: ModifyInput): ActionResult<"modify"> {
+		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
 		if (parent === undefined) {
 			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
 		}
 
 		let childIndex: number | undefined = parent.childIndex(target);
-
 		if (childIndex === undefined) {
-			return {ok: false, error: `Child ${target.ref} does not exist on parent ${parent.ref}`}
+			return { ok: false, error: `Child ${target.ref} does not exist on parent ${parent.ref}` }
 		}
+
+		let targetId: ID = target.id;
 
 		// Delete element
-		let deleteResult: Result<Visual> = this.remove(target, removeCol);
-		if (deleteResult.ok === false) {
-			return deleteResult;
-		}
-		let id: ID = deleteResult.value.id;
+		let deleteResult: Result<Visual> = this.editDiagram({
+			"type": "remove",
+			"data": { child: target },
+			"parentId": target.parentId ?? ""
+		})
+		if (deleteResult.ok === false) { return deleteResult }
 
-		parameters.id = id;
-		var result: Result<Visual> = this.createAndAdd(parameters, type, childIndex);
+		child.id = targetId;
+		let addResult: Result<Visual> = this.editDiagram({
+			"type": "add",
+			"data": { child: child, index: childIndex },
+			"parentId": child.parentId ?? ""
+		})
 
-		return result;
+		if (addResult.ok === false) { return addResult }
+
+		return { ok: true, undo: { action: "modify", data: { child: target, target: child } } }
 	}
 
-	public submitDeleteVisual(target: Visual, type: AllComponentTypes): Result<Visual> {
-		var result: Result<Visual>;
-
-		switch (type) {
-			case "label":
-			case "rect":
-			case "svg":
-			case "label-group":
-			case "channel":
-				result = this.remove(target, true);
-				break;
-
-				break;
-			default:
-				throw new Error(`Cannot delete component of type ${type}`);
+	protected createAndModify({ parameters, target }: CreateAndModifyInput): ActionResult<"createAndModify"> {
+		var elementResult: Result<Visual> = this.createVisual(parameters, parameters.type);
+		if (elementResult.ok === false) {
+			return { ok: false, error: elementResult.error };
 		}
 
-		return result;
+		let modifyResult: ActionResult<"modify"> = this.modify({ child: elementResult.value, target });
+		if (modifyResult.ok === false) {
+			return modifyResult
+		}
+
+		return { ok: true, undo: { action: "modify", data: { target: elementResult.value, child: target } } }
 	}
-
-	/*
-	public submitChannel(parameters: IChannel): Result<Channel> {
-		if (parameters.sequenceID === undefined) {
-			return {
-				ok: false,
-				error: `No sequence id on channel ${parameters.ref}`
-			};
-		}
-
-		try {
-			var newChannel = new Channel(parameters);
-		} catch (err) {
-			return {
-				ok: false,
-				error: `Cannot instantiate channel ${parameters.ref}`
-			};
-		}
-
-		return this.addChannel(newChannel);
-	}
-		*/
-
+	//#endregion
 	// ------------------------------------------
+
+
+	public addColumn(sequenceId: ID, index: number) {
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
+
+		if (sequence === undefined) {
+			console.warn(`Cannot insert column in sequence with id ${sequenceId}`)
+			return
+		}
+
+		sequence.insertEmptyColumn(index);
+	}
 
 	public createVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
 		try {
@@ -283,223 +503,6 @@ export default class DiagramHandler implements IDraw {
 		} else {
 			return { ok: true, value: element }
 		}
-	}
-
-	// ---------- Visual interaction (generic) -----------
-	@draws
-	public createAndAdd(parameters: IVisual, type: AllComponentTypes, index?: number): Result<Visual> {
-		var elementResult: Result<Visual> = this.createVisual(parameters, type);
-
-		if (elementResult.ok === false) {
-			return elementResult;
-		} else {
-			return this.add(elementResult.value, index);
-		}
-	}
-	@draws
-	public moveVisual(element: Visual, x: number, y: number): Result<Visual> {
-		// Cancel if pulse position type or change to free position type?
-
-		try {
-			element.x = x;
-			element.y = y;
-
-		} catch (err) {
-			return { ok: false, error: (err as Error).message };
-		}
-
-		return { ok: true, value: element };
-	}
-	@draws
-	public remove(target: Visual, removeCol: boolean = false): Result<Visual> {
-		var result: Result<Visual> = { ok: false, error: `Problem deleting visual ${target.ref}` };
-
-		// Parent Id can never be atomic
-		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
-
-		if (parent === undefined) {
-			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
-		}
-
-		try {
-			parent.remove(target);
-			result = { ok: true, value: target };
-		} catch (err) {
-			result = { ok: false, error: (err as Error).message }
-		}
-
-		if (isPulse(target)) {
-			let targetSequence: Sequence | undefined = this.allElements[target.pulseData.sequenceID ?? 0] as Sequence | undefined;
-
-			if (targetSequence !== undefined) {
-				targetSequence.removeColumn(target.pulseData.index, removeCol === false ? false : "if-empty")
-			}
-		}
-
-
-		if (target.svg) {
-			target.svg.remove();
-		}
-		if (target.maskBlock) {
-			target.maskBlock.remove();
-		}
-
-		return result;
-	}
-	public removeByID(targetId: ID): Result<Visual> {
-		var target: Visual | undefined = this.identifyElement(targetId);
-		if (target === undefined) {
-			return { ok: false, error: `Element with id ${targetId} not found` };
-		}
-		return this.remove(target);
-	}
-	// ----------------------------
-
-	// ------- Channel stuff ---------
-	/*
-	@draws
-	public addChannel(element: Channel): Result<Channel> {
-		var result: Result<Channel>;
-
-
-		var sequence: Sequence | undefined = this.diagram.sequenceDict[element.sequenceID ?? ""];
-
-		if (sequence === undefined) {
-			result = {
-				ok: false,
-				error: `Cannot find sequence of ID ${element.sequenceID}`
-			};
-		}
-
-		try {
-			sequence.add(element);
-		} catch (err) {
-			result = { ok: false, error: (err as Error).message };
-		}
-		result = { ok: true, value: element };
-		return result;
-	}
-
-	@draws
-	public deleteChannel(target: Channel): Result<Channel> {
-		var result: Result<Channel>;
-
-		var sequence: Sequence | undefined = this.diagram.sequenceDict[target.sequenceID ?? ""];
-
-		if (sequence === undefined) {
-			result = {
-				ok: false,
-				error: `Cannot find channel with ID: ${target.sequenceID}`
-			};
-		}
-
-		try {
-			sequence.remove(target);
-		} catch (err) {
-			result = { ok: false, error: (err as Error).message };
-		}
-		result = { ok: true, value: target };
-		return result
-	}
-	*/
-	// ----------- Annotation stuff ------------------
-	@draws
-	public createLine(
-		pParams: RecursivePartial<ILine>,
-		startBinds: PointBind,
-		endBinds: PointBind
-	): Result<Line> {
-		try {
-			var newLine: Line = new Line(pParams as ILine);
-		} catch (err) {
-			return { ok: false, error: `Cannot instantiate line ${pParams.ref}` };
-		}
-
-		try {
-			startBinds["x"].anchorObject.bind(
-				newLine,
-				"x",
-				startBinds["x"].bindingRule.anchorSiteName,
-				"here",
-				undefined,
-				undefined,
-				false
-			);
-			startBinds["y"].anchorObject.bind(
-				newLine,
-				"y",
-				startBinds["y"].bindingRule.anchorSiteName,
-				"here",
-				undefined,
-				undefined,
-				false
-			);
-			startBinds["x"].anchorObject.enforceBinding();
-			startBinds["y"].anchorObject.enforceBinding();
-
-			endBinds["x"].anchorObject.bind(
-				newLine,
-				"x",
-				endBinds["x"].bindingRule.anchorSiteName,
-				"far",
-				undefined,
-				undefined,
-				false
-			);
-			endBinds["y"].anchorObject.bind(
-				newLine,
-				"y",
-				endBinds["y"].bindingRule.anchorSiteName,
-				"far",
-				undefined,
-				undefined,
-				false
-			);
-			endBinds["x"].anchorObject.enforceBinding();
-			endBinds["y"].anchorObject.enforceBinding();
-		} catch (err) {
-			return { ok: false, error: `Cannot bind line` };
-		}
-
-		// try {
-		// 	this.diagram.addFreeArrow(newLine);
-		// } catch (err) {
-		// 	return {ok: false, error: (err as Error).message};
-		// }
-
-		return { ok: true, value: newLine };
-	}
-
-	// -------------- Placement ----------------
-	private add(target: Visual, index?: number): Result<Visual> {
-		// Parent Id can never be atomic
-		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
-
-		if (parent === undefined) {
-			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
-		}
-
-		try {
-			parent.add(target, index);
-		} catch (err) {
-			return { ok: false, error: (err as Error).message };
-		}
-
-
-
-		return { ok: true, value: target }
-	}
-
-
-	public addColumn(sequenceId: ID, index: number) {
-		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
-
-		if (sequence === undefined) {
-			console.warn(`Cannot insert column in sequence with id ${sequenceId}`)
-			return
-		}
-
-		sequence.insertEmptyColumn(index);
 	}
 }
 

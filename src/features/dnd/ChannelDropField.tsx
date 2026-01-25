@@ -1,31 +1,28 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
-import DiagramHandler from "../../logic/diagramHandler";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { GridCell } from "../../logic/grid";
-import Diagram from "../../logic/hasComponents/diagram";
-import Sequence from "../../logic/hasComponents/sequence";
-import Visual from "../../logic/visual";
-import ChannelInsertArea, { AddSpec } from "./ChannelInsertArea";
 import Channel from "../../logic/hasComponents/channel";
+import ChannelInsertArea, { IPulseArea } from "./ChannelInsertArea";
 
-interface Rect {x: number, y: number, width: number, height: number}
-
+interface Rect { x: number, y: number, width: number, height: number }
 
 const SLITHER_WIDTH = 4;
+
 
 interface IChannelDropFieldProps {
 	target: Channel
 }
-
 function ChannelDropField(props: IChannelDropFieldProps) {
-	const [insertAreas, setInsertAreas] = useState<AddSpec[]>([]);
+	const [insertAreas, setInsertAreas] = useState<IPulseArea[]>([]);
 
-	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+	
+	
 	useEffect(() => {
-		let insertAreas: AddSpec[] = [];
+		let insertAreas: IPulseArea[] = [];
 
-		var newBlock: AddSpec;
-		var newSlither: AddSpec;
+		var newBlock: IPulseArea;
+		var newSlither: IPulseArea;
 
 		var columns: Rect[] = props.target.gridSizes.columns;
 		var noColumns = columns.length;
@@ -36,11 +33,11 @@ function ChannelDropField(props: IChannelDropFieldProps) {
 		// Compute indexes of the slithers
 		for (var columnIndex = 0; columnIndex < noColumns + 1; columnIndex++) {
 			let hereOccupancyTop: GridCell =
-				props.target.getCell({row: 0, col: columnIndex})
-			let middleOccupied: boolean = 
-				(props.target.getCell({row: 1, col: columnIndex})?.elements ?? []).length > 1;
+				props.target.getCell({ row: 0, col: columnIndex })
+			let middleOccupied: boolean =
+				(props.target.getCell({ row: 1, col: columnIndex })?.elements ?? []).length > 1;
 			let hereOccupancyBottom: GridCell =
-				props.target.getCell({row: 2, col: columnIndex});
+				props.target.getCell({ row: 2, col: columnIndex });
 
 			if (
 				(hereOccupancyTop?.sources !== undefined ||
@@ -50,19 +47,19 @@ function ChannelDropField(props: IChannelDropFieldProps) {
 				slitherIndexes[columnIndex] = false;
 			}
 		}
-		
+
 
 		// Main slithers and place blocks
 		for (var columnIndex = 1; columnIndex < noColumns; columnIndex++) {
 			var column = columns[columnIndex];
 			let topOccupied: boolean =
-				props.target.getCell({row: 0, col: columnIndex}) === undefined
+				props.target.getCell({ row: 0, col: columnIndex }) === undefined
 					? false
 					: true;
-			let middleOccupied: boolean = 
-				(props.target.getCell({row: 1, col: columnIndex})?.elements ?? []).length > 1;
-			let bottomOccupied: boolean = 
-			props.target.getCell({row: 2, col: columnIndex}) === undefined
+			let middleOccupied: boolean =
+				(props.target.getCell({ row: 1, col: columnIndex })?.elements ?? []).length > 1;
+			let bottomOccupied: boolean =
+				props.target.getCell({ row: 2, col: columnIndex }) === undefined
 					? false
 					: true;
 
@@ -107,7 +104,7 @@ function ChannelDropField(props: IChannelDropFieldProps) {
 			if (!topOccupied && !middleOccupied) {
 				// Top block
 
-				var newBlock: AddSpec = {
+				var newBlock: IPulseArea = {
 					area: {
 						x: column.x + SLITHER_WIDTH / 2,
 						y: props.target.gridSizes.rows[0].y,
@@ -177,10 +174,9 @@ function ChannelDropField(props: IChannelDropFieldProps) {
 			sequenceID: props.target.parentId ?? ""
 		};
 		insertAreas.push(newSlither);
-		
 
-		setInsertAreas(insertAreas)
-	})
+		setInsertAreas(insertAreas);
+	}, [store])
 
 
 	return (

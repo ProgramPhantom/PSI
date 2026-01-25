@@ -102,7 +102,7 @@ export default class LabelGroup
 			}
 		}
 
-		this.add(child);
+		this.add({ child });
 	}
 
 
@@ -122,31 +122,31 @@ export default class LabelGroup
 		switch (position) {
 			case "top":
 				label.placementMode.config.alignment = { x: "centre", y: "far" }
-				label.placementMode.config.coords = {row: 0, col: 1}
+				label.placementMode.config.coords = { row: 0, col: 1 }
 				label.sizeMode = { x: "grow", y: "fit" }
 				label.mainAxis = "y";
-				this.add(label);
+				this.add({ child: label });
 				break;
 			case "right":
 				label.placementMode.config.alignment = { x: "here", y: "centre" }
-				label.placementMode.config.coords = {row: 1, col: 2}
+				label.placementMode.config.coords = { row: 1, col: 2 }
 				label.sizeMode = { x: "fit", y: "grow" }
 				label.mainAxis = "x";
-				this.add(label);
+				this.add({ child: label });
 				break;
 			case "bottom":
 				label.placementMode.config.alignment = { x: "centre", y: "here" }
-				label.placementMode.config.coords = {row: 2, col: 1}
+				label.placementMode.config.coords = { row: 2, col: 1 }
 				label.sizeMode = { x: "grow", y: "fit" }
 				label.mainAxis = "y";
-				this.add(label);
+				this.add({ child: label });
 				break;
 			case "left":
 				label.placementMode.config.alignment = { x: "far", y: "centre" }
-				label.placementMode.config.coords = {row: 1, col: 0}
+				label.placementMode.config.coords = { row: 1, col: 0 }
 				label.sizeMode = { x: "fit", y: "grow" }
 				label.mainAxis = "x";
-				this.add(label);
+				this.add({ child: label });
 				break;
 			case "centre":
 				throw new Error("Not implemented");

@@ -3,7 +3,7 @@ import { ID } from "./point";
 import Spacial, { Dimensions, Size } from "./spacial";
 import Visual, { AlignerElement, doesDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
-import Collection, { ICollection } from "./collection";
+import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
 
 
 export interface IAligner<T extends IVisual = IVisual> extends ICollection {
@@ -220,8 +220,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	}
 
 	public add(
-		child: T,
-		index?: number,
+		{ child, index }: AddDispatchData<T>
 	) {
 		let INDEX: number = index ?? this.children.length;
 
@@ -243,8 +242,8 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		return true
 	}
 
-	public remove(target: T): boolean {
-		var INDEX: number | undefined = this.childIndex(target);
+	public remove({ child }: RemoveDispatchData<T>): boolean {
+		var INDEX: number | undefined = this.childIndex(child);
 
 		if (INDEX === undefined) {
 			return false

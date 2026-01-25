@@ -6,13 +6,13 @@ import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { appToaster } from "../../app/Toaster";
 import SchemeManager from "../../logic/default";
-import { Result } from "../../logic/diagramHandler";
+import { ActionResult } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
 import { UserComponentType } from "../../logic/point";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
-import { DragElementTypes, IDrop, isCanvasDrop } from "./CanvasDropContainer";
-import { isMountDrop } from "./ChannelInsertArea";
+import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
+
 
 const style: CSSProperties = {
 	border: "1px solid #d3d8de",
@@ -34,7 +34,7 @@ const style: CSSProperties = {
 };
 
 
- 
+
 
 interface ITemplateDraggableElementProps {
 	element: Visual;
@@ -53,55 +53,75 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 		type: DragElementTypes.PREFAB,
 		item: { element: props.element } as IDraggableElementDropItem,
 		end: (item, monitor) => {
-			const dropResult = monitor.getDropResult<IDrop>();
+			const dropResult = monitor.getDropResult<AllDropResultTypes>();
 
 			if (dropResult === null) {
 				return;
 			}
 
-			var elementType = (props.element.constructor as typeof Visual).ElementType;
 			var singletonState: IVisual = structuredClone(props.element.state);
 
 			singletonState.id = undefined;  // Required
-			if (isCanvasDrop(dropResult)) {
-				singletonState.x = dropResult.x;
-				singletonState.y = dropResult.y;
 
-				singletonState.placementMode = {
-					type: "free"
-				}
-				singletonState.parentId = ENGINE.handler.diagram.id;
+			switch (dropResult.type) {
+				case "canvas":
+					singletonState.x = dropResult.data.x;
+					singletonState.y = dropResult.data.y;
 
-				ENGINE.handler.createAndAdd(singletonState, elementType);
-			} else if (isMountDrop(dropResult)) {
-				// ENGINE.handler.mountElementFromTemplate({mountConfig: {...dropResult}}, props.element.ref, dropResult.insert);
-
-				singletonState.parentId = dropResult.channelID;
-				if (dropResult.insert === true) {
-					ENGINE.handler.addColumn(dropResult.sequenceID ?? "", dropResult.index);
-				}
-
-				if (isPulse(singletonState)) {
-					singletonState.pulseData.channelID = dropResult.channelID;
-					singletonState.pulseData.sequenceID = dropResult.sequenceID;
-					singletonState.pulseData.index = dropResult.index;
-
-					if (singletonState.pulseData.orientation !== "both") {
-						singletonState.pulseData.orientation = dropResult.orientation;
+					singletonState.placementMode = {
+						type: "free"
 					}
-				}
+					singletonState.parentId = ENGINE.handler.diagram.id;
 
-				var result: Result<Visual> = ENGINE.handler.createAndAdd(
-					singletonState,
-					elementType as UserComponentType
-				);
+					ENGINE.handler.act({
+						"type": "createAndAdd",
+						input: {
+							parameters: singletonState,
+						}
+					})
+					break;
+				case "pulse":
+					singletonState.parentId = dropResult.data.channelID;
+					if (dropResult.data.insert === true) {
+						ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
+					}
 
-				if (result.ok === false) {
-					appToaster.show({
-						message: `Cannot add pulse '${singletonState.ref}'`,
-						intent: "danger"
-					});
-				}
+					if (isPulse(singletonState)) {
+						singletonState.pulseData.channelID = dropResult.data.channelID;
+						singletonState.pulseData.sequenceID = dropResult.data.sequenceID;
+						singletonState.pulseData.index = dropResult.data.index;
+
+						if (singletonState.pulseData.orientation !== "both") {
+							singletonState.pulseData.orientation = dropResult.data.orientation;
+						}
+					}
+
+					singletonState.placementMode = {
+						type: "grid",
+						config: {}
+					}
+
+					ENGINE.handler.act({
+						type: "createAndAdd",
+						input: {
+							parameters: singletonState,
+						}
+					})
+
+					break;
+				case "grid":
+					singletonState.placementMode = {
+						type: "grid",
+						config: {
+							coords: dropResult.data.coords
+						}
+					}
+					singletonState.parentId = dropResult.data.id;
+
+					// ENGINE.handler.act({
+					// 	type: "createAndAdd"
+					// })
+					break;
 			}
 		},
 		collect: (monitor) => ({

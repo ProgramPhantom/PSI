@@ -3,6 +3,25 @@ import { ID } from "./point";
 import { ContainerSizeMethod, Dimensions, Size } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 
+// Add
+export type AddDispatchData<C extends Visual = Visual> = { child: C, index?: number }
+export interface ICanAdd<C extends Visual = Visual> {
+	add: ({ child, index }: AddDispatchData<C>) => void
+}
+export function CanAdd(value: Visual): value is (Visual & ICanAdd) {
+	return (value as any).add !== undefined
+}
+
+
+// Remove
+export type RemoveDispatchData<C extends Visual = Visual> = { child: C }
+export interface ICanRemove<C extends Visual = Visual> {
+	remove: ({ child }: RemoveDispatchData<C>) => void
+}
+export function CanRemove(value: Visual): value is Visual & ICanRemove {
+	return (value as any).remove !== undefined
+}
+
 
 export interface ICollection<C extends IVisual = IVisual> extends IVisual {
 	children: C[];
@@ -12,7 +31,7 @@ export interface ICollection<C extends IVisual = IVisual> extends IVisual {
 
 export type RolesDict = Record<string, { object: Visual | undefined, initialiser?: (object: Visual) => void }>;
 
-export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C> {
+export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C>, ICanAdd<C>, ICanRemove<C> {
 	static isCollection(v: IVisual): v is Collection {
 		return (v as any).children !== undefined;
 	}
@@ -20,7 +39,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	get state(): ICollection {
 		return {
 			children: this.children.map((c) => c.state),
-			
+
 			...super.state,
 			sizeMode: this.sizeMode
 		};
@@ -210,7 +229,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 	// ----------------- Collection methods -------------
 	//#region 
-	add(child: C, index?: number) {
+	add({ child, index }: AddDispatchData<C>) {
 		child.parentId = this.id;
 
 		this.children.splice(index ?? this.numChildren, 0, child);
@@ -232,7 +251,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		});
 	}
 
-	remove(child: C) {
+	remove({ child }: RemoveDispatchData<C>) {
 		var index: number | undefined = this.childIndex(child);
 
 		if (index === undefined) {
@@ -249,7 +268,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 	removeAll() {
 		this.children.forEach((c) => {
-			this.remove(c);
+			this.remove({ child: c });
 		});
 	}
 	//#endregion

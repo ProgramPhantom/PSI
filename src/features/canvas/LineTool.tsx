@@ -2,7 +2,7 @@ import { Path } from "@svgdotjs/svg.js";
 import { useEffect, useRef, useState } from "react";
 import { IToolConfig, Tool } from "../../app/App";
 import Aligner from "../../logic/aligner";
-import { Result } from "../../logic/diagramHandler";
+import { ActionResult } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
 import { ILineStyle } from "../../logic/line";
 import Spacial, { IBindingPayload, PointBind } from "../../logic/spacial";
@@ -39,8 +39,8 @@ export function LineTool(props: IDrawArrowProps) {
 	const overlaySvgRef = useRef<SVGSVGElement | null>(null);
 
 	const createArrow = (startBind: PointBind, endBind: PointBind) => {
-		var result: Result<any> = ENGINE.handler.createLine(
-			{lineStyle: props.config.lineStyle},
+		var result: ActionResult<any> = ENGINE.handler.createLine(
+			{ lineStyle: props.config.lineStyle },
 			startBind,
 			endBind
 		);
@@ -52,7 +52,7 @@ export function LineTool(props: IDrawArrowProps) {
 			});
 		}
 
-		props.setTool({type: "select", config: {}});
+		props.setTool({ type: "select", config: {} });
 	};
 
 	const placeVerticalLine = (col: Spacial, far: boolean = false) => {
@@ -114,7 +114,7 @@ export function LineTool(props: IDrawArrowProps) {
 
 	const selectBind = (bindX: IBindingPayload, bindY: IBindingPayload) => {
 		if (start.current === undefined) {
-			start.current = {x: bindX, y: bindY};
+			start.current = { x: bindX, y: bindY };
 			var startX = bindX.anchorObject.getCoordinateFromBindRule(bindX.bindingRule);
 			var startY = bindY.anchorObject.getCoordinateFromBindRule(bindY.bindingRule);
 			setStartCoords([startX, startY]);
@@ -129,10 +129,10 @@ export function LineTool(props: IDrawArrowProps) {
 			setArrowIndicator(p);
 			setPreviewPathSvg(p.svg());
 		} else {
-			end.current = {x: bindX, y: bindY};
+			end.current = { x: bindX, y: bindY };
 
 			if (start.current !== undefined) {
-				createArrow(start.current, {x: bindX, y: bindY});
+				createArrow(start.current, { x: bindX, y: bindY });
 			}
 
 			start.current = undefined;
@@ -186,7 +186,7 @@ export function LineTool(props: IDrawArrowProps) {
 	var lastColumn: Spacial = columns[columns.length - 1];
 	return (
 		<>
-			<div style={{position: "absolute"}}>
+			<div style={{ position: "absolute" }}>
 				{props.hoveredElement && props.config.mode === "bind" ? (
 					<BindingsSelector
 						element={props.hoveredElement}
@@ -260,7 +260,7 @@ export function LineTool(props: IDrawArrowProps) {
 						}}
 						width={ENGINE.handler.diagram.width}
 						height={ENGINE.handler.diagram.height}>
-						<g dangerouslySetInnerHTML={{__html: previewPathSvg}} />
+						<g dangerouslySetInnerHTML={{ __html: previewPathSvg }} />
 					</svg>
 				) : (
 					<></>

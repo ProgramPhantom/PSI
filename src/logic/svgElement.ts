@@ -83,33 +83,34 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		}
 
 
-		if (this.dirty) {
-			// Clear old svg
-			if (this.svg) {
-				this.svg.remove();
-			}
-
-			// Flip svg depending on orientation.
-			// if (
-			// 	(!this.flipped && this.mountConfig?.orientation === "bottom")
-			// 	|| (this.flipped && this.mountConfig?.orientation === "top")
-			// ) {
-			// 	this.flipped = !this.flipped;
-			// 	this.verticalFlip();
-			// }
-			// 
-			// if (this.flipped) {
-			// 	this.offset = [this.offset[0], -Math.abs(this.offset[1])];
-			// } else {
-			// 	this.offset = [this.offset[0], Math.abs(this.offset[1])];
-			// }
-
-			// Position, size and draw svg.
-			this.svg.move(this.drawCX, this.drawCY);
-			this.svg.size(this.contentWidth, this.contentHeight);
-
-			surface.add(this.svg);
+		
+		// Clear old svg
+		if (this.svg) {
+			this.svg.remove();
 		}
+
+		// Flip svg depending on orientation.
+		// if (
+		// 	(!this.flipped && this.mountConfig?.orientation === "bottom")
+		// 	|| (this.flipped && this.mountConfig?.orientation === "top")
+		// ) {
+		// 	this.flipped = !this.flipped;
+		// 	this.verticalFlip();
+		// }
+		// 
+		// if (this.flipped) {
+		// 	this.offset = [this.offset[0], -Math.abs(this.offset[1])];
+		// } else {
+		// 	this.offset = [this.offset[0], Math.abs(this.offset[1])];
+		// }
+
+		// Position, size and draw svg.
+		this.svg.move(this.drawCX, this.drawCY);
+		this.svg.size(this.contentWidth, this.contentHeight);
+		//this.svg.attr({"style": 'display: "block"'})
+		this.svg.show();
+		surface.add(this.svg);
+		
 
 		super.draw(surface);
 	}

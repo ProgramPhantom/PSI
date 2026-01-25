@@ -65,7 +65,7 @@ export default class Label extends Aligner implements ILabel {
 			}
 
 			this.text = text;
-			this.add(text);
+			this.add({child: text});
 		}
 
 		if (params.line) {
@@ -91,7 +91,7 @@ export default class Label extends Aligner implements ILabel {
 
 			switch (this.labelConfig.textPosition) {
 				case "top":
-					this.add(this.line)
+					this.add({child: this.line})
 					break;
 				case "inline":
 					this.line.placementMode = {
@@ -101,10 +101,10 @@ export default class Label extends Aligner implements ILabel {
 							contribution: { mainAxis: false, crossAxis: true }
 						}
 					}
-					this.add(this.line)
+					this.add({child: this.line})
 					break;
 				case "bottom":
-					this.add(this.line, 0);
+					this.add({child: this.line, index: 0});
 
 			}
 		}

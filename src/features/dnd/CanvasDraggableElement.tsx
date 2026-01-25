@@ -7,8 +7,9 @@ import { HandleStyles } from "react-rnd";
 import ENGINE from "../../logic/engine";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
-import { DragElementTypes, IDrop, isCanvasDrop } from "./CanvasDropContainer";
-import { isMountDrop } from "./ChannelInsertArea";
+import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
+import { ActionResult } from "../../logic/diagramHandler";
+import { appToaster } from "../../app/Toaster";
 
 
 const style: CSSProperties = {
@@ -85,65 +86,77 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					offset: offsetRef.current
 				} as CanvasDraggableElementPayload),
 				end: (item, monitor) => {
-					const dropResult = monitor.getDropResult<IDrop>();
+					const dropResult = monitor.getDropResult<AllDropResultTypes>();
 					if (dropResult === null) {
 						return;
 					}
 
-					let elementType = (item.element.constructor as typeof Visual).ElementType
+					let newState: IVisual = { ...item.element.state }
 
-					if (isCanvasDrop(dropResult)) {
-						const scale = ENGINE.surface.node.getScreenCTM()?.a ?? 1;
+					switch (dropResult.type) {
+						case "canvas":
+							const scale = ENGINE.surface.node.getScreenCTM()?.a ?? 1;
 
-						const offsetX = item.offset?.x ?? 0;
-						const offsetY = item.offset?.y ?? 0;
+							const offsetX = item.offset?.x ?? 0;
+							const offsetY = item.offset?.y ?? 0;
 
-						item.element.x = dropResult.x - (offsetX / scale);
-						item.element.y = dropResult.y - (offsetY / scale);
+							
+							newState.x = dropResult.data.x - (offsetX / scale);
+							newState.y = dropResult.data.y - (offsetY / scale);
 
-						let newState: IVisual = { ...item.element.state }
-						newState.parentId = ENGINE.handler.diagram.id;
-						newState.placementMode = {
-							type: "free",
-						}
+							
+							newState.parentId = ENGINE.handler.diagram.id;
+							newState.placementMode = {
+								type: "free",
+							}
 
-						ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
-					} else if (isMountDrop(dropResult)) {
-						if (isPulse(item.element)) {
-							// var newMountConfig: IPulseConfig = {
-							// 	...item.element.placementMode.config,
-							// 	orientation: item.element.placementMode.config.orientation === "both" ? "both" : result.orientation,
-							// 	channelID: result.channelID,
-							// 	sequenceID: result.sequenceID,
-							// 	index: result.index
-							// };
+							ENGINE.handler.act({
+								type: "createAndModify",
+								input: {
+									parameters: newState,
+									target: props.element
+								}
+							})
+							break;
+						case "pulse":
+							newState = { ...item.element.state }
 
-							let newState: IVisual = { ...item.element.state }
-
-							newState.pulseData!.channelID = dropResult.channelID;
-							newState.pulseData!.sequenceID = dropResult.sequenceID;
-							newState.pulseData!.index = dropResult.index;
+							newState.pulseData!.channelID = dropResult.data.channelID;
+							newState.pulseData!.sequenceID = dropResult.data.sequenceID;
+							newState.pulseData!.index = dropResult.data.index;
 
 							if (newState.pulseData!.orientation !== "both") {
-								newState.pulseData!.orientation = dropResult.orientation;
+								newState.pulseData!.orientation = dropResult.data.orientation;
 							}
 
-							newState.parentId = dropResult.channelID;
-
-							if (dropResult.insert === true) {
-								ENGINE.handler.addColumn(dropResult.sequenceID ?? "", dropResult.index);
+							newState.parentId = dropResult.data.channelID;
+							newState.placementMode = {
+								type: "grid",
+								config: {}
 							}
 
-
-							let modifyResult = ENGINE.handler.submitModifyVisual(newState, elementType, item.element);
-
-							if (modifyResult.ok === true) {
-								props.reselect(modifyResult.value);
+							if (dropResult.data.insert === true) {
+								ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
 							}
 
-						} else {
-							throw Error("Not yet implemented"); // Converting an unmounted object into a mounted one.
-						}
+							ENGINE.handler.act({
+								type: "createAndModify",
+								input: {
+									parameters: newState,
+									target: props.element
+								}
+							})
+							break
+						case "grid":
+							newState.placementMode = {
+								type: "grid",
+								config: {
+									coords: dropResult.data.coords
+								}
+							}
+							newState.parentId = dropResult.data.id;
+
+							break;
 					}
 				},
 				collect: (monitor) => ({

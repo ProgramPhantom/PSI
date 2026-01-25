@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 
 
 export const appToaster: Toaster = await OverlayToaster.createAsync(
-	{position: "bottom"},
+	{ position: "bottom", maxToasts: 3 },
 	{
 		domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster)
 	}

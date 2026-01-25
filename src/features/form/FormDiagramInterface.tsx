@@ -2,7 +2,7 @@ import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Ico
 import { useRef, useState } from "react";
 import { ObjectInspector } from "react-inspector";
 import { appToaster } from "../../app/Toaster";
-import { Result } from "../../logic/diagramHandler";
+import { ActionResult } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
 import { UserComponentType } from "../../logic/point";
 import { IVisual } from "../../logic/visual";
@@ -21,36 +21,41 @@ export function FormDiagramInterface(props: FormHolderProps) {
 	// Submit function
 	const dispatchFormEffect = (
 		values: IVisual,
-		masterType: UserComponentType,
 		effect: FormEffect
 	) => {
 
-		var result: Result<any>;
 		switch (effect) {
 			case "submit":
-				result = (ENGINE.handler.createAndAdd)(values, masterType);
+				ENGINE.handler.act({
+					type: "createAndAdd",
+					input: {
+						parameters: values
+					}
+				})
 				break;
 			case "modify":
 				if (props.target === undefined) {
 					throw new Error(`Calling modification function with no selected target`)
 				}
-				result = (ENGINE.handler.submitModifyVisual)(values, masterType, props.target);
+				ENGINE.handler.act({
+					type: "createAndModify",
+					input: {
+						parameters: values,
+						target: props.target
+					}
+				})
 				break;
 			case "delete":
 				if (props.target === undefined) {
 					throw new Error(`Calling deletion function with no selected target`)
 				}
-				result = (ENGINE.handler.submitDeleteVisual)(props.target, masterType);
+				ENGINE.handler.act({
+					type: "remove",
+					input: {
+						child: props.target
+					}
+				})
 				break;
-			default:
-				result = { ok: false, error: `No '${effect}' method assigned to object type '${masterType}'` }
-		}
-
-		if (!result.ok) {
-			appToaster.show({
-				message: result.error,
-				intent: "danger"
-			});
 		}
 	}
 
@@ -108,7 +113,6 @@ export function FormDiagramInterface(props: FormHolderProps) {
 								onClick={() => {
 									dispatchFormEffect(
 										props.target!,
-										props.targetType as UserComponentType,
 										"delete"
 									);
 									props.changeTarget(undefined);
@@ -141,10 +145,10 @@ export function FormDiagramInterface(props: FormHolderProps) {
 					objectType={props.targetType as UserComponentType}
 					target={props.target}
 					changeTarget={props.changeTarget}
-					callback={(val: IVisual, masterType: UserComponentType) => {
+					callback={(val: IVisual) => {
 						props.target
-							? dispatchFormEffect(val, masterType, "modify")
-							: dispatchFormEffect(val, masterType, "submit");
+							? dispatchFormEffect(val, "modify")
+							: dispatchFormEffect(val, "submit");
 						props.changeTarget(undefined);
 					}}></LabelGroupComboForm>
 

@@ -1,29 +1,17 @@
-import type { CSSProperties, FC, ReactNode } from "react";
+import type { FC, ReactNode } from "react";
 import { useDrop } from "react-dnd";
+import { PulseDropResultType } from "./ChannelInsertArea";
+import { GridDropResultType } from "./GridInsertArea";
 
-const styles: CSSProperties = {
-	width: "100%",
-	height: "100%",
-	position: "relative"
-};
 
-export interface ICanvasContainerProps {
-	children: ReactNode[];
-	scale: number;
-}
-
-export interface ICanvasDropResult extends IDrop {
+export interface IDirectCanvasDropResult {
 	x: number;
 	y: number;
 }
-export function isCanvasDrop(object: IDrop): object is ICanvasDropResult {
-	return object.dropEffect === "move";
-}
-export type DropEffect = "move" | "insert";
+type CanvasDropResultType = {type: "canvas", data: IDirectCanvasDropResult}
 
-export interface IDrop {
-	dropEffect: DropEffect;
-}
+
+export type AllDropResultTypes = CanvasDropResultType | PulseDropResultType | GridDropResultType
 
 export const DragElementTypes = {
 	PREFAB: "prefab",
@@ -33,13 +21,19 @@ export const DragElementTypes = {
 	FIXED: "fixed"
 }
 
+
+export interface ICanvasContainerProps {
+	children: ReactNode[];
+	scale: number;
+}
+
 /* This is a drop target that covers the entire canvas for collecting drops that are intended
 for movements of elements. */
 export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 	const [, drop] = useDrop(
 		() => ({
 			accept: [DragElementTypes.PULSE, DragElementTypes.FREE, DragElementTypes.PREFAB],
-			drop(item: ICanvasDropResult, monitor) {
+			drop(item: IDirectCanvasDropResult, monitor) {
 				// Allow drop to be handled by insertAreas
 				const didDrop = monitor.didDrop();
 				if (didDrop) {
@@ -66,14 +60,18 @@ export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 				const relativeX = (clientOffset.x - drawDivRect.left) / props.scale;
 				const relativeY = (clientOffset.y - drawDivRect.top) / props.scale;
 
-				return { dropEffect: "move", x: relativeX, y: relativeY };
+				return { type: "canvas", data: {x: relativeX, y: relativeY }} as CanvasDropResultType;
 			}
 		}),
 		[props.scale]
 	);
 
 	return (
-		<div ref={drop} style={styles} data-canvas-container>
+		<div ref={drop} style={{
+			width: "100%",
+			height: "100%",
+			position: "relative"
+		}} data-canvas-container>
 			{props.children}
 		</div>
 	);

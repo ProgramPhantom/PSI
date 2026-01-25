@@ -1,5 +1,5 @@
 import { Element, G } from "@svgdotjs/svg.js";
-import Collection, { ICollection } from "./collection";
+import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
 import { ID } from "./point";
 import Spacial, { Dimensions, IGridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
 import Visual, { doesDraw, GridElement, IDraw, IVisual, PulseElement } from "./visual";
@@ -452,8 +452,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 
 	// ---------------- Add Methods ----------------
 	//#region
-	public override add(child: C, index?: number) {
-		super.add(child, index);
+	public override add({ child, index }: AddDispatchData<C>) {
+		super.add({ child, index });
 
 		if (Grid.isGridElement(child)) {
 			this.addElement(child);
@@ -607,8 +607,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 
 	// ---------------- Remove Methods ----------------
 	//#region 
-	public remove(child: C, deleteIfEmpty?: { row: boolean, col: boolean }) {
-		super.remove(child)
+	public remove({ child }: RemoveDispatchData<C>, deleteIfEmpty?: { row: boolean, col: boolean }) {
+		super.remove({ child })
 
 		if (Grid.isGridElement(child)) {
 			this.removeMatrix(child, deleteIfEmpty)
@@ -892,12 +892,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		}
 
 		var targetColumn: GridCell[] | undefined = this.getColumn(INDEX);
-		if (targetColumn === undefined) {return}
+		if (targetColumn === undefined) { return }
 
 		var empty: boolean = this.isArrayEmpty(targetColumn)
 
-		if (remove === false) {return}
-		if (remove === "if-empty"  && empty === false) { return }
+		if (remove === false) { return }
+		if (remove === "if-empty" && empty === false) { return }
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);
@@ -914,7 +914,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		}
 
 		var targetRow: GridCell[] | undefined = this.getRow(INDEX);
-		if (targetRow === undefined) {return}
+		if (targetRow === undefined) { return }
 
 		var empty: boolean = this.isArrayEmpty(targetRow)
 
@@ -1056,7 +1056,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	}
 
 	public getColumn(index: number): GridCell[] | undefined {
-		if (index >= this.numColumns || index < 0) {return undefined}
+		if (index >= this.numColumns || index < 0) { return undefined }
 		return this.gridMatrix.map((row) => row[index]);
 	}
 
@@ -1238,7 +1238,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 	// ---------------- Helpers ---------------------
 	//#region 
 	protected isArrayEmpty(target: GridCell[]): boolean {
-		return !target .some((c) => c !== undefined)
+		return !target.some((c) => c !== undefined)
 	}
 
 	protected isCellEmptyAt(coords: { row: number, col: number }): boolean {

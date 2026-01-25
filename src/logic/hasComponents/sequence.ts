@@ -1,20 +1,23 @@
-import { Element } from "@svgdotjs/svg.js";
-import Grid, { Ghost, GridCell, IGrid, OccupiedCell } from "../grid";
+import { AddDispatchData, RemoveDispatchData } from "../collection";
+import Grid, { GridCell, IGrid } from "../grid";
 import { ID, UserComponentType } from "../point";
-import Spacial, { Dimensions, IGridConfig, IPulseConfig, Orientation, PlacementConfiguration, SiteNames, Size } from "../spacial";
-import Visual, { GridElement, PulseElement } from "../visual";
+import Spacial, { Dimensions, IGridConfig, IPulseConfig, Orientation, SiteNames, Size } from "../spacial";
+import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
-import { G } from "@svgdotjs/svg.js";
 
-
-export interface ISequence extends IGrid<IChannel> {
-
+export type AddBlockDispatchData = { region: GridCell[][], coords?: { row: number, col: number } }
+export interface ICanAddBlock {
+	addBlock: ({ region, coords }: AddBlockDispatchData) => void
+}
+export function CanAddBlock(value: Visual): value is Visual & ICanAddBlock {
+	return (value as any).addBlock !== undefined
 }
 
-export type OccupancyStatus = Visual | "." | undefined;
+export interface ISequence extends IGrid<IChannel> {
+}
 
 
-export default class Sequence extends Grid<Channel> implements ISequence {
+export default class Sequence extends Grid<Channel> implements ISequence, ICanAddBlock {
 	static ElementType: UserComponentType = "sequence";
 	get state(): ISequence {
 		return {
@@ -84,7 +87,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 	// ----------------- Add Methods -----------------
 	//#region
-	public override add(child: Channel, index?: number) {
+	public override add({ child, index }: AddDispatchData<Channel>) {
 		let CHILD_INDEX: number = index ?? this.numChildren;
 		// super.add(child);
 		this.children.splice(CHILD_INDEX, 0, child);
@@ -101,11 +104,15 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		// rows of the channel now, there's no need to expand it
 
 		child.getRows().forEach((row, row_index) => {
-			this.gridMatrix.splice((CHILD_INDEX*3) + row_index, 0, row)
+			this.gridMatrix.splice((CHILD_INDEX * 3) + row_index, 0, row)
 		})
 
 		child.placementControl = "auto";
-		child.placementMode = {type: "channel"}
+		child.placementMode = { type: "channel" }
+	}
+
+	public addBlock({ region, coords }: AddBlockDispatchData) {
+		this.appendElementsInRegion(region, coords);
 	}
 	//#endregion
 	// -----------------------------------------------
@@ -113,12 +120,12 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 	// --------------- Remove methods ----------------
 	//#region 
-	public override remove(channel: Channel) {
-		var channelIndex: number | undefined = this.childIndex(channel);
-		super.remove(channel)
+	public override remove({ child }: RemoveDispatchData<Channel>) {
+		var channelIndex: number | undefined = this.childIndex(child);
+		super.remove({ child })
 
 		if (channelIndex === undefined) {
-			console.warn(`Cannot find index of channel with ref ${channel.ref}`)
+			console.warn(`Cannot find index of channel with ref ${child.ref}`)
 			return
 		}
 
@@ -195,7 +202,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 			// and just set the number of columns
 
 			// set matrix takes index
-			channel.setMatrixSize({ col: longestChannel -1 });
+			channel.setMatrixSize({ col: longestChannel - 1 });
 		})
 	}
 
@@ -323,8 +330,8 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 		var empty: boolean = !this.colHasPulse(INDEX);
 
-		if (remove === false) {return}
-		if (remove === "if-empty"  && empty === false) { return }
+		if (remove === false) { return }
+		if (remove === "if-empty" && empty === false) { return }
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);
@@ -340,8 +347,8 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 	// --------------- Helpers -----------------------
 	//#region 
 	private colHasPulse(col: number): boolean {
-		var targetColumn: GridCell[] | undefined= this.getColumn(col);
-		if (targetColumn === undefined) {return false}
+		var targetColumn: GridCell[] | undefined = this.getColumn(col);
+		if (targetColumn === undefined) { return false }
 
 		let present: number = 0;
 

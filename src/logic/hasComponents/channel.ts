@@ -1,4 +1,4 @@
-import { RolesDict } from "../collection";
+import { AddDispatchData, RemoveDispatchData, RolesDict } from "../collection";
 import Grid, { Elements, Ghost, GridCell, IGrid } from "../grid";
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
 import RectElement, { IRectElement } from "../rectElement";
@@ -83,9 +83,9 @@ export default class Channel extends Grid implements IChannel {
 		super(params);
 
 		if (params.sequenceID !== undefined) {
-			
+
 		}
-	
+
 
 		this.initialiseChannel();
 	}
@@ -113,7 +113,7 @@ export default class Channel extends Grid implements IChannel {
 
 	}
 
-	public override add(child: GridElement) {
+	public override add({ child }: AddDispatchData<GridElement>) {
 		if (isPulse(child)) {
 			this.setGridConfigViaPulseData(child, child.pulseData);
 
@@ -131,18 +131,18 @@ export default class Channel extends Grid implements IChannel {
 
 		this.sizeBar()
 
-		super.add(child);
+		super.add({ child });
 	}
 
-	public remove(child: GridElement, deleteIfEmpty?: { row: boolean, col: boolean }, modifying?: boolean) {
+	public remove({ child }: RemoveDispatchData<GridElement>) {
 		//let remove: {row: boolean, col: boolean } = {row: false, col: isPulse(child)}
 		//
 		//// Never remove the first pulse column
 		//if (this.numColumns === 2) {
 		//	remove.col = false
 		//}
-		
-		super.remove(child)
+
+		super.remove({ child })
 	}
 
 	public sizeBar() {
@@ -150,7 +150,7 @@ export default class Channel extends Grid implements IChannel {
 			return
 		}
 
-		this.remove(this.bar)
+		this.remove({ child: this.bar })
 
 		this.bar.placementMode = {
 			type: "grid",
@@ -170,7 +170,7 @@ export default class Channel extends Grid implements IChannel {
 			}
 		}
 
-		super.add(this.bar);
+		super.add({ child: this.bar });
 	}
 
 	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {

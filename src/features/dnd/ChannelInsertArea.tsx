@@ -2,18 +2,17 @@ import { Colors } from "@blueprintjs/core";
 import { CSSProperties } from "react";
 import { useDrop } from "react-dnd";
 import { ID } from "../../logic/point";
-import { DragElementTypes, IDrop } from "./CanvasDropContainer";
+import { DragElementTypes } from "./CanvasDropContainer";
 import { Orientation } from "../../logic/spacial";
 
-interface Rect {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-}
 
-export interface AddSpec {
-	area: Rect;
+export interface IPulseArea {
+	area: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	};
 	channelID: ID;
 	sequenceID: ID;
 	index: number;
@@ -21,30 +20,30 @@ export interface AddSpec {
 	insert: boolean;
 }
 
-export interface IMountAreaResult extends IDrop {
+interface IPulseDataAreaResult {
 	index: number;
 	channelID: ID;
 	sequenceID: ID;
 	orientation: Orientation;
 	insert: boolean;
 }
+export type PulseDropResultType = {type: "pulse", data: IPulseDataAreaResult}
 
-export function isMountDrop(object: IDrop): object is IMountAreaResult {
-	return object.dropEffect === "insert";
-}
 
-function ChannelInsertArea(props: {areaSpec: AddSpec; key: string}) {
+function ChannelInsertArea(props: {areaSpec: IPulseArea; key: string}) {
 	const [{canDrop, isOver}, drop] = useDrop(() => ({
 		accept: [DragElementTypes.PULSE, DragElementTypes.PREFAB],
 		drop: () =>
 			({
-				index: props.areaSpec.index,
-				channelID: props.areaSpec.channelID,
-				sequenceID: props.areaSpec.sequenceID,
-				insert: props.areaSpec.insert,
-				orientation: props.areaSpec.orientation,
-				dropEffect: "insert"
-			}) as IMountAreaResult,
+				data: {
+					index: props.areaSpec.index,
+					channelID: props.areaSpec.channelID,
+					sequenceID: props.areaSpec.sequenceID,
+					insert: props.areaSpec.insert,
+					orientation: props.areaSpec.orientation,
+				},
+				type: "pulse"
+			}) as PulseDropResultType,
 		collect: (monitor) => ({
 			isOver: monitor.isOver(),
 			isOverCurrent: monitor.isOver({shallow: false}),

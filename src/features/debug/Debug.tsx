@@ -5,6 +5,7 @@ import Visual from "../../logic/visual";
 import PaddedBoxDebug from "./PaddedBoxDebug";
 import GridDebug from "./GridDebug";
 import PulseDebug from "./PulseDebug";
+import GridDropField from "../dnd/GridDropField";
 
 interface IDebug {
 	debugGroupSelection: Record<AllComponentTypes, boolean>;

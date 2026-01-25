@@ -16,7 +16,7 @@ import { CollectionChildrenList } from "./CollectionChildrenList";
 interface LabelGroupComboForm {
 	target?: Visual;
 	objectType: UserComponentType;
-	callback: (val: IVisual, masterType: UserComponentType) => void;
+	callback: (val: IVisual) => void;
 
 	ref?: React.RefObject<SubmitButtonRef>;
 
@@ -158,12 +158,13 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						labels: labelListFormData,
 						children: [],
 						...masterFormData,
-						sizeMode: { x: "fit", y: "fit" }
+						sizeMode: { x: "fit", y: "fit" },
+						type: "label-group"
 					};
 
-					props.callback(result, "label-group");
+					props.callback(result);
 				} else {
-					props.callback(masterFormData, props.objectType);
+					props.callback(masterFormData);
 				}
 			} else {
 
@@ -179,12 +180,12 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 						children: [],
 						sizeMode: { x: "fit", y: "fit" }
 					};
-					props.callback(result, "label-group");
+					props.callback(result);
 				} else {
 					// Change BACK into a non-label group
 					// Copy placement mode from label group into core child
 					childFormData!.placementMode = props.target!.placementMode;
-					props.callback(childFormData!, (masterFormData as ILabelGroup).coreChildType);
+					props.callback(childFormData!);
 				}
 			}
 		});

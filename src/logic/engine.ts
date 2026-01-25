@@ -1,7 +1,7 @@
 import { Element, Svg, SVG } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 import SchemeManager, { IUserSchemeData } from "./default";
-import DiagramHandler, { Result } from "./diagramHandler";
+import DiagramHandler, { ActionResult, Result } from "./diagramHandler";
 import Grid, { IGrid } from "./grid";
 import Channel, { IChannel } from "./hasComponents/channel";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
@@ -227,7 +227,7 @@ class ENGINE {
 			case "diagram":
 				element = new Diagram(parameters as IDiagram);
 				break;
-			
+
 			default:
 				element = undefined;
 		}
@@ -255,9 +255,9 @@ class ENGINE {
 		}
 
 		if (Collection.isCollection(parent)) {
-			parent.add(element);
+			parent.add({ child: element });
 		}
-		
+
 
 
 	}
