@@ -22,6 +22,8 @@ import AddSchemeDialog from "./AddSchemeDialog";
 import NewElementDialog from "./NewElementDialog";
 import { appToaster } from "../../app/Toaster";
 
+import { isPulse } from "../../logic/spacial";
+
 interface IElementDrawProps { }
 
 const ElementsDraw: React.FC<IElementDrawProps> = () => {
@@ -35,6 +37,18 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	const [schemeState, setSchemeState] = useState<SchemeSet>(ENGINE.schemeManager.allSchemes);
+	const [filter, setFilter] = useState<string>("All");
+
+	const filterElements = (elements: Visual[], filter: string) => {
+		return elements.filter((e) => {
+			if (filter === "All") return true;
+			if (filter === "Channels") return e.type === "channel";
+			if (filter === "Sequences") return e.type === "sequence";
+			if (filter === "Pulses") return isPulse(e);
+			if (filter === "Annotation") return e.type === "label" || e.type === "text";
+			return true;
+		});
+	};
 
 	const handleElementDoubleClick = (element: Visual) => {
 		setSelectedElement(element);
@@ -131,7 +145,10 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 						style={{
 							padding: "8px 16px",
 							width: "100%",
-							height: "100%"
+							flex: "1 1 0",
+							minHeight: 0,
+							display: "flex",
+							flexDirection: "column"
 						}}>
 						<style>{`.bp5-tabs { height: 100% }`}</style>
 
@@ -141,8 +158,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 							defaultSelectedTabId={"default"}
 							fill={true}
 							selectedTabId={selectedScheme}>
-							<style>{`.bp5-tab-panel { width: 100%; height: 100%; !important; max-width: 100% !important; box-sizing: border-box; display: block; 
-                                                      overflow: "auto" }`}</style>
+							<style>{`.bp5-tab-panel { width: 100%; height: 100% !important; max-width: 100% !important; box-sizing: border-box; display: block; overflow: hidden; }`}</style>
 
 							{Object.entries(schemeState).map(([schemeName, singletonDict]) => {
 								var singletons: Visual[] | undefined =
@@ -172,87 +188,114 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 												<div
 													style={{
 														width: "100%",
-														display: "grid",
-														overflow: "auto",
-														gridTemplateColumns:
-															"repeat(auto-fill, minmax(120px, 1fr))",
-														gridTemplateRows:
-															"repeat(auto-fill, 120px)",
-														gap: "12px",
-														padding: "4px"
+														height: "100%",
+														overflow: "hidden",
+														display: "flex",
+														flexDirection: "column"
 													}}>
-													{/* Plus button for adding new elements */}
-													{schemeName
-														!== SchemeManager.InternalSchemeName ? (
-														<div
-															style={{
-																width: "120px",
-																height: "120px",
-																padding: "12px 8px",
-																border: "1px solid #d3d8de",
-																borderRadius: "4px",
-																backgroundColor: "white",
-																display: "flex",
-																flexDirection: "column",
-																alignItems: "center",
-																justifyContent: "center",
-																cursor: "pointer",
-																boxShadow:
-																	"0 1px 3px rgba(0, 0, 0, 0.1)",
-																transition: "all 0.2s ease",
-																userSelect: "none"
-															}}
-															onMouseEnter={(e) => {
-																e.currentTarget.style.boxShadow =
-																	"0 2px 6px rgba(0, 0, 0, 0.15)";
-																e.currentTarget.style.transform =
-																	"translateY(-1px)";
-															}}
-															onMouseLeave={(e) => {
-																e.currentTarget.style.boxShadow =
-																	"0 1px 3px rgba(0, 0, 0, 0.1)";
-																e.currentTarget.style.transform =
-																	"translateY(0)";
-															}}
-															onClick={() =>
-																setIsNewElementDialogOpen(true)
+													{/* Filter Tabs */}
+													<div style={{ padding: "8px 16px 8px 4px", flexShrink: 0 }}>
+														<Tabs
+															id="filter-tabs"
+															onChange={(newFilter) =>
+																setFilter(newFilter as string)
 															}
-															title="Add new template element">
+															selectedTabId={filter}
+															renderActiveTabPanelOnly={false}>
+															<Tab id="All" title="All" />
+															<Tab id="Sequences" title="Sequences" />
+															<Tab id="Channels" title="Channels" />
+															<Tab id="Pulses" title="Pulses" />
+															<Tab id="Annotation" title="Annotation" />
+														</Tabs>
+													</div>
+
+													<div
+														style={{
+															width: "100%",
+															display: "grid",
+															overflow: "auto",
+															gridTemplateColumns:
+																"repeat(auto-fill, minmax(120px, 1fr))",
+															gridAutoRows: "120px",
+															gap: "12px",
+															padding: "4px 16px 16px 4px"
+														}}>
+														{/* Plus button for adding new elements */}
+														{schemeName !==
+															SchemeManager.InternalSchemeName ? (
 															<div
 																style={{
-																	fontSize: "32px",
-																	color: "#5c7080",
-																	marginBottom: "8px"
-																}}>
-																+
-															</div>
-															<span
-																style={{
-																	fontSize: "12px",
-																	color: "#5c7080",
-																	fontWeight: "600",
-																	textAlign: "center",
-																	lineHeight: "1.4"
-																}}>
-																Add New
-															</span>
-														</div>
-													) : (
-														<></>
-													)}
-
-													{singletons.map((s) => {
-														return (
-															<TemplateDraggableElement
-																key={s.ref}
-																element={s}
-																onDoubleClick={
-																	handleElementDoubleClick
+																	width: "120px",
+																	height: "120px",
+																	padding: "12px 8px",
+																	border: "1px solid #d3d8de",
+																	borderRadius: "4px",
+																	backgroundColor: "white",
+																	display: "flex",
+																	flexDirection: "column",
+																	alignItems: "center",
+																	justifyContent: "center",
+																	cursor: "pointer",
+																	boxShadow:
+																		"0 1px 3px rgba(0, 0, 0, 0.1)",
+																	transition: "all 0.2s ease",
+																	userSelect: "none"
+																}}
+																onMouseEnter={(e) => {
+																	e.currentTarget.style.boxShadow =
+																		"0 2px 6px rgba(0, 0, 0, 0.15)";
+																	e.currentTarget.style.transform =
+																		"translateY(-1px)";
+																}}
+																onMouseLeave={(e) => {
+																	e.currentTarget.style.boxShadow =
+																		"0 1px 3px rgba(0, 0, 0, 0.1)";
+																	e.currentTarget.style.transform =
+																		"translateY(0)";
+																}}
+																onClick={() =>
+																	setIsNewElementDialogOpen(true)
 																}
-																schemeName={schemeName}
-															/>
-														);
-													})}
+																title="Add new template element">
+																<div
+																	style={{
+																		fontSize: "32px",
+																		color: "#5c7080",
+																		marginBottom: "8px"
+																	}}>
+																	+
+																</div>
+																<span
+																	style={{
+																		fontSize: "12px",
+																		color: "#5c7080",
+																		fontWeight: "600",
+																		textAlign: "center",
+																		lineHeight: "1.4"
+																	}}>
+																	Add New
+																</span>
+															</div>
+														) : (
+															<></>
+														)}
+
+														{filterElements(singletons, filter).map(
+															(s) => {
+																return (
+																	<TemplateDraggableElement
+																		key={s.ref}
+																		element={s}
+																		onDoubleClick={
+																			handleElementDoubleClick
+																		}
+																		schemeName={schemeName}
+																	/>
+																);
+															}
+														)}
+													</div>
 												</div>
 											</div>
 										}></Tab>
@@ -367,7 +410,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 						</>
 					}></DialogFooter>
 			</Dialog>
-		</div>
+		</div >
 	);
 };
 

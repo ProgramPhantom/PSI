@@ -19,15 +19,15 @@ import { appToaster } from "./Toaster";
 
 ENGINE.initialiseSchemeManager();
 await ENGINE.loadSVGData();
-ENGINE.surface = SVG().attr({"pointer-events": "bounding-box"});
+ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
 ENGINE.loadDiagramState();
 
 ENGINE.createSingletons();
 
-export interface IToolConfig {}
+export interface IToolConfig { }
 
-export type Tool = {type: "select"; config: {}} | {type: "arrow"; config: IDrawArrowConfig};
+export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDrawArrowConfig };
 
 function App() {
 	console.info("Application initialized successfully");
@@ -75,7 +75,7 @@ function App() {
 			const svgString = svgClone.svg();
 
 			// Create a blob with the SVG content
-			const blob = new Blob([svgString], {type: "image/svg+xml"});
+			const blob = new Blob([svgString], { type: "image/svg+xml" });
 
 			// Use the current image name from ENGINE or default to a timestamp
 			const fileName = ENGINE.currentImageName || `pulse-diagram-${Date.now()}.svg`;
@@ -222,7 +222,7 @@ function App() {
 					width: "100%",
 					flexDirection: "column"
 				}}>
-				<div style={{width: "100%"}}>
+				<div style={{ width: "100%" }}>
 					<Banner
 						saveSVG={SaveSVG}
 						savePNG={SavePNG}
@@ -230,7 +230,7 @@ function App() {
 						setTool={setTool}></Banner>
 				</div>
 
-				<div style={{display: "flex", height: "100%", width: "100%"}}>
+				<div style={{ display: "flex", height: "100%", width: "100%" }}>
 					<div
 						style={{
 							flex: "1 1",
@@ -257,15 +257,16 @@ function App() {
 							}}>
 							<ComponentResizer
 								resizeDirection="vertical"
-								defaultHeight={330}
+								defaultHeight={388}
 								maxHeight={600}
+								minHeight={240}
 								panelName="Elements">
 								<ElementsDraw></ElementsDraw>
 							</ComponentResizer>
 						</div>
 					</div>
 
-					<div style={{gridColumnStart: 2, gridColumnEnd: 3}}>
+					<div style={{ gridColumnStart: 2, gridColumnEnd: 3 }}>
 						<ComponentResizer
 							resizeDirection="horizontal"
 							defaultWidth={400}
