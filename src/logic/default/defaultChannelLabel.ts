@@ -1,15 +1,16 @@
 import { IText } from "../text"
 
-export const DEFAULT_TEXT: IText = {
-	"ref": "default-text",
+export const DEFAULT_CHANNEL_TEXT: IText = {
+	"ref": "channel-label",
 	"contentWidth": 10,
 	"contentHeight": 10,
+	"placementControl": "auto",
 	"text": "^{1}\\textrm{H}",
-	"padding": [0, 0, 0, 0],
+	"padding": [0, 5, 0, 0],
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 35,
+		"fontSize": 55,
 		"colour": "black",
 		"background": null,
 		"display": "block"

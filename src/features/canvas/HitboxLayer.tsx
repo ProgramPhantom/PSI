@@ -42,52 +42,15 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	var hitboxSVG: G = new G();
 	var hitboxSvgRef = useRef<SVGSVGElement | null>(null);
 
-	var componentRectArray: Rect[] = [];
-	var freeRectArray: Rect[] = [];
-
 	// Create hitboxes
 	const createHitboxDom = () => {
 		hitboxSVG = new G();
-		componentRectArray = [];
-		freeRectArray = [];
 
-		traverseDom(diagramSVG, componentRectArray, freeRectArray);
-
-		componentRectArray.forEach((r) => {
-			hitboxSVG.add(r);
-		});
-		freeRectArray.forEach((r) => {
-			hitboxSVG.add(r);
-		});
-	};
-
-	const traverseDom = (
-		root: Element,
-		componentRectArray: Rect[],
-		freeRectArray: Rect[],
-		depth: number = BASE_LAYER
-	) => {
-		let thisElement: Visual | undefined = ENGINE.handler.identifyElement(root.id());
-
-
-		if (thisElement !== undefined) {
-			let thisLayer: Rect = thisElement.getHitbox().attr({ zIndex: depth });
-
-			// We don't want the diagram to be selectable.
-			if (thisElement.ref !== "diagram") {
-				componentRectArray.push(thisLayer);
+		Object.values(ENGINE.handler.allElements).forEach((e) => {
+			if (e.type !== "diagram") {
+				hitboxSVG.add(e.getHitbox())
 			}
-
-			if (
-				root.type !== "svg" || depth === BASE_LAYER
-			) {
-				root.children().forEach((c) => {
-					traverseDom(c, componentRectArray, freeRectArray, depth - 1);
-				});
-			}
-		}
-
-
+		})
 	};
 
 	const getMouseElementFromID = (id: ID | undefined): Visual | undefined => {

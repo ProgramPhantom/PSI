@@ -81,24 +81,26 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					})
 					break;
 				case "pulse":
+					singletonState.pulseData = {
+						channelID: dropResult.data.channelID,
+						sequenceID: dropResult.data.sequenceID,
+						index: dropResult.data.index,
+
+						orientation: singletonState.pulseData?.orientation !== "both" ? dropResult.data.orientation : "both",
+						alignment: singletonState.pulseData?.alignment ?? {x: "centre", y: "far"},
+						noSections: singletonState.pulseData?.noSections ?? 1,
+						clipBar: singletonState.pulseData?.clipBar ?? false
+					}
+
 					singletonState.parentId = dropResult.data.channelID;
-					if (dropResult.data.insert === true) {
-						ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
-					}
-
-					if (isPulse(singletonState)) {
-						singletonState.pulseData.channelID = dropResult.data.channelID;
-						singletonState.pulseData.sequenceID = dropResult.data.sequenceID;
-						singletonState.pulseData.index = dropResult.data.index;
-
-						if (singletonState.pulseData.orientation !== "both") {
-							singletonState.pulseData.orientation = dropResult.data.orientation;
-						}
-					}
 
 					singletonState.placementMode = {
 						type: "grid",
 						config: {}
+					}
+
+					if (dropResult.data.insert === true) {
+						ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
 					}
 
 					ENGINE.handler.act({

@@ -22,7 +22,6 @@ import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import { DebugLayerDialog } from "./DebugLayerDialog";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
-import GridDropField from "../dnd/GridDropField";
 
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {

@@ -119,17 +119,19 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							})
 							break;
 						case "pulse":
-							newState = { ...item.element.state }
+							newState.pulseData = {
+								channelID: dropResult.data.channelID,
+								sequenceID: dropResult.data.sequenceID,
+								index: dropResult.data.index,
 
-							newState.pulseData!.channelID = dropResult.data.channelID;
-							newState.pulseData!.sequenceID = dropResult.data.sequenceID;
-							newState.pulseData!.index = dropResult.data.index;
-
-							if (newState.pulseData!.orientation !== "both") {
-								newState.pulseData!.orientation = dropResult.data.orientation;
+								orientation: newState.pulseData?.orientation !== "both" ? dropResult.data.orientation : "both",
+								alignment: newState.pulseData?.alignment ?? {x: "centre", y: "far"},
+								noSections: newState.pulseData?.noSections ?? 1,
+								clipBar: newState.pulseData?.clipBar ?? false
 							}
 
 							newState.parentId = dropResult.data.channelID;
+							
 							newState.placementMode = {
 								type: "grid",
 								config: {}
@@ -187,7 +189,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
     		/* <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
     		<svg ref={visualRef}></svg>
       </Rnd> */}
-				<div
+				<div key={dragElementType}
 					style={{
 						zIndex: 15000,
 						opacity: isDragging ? 0.4 : 1,

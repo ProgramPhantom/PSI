@@ -159,8 +159,15 @@ export default class Text extends Visual implements IText {
 		super.draw(surface);
 	}
 
-	getInternalRepresentation(): SVGElement | undefined {
-		return this.svg;
+	override getInternalRepresentation(): Element | undefined {
+		if (this.svg === undefined) {
+			return undefined
+		}
+
+		var internalSVG = this.svg?.clone(true, true);
+		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
+
+		return internalSVG;
 	}
 }
 
