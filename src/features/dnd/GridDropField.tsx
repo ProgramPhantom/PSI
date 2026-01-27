@@ -1,7 +1,8 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import Grid from "../../logic/grid";
 import GridInsertArea, { IGridArea } from "./GridInsertArea";
+import { IVisual } from "../../logic/visual";
 
 
 interface Rect {
@@ -17,9 +18,14 @@ interface IGridDropFieldProps {
 
 function GridDropField(props: IGridDropFieldProps) {
 	const [insertAreas, setInsertAreas] = useState<IGridArea[]>([]);
+	const [highlightedCells, setHighlightedCells] = useState<Set<string>>(new Set());
+
+	const handleSetHighlights = useCallback((cells: Set<string>) => {
+		setHighlightedCells(cells);
+	}, []);
 
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
-	
+
 	useEffect(() => {
 		let insertAreas: IGridArea[] = [];
 
@@ -49,7 +55,9 @@ function GridDropField(props: IGridDropFieldProps) {
 			}
 		}
 
+
 		setInsertAreas(insertAreas)
+		setHighlightedCells(new Set());
 	}, [store]);
 
 	return (
@@ -58,7 +66,9 @@ function GridDropField(props: IGridDropFieldProps) {
 				return (
 					<GridInsertArea
 						areaSpec={insertArea}
-						key={`${insertArea.coords.row}+${insertArea.coords.col}+${crypto.randomUUID()}`}
+						key={`${insertArea.coords.row}+${insertArea.coords.col}`}
+						isHighlighted={highlightedCells.has(`${insertArea.coords.row},${insertArea.coords.col}`)}
+						onSetHighlights={handleSetHighlights}
 					></GridInsertArea>
 				);
 			})}

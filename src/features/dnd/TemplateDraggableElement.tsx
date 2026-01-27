@@ -44,7 +44,7 @@ interface ITemplateDraggableElementProps {
 	schemeName: string;
 }
 
-interface IDraggableElementDropItem {
+export interface IDraggableElementDropItem {
 	element: Visual;
 }
 

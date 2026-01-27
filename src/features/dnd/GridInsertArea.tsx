@@ -1,7 +1,9 @@
 import { Colors } from "@blueprintjs/core";
-import { CSSProperties } from "react";
+import { CSSProperties, useEffect, useRef } from "react";
 import { useDrop } from "react-dnd";
 import { DragElementTypes, } from "./CanvasDropContainer";
+import { IDraggableElementDropItem } from "./TemplateDraggableElement";
+import { IVisual } from "../../logic/visual";
 
 
 export interface IGridArea {
@@ -22,7 +24,13 @@ export interface IGridAreaResult {
 export type GridDropResultType = { type: "grid", data: IGridAreaResult }
 
 
-function GridInsertArea(props: { areaSpec: IGridArea; key: string }) {
+interface IGridInsertAreaProps {
+	areaSpec: IGridArea;
+	isHighlighted?: boolean;
+	onSetHighlights?: (cells: Set<string>) => void;
+}
+
+function GridInsertArea(props: IGridInsertAreaProps) {
 	const [{ canDrop, isOver }, drop] = useDrop(() => ({
 		accept: [DragElementTypes.SUBSEQUENCE],
 		drop: () =>
@@ -32,23 +40,49 @@ function GridInsertArea(props: { areaSpec: IGridArea; key: string }) {
 					coords: props.areaSpec.coords,
 					id: props.areaSpec.id
 				}
-				
+
 			}) as GridDropResultType,
+		hover: (item: any, monitor) => {
+			if (monitor.canDrop() && props.onSetHighlights) {
+				const { noRows = 1, noCols = 1 } = item.element.placementMode?.config?.gridSize || {};
+				const coords = props.areaSpec.coords;
+
+				const newHighlights = new Set<string>();
+				for (let r = 0; r < noRows; r++) {
+					for (let c = 0; c < noCols; c++) {
+						newHighlights.add(`${coords.row + r},${coords.col + c}`);
+					}
+				}
+
+				props.onSetHighlights(newHighlights);
+			}
+		},
 		collect: (monitor) => ({
 			isOver: monitor.isOver(),
 			isOverCurrent: monitor.isOver({ shallow: false }),
 			canDrop: monitor.canDrop()
-		})
-	}));
+		}),
+
+	})); // Added dependencies
+
+
+	useEffect(() => {
+		if (!isOver && props.onSetHighlights) {
+			props.onSetHighlights(new Set());
+		}
+	}, [isOver]);
 
 	const isActive = canDrop && isOver;
 	let backgroundColor = "transparent";
-	let border = "2px solid rgba(0, 0, 0, 0)";
-	if (isActive) {
+	/*
+	let border = "2px solid rgba(0, 0, 0, 0)"; // Unused variable
+	*/
+
+	if (isActive || props.isHighlighted) {
 		backgroundColor = Colors.RED2;
 	} else if (canDrop) {
 		backgroundColor = Colors.RED4;
-		border = "2px solid rgba(80, 80, 80, 0)";
+		// border = "2px solid rgba(80, 80, 80, 0)";
 	}
 
 	let style: CSSProperties = {
@@ -69,7 +103,7 @@ function GridInsertArea(props: { areaSpec: IGridArea; key: string }) {
 		<div
 			ref={drop}
 			style={{ ...style, backgroundColor, pointerEvents: "visiblePainted", }}
-			key={props.key}></div>
+		></div>
 	);
 }
 
