@@ -12,6 +12,7 @@ import { IRectElement } from "./rectElement";
 import { ISVGElement } from "./svgElement";
 import { IText } from "./text";
 import { IVisual } from "./visual";
+import { IGrid } from "./grid";
 
 
 // TODO: if there are performance problems, try loading not as raw and using svg encoding instead.
@@ -52,6 +53,8 @@ export interface IUserSchemeData {
 
 	line: Record<string, ILine> | undefined;
 	text: Record<string, IText> | undefined;
+
+	subgrids: Record<string, IGrid> | undefined;
 }
 
 // A scheme set is a collection of schemes with names. This object is used to store all the default

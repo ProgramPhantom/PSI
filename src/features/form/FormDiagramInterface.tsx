@@ -27,9 +27,9 @@ export function FormDiagramInterface(props: FormHolderProps) {
 		switch (effect) {
 			case "submit":
 				ENGINE.handler.act({
-					type: "createAndAdd",
+					type: "add",
 					input: {
-						parameters: values
+						child: values
 					}
 				})
 				break;
@@ -38,9 +38,9 @@ export function FormDiagramInterface(props: FormHolderProps) {
 					throw new Error(`Calling modification function with no selected target`)
 				}
 				ENGINE.handler.act({
-					type: "createAndModify",
+					type: "modify",
 					input: {
-						parameters: values,
+						child: values,
 						target: props.target
 					}
 				})

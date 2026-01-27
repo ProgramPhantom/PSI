@@ -1,10 +1,12 @@
 import { SchemeSet } from "../default";
+import { ISequence } from "../hasComponents/sequence";
 import { DEFAULT_CHANNEL } from "./channel";
 import { DEFAULT_DIAGRAM } from "./defaultDiagram";
 import { DEFAULT_LINE } from "./line";
 import { DEFAULT_SEQUENCE } from "./sequence";
 import { DEFAULT_180H } from "./simplePulse/180pulse";
 import { DEFAULT_90H } from "./simplePulse/90pulse";
+import { DEFAULT_SUBSEQUENCE } from "./subsequence";
 import { DEFAULT_180S } from "./svgPulse/180";
 import { DEFAULT_ACQUIRE } from "./svgPulse/acquire";
 import { DEFAULT_AMP } from "./svgPulse/amp";
@@ -24,7 +26,8 @@ export const DEFAULT_SCHEME_SET: SchemeSet = {
 			"default": DEFAULT_DIAGRAM
 		},
 		"sequence": {
-			"default": DEFAULT_SEQUENCE
+			"default": DEFAULT_SEQUENCE,
+			
 		},
 		"channel": {
 			"default": DEFAULT_CHANNEL
@@ -53,6 +56,10 @@ export const DEFAULT_SCHEME_SET: SchemeSet = {
 			"90-pulse": DEFAULT_90H,
 			"180-pulse": DEFAULT_180H
 		},
-		"labelGroupElements": {}
+		"labelGroupElements": {},
+
+		"subgrids": {
+			"sub-sequence": DEFAULT_SUBSEQUENCE
+		}
 	}
 }
