@@ -484,7 +484,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 									{/* Drop field */}
 									<div className="nopan" style={{ pointerEvents: "auto" }}>
 										<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
-										{/* <SequencesPulseDropField></SequencesPulseDropField>*/}
+										<SequencesPulseDropField></SequencesPulseDropField>
 									</div>
 
 									{/* Debug layers */}

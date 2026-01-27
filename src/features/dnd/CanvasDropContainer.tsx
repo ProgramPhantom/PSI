@@ -14,7 +14,8 @@ type CanvasDropResultType = {type: "canvas", data: IDirectCanvasDropResult}
 export type AllDropResultTypes = CanvasDropResultType | PulseDropResultType | GridDropResultType
 
 export const DragElementTypes = {
-	PREFAB: "prefab",
+	ATOMIC_PREFAB: "prefab",
+	SUBSEQUENCE: "sub-sequence",
 	PULSE: "pulse",
 	OTHER: "other",
 	FREE: "free",
@@ -32,7 +33,7 @@ for movements of elements. */
 export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 	const [, drop] = useDrop(
 		() => ({
-			accept: [DragElementTypes.PULSE, DragElementTypes.FREE, DragElementTypes.PREFAB],
+			accept: [DragElementTypes.PULSE, DragElementTypes.FREE, DragElementTypes.ATOMIC_PREFAB],
 			drop(item: IDirectCanvasDropResult, monitor) {
 				// Allow drop to be handled by insertAreas
 				const didDrop = monitor.didDrop();

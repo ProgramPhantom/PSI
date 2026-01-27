@@ -24,7 +24,7 @@ export type GridDropResultType = { type: "grid", data: IGridAreaResult }
 
 function GridInsertArea(props: { areaSpec: IGridArea; key: string }) {
 	const [{ canDrop, isOver }, drop] = useDrop(() => ({
-		accept: [DragElementTypes.PULSE, DragElementTypes.PREFAB],
+		accept: [DragElementTypes.SUBSEQUENCE],
 		drop: () =>
 			({
 				type: "grid",

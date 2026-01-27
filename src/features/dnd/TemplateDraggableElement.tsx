@@ -12,7 +12,8 @@ import { UserComponentType } from "../../logic/point";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
-import { IGrid } from "../../logic/grid";
+import Grid, { IGrid } from "../../logic/grid";
+import Collection from "../../logic/collection";
 
 
 const style: CSSProperties = {
@@ -50,8 +51,16 @@ interface IDraggableElementDropItem {
 /* When an element is selected, the svg on the canvas is hidden and the element is replaced
 by this. It is a different object that can be dragged. */
 const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (props) => {
+	// Compute drag element type:
+	let dragElementType = DragElementTypes.ATOMIC_PREFAB;
+	if (props.element instanceof Grid) {
+		dragElementType = DragElementTypes.SUBSEQUENCE
+	} else if (props.element instanceof Collection) {
+		dragElementType = DragElementTypes.OTHER
+	}
+	
 	const [{ isDragging }, drag, preview] = useDrag(() => ({
-		type: DragElementTypes.PREFAB,
+		type: dragElementType,
 		item: { element: props.element } as IDraggableElementDropItem,
 		end: (item, monitor) => {
 			const dropResult = monitor.getDropResult<AllDropResultTypes>();

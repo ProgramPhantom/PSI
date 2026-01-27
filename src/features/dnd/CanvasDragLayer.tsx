@@ -58,7 +58,7 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
 
 	var css;
 
-	if (itemType === DragElementTypes.PREFAB) {
+	if (itemType === DragElementTypes.ATOMIC_PREFAB) {
 		css = getItemStyles(initialOffset, clientOffset, props.scale);
 	} else {
 		css = getItemStyles(initialOffset, currentOffset, props.scale);
