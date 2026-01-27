@@ -687,10 +687,16 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				break;
 		}
 	
+		let coords: {row: number, col: number} = {row: row, col: 0};
+		if (pulseData?.index !== undefined) {
+			coords.col = pulseData.index
+		} else if (this.placementMode.config.coords !== undefined) {
+			coords.col = this.placementMode.config.coords.col;
+		}
 
 		this.placementMode.config = {
 			"alignment": pulseData?.alignment,
-			"coords": {row: row, col: pulseData?.index ?? 0},
+			"coords": coords,
 			"gridSize": {noRows: 1, noCols: pulseData?.noSections ?? 1},
 			
 			"ownedGhosts": this.placementMode.config.ownedGhosts,

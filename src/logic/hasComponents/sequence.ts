@@ -1,23 +1,17 @@
 import { AddDispatchData, RemoveDispatchData } from "../collection";
 import Grid, { GridCell, IGrid } from "../grid";
 import { ID, UserComponentType } from "../point";
-import Spacial, { Dimensions, IGridConfig, IPulseConfig, Orientation, SiteNames, Size } from "../spacial";
+import Spacial, { Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel } from "./channel";
 
-export type AddBlockDispatchData = { region: GridCell[][], coords?: { row: number, col: number } }
-export interface ICanAddBlock {
-	addBlock: ({ region, coords }: AddBlockDispatchData) => void
-}
-export function CanAddBlock(value: Visual): value is Visual & ICanAddBlock {
-	return (value as any).addBlock !== undefined
-}
+
 
 export interface ISequence extends IGrid<IChannel> {
 }
 
 
-export default class Sequence extends Grid<Channel> implements ISequence, ICanAddBlock {
+export default class Sequence extends Grid<Channel> implements ISequence {
 	static ElementType: UserComponentType = "sequence";
 	get state(): ISequence {
 		return {
@@ -110,10 +104,6 @@ export default class Sequence extends Grid<Channel> implements ISequence, ICanAd
 
 		child.placementControl = "auto";
 		child.placementMode = { type: "channel" }
-	}
-
-	public addBlock({ region, coords }: AddBlockDispatchData) {
-		this.appendElementsInRegion(region, coords);
 	}
 	//#endregion
 	// -----------------------------------------------

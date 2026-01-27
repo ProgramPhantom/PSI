@@ -12,6 +12,7 @@ import { UserComponentType } from "../../logic/point";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
+import { IGrid } from "../../logic/grid";
 
 
 const style: CSSProperties = {
@@ -74,9 +75,9 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					singletonState.parentId = ENGINE.handler.diagram.id;
 
 					ENGINE.handler.act({
-						"type": "createAndAdd",
+						"type": "add",
 						input: {
-							parameters: singletonState,
+							child: singletonState,
 						}
 					})
 					break;
@@ -104,9 +105,9 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					}
 
 					ENGINE.handler.act({
-						type: "createAndAdd",
+						type: "add",
 						input: {
-							parameters: singletonState,
+							child: singletonState,
 						}
 					})
 
@@ -120,9 +121,13 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					}
 					singletonState.parentId = dropResult.data.id;
 
-					// ENGINE.handler.act({
-					// 	type: "createAndAdd"
-					// })
+					ENGINE.handler.act({
+						"type": "addSubgrid",
+						"input": {
+							subgrid: singletonState as IGrid,
+
+						}
+					})
 					break;
 			}
 		},

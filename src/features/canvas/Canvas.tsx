@@ -22,6 +22,7 @@ import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import { DebugLayerDialog } from "./DebugLayerDialog";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
+import GridDropField from "../dnd/GridDropField";
 
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
@@ -482,7 +483,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 									{/* Drop field */}
 									<div className="nopan" style={{ pointerEvents: "auto" }}>
-										<SequencesPulseDropField ></SequencesPulseDropField>
+										<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
+										{/* <SequencesPulseDropField></SequencesPulseDropField>*/}
 									</div>
 
 									{/* Debug layers */}

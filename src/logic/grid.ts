@@ -31,7 +31,16 @@ export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridConf
 export type GridPlacementSetter = (element: Visual, value: IGridConfig) => void
 
 
-export default class Grid<C extends Visual = Visual> extends Collection<C> implements IDraw {
+export type AddSubgrid = { subgrid: Grid, coords?: { row: number, col: number } }
+export interface ICanAddSubgrid {
+	addSubgrid: ({ subgrid, coords }: AddSubgrid) => void
+}
+export function CanAddSubgrid(value: Visual): value is Visual & ICanAddSubgrid {
+	return (value as any).addSubgrid !== undefined
+}
+
+
+export default class Grid<C extends Visual = Visual> extends Collection<C> implements IDraw, ICanAddSubgrid {
 	static isGridElement = (e: Visual): e is GridElement => e.placementMode.type === "grid"
 
 	get state(): IGrid {
@@ -459,6 +468,15 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 			this.addElement(child);
 		}
 	}
+
+	public addSubgrid({ subgrid, coords }: AddSubgrid) {
+		// this.appendElementsInRegion(region, coords);
+		if (Grid.isGridElement(subgrid)) {
+			this.addElement(subgrid);
+		}
+	}
+
+	// ---- private?
 
 	public appendElementsInRegion(gridRegion: GridCell[][], coords?: { row: number, col: number }) {
 		if (gridRegion.length === 0 || gridRegion[0].length === 0) { return }

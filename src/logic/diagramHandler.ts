@@ -6,11 +6,12 @@ import SchemeManager from "./default";
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
-import Sequence, { AddBlockDispatchData, CanAddBlock } from "./hasComponents/sequence";
+import Sequence from "./hasComponents/sequence";
 import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
 import { isPulse, PointBind } from "./spacial";
 import Visual, { IDraw, IVisual } from "./visual";
+import Grid, { AddSubgrid, CanAddSubgrid, IGrid } from "./grid.ts";
 
 
 /**
@@ -43,17 +44,16 @@ function draws(
 
 type AddEdit = { type: "add", data: AddDispatchData, parentId: ID }
 type RemoveEdit = { type: "remove", data: RemoveDispatchData, parentId: ID }
-type AddBlockEdit = { type: "addBlock", data: AddBlockDispatchData, parentId: ID }
+type AddSubgridEdit = {type: "addSubgrid", data: AddSubgrid, parentId: ID} 
 
-type Edit = AddEdit | RemoveEdit | AddBlockEdit
+type Edit = AddEdit | RemoveEdit | AddSubgridEdit
 
 
-type CreateAndAddInput = { parameters: IVisual, index?: number }
 type CreateAndModifyInput = { parameters: IVisual, target: Visual }
-type ModifyInput = { child: Visual, target: Visual }
-type AddInput = AddDispatchData
+type ModifyInput = { child: IVisual, target: Visual }
+type AddInput = { child: IVisual, index?: number}
 type RemoveInput = RemoveDispatchData
-
+type AddSubgridInput =  { subgrid: IGrid, coords?: { row: number, col: number } };
 
 export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -67,14 +67,6 @@ type InputData<T extends keyof Actions> = Actions[T]["inputData"]
 type UndoData<T extends keyof Actions> = Actions[Actions[T]["undoAction"]]["inputData"];
 
 type Actions = {
-	"createAndAdd": {
-		inputData: CreateAndAddInput,
-		undoAction: "remove"
-	},
-	"createAndModify": {
-		inputData: CreateAndModifyInput,
-		undoAction: "modify"
-	},
 	"modify": {
 		inputData: ModifyInput,
 		undoAction: "modify"
@@ -88,6 +80,15 @@ type Actions = {
 	"remove": {
 		inputData: RemoveInput,
 		undoAction: "add"
+	},
+
+	"addSubgrid": {
+		inputData: AddSubgridInput,
+		undoAction: "removeSubgrid"
+	},
+	"removeSubgrid": {
+		inputData: AddSubgridInput,
+		undoAction: "addSubgrid"
 	}
 }
 type ActionNames = keyof Actions;
@@ -147,14 +148,12 @@ export default class DiagramHandler implements IDraw {
 	public undoStack: AnyCompletedAction[] = [];
 	public redoStack: AnyCompletedAction[] = [];
 
-	public ActionRegistry: ActionRegistry = {
+	public ActionRegistry: Partial<ActionRegistry> = {
 		"add": this.add.bind(this),
-		"createAndAdd": this.createAndAdd.bind(this),
-
 		"modify": this.modify.bind(this),
-		"createAndModify": this.createAndModify.bind(this),
-
 		"remove": this.remove.bind(this),
+
+		"addSubgrid": this.addSubgrid.bind(this)
 	}
 
 
@@ -270,7 +269,7 @@ export default class DiagramHandler implements IDraw {
 
 		if (actionResult.ok === false) {
 			appToaster.show({
-				"message": actionResult.error,
+				"message": `${actionResult.error as string}`,
 				"intent": "danger",
 			})
 		} else {
@@ -354,11 +353,11 @@ export default class DiagramHandler implements IDraw {
 						result = { ok: true, value: parent }
 					}
 					break;
-				case "addBlock":
-					if (!CanAddBlock(parent)) {
+				case "addSubgrid":
+					if (!CanAddSubgrid(parent)) {
 						result = { ok: false, error: `Parent ${parent.ref}` }
 					} else {
-						parent.addBlock({ ...edit.data });
+						parent.addSubgrid({ ...edit.data });
 						result = { ok: true, value: parent }
 					}
 					break;
@@ -374,35 +373,30 @@ export default class DiagramHandler implements IDraw {
 	// ------------- ACTIONS ---------------------
 	//#region 
 	protected add({ child, index }: AddInput): ActionResult<"add"> {
+		let childInstance: Visual;
+		if (!(child instanceof Visual)) {
+			let constructedChildResult: Result<Visual> = this.createVisual(child, child.type);
+
+			if (constructedChildResult.ok === false) {
+				return { ok: false, error: constructedChildResult.error };
+			}
+
+			childInstance = constructedChildResult.value;
+		} else {
+			childInstance = child;
+		}
+		
 		let editResult: Result<Visual> = this.editDiagram({
 			type: "add",
-			data: { child: child, index: index },
-			parentId: child.parentId ?? ""
+			data: { child: childInstance, index: index },
+			parentId: childInstance.parentId ?? ""
 		})
 
 		if (editResult.ok === false) {
 			return editResult
 		}
 
-		return { ok: true, undo: { action: "remove", data: { child: child } } }
-	}
-
-	protected createAndAdd({ parameters, index }: CreateAndAddInput): ActionResult<"createAndAdd"> {
-		var elementResult: Result<Visual> = this.createVisual(parameters, parameters.type);
-
-		if (elementResult.ok === false) {
-			return { ok: false, error: elementResult.error };
-		}
-
-		let addResult: ActionResult<"add"> = this.add({ child: elementResult.value, index });
-		if (addResult.ok === false) {
-			return addResult
-		}
-
-		// Important, means redo action instantiates with the same id.
-		parameters.id = elementResult.value.id;
-
-		return { ok: true, undo: { action: "remove", data: { child: elementResult.value } } }
+		return { ok: true, undo: { action: "remove", data: { child: childInstance } } }
 	}
 
 	protected remove({ child }: RemoveInput): ActionResult<"remove"> {
@@ -431,13 +425,26 @@ export default class DiagramHandler implements IDraw {
 	}
 
 	protected modify({ child, target }: ModifyInput): ActionResult<"modify"> {
+		let childInstance: Visual;
+		if (!(child instanceof Visual)) {
+			let constructedChildResult: Result<Visual> = this.createVisual(child, child.type);
+
+			if (constructedChildResult.ok === false) {
+				return { ok: false, error: constructedChildResult.error };
+			}
+
+			childInstance = constructedChildResult.value;
+		} else {
+			childInstance = child;
+		}
+		
 		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
 		if (parent === undefined) {
 			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
 		}
 
-		let childIndex: number | undefined = parent.childIndex(target);
-		if (childIndex === undefined) {
+		let targetIndex: number | undefined = parent.childIndex(target);
+		if (targetIndex === undefined) {
 			return { ok: false, error: `Child ${target.ref} does not exist on parent ${parent.ref}` }
 		}
 
@@ -454,27 +461,40 @@ export default class DiagramHandler implements IDraw {
 		child.id = targetId;
 		let addResult: Result<Visual> = this.editDiagram({
 			"type": "add",
-			"data": { child: child, index: childIndex },
+			"data": { child: childInstance, index: targetIndex },
 			"parentId": child.parentId ?? ""
 		})
 
 		if (addResult.ok === false) { return addResult }
 
-		return { ok: true, undo: { action: "modify", data: { child: target, target: child } } }
+		return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } }
 	}
 
-	protected createAndModify({ parameters, target }: CreateAndModifyInput): ActionResult<"createAndModify"> {
-		var elementResult: Result<Visual> = this.createVisual(parameters, parameters.type);
-		if (elementResult.ok === false) {
-			return { ok: false, error: elementResult.error };
+	protected addSubgrid({ subgrid, coords }: AddSubgridInput): ActionResult<"addSubgrid"> {
+		let childInstance: Grid;
+		if (!(subgrid instanceof Grid)) {
+			let constructedChildResult: Result<Grid> = this.createVisual(subgrid, "grid");
+
+			if (constructedChildResult.ok === false) {
+				return { ok: false, error: constructedChildResult.error };
+			}
+
+			childInstance = constructedChildResult.value;
+		} else {
+			childInstance = subgrid;
+		}
+		
+		let editResult: Result<Visual> = this.editDiagram({
+			type: "addSubgrid",
+			data: { subgrid: childInstance, coords: coords },
+			parentId: subgrid.parentId ?? ""
+		})
+
+		if (editResult.ok === false) {
+			return editResult
 		}
 
-		let modifyResult: ActionResult<"modify"> = this.modify({ child: elementResult.value, target });
-		if (modifyResult.ok === false) {
-			return modifyResult
-		}
-
-		return { ok: true, undo: { action: "modify", data: { target: elementResult.value, child: target } } }
+		return { ok: true, undo: { action: "removeSubgrid", data: { subgrid: subgrid } } }
 	}
 	//#endregion
 	// ------------------------------------------
@@ -491,9 +511,9 @@ export default class DiagramHandler implements IDraw {
 		sequence.insertEmptyColumn(index);
 	}
 
-	public createVisual(parameters: IVisual, type: AllComponentTypes): Result<Visual> {
+	public createVisual<T extends Visual = Visual>(parameters: IVisual, type: AllComponentTypes): Result<T> {
 		try {
-			var element: Visual | undefined = this.EngineConstructor(parameters, type);
+			var element: T | undefined = this.EngineConstructor(parameters, type) as T | undefined;
 		} catch (e) {
 			return { ok: false, error: (e as string) }
 		}

@@ -111,9 +111,9 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							}
 
 							ENGINE.handler.act({
-								type: "createAndModify",
+								type: "modify",
 								input: {
-									parameters: newState,
+									child: newState,
 									target: props.element
 								}
 							})
@@ -142,9 +142,9 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							}
 
 							ENGINE.handler.act({
-								type: "createAndModify",
+								type: "modify",
 								input: {
-									parameters: newState,
+									child: newState,
 									target: props.element
 								}
 							})
