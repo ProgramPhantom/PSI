@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import Grid from "../../logic/grid";
 import GridInsertArea, { IGridArea } from "./GridInsertArea";
@@ -16,7 +16,11 @@ interface IGridDropFieldProps {
 }
 
 function GridDropField(props: IGridDropFieldProps) {
-	const insertAreas = useMemo(() => {
+	const [insertAreas, setInsertAreas] = useState<IGridArea[]>([]);
+
+	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+	
+	useEffect(() => {
 		let insertAreas: IGridArea[] = [];
 
 		const cells = props.target.cells;
@@ -45,8 +49,8 @@ function GridDropField(props: IGridDropFieldProps) {
 			}
 		}
 
-		return insertAreas;
-	}, [props.target]);
+		setInsertAreas(insertAreas)
+	}, [store]);
 
 	return (
 		<div id={`${props.target.ref}-drop-field`}>
