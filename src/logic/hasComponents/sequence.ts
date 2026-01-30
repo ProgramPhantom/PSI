@@ -1,4 +1,4 @@
-import { AddDispatchData, RemoveDispatchData } from "../collection";
+import { AddDispatchData, RemoveDispatchData, StructuredChildren } from "../collection";
 import Grid, { GridCell, IGrid } from "../grid";
 import { ID, UserComponentType } from "../point";
 import Spacial, { Size } from "../spacial";
@@ -20,19 +20,21 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		};
 	}
 
-
+	get channels(): Channel[] {
+		return this.structuredChildren["channel"].objects;
+	}
 	get channelsDict(): Record<ID, Channel> {
-		return Object.fromEntries(this.children.map((item) => [item.id, item]));
+		return Object.fromEntries(this.channels.map((item) => [item.id, item]));
 	}
 	get channelIDs(): string[] {
-		return this.children.map((c) => c.id);
+		return this.channels.map((c) => c.id);
 	}
 	get numChannels(): number {
-		return this.children.length;
+		return this.channels.length;
 	}
 	get allPulseElements(): Visual[] {
 		var elements: Visual[] = [];
-		this.children.forEach((c) => {
+		this.channels.forEach((c) => {
 			elements.push(...c.children);
 		});
 		return elements;
@@ -46,6 +48,15 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 			elements = { ...elements, ...c.allElements };
 		});
 		return elements;
+	}
+
+
+	structuredChildren: StructuredChildren<Channel> = {
+		"channel": {
+			objects: [],
+			initialiser: this.addChannel.bind(this),
+			destructor: this.removeChannel.bind(this),
+		}
 	}
 
 	constructor(params: ISequence) {
@@ -83,9 +94,32 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 	// ----------------- Add Methods -----------------
 	//#region
 	public override add({ child, index }: AddDispatchData<Channel>) {
+		super.add({child, index})
+	}
+	//#endregion
+	// -----------------------------------------------
+
+
+	// --------------- Remove methods ----------------
+	//#region 
+	public override remove({ child }: RemoveDispatchData<Channel>) {
+		super.remove({ child })
+	}
+	//#endregion
+	// ----------------------------------------------
+
+
+	// ------------ Accessors ---------------------
+	//#region 
+
+	//#endregion
+	// -------------------------------------------
+
+	// -------------- Channel interaction -------------
+	//#region 
+	private addChannel( {child, index}: AddDispatchData<Channel> ) {
 		let CHILD_INDEX: number = index ?? this.numChildren;
-		// super.add(child);
-		this.children.splice(CHILD_INDEX, 0, child);
+
 		// Add the three rows of this channel to the bottom of the 
 		// grid matrix;
 
@@ -105,15 +139,9 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		child.placementControl = "auto";
 		child.placementMode = { type: "channel" }
 	}
-	//#endregion
-	// -----------------------------------------------
 
-
-	// --------------- Remove methods ----------------
-	//#region 
-	public override remove({ child }: RemoveDispatchData<Channel>) {
+	private removeChannel( {child}: RemoveDispatchData<Channel>) {
 		var channelIndex: number | undefined = this.childIndex(child);
-		super.remove({ child })
 
 		if (channelIndex === undefined) {
 			console.warn(`Cannot find index of channel with ref ${child.ref}`)
@@ -130,18 +158,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		// been deleted, hence we squeeze.
 		this.squeezeMatrix();  // TODO: is this why channel deletion is bugging?
 	}
-	//#endregion
-	// ----------------------------------------------
-
-
-	// ------------ Accessors ---------------------
-	//#region 
-
-	//#endregion
-	// -------------------------------------------
-
-	// -------------- Channel interaction -------------
-	//#region 
+	
 	/**
 	 * Applies grid slices and positional offsets to each channel in `this.channels`.
 	 *
@@ -162,7 +179,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 	 * @private
 	 */
 	private applySizesToChannels() {
-		this.children.forEach((channel, channel_index) => {
+		this.channels.forEach((channel, channel_index) => {
 			let INDEX: number = channel_index * 3;
 
 			let gridSlice = this.gridMatrix.slice(INDEX, INDEX + 3);

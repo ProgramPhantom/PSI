@@ -1,8 +1,7 @@
-import { Element, G } from "@svgdotjs/svg.js";
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
 import { ID } from "./point";
-import Spacial, { Dimensions, IGridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
-import Visual, { doesDraw, GridElement, IDraw, IVisual, PulseElement } from "./visual";
+import Spacial, { Dimensions, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
+import Visual, { GridElement, IDraw, IVisual } from "./visual";
 
 
 export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
@@ -12,6 +11,9 @@ export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 	numRows?: number,
 	numColumns?: number
 }
+
+export type ISubgrid = IGrid & { placementMode: { type: "subgrid"; config: ISubgridConfig } };
+export type Subgrid = Grid & { placementMode: { type: "subgrid"; config: ISubgridConfig } };
 
 export type GridCell<T extends GridElement = GridElement> = OccupiedCell<T> | undefined
 
@@ -31,9 +33,9 @@ export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridConf
 export type GridPlacementSetter = (element: Visual, value: IGridConfig) => void
 
 
-export type AddSubgrid = { subgrid: Grid, coords?: { row: number, col: number } }
+export type AddSubgrid = { subgrid: Grid }
 export interface ICanAddSubgrid {
-	addSubgrid: ({ subgrid, coords }: AddSubgrid) => void
+	addSubgrid: ({ subgrid }: AddSubgrid) => void
 }
 export function CanAddSubgrid(value: Visual): value is Visual & ICanAddSubgrid {
 	return (value as any).addSubgrid !== undefined
@@ -472,11 +474,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 		}
 	}
 
-	public addSubgrid({ subgrid, coords }: AddSubgrid) {
+	public addSubgrid({ subgrid }: AddSubgrid) {
 		// this.appendElementsInRegion(region, coords);
-		if (Grid.isGridElement(subgrid)) {
-			this.addElement(subgrid);
+		if (subgrid.placementMode.type !== "subgrid") {
+			return
 		}
+
+		this.appendElementsInRegion(subgrid.gridMatrix, subgrid.placementMode.config.coords)
 	}
 
 	// ---- private?

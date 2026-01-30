@@ -40,6 +40,10 @@ export interface IGridConfig {
 	ownedGhosts?: { row: number, col: number }[]
 }
 
+export interface ISubgridConfig {
+	coords: {row: number, col: number}
+}
+
 export interface IAlignerConfig {
 	index?: number,
 	alignment?: SiteNames,
@@ -50,7 +54,8 @@ export type PlacementConfiguration = { type: "free" } |
 { type: "binds"; bindings: undefined } |
 { type: "grid"; config: IGridConfig } |
 { type: "aligner", config: IAlignerConfig } | 
-{type: "channel"}
+{type: "channel"} | 
+{type: "subgrid", config: ISubgridConfig }
 
 
 export type PlacementControl = "auto" | "user";

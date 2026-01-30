@@ -29,7 +29,15 @@ export interface ICollection<C extends IVisual = IVisual> extends IVisual {
 	sizeMode?: Record<Dimensions, ContainerSizeMethod>
 }
 
-export type RolesDict = Record<string, { object: Visual | undefined, initialiser?: (object: Visual) => void }>;
+export type Components<C extends Visual = Visual> = 
+	Record<string, { object: C | undefined, 
+	initialiser?: ({child, index}: AddDispatchData<C>) => void,
+	destructor?: ({child}: RemoveDispatchData<C>) => void }>;
+
+export type StructuredChildren<C extends Visual = Visual> = 
+	Record<string, { objects: C[], 
+	initialiser?: ({child, index}: AddDispatchData<C>) => void,
+	destructor?: ({child}: RemoveDispatchData<C>) => void }>;
 
 export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C>, ICanAdd<C>, ICanRemove<C> {
 	static isCollection(v: IVisual): v is Collection {
@@ -59,7 +67,8 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		return this._children;
 	};
 
-	public roles: RolesDict = {};
+	public roles: Components<C> = {};
+	public structuredChildren: StructuredChildren<C> = {};
 
 	declare public sizeMode: Record<Dimensions, ContainerSizeMethod>;
 
@@ -67,17 +76,6 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		params: ICollection,
 	) {
 		super(params);
-
-		// params.children.forEach((c) => {
-		// 	if (c.type === undefined) {
-		// 		console.warn(`Cannot instantiate parameter child ${c.ref} as it has no type`);
-		// 		return;
-		// 	}
-		// 	if (!this.has(c.id)) {
-		// 		var child: T = Collection.CreateChild(c, c.type) as T;
-		// 		this.add(child);
-		// 	}
-		// });
 	}
 
 
@@ -223,25 +221,6 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			}
 		});
 	}
-	//#endregion
-	// --------------------------------------------------
-
-
-	// ----------------- Collection methods -------------
-	//#region 
-	add({ child, index }: AddDispatchData<C>) {
-		child.parentId = this.id;
-
-		this.children.splice(index ?? this.numChildren, 0, child);
-
-		if (child.role !== undefined && Object.keys(this.roles).includes(child.role ?? "") && this.roles[child.role].object === undefined) {
-			this.roles[child.role].object = child;
-
-			if (this.roles[child.role].initialiser !== undefined) {
-				this.roles[child.role].initialiser!(child);
-			}
-		}
-	}
 
 	erase(): void {
 		this.children.forEach((c) => {
@@ -250,8 +229,37 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			}
 		});
 	}
+	//#endregion
+	// --------------------------------------------------
 
-	remove({ child }: RemoveDispatchData<C>) {
+
+	// ----------------- Collection methods -------------
+	//#region 
+	public add({ child, index }: AddDispatchData<C>) {
+		child.parentId = this.id;
+
+		this.children.splice(index ?? this.numChildren, 0, child);
+
+		if (child.role !== undefined) {
+			if (Object.keys(this.roles).includes(child.role ?? "") && this.roles[child.role].object === undefined) {
+				this.roles[child.role].object = child;
+				let initialiser: (({child, index}: AddDispatchData<C>) => void) | undefined = this.roles[child.role].initialiser;
+
+				if (initialiser !== undefined) {
+					initialiser({child, index});
+				}
+			} else if (Object.keys(this.structuredChildren).includes(child.role ?? "")) {
+				this.structuredChildren[child.role].objects.push(child);
+				let initialiser: (({child, index}: AddDispatchData<C>) => void) | undefined = this.structuredChildren[child.role].initialiser;
+
+				if (initialiser !== undefined) {
+					initialiser({child, index});
+				}
+			}
+		}
+	}
+
+	public remove({ child }: RemoveDispatchData<C>) {
 		var index: number | undefined = this.childIndex(child);
 
 		if (index === undefined) {
@@ -259,12 +267,32 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			return
 		}
 
-		this.removeAt(index);
-	}
+		// Remove from structure.
+		if (child.role !== undefined) {
+			if (Object.keys(this.roles).includes(child.role ?? "") && this.roles[child.role].object !== undefined) {
+				this.roles[child.role].object = undefined;
 
-	removeAt(index: number) {
+				let destructor: (({child}: RemoveDispatchData<C>) => void) | undefined = this.roles[child.role].destructor;
+				if (destructor !== undefined) {
+					destructor({child});
+				}
+			} else if (Object.keys(this.structuredChildren).includes(child.role ?? "")) {
+				let index: number = this.structuredChildren[child.role].objects.indexOf(child);
+
+				if (index !== -1) {
+					this.structuredChildren[child.role].objects.splice(index, 1);
+
+					let destructor: (({child}: RemoveDispatchData<C>) => void) | undefined = this.structuredChildren[child.role].destructor;
+					if (destructor !== undefined) {
+						destructor({child});
+					}
+				}
+			}
+		}
+
 		this.children.splice(index, 1);
 	}
+
 
 	removeAll() {
 		this.children.forEach((c) => {

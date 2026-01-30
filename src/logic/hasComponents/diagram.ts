@@ -1,4 +1,4 @@
-import Collection, { ICollection, RolesDict } from "../collection";
+import Collection, { ICollection, Components } from "../collection";
 import { ID, UserComponentType } from "../point";
 import Visual, { IVisual, PulseElement } from "../visual";
 import Channel from "./channel";
@@ -63,7 +63,7 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 		return sequenceAligner
 	}
 
-	roles: RolesDict = {
+	roles: Components = {
 		"sequence-aligner": {
 			object: undefined
 		}

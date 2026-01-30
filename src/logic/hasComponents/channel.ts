@@ -1,4 +1,4 @@
-import { AddDispatchData, RemoveDispatchData, RolesDict } from "../collection";
+import { AddDispatchData, RemoveDispatchData, Components } from "../collection";
 import Grid, { Elements, Ghost, GridCell, IGrid } from "../grid";
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
 import RectElement, { IRectElement } from "../rectElement";
@@ -59,16 +59,14 @@ export default class Channel extends Grid implements IChannel {
 
 	get label(): GridElement<Text> | undefined {
 		let label: GridElement<Text> | undefined = this.roles["label"].object as GridElement<Text> | undefined;
-
 		return label
 	}
 	get bar(): GridElement<RectElement> | undefined {
 		let bar: GridElement<RectElement> | undefined = this.roles["bar"].object as GridElement<RectElement> | undefined;
-
 		return bar
 	}
 
-	roles: RolesDict = {
+	roles: Components = {
 		"label": {
 			object: undefined,
 			initialiser: this.initialiseLabel.bind(this)
@@ -82,12 +80,8 @@ export default class Channel extends Grid implements IChannel {
 	constructor(params: IChannel) {
 		super(params);
 
-		if (params.sequenceID !== undefined) {
-
-		}
-
-
 		this.initialiseChannel();
+		this.role = "channel"
 	}
 
 	override computeSize(): Size {
@@ -150,9 +144,9 @@ export default class Channel extends Grid implements IChannel {
 			return
 		}
 
-		this.remove({ child: this.bar })
-
-		this.bar.placementMode = {
+		
+		let barRef = this.bar;
+		barRef.placementMode = {
 			type: "grid",
 			config: {
 				gridSize: {
@@ -170,7 +164,9 @@ export default class Channel extends Grid implements IChannel {
 			}
 		}
 
-		super.add({ child: this.bar });
+		// This will recompute state
+		this.remove({ child: this.bar })
+		super.add({ child: barRef });
 	}
 
 	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {
@@ -211,9 +207,9 @@ export default class Channel extends Grid implements IChannel {
 		this.sizeBar();
 	}
 
-	private initialiseBar(bar: Visual) {
-		bar.maskId = BAR_MASK_ID;
-		bar.placementMode = {
+	private initialiseBar({child, index}: AddDispatchData) {
+		child.maskId = BAR_MASK_ID;
+		child.placementMode = {
 			type: "grid",
 			config: {
 				gridSize: {
@@ -230,11 +226,11 @@ export default class Channel extends Grid implements IChannel {
 				}
 			}
 		}
-		bar.ref = this.ref + "-bar";
+		child.ref = this.ref + "-bar";
 	}
 
-	private initialiseLabel(label: Visual) {
-		label.placementMode = {
+	private initialiseLabel({child, index}: AddDispatchData) {
+		child.placementMode = {
 			type: "grid", config: {
 				alignment: { x: "centre", y: "centre" },
 				coords: { row: 1, col: 0 },

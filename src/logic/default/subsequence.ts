@@ -28,14 +28,17 @@ export const DEFAULT_SUBSEQUENCE: IGrid = {
 			"type": "grid",
 			"config": {
 				"coords": {row: 0, col: 0}
-			}
-		}},
+			}},
+			pulseData: undefined	
+		},
 
 		{...DEFAULT_ACQUIRE, placementMode: {
 			"type": "grid",
 			"config": {
 				"coords": {row: 3, col: 0}
-			}
-		}},
+			},
+		},
+		pulseData: undefined	
+	},
 	]
 }

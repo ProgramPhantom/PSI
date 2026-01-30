@@ -12,7 +12,7 @@ import { UserComponentType } from "../../logic/point";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
-import Grid, { IGrid } from "../../logic/grid";
+import Grid, { IGrid, ISubgrid } from "../../logic/grid";
 import Collection from "../../logic/collection";
 
 
@@ -123,7 +123,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					break;
 				case "grid":
 					singletonState.placementMode = {
-						type: "grid",
+						type: "subgrid",
 						config: {
 							coords: dropResult.data.coords
 						}
@@ -133,8 +133,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					ENGINE.handler.act({
 						"type": "addSubgrid",
 						"input": {
-							subgrid: singletonState as IGrid,
-
+							subgrid: singletonState as ISubgrid,
 						}
 					})
 					break;

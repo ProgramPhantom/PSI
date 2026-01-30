@@ -5,13 +5,11 @@ import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } fr
 import SchemeManager from "./default";
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
+import Grid, { AddSubgrid, CanAddSubgrid, ISubgrid } from "./grid.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
 import Sequence from "./hasComponents/sequence";
-import Line, { ILine } from "./line";
 import { AllComponentTypes, ID } from "./point";
-import { isPulse, PointBind } from "./spacial";
 import Visual, { IDraw, IVisual } from "./visual";
-import Grid, { AddSubgrid, CanAddSubgrid, IGrid } from "./grid.ts";
 
 
 /**
@@ -53,7 +51,7 @@ type CreateAndModifyInput = { parameters: IVisual, target: Visual }
 type ModifyInput = { child: IVisual, target: Visual }
 type AddInput = { child: IVisual, index?: number}
 type RemoveInput = RemoveDispatchData
-type AddSubgridInput =  { subgrid: IGrid, coords?: { row: number, col: number } };
+type AddSubgridInput =  { subgrid: ISubgrid };
 
 export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -470,7 +468,7 @@ export default class DiagramHandler implements IDraw {
 		return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } }
 	}
 
-	protected addSubgrid({ subgrid, coords }: AddSubgridInput): ActionResult<"addSubgrid"> {
+	protected addSubgrid({ subgrid }: AddSubgridInput): ActionResult<"addSubgrid"> {
 		let childInstance: Grid;
 		if (!(subgrid instanceof Grid)) {
 			let constructedChildResult: Result<Grid> = this.createVisual(subgrid, "grid");
@@ -486,7 +484,7 @@ export default class DiagramHandler implements IDraw {
 		
 		let editResult: Result<Visual> = this.editDiagram({
 			type: "addSubgrid",
-			data: { subgrid: childInstance, coords: coords },
+			data: { subgrid: childInstance },
 			parentId: subgrid.parentId ?? ""
 		})
 
