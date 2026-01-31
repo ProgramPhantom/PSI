@@ -131,9 +131,9 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					singletonState.parentId = dropResult.data.id;
 
 					ENGINE.handler.act({
-						"type": "addSubgrid",
+						"type": "add",
 						"input": {
-							subgrid: singletonState as ISubgrid,
+							child: singletonState
 						}
 					})
 					break;

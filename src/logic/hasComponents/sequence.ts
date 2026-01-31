@@ -1,3 +1,4 @@
+import { Element } from "@svgdotjs/svg.js";
 import { AddDispatchData, RemoveDispatchData, StructuredChildEntry, StructuredChildren } from "../collection";
 import Grid, { GridCell, IGrid, Subgrid } from "../grid";
 import { ID, UserComponentType } from "../point";
@@ -56,7 +57,7 @@ export default class Sequence extends Grid<Subgrid> implements ISequence {
 	} = {
 		"channel": {
 			objects: [],
-			initialiser: this.addChannel.bind(this),
+			initialiser: this.configureChannel.bind(this),
 			destructor: this.removeChannel.bind(this),
 		}
 	}
@@ -88,7 +89,9 @@ export default class Sequence extends Grid<Subgrid> implements ISequence {
 
 	// --------------- Draw Methods ----------------
 	//#region
-
+	public draw(surface: Element) {
+		super.draw(surface);
+	}
 	//#endregion
 	// -----------------------------------------------
 
@@ -119,8 +122,8 @@ export default class Sequence extends Grid<Subgrid> implements ISequence {
 
 	// -------------- Channel interaction -------------
 	//#region 
-	private addChannel( {child, index}: AddDispatchData<Channel> ) {
-		let CHILD_INDEX: number = index ?? this.numChildren;
+	private configureChannel( {child, index}: AddDispatchData<Channel> ) {
+		let CHILD_INDEX: number = index ?? this.numChannels-1;
 
 		// Add the three rows of this channel to the bottom of the 
 		// grid matrix;
@@ -129,14 +132,14 @@ export default class Sequence extends Grid<Subgrid> implements ISequence {
 		// adding  could be longer than the matrix:
 
 		var channelLength: number = child.numColumns;
-		this.setMatrixSize({ row: undefined, col: channelLength - 1 }, true)
+		// this.setMatrixSize({ row: undefined, col: channelLength - 1 }, true)
 
 		// Note we don't care about the row as we will just append the 
 		// rows of the channel now, there's no need to expand it
 
-		child.getRows().forEach((row, row_index) => {
-			this.gridMatrix.splice((CHILD_INDEX * 3) + row_index, 0, row)
-		})
+		// child.getRows().forEach((row, row_index) => {
+		// 	this.gridMatrix.splice((CHILD_INDEX * 3) + row_index, 0, row)
+		// })
 
 		child.placementControl = "auto";
 		child.placementMode = {type: "subgrid", config: {coords: {row: CHILD_INDEX*3, col: 0}}}

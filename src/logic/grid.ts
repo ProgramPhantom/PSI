@@ -44,8 +44,8 @@ export function CanAddSubgrid(value: Visual): value is Visual & ICanAddSubgrid {
 
 export default class Grid<C extends Visual = Visual> extends Collection<C> implements IDraw, ICanAddSubgrid {
 	static isGridElement = (e: Visual): e is GridElement => e.placementMode.type === "grid"
-	static isSubgrid(e: Visual): boolean {
-		return e instanceof Grid && e.placementMode.type === "grid"
+	static isSubgrid(e: Visual): e is Subgrid {
+		return e instanceof Grid && e.placementMode.type === "subgrid"
 	}
 
 	get state(): IGrid {
@@ -471,6 +471,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C> imple
 
 		if (Grid.isGridElement(child)) {
 			this.addElement(child);
+		} else if (Grid.isSubgrid(child)) {
+			this.addSubgrid({subgrid: child})
 		}
 	}
 

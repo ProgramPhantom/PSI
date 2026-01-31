@@ -176,6 +176,8 @@ export default class DiagramHandler implements IDraw {
 				"intent": "danger",
 				"message": `Compute error: ${(err as string)}`
 			})
+
+			throw new Error(err as string);
 		}
 
 
