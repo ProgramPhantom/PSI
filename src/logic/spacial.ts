@@ -54,7 +54,6 @@ export type PlacementConfiguration = { type: "free" } |
 { type: "binds"; bindings: undefined } |
 { type: "grid"; config: IGridConfig } |
 { type: "aligner", config: IAlignerConfig } | 
-{type: "channel"} | 
 {type: "subgrid", config: ISubgridConfig }
 
 

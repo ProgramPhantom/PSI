@@ -1,9 +1,9 @@
-import { AddDispatchData, RemoveDispatchData, Components } from "../collection";
+import { AddDispatchData, Components, RemoveDispatchData } from "../collection";
 import Grid, { Elements, Ghost, GridCell, IGrid } from "../grid";
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
-import RectElement, { IRectElement } from "../rectElement";
-import { Dimensions, IGridConfig, IPulseConfig, isPulse, Orientation, PlacementConfiguration, SiteNames, Size } from "../spacial";
-import Text, { IText } from "../text";
+import RectElement from "../rectElement";
+import { Dimensions, IGridConfig, IPulseConfig, isPulse, ISubgridConfig, Orientation, SiteNames, Size } from "../spacial";
+import Text from "../text";
 import Visual, { GridElement } from "../visual";
 
 
@@ -12,7 +12,7 @@ export interface IChannel extends IGrid {
 }
 
 
-
+export type SubgridChannel = Channel & { placementMode: { type: "subgrid"; config: ISubgridConfig } };
 export default class Channel extends Grid implements IChannel {
 	static ElementType: UserComponentType = "channel";
 	static OrientationToRow(orientation: Orientation): 0 | 1 | 2 {

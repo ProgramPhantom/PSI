@@ -34,10 +34,16 @@ export type Components<C extends Visual = Visual> =
 	initialiser?: ({child, index}: AddDispatchData<C>) => void,
 	destructor?: ({child}: RemoveDispatchData<C>) => void }>;
 
-export type StructuredChildren<C extends Visual = Visual> = 
-	Record<string, { objects: C[], 
+
+export type StructuredChildren = Record<string, StructuredChildEntry<any>>
+
+export type StructuredChildEntry<C extends Visual = Visual> = {
+	objects: C[], 
 	initialiser?: ({child, index}: AddDispatchData<C>) => void,
-	destructor?: ({child}: RemoveDispatchData<C>) => void }>;
+	destructor?: ({child}: RemoveDispatchData<C>) => void
+}
+
+
 
 export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C>, ICanAdd<C>, ICanRemove<C> {
 	static isCollection(v: IVisual): v is Collection {
@@ -68,7 +74,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	};
 
 	public roles: Components<C> = {};
-	public structuredChildren: StructuredChildren<C> = {};
+	public structuredChildren: StructuredChildren = {};
 
 	declare public sizeMode: Record<Dimensions, ContainerSizeMethod>;
 

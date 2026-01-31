@@ -1,9 +1,9 @@
-import { AddDispatchData, RemoveDispatchData, StructuredChildren } from "../collection";
-import Grid, { GridCell, IGrid } from "../grid";
+import { AddDispatchData, RemoveDispatchData, StructuredChildEntry, StructuredChildren } from "../collection";
+import Grid, { GridCell, IGrid, Subgrid } from "../grid";
 import { ID, UserComponentType } from "../point";
 import Spacial, { Size } from "../spacial";
 import Visual from "../visual";
-import Channel, { IChannel } from "./channel";
+import Channel, { IChannel, SubgridChannel } from "./channel";
 
 
 
@@ -11,7 +11,7 @@ export interface ISequence extends IGrid<IChannel> {
 }
 
 
-export default class Sequence extends Grid<Channel> implements ISequence {
+export default class Sequence extends Grid<Subgrid> implements ISequence {
 	static ElementType: UserComponentType = "sequence";
 	get state(): ISequence {
 		return {
@@ -20,10 +20,10 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		};
 	}
 
-	get channels(): Channel[] {
+	get channels(): SubgridChannel[] {
 		return this.structuredChildren["channel"].objects;
 	}
-	get channelsDict(): Record<ID, Channel> {
+	get channelsDict(): Record<ID, SubgridChannel> {
 		return Object.fromEntries(this.channels.map((item) => [item.id, item]));
 	}
 	get channelIDs(): string[] {
@@ -51,7 +51,9 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 	}
 
 
-	structuredChildren: StructuredChildren<Channel> = {
+	structuredChildren: {
+		"channel": StructuredChildEntry<SubgridChannel>
+	} = {
 		"channel": {
 			objects: [],
 			initialiser: this.addChannel.bind(this),
@@ -93,7 +95,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 	// ----------------- Add Methods -----------------
 	//#region
-	public override add({ child, index }: AddDispatchData<Channel>) {
+	public override add({ child, index }: AddDispatchData<Subgrid>) {
 		super.add({child, index})
 	}
 	//#endregion
@@ -102,7 +104,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 
 	// --------------- Remove methods ----------------
 	//#region 
-	public override remove({ child }: RemoveDispatchData<Channel>) {
+	public override remove({ child }: RemoveDispatchData<Subgrid>) {
 		super.remove({ child })
 	}
 	//#endregion
@@ -137,10 +139,10 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 		})
 
 		child.placementControl = "auto";
-		child.placementMode = { type: "channel" }
+		child.placementMode = {type: "subgrid", config: {coords: {row: CHILD_INDEX*3, col: 0}}}
 	}
 
-	private removeChannel( {child}: RemoveDispatchData<Channel>) {
+	private removeChannel( {child}: RemoveDispatchData<SubgridChannel>) {
 		var channelIndex: number | undefined = this.childIndex(child);
 
 		if (channelIndex === undefined) {
@@ -205,7 +207,7 @@ export default class Sequence extends Grid<Channel> implements ISequence {
 	protected synchroniseChannels() {
 		let longestChannel: number = Math.max(...this.children.map((c) => c.numColumns));
 
-		this.children.forEach((channel, channel_index) => {
+		this.channels.forEach((channel, channel_index) => {
 			// Currently channels are forced to be 3 rows so we leave that
 			// and just set the number of columns
 
