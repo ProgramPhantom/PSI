@@ -13,7 +13,7 @@ import { AllComponentTypes } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Text, { IText } from "./text";
-import Visual, { GridElement, IVisual } from "./visual";
+import Visual, { GridCellElement, IVisual } from "./visual";
 
 
 //                                    scheme name
@@ -201,7 +201,7 @@ class ENGINE {
 					break;
 				}
 
-				element = new LabelGroup(parameters as ILabelGroup, coreChild as GridElement);
+				element = new LabelGroup(parameters as ILabelGroup, coreChild as GridCellElement);
 				break;
 			case "label":
 				element = new Label(parameters as ILabel);

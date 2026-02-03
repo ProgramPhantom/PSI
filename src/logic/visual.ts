@@ -25,7 +25,9 @@ export function doesDraw(object: any): object is IDraw {
 }
 
 export type PulseElement<T extends Visual = Visual> = T & { placementMode: { type: "pulse"; config: IPulseConfig } };
-export type GridElement<T extends Visual = Visual> = T & { placementMode: { type: "grid"; config: IGridConfig } };
+
+export type GridCellElement<T extends Visual = Visual> = T & { placementMode: { type: "grid"; config: IGridConfig } };
+
 export type AlignerElement<T extends Visual = Visual> = T & { placementMode: { type: "aligner"; config: IAlignerConfig } };
 export type FreeElement<T extends Visual = Visual> = T & { placementMode: { type: "free" } };
 export type BindsElement<T extends Visual = Visual> = T & { placementMode: { type: "binds"; bindings: undefined } };

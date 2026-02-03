@@ -1,19 +1,19 @@
 import { AddDispatchData, Components, RemoveDispatchData } from "../collection";
-import Grid, { Elements, Ghost, GridCell, IGrid } from "../grid";
+import Grid, { Elements, Ghost, GridCell, IGrid, ISubgrid, Subgrid } from "../grid";
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
 import RectElement from "../rectElement";
 import { Dimensions, IGridConfig, IPulseConfig, isPulse, ISubgridConfig, Orientation, SiteNames, Size } from "../spacial";
 import Text from "../text";
-import Visual, { GridElement } from "../visual";
+import Visual, { GridCellElement } from "../visual";
 
 
-export interface IChannel extends IGrid {
+export interface IChannel extends ISubgrid {
 	sequenceID?: ID;
 }
 
 
 export type SubgridChannel = Channel & { placementMode: { type: "subgrid"; config: ISubgridConfig } };
-export default class Channel extends Grid implements IChannel {
+export default class Channel extends Subgrid implements IChannel {
 	static ElementType: UserComponentType = "channel";
 	static OrientationToRow(orientation: Orientation): 0 | 1 | 2 {
 		let row: 0 | 1 | 2 = 0
@@ -47,22 +47,16 @@ export default class Channel extends Grid implements IChannel {
 	}
 
 
-	get state(): IChannel {
-		return {
-			...super.state
-		};
-	}
-
 	get pulseElements(): Visual[] {
 		return this.children.filter((v) => isPulse(v))
 	}
 
-	get label(): GridElement<Text> | undefined {
-		let label: GridElement<Text> | undefined = this.roles["label"].object as GridElement<Text> | undefined;
+	get label(): GridCellElement<Text> | undefined {
+		let label: GridCellElement<Text> | undefined = this.roles["label"].object as GridCellElement<Text> | undefined;
 		return label
 	}
-	get bar(): GridElement<RectElement> | undefined {
-		let bar: GridElement<RectElement> | undefined = this.roles["bar"].object as GridElement<RectElement> | undefined;
+	get bar(): GridCellElement<RectElement> | undefined {
+		let bar: GridCellElement<RectElement> | undefined = this.roles["bar"].object as GridCellElement<RectElement> | undefined;
 		return bar
 	}
 
@@ -107,7 +101,7 @@ export default class Channel extends Grid implements IChannel {
 
 	}
 
-	public override add({ child }: AddDispatchData<GridElement>) {
+	public override add({ child }: AddDispatchData<GridCellElement>) {
 		if (isPulse(child)) {
 			this.setGridConfigViaPulseData(child, child.pulseData);
 
@@ -128,7 +122,7 @@ export default class Channel extends Grid implements IChannel {
 		super.add({ child });
 	}
 
-	public remove({ child }: RemoveDispatchData<GridElement>) {
+	public remove({ child }: RemoveDispatchData<GridCellElement>) {
 		//let remove: {row: boolean, col: boolean } = {row: false, col: isPulse(child)}
 		//
 		//// Never remove the first pulse column
@@ -237,6 +231,13 @@ export default class Channel extends Grid implements IChannel {
 				contribution: { x: true, y: false }
 			}
 		}
+	}
+
+	public colHasPulse(col: number): boolean {
+		var targetColumn: GridCell[] | undefined = this.getColumn(col);
+		if (targetColumn === undefined) { return false }
+
+		return targetColumn.some((cell) => (cell?.elements ?? []).some(e => e.role !== "bar"));
 	}
 
 	// -------------- Translation functions -------------

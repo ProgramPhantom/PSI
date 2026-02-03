@@ -3,7 +3,7 @@ import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
 import { isPulse } from "../spacial";
 import { Position } from "../text";
-import Visual, { GridElement, IVisual } from "../visual";
+import Visual, { GridCellElement, IVisual } from "../visual";
 import Label, { ILabel } from "./label";
 
 
@@ -28,13 +28,13 @@ export default class LabelGroup
 		};
 	}
 
-	get labels(): Partial<Record<Position, GridElement<Label>>> {
-		let record: Partial<Record<Position, GridElement<Label>>> = {};
+	get labels(): Partial<Record<Position, GridCellElement<Label>>> {
+		let record: Partial<Record<Position, GridCellElement<Label>>> = {};
 
-		let top: GridElement<Label> | undefined = this.getCell({ row: 0, col: 1 })?.elements?.[0] as GridElement<Label>;
-		let bottom: GridElement<Label> | undefined = this.getCell({ row: 2, col: 1 })?.elements?.[0] as GridElement<Label>;
-		let left: GridElement<Label> | undefined = this.getCell({ row: 1, col: 0 })?.elements?.[0] as GridElement<Label>;
-		let right: GridElement<Label> | undefined = this.getCell({ row: 1, col: 2 })?.elements?.[0] as GridElement<Label>;
+		let top: GridCellElement<Label> | undefined = this.getCell({ row: 0, col: 1 })?.elements?.[0] as GridCellElement<Label>;
+		let bottom: GridCellElement<Label> | undefined = this.getCell({ row: 2, col: 1 })?.elements?.[0] as GridCellElement<Label>;
+		let left: GridCellElement<Label> | undefined = this.getCell({ row: 1, col: 0 })?.elements?.[0] as GridCellElement<Label>;
+		let right: GridCellElement<Label> | undefined = this.getCell({ row: 1, col: 2 })?.elements?.[0] as GridCellElement<Label>;
 
 		record["top"] = top;
 		record["bottom"] = bottom;
@@ -59,8 +59,8 @@ export default class LabelGroup
 		return record
 	}
 
-	private _coreChild: GridElement;
-	get coreChild(): GridElement {
+	private _coreChild: GridCellElement;
+	get coreChild(): GridCellElement {
 		return this._coreChild;
 	}
 
@@ -69,14 +69,14 @@ export default class LabelGroup
 
 	constructor(
 		params: ILabelGroup,
-		coreChild: GridElement,
+		coreChild: GridCellElement,
 	) {
 		super(params);
 		this.setMatrixSize({ row: 2, col: 2 })
 
 		this.coreChildType = params.coreChildType;
 
-		var coreChild: GridElement = coreChild;
+		var coreChild: GridCellElement = coreChild;
 
 
 		this.placementMode = params.placementMode ?? { type: "free" };
@@ -87,13 +87,13 @@ export default class LabelGroup
 		this.setCoreChild(coreChild);
 
 		Object.entries(params.labels)?.forEach(([position, label]) => {
-			var newLabel = new Label(label) as GridElement<Label>;
+			var newLabel = new Label(label) as GridCellElement<Label>;
 
 			this.addLabel(newLabel, position as Position);
 		});
 	}
 
-	private setCoreChild(child: GridElement) {
+	private setCoreChild(child: GridCellElement) {
 		this._coreChild = child;
 		this._coreChild.placementMode = {
 			type: "grid",
@@ -106,7 +106,7 @@ export default class LabelGroup
 	}
 
 
-	addLabel(label: GridElement<Label>, position: Position) {
+	addLabel(label: GridCellElement<Label>, position: Position) {
 
 		label.placementMode = {
 			type: "grid",

@@ -171,7 +171,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	protected _contentWidth: number;
 	protected _contentHeight: number;
 
-	private _placementMode: PlacementConfiguration;
+	protected _placementMode: PlacementConfiguration;
 	public get placementMode() {
 		return this._placementMode;
 	}

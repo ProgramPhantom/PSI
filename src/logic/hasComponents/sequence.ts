@@ -8,11 +8,11 @@ import Channel, { IChannel, SubgridChannel } from "./channel";
 
 
 
-export interface ISequence extends IGrid<IChannel> {
+export interface ISequence extends IGrid {
 }
 
 
-export default class Sequence extends Grid<Subgrid> implements ISequence {
+export default class Sequence extends Grid implements ISequence {
 	static ElementType: UserComponentType = "sequence";
 	get state(): ISequence {
 		return {
@@ -74,15 +74,11 @@ export default class Sequence extends Grid<Subgrid> implements ISequence {
 		this.synchroniseChannels();
 
 		var size: Size = super.computeSize();
-
-		this.applySizesToChannels();
 		return size
 	}
 
 	public override computePositions(root: { x: number, y: number }): void {
 		super.computePositions(root);
-
-		this.applySizesToChannels();
 	}
 	//#endregion
 	// -----------------------------------------------
@@ -125,22 +121,6 @@ export default class Sequence extends Grid<Subgrid> implements ISequence {
 	private configureChannel( {child, index}: AddDispatchData<Channel> ) {
 		let CHILD_INDEX: number = index ?? this.numChannels-1;
 
-		// Add the three rows of this channel to the bottom of the 
-		// grid matrix;
-
-		// First we need to expand the matrix (as this channel we are)
-		// adding  could be longer than the matrix:
-
-		var channelLength: number = child.numColumns;
-		// this.setMatrixSize({ row: undefined, col: channelLength - 1 }, true)
-
-		// Note we don't care about the row as we will just append the 
-		// rows of the channel now, there's no need to expand it
-
-		// child.getRows().forEach((row, row_index) => {
-		// 	this.gridMatrix.splice((CHILD_INDEX * 3) + row_index, 0, row)
-		// })
-
 		child.placementControl = "auto";
 		child.placementMode = {type: "subgrid", config: {coords: {row: CHILD_INDEX*3, col: 0}}}
 	}
@@ -163,52 +143,9 @@ export default class Sequence extends Grid<Subgrid> implements ISequence {
 		// been deleted, hence we squeeze.
 		this.squeezeMatrix();  // TODO: is this why channel deletion is bugging?
 	}
-	
-	/**
-	 * Applies grid slices and positional offsets to each channel in `this.channels`.
-	 *
-	 * For each channel at index `i` this method:
-	 * - computes a base `INDEX = i * 3` and extracts 3-item slices from `this.gridMatrix` and `this.cells`,
-	 *   plus a corresponding 3-item slice from `this.gridSizes.rows`.
-	 * - builds a `gridSizes` object that preserves `this.gridSizes.columns` and uses the extracted row slice.
-	 * - sets the channel's `x` to `this.contentX` and `y` to the `y` value of the first row in the row slice.
-	 * - calls `channel.setGrid(gridSlice, gridSizes, cellSlice)` to assign the extracted grid and cells.
-	 *
-	 * Side effects:
-	 * - Mutates each channel by setting `x`, `y`, and invoking `setGrid`.
-	 *
-	 * Preconditions:
-	 * - `this.gridMatrix`, `this.cells`, and `this.gridSizes.rows` must be aligned and long enough so that
-	 *   slicing `INDEX .. INDEX + 3` is valid for every channel.
-	 *
-	 * @private
-	 */
-	private applySizesToChannels() {
-		this.channels.forEach((channel, channel_index) => {
-			let INDEX: number = channel_index * 3;
-
-			let gridSlice = this.gridMatrix.slice(INDEX, INDEX + 3);
-
-			let rowSizeSlice = this.gridSizes.rows.slice(INDEX, INDEX + 3);
-			let gridSizes: { columns: Spacial[], rows: Spacial[] } = { rows: rowSizeSlice, columns: this.gridSizes.columns }
-
-			let cellSlice = this.cells.slice(INDEX, INDEX + 3);
-
-			channel.x = this.cx;
-			channel.y = rowSizeSlice[0].y;
-
-			channel.setGrid(gridSlice, gridSizes, cellSlice);
-
-			let channelWidth: number = this.width;
-			let channelHeight: number = rowSizeSlice.reduce((h, row) => h + row.height, 0);
-
-			channel.width = channelWidth;
-			channel.height = channelHeight;
-		})
-	}
 
 	protected synchroniseChannels() {
-		let longestChannel: number = Math.max(...this.children.map((c) => c.numColumns));
+		let longestChannel: number = Math.max(...this.channels.map((c) => c.numColumns));
 
 		this.channels.forEach((channel, channel_index) => {
 			// Currently channels are forced to be 3 rows so we leave that
@@ -235,38 +172,35 @@ export default class Sequence extends Grid<Subgrid> implements ISequence {
 		}
 	}
 
-	public override removeColumn(index?: number, remove: true | "if-empty" = true) {
-		let INDEX: number | undefined = index;
-		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns - 1) {
-			INDEX = this.numColumns - 1;
-		}
-
-		if (INDEX === 1 && this.numColumns === 2) {
-			return
-		}
-
-		var empty: boolean = !this.colHasPulse(INDEX);
-
-		if (remove === "if-empty" && empty === false) { return }
-
-		for (let i = 0; i < this.numRows; i++) {
-			this.gridMatrix[i].splice(INDEX, 1);
-		}
-
-		this.synchroniseChannels();
-
-		this.shiftElementColumnIndexes(INDEX, -1);
-	}
+	// public override removeColumn(index?: number, remove: true | "if-empty" = true) {
+	// 	let INDEX: number | undefined = index;
+	// 	if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns - 1) {
+	// 		INDEX = this.numColumns - 1;
+	// 	}
+// 
+	// 	if (INDEX === 1 && this.numColumns === 2) {
+	// 		return
+	// 	}
+// 
+	// 	var empty: boolean = !this.colHasPulse(INDEX);
+// 
+	// 	if (remove === "if-empty" && empty === false) { return }
+// 
+	// 	for (let i = 0; i < this.numRows; i++) {
+	// 		this.gridMatrix[i].splice(INDEX, 1);
+	// 	}
+// 
+	// 	this.synchroniseChannels();
+// 
+	// 	this.shiftElementColumnIndexes(INDEX, -1);
+	// }
 	//#endregion
 	// -----------------------------------------------
 
 	// --------------- Helpers -----------------------
 	//#region 
 	private colHasPulse(col: number): boolean {
-		var targetColumn: GridCell[] | undefined = this.getColumn(col);
-		if (targetColumn === undefined) { return false }
-
-		return targetColumn.some((cell) => (cell?.elements ?? []).some(e => e.role !== "bar"));
+		return this.channels.some(c => c.colHasPulse(col));
 	}
 
 	private deleteEmptyColumns() {
