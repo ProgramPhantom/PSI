@@ -269,8 +269,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		var index: number | undefined = this.childIndex(child);
 
 		if (index === undefined) {
-			console.warn(`Cannot find child to remove ${child.ref} in ${this.ref}`)
-			return
+			throw new Error(`Cannot find child to remove ${child.ref} in ${this.ref}`)
 		}
 
 		// Remove from structure.

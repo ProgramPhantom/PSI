@@ -6,7 +6,7 @@ import { IRectElement } from "../../logic/rectElement";
 import { ISpace } from "../../logic/space";
 import { ISVGElement } from "../../logic/svgElement";
 import { IText } from "../../logic/text";
-import { IVisual } from "../../logic/visual";
+import Visual, { IVisual } from "../../logic/visual";
 import ChannelForm from "./ChannelForm";
 import { GridForm } from "./GridForm";
 import LabelForm from "./LabelForm";
@@ -72,6 +72,16 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	"diagram": {
 		form: VisualForm,
 		defaults: defaultDiagram,
+		allowLabels: false
+	},
+	"subgrid": {
+		form: VisualForm,
+		defaults: defaultVisual,
+		allowLabels: false
+	},
+	"grid": {
+		form: VisualForm,
+		defaults: defaultVisual,
 		allowLabels: false
 	}
 }

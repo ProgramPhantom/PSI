@@ -656,6 +656,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		if (this.isCellChild(child)) {
 			this.removeMatrix(child, deleteIfEmpty)
+		} else if (this.isSubgridChild(child)) {
+			this.removeMatrix(child, deleteIfEmpty)
 		}
 	}
 
