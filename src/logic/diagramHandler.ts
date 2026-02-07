@@ -5,11 +5,11 @@ import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } fr
 import SchemeManager from "./default";
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
-import Grid, { AddSubgrid, CanAddSubgrid, ISubgrid } from "./grid.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
 import Sequence from "./hasComponents/sequence";
 import { AllComponentTypes, ID } from "./point";
 import Visual, { IDraw, IVisual } from "./visual";
+import { ISubgrid } from "./grid.ts";
 
 
 /**
@@ -42,9 +42,8 @@ function draws(
 
 type AddEdit = { type: "add", data: AddDispatchData, parentId: ID }
 type RemoveEdit = { type: "remove", data: RemoveDispatchData, parentId: ID }
-type AddSubgridEdit = {type: "addSubgrid", data: AddSubgrid, parentId: ID} 
 
-type Edit = AddEdit | RemoveEdit | AddSubgridEdit
+type Edit = AddEdit | RemoveEdit
 
 
 type CreateAndModifyInput = { parameters: IVisual, target: Visual }
@@ -69,8 +68,6 @@ type Actions = {
 		inputData: ModifyInput,
 		undoAction: "modify"
 	},
-
-
 	"add": {
 		inputData: AddInput,
 		undoAction: "remove"
@@ -79,15 +76,6 @@ type Actions = {
 		inputData: RemoveInput,
 		undoAction: "add"
 	},
-
-	"addSubgrid": {
-		inputData: AddSubgridInput,
-		undoAction: "removeSubgrid"
-	},
-	"removeSubgrid": {
-		inputData: AddSubgridInput,
-		undoAction: "addSubgrid"
-	}
 }
 type ActionNames = keyof Actions;
 
@@ -150,8 +138,6 @@ export default class DiagramHandler implements IDraw {
 		"add": this.add.bind(this),
 		"modify": this.modify.bind(this),
 		"remove": this.remove.bind(this),
-
-		"addSubgrid": this.addSubgrid.bind(this)
 	}
 
 
@@ -353,14 +339,6 @@ export default class DiagramHandler implements IDraw {
 						result = { ok: true, value: parent }
 					}
 					break;
-				case "addSubgrid":
-					if (!CanAddSubgrid(parent)) {
-						result = { ok: false, error: `Parent ${parent.ref}` }
-					} else {
-						parent.addSubgrid({ ...edit.data });
-						result = { ok: true, value: parent }
-					}
-					break;
 			}
 		} catch (err) {
 			result = { ok: false, error: (err as string) }
@@ -468,33 +446,6 @@ export default class DiagramHandler implements IDraw {
 		if (addResult.ok === false) { return addResult }
 
 		return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } }
-	}
-
-	protected addSubgrid({ subgrid }: AddSubgridInput): ActionResult<"addSubgrid"> {
-		let childInstance: Grid;
-		if (!(subgrid instanceof Grid)) {
-			let constructedChildResult: Result<Grid> = this.createVisual(subgrid, "grid");
-
-			if (constructedChildResult.ok === false) {
-				return { ok: false, error: constructedChildResult.error };
-			}
-
-			childInstance = constructedChildResult.value;
-		} else {
-			childInstance = subgrid;
-		}
-		
-		let editResult: Result<Visual> = this.editDiagram({
-			type: "addSubgrid",
-			data: { subgrid: childInstance },
-			parentId: subgrid.parentId ?? ""
-		})
-
-		if (editResult.ok === false) {
-			return editResult
-		}
-
-		return { ok: true, undo: { action: "removeSubgrid", data: { subgrid: subgrid } } }
 	}
 	//#endregion
 	// ------------------------------------------

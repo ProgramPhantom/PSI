@@ -2,7 +2,6 @@ import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./
 import { ID } from "./point";
 import Spacial, { Dimensions, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
 import Visual, { GridCellElement, IDraw, IVisual } from "./visual";
-import ENGINE from "./engine";
 
 export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 	minHeight?: number,
@@ -32,16 +31,7 @@ export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridConf
 export type GridPlacementSetter = (element: Visual, value: IGridConfig) => void
 
 
-export type AddSubgrid = { subgrid: Grid }
-export interface ICanAddSubgrid {
-	addSubgrid: ({ subgrid }: AddSubgrid) => void
-}
-export function CanAddSubgrid(value: Visual): value is Visual & ICanAddSubgrid {
-	return (value as any).addSubgrid !== undefined
-}
-
-
-export default class Grid<C extends Visual = Visual> extends Collection<C | Subgrid<C>> implements IDraw, ICanAddSubgrid {
+export default class Grid<C extends Visual = Visual> extends Collection<C | Subgrid<C>> implements IDraw {
 	public isCellChild = (e: Visual): e is GridCellElement<C> => e.placementMode.type === "grid"
 	public isSubgridChild(e: Visual): e is Subgrid<C> {
 		return e instanceof Subgrid
@@ -481,7 +471,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.subgridChildren.forEach((sg) => {
 			this.removeMatrix(sg);
 
-			this.addSubgridGrid(sg);
+			this.addSubgrid(sg);
 		})
 	}
 
@@ -503,19 +493,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		if (this.isCellChild(child)) {
 			this.addGridElement(child);
 		} else if (this.isSubgridChild(child)) {
-			this.addSubgridGrid(child)
+			this.addSubgrid(child)
 		}
 	}
-
-	public addSubgrid({ subgrid }: AddSubgrid) {
-		// this.appendElementsInRegion(region, coords);
-		if (subgrid.placementMode.type !== "subgrid") {
-			return
-		}
-
-		// this.appendElementsInRegion(subgrid.gridMatrix, subgrid.placementMode.config.coords)
-	}
-
 	// ---- private?
 
 	public appendElementsInRegion(gridRegion: GridCell<C>[][], coords?: { row: number, col: number }) {
@@ -563,7 +543,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.appendElementsInRegion(region, { row: insertCoords.row, col: insertCoords.col })
 	}
 
-	private addSubgridGrid(child: Subgrid<C>) {
+	private addSubgrid(child: Subgrid<C>) {
 		let subgridRegion: GridCell<C>[][] = child.getSubgridRegion();
 
 		this.appendElementsInRegion(subgridRegion, child.placementMode.config.coords);

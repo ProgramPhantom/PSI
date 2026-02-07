@@ -43,6 +43,7 @@ const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
 	"label-group": false,
 	"sequence-aligner": false,
 	grid: false,
+	subgrid: false
 };
 
 export interface ISelectConfig extends IToolConfig { }
