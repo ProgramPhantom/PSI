@@ -71,7 +71,6 @@ export default class Sequence extends Grid implements ISequence {
 	public override computeSize(): Size {
 		// Do this so if Channels self added a column
 		this.deleteEmptyColumns();
-		this.synchroniseChannels();
 
 		var size: Size = super.computeSize();
 		return size
@@ -122,7 +121,8 @@ export default class Sequence extends Grid implements ISequence {
 		let CHILD_INDEX: number = index ?? this.numChannels-1;
 
 		child.placementControl = "auto";
-		child.placementMode = {type: "subgrid", config: {coords: {row: CHILD_INDEX*3, col: 0}}}
+		child.placementMode = {type: "subgrid", config: {coords: {row: CHILD_INDEX*3, col: 0,}, 
+		fill: {cols: true, rows: false}}}
 	}
 
 	private removeChannel( {child}: RemoveDispatchData<SubgridChannel>) {
@@ -143,57 +143,12 @@ export default class Sequence extends Grid implements ISequence {
 		// been deleted, hence we squeeze.
 		this.squeezeMatrix();  // TODO: is this why channel deletion is bugging?
 	}
-
-	protected synchroniseChannels() {
-		let longestChannel: number = Math.max(...this.channels.map((c) => c.numColumns));
-
-		this.channels.forEach((channel, channel_index) => {
-			// Currently channels are forced to be 3 rows so we leave that
-			// and just set the number of columns
-
-			// set matrix takes index
-			channel.setMatrixSize({ col: longestChannel - 1 });
-			channel.sizeBar();
-		})
-	}
 	//#endregion
 	// ----------------------------------------------
 
 
 	// --------------- Behaviour overrides -------------
 	//#region 
-	public override insertEmptyColumn(index?: number) {
-		super.insertEmptyColumn(index);
-
-		// Apply this to the channels
-		// This condition means this only happens when a channel is initialised.
-		if (this.numColumns >= 2) {
-			this.synchroniseChannels();
-		}
-	}
-
-	// public override removeColumn(index?: number, remove: true | "if-empty" = true) {
-	// 	let INDEX: number | undefined = index;
-	// 	if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns - 1) {
-	// 		INDEX = this.numColumns - 1;
-	// 	}
-// 
-	// 	if (INDEX === 1 && this.numColumns === 2) {
-	// 		return
-	// 	}
-// 
-	// 	var empty: boolean = !this.colHasPulse(INDEX);
-// 
-	// 	if (remove === "if-empty" && empty === false) { return }
-// 
-	// 	for (let i = 0; i < this.numRows; i++) {
-	// 		this.gridMatrix[i].splice(INDEX, 1);
-	// 	}
-// 
-	// 	this.synchroniseChannels();
-// 
-	// 	this.shiftElementColumnIndexes(INDEX, -1);
-	// }
 	//#endregion
 	// -----------------------------------------------
 

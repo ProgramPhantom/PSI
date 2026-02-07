@@ -99,6 +99,7 @@ export default class Channel extends Subgrid implements IChannel {
 			extra: { width: 0, height: this.padding[2] }
 		}, { row: 2, column: 0 })
 
+		this.placementMode.config.fill = {rows: false, cols: true}
 	}
 
 	public override add({ child }: AddDispatchData<GridCellElement>) {

@@ -72,7 +72,7 @@ export default class LabelGroup
 		coreChild: GridCellElement,
 	) {
 		super(params);
-		this.setMatrixSize({ row: 2, col: 2 })
+		this.setMatrixBottomRight({ row: 2, col: 2 })
 
 		this.coreChildType = params.coreChildType;
 

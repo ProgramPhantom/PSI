@@ -41,7 +41,8 @@ export interface IGridConfig {
 }
 
 export interface ISubgridConfig {
-	coords: {row: number, col: number}
+	coords: {row: number, col: number},
+	fill?: {rows: boolean, cols: boolean}
 }
 
 export interface IAlignerConfig {

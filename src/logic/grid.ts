@@ -83,6 +83,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	// ---------------- Compute Methods ----------------
 	//#region 
 	public override computeSize(): Size {
+		this.growSubgrids();
+		
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
 			child.computeSize();
@@ -475,6 +477,23 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		})
 	}
 
+	private growSubgrids() {
+		this.subgridChildren.forEach((sg) => {
+			let root: {row: number, col: number} = sg.placementMode.config.coords;
+			let currWidth: number = sg.numColumns;
+			let currHeight: number = sg.numRows;
+			let dWidth: number = (this.numColumns) - root.col;
+			let dHeight: number = (this.numRows) - root.row;
+			
+			let newWidth: number = sg.placementMode.config.fill?.cols === true ? dWidth : currWidth;
+			let newHeight: number = sg.placementMode.config.fill?.rows === true ? dHeight : currHeight;
+
+			if (newHeight !== currHeight || newWidth !== currWidth) {
+				this.setChildSize(sg, {noRows: newHeight, noCols: newWidth});
+			}
+		})
+	}
+
 
 	//#endregion
 	// -------------------------------------------------
@@ -513,7 +532,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		let topRow: number = coords.row;
 		let bottomRow: number = coords.row + noRows - 1;
 
-		this.setMatrixSize({ row: bottomRow, col: rightCol }, true);
+		this.setMatrixBottomRight({ row: bottomRow, col: rightCol }, true);
 
 		for (let r = 0; r < noRows; r++) {
 			for (let c = 0; c < noCols; c++) {
@@ -534,7 +553,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			throw new Error(`Adding grid child ${child.ref} with unspecified coords`)
 		}
 
-		var region: OccupiedCell<C>[][] | undefined = this.getGridElementRegion(child, { row: insertCoords.row, col: insertCoords.col });
+		var region: OccupiedCell<C>[][] | undefined = this.getChildRegion(child, { row: insertCoords.row, col: insertCoords.col });
 
 		if (region === undefined) {
 			throw new Error(`Could not construct cell region for element ${child.ref}`)
@@ -560,7 +579,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	public appendCellAtCoord(cell: GridCell<C>, coords: { row: number, col: number }) {
 		if (Object.keys(cell ?? {}).length === 0) { return }
 
-		this.setMatrixSize(coords, true);
+		this.setMatrixBottomRight(coords, true);
 
 		let targetGridCell: GridCell<C> = this.gridMatrix[coords.row][coords.col];
 
@@ -635,7 +654,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		let bottomRow: number = coords.row + noRows - 1;
 
 
-		this.setMatrixSize({ row: bottomRow, col: rightCol }, true);
+		this.setMatrixBottomRight({ row: bottomRow, col: rightCol }, true);
 
 		for (let r = 0; r < noRows; r++) {
 			for (let c = 0; c < noCols; c++) {
@@ -801,7 +820,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	 * // ensure coordinate (5, 3) exists; will insert rows/columns as needed
 	 * this.expandMatrix({ row: 5, col: 3 });
 	 */
-	public setMatrixSize(coords: { row?: number, col?: number }, onlyGrow: boolean = false) {
+	public setMatrixBottomRight(coords: { row?: number, col?: number }, onlyGrow: boolean = false) {
 		var rowDiff: number = coords.row !== undefined ? coords.row - this.numRows + 1 : 0;
 		var colDiff: number = coords.col !== undefined ? coords.col - this.numColumns + 1 : 0;
 
@@ -850,7 +869,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 	}
 
-	protected insertEmptyColumn(index?: number) {
+	public insertEmptyColumn(index?: number) {
 		let newColumn: GridCell<C>[] = Array<GridCell<C>>(this.numRows).fill(undefined);
 		let INDEX: number | undefined = index;
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns) {
@@ -858,7 +877,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		// Grow split elements by 1 in columns
-		let splitElements: GridElement<C>[][] = this.getStructuredRowSplitElements(INDEX);
+		let splitElements: GridElement<C>[][] = this.getStructuredColumnSplitElements(INDEX);
 		splitElements.forEach((row, row_index) => {
 			for (let element of row) {
 				let gridConfig: IGridConfig = element.placementMode.config;
@@ -891,7 +910,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.shiftElementColumnIndexes(INDEX, 1);
 	}
 
-	protected insertEmptyRow(index?: number): void {
+	public insertEmptyRow(index?: number): void {
 		var newRow: GridCell<C>[] = Array<GridCell<C>>(this.numColumns).fill(undefined)
 		let INDEX: number | undefined = index;
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numRows) {
@@ -1290,7 +1309,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	// -------------- Child sizing -------------------
 	//#region 
-	public setElementSize(child: GridElement<C>, size: { noRows: number, noCols: number }) {
+	public setChildSize(child: GridElement<C>, size: { noRows: number, noCols: number }) {
 		let location: { row: number, col: number } | undefined = this.locateElement(child)
 
 		if (location === undefined) {
@@ -1298,11 +1317,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			return
 		}
 
+
 		if (this.isCellChild(child)) {
 			child.placementMode.config.gridSize = { noRows: size.noRows, noCols: size.noCols }
+		} else if (this.isSubgridChild(child)) {
+			child.setMatrixBottomRight({row: size.noRows-1, col: size.noCols-1})
 		}
 
-		let region: OccupiedCell<C>[][] | undefined = this.getGridElementRegion(child);
+		let region: OccupiedCell<C>[][] | undefined = this.getChildRegion(child);
 		if (region === undefined) {
 			return
 		}
@@ -1311,12 +1333,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.appendElementsInRegion(region, location);
 	}
 
-	protected getGridElementRegion(element: GridElement<C>, overridePosition?: { row: number, col: number }): OccupiedCell<C>[][] | undefined {
-		let gridConfig: IGridConfig = element.placementMode.config;
+	protected getChildRegion(child: GridElement<C>, overridePosition?: { row: number, col: number }): OccupiedCell<C>[][] | undefined {
+		if (this.isSubgridChild(child)) {
+			return child.getSubgridRegion();
+		}
+		
+		let gridConfig: IGridConfig = child.placementMode.config;
 
 		let topLeft: { row: number, col: number } | undefined = gridConfig.coords;
 		if (topLeft === undefined) {
-			console.warn(`Cannot locate child ${element.ref} in grid object ${this.ref}`)
+			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
 			return
 		}
 
@@ -1330,13 +1356,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		gridConfig.coords = root;
 
 		// Construct region
-		let entry: OccupiedCell<C> = { elements: [element], sources: { [element.id]: root } }
+		let entry: OccupiedCell<C> = { elements: [child], sources: { [child.id]: root } }
 		let region: OccupiedCell<C>[][] =
 			Array<OccupiedCell<C>[]>(gridConfig.gridSize?.noRows ?? 1)
 				.fill(Array<OccupiedCell<C>>(gridConfig.gridSize?.noCols ?? 1).fill(entry))
 
 		// Put the top left back to just the element:
-		region[0][0] = { elements: [element] };
+		region[0][0] = { elements: [child] };
 
 
 		return region
@@ -1481,7 +1507,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 
 	public positionElement(child: GridElement<C>, position: { row: number, col: number }) {
-		let region: GridCell<C>[][] | undefined = this.getGridElementRegion(child, position);
+		let region: GridCell<C>[][] | undefined = this.getChildRegion(child, position);
 		this.removeMatrix(child);
 
 		if (region === undefined) {
@@ -1521,7 +1547,7 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 		super(params);
 	}
 
-	public getSubgridRegion(): GridCell<C>[][] {
+	public getSubgridRegion(): OccupiedCell<C>[][] {
 		let root: { row: number, col: number } = this.placementMode.config.coords;
 		let numRows: number = this.numRows;
 		let numCols: number = this.numColumns;
