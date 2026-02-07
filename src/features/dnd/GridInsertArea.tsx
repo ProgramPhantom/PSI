@@ -32,7 +32,7 @@ interface IGridInsertAreaProps {
 
 function GridInsertArea(props: IGridInsertAreaProps) {
 	const [{ canDrop, isOver }, drop] = useDrop(() => ({
-		accept: [DragElementTypes.SUBSEQUENCE],
+		accept: [DragElementTypes.SUBGRID],
 		drop: () =>
 			({
 				type: "grid",
@@ -44,12 +44,13 @@ function GridInsertArea(props: IGridInsertAreaProps) {
 			}) as GridDropResultType,
 		hover: (item: any, monitor) => {
 			if (monitor.canDrop() && props.onSetHighlights) {
-				const { noRows = 1, noCols = 1 } = item.element.placementMode?.config?.gridSize || {};
+				const numRows: number = item.element?.numRows ?? 1;
+				const numCols: number = item.element?.numCols ?? 1;
 				const coords = props.areaSpec.coords;
 
 				const newHighlights = new Set<string>();
-				for (let r = 0; r < noRows; r++) {
-					for (let c = 0; c < noCols; c++) {
+				for (let r = 0; r < numRows; r++) {
+					for (let c = 0; c < numCols; c++) {
 						newHighlights.add(`${coords.row + r},${coords.col + c}`);
 					}
 				}

@@ -15,7 +15,7 @@ export type AllDropResultTypes = CanvasDropResultType | PulseDropResultType | Gr
 
 export const DragElementTypes = {
 	ATOMIC_PREFAB: "prefab",
-	SUBSEQUENCE: "sub-sequence",
+	SUBGRID: "subgrid",
 	PULSE: "pulse",
 	OTHER: "other",
 	FREE: "free",

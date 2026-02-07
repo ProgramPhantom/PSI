@@ -12,7 +12,7 @@ import { UserComponentType } from "../../logic/point";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
-import Grid, { IGrid, ISubgrid } from "../../logic/grid";
+import Grid, { IGrid, ISubgrid, Subgrid } from "../../logic/grid";
 import Collection from "../../logic/collection";
 
 
@@ -53,8 +53,8 @@ by this. It is a different object that can be dragged. */
 const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (props) => {
 	// Compute drag element type:
 	let dragElementType = DragElementTypes.ATOMIC_PREFAB;
-	if (props.element instanceof Grid) {
-		dragElementType = DragElementTypes.SUBSEQUENCE
+	if (props.element instanceof Subgrid) {
+		dragElementType = DragElementTypes.SUBGRID
 	} else if (props.element instanceof Collection) {
 		dragElementType = DragElementTypes.OTHER
 	}
