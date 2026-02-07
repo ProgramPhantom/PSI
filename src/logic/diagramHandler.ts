@@ -297,7 +297,7 @@ export default class DiagramHandler implements IDraw {
 		if (action?.result.ok === true) {
 			this.dispatchAction(
 				action.type,
-				action.input
+				action.result.undo.data
 			);
 			this.undoStack.push(action);
 
