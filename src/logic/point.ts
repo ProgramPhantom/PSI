@@ -16,7 +16,8 @@ export type UserComponentType =
 	| "channel"
 	| "sequence-aligner"
 	| "sequence"
-	| "diagram";
+	| "diagram"
+	| "subgrid";
 export type DrawComponent = "svg" | "rect" | "space";
 
 // Abstract component types (have no visual content)

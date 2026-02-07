@@ -2,7 +2,7 @@ import { Element, Svg, SVG } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
 import SchemeManager, { IUserSchemeData } from "./default";
 import DiagramHandler, { ActionResult, Result } from "./diagramHandler";
-import Grid, { IGrid } from "./grid";
+import Grid, { IGrid, ISubgrid, Subgrid } from "./grid";
 import Channel, { IChannel } from "./hasComponents/channel";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
 import Label, { ILabel } from "./hasComponents/label";
@@ -215,6 +215,9 @@ class ENGINE {
 			case "grid":
 				element = new Grid(parameters as IGrid);
 				break
+			case "subgrid":
+				element = new Subgrid(parameters as ISubgrid);
+				break;
 			case "sequence":
 				element = new Sequence(parameters as ISequence);
 				break;

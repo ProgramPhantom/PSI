@@ -1,9 +1,8 @@
-import { IGrid } from "../grid";
+import { ISubgrid } from "../grid";
 import { DEFAULT_ACQUIRE } from "./svgPulse/acquire";
-import { DEFAULT_AMP } from "./svgPulse/amp";
 
 
-export const DEFAULT_SUBSEQUENCE: IGrid = {
+export const DEFAULT_SUBSEQUENCE: ISubgrid = {
 	"sizeMode": { x: "fit", y: "fit" },
 
 	"padding": [0, 0, 0, 0],
@@ -11,17 +10,17 @@ export const DEFAULT_SUBSEQUENCE: IGrid = {
 	"contentWidth": 50,
 	"contentHeight": 50,
 	"placementMode": {
-		"type": "grid",
+		"type": "subgrid",
 		"config": {
-			"gridSize": {
-				"noCols": 1,
-				"noRows": 4
+			"coords": {
+				"row": 0,
+				"col": 0
 			}
 		}
 	},
 
 	"ref": "sub-sequence",
-	"type": "grid",
+	"type": "subgrid",
 
 	"children": [
 		{...DEFAULT_ACQUIRE, placementMode: {

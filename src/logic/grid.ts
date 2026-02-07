@@ -100,7 +100,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 
 		// Bring subgrids into parent matrix
-		this.reapplySubgridsToMatrix();
+		//this.reapplySubgridsToMatrix();
 
 
 		// Compute the size of the grid by finding the maximum width and height
@@ -499,7 +499,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	//#region
 	public override add({ child, index }: AddDispatchData<C>) {
 		super.add({ child, index });
-		ENGINE.handler
+
 		if (this.isCellChild(child)) {
 			this.addGridElement(child);
 		} else if (this.isSubgridChild(child)) {
@@ -569,7 +569,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.appendElementsInRegion(subgridRegion, child.placementMode.config.coords);
 	}
 
-
 	public addElementAtCoord(child: GridElement<C>, coords: { row: number, col: number }) {
 		var insertCoords: { row: number, col: number } = coords;
 
@@ -598,9 +597,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		else {
 			for (let child of currElements) {
 				// Don't change child coord with coord of source cells
-				if (cell?.sources?.[child.id] === undefined) {
-					child.placementMode.config.coords = coords;
-				}
+				//if (cell?.sources?.[child.id] === undefined) {
+				//	child.placementMode.config.coords = coords;
+				//}
 
 				if (child.parentId === undefined) {
 					child.parentId = this.id;
@@ -877,7 +876,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		// Grow split elements by 1 in columns
-		let splitElements: Set<GridElement<C>> = this.getColumnSplitElements(INDEX);
+		let splitElements: GridElement<C>[][] = this.getStructuredRowSplitElements(INDEX);
 		splitElements.forEach((row, row_index) => {
 			for (let element of row) {
 				let gridConfig: IGridConfig = element.placementMode.config;
@@ -917,8 +916,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			INDEX = this.numRows;
 		}
 
-		// Grow split elements by 1 in columns
-		let splitElements: GridElement<C>[][] = this.getRowSplitElements(INDEX);
+		// Grow split elements by 1 in rows
+		let splitElements: GridElement<C>[][] = this.getStructuredRowSplitElements(INDEX);
 		splitElements.forEach((col, col_index) => {
 			for (let element of col) {
 				let gridConfig: IGridConfig = element.placementMode.config;
@@ -1006,13 +1005,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	// --- Helpers ----
-	protected getColumnSplitElements(index: number): Set<GridElement<C>> {
+	protected getStructuredColumnSplitElements(index: number): GridElement<C>[][] {
 		if (index > this.numColumns || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
 		}
 
 		// Get elements which have a part on the left and right of the index (insertion index)
-		var elements: Set<GridElement<C>> = new Set<GridElement<C>>;
+		var elements: GridElement<C>[][] = Array.from({ length: this.numRows }, () => []);
 
 		this.getRows().forEach((row, row_index) => {
 			let leftCell: GridCell<C> = row[index - 1];
@@ -1022,7 +1021,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
 
 				if (childIndex !== -1) {
-					elements.add(child);
+					elements[row_index].push(child);
 				}
 			}
 		})
@@ -1030,7 +1029,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return elements;
 	}
 
-	protected getRowSplitElements(index: number): GridElement<C>[][] {
+	protected getStructuredRowSplitElements(index: number): GridElement<C>[][] {
 		if (index > this.numRows || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
 		}
@@ -1047,6 +1046,53 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 				if (childIndex !== -1) {
 					elements[col_index].push(child);
+				}
+			}
+		})
+
+		return elements;
+	}
+
+	protected getColumnSplitElements(index: number): Set<GridElement<C>> {
+		if (index > this.numColumns || index < 0) {
+			throw new Error(`Index ${index} is out of bounds`)
+		}
+
+		var elements: Set<GridElement<C>> = new Set<GridElement<C>>;
+
+		this.getRows().forEach((row) => {
+			let leftCell: GridCell<C> = row[index - 1];
+			let rightCell: GridCell<C> = row[index];
+
+			for (let child of (leftCell?.elements ?? [])) {
+				let childIndex: number = (rightCell?.elements ?? []).indexOf(child);
+
+				if (childIndex !== -1) {
+					elements.add(child);
+				}
+			}
+		})
+
+		return elements;
+	}
+
+
+	protected getRowSplitElements(index: number): Set<GridElement<C>> {
+		if (index > this.numRows || index < 0) {
+			throw new Error(`Index ${index} is out of bounds`)
+		}
+
+		var elements: Set<GridElement<C>> = new Set<GridElement<C>>;
+
+		this.getColumns().forEach((col) => {
+			let topCell: GridCell<C> = col[index - 1];
+			let bottomCell: GridCell<C> = col[index];
+
+			for (let child of (topCell?.elements ?? [])) {
+				let childIndex: number = (bottomCell?.elements ?? []).indexOf(child);
+
+				if (childIndex !== -1) {
+					elements.add(child);
 				}
 			}
 		})
