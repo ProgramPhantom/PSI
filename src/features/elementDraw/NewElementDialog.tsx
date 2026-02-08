@@ -58,8 +58,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 								<LabelGroupComboForm
 									ref={submitRef}
 									objectType={tabId}
-									callback={addNewTemplate}
-									changeTarget={() => { }}></LabelGroupComboForm>
+									callback={addNewTemplate}></LabelGroupComboForm>
 							}
 						/>
 						<Tab
@@ -69,8 +68,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 								<LabelGroupComboForm
 									ref={submitRef}
 									objectType={tabId}
-									callback={addNewTemplate}
-									changeTarget={() => { }}></LabelGroupComboForm>
+									callback={addNewTemplate}></LabelGroupComboForm>
 							}
 						/>
 						<Tab
@@ -80,8 +78,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 								<LabelGroupComboForm
 									ref={submitRef}
 									objectType={tabId}
-									callback={addNewTemplate}
-									changeTarget={() => { }}></LabelGroupComboForm>
+									callback={addNewTemplate}></LabelGroupComboForm>
 							}
 						/>
 					</Tabs>

@@ -1,11 +1,10 @@
 import { Card } from "@blueprintjs/core";
 import React from "react";
+import ENGINE from "../logic/engine";
 import { AllComponentTypes } from "../logic/point";
 import Visual from "../logic/visual";
-import { FormDiagramInterface } from "./form/FormDiagramInterface";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { setSelectedElementId } from "../redux/applicationSlice";
-import ENGINE from "../logic/engine";
+import { FormDiagramInterface } from "./form/FormDiagramInterface";
 
 
 interface IFormProps {
@@ -31,11 +30,7 @@ const Form: React.FC<IFormProps> = (props) => {
 					flexDirection: "column",
 					borderLeft: "1px solid #c3c3c4"
 				}}>
-				<FormDiagramInterface
-					target={target}
-					changeTarget={(val) => dispatch(setSelectedElementId(val?.id))}
-					targetType={targetType}
-				/>
+				<FormDiagramInterface />
 			</Card>
 		</>
 	); // Use key in Dynamic form so it forces a remount, triggering the initial values in the form // ?

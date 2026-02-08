@@ -12,15 +12,15 @@ import Collection from "../../logic/collection";
 import FormDivider from "./FormDivider";
 import { Position } from "../../logic/text";
 import { CollectionChildrenList } from "./CollectionChildrenList";
+import { useAppDispatch } from "../../redux/hooks";
+import { setSelectedElementId } from "../../redux/applicationSlice";
 
-interface LabelGroupComboForm {
+export interface LabelGroupComboForm {
 	target?: Visual;
 	objectType: UserComponentType;
 	callback: (val: IVisual) => void;
 
 	ref?: React.RefObject<SubmitButtonRef>;
-
-	changeTarget: (val: Visual | undefined) => void;
 }
 
 export type SubmitButtonRef = {
@@ -32,6 +32,8 @@ export type SubmitButtonRef = {
 
 export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupComboForm>(
 	(props, ref) => {
+		const dispatch = useAppDispatch();
+
 		interface FormState {
 			MasterForm: React.FC<FormRequirements>;
 			ChildForm: React.FC<FormRequirements> | undefined;
@@ -210,7 +212,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 					<div
 						style={{ overflowY: "auto", flex: "1 1 0" }}
 						id="form-fields">
-						<div style={{ padding: "4px" }}>
+						<div style={{ margin: "4px" }}>
 							<Tabs defaultSelectedTabId={"properties"}>
 								<Tab
 									style={{ userSelect: "none" }}
@@ -269,7 +271,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 										id={"children"}
 										title={"Children"}
 										panel={
-											<CollectionChildrenList target={props.target as Collection} changeTarget={props.changeTarget} />
+											<CollectionChildrenList target={props.target as Collection} />
 										}></Tab>
 								) : (
 									<></>

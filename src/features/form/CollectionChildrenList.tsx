@@ -1,14 +1,14 @@
 import { Button } from "@blueprintjs/core";
 import React from "react";
 import Collection from "../../logic/collection";
-import Visual from "../../logic/visual";
 import FormDivider from "./FormDivider";
 import { ID, AllComponentTypes } from "../../logic/point";
 import { IconName } from "@blueprintjs/core";
+import { useAppDispatch } from "../../redux/hooks";
+import { setSelectedElementId } from "../../redux/applicationSlice";
 
 interface CollectionChildrenListProps {
     target: Collection;
-    changeTarget: (val: Visual | undefined) => void;
 }
 
 const ChildIcons: Partial<Record<AllComponentTypes, IconName>> = {
@@ -30,7 +30,8 @@ const ChildIcons: Partial<Record<AllComponentTypes, IconName>> = {
     "grid": "grid"
 };
 
-export const CollectionChildrenList: React.FC<CollectionChildrenListProps> = ({ target, changeTarget }) => {
+export const CollectionChildrenList: React.FC<CollectionChildrenListProps> = ({ target }) => {
+    const dispatch = useAppDispatch();
     const displayedIds = new Set<ID>();
     const roleElements: React.ReactNode[] = [];
 
@@ -46,7 +47,7 @@ export const CollectionChildrenList: React.FC<CollectionChildrenListProps> = ({ 
                         text={roleData.object.ref || roleName}
                         icon={ChildIcons[roleData.object.type] || "cube"}
                         fill={true}
-                        onClick={() => changeTarget(roleData.object)}
+                        onClick={() => dispatch(setSelectedElementId(roleData.object!.id))}
                     />
                 </React.Fragment>
             );
@@ -71,7 +72,7 @@ export const CollectionChildrenList: React.FC<CollectionChildrenListProps> = ({ 
                             text={child.ref || `Child ${index + 1}`}
                             icon={ChildIcons[child.type] || "cube"}
                             fill={true}
-                            onClick={() => changeTarget(child)}
+                            onClick={() => dispatch(setSelectedElementId(child.id))}
                         />
                     ))}
                 </>

@@ -1,4 +1,5 @@
 import { CSSProperties } from "react";
+import { isPulse } from "../../logic/spacial";
 import Grid from "../../logic/grid";
 import Visual from "../../logic/visual";
 import GridDebug from "./GridDebug";
@@ -52,7 +53,7 @@ const PulseDebug: React.FC<IPulseDebug> = (props) => {
 
 	var padding = props.element.padding;
 
-	if (props.element.placementMode.type !== "pulse") {
+	if (!isPulse(props.element)) {
 		return <></>
 	}
 

@@ -18,7 +18,7 @@ type HoverBehaviour = "terminate" | "carry" | "conditional";
 // Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
 const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> = {
 	0: {
-		terminate: ["channel", "grid", "subgrid", "sequence"],
+		terminate: ["channel", "grid", "subgrid", "sequence", "diagram"],
 		carry: ["text", "lower-abstract"],
 		conditional: ["rect", "svg", "label", "diagram", "label-group", "subgrid"]
 	},

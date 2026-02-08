@@ -10,6 +10,8 @@ import Sequence from "./hasComponents/sequence";
 import { AllComponentTypes, ID } from "./point";
 import Visual, { IDraw, IVisual } from "./visual";
 import { ISubgrid } from "./grid.ts";
+import Line, { ILineStyle } from "./line.ts";
+import { PointBind } from "./spacial.ts";
 
 
 /**
@@ -48,9 +50,9 @@ type Edit = AddEdit | RemoveEdit
 
 type CreateAndModifyInput = { parameters: IVisual, target: Visual }
 type ModifyInput = { child: IVisual, target: Visual }
-type AddInput = { child: IVisual, index?: number}
+type AddInput = { child: IVisual, index?: number }
 type RemoveInput = RemoveDispatchData
-type AddSubgridInput =  { subgrid: ISubgrid };
+type AddSubgridInput = { subgrid: ISubgrid };
 
 export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -363,7 +365,7 @@ export default class DiagramHandler implements IDraw {
 		} else {
 			childInstance = child;
 		}
-		
+
 		let editResult: Result<Visual> = this.editDiagram({
 			type: "add",
 			data: { child: childInstance, index: index },
@@ -415,7 +417,7 @@ export default class DiagramHandler implements IDraw {
 		} else {
 			childInstance = child;
 		}
-		
+
 		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
 		if (parent === undefined) {
 			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }

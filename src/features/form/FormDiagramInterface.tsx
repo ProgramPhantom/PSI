@@ -2,18 +2,27 @@ import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Ico
 import { useRef, useState } from "react";
 import { ObjectInspector } from "react-inspector";
 import { appToaster } from "../../app/Toaster";
-import { ActionResult } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import { UserComponentType } from "../../logic/point";
-import { IVisual } from "../../logic/visual";
-import { FormHolderProps } from "./FormBase";
+import { setSelectedElementId } from "../../redux/applicationSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { AllComponentTypes, UserComponentType } from "../../logic/point";
+import Visual, { IVisual } from "../../logic/visual";
 import { LabelGroupComboForm, SubmitButtonRef } from "./LabelGroupComboForm";
-
 
 type FormEffect = "submit" | "delete" | "modify";
 
+export function FormDiagramInterface() {
+	const dispatch = useAppDispatch();
+	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const target = ENGINE.handler.identifyElement(selectedElementId ?? "");
 
-export function FormDiagramInterface(props: FormHolderProps) {
+	const changeTarget = (val: Visual | undefined) => {
+		dispatch(setSelectedElementId(val?.id));
+	};
+
+	var targetType: AllComponentTypes = target
+		? (target.constructor as typeof Visual).ElementType
+		: "channel";
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const submitRef = useRef<SubmitButtonRef>(null);
 	var [submissionValid, setSubmissionValid] = useState<boolean>(true);
@@ -34,25 +43,25 @@ export function FormDiagramInterface(props: FormHolderProps) {
 				})
 				break;
 			case "modify":
-				if (props.target === undefined) {
+				if (target === undefined) {
 					throw new Error(`Calling modification function with no selected target`)
 				}
 				ENGINE.handler.act({
 					type: "modify",
 					input: {
 						child: values,
-						target: props.target
+						target: target
 					}
 				})
 				break;
 			case "delete":
-				if (props.target === undefined) {
+				if (target === undefined) {
 					throw new Error(`Calling deletion function with no selected target`)
 				}
 				ENGINE.handler.act({
 					type: "remove",
 					input: {
-						child: props.target
+						child: target
 					}
 				})
 				break;
@@ -71,7 +80,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 							flexDirection: "row",
 							alignItems: "center"
 						}}>
-						{props.target === undefined ? (
+						{target === undefined ? (
 							<>
 								<EntityTitle
 									title={"Create Channel"}
@@ -88,7 +97,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 						) : (
 							<>
 								<EntityTitle
-									title={`Modify '${props.target.ref}'`}
+									title={`Modify '${target.ref}'`}
 									icon={
 										<Icon
 											icon="add-child"
@@ -101,7 +110,7 @@ export function FormDiagramInterface(props: FormHolderProps) {
 							</>
 						)}
 
-						{props.target !== undefined ? (
+						{target !== undefined ? (
 							<Button
 								style={{
 									height: "30px",
@@ -112,12 +121,12 @@ export function FormDiagramInterface(props: FormHolderProps) {
 								intent="danger"
 								onClick={() => {
 									dispatchFormEffect(
-										props.target!,
+										target!,
 										"delete"
 									);
-									props.changeTarget(undefined);
+									changeTarget(undefined);
 									appToaster.show({
-										message: `Deleted element '${props.target?.ref}'`,
+										message: `Deleted element '${target?.ref}'`,
 										intent: "danger",
 										timeout: 1000
 									});
@@ -140,16 +149,15 @@ export function FormDiagramInterface(props: FormHolderProps) {
 					padding: "0px"
 				}}>
 				<LabelGroupComboForm
-					key={props.target ? props.target.id : "defaults"}
+					key={target ? target.id : "defaults"}
 					ref={submitRef}
-					objectType={props.targetType as UserComponentType}
-					target={props.target}
-					changeTarget={props.changeTarget}
+					objectType={targetType as UserComponentType}
+					target={target}
 					callback={(val: IVisual) => {
-						props.target
+						target
 							? dispatchFormEffect(val, "modify")
 							: dispatchFormEffect(val, "submit");
-						props.changeTarget(undefined);
+						changeTarget(undefined);
 					}}></LabelGroupComboForm>
 
 				<div
@@ -168,14 +176,14 @@ export function FormDiagramInterface(props: FormHolderProps) {
 
 
 					<Tooltip
-						content={`Modification for ${props.targetType} is not yet implemented`}
+						content={`Modification for ${targetType} is not yet implemented`}
 						disabled={submissionValid} position="top">
 						<AnchorButton
 							style={{ width: "100%" }}
 							disabled={!submissionValid}
 							onClick={() => submitRef.current?.submit()}
-							text={props.target !== undefined ? "Apply" : "Add"}
-							icon={props.target !== undefined ? "tick" : "add"}></AnchorButton>
+							text={target !== undefined ? "Apply" : "Add"}
+							icon={target !== undefined ? "tick" : "add"}></AnchorButton>
 					</Tooltip>
 				</div>
 			</div>
@@ -195,19 +203,19 @@ export function FormDiagramInterface(props: FormHolderProps) {
 					<div style={{ display: "flex", flexDirection: "column" }}>
 						<EntityTitle title={"State"} icon="wrench-time"></EntityTitle>
 
-						<ObjectInspector data={props.target}></ObjectInspector>
+						<ObjectInspector data={target}></ObjectInspector>
 
 						<Divider style={{ marginBottom: "8px" }}></Divider>
 						<EntityTitle title={"Bindings"} icon="bring-data"></EntityTitle>
 
 						<ObjectInspector
-							data={props.target?.bindings.map((b) => b)}></ObjectInspector>
+							data={target?.bindings.map((b) => b)}></ObjectInspector>
 
 						<Divider style={{ marginBottom: "8px" }}></Divider>
 						<EntityTitle title={"Binds to this"} icon="bring-forward"></EntityTitle>
 
 						<ObjectInspector
-							data={props.target?.bindingsToThis.map((b) => b)}></ObjectInspector>
+							data={target?.bindingsToThis.map((b) => b)}></ObjectInspector>
 
 						<Divider style={{ marginBottom: "8px" }}></Divider>
 						<EntityTitle title={"All elements"} icon="zoom-in"></EntityTitle>

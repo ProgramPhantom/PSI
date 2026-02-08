@@ -158,7 +158,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 							defaultSelectedTabId={"default"}
 							fill={true}
 							selectedTabId={selectedScheme}>
-							<style>{`.bp5-tab-panel { width: 100%; height: 100% !important; max-width: 100% !important; box-sizing: border-box; display: block; overflow: hidden; }`}</style>
+							<style>{`.bp5-tab-panel { width: 100%; height: 100% !important; max-width: 100% !important; box-sizing: border-box; display: block; }`}</style>
 
 							{Object.entries(schemeState).map(([schemeName, singletonDict]) => {
 								var singletons: Visual[] | undefined =
