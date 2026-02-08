@@ -222,7 +222,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		selectVisual(e);
 	}
 
-	const doubleClick = (click: React.MouseEvent<HTMLDivElement>) => {
+	const onClick = (click: React.MouseEvent<HTMLDivElement>) => {
 		var element: Visual | undefined = hoveredElement;
 
 		if (element === undefined) {
@@ -295,8 +295,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					display: "flex",
 					position: "relative"
 				}}
-				onDoubleClick={(e) => {
-					doubleClick(e);
+				onClick={(e) => {
+					onClick(e);
 				}}
 				onMouseUp={(e) => {
 					singleClick(e);
