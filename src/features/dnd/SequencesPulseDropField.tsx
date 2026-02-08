@@ -10,7 +10,7 @@ export default function SequencesPulseDropField() {
 				return (
 					<div id={`$sequence-drop-field`}>
 						{
-							s.children.map((c) => {
+							s.channels.map((c) => {
 								return (
 									<ChannelDropField target={c}></ChannelDropField>
 								)

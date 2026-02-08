@@ -39,7 +39,7 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 		return channels;
 	}
 	get channels(): Channel[] {
-		return this.sequenceAligner.children.map((s) => s.children).flat();
+		return this.sequenceAligner.children.map((s) => s.channels).flat();
 	}
 	get channelIDs(): string[] {
 		return this.sequenceAligner.children.map((s) => s.channelIDs).flat();

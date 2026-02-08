@@ -11,6 +11,8 @@ import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } fro
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { setSelectedElementId } from "../../redux/applicationSlice";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes } from "../../logic/point";
 import Visual from "../../logic/visual";
@@ -49,8 +51,6 @@ const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
 export interface ISelectConfig extends IToolConfig { }
 
 interface ICanvasProps {
-	select: (element?: Visual) => void;
-	selectedElement: Visual | undefined;
 	selectedTool: Tool;
 	setTool: (tool: Tool) => void;
 }
@@ -107,6 +107,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 
+	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const dispatch = useAppDispatch();
+	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
+
 
 
 	const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
@@ -125,11 +129,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				global: true,
 				label: "Delete selected element",
 				onKeyDown: () => {
-					if (props.selectedElement) {
+					if (selectedElement) {
 						ENGINE.handler.act({
 							type: "remove",
 							input: {
-								child: props.selectedElement
+								child: selectedElement
 							}
 						})
 						deselect();
@@ -142,11 +146,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				global: true,
 				label: "Delete selected element",
 				onKeyDown: () => {
-					if (props.selectedElement) {
+					if (selectedElement) {
 						ENGINE.handler.act({
 							type: "remove",
 							input: {
-								child: props.selectedElement
+								child: selectedElement
 							}
 						})
 						deselect();
@@ -177,7 +181,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				preventDefault: true
 			},
 		],
-		[debugDialogOpen, props.selectedElement]
+		[debugDialogOpen, selectedElementId]
 	);
 	const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 	const handleSetDebugSelection = (type: AllComponentTypes) => {
@@ -196,12 +200,11 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
-	let selectedElement = props.selectedElement;
 
 	const deselect = () => {
 		selectedElement?.svg?.show();
 		setFocusLevel(0);
-		props.select(undefined);
+		dispatch(setSelectedElementId(undefined));
 	};
 
 	const stopHover = () => {
@@ -209,7 +212,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	};
 
 	const selectVisual = (e: Visual) => {
-		props.select(e);
+		dispatch(setSelectedElementId(e.id));
 		setFocusLevel(focusLevel + 1);
 		e.svg?.hide();
 	};
@@ -262,10 +265,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	// Reset focus level when lose focus
 	useEffect(() => {
-		if (props.selectedElement === undefined) {
+		if (selectedElementId === undefined) {
 			setFocusLevel(0);
 		}
-	}, [props.selectedElement]);
+	}, [selectedElementId]);
 
 	useEffect(() => {
 		if (diagramSvgRef.current && ENGINE.handler.diagram.svg) {

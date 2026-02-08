@@ -2,6 +2,8 @@ import { Drawer, Position } from "@blueprintjs/core";
 import { SVG } from "@svgdotjs/svg.js";
 import { saveAs } from "file-saver";
 import { ReactNode, useState, useSyncExternalStore } from "react";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { setSelectedElementId } from "../redux/applicationSlice";
 import Banner from "../features/banner/Banner";
 import Console from "../features/banner/Console";
 import Canvas from "../features/canvas/Canvas";
@@ -35,7 +37,10 @@ function App() {
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	const [form, setForm] = useState<ReactNode | null>(null);
-	const [selectedElement, setSelectedElement] = useState<Visual | undefined>(undefined);
+	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const dispatch = useAppDispatch();
+	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "");
+
 	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 
 	const [selectedTool, setSelectedTool] = useState<Tool>({
@@ -193,12 +198,12 @@ function App() {
 
 	const SelectElement = (element: Visual | undefined) => {
 		if (element === undefined) {
-			setSelectedElement(undefined);
+			dispatch(setSelectedElementId(undefined));
 			setForm(null);
 			return;
 		}
 
-		setSelectedElement(element);
+		dispatch(setSelectedElementId(element.id));
 	};
 
 	const openConsole = () => {
@@ -207,8 +212,6 @@ function App() {
 
 	const canvas: ReactNode = (
 		<Canvas
-			select={SelectElement}
-			selectedElement={selectedElement}
 			selectedTool={selectedTool}
 			setTool={setSelectedTool}></Canvas>
 	);
@@ -272,7 +275,7 @@ function App() {
 							defaultWidth={400}
 							minWidth={200}
 							maxWidth={800}>
-							<Form target={selectedElement} changeTarget={setSelectedElement}></Form>
+							<Form></Form>
 						</ComponentResizer>
 					</div>
 				</div>

@@ -22,15 +22,15 @@ export default function NewElementDialog(props: INewElementDialog) {
 	const submitRef = useRef<SubmitButtonRef>(null);
 
 	const rectFormControls = useForm<IRectElement>({
-		
+
 		mode: "onChange"
 	});
 	const svgFormControls = useForm<ISVGElement>({
-		
+
 		mode: "onChange"
 	});
 
-	const addNewTemplate = (values: IVisual, masterType: UserComponentType) => {
+	const addNewTemplate = (values: IVisual) => {
 		ENGINE.addSingleton(values, props.schemeName);
 		props.close();
 	}
@@ -58,7 +58,8 @@ export default function NewElementDialog(props: INewElementDialog) {
 								<LabelGroupComboForm
 									ref={submitRef}
 									objectType={tabId}
-									callback={addNewTemplate}></LabelGroupComboForm>
+									callback={addNewTemplate}
+									changeTarget={() => { }}></LabelGroupComboForm>
 							}
 						/>
 						<Tab
@@ -68,7 +69,8 @@ export default function NewElementDialog(props: INewElementDialog) {
 								<LabelGroupComboForm
 									ref={submitRef}
 									objectType={tabId}
-									callback={addNewTemplate}></LabelGroupComboForm>
+									callback={addNewTemplate}
+									changeTarget={() => { }}></LabelGroupComboForm>
 							}
 						/>
 						<Tab
@@ -78,7 +80,8 @@ export default function NewElementDialog(props: INewElementDialog) {
 								<LabelGroupComboForm
 									ref={submitRef}
 									objectType={tabId}
-									callback={addNewTemplate}></LabelGroupComboForm>
+									callback={addNewTemplate}
+									changeTarget={() => { }}></LabelGroupComboForm>
 							}
 						/>
 					</Tabs>

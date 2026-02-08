@@ -3,16 +3,21 @@ import React from "react";
 import { AllComponentTypes } from "../logic/point";
 import Visual from "../logic/visual";
 import { FormDiagramInterface } from "./form/FormDiagramInterface";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { setSelectedElementId } from "../redux/applicationSlice";
+import ENGINE from "../logic/engine";
 
 
 interface IFormProps {
-	target?: Visual;
-	changeTarget: (val: Visual | undefined) => void;
 }
 
 const Form: React.FC<IFormProps> = (props) => {
-	var targetType: AllComponentTypes = props.target
-		? (props.target.constructor as typeof Visual).ElementType
+	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const dispatch = useAppDispatch();
+	const target = ENGINE.handler.identifyElement(selectedElementId ?? "");
+
+	var targetType: AllComponentTypes = target
+		? (target.constructor as typeof Visual).ElementType
 		: "channel";
 
 	return (
@@ -27,8 +32,8 @@ const Form: React.FC<IFormProps> = (props) => {
 					borderLeft: "1px solid #c3c3c4"
 				}}>
 				<FormDiagramInterface
-					target={props.target}
-					changeTarget={props.changeTarget}
+					target={target}
+					changeTarget={(val) => dispatch(setSelectedElementId(val?.id))}
 					targetType={targetType}
 				/>
 			</Card>
