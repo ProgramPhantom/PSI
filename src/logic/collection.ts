@@ -35,7 +35,7 @@ export type Components<C extends Visual = Visual> =
 	destructor?: ({child}: RemoveDispatchData<C>) => void }>;
 
 
-export type StructuredChildren = Record<string, StructuredChildEntry<any>>
+export type StructuredChildren = Record<string, StructuredChildEntry<Visual>>
 
 export type StructuredChildEntry<C extends Visual = Visual> = {
 	objects: C[], 
@@ -353,6 +353,23 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	public get numChildren(): number {
 		return this.children.length;
 	}
+
+	public get allStructure(): Visual[] {
+		let allStructureChildren: Visual[] = [];
+
+		Object.values(this.roles).forEach((c) => {
+			if (c.object !== undefined) {allStructureChildren.push(c.object)}
+		})
+
+		allStructureChildren.push(...Object.values(this.structuredChildren).map(sc => sc.objects).flat());
+
+		return allStructureChildren;
+	}
+
+	public isStructure(el: Visual): boolean {
+		return this.allStructure.includes(el)
+	}
+
 	//#endregion
 	// --------------------------------------------------
 }

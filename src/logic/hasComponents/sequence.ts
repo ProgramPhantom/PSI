@@ -2,7 +2,7 @@ import { Element } from "@svgdotjs/svg.js";
 import { AddDispatchData, RemoveDispatchData, StructuredChildEntry, StructuredChildren } from "../collection";
 import Grid, { GridCell, IGrid, Subgrid } from "../grid";
 import { ID, UserComponentType } from "../point";
-import Spacial, { Size } from "../spacial";
+import Spacial, { isPulse, Size } from "../spacial";
 import Visual from "../visual";
 import Channel, { IChannel, SubgridChannel } from "./channel";
 
@@ -154,8 +154,23 @@ export default class Sequence extends Grid implements ISequence {
 
 	// --------------- Helpers -----------------------
 	//#region 
-	private colHasPulse(col: number): boolean {
-		return this.channels.some(c => c.colHasPulse(col));
+	private colHasNonStructureElement(col_index: number): boolean {
+		let col: GridCell[] | undefined = this.getColumn(col_index);
+		if (col === undefined) {return false}''
+
+		let hasPulse: boolean = false;
+		for (let row_index=0; row_index<this.numRows; row_index++) {
+			let elements: Visual[] = this.getGridElementsAtCell({row: row_index, col: col_index});
+			hasPulse = elements.some(el => !this.isStructure(el));
+		}
+
+		return hasPulse;
+	}	
+
+	public cellHasNonStructureElement(coords: {row: number, col: number}): boolean {
+		let elementsAtCell: Visual[] = this.getGridElementsAtCell(coords);
+
+		return elementsAtCell.some((el) => !this.isStructure(el));
 	}
 
 	private deleteEmptyColumns() {
@@ -163,7 +178,7 @@ export default class Sequence extends Grid implements ISequence {
 		let index: number = 2;
 
 		while (index < this.numColumns) {
-			if (!this.colHasPulse(index)) {
+			if (!this.colHasNonStructureElement(index)) {
 				this.removeColumn(index);
 			} else {
 				index++

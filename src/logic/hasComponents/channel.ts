@@ -233,21 +233,7 @@ export default class Channel extends Subgrid implements IChannel {
 			}
 		}
 	}
-
-	public colHasPulse(col: number): boolean {
-		var targetColumn: GridCell[] | undefined = this.getColumn(col);
-		if (targetColumn === undefined) { return false }
-
-		return targetColumn.some((cell) => (cell?.elements ?? []).some(e => e.role !== "bar"));
-	}
-
-	public colHasCentralPulse(col: number): boolean {
-		var targetColumn: GridCell[] | undefined = this.getColumn(col);
-		if (targetColumn === undefined) { return false }
-
-		return (targetColumn[1]?.elements ?? []).some(e => isPulse(e));
-	}
-
+	
 	// -------------- Translation functions -------------
 	//#region 
 	protected setGridConfigViaPulseData(child: Visual, data: IPulseConfig) {

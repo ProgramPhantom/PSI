@@ -1446,6 +1446,21 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return empty;
 	}
 
+	public getGridElementsAtCell(coords: {row: number, col: number}): C[] {
+		let elements: C[] = [];
+		let cell: GridCell<C> = this.getCell(coords);
+
+		(cell?.elements ?? []).forEach((el) => {
+			if (this.isCellChild(el)) {
+				elements.push(el)
+			} else if (this.isSubgridChild(el)) {
+				elements.push(...el.getGridElementsAtCell(el.getRelativeCoord(coords)));
+			}
+		})
+
+		return elements;
+	}
+
 	protected numElementsOverArea(topLeft: { row: number, col: number }, size: { noRows: number, noCols: number }): number {
 		let count: number = 0;
 		let right: number = topLeft.col + size.noCols - 1;
@@ -1505,6 +1520,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		return cells;
+	}
+
+	public get allStructure(): Visual[] {
+		let allStructureChildren: Visual[] = super.allStructure;
+
+		for (let structure of allStructureChildren) {
+			if (this.isSubgridChild(structure)) {
+				allStructureChildren.push(...structure.allStructure)
+			}
+		}
+
+		return allStructureChildren;
 	}
 	//#endregion
 	// -----------------------------------------------

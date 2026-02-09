@@ -6,6 +6,7 @@ import PulseInsertArea, { IPulseArea } from "./PulseInsertArea";
 import Spacial, { Orientation, isPulse } from "../../logic/spacial";
 import { ID } from "../../logic/point";
 import Visual from "../../logic/visual";
+import Channel from "../../logic/hasComponents/channel";
 
 interface ISequencePulseDropFieldProps {
     sequence: Sequence;
@@ -37,27 +38,33 @@ export default function SequencePulseDropField({ sequence }: ISequencePulseDropF
             // But usually pulses are Top/Bottom. 
             // I will include it if it's a valid empty cell, as per the strict instruction.
 
-            for (let colIndex = 0; colIndex < numCols; colIndex++) {
-                let gridEntry: GridCell<Visual> = sequence.getCell({ row: row_index, col: colIndex });
+            for (let col_index = 0; col_index < numCols; col_index++) {
+                let gridEntry: GridCell<Visual> = sequence.getCell({ row: row_index, col: col_index });
 
-                let cell: Spacial = sequence.cells[row_index]?.[colIndex];
+                let cell: Spacial = sequence.cells[row_index]?.[col_index];
                 if (!cell) continue;
 
                 // Check 1: Is the cell empty? (Atomic + Recursive Subgrid check)
-                if (!sequence.isCellEmptyAt({ row: row_index, col: colIndex })) {
+                if (!sequence.isCellEmptyAt({ row: row_index, col: col_index })) {
                     continue;
                 }
 
                 // Determine Target Channel ID
-                const channel = sequence.getChannelOnRow(row_index);
+                let channel: Channel | undefined = sequence.getChannelOnRow(row_index);
+				if (channel === undefined) {return}
 
                 // Check 1.5: Middle Row Blocking
                 // If we are on Top or Bottom row, we must check if the Middle row (index 1 of the strip) is occupied by a pulse.
-                if (channel && (orientation === "top" || orientation === "bottom")) {
-                    if (channel.colHasCentralPulse(colIndex)) {
-                        continue;
-                    }
-                }
+				if (orientation === "top") {
+					if (sequence.cellHasNonStructureElement({row: row_index+1, col: col_index})) {
+						continue;
+					}
+				} else if (orientation === "bottom") {
+					if (sequence.cellHasNonStructureElement({row: row_index-1, col: col_index})) {
+						continue;
+					}
+				}
+                
 
                 // Determine Target Channel ID (Logic from before, simplified as we have channel object)
                 let targetID: ID;
@@ -77,7 +84,7 @@ export default function SequencePulseDropField({ sequence }: ISequencePulseDropF
                     },
                     channelID: targetID,
                     sequenceID: sequence.id,
-                    index: colIndex,
+                    index: col_index,
                     orientation: orientation,
                     insert: false
                 };
