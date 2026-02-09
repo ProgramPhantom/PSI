@@ -877,29 +877,33 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		// Grow split elements by 1 in columns
-		let splitElements: GridElement<C>[][] = this.getStructuredColumnSplitElements(INDEX);
-		splitElements.forEach((row, row_index) => {
+		let structuredSplitElements: GridElement<C>[][] = this.getStructuredColumnSplitElements(INDEX);
+		structuredSplitElements.forEach((row, row_index) => {
 			for (let element of row) {
-				let gridConfig: IGridConfig = element.placementMode.config;
-
-				if (gridConfig.gridSize !== undefined) {
-					// Grow
-					gridConfig.gridSize.noCols += 1;
-
-					// Add this element so that it spans over the gap
-					if (newColumn[row_index]?.sources === undefined) {
-						newColumn[row_index] = { sources: { [element.id]: gridConfig.coords ?? { row: 0, col: 0 } } }
-					} else {
-						newColumn[row_index].sources[element.id] = gridConfig.coords ?? { row: 0, col: 0 }
-					}
-
-
-					if (newColumn[row_index]?.elements === undefined) {
-						newColumn[row_index].elements = [element]
-					} else {
-						newColumn[row_index].elements.push(element)
-					}
+				// Add source to the gap
+				// Add this element so that it spans over the gap
+				if (newColumn[row_index]?.sources === undefined) {
+					newColumn[row_index] = { sources: { [element.id]: element.placementMode.config.coords ?? { row: 0, col: 0 } } }
+				} else {
+					newColumn[row_index].sources[element.id] = element.placementMode.config.coords ?? { row: 0, col: 0 }
 				}
+
+				// Add element to gap
+				if (newColumn[row_index]?.elements === undefined) {
+					newColumn[row_index].elements = [element]
+				} else {
+					newColumn[row_index].elements.push(element)
+				}
+			}
+		})
+		
+		// Make singular updates to the state of elements
+		let splitElements: Set<GridElement<C>> = this.getColumnSplitElements(INDEX);
+		splitElements.forEach((el) => {
+			if (this.isCellChild(el) && el.placementMode.config.gridSize !== undefined) {
+				el.placementMode.config.gridSize.noCols += 1
+			} else if (this.isSubgridChild(el)) {
+				el.insertEmptyColumn(el.getRelativeCol(INDEX));
 			}
 		})
 
@@ -908,6 +912,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		this.shiftElementColumnIndexes(INDEX, 1);
+
+		this.growSubgrids();
 	}
 
 	public insertEmptyRow(index?: number): void {
@@ -918,35 +924,39 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		// Grow split elements by 1 in rows
-		let splitElements: GridElement<C>[][] = this.getStructuredRowSplitElements(INDEX);
-		splitElements.forEach((col, col_index) => {
+		let structuredSplitElements: GridElement<C>[][] = this.getStructuredRowSplitElements(INDEX);
+		structuredSplitElements.forEach((col, col_index) => {
 			for (let element of col) {
-				let gridConfig: IGridConfig = element.placementMode.config;
-
-				if (gridConfig.gridSize !== undefined) {
-					// Grow
-					gridConfig.gridSize.noRows += 1;
-
-					// Add this element so that it spans over the gap
-					if (newRow[col_index]?.sources === undefined) {
-						newRow[col_index] = { sources: { [element.id]: gridConfig.coords ?? { row: 0, col: 0 } } }
-					} else {
-						newRow[col_index].sources[element.id] = gridConfig.coords ?? { row: 0, col: 0 }
-					}
-
-
-					if (newRow[col_index]?.elements === undefined) {
-						newRow[col_index].elements = [element]
-					} else {
-						newRow[col_index].elements.push(element)
-					}
+				// Add this element so that it spans over the gap
+				if (newRow[col_index]?.sources === undefined) {
+					newRow[col_index] = { sources: { [element.id]: element.placementMode.config.coords ?? { row: 0, col: 0 } } }
+				} else {
+					newRow[col_index].sources[element.id] = element.placementMode.config.coords ?? { row: 0, col: 0 }
 				}
+
+				if (newRow[col_index]?.elements === undefined) {
+					newRow[col_index].elements = [element]
+				} else {
+					newRow[col_index].elements.push(element)
+				}
+			}
+		})
+
+		// Make singular updates to the state of elements
+		let splitElements: Set<GridElement<C>> = this.getRowSplitElements(INDEX);
+		splitElements.forEach((el) => {
+			if (this.isCellChild(el) && el.placementMode.config.gridSize !== undefined) {
+				el.placementMode.config.gridSize.noRows += 1
+			} else if (this.isSubgridChild(el)) {
+				el.insertEmptyRow(el.getRelativeRow(INDEX));
 			}
 		})
 
 		this.gridMatrix.splice(INDEX, 0, newRow);
 
 		this.shiftElementRowIndexes(INDEX, 1);
+
+		this.growSubgrids();
 	}
 
 	public removeColumn(index?: number, remove: true | "if-empty" = true) {
@@ -1600,5 +1610,13 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 			row: coords.row - this.placementMode.config.coords.row,
 			col: coords.col - this.placementMode.config.coords.col
 		}
+	}
+
+	public getRelativeCol(col: number): number {
+		return col - this.placementMode.config.coords.col;
+	}
+
+	public getRelativeRow(row: number): number {
+		return row - this.placementMode.config.coords.row;
 	}
 }

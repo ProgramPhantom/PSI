@@ -162,13 +162,15 @@ export default class Sequence extends Grid implements ISequence {
 		let col: GridCell[] | undefined = this.getColumn(col_index);
 		if (col === undefined) { return false } ''
 
-		let hasPulse: boolean = false;
+		let hasNonStructureElement: boolean = false;
 		for (let row_index = 0; row_index < this.numRows; row_index++) {
 			let elements: Visual[] = this.getGridElementsAtCell({ row: row_index, col: col_index });
-			hasPulse = elements.some(el => !this.isStructure(el));
+			if (elements.some(el => !this.isStructure(el)) === true) {
+				hasNonStructureElement = true;
+			}
 		}
 
-		return hasPulse;
+		return hasNonStructureElement;
 	}
 
 	public cellHasNonStructureElement(coords: { row: number, col: number }): boolean {
