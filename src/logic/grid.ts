@@ -13,14 +13,14 @@ export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 
 type GridElement<S extends Visual = Visual> = GridCellElement<S> | Subgrid<S>;
 
-export type GridCell<S extends Visual=Visual> = OccupiedCell<S> | undefined
+export type GridCell<S extends Visual = Visual> = OccupiedCell<S> | undefined
 
 export type Elements<T> = T[];
 type Sources = { [id: string]: { row: number; col: number } };
 export type Ghost = { size: { width: number, height: number }, owner?: ID };
 type Extra = { width: number, height: number };
 
-export interface OccupiedCell<S extends Visual=Visual> {
+export interface OccupiedCell<S extends Visual = Visual> {
 	elements?: Elements<GridElement<S>>;  // The element if this is the “owning” cell
 	sources?: Sources;  // If this cell is covered by another
 	ghosts?: Ghost[];  // Provide spacing to a cell
@@ -84,7 +84,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	//#region 
 	public override computeSize(): Size {
 		this.growSubgrids();
-		
+
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
 			child.computeSize();
@@ -260,7 +260,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		// Set via content...
 		this.contentWidth = totalWidth;
 		this.contentHeight = totalHeight;
-	
+
 
 		this.applySizesToSubgrids();
 
@@ -390,7 +390,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			yCount += rowHeight;
 		}
 
-		
+
 		// Set positions of columns and rows
 		this.gridSizes.columns.forEach((col, i) => {
 			col.x = this.cells[0][i].x;
@@ -479,17 +479,17 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	private growSubgrids() {
 		this.subgridChildren.forEach((sg) => {
-			let root: {row: number, col: number} = sg.placementMode.config.coords;
+			let root: { row: number, col: number } = sg.placementMode.config.coords;
 			let currWidth: number = sg.numColumns;
 			let currHeight: number = sg.numRows;
 			let dWidth: number = (this.numColumns) - root.col;
 			let dHeight: number = (this.numRows) - root.row;
-			
+
 			let newWidth: number = sg.placementMode.config.fill?.cols === true ? dWidth : currWidth;
 			let newHeight: number = sg.placementMode.config.fill?.rows === true ? dHeight : currHeight;
 
 			if (newHeight !== currHeight || newWidth !== currWidth) {
-				this.setChildSize(sg, {noRows: newHeight, noCols: newWidth});
+				this.setChildSize(sg, { noRows: newHeight, noCols: newWidth });
 			}
 		})
 	}
@@ -979,10 +979,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			} else if (element.placementMode.config.gridSize !== undefined) {
 				element.placementMode.config.gridSize = {
 					noRows: element.placementMode.config.gridSize.noRows,
-					noCols: element.placementMode.config.gridSize.noCols-1
+					noCols: element.placementMode.config.gridSize.noCols - 1
 				}
 			}
-		
+
 		})
 	}
 
@@ -1274,10 +1274,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		let subMatrix: GridCell<C>[][] = [];
 
-		for (let r=topLeft.row; r<=bottomRight.row; r++) {
+		for (let r = topLeft.row; r <= bottomRight.row; r++) {
 			let row: GridCell<C>[] | undefined = this.getRow(r);
-			if (row === undefined) {continue}
-			
+			if (row === undefined) { continue }
+
 			let rowSlice: GridCell<C>[] = row.slice(topLeft.col, bottomRight.col);
 			subMatrix.push(rowSlice);
 		}
@@ -1321,7 +1321,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		if (this.isCellChild(child)) {
 			child.placementMode.config.gridSize = { noRows: size.noRows, noCols: size.noCols }
 		} else if (this.isSubgridChild(child)) {
-			child.setMatrixBottomRight({row: size.noRows-1, col: size.noCols-1})
+			child.setMatrixBottomRight({ row: size.noRows - 1, col: size.noCols - 1 })
 		}
 
 		let region: OccupiedCell<C>[][] | undefined = this.getChildRegion(child);
@@ -1337,7 +1337,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		if (this.isSubgridChild(child)) {
 			return child.getSubgridRegion();
 		}
-		
+
 		let gridConfig: IGridConfig = child.placementMode.config;
 
 		let topLeft: { row: number, col: number } | undefined = gridConfig.coords;
@@ -1372,11 +1372,11 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.subgridChildren.forEach((sg) => {
 			let width: number = sg.numColumns;
 			let height: number = sg.numRows;
-			
-			let topLeft: {row: number, col: number} = sg.placementMode.config.coords;
-			let bottomRight: {row: number, col: number} = {row: topLeft.row + height, col: topLeft.col + width};
-			
-			
+
+			let topLeft: { row: number, col: number } = sg.placementMode.config.coords;
+			let bottomRight: { row: number, col: number } = { row: topLeft.row + height, col: topLeft.col + width };
+
+
 			if (topLeft.col < 0 || bottomRight.col > this.numColumns ||
 				topLeft.row < 0 || bottomRight.row > this.numRows
 			) {
@@ -1410,7 +1410,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	private applyPositionsToSubgrids() {
 		this.subgridChildren.forEach((sg) => {
-			let topLeft: {row: number, col: number} = sg.placementMode.config.coords;
+			let topLeft: { row: number, col: number } = sg.placementMode.config.coords;
 			let topLeftCell: Spacial = this.cells[topLeft.row][topLeft.col];
 
 			sg.x = topLeftCell.x;
@@ -1429,17 +1429,21 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return !target.some((c) => c !== undefined)
 	}
 
-	protected isCellEmptyAt(coords: { row: number, col: number }): boolean {
-		let cellRow: GridCell<C>[] = this.gridMatrix[coords.row];
-		if (cellRow === undefined) { return true }
+	public isCellEmptyAt(coords: { row: number, col: number }): boolean {
+		let cell: GridCell<C> = this.getCell(coords);
 
-		let cell: GridCell<C> = cellRow[coords.col];
+		if (cell === undefined) { return true }
 
-		if (cell === undefined) {
-			return true
-		}
+		let empty: boolean = true;
+		(cell.elements ?? []).forEach((el) => {
+			if (this.isCellChild(el)) {
+				empty = false
+			} else if (this.isSubgridChild(el)) {
+				empty = el.isCellEmptyAt(el.getRelativeCoord(coords));
+			}
+		})
 
-		return false
+		return empty;
 	}
 
 	protected numElementsOverArea(topLeft: { row: number, col: number }, size: { noRows: number, noCols: number }): number {
@@ -1485,17 +1489,17 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 	}
 
-	private getCellRegion(topLeft: {row: number, col: number}, bottomRight: {row: number, col: number}): Spacial[][] {
+	private getCellRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial[][] {
 		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
 			throw new Error(`Invalid input topLeft: (${topLeft.row}, ${topLeft.col})-(${bottomRight.row}, ${bottomRight.col})`)
 		}
 
 		let cells: Spacial[][] = [];
 
-		for (let r=topLeft.row; r<=bottomRight.row; r++) {
+		for (let r = topLeft.row; r <= bottomRight.row; r++) {
 			let row: Spacial[] = this.cells[r];
-			if (row === undefined) {continue}
-			
+			if (row === undefined) { continue }
+
 			let rowSlice: Spacial[] = row.slice(topLeft.col, bottomRight.col);
 			cells.push(rowSlice);
 		}
@@ -1523,7 +1527,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 
 export interface ISubgrid<C extends IVisual = IVisual> extends ICollection<C> {
-	placementMode: {type: "subgrid", config: ISubgridConfig }
+	placementMode: { type: "subgrid", config: ISubgridConfig }
 }
 
 export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubgrid {
@@ -1535,11 +1539,11 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 		};
 	}
 
-	protected declare _placementMode: {type: "subgrid", config: ISubgridConfig };
+	protected declare _placementMode: { type: "subgrid", config: ISubgridConfig };
 	public get placementMode() {
 		return this._placementMode;
 	}
-	public set placementMode(value: {type: "subgrid", config: ISubgridConfig }) {
+	public set placementMode(value: { type: "subgrid", config: ISubgridConfig }) {
 		this._placementMode = value;
 	}
 
@@ -1553,14 +1557,21 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 		let numCols: number = this.numColumns;
 
 		let entry: OccupiedCell<C> = { elements: [this], sources: { [this.id]: root } }
-		
-		let region: OccupiedCell<C>[][] =
-			Array.from({ length: numRows }, () => Array<OccupiedCell<C>>(numCols).fill(entry) )
 
-		
-				// Put the top left back to just the element:
+		let region: OccupiedCell<C>[][] =
+			Array.from({ length: numRows }, () => Array<OccupiedCell<C>>(numCols).fill(entry))
+
+
+		// Put the top left back to just the element:
 		region[0][0] = { elements: [this] };
 
 		return region;
+	}
+
+	public getRelativeCoord(coords: { row: number, col: number }): { row: number, col: number } {
+		return {
+			row: coords.row - this.placementMode.config.coords.row,
+			col: coords.col - this.placementMode.config.coords.col
+		}
 	}
 }

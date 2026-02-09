@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from "react";
 import { useDrop } from "react-dnd";
-import { PulseDropResultType } from "./ChannelInsertArea";
+import { PulseDropResultType } from "./PulseInsertArea";
 import { GridDropResultType } from "./GridInsertArea";
 
 

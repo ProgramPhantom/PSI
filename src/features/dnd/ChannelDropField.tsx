@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { GridCell } from "../../logic/grid";
 import Channel from "../../logic/hasComponents/channel";
-import ChannelInsertArea, { IPulseArea } from "./ChannelInsertArea";
+import PulseInsertArea, { IPulseArea } from "./PulseInsertArea";
 
 interface Rect { x: number, y: number, width: number, height: number }
 
@@ -184,14 +184,14 @@ function ChannelDropField(props: IChannelDropFieldProps) {
 			{insertAreas.map((insertArea) => {
 				return (
 					// This fixes an enormous, impossible to fix problem
-					<ChannelInsertArea
+					<PulseInsertArea
 						areaSpec={insertArea}
 						key={
 							insertArea.channelID
 							+ insertArea.index
 							+ insertArea.insert
 							+ insertArea.orientation
-						}></ChannelInsertArea>
+						}></PulseInsertArea>
 				);
 			})}
 		</div>

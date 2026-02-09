@@ -172,7 +172,7 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public getChannelOnRow(row: number): Channel | undefined {
-		let channelIndex: number = row % 3;
+		let channelIndex: number = Math.floor(row/3);
 		let channel: Channel | undefined = this.channels[channelIndex];
 
 		return channel;

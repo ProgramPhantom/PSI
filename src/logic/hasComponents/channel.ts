@@ -99,7 +99,7 @@ export default class Channel extends Subgrid implements IChannel {
 			extra: { width: 0, height: this.padding[2] }
 		}, { row: 2, column: 0 })
 
-		this.placementMode.config.fill = {rows: false, cols: true}
+		this.placementMode.config.fill = { rows: false, cols: true }
 	}
 
 	public override add({ child }: AddDispatchData<GridCellElement>) {
@@ -139,7 +139,7 @@ export default class Channel extends Subgrid implements IChannel {
 			return
 		}
 
-		
+
 		let barRef = this.bar;
 		barRef.placementMode = {
 			type: "grid",
@@ -202,7 +202,7 @@ export default class Channel extends Subgrid implements IChannel {
 		this.sizeBar();
 	}
 
-	private initialiseBar({child, index}: AddDispatchData) {
+	private initialiseBar({ child, index }: AddDispatchData) {
 		child.maskId = BAR_MASK_ID;
 		child.placementMode = {
 			type: "grid",
@@ -224,7 +224,7 @@ export default class Channel extends Subgrid implements IChannel {
 		child.ref = this.ref + "-bar";
 	}
 
-	private initialiseLabel({child, index}: AddDispatchData) {
+	private initialiseLabel({ child, index }: AddDispatchData) {
 		child.placementMode = {
 			type: "grid", config: {
 				alignment: { x: "centre", y: "centre" },
@@ -239,6 +239,13 @@ export default class Channel extends Subgrid implements IChannel {
 		if (targetColumn === undefined) { return false }
 
 		return targetColumn.some((cell) => (cell?.elements ?? []).some(e => e.role !== "bar"));
+	}
+
+	public colHasCentralPulse(col: number): boolean {
+		var targetColumn: GridCell[] | undefined = this.getColumn(col);
+		if (targetColumn === undefined) { return false }
+
+		return (targetColumn[1]?.elements ?? []).some(e => isPulse(e));
 	}
 
 	// -------------- Translation functions -------------

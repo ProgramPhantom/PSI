@@ -30,7 +30,7 @@ interface IPulseDataAreaResult {
 export type PulseDropResultType = {type: "pulse", data: IPulseDataAreaResult}
 
 
-function ChannelInsertArea(props: {areaSpec: IPulseArea; key: string}) {
+function PulseInsertArea(props: {areaSpec: IPulseArea; key: string}) {
 	const [{canDrop, isOver}, drop] = useDrop(() => ({
 		accept: [DragElementTypes.PULSE, DragElementTypes.ATOMIC_PREFAB, DragElementTypes.FREE],
 		drop: () =>
@@ -83,4 +83,4 @@ function ChannelInsertArea(props: {areaSpec: IPulseArea; key: string}) {
 	);
 }
 
-export default ChannelInsertArea;
+export default PulseInsertArea;
