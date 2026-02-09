@@ -12,7 +12,6 @@ export interface IChannel extends ISubgrid {
 }
 
 
-export type SubgridChannel = Channel & { placementMode: { type: "subgrid"; config: ISubgridConfig } };
 export default class Channel extends Subgrid implements IChannel {
 	static ElementType: UserComponentType = "channel";
 	static OrientationToRow(orientation: Orientation): 0 | 1 | 2 {
@@ -233,7 +232,7 @@ export default class Channel extends Subgrid implements IChannel {
 			}
 		}
 	}
-	
+
 	// -------------- Translation functions -------------
 	//#region 
 	protected setGridConfigViaPulseData(child: Visual, data: IPulseConfig) {

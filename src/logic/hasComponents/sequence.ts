@@ -1,10 +1,10 @@
 import { Element } from "@svgdotjs/svg.js";
-import { AddDispatchData, RemoveDispatchData, StructuredChildEntry, StructuredChildren } from "../collection";
+import { AddDispatchData, RemoveDispatchData, StructuredChildEntry } from "../collection";
 import Grid, { GridCell, IGrid, Subgrid } from "../grid";
 import { ID, UserComponentType } from "../point";
-import Spacial, { isPulse, Size } from "../spacial";
+import { Size } from "../spacial";
 import Visual from "../visual";
-import Channel, { IChannel, SubgridChannel } from "./channel";
+import Channel from "./channel";
 
 
 
@@ -21,10 +21,10 @@ export default class Sequence extends Grid implements ISequence {
 		};
 	}
 
-	get channels(): SubgridChannel[] {
+	get channels(): Channel[] {
 		return this.structuredChildren["channel"].objects;
 	}
-	get channelsDict(): Record<ID, SubgridChannel> {
+	get channelsDict(): Record<ID, Channel> {
 		return Object.fromEntries(this.channels.map((item) => [item.id, item]));
 	}
 	get channelIDs(): string[] {
@@ -53,14 +53,14 @@ export default class Sequence extends Grid implements ISequence {
 
 
 	structuredChildren: {
-		"channel": StructuredChildEntry<SubgridChannel>
+		"channel": StructuredChildEntry<Channel>
 	} = {
-		"channel": {
-			objects: [],
-			initialiser: this.configureChannel.bind(this),
-			destructor: this.removeChannel.bind(this),
+			"channel": {
+				objects: [],
+				initialiser: this.configureChannel.bind(this),
+				destructor: this.removeChannel.bind(this),
+			}
 		}
-	}
 
 	constructor(params: ISequence) {
 		super(params);
@@ -94,7 +94,7 @@ export default class Sequence extends Grid implements ISequence {
 	// ----------------- Add Methods -----------------
 	//#region
 	public override add({ child, index }: AddDispatchData<Subgrid>) {
-		super.add({child, index})
+		super.add({ child, index })
 	}
 	//#endregion
 	// -----------------------------------------------
@@ -117,15 +117,19 @@ export default class Sequence extends Grid implements ISequence {
 
 	// -------------- Channel interaction -------------
 	//#region 
-	private configureChannel( {child, index}: AddDispatchData<Channel> ) {
-		let CHILD_INDEX: number = index ?? this.numChannels-1;
+	private configureChannel({ child, index }: AddDispatchData<Channel>) {
+		let CHILD_INDEX: number = index ?? this.numChannels - 1;
 
 		child.placementControl = "auto";
-		child.placementMode = {type: "subgrid", config: {coords: {row: CHILD_INDEX*3, col: 0,}, 
-		fill: {cols: true, rows: false}}}
+		child.placementMode = {
+			type: "subgrid", config: {
+				coords: { row: CHILD_INDEX * 3, col: 0, },
+				fill: { cols: true, rows: false }
+			}
+		}
 	}
 
-	private removeChannel( {child}: RemoveDispatchData<SubgridChannel>) {
+	private removeChannel({ child }: RemoveDispatchData<Channel>) {
 		var channelIndex: number | undefined = this.childIndex(child);
 
 		if (channelIndex === undefined) {
@@ -156,18 +160,18 @@ export default class Sequence extends Grid implements ISequence {
 	//#region 
 	private colHasNonStructureElement(col_index: number): boolean {
 		let col: GridCell[] | undefined = this.getColumn(col_index);
-		if (col === undefined) {return false}''
+		if (col === undefined) { return false } ''
 
 		let hasPulse: boolean = false;
-		for (let row_index=0; row_index<this.numRows; row_index++) {
-			let elements: Visual[] = this.getGridElementsAtCell({row: row_index, col: col_index});
+		for (let row_index = 0; row_index < this.numRows; row_index++) {
+			let elements: Visual[] = this.getGridElementsAtCell({ row: row_index, col: col_index });
 			hasPulse = elements.some(el => !this.isStructure(el));
 		}
 
 		return hasPulse;
-	}	
+	}
 
-	public cellHasNonStructureElement(coords: {row: number, col: number}): boolean {
+	public cellHasNonStructureElement(coords: { row: number, col: number }): boolean {
 		let elementsAtCell: Visual[] = this.getGridElementsAtCell(coords);
 
 		return elementsAtCell.some((el) => !this.isStructure(el));
@@ -187,7 +191,7 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public getChannelOnRow(row: number): Channel | undefined {
-		let channelIndex: number = Math.floor(row/3);
+		let channelIndex: number = Math.floor(row / 3);
 		let channel: Channel | undefined = this.channels[channelIndex];
 
 		return channel;

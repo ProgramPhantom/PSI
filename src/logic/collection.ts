@@ -29,18 +29,20 @@ export interface ICollection<C extends IVisual = IVisual> extends IVisual {
 	sizeMode?: Record<Dimensions, ContainerSizeMethod>
 }
 
-export type Components<C extends Visual = Visual> = 
-	Record<string, { object: C | undefined, 
-	initialiser?: ({child, index}: AddDispatchData<C>) => void,
-	destructor?: ({child}: RemoveDispatchData<C>) => void }>;
+export type Components<C extends Visual = Visual> =
+	Record<string, {
+		object: C | undefined,
+		initialiser?: ({ child, index }: AddDispatchData<C>) => void,
+		destructor?: ({ child }: RemoveDispatchData<C>) => void
+	}>;
 
 
-export type StructuredChildren = Record<string, StructuredChildEntry<Visual>>
+export type StructuredChildren<C extends Visual = Visual> = Record<string, StructuredChildEntry<any>>
 
 export type StructuredChildEntry<C extends Visual = Visual> = {
-	objects: C[], 
-	initialiser?: ({child, index}: AddDispatchData<C>) => void,
-	destructor?: ({child}: RemoveDispatchData<C>) => void
+	objects: C[],
+	initialiser?: ({ child, index }: AddDispatchData<C>) => void,
+	destructor?: ({ child }: RemoveDispatchData<C>) => void
 }
 
 
@@ -74,7 +76,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	};
 
 	public roles: Components<C> = {};
-	public structuredChildren: StructuredChildren = {};
+	public structuredChildren: StructuredChildren<C> = {};
 
 	declare public sizeMode: Record<Dimensions, ContainerSizeMethod>;
 
@@ -249,17 +251,17 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		if (child.role !== undefined) {
 			if (Object.keys(this.roles).includes(child.role ?? "") && this.roles[child.role].object === undefined) {
 				this.roles[child.role].object = child;
-				let initialiser: (({child, index}: AddDispatchData<C>) => void) | undefined = this.roles[child.role].initialiser;
+				let initialiser: (({ child, index }: AddDispatchData<C>) => void) | undefined = this.roles[child.role].initialiser;
 
 				if (initialiser !== undefined) {
-					initialiser({child, index});
+					initialiser({ child, index });
 				}
 			} else if (Object.keys(this.structuredChildren).includes(child.role ?? "")) {
 				this.structuredChildren[child.role].objects.push(child);
-				let initialiser: (({child, index}: AddDispatchData<C>) => void) | undefined = this.structuredChildren[child.role].initialiser;
+				let initialiser: (({ child, index }: AddDispatchData<C>) => void) | undefined = this.structuredChildren[child.role].initialiser;
 
 				if (initialiser !== undefined) {
-					initialiser({child, index});
+					initialiser({ child, index });
 				}
 			}
 		}
@@ -277,9 +279,9 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			if (Object.keys(this.roles).includes(child.role ?? "") && this.roles[child.role].object !== undefined) {
 				this.roles[child.role].object = undefined;
 
-				let destructor: (({child}: RemoveDispatchData<C>) => void) | undefined = this.roles[child.role].destructor;
+				let destructor: (({ child }: RemoveDispatchData<C>) => void) | undefined = this.roles[child.role].destructor;
 				if (destructor !== undefined) {
-					destructor({child});
+					destructor({ child });
 				}
 			} else if (Object.keys(this.structuredChildren).includes(child.role ?? "")) {
 				let index: number = this.structuredChildren[child.role].objects.indexOf(child);
@@ -287,9 +289,9 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 				if (index !== -1) {
 					this.structuredChildren[child.role].objects.splice(index, 1);
 
-					let destructor: (({child}: RemoveDispatchData<C>) => void) | undefined = this.structuredChildren[child.role].destructor;
+					let destructor: (({ child }: RemoveDispatchData<C>) => void) | undefined = this.structuredChildren[child.role].destructor;
 					if (destructor !== undefined) {
-						destructor({child});
+						destructor({ child });
 					}
 				}
 			}
@@ -358,7 +360,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		let allStructureChildren: Visual[] = [];
 
 		Object.values(this.roles).forEach((c) => {
-			if (c.object !== undefined) {allStructureChildren.push(c.object)}
+			if (c.object !== undefined) { allStructureChildren.push(c.object) }
 		})
 
 		allStructureChildren.push(...Object.values(this.structuredChildren).map(sc => sc.objects).flat());
