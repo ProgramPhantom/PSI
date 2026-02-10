@@ -1,0 +1,20 @@
+{
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "cSpell.words": [
+		"blueprintjs",
+		"Colour",
+		"hitbox",
+		"Hitboxes",
+		"IPNG",
+		"ISVG",
+		"LABELGROUP",
+		"Labellable",
+		"paddedbox",
+		"rect",
+		"Subgrid",
+		"subgrids",
+		"svgdotjs",
+		"SVGS",
+		"viewbox"
+	]
+}
