@@ -103,18 +103,18 @@ export default class Channel extends Subgrid implements IChannel {
 
 	public override add({ child }: AddDispatchData<GridCellElement>) {
 		if (isPulse(child)) {
-			this.setGridConfigViaPulseData(child, child.pulseData);
-
+			// this.setGridConfigViaPulseData(child, child.pulseData);
+		
 			// If this pulse is placed in the "both" orientation, it needs to create two ghosts
 			// above and below it to pad out the top and bottom row:
-			if (child.pulseData.orientation === "both") {
-				let barHeight: number = this.bar?.height ?? 0;
-				let ghostHeight: number = (child.height - barHeight) / 2;
-
-				let ghost: Ghost = { size: { width: 0, height: ghostHeight }, owner: child.id }
-
-				this.addCentralElementGhosts(child.pulseData.index!, ghost, ghost);
-			}
+			// if (child.pulseData.orientation === "both") {
+			// 	let barHeight: number = this.bar?.height ?? 0;
+			// 	let ghostHeight: number = (child.height - barHeight) / 2;
+			// 
+			// 	let ghost: Ghost = { size: { width: 0, height: ghostHeight }, owner: child.id }
+			// 
+			// 	this.addCentralElementGhosts(child.pulseData.index!, ghost, ghost);
+			// }
 		}
 
 		this.sizeBar()
@@ -164,8 +164,8 @@ export default class Channel extends Subgrid implements IChannel {
 	}
 
 	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {
-		this.appendCellAtCoord({ ghosts: [top] }, { row: 0, col: col });
-		this.appendCellAtCoord({ ghosts: [bottom] }, { row: 2, col: col });
+		this.appendToCellAtCoord({ ghosts: [top] }, { row: 0, col: col });
+		this.appendToCellAtCoord({ ghosts: [bottom] }, { row: 2, col: col });
 	}
 
 	public getSpacesToNextPulse(orientation: Orientation, index: number): number {
@@ -258,11 +258,14 @@ export default class Channel extends Subgrid implements IChannel {
 			contribution: contribution,
 		}
 
+
+		let barHeight: number = this.bar?.height ?? 0;
+		let ghostHeight: number = (child.height - barHeight) / 2;
 		// Inform of ghosts that have been placed by addPulse process.
 		if (data.orientation === "both") {
-			gridConfig.ownedGhosts = [
-				{ row: 0, col: column },
-				{ row: 2, col: column }
+			gridConfig.ghosts = [
+				{ relativePosition: {relRow: 1, relCol: column}, size: {width: 0, height: ghostHeight}},
+				{ relativePosition: {relRow: -1, relCol: column}, size: {width: 0, height: ghostHeight} }
 			]
 		}
 

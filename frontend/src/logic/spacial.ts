@@ -32,12 +32,13 @@ export const isPulse = (element: ISpacial): element is ISpacial & { pulseData: I
 	return element.pulseData !== undefined
 }
 
+export type GhostTemplate = {relativePosition: { relRow: number, relCol: number }, size: {width: number, height: number}}
 export interface IGridConfig {
 	coords?: { row: number, col: number }
 	alignment?: Record<Dimensions, SiteNames>
 	gridSize?: { noRows: number, noCols: number }
 	contribution?: Record<Dimensions, boolean>,
-	ownedGhosts?: { row: number, col: number }[]
+	ghosts?: GhostTemplate[]
 }
 
 export interface ISubgridConfig {
@@ -214,14 +215,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ?? { x: "fixed", y: "fixed" }
 		
+		this._contentWidth = params.contentWidth ?? 0;
+		this._contentHeight = params.contentHeight ?? 0;
+
 		if (params.pulseData !== undefined) {
 			this._pulseData = params.pulseData;
 			this.setGridConfigUsingPulseData(params.pulseData);
 		}
 		
-
-		this._contentWidth = params.contentWidth ?? 0;
-		this._contentHeight = params.contentHeight ?? 0;
 	}
 
 	public computeSize(): Size {
@@ -699,14 +700,25 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			coords.col = this.placementMode.config.coords.col;
 		}
 
+		let ghosts: GhostTemplate[] | undefined = undefined;
+		//let barHeight: number = this.bar?.height ?? 0;  
+		// TODO: needs investigating, how can we make this pixel perfect? It only works because we assume the bar is thin.
+		let ghostHeight: number = this.contentHeight / 2;
+		// Inform of ghosts that have been placed by addPulse process.
+		if (pulseData.orientation === "both") {
+			ghosts = [
+				{ relativePosition: {relRow: 1, relCol: 0}, size: {width: 0, height: ghostHeight}},
+				{ relativePosition: {relRow: -1, relCol: 0}, size: {width: 0, height: ghostHeight} }
+			]
+		} 
+
 		this.placementMode.config = {
-			"alignment": pulseData?.alignment,
+			"alignment": pulseData.orientation === "both" ? {x: "centre", y: "centre"} : pulseData?.alignment,
 			"coords": coords,
 			"gridSize": {noRows: 1, noCols: pulseData?.noSections ?? 1},
 			
-			"ownedGhosts": this.placementMode.config.ownedGhosts,
-			"contribution": this.placementMode.config.contribution,
-
+			"ghosts": ghosts !== undefined ? ghosts : this.placementMode.config.ghosts,
+			"contribution": pulseData.orientation === "both" ? {x: true, y: false} : this.placementMode.config.contribution,
 		}
 		
 	}

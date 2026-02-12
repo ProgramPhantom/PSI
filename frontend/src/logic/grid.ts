@@ -1,6 +1,6 @@
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
 import { ID } from "./point";
-import Spacial, { Dimensions, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
+import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
 import Visual, { GridCellElement, IDraw, IVisual } from "./visual";
 
 export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
@@ -541,12 +541,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 				let toAppend: GridCell<C> = gridRegion[r][c];
 
-				this.appendCellAtCoord(toAppend, { row: row, col: col });
+				this.appendToCellAtCoord(toAppend, { row: row, col: col });
 			}
 		}
 	}
 
-	private addGridElement(child: GridElement<C>) {
+	private addGridElement(child: GridCellElement<C>) {
 
 		let insertCoords: { row: number, col: number } | undefined = child.placementMode.config.coords;
 		if (insertCoords === undefined) {
@@ -559,7 +559,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			throw new Error(`Could not construct cell region for element ${child.ref}`)
 		}
 
-		this.appendElementsInRegion(region, { row: insertCoords.row, col: insertCoords.col })
+		this.appendElementsInRegion(region, { row: insertCoords.row, col: insertCoords.col });
+
+		// Add ghosts from element
+		let ghostTemplates: GhostTemplate[] | undefined = child.placementMode.config.ghosts
+		if (ghostTemplates !== undefined) {
+			ghostTemplates.forEach((ghostTemplate) => {
+				let ghost: Ghost = {size: ghostTemplate.size, owner: child.id};
+				this.addGhost({row: insertCoords.row + ghostTemplate.relativePosition.relRow,
+							   col: insertCoords.col + ghostTemplate.relativePosition.relCol
+				}, ghost)
+			})
+		}
 	}
 
 	private addSubgrid(child: Subgrid<C>) {
@@ -568,7 +579,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.appendElementsInRegion(subgridRegion, child.placementMode.config.coords);
 	}
 
-	public addElementAtCoord(child: GridElement<C>, coords: { row: number, col: number }) {
+	public addElementAtCoord(child: GridCellElement<C>, coords: { row: number, col: number }) {
 		var insertCoords: { row: number, col: number } = coords;
 
 		child.placementMode.config.coords = insertCoords;
@@ -576,7 +587,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.addGridElement(child);
 	}
 
-	public appendCellAtCoord(cell: GridCell<C>, coords: { row: number, col: number }) {
+	public appendToCellAtCoord(cell: GridCell<C>, coords: { row: number, col: number }) {
 		if (Object.keys(cell ?? {}).length === 0) { return }
 
 		this.setMatrixBottomRight(coords, true);
@@ -665,6 +676,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			}
 		}
 	}
+
+	public addGhost(coords: {row: number, col: number}, ghost: Ghost) {
+		this.appendToCellAtCoord({ghosts: [ghost]}, coords);
+	} 
 	//#endregion
 	// -------------------------------------------------
 
@@ -744,15 +759,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		// Ghosts can be placed by an element outside of it's region, hence we use the 
 		// owned ghosts properties to clear these up.
 		let gridConfig: IGridConfig = child.placementMode.config;
-		(gridConfig?.ownedGhosts ?? []).forEach((ownedGhost) => {
-			let cell: GridCell<C> = this.getCell({ row: ownedGhost.row, col: ownedGhost.col });
+		(gridConfig?.ghosts ?? []).forEach((ownedGhost) => {
+			let ghostLocation: {row: number, col: number} = {
+				row: (topLeft?.row ?? 0) + ownedGhost.relativePosition.relRow,
+				col: (topLeft?.col ?? 0) + ownedGhost.relativePosition.relCol
+			}
+			let cell: GridCell<C> = this.getCell(ghostLocation);
 
 			if (cell?.ghosts !== undefined) {
 				cell.ghosts = cell.ghosts.filter((ghost) => ghost.owner !== child.id)
 				if (cell.ghosts.length === 0) {
 					cell.ghosts = undefined;
 				}
-				this.setCellUndefinedIfEmpty({ row: ownedGhost.row, col: ownedGhost.col })
+				this.setCellUndefinedIfEmpty(ghostLocation)
 			}
 		})
 	}
