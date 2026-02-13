@@ -204,7 +204,6 @@ export default class DiagramHandler implements IDraw {
 
 
 		if (element === undefined) {
-			console.warn(`Cannot find element "${id}"`);
 			return undefined;
 		} else {
 			return element;

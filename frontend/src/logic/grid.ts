@@ -626,14 +626,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return { width: width, height: height };
 	}
 
-	private reapplySubgridsToMatrix() {
-		this.subgridChildren.forEach((sg) => {
-			this.removeMatrix(sg);
-
-			this.addSubgrid(sg);
-		})
-	}
-
 	private growSubgrids() {
 		this.subgridChildren.forEach((sg) => {
 			let root: { row: number, col: number } = sg.placementMode.config.coords;
@@ -843,8 +835,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	private removeMatrix(child: GridElement<C>, deleteIfEmpty?: { row: boolean, col: boolean }) {
 		// First we need to locate this child in the matrix:
-		var topLeft: { row: number, col: number } | undefined = this.locateElement(child);
-		let bottomRight: { row: number, col: number } | undefined = this.getElementBottomRight(child);
+		let {topLeft, bottomRight} = this.getElementRegionCoords(child);
 		if (topLeft === undefined || bottomRight === undefined) {
 			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
 			return
@@ -886,9 +877,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				if (cell.ghosts?.length === 0) { cell.ghosts = undefined };
 
 				// Set cell to undefined
-				if (Object.values(cell).every(v => v === undefined)) {
-					this.gridMatrix[row][col] = undefined
-				}
+				this.setCellUndefinedIfEmpty({row: row, col: col});
 
 				// Remove row/column
 				if (deleteIfEmpty?.row === true) {
@@ -998,19 +987,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var trailingRow: GridCell<C>[] | undefined = this.getRow(this.numRows - 1) ?? []
 		var trailingColumn: GridCell<C>[] | undefined = this.getColumn(this.numColumns - 1) ?? []
 
-		var trailingRowEmpty: boolean = this.isArrayEmpty(trailingRow);
-		var trailingColumnEmpty: boolean = this.isArrayEmpty(trailingColumn);
+		var trailingRowEmpty: boolean = this.isCellArrayEmpty(trailingRow);
+		var trailingColumnEmpty: boolean = this.isCellArrayEmpty(trailingColumn);
 
 		while (trailingRowEmpty === true && trailingRow !== undefined) {
-			this.removeRow();
+			this.removeRow(undefined, true);
 			trailingRow = this.getRow(this.numRows - 1);
-			trailingRowEmpty = this.isArrayEmpty(trailingRow ?? []);
+			trailingRowEmpty = this.isCellArrayEmpty(trailingRow ?? []);
 		}
 
 		while (trailingColumnEmpty === true && trailingColumn !== undefined) {
-			this.removeColumn();
+			this.removeColumn(undefined, true);
 			trailingColumn = this.getColumn(this.numColumns - 1);
-			trailingColumnEmpty = this.isArrayEmpty(trailingColumn ?? []);
+			trailingColumnEmpty = this.isCellArrayEmpty(trailingColumn ?? []);
 		}
 	}
 
@@ -1114,7 +1103,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var targetColumn: GridCell<C>[] | undefined = this.getColumn(INDEX);
 		if (targetColumn === undefined) { return }
 
-		var empty: boolean = this.isArrayEmpty(targetColumn)
+		var empty: boolean = this.isCellArrayEmpty(targetColumn)
 
 		if (remove === "if-empty" && empty === false) { return }
 
@@ -1151,7 +1140,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var targetRow: GridCell<C>[] | undefined = this.getRow(INDEX);
 		if (targetRow === undefined) { return }
 
-		var empty: boolean = this.isArrayEmpty(targetRow)
+		var empty: boolean = this.isCellArrayEmpty(targetRow)
 
 		if (onlyIfEmpty === true && !empty) { return }
 
@@ -1458,6 +1447,28 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		return result;
 	}
+
+	public getElementRegionCoords(child: GridElement<C>): {topLeft: {row: number, col: number}, bottomRight: {row: number, col: number}} {
+		let topLeft: {row: number, col: number} = child.placementMode.config.coords ?? {row: 0, col: 0};
+		let bottomRight: {row: number, col: number};
+
+		if (this.isCellChild(child)) {
+			bottomRight = {
+				row: topLeft.row + (child.placementMode.config.gridSize?.noRows ?? 1)-1,
+				col: topLeft.col + (child.placementMode.config.gridSize?.noCols ?? 1)-1
+			}
+		} else {
+			bottomRight = {
+				row: topLeft.row + child.numRows-1,
+				col: topLeft.col + child.numColumns-1,
+			}
+		}
+
+		return {
+			topLeft: topLeft,
+			bottomRight: bottomRight
+		}
+	}
 	//#endregion
 	// -----------------------------------------------
 
@@ -1580,11 +1591,11 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	// ---------------- Helpers ---------------------
 	//#region 
-	protected isArrayEmpty(target: GridCell<C>[]): boolean {
+	protected isCellArrayEmpty(target: GridCell<C>[]): boolean {
 		return !target.some((c) => c !== undefined)
 	}
 
-	public isCellEmptyAt(coords: { row: number, col: number }): boolean {
+	public doesCellHaveCellChildAt(coords: { row: number, col: number }): boolean {
 		let cell: GridCell<C> = this.getCell(coords);
 
 		if (cell === undefined) { return true }
@@ -1594,7 +1605,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			if (this.isCellChild(el)) {
 				empty = false
 			} else if (this.isSubgridChild(el)) {
-				empty = el.isCellEmptyAt(el.getRelativeCoord(coords));
+				empty = el.doesCellHaveCellChildAt(el.getRelativeCoord(coords));
 			}
 		})
 

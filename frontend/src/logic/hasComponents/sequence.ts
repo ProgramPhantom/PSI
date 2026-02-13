@@ -58,7 +58,6 @@ export default class Sequence extends Grid implements ISequence {
 			"channel": {
 				objects: [],
 				initialiser: this.configureChannel.bind(this),
-				destructor: this.removeChannel.bind(this),
 			}
 		}
 
@@ -118,34 +117,13 @@ export default class Sequence extends Grid implements ISequence {
 	// -------------- Channel interaction -------------
 	//#region 
 	private configureChannel({ child, index }: AddDispatchData<Channel>) {
-		let CHILD_INDEX: number = index ?? this.numChannels - 1;
-
 		child.placementControl = "auto";
 		child.placementMode = {
 			type: "subgrid", config: {
-				coords: { row: CHILD_INDEX * 3, col: 0, },
+				coords: { row: this.numRows, col: 0, },
 				fill: { cols: true, rows: false }
 			}
 		}
-	}
-
-	private removeChannel({ child }: RemoveDispatchData<Channel>) {
-		var channelIndex: number | undefined = this.childIndex(child);
-
-		if (channelIndex === undefined) {
-			console.warn(`Cannot find index of channel with ref ${child.ref}`)
-			return
-		}
-
-		var channelStartRow = channelIndex * 3;
-
-		this.removeRow(channelStartRow);
-		this.removeRow(channelStartRow);
-		this.removeRow(channelStartRow);
-
-		// Matrix now may be over-long if the longest channel has 
-		// been deleted, hence we squeeze.
-		this.squeezeMatrix();  // TODO: is this why channel deletion is bugging?
 	}
 	//#endregion
 	// ----------------------------------------------
