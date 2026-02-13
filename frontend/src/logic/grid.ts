@@ -65,6 +65,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	private min: { width: number, height: number };
+	public spill: {top: number, bottom: number, left: number, right: number} = {
+		top: 0,
+		bottom: 0,
+		left: 0,
+		right: 0
+	}
 
 	protected gridMatrix: GridCell<C>[][] = [];
 
@@ -141,6 +147,20 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						if (this.isSubgridChild(child)) {
 							width = child.gridSizes.columns[col_index - child.placementMode.config.coords.col].width;
+
+							// Spilling to left
+							if (col_index === child.placementMode.config.coords.col &&
+								child.spill.left > 0
+							) {
+								spilling = true;
+							}
+
+							// Spilling to right
+							if (col_index === child.placementMode.config.coords.col + child.numColumns-1 &&
+								child.spill.right > 0
+							) {
+								spilling = true;
+							}
 						}
 
 						if (contributing === true) {
@@ -189,7 +209,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 							maxLeftSpill = Math.max(rightSpill, maxRightSpill);
 							break;
 					}
+				}  else if (this.isSubgridChild(element)) {
+					// Trigger at left col
+					if (col_index === element.placementMode.config.coords.col
+					) {maxLeftSpill = Math.max(element.spill.left, maxLeftSpill)}
 
+					if (col_index === element.placementMode.config.coords.col + element.numColumns-1
+					) { maxRightSpill = Math.max(element.spill.right, maxRightSpill) }
 				}
 			})
 
@@ -201,12 +227,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				leftRow.width = Math.max(maxLeftSpill, leftRow.width);
 			} else if (maxLeftSpill > 0) {
 				console.warn(`Element spilling to left of grid ${this.ref}`);
+				this.spill.left = Math.max(this.spill.left, maxLeftSpill)
 			}
 
 			if (rightRow !== undefined) {
 				rightRow.width = Math.max(maxRightSpill, rightRow.width)
 			} else if (maxRightSpill > 0) {
 				console.warn(`Element spilling to right of grid ${this.ref}`)
+				this.spill.right = Math.max(this.spill.right, maxRightSpill)
 			}
 		})
 
@@ -264,6 +292,25 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						if (this.isSubgridChild(child)) {
 							height = child.gridSizes.rows[row_index - child.placementMode.config.coords.row].height;
+
+							// Given this is the top or bottom row of the subgrid, check if the subgrid is spilling
+							// vertically and add to spilling elements if so.
+
+							// Spilling above
+							if (row_index === child.placementMode.config.coords.row &&
+								child.spill.top > 0
+							) {
+								spilling = true;
+							}
+
+							// Spilling below
+							if (row_index === child.placementMode.config.coords.row + child.numRows-1 &&
+								child.spill.bottom > 0
+							) {
+								spilling = true;
+							}
+							// TODO: this will mean the subgrid is added multiple times if it is wide, could 
+							// do a check for that for slight performance gain
 						}
 
 						if (contributing === true) {
@@ -312,7 +359,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 							maxAboveSpill = Math.max(belowSpill, maxBelowSpill);
 							break;
 					}
+				} else if (this.isSubgridChild(element)) {
+					// Trigger at top row
+					if (row_index === element.placementMode.config.coords.row
+					) {maxAboveSpill = Math.max(element.spill.top, maxAboveSpill)}
 
+					
+					if (row_index === element.placementMode.config.coords.row + element.numRows-1
+					) { maxBelowSpill = Math.max(element.spill.bottom, maxBelowSpill) }
 				}
 			})
 
@@ -324,12 +378,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				aboveRow.height = Math.max(maxAboveSpill, aboveRow.height);
 			} else if (maxAboveSpill > 0) {
 				console.warn(`Element spilling above grid ${this.ref}`);
+				this.spill.top = Math.max(this.spill.top, maxAboveSpill)
 			}
 
 			if (belowRow !== undefined) {
 				belowRow.height = Math.max(maxBelowSpill, belowRow.height)
 			} else if (maxBelowSpill > 0) {
 				console.warn(`Element spilling below grid ${this.ref}`)
+				this.spill.bottom = Math.max(this.spill.bottom, maxBelowSpill)
 			}
 		})
 
@@ -1000,7 +1056,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
 		}
 
-		this.shiftElementColumnIndexes(INDEX, 1);
+		this.shiftElementColumnIndexes(INDEX+1, 1);
 
 		this.growSubgrids();
 	}
@@ -1686,7 +1742,8 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 	}
 
 	public getSubgridRegion(): OccupiedCell<C>[][] {
-		let root: { row: number, col: number } = this.placementMode.config.coords;
+		// Be careful not to cause reference type linkage here. Causes problems ->
+		let root: { row: number, col: number } = {...this.placementMode.config.coords};
 		let numRows: number = this.numRows;
 		let numCols: number = this.numColumns;
 

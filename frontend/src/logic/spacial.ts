@@ -666,7 +666,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 				noSections: this.placementMode.config.gridSize?.noCols ?? 1,
 				index: this.placementMode.config.coords?.col ?? 0,
-				orientation: orientation,
+				orientation: this._pulseData?.orientation,
 				alignment: {
 					x: this.placementMode.config.alignment?.x ?? "centre",
 					y: this.placementMode.config.alignment?.y ?? "far"
@@ -696,13 +696,21 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		let coords: {row: number, col: number} = {row: row, col: 0};
 		if (pulseData.index !== undefined) {
 			coords.col = pulseData.index
-		} else if (this.placementMode.config.coords !== undefined) {
+		} 
+		if (this.placementMode.config.coords !== undefined) {
 			coords.col = this.placementMode.config.coords.col;
 			coords.row = this.placementMode.config.coords.row;
 		}
 
+		let alignment: Record<Dimensions, SiteNames> = {
+			x: "centre", y: pulseData.orientation === "bottom" ? "here" : "far"
+		}
+		if (pulseData.orientation === "both") {
+			alignment = {x: "centre", y: "centre"}
+		}
+
 		this.placementMode.config = {
-			"alignment": pulseData.orientation === "both" ? {x: "centre", y: "centre"} : pulseData?.alignment,
+			"alignment": alignment, 
 			"coords": coords,
 			"gridSize": {noRows: 1, noCols: pulseData?.noSections ?? 1},
 			
