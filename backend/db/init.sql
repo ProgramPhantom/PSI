@@ -17,6 +17,7 @@ create table if not exists diagrams
     diagram_id    uuid      not null
         constraint diagrams_pk
             primary key,
+    name          varchar   not null,
     data          jsonb     not null,
     date_created  timestamp not null,
     date_modified timestamp not null,
