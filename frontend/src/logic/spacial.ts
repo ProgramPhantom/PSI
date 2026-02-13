@@ -39,7 +39,6 @@ export interface IGridConfig {
 	alignment?: Record<Dimensions, SiteNames>
 	gridSize?: { noRows: number, noCols: number }
 	contribution?: Record<Dimensions, boolean>,
-	ghosts?: GhostTemplate[]
 }
 
 export interface ISubgridConfig {
@@ -702,24 +701,11 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			coords.row = this.placementMode.config.coords.row;
 		}
 
-		let ghosts: GhostTemplate[] | undefined = undefined;
-		//let barHeight: number = this.bar?.height ?? 0;  
-		// TODO: needs investigating, how can we make this pixel perfect? It only works because we assume the bar is thin.
-		let ghostHeight: number = this.contentHeight / 2;
-		// Inform of ghosts that have been placed by addPulse process.
-		if (pulseData.orientation === "both") {
-			ghosts = [
-				{ relativePosition: {relRow: 1, relCol: 0}, size: {width: 0, height: ghostHeight}},
-				{ relativePosition: {relRow: -1, relCol: 0}, size: {width: 0, height: ghostHeight} }
-			]
-		} 
-
 		this.placementMode.config = {
 			"alignment": pulseData.orientation === "both" ? {x: "centre", y: "centre"} : pulseData?.alignment,
 			"coords": coords,
 			"gridSize": {noRows: 1, noCols: pulseData?.noSections ?? 1},
 			
-			"ghosts": ghosts !== undefined ? ghosts : this.placementMode.config.ghosts,
 			"contribution": pulseData.orientation === "both" ? {x: true, y: false} : this.placementMode.config.contribution,
 		}
 		

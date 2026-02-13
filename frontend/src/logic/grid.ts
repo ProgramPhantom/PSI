@@ -661,24 +661,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		this.appendElementsInRegion(region, { row: insertCoords.row, col: insertCoords.col });
-
-		// Add ghosts from element
-		/* let ghostTemplates: GhostTemplate[] | undefined = child.placementMode.config.ghosts
-		if (ghostTemplates !== undefined) {
-			ghostTemplates.forEach((ghostTemplate) => {
-				let ghost: Ghost = {size: ghostTemplate.size, owner: child.id};
-				let location: {row: number, col: number} = {
-					row: insertCoords.row + ghostTemplate.relativePosition.relRow,
-					col: insertCoords.col + ghostTemplate.relativePosition.relCol
-				}
-
-				if (this.isInGrid(location)) {
-					this.addGhost({row: insertCoords.row + ghostTemplate.relativePosition.relRow,
-								col: insertCoords.col + ghostTemplate.relativePosition.relCol
-					}, ghost)
-				}
-			})
-		} */
 	}
 
 	private addSubgrid(child: Subgrid<C>) {
@@ -841,7 +823,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 					}
 				}
 
-				// Remove owned ghosts
+				// Remove ghosts
 				if (cell.ghosts !== undefined) {
 					cell.ghosts = cell.ghosts.filter(g => g.owner !== child.id)
 				}
@@ -862,26 +844,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				}
 			}
 		}
-
-		// Clean up ghosts:
-		// Ghosts can be placed by an element outside of it's region, hence we use the 
-		// owned ghosts properties to clear these up.
-		let gridConfig: IGridConfig = child.placementMode.config;
-		(gridConfig?.ghosts ?? []).forEach((ownedGhost) => {
-			let ghostLocation: {row: number, col: number} = {
-				row: (topLeft?.row ?? 0) + ownedGhost.relativePosition.relRow,
-				col: (topLeft?.col ?? 0) + ownedGhost.relativePosition.relCol
-			}
-			let cell: GridCell<C> = this.getCell(ghostLocation);
-
-			if (cell?.ghosts !== undefined) {
-				cell.ghosts = cell.ghosts.filter((ghost) => ghost.owner !== child.id)
-				if (cell.ghosts.length === 0) {
-					cell.ghosts = undefined;
-				}
-				this.setCellUndefinedIfEmpty(ghostLocation)
-			}
-		})
 	}
 
 	public deleteCellAtCoord(coords: { row: number, col: number }, deleteIfEmpty?: { row: boolean, col: boolean }) {
