@@ -90,11 +90,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			child.computeSize();
 		}
 
-
-		// Bring subgrids into parent matrix
-		//this.reapplySubgridsToMatrix();
-
-
 		// Compute the size of the grid by finding the maximum width and height
 		// element in each column and row, and then summing them up.
 
@@ -103,12 +98,15 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		// Let's compute the width and height of each column
 		var columnRects: Spacial[] = Array.from({ length: gridColumns.length }, () => new Spacial())
+		var colSpillingElements: GridElement<C>[][] = Array.from({length: gridColumns.length}, () => []);
+		var colExtras: number[][] = Array.from({length: gridColumns.length}, () => []);
+
+		// First pass
 		gridColumns.forEach((col, col_index) => {
 			var colEntries: GridCell<C>[] = col.filter((cell) => cell !== undefined);
 
 			// Find width of column
 			var widths: number[] = [];
-			var extras: number[] = [];
 			for (let cell of colEntries) {
 
 				if (cell?.ghosts !== undefined) {
@@ -116,18 +114,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				}
 
 				if (cell?.extra !== undefined) {
-					extras.push(cell.extra.width);
+					colExtras[col_index].push(cell.extra.width);
 				}
 
 				if (cell?.elements !== undefined) {
 					for (let child of cell.elements) {
 						let placementMode: IGridConfig | undefined = child.placementMode.config;
 						var contributing: boolean = true;
+						let spilling: boolean = false;
 
 						// Manual contribution parameter
 						if (placementMode !== undefined && placementMode.contribution !== undefined
 							&& placementMode.contribution.x === false
-						) { contributing = false; }
+						) { contributing = false; spilling = true; }
 
 						// Grow elements do not provide size
 						if (child.sizeMode.x === "grow"
@@ -146,6 +145,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						if (contributing === true) {
 							widths.push(width)
+						} 
+						if (spilling === true) {
+							colSpillingElements[col_index].push(child);
 						}
 					}
 
@@ -154,29 +156,80 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 			// Set the width of this column
 			var maxWidth = Math.max(...widths, this.min.width);
-			var paddedWidth = maxWidth += extras.reduce((e, v) => e + v, 0)
-			columnRects[col_index].width = paddedWidth;
-
-			// Compute the height of this column
-			var colHeight = col.reduce((h, c) => {
-				let dh = 0;
-				if (c?.elements !== undefined) {
-					dh = Math.max(...c.elements.map(e => e.height), ...(c.ghosts ?? []).map((g) => g.size.height));
-				}
-				return h + dh;
-			}, 0);
-			columnRects[col_index].height = colHeight
+			columnRects[col_index].width = maxWidth;
 		})
+
+		// Second pass, apply spills.
+		colSpillingElements.forEach((col, col_index) => {
+			let targetColWidth: number = columnRects[col_index].width;
+
+			let maxLeftSpill: number = 0;
+			let maxRightSpill: number = 0;
+
+			let leftSpill: number;
+			let rightSpill: number;
+
+			col.forEach((element) => {
+				if (this.isCellChild(element)) {
+					switch (element.placementMode.config.alignment?.x) {
+						case "here":
+							// Apply spill to right row
+							rightSpill = element.width - targetColWidth;
+							maxRightSpill = Math.max(rightSpill, maxRightSpill);
+							break;
+						case "centre":
+							leftSpill = (element.width - targetColWidth)/2
+							rightSpill = (element.width - targetColWidth)/2
+							maxLeftSpill = Math.max(leftSpill, maxLeftSpill);
+							maxRightSpill = Math.max(rightSpill, maxRightSpill);
+							break;
+						case "far":
+							// Apply spill to left row
+							leftSpill = element.width - targetColWidth;
+							maxLeftSpill = Math.max(rightSpill, maxRightSpill);
+							break;
+					}
+
+				}
+			})
+
+			// Now we can apply these new constrains to the rows:
+			let leftRow: Spacial | undefined = columnRects[col_index-1];
+			let rightRow: Spacial | undefined = columnRects[col_index+1];
+
+			if (leftRow !== undefined) {
+				leftRow.width = Math.max(maxLeftSpill, leftRow.width);
+			} else if (maxLeftSpill > 0) {
+				console.warn(`Element spilling to left of grid ${this.ref}`);
+			}
+
+			if (rightRow !== undefined) {
+				rightRow.width = Math.max(maxRightSpill, rightRow.width)
+			} else if (maxRightSpill > 0) {
+				console.warn(`Element spilling to right of grid ${this.ref}`)
+			}
+		})
+
+		// Third pass, apply extras:
+		colExtras.forEach((extras, col_index) => {
+			let targetCol: Spacial = columnRects[col_index];
+			targetCol.width += extras.reduce((e, v) => e + v, 0)
+		})
+
+
 
 
 		// Now lets compute the width and height of each row
 		var rowRects: Spacial[] = Array.from({ length: gridRows.length }, () => new Spacial())
+		var rowSpillingElements: GridElement<C>[][] = Array.from({length: gridRows.length}, () => []);
+		var rowExtras: number[][] = Array.from({length: gridRows.length}, () => []);
+
+		// First pass, find initial size
 		gridRows.forEach((row, row_index) => {
 			var rowEntries: OccupiedCell<C>[] = row.filter((cell) => cell !== undefined);
 
 			// Find height of the row
 			var heights: number[] = [];
-			var extras: number[] = [];
 			for (let cell of rowEntries) {
 
 				if (cell?.ghosts !== undefined) {
@@ -184,18 +237,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				}
 
 				if (cell?.extra !== undefined) {
-					extras.push(cell.extra.height);
+					rowExtras[row_index].push(cell.extra.height);
 				}
 
 				if (cell?.elements !== undefined) {
 					for (let child of cell.elements) {
 						let placementMode: IGridConfig | undefined = child.placementMode.config;
 						let contributing: boolean = true;
+						let spilling: boolean = false;
 
 						// Manual contribution parameter
 						if (placementMode !== undefined && placementMode.contribution !== undefined
 							&& placementMode.contribution.y === false
-						) { contributing = false; }
+						) { contributing = false; spilling = true; }
 
 						// Grow elements do not provide size
 						if (child.sizeMode.y === "grow"
@@ -214,6 +268,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						if (contributing === true) {
 							heights.push(height)
+						} 
+						if (spilling === true) {
+							rowSpillingElements[row_index].push(child);
 						}
 					}
 
@@ -222,20 +279,64 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 			// Set the width of this column
 			var maxHeight = Math.max(...heights, this.min.height)
-			var paddedHeight = maxHeight += extras.reduce((e, v) => e + v, 0)
-			rowRects[row_index].height = paddedHeight;
+			rowRects[row_index].height = maxHeight;
+		})
 
+		// Second pass, apply spills.
+		rowSpillingElements.forEach((row, row_index) => {
+			let targetRowHight: number = rowRects[row_index].height;
 
-			var rowWidth = row.reduce((w, c) => {
-				let dw = 0;
-				if (c !== undefined && c.elements !== undefined) {
-					if (c?.elements !== undefined) {
-						dw = Math.max(...c.elements.map(e => e.width), ...(c.ghosts ?? []).map((g) => g.size.width));
+			let maxAboveSpill: number = 0;
+			let maxBelowSpill: number = 0;
+
+			let aboveSpill: number;
+			let belowSpill: number;
+
+			row.forEach((element) => {
+				if (this.isCellChild(element)) {
+					switch (element.placementMode.config.alignment?.y) {
+						case "here":
+							// Apply spill to below row
+							belowSpill = element.height - targetRowHight;
+							maxBelowSpill = Math.max(belowSpill, maxBelowSpill);
+							break;
+						case "centre":
+							aboveSpill = (element.height - targetRowHight)/2
+							belowSpill = (element.height - targetRowHight)/2
+							maxAboveSpill = Math.max(aboveSpill, maxAboveSpill);
+							maxBelowSpill = Math.max(belowSpill, maxBelowSpill);
+							break;
+						case "far":
+							// Apply spill to row above
+							aboveSpill = element.height - targetRowHight;
+							maxAboveSpill = Math.max(belowSpill, maxBelowSpill);
+							break;
 					}
+
 				}
-				return w + dw;
-			}, 0);
-			rowRects[row_index].width = rowWidth
+			})
+
+			// Now we can apply these new constrains to the rows:
+			let aboveRow: Spacial | undefined = rowRects[row_index-1];
+			let belowRow: Spacial | undefined = rowRects[row_index+1];
+
+			if (aboveRow !== undefined) {
+				aboveRow.height = Math.max(maxAboveSpill, aboveRow.height);
+			} else if (maxAboveSpill > 0) {
+				console.warn(`Element spilling above grid ${this.ref}`);
+			}
+
+			if (belowRow !== undefined) {
+				belowRow.height = Math.max(maxBelowSpill, belowRow.height)
+			} else if (maxBelowSpill > 0) {
+				console.warn(`Element spilling below grid ${this.ref}`)
+			}
+		})
+
+		// Third pass, apply extras:
+		rowExtras.forEach((extras, row_index) => {
+			let targetRow: Spacial = rowRects[row_index];
+			targetRow.height += extras.reduce((e, v) => e + v, 0)
 		})
 
 		this.gridSizes.columns = columnRects;
@@ -562,7 +663,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.appendElementsInRegion(region, { row: insertCoords.row, col: insertCoords.col });
 
 		// Add ghosts from element
-		let ghostTemplates: GhostTemplate[] | undefined = child.placementMode.config.ghosts
+		/* let ghostTemplates: GhostTemplate[] | undefined = child.placementMode.config.ghosts
 		if (ghostTemplates !== undefined) {
 			ghostTemplates.forEach((ghostTemplate) => {
 				let ghost: Ghost = {size: ghostTemplate.size, owner: child.id};
@@ -577,7 +678,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 					}, ghost)
 				}
 			})
-		}
+		} */
 	}
 
 	private addSubgrid(child: Subgrid<C>) {
