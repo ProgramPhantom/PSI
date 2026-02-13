@@ -65,14 +65,23 @@ export const DiagramRepository = {
       )
       .execute();
   },
-  async createDiagram(id: string, datetime: string, owner: string, name: string) {
-    return await db.insertInto('diagrams').values({
+  async createDiagram(
+    id: string,
+    datetime: string,
+    owner: string,
+    name: string,
+  ) {
+    return await db
+      .insertInto('diagrams')
+      .values({
         diagram_id: id,
         owner: owner,
         name: name,
         date_created: datetime,
         date_modified: datetime,
-        data: ""
-    }).returning('diagram_id').executeTakeFirst()
-  }
+        data: '',
+      })
+      .returning('diagram_id')
+      .executeTakeFirst();
+  },
 };
