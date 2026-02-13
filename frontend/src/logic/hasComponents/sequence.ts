@@ -171,8 +171,8 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public getChannelOnRow(row: number): Channel | undefined {
-		let channelIndex: number = Math.floor(row / 3);
-		let channel: Channel | undefined = this.channels[channelIndex];
+		let cell: GridCell = this.getCell({row: row, col: 0});
+		let channel: Channel | undefined = cell?.elements?.filter(e => e instanceof Channel)?.[0];
 
 		return channel;
 	}
