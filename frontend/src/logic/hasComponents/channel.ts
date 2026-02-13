@@ -102,21 +102,6 @@ export default class Channel extends Subgrid implements IChannel {
 	}
 
 	public override add({ child }: AddDispatchData<GridCellElement>) {
-		if (isPulse(child)) {
-			// this.setGridConfigViaPulseData(child, child.pulseData);
-		
-			// If this pulse is placed in the "both" orientation, it needs to create two ghosts
-			// above and below it to pad out the top and bottom row:
-			// if (child.pulseData.orientation === "both") {
-			// 	let barHeight: number = this.bar?.height ?? 0;
-			// 	let ghostHeight: number = (child.height - barHeight) / 2;
-			// 
-			// 	let ghost: Ghost = { size: { width: 0, height: ghostHeight }, owner: child.id }
-			// 
-			// 	this.addCentralElementGhosts(child.pulseData.index!, ghost, ghost);
-			// }
-		}
-
 		this.sizeBar()
 
 		super.add({ child });
@@ -232,78 +217,4 @@ export default class Channel extends Subgrid implements IChannel {
 			}
 		}
 	}
-
-	// -------------- Translation functions -------------
-	//#region 
-	protected setGridConfigViaPulseData(child: Visual, data: IPulseConfig) {
-		var row: number = Channel.OrientationToRow(data.orientation);
-		var column: number = data.index ?? 0;  // Starting at 1 as we know the label goes there
-		var alignment: { x: SiteNames, y: SiteNames } = { x: data.alignment.x, y: data.alignment.y }
-		let contribution: Record<Dimensions, boolean> = { x: true, y: true };
-
-		// --------- Row -------------
-		// Currently, channels ALWAYS have a height of 3 so that's how we find 
-		// our row number.
-		if (data.orientation === "both") {
-			alignment = { x: "centre", y: "centre" }
-			contribution = { x: true, y: false }
-		} else if (data.orientation === "bottom") {
-			alignment = { x: "centre", y: "here" }
-		}
-
-		let gridConfig: IGridConfig = {
-			coords: { row: row, col: column },
-			alignment: alignment,
-			gridSize: { noRows: 1, noCols: data.noSections },
-			contribution: contribution,
-		}
-
-
-		let barHeight: number = this.bar?.height ?? 0;
-		let ghostHeight: number = (child.height - barHeight) / 2;
-		// Inform of ghosts that have been placed by addPulse process.
-		if (data.orientation === "both") {
-			gridConfig.ghosts = [
-				{ relativePosition: {relRow: 1, relCol: column}, size: {width: 0, height: ghostHeight}},
-				{ relativePosition: {relRow: -1, relCol: column}, size: {width: 0, height: ghostHeight} }
-			]
-		}
-
-		child.placementMode = {
-			type: "grid",
-			config: gridConfig
-		}
-	}
-
-	protected setPulseDataViaGridConfig(child: Visual, config: IGridConfig) {
-		let numCols: number = config.gridSize?.noCols ?? 1;
-		let index: number = config.coords?.col ?? 1;
-
-
-		let orientationIndex: 0 | 1 | 2 = ((config.coords?.row ?? 0) % 3) as 0 | 1 | 2;
-		let orientation: Orientation = Channel.RowToOrientation(orientationIndex);
-
-		let alignment: Record<Dimensions, SiteNames> = {
-			x: config.alignment?.x ?? "centre",
-			y: config.alignment?.y ?? "centre"
-		}
-
-		let clipBar: boolean = false;
-		if (child.pulseData !== undefined && child.pulseData.clipBar === true) {
-			clipBar = true;
-		}
-
-		child.pulseData = {
-			noSections: numCols,
-			orientation: orientation,
-			alignment: alignment,
-
-			channelID: this.id,
-			sequenceID: this.parentId,
-			index: index,
-			clipBar: clipBar
-		}
-	}
-	//#endregion
-	// -------------------------------------------------
 }

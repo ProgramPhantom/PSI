@@ -566,9 +566,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		if (ghostTemplates !== undefined) {
 			ghostTemplates.forEach((ghostTemplate) => {
 				let ghost: Ghost = {size: ghostTemplate.size, owner: child.id};
-				this.addGhost({row: insertCoords.row + ghostTemplate.relativePosition.relRow,
-							   col: insertCoords.col + ghostTemplate.relativePosition.relCol
-				}, ghost)
+				let location: {row: number, col: number} = {
+					row: insertCoords.row + ghostTemplate.relativePosition.relRow,
+					col: insertCoords.col + ghostTemplate.relativePosition.relCol
+				}
+
+				if (this.isInGrid(location)) {
+					this.addGhost({row: insertCoords.row + ghostTemplate.relativePosition.relRow,
+								col: insertCoords.col + ghostTemplate.relativePosition.relCol
+					}, ghost)
+				}
 			})
 		}
 	}
@@ -1561,6 +1568,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		return allStructureChildren;
+	}
+
+	public isInGrid(coord: {row: number, col: number}): boolean {
+		if ((-1 < coord.row) && (coord.row < this.numRows) && (-1 < coord.col) && (coord.col < this.numColumns)) {
+			return true
+		} else {
+			return false
+		}
 	}
 	//#endregion
 	// -----------------------------------------------

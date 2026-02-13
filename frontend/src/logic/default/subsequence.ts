@@ -28,7 +28,9 @@ export const DEFAULT_SUBSEQUENCE: ISubgrid = {
 			"config": {
 				"coords": {row: 0, col: 0}
 			}},
-			pulseData: undefined	
+			pulseData: {
+				orientation: "both"
+			}	
 		},
 
 		{...DEFAULT_ACQUIRE, placementMode: {
@@ -37,7 +39,9 @@ export const DEFAULT_SUBSEQUENCE: ISubgrid = {
 				"coords": {row: 3, col: 0}
 			},
 		},
-		pulseData: undefined	
+		pulseData: {
+			orientation: "both"
+		}	
 	},
 	]
 }

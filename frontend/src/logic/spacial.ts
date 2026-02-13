@@ -23,11 +23,12 @@ export interface IPulseConfig {
 	channelID?: ID;
 	sequenceID?: ID;
 
-	orientation: Orientation;
-	alignment: Record<Dimensions, SiteNames>;
-	noSections: number;
+	orientation?: Orientation;
+	alignment?: Record<Dimensions, SiteNames>;
+	noSections?: number;
 	clipBar?: boolean;
 }
+
 export const isPulse = (element: ISpacial): element is ISpacial & { pulseData: IPulseConfig } => {
 	return element.pulseData !== undefined
 }
@@ -694,10 +695,11 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	
 		let coords: {row: number, col: number} = {row: row, col: 0};
-		if (pulseData?.index !== undefined) {
+		if (pulseData.index !== undefined) {
 			coords.col = pulseData.index
 		} else if (this.placementMode.config.coords !== undefined) {
 			coords.col = this.placementMode.config.coords.col;
+			coords.row = this.placementMode.config.coords.row;
 		}
 
 		let ghosts: GhostTemplate[] | undefined = undefined;
