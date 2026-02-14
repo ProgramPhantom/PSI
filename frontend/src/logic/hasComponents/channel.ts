@@ -108,13 +108,6 @@ export default class Channel extends Subgrid implements IChannel {
 	}
 
 	public remove({ child }: RemoveDispatchData<GridCellElement>) {
-		//let remove: {row: boolean, col: boolean } = {row: false, col: isPulse(child)}
-		//
-		//// Never remove the first pulse column
-		//if (this.numColumns === 2) {
-		//	remove.col = false
-		//}
-
 		super.remove({ child })
 	}
 
@@ -123,29 +116,15 @@ export default class Channel extends Subgrid implements IChannel {
 			return
 		}
 
+		this.positionElement(this.bar, {
+			row: 1,
+			col: 1
+		})
 
-		let barRef = this.bar;
-		barRef.placementMode = {
-			type: "grid",
-			config: {
-				gridSize: {
-					noCols: this.numColumns - 1,
-					noRows: 1
-				},
-				coords: {
-					row: 1,
-					col: 1
-				},
-				alignment: {
-					x: "here",
-					y: "centre"
-				}
-			}
-		}
-
-		// This will recompute state
-		this.remove({ child: this.bar })
-		super.add({ child: barRef });
+		this.setChildSize(this.bar, {
+			noCols: this.numColumns-1,
+			noRows: 1
+		})
 	}
 
 	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {

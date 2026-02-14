@@ -89,6 +89,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	// ---------------- Compute Methods ----------------
 	//#region 
 	public override computeSize(): Size {
+		this.refreshSubgrids();
 		this.growSubgrids();
 
 		// First job is to compute the sizes of all children
@@ -643,6 +644,15 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		})
 	}
 
+	private refreshSubgrids() {
+		this.subgridChildren.forEach((sg) => {
+			// TODO: if state dirty:
+
+			this.removeMatrix(sg);
+			this.addSubgrid(sg);
+		})
+	}
+
 
 	//#endregion
 	// -------------------------------------------------
@@ -831,11 +841,15 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		} else if (this.isSubgridChild(child)) {
 			this.removeMatrix(child, deleteIfEmpty)
 		}
+
+		this.squeezeMatrix();
 	}
 
 	private removeMatrix(child: GridElement<C>, deleteIfEmpty?: { row: boolean, col: boolean }) {
 		// First we need to locate this child in the matrix:
 		let {topLeft, bottomRight} = this.getElementRegionCoords(child);
+		topLeft = this.locateElement(child) ?? {row: 0, col: 0};
+
 		if (topLeft === undefined || bottomRight === undefined) {
 			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
 			return
@@ -984,6 +998,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	protected squeezeMatrix() {
+		// Squeeze right and bottom
 		var trailingRow: GridCell<C>[] | undefined = this.getRow(this.numRows - 1) ?? []
 		var trailingColumn: GridCell<C>[] | undefined = this.getColumn(this.numColumns - 1) ?? []
 
@@ -1000,6 +1015,26 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.removeColumn(undefined, true);
 			trailingColumn = this.getColumn(this.numColumns - 1);
 			trailingColumnEmpty = this.isCellArrayEmpty(trailingColumn ?? []);
+		}
+
+
+		// Squeeze top and left
+		var firstRow: GridCell<C>[] | undefined = this.getRow(0) ?? []
+		var firstColumn: GridCell<C>[] | undefined = this.getColumn(this.numColumns - 1) ?? []
+
+		var firstRowEmpty: boolean = this.isCellArrayEmpty(firstRow);
+		var firstColumnEmpty: boolean = this.isCellArrayEmpty(firstColumn);
+
+		while (firstRowEmpty === true && firstRow !== undefined) {
+			this.removeRow(0, true);
+			firstRow = this.getRow(0);
+			firstRowEmpty = this.isCellArrayEmpty(firstRow ?? []);
+		}
+
+		while (firstColumnEmpty === true && firstColumn !== undefined) {
+			this.removeColumn(0, true);
+			firstColumn = this.getColumn(0);
+			firstColumnEmpty = this.isCellArrayEmpty(firstColumn ?? []);
 		}
 	}
 
@@ -1784,4 +1819,20 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 	public getRelativeRow(row: number): number {
 		return row - this.placementMode.config.coords.row;
 	}
+
+	public override removeRow(index?: number, onlyIfEmpty?: boolean): void {
+		super.removeRow(index, onlyIfEmpty);
+
+		if (index === 0) {
+			this.placementMode.config.coords.row += 1;
+		}
+	}
+
+	public override removeColumn(index?: number, remove?: true | "if-empty"): void {
+		super.removeColumn(index, remove);
+
+		if (index === 0) {
+			this.placementMode.config.coords.col += 1;
+		}
+	} 
 }

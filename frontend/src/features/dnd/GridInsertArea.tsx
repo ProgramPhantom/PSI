@@ -14,7 +14,8 @@ export interface IGridArea {
 		height: number;
 	};
 	coords: { row: number, col: number },
-	id: string
+	id: string,
+	index: number
 }
 
 export interface IGridAreaResult {
@@ -101,7 +102,7 @@ function GridInsertArea(props: IGridInsertAreaProps) {
 	};
 
 	return (
-		<div
+		<div id={`(${props.areaSpec.coords.row}, ${props.areaSpec.coords.col})`}
 			ref={drop}
 			style={{ ...style, backgroundColor, pointerEvents: "visiblePainted", }}
 		></div>
