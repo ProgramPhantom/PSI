@@ -19,8 +19,8 @@ create table if not exists diagrams
             primary key,
     name          varchar   not null,
     data          jsonb     not null,
-    date_created  timestamp not null,
-    date_modified timestamp not null,
+    date_created  timestamptz not null,
+    date_modified timestamptz not null,
     owner         varchar   not null
         constraint diagrams_users_gsub_fk
             references users

@@ -152,13 +152,15 @@
     "undici-types": "^7.16.0",
     "unpipe": "^1.0.0",
     "uri-js": "^4.4.1",
+    "uuid": "^13.0.0",
     "v8-compile-cache-lib": "^3.0.1",
     "vary": "^1.1.2",
     "which": "^2.0.2",
     "word-wrap": "^1.2.5",
     "wrappy": "^1.0.2",
     "yn": "^3.1.1",
-    "yocto-queue": "^0.1.0"
+    "yocto-queue": "^0.1.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
