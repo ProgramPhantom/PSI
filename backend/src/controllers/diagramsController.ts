@@ -13,7 +13,6 @@ const IdSchema = z.uuid();
 
 // ---------- Controllers --------------
 
-// Create an item
 export const deleteDiagram = async (
   req: Request,
   res: Response,
@@ -39,7 +38,7 @@ export const deleteDiagram = async (
   }
 };
 
-export const postSaveDiagram = async (
+export const putSaveDiagram = async (
   req: Request,
   res: Response,
   next: NextFunction,
