@@ -1,4 +1,5 @@
 import { db } from '../db/database.js';
+import type { JsonObject } from '../db/db.js';
 
 export const DiagramRepository = {
   async deleteById(id: string) {
@@ -7,7 +8,7 @@ export const DiagramRepository = {
       .where('diagram_id', '=', id)
       .executeTakeFirst();
   },
-  async saveById(id: string, json: string) {
+  async saveById(id: string, json: JsonObject) {
     return await db
       .updateTable('diagrams')
       .set({ data: json })
@@ -20,6 +21,9 @@ export const DiagramRepository = {
       .select(['data', 'name'])
       .where('diagram_id', '=', id)
       .executeTakeFirst();
+  },
+  async getOwnerById(id: string) {
+    return await db.selectFrom('diagrams').select('owner').where('diagram_id', '=', id).executeTakeFirst()
   },
   async getModifiedById(id: string) {
     return await db
@@ -67,7 +71,7 @@ export const DiagramRepository = {
   },
   async createDiagram(
     id: string,
-    datetime: string,
+    datetime: Date,
     owner: string,
     name: string,
   ) {
@@ -79,7 +83,7 @@ export const DiagramRepository = {
         name: name,
         date_created: datetime,
         date_modified: datetime,
-        data: '',
+        data: {},
       })
       .returning('diagram_id')
       .executeTakeFirst();
