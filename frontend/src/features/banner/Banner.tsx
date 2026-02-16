@@ -7,6 +7,7 @@ import { IDiagram } from "../../logic/hasComponents/diagram";
 import { AnnotateDropdown } from "./AnnotateDropdown";
 import { LoadStateDialog } from "./LoadStateDialog";
 import { PNGExportDialog } from "./PNGExportDialog";
+import { LoginDialog } from "./LoginDialog";
 import { ILineStyle } from "../../logic/line";
 import { appToaster } from "../../app/Toaster";
 
@@ -81,6 +82,8 @@ export default function Banner(props: IBannerProps) {
 			intent: "success"
 		});
 	};
+
+	const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
 
 	return (
 		<>
@@ -175,12 +178,22 @@ export default function Banner(props: IBannerProps) {
 
 				<Navbar.Group align={"right"}>
 					<Button
+						minimal={true}
+						icon="user"
+						text="Sign in"
+						onClick={() => setIsLoginDialogOpen(true)}
+						style={{ marginRight: "10px" }}
+					/>
+
+					<Button
 						size="small"
 						variant="minimal"
 						icon="bug"
 						onClick={debugIssue}
 					/>
 				</Navbar.Group>
+
+
 			</Navbar>
 
 			<PNGExportDialog
@@ -191,6 +204,11 @@ export default function Banner(props: IBannerProps) {
 			<LoadStateDialog
 				close={() => setIsLoadDialogOpen(false)}
 				isOpen={isLoadDialogOpen}></LoadStateDialog>
+
+			<LoginDialog
+				isOpen={isLoginDialogOpen}
+				onClose={() => setIsLoginDialogOpen(false)}
+			/>
 		</>
 	);
 }
