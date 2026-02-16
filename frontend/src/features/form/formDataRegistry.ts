@@ -1,5 +1,6 @@
 
 import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultSvgElement, defaultText, defaultVisual } from "../../logic/default/index";
+import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
 import { ILabel } from "../../logic/hasComponents/label";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
@@ -82,6 +83,11 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	"grid": {
 		form: VisualForm,
 		defaults: defaultVisual,
+		allowLabels: false
+	},
+	"sequence": {
+		form: VisualForm,
+		defaults: DEFAULT_SEQUENCE,
 		allowLabels: false
 	}
 }

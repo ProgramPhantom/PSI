@@ -33,6 +33,7 @@ function GridDropField(props: IGridDropFieldProps) {
 		const rows = cells.length;
 		const cols = rows > 0 ? cells[0].length : 0;
 
+		let i = 0;
 		// Iterate through all cells and create drop zones for each
 		for (let row = 0; row < rows; row++) {
 			for (let col = 0; col < cols; col++) {
@@ -47,8 +48,11 @@ function GridDropField(props: IGridDropFieldProps) {
 							height: cell.height
 						},
 						coords: { row: row, col: col },
-						id: props.target.id
+						id: props.target.id,
+						index: i
 					};
+
+					i++;
 
 					insertAreas.push(addSpec);
 				}
@@ -66,7 +70,12 @@ function GridDropField(props: IGridDropFieldProps) {
 				return (
 					<GridInsertArea
 						areaSpec={insertArea}
-						key={`${insertArea.coords.row}+${insertArea.coords.col}`}
+						key={`${insertArea.coords.row}+
+						${insertArea.coords.col}+
+						${insertArea.area.x}+
+						${insertArea.area.y}+
+						${insertArea.area.width}+
+						${insertArea.area.height}`}
 						isHighlighted={highlightedCells.has(`${insertArea.coords.row},${insertArea.coords.col}`)}
 						onSetHighlights={handleSetHighlights}
 					></GridInsertArea>

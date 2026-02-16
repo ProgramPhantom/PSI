@@ -23,21 +23,22 @@ export interface IPulseConfig {
 	channelID?: ID;
 	sequenceID?: ID;
 
-	orientation: Orientation;
-	alignment: Record<Dimensions, SiteNames>;
-	noSections: number;
+	orientation?: Orientation;
+	alignment?: Record<Dimensions, SiteNames>;
+	noSections?: number;
 	clipBar?: boolean;
 }
+
 export const isPulse = (element: ISpacial): element is ISpacial & { pulseData: IPulseConfig } => {
 	return element.pulseData !== undefined
 }
 
+export type GhostTemplate = {relativePosition: { relRow: number, relCol: number }, size: {width: number, height: number}}
 export interface IGridConfig {
 	coords?: { row: number, col: number }
 	alignment?: Record<Dimensions, SiteNames>
 	gridSize?: { noRows: number, noCols: number }
 	contribution?: Record<Dimensions, boolean>,
-	ownedGhosts?: { row: number, col: number }[]
 }
 
 export interface ISubgridConfig {
@@ -214,14 +215,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ?? { x: "fixed", y: "fixed" }
 		
+		this._contentWidth = params.contentWidth ?? 0;
+		this._contentHeight = params.contentHeight ?? 0;
+
 		if (params.pulseData !== undefined) {
 			this._pulseData = params.pulseData;
 			this.setGridConfigUsingPulseData(params.pulseData);
 		}
 		
-
-		this._contentWidth = params.contentWidth ?? 0;
-		this._contentHeight = params.contentHeight ?? 0;
 	}
 
 	public computeSize(): Size {
@@ -665,7 +666,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 				noSections: this.placementMode.config.gridSize?.noCols ?? 1,
 				index: this.placementMode.config.coords?.col ?? 0,
-				orientation: orientation,
+				orientation: this._pulseData?.orientation,
 				alignment: {
 					x: this.placementMode.config.alignment?.x ?? "centre",
 					y: this.placementMode.config.alignment?.y ?? "far"
@@ -693,20 +694,27 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	
 		let coords: {row: number, col: number} = {row: row, col: 0};
-		if (pulseData?.index !== undefined) {
+		if (pulseData.index !== undefined) {
 			coords.col = pulseData.index
-		} else if (this.placementMode.config.coords !== undefined) {
+		} 
+		if (this.placementMode.config.coords !== undefined) {
 			coords.col = this.placementMode.config.coords.col;
+			coords.row = this.placementMode.config.coords.row;
+		}
+
+		let alignment: Record<Dimensions, SiteNames> = {
+			x: "centre", y: pulseData.orientation === "bottom" ? "here" : "far"
+		}
+		if (pulseData.orientation === "both") {
+			alignment = {x: "centre", y: "centre"}
 		}
 
 		this.placementMode.config = {
-			"alignment": pulseData?.alignment,
+			"alignment": alignment, 
 			"coords": coords,
 			"gridSize": {noRows: 1, noCols: pulseData?.noSections ?? 1},
 			
-			"ownedGhosts": this.placementMode.config.ownedGhosts,
-			"contribution": this.placementMode.config.contribution,
-
+			"contribution": pulseData.orientation === "both" ? {x: true, y: false} : this.placementMode.config.contribution,
 		}
 		
 	}

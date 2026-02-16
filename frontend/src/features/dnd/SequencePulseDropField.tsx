@@ -62,7 +62,7 @@ export default function SequencePulseDropField({ sequence }: ISequencePulseDropF
 
                 // 2. Block (Drop Zone)
                 // Check 1: Is the cell empty? (Atomic + Recursive Subgrid check)
-                if (!sequence.isCellEmptyAt({ row: row_index, col: col_index })) {
+                if (!sequence.doesCellHaveCellChildAt({ row: row_index, col: col_index })) {
                     continue;
                 }
 
