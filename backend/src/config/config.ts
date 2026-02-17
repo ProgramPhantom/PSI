@@ -7,13 +7,15 @@ interface Config {
   nodeEnv: string;
   connectionString: string;
   sessionSecret: string;
+  clientId: string
 }
 
 const config: Config = {
   port: parseInt(process.env.PORT ?? "3000"),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   connectionString: process.env.DATABASE_URL ?? "",
-  sessionSecret: process.env.SESSION_SECRET ?? "",
+  clientSecret: process.env.CLIENT_SECRET ?? "",
+  clientId: process.env.CLIENT_ID ?? ""
 };
 
 export default config;
