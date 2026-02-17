@@ -1,5 +1,6 @@
 
 import { Button, Dialog, DialogBody, DialogFooter } from "@blueprintjs/core";
+import { GoogleLogin } from "@react-oauth/google";
 import React from "react";
 
 export interface ILoginDialogProps {
@@ -17,16 +18,13 @@ export function LoginDialog(props: ILoginDialogProps) {
         >
             <DialogBody>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                    <Button
-                        intent="primary"
-                        text="Log in"
-                        large={true}
-                        onClick={() => {
-                            // Placeholder for login logic
-                            console.log("Log in clicked");
-                            props.onClose();
+                    <GoogleLogin
+                        onSuccess={(credentialResponse) => {
+                            console.log(credentialResponse)
                         }}
-                    />
+                        onError={() => {console.log("Login failed")}}
+                        >
+                    </GoogleLogin>
                 </div>
             </DialogBody>
             <DialogFooter
