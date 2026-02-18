@@ -26,7 +26,7 @@ export const deleteDiagram = async (
 
     const result = IdSchema.safeParse(req.params.diagramId);
     if (!result.success) {
-      res.status(400).json({ error: z.treeifyError(result.error) });
+      res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
     const resource = result.data;
@@ -61,7 +61,7 @@ export const putSaveDiagram = async (
 
     const result = IdSchema.safeParse(req.params.diagramId);
     if (!result.success) {
-      res.status(400).json({ error: z.treeifyError(result.error) });
+      res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
     const resource = result.data;
@@ -86,7 +86,7 @@ export const putSaveDiagram = async (
         req.body as JsonObject,
       );
       if (updateResponse.numUpdatedRows > 0) {
-        res.status(200).json({ message: `Saved diagram with Id: ${resource}` });
+        res.status(200).json({ message: `Saved diagram with Id: ${resource}`, copied: false });
       } else {
         throw new Error(
           'No rows updated for an Id that was found??? No clue mate.',
@@ -100,7 +100,7 @@ export const putSaveDiagram = async (
       const copyResponse = await DiagramRepository.copyDiagramToOwnerById(resource, newId, req.session.gsub!)
       if (copyResponse) {
         //copy succeeded
-        res.status(200).json({message: "Success: Copied to your own diagrams", savedDiagramId: newId})
+        res.status(200).json({message: "Success: Copied to your own diagrams", savedDiagramId: newId, copied: true})
       } else {
         throw new Error("Copy failed for some reason")
       }
@@ -158,7 +158,7 @@ export const getLoadDiagram = async (
   try {
     const result = IdSchema.safeParse(req.params.diagramId);
     if (!result.success) {
-      res.status(400).json({ error: z.treeifyError(result.error) });
+      res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
     const resource = result.data;
@@ -181,7 +181,7 @@ export const getDateModified = async (
   try {
     const result = IdSchema.safeParse(req.params.diagramId);
     if (!result.success) {
-      res.status(400).json({ error: z.treeifyError(result.error) });
+      res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
     const resource = result.data;
@@ -189,7 +189,7 @@ export const getDateModified = async (
     if (dbResponse) {
       res.status(200).json(dbResponse);
     } else {
-      res.status(400).json({ message: 'Diagram not found' });
+      res.status(404).json({ message: 'Diagram not found' });
     }
   } catch (error) {
     next(error);
