@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 
 // Create an item
-export const getHelloWorld = (req: Request, res: Response, next: NextFunction) => {
+export const listen = (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.status(201).json("Hello World");
+    console.log(JSON.stringify(req, null, 4))
+    res.status(200).json("Sigma");
   } catch (error) {
     next(error);
   }

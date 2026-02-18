@@ -4,13 +4,12 @@
     // File Layout
     "rootDir": "./src",
     "outDir": "./build",
-
+    
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "esnext",
     "esModuleInterop": true,
-    "types": [],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -41,5 +40,6 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+  },
+  "include": ["src/**/*", "types/**/*.d.ts"],
 }

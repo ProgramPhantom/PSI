@@ -18,7 +18,7 @@ export function LoginDialog(props: ILoginDialogProps) {
         >
             <DialogBody>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                    <GoogleLogin
+                    <GoogleLogin useOneTap={false} ux_mode="popup"
                         onSuccess={(credentialResponse) => {
                             console.log(credentialResponse)
                         }}

@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import {
-  getHelloWorld,
+  listen,
 } from '../controllers/testController.js';
 
 const router = Router();
 
-router.get('/', getHelloWorld);
+router.all('/listen*', listen);
 
 export default router;

@@ -31,7 +31,7 @@ export const deleteDiagram = async (
     if (deleteResponse.numDeletedRows > 0) {
         res.status(200).json({message: `Deleted diagram with Id: ${resource}`});
     } else {
-        res.status(404).json({error: "Diagram not found"})
+        res.status(404).json({message: "Diagram not found"})
     }
   } catch (error) {
     next(error);
@@ -56,7 +56,7 @@ export const putSaveDiagram = async (
     const ownerData = await DiagramRepository.getOwnerById(resource);
 
     if (!req.body || Array.isArray(req.body) || typeof req.body !== 'object') {
-        res.status(400).json({error: "Body must be a JSON object"})
+        res.status(400).json({message: "Body must be a JSON object"})
         return;
     }
 
@@ -69,7 +69,7 @@ export const putSaveDiagram = async (
       }
     } else {
         //diagram does not exist
-        res.status(404).json({error: "Diagram not found"})
+        res.status(404).json({message: "Diagram not found"})
     }
   } catch (error) {
     next(error);
@@ -86,7 +86,7 @@ export const postCreateDiagram = async (
     const id = uuidv7();
     const result = CreateDiagramSchema.safeParse(req.body);
     if (!result.success) {
-      res.status(400).json({ error: z.treeifyError(result.error) });
+      res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
     const { name } = result.data;
@@ -123,7 +123,7 @@ export const getLoadDiagram = async (
     if (dbResponse) {
       res.status(200).json(dbResponse);
     } else {
-      res.status(404).json({ error: 'Diagram not found' });
+      res.status(404).json({ message: 'Diagram not found' });
     }
   } catch (error) {
     next(error);
@@ -146,7 +146,7 @@ export const getDateModified = async (
     if (dbResponse) {
         res.status(200).json(dbResponse);
     } else {
-        res.status(400).json({error: "Diagram not found"})
+        res.status(400).json({message: "Diagram not found"})
     }
   } catch (error) {
     next(error);
