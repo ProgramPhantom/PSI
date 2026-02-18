@@ -331,13 +331,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						right: "10px",
 						zIndex: 100
 					}}>
-					{hoveredElement ? (
-						<Text>
-							Hovered: {hoveredElement.ref}: {hoveredElement.id}
-						</Text>
-					) : (
-						<Text>Hovered: none</Text>
-					)}
+					
 				</div>
 
 				<div
