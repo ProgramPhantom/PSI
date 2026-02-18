@@ -1,7 +1,7 @@
 
 import { Button, Dialog, DialogBody, DialogFooter } from "@blueprintjs/core";
 import { GoogleLogin } from "@react-oauth/google";
-import React from "react";
+import {login} from '../../logic/login'
 
 export interface ILoginDialogProps {
     isOpen: boolean;
@@ -20,7 +20,7 @@ export function LoginDialog(props: ILoginDialogProps) {
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
                     <GoogleLogin useOneTap={false} ux_mode="popup"
                         onSuccess={(credentialResponse) => {
-                            console.log(credentialResponse)
+                            login(credentialResponse)
                         }}
                         onError={() => {console.log("Login failed")}}
                         >
