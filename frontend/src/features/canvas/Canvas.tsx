@@ -314,14 +314,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						left: "10px",
 						zIndex: 100
 					}}>
-					<Label style={{ fontSize: "10px", marginBottom: "0px" }}>filename</Label>
-					<EditableText
-						value={fileName}
-						onChange={handleFileNameChange}
-						onConfirm={handleFileNameBlur}
-						multiline={false}
-						selectAllOnFocus={true}
-					/>
+					
 				</div>
 
 				<div
