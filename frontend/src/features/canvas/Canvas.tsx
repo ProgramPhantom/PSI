@@ -110,7 +110,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
 	const dispatch = useAppDispatch();
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
-
+	if (selectedElement) {selectedElement.svg?.hide();}
 
 
 	const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
