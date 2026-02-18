@@ -1,5 +1,6 @@
 import express from 'express';
 import diagramRoutes from './routes/diagramRoutes.js';
+import userRoutes from './routes/userRoutes.js'
 import { errorHandler } from './middlewares/errorHandler.js';
 import session from 'express-session';
 import { sessionOptns } from './middlewares/sessionOptns.js';
@@ -10,7 +11,7 @@ app.use(session(sessionOptns))
 
 // Routes
 app.use('/api/diagrams', diagramRoutes);
-app.use('/api/users')
+app.use('/api/users', userRoutes);
 
 // Global error handler (should be after routes)
 app.use(errorHandler);
