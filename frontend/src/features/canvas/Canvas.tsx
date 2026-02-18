@@ -99,7 +99,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [debugSelectionTypes, setDebugSelectionTypes] =
 		useState<Record<AllComponentTypes, boolean>>(DefaultDebugSelection);
 	const [zoom, setZoom] = useState(2);
-	const [dragging, setDragging] = useState(false);
 	const [fileName, setFileName] = useState(ENGINE.currentImageName);
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
@@ -277,14 +276,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		}
 	}, [store]);
 
-	var diagramWidth: number = 0;
-	var diagramHeight: number = 0;
-
-	diagramWidth = ENGINE.handler.diagram.width;
-	diagramHeight = ENGINE.handler.diagram.height;
-
-
-
+	var diagramWidth: number = ENGINE.handler.diagram.width;
+	var diagramHeight: number = ENGINE.handler.diagram.height;
 
 	return (
 		<>
@@ -301,10 +294,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				onMouseUp={(e) => {
 					singleClick(e);
 					deselect();
-					setDragging(false);
-				}}
-				onDragEnd={() => {
-					setDragging(false);
 				}}>
 				{/* Image name display text box - positioned outside TransformWrapper */}
 				<div
@@ -419,9 +408,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 												left: selectedElement.drawCX,
 												top: selectedElement.drawCY,
 												pointerEvents: "auto"
-											}}
-											onMouseDown={() => {
-												setDragging(true);
 											}}>
 											<CanvasDraggableElement
 												reselect={reselect}
@@ -433,7 +419,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 									)}
 
 									{/* Hover highlight */}
-									{(hoveredElement !== undefined
+									{(hoveredElement !== undefined && !isDragging && selectedElement?.id !== hoveredElement.id
 										&& props.selectedTool.type === "select") && (
 											<>
 												<svg

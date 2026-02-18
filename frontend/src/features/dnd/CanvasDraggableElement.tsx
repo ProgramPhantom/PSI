@@ -192,7 +192,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 				<div key={dragElementType}
 					style={{
 						zIndex: 15000,
-						opacity: isDragging ? 0.4 : 1,
+						opacity: isDragging ? 0 : 1,
 						position: "relative"
 					}}>
 					<div
