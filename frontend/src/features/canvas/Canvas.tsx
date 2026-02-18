@@ -314,14 +314,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						left: "10px",
 						zIndex: 100
 					}}>
-					<Label style={{ fontSize: "10px", marginBottom: "0px" }}>filename</Label>
-					<EditableText
-						value={fileName}
-						onChange={handleFileNameChange}
-						onConfirm={handleFileNameBlur}
-						multiline={false}
-						selectAllOnFocus={true}
-					/>
+					
 				</div>
 
 				<div
@@ -331,21 +324,15 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						right: "10px",
 						zIndex: 100
 					}}>
-					{hoveredElement ? (
-						<Text>
-							Hovered: {hoveredElement.ref}: {hoveredElement.id}
-						</Text>
-					) : (
-						<Text>Hovered: none</Text>
-					)}
+					
 				</div>
 
 				<div
 					style={{
 						position: "absolute",
 						top: "10px",
-						right: "10px",
-						zIndex: 100
+						left: "10px",
+						zIndex: 10
 					}}>
 					<Button
 						icon="target"
