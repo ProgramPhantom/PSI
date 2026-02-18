@@ -19,16 +19,16 @@ export const login = async (data: loginValidationData, session: UserSession) => 
       !insertResult.numInsertedOrUpdatedRows ||
       insertResult.numInsertedOrUpdatedRows == BigInt(0)
     ) {
-        return {code: 500, message: 'Huh??'}
+        throw new Error("ERROR: We had no inserted rows when creating the user that we just confirmed did not exist")
     } else {
       //log user in as session
       createSession(googleData, session)
-      return {code: 200, message: "Successs: Signed up and logged in"}
+      return {code: 200, message: "Success: Signed up and logged in"}
     }
   }
   //log user in as session
   createSession(googleData, session)
-  return {code: 200, message: "Successs: Logged in"}
+  return {code: 200, message: "Success: Logged in"}
 };
 
 const createUser = async (googleData: TokenPayload) => {

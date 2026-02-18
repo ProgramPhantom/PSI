@@ -67,7 +67,8 @@ export const DiagramRepository = {
           ])
           .where('diagram_id', '=', diagramId),
       )
-      .execute();
+      .returning('diagram_id')
+      .executeTakeFirst();
   },
   async createDiagram(
     id: string,
