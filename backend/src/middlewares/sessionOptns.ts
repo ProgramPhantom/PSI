@@ -13,4 +13,5 @@ export const sessionOptns: SessionOptions = {
   rolling: true,
   secret: config.sessionSecret,
   saveUninitialized: false,
+  resave: false
 };
