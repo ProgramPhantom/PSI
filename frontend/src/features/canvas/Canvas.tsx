@@ -331,8 +331,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					style={{
 						position: "absolute",
 						top: "10px",
-						right: "10px",
-						zIndex: 100
+						left: "10px",
+						zIndex: 10
 					}}>
 					<Button
 						icon="target"
