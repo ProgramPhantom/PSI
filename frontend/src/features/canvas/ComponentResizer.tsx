@@ -153,7 +153,7 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
 						? "row-resize"
 						: "nw-resize",
 			backgroundColor: isResizing ? "#0066cc" : isHovering ? "#e6f3ff" : "transparent",
-			zIndex: 1000,
+			zIndex: 15,
 			transition: "background-color 0.1s ease"
 		};
 
@@ -246,7 +246,7 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
 				color: "#999",
 				fontSize: "14px",
 				whiteSpace: "nowrap",
-				zIndex: 5,
+				zIndex: 1,
 				userSelect: "none" as const,
 				transition: "none"
 			};
@@ -259,7 +259,7 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
 				color: "#999",
 				fontSize: "14px",
 				whiteSpace: "nowrap",
-				zIndex: 5,
+				zIndex: 1,
 				userSelect: "none" as const,
 				transition: "none"
 			};
@@ -273,7 +273,7 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
 				fontSize: "12px",
 				fontWeight: "bold",
 				whiteSpace: "nowrap",
-				zIndex: 999,
+				zIndex: 1,
 				userSelect: "none" as const,
 				transition: "none"
 			};
