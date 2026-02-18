@@ -100,11 +100,11 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							const offsetX = item.offset?.x ?? 0;
 							const offsetY = item.offset?.y ?? 0;
 
-							
+
 							newState.x = dropResult.data.x - (offsetX / scale);
 							newState.y = dropResult.data.y - (offsetY / scale);
 
-							
+
 							newState.parentId = ENGINE.handler.diagram.id;
 							newState.placementMode = {
 								type: "free",
@@ -125,13 +125,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								index: dropResult.data.index,
 
 								orientation: newState.pulseData?.orientation !== "both" ? dropResult.data.orientation : "both",
-								alignment: newState.pulseData?.alignment ?? {x: "centre", y: "far"},
+								alignment: newState.pulseData?.alignment ?? { x: "centre", y: "far" },
 								noSections: newState.pulseData?.noSections ?? 1,
 								clipBar: newState.pulseData?.clipBar ?? false
 							}
 
 							newState.parentId = dropResult.data.channelID;
-							
+
 							newState.placementMode = {
 								type: "grid",
 								config: {}
@@ -198,6 +198,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					<div
 						ref={drag}
 						onMouseDown={(e) => {
+							props.reselect(props.element);
 							const rect = e.currentTarget.getBoundingClientRect();
 							offsetRef.current = {
 								x: e.clientX - rect.left,

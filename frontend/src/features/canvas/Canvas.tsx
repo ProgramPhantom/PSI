@@ -106,10 +106,22 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 
-	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
 	const dispatch = useAppDispatch();
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
-	if (selectedElement) {selectedElement.svg?.hide();}
+
+
+	const interactiveElement: Visual | undefined = selectedElement || (props.selectedTool.type === "select" ? hoveredElement : undefined);
+
+	useEffect(() => {
+		if (interactiveElement) {
+			interactiveElement.svg?.hide();
+		}
+
+		return () => {
+			interactiveElement?.svg?.show();
+		};
+	}, [interactiveElement?.id]);
 
 
 	const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
@@ -303,7 +315,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						left: "10px",
 						zIndex: 100
 					}}>
-					
+
 				</div>
 
 				<div
@@ -313,7 +325,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						right: "10px",
 						zIndex: 100
 					}}>
-					
+
 				</div>
 
 				<div
@@ -397,54 +409,28 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											}px)`
 									}}>
 
-									{/* Draggable elements */}
-									{selectedElement !== undefined && (
+									{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
+									{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
 										<div
+											key={interactiveElement.id}
 											className="nopan"
 											style={{
 												position: "absolute",
-												width: selectedElement.contentWidth,
-												height: selectedElement.contentHeight,
-												left: selectedElement.drawCX,
-												top: selectedElement.drawCY,
+												width: interactiveElement.contentWidth,
+												height: interactiveElement.contentHeight,
+												left: interactiveElement.drawCX,
+												top: interactiveElement.drawCY,
 												pointerEvents: "auto"
 											}}>
 											<CanvasDraggableElement
 												reselect={reselect}
-												name={selectedElement.ref}
-												element={selectedElement}
-												x={selectedElement.x}
-												y={selectedElement.y}></CanvasDraggableElement>
+												name={interactiveElement.ref}
+												element={interactiveElement}
+												x={interactiveElement.x}
+												y={interactiveElement.y}></CanvasDraggableElement>
 										</div>
 									)}
 
-									{/* Hover highlight */}
-									{(hoveredElement !== undefined && !isDragging && selectedElement?.id !== hoveredElement.id
-										&& props.selectedTool.type === "select") && (
-											<>
-												<svg
-													style={{
-														width: `${hoveredElement.width}px`,
-														height: `${hoveredElement.height}`,
-														position: "absolute",
-														top: `${hoveredElement.drawY}px`,
-														left: `${hoveredElement.drawX}px`,
-														zIndex: 100,
-														vectorEffect: "non-scaling-stroke"
-													}}
-													pointerEvents={"none"}>
-													<rect
-														width={"100%"}
-														height={"100%"}
-														style={{
-															stroke: `${Colors.BLUE3}`,
-															strokeWidth: "1px",
-															fill: `none`,
-															strokeDasharray: "1 1"
-														}}></rect>
-												</svg>
-											</>
-										)}
 
 									{/* Tools */}
 									{props.selectedTool.type === "arrow" ? (
