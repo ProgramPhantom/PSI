@@ -4,9 +4,10 @@ import { ISequenceAligner } from "../../logic/hasComponents/sequenceAligner";
 import ENGINE from "../../logic/engine";
 import { DEFAULT_DIAGRAM } from "../../logic/default/defaultDiagram";
 import { BLANK_DIAGRAM } from "../../logic/default/blankDiagram";
-import { getUserDiagrams } from "../../logic/api";
+import { getDiagram, getUserDiagrams } from "../../logic/api";
 import { useEffect, useState } from "react";
 import { More } from "@blueprintjs/icons";
+import { appToaster } from "../../app/Toaster";
 
 export interface IDiagramsDialogProps {
     isOpen: boolean;
@@ -44,6 +45,42 @@ interface DiagramDTO {
 export function DiagramsDialog(props: IDiagramsDialogProps) {
     const handleSelect = (entry: DiagramDTO) => {
         //ENGINE.handler.constructDiagram(entry.diagram);
+
+        let success: boolean = true;
+        if (entry.diagram_id === undefined) {
+            success = false;
+        } else {
+            // Get diagram
+            getDiagram(entry.diagram_id).then((response) => {
+                if (response.error) {
+                    success = false;
+                    return
+                }
+                let diagramString: string | undefined = response.data?.data;
+
+                if (diagramString === undefined) {
+                    success = false
+                    return
+                }
+
+
+                try {
+                    let diagramData: IDiagram = JSON.parse(diagramString); 
+
+                    ENGINE.handler.constructDiagram(diagramData)
+                } catch (err) {
+                    success = false
+                }
+            })
+        }
+
+        if (success === false) {
+            appToaster.show({
+                "message": "Error loading diagram",
+                "intent": "danger"
+            })
+        }
+
         props.onClose();
     };
 
