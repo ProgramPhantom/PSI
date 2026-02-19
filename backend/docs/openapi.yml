@@ -5,7 +5,7 @@ info:
   description: |
     The PSI backend api allows users to sign up and sync and share diagrams across devices
 servers:
-  - url: https://conradspitobefilledin/api
+  - url: http://90.251.68.254:8901/api
     description: Internal staging server
   - url: http://localhost:3000/api
     description: local testing server
