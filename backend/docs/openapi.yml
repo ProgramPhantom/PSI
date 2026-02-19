@@ -1,0 +1,297 @@
+openapi: '3.0.3'
+info:
+  title: PSI API
+  version: '1.0'
+  description: |
+    The PSI backend api allows users to sign up and sync and share diagrams across devices
+servers:
+  - url: https://conradspitobefilledin/api
+    description: Internal staging server
+  - url: http://localhost:3000/api
+    description: local testing server
+
+components:
+  schemas:
+    genericResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    diagramsListResponse:
+      type: object
+      properties:
+        diagrams:
+          type: array
+          items:
+            type: object
+            properties:
+              diagram_id: 
+                type: string
+                format: uuid
+              name:
+                type: string
+    loginCredentialsRequest:
+      type: object
+      properties: 
+        credential:
+          type: string
+        clientId:
+          type: string
+        select_by:
+          type: string
+    diagramDataResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        data:
+          type: string
+
+    diagramCreateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        id:
+          description: The diagram Id of the newly created diagram
+          type: string
+          format: uuid
+    copyDiagramResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        savedDiagramId:
+          description: The diagram Id of the newly created diagram
+          type: string
+          format: uuid
+        copied:
+          type: boolean
+    saveDiagramResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        copied:
+          type: boolean
+
+  securitySchemes:
+      sessionCookie:
+        type: apiKey
+        in: cookie
+        name: sessionId
+  
+
+paths:
+  /users/login:
+    post:
+      tags: 
+        -  Users
+      security: 
+        -  {}
+      summary: Login or create account with Google OAuth credentials
+      requestBody:
+        description: Credentials returned by Google OAuth flow
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/loginCredentialsRequest"
+      responses:
+        '200':
+          description: OK - session is now authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/genericResponse"
+        '400':
+          description: Malformed or invalid form data from 'sign on with google'
+
+  /users/diagrams:
+    get:
+      tags: 
+        -  Users
+      summary: Get a list of diagrams belonging to the logged in user
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK - a list of diagrams is returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/diagramsListResponse"
+
+        '401':
+          description: Authentication required
+
+  /diagrams/{diagramId}:
+    delete: 
+      parameters:
+        - name: diagramId
+          in: path
+          description: Diagram Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      tags: 
+        -  Diagrams
+      summary: Delete the specified diagram belonging to the logged in user
+      security: 
+        -  sessionCookie: []
+      responses: 
+        '200':
+          description: OK - the diagram has been successfully deleted
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/genericResponse"
+        '400':
+          description: Malformed diagram Id
+        '401':
+          description: Authentication Required
+        '403':
+          description: The logged in user does not have permission to delete this diagram
+        '404':
+          description: Diagram not found
+    get: 
+      parameters:
+        - name: diagramId
+          in: path
+          description: Diagram Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      tags: 
+        -  Diagrams
+      summary: Load the specified diagram
+      security: 
+        -  {}
+      responses: 
+        '200':
+          description: OK - the specified diagram data is returned
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/diagramDataResponse"
+        '400':
+          description: Malformed diagram Id
+        '404':
+          description: Diagram not found
+    put:
+      parameters:
+        - name: diagramId
+          in: path
+          description: Diagram Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: JSON data to save
+        required: true
+        content:
+          application/json:
+            schema: 
+              type: object
+      tags: 
+        -  Diagrams
+      summary: Save the diagram data
+      description: >
+        Saves the diagram JSON to the database based on the current user.<br>
+        **Users saving their own diagram** have the changes committed.<br>
+        **Users saving someone elses diagram** make a copy of the diagram and commit the changes to their owned copy.
+      security: 
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK - saving/copying has been successful
+          content:
+            application/json:
+              schema: 
+                oneOf: 
+                  - $ref: "#/components/schemas/saveDiagramResponse"
+                  - $ref: "#/components/schemas/copyDiagramResponse"
+              examples:
+                OwnerResponse:
+                  summary: Example - Diagram Owner
+                  value:
+                    message: "Saved diagram with Id: 399c8f13-d358-4b0b-9aa8-5ec897015932"
+                    copied: false
+                ViewerResponse:
+                  summary: Example - Diagram Viewer
+                  value:
+                    message: "Success: Copied to your own diagram"
+                    savedDiagramId: "2ad8651c-477a-4e16-903f-eec4ba3a35ee"
+                    copied: true
+
+        '400':
+          description: Malformed diagram Id/body is not a JSON object
+        '401':
+          description: Authentication Required
+        '403':
+          description: The logged in user does not have permission to delete this diagram
+        '404':
+          description: Diagram not found
+      
+
+  /diagrams:    
+    post:
+      requestBody:
+        description: The name given to the newly created diagram
+        required: true
+        content:
+          application/json:
+            schema: 
+              properties:
+                name:
+                  type: string
+      tags: 
+        -  Diagrams
+      summary: Create a diagram belonging to the logged in user
+      security: 
+        - sessionCookie: []
+      responses:
+        '201':
+          description: OK - a blank diagram has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/diagramCreateResponse"
+        '400':
+          description: Malformed request body
+        '401':
+          description: Authentication Required
+
+  /diagrams/{diagramId}/modified:
+    get: 
+      parameters:
+        - name: diagramId
+          in: path
+          description: Diagram Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      tags: 
+        -  Diagrams
+      summary: Gets the last date modified for the specified diagram
+      security: 
+        -  {}
+      responses: 
+        '200':
+          description: OK - the date modified is returned
+          content:
+            application/json:
+              schema: 
+                properties:
+                  date_modified:
+                    type: string
+                    format: date-time
+        '400':
+          description: Malformed diagram Id
+        '404':
+          description: Diagram not found
+      

@@ -1,8 +1,7 @@
 import {defineConfig} from "vite";
 import {nodePolyfills} from "vite-plugin-node-polyfills";
 import react from "@vitejs/plugin-react";
-import CircularDependencyPlugin from 'vite-plugin-circular-dependency';
-
+import CircularDependencyPlugin from "vite-plugin-circular-dependency";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -11,6 +10,15 @@ export default defineConfig({
 		sourcemap: true,
 		supported: {
 			"top-level-await": true //browsers can handle top-level-await features
+		}
+	},
+	server: {
+		proxy: {
+			// If the request starts with /api, forward it to the backend
+			"/api": {
+				target: "http://localhost:3000",
+				changeOrigin: true
+			}
 		}
 	},
 	base: "/PSI/",
@@ -41,9 +49,9 @@ export default defineConfig({
 			outputFilePath: "./circleDep",
 			include: ["/\.ts$/"],
 			exclude: ["/node_modules/"]
-		}),
+		})
 	],
 	build: {
-		sourcemap: true,
+		sourcemap: true
 	}
 });

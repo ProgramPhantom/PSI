@@ -1,0 +1,41 @@
+
+services:
+  server:
+    build:
+      context: .
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:${DB_PORT}/${DB_NAME}
+      - PORT=${PORT}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+        db:
+            condition: service_healthy
+
+  db:
+    image: postgres:alpine
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    expose:
+      - "${DB_PORT}"
+    #   For using data visualisation tools
+    #   Remove when you no longer want to expose DB outside of services/container
+    ports:
+      - "${DB_EXPOSE_PORT}:${DB_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME}"]
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:
