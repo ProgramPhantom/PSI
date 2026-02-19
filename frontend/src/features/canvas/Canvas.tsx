@@ -99,7 +99,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [debugSelectionTypes, setDebugSelectionTypes] =
 		useState<Record<AllComponentTypes, boolean>>(DefaultDebugSelection);
 	const [zoom, setZoom] = useState(2);
-	const [dragging, setDragging] = useState(false);
 	const [fileName, setFileName] = useState(ENGINE.currentImageName);
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
@@ -107,10 +106,22 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 
-	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
 	const dispatch = useAppDispatch();
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
 
+
+	const interactiveElement: Visual | undefined = selectedElement || (props.selectedTool.type === "select" ? hoveredElement : undefined);
+
+	useEffect(() => {
+		if (interactiveElement) {
+			interactiveElement.svg?.hide();
+		}
+
+		return () => {
+			interactiveElement?.svg?.show();
+		};
+	}, [interactiveElement?.id]);
 
 
 	const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
@@ -277,14 +288,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		}
 	}, [store]);
 
-	var diagramWidth: number = 0;
-	var diagramHeight: number = 0;
-
-	diagramWidth = ENGINE.handler.diagram.width;
-	diagramHeight = ENGINE.handler.diagram.height;
-
-
-
+	var diagramWidth: number = ENGINE.handler.diagram.width;
+	var diagramHeight: number = ENGINE.handler.diagram.height;
 
 	return (
 		<>
@@ -301,10 +306,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				onMouseUp={(e) => {
 					singleClick(e);
 					deselect();
-					setDragging(false);
-				}}
-				onDragEnd={() => {
-					setDragging(false);
 				}}>
 				{/* Image name display text box - positioned outside TransformWrapper */}
 				<div
@@ -314,14 +315,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						left: "10px",
 						zIndex: 100
 					}}>
-					<Label style={{ fontSize: "10px", marginBottom: "0px" }}>filename</Label>
-					<EditableText
-						value={fileName}
-						onChange={handleFileNameChange}
-						onConfirm={handleFileNameBlur}
-						multiline={false}
-						selectAllOnFocus={true}
-					/>
+
 				</div>
 
 				<div
@@ -331,21 +325,15 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						right: "10px",
 						zIndex: 100
 					}}>
-					{hoveredElement ? (
-						<Text>
-							Hovered: {hoveredElement.ref}: {hoveredElement.id}
-						</Text>
-					) : (
-						<Text>Hovered: none</Text>
-					)}
+
 				</div>
 
 				<div
 					style={{
 						position: "absolute",
 						top: "10px",
-						right: "10px",
-						zIndex: 100
+						left: "10px",
+						zIndex: 10
 					}}>
 					<Button
 						icon="target"
@@ -421,57 +409,28 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											}px)`
 									}}>
 
-									{/* Draggable elements */}
-									{selectedElement !== undefined && (
+									{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
+									{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
 										<div
+											key={interactiveElement.id}
 											className="nopan"
 											style={{
 												position: "absolute",
-												width: selectedElement.contentWidth,
-												height: selectedElement.contentHeight,
-												left: selectedElement.drawCX,
-												top: selectedElement.drawCY,
+												width: interactiveElement.contentWidth,
+												height: interactiveElement.contentHeight,
+												left: interactiveElement.drawCX,
+												top: interactiveElement.drawCY,
 												pointerEvents: "auto"
-											}}
-											onMouseDown={() => {
-												setDragging(true);
 											}}>
 											<CanvasDraggableElement
 												reselect={reselect}
-												name={selectedElement.ref}
-												element={selectedElement}
-												x={selectedElement.x}
-												y={selectedElement.y}></CanvasDraggableElement>
+												name={interactiveElement.ref}
+												element={interactiveElement}
+												x={interactiveElement.x}
+												y={interactiveElement.y}></CanvasDraggableElement>
 										</div>
 									)}
 
-									{/* Hover highlight */}
-									{(hoveredElement !== undefined
-										&& props.selectedTool.type === "select") && (
-											<>
-												<svg
-													style={{
-														width: `${hoveredElement.width}px`,
-														height: `${hoveredElement.height}`,
-														position: "absolute",
-														top: `${hoveredElement.drawY}px`,
-														left: `${hoveredElement.drawX}px`,
-														zIndex: 100,
-														vectorEffect: "non-scaling-stroke"
-													}}
-													pointerEvents={"none"}>
-													<rect
-														width={"100%"}
-														height={"100%"}
-														style={{
-															stroke: `${Colors.BLUE3}`,
-															strokeWidth: "1px",
-															fill: `none`,
-															strokeDasharray: "1 1"
-														}}></rect>
-												</svg>
-											</>
-										)}
 
 									{/* Tools */}
 									{props.selectedTool.type === "arrow" ? (
