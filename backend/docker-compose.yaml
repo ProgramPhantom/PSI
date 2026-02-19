@@ -5,7 +5,11 @@ services:
       context: .
     environment:
       - NODE_ENV=${NODE_ENV}
-      - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:${DB_PORT}/${DB_NAME}
+      - PORT=${PORT}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
 
     ports:
       - "${PORT}:${PORT}"
