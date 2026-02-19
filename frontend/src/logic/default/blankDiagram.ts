@@ -26,7 +26,7 @@ export const BLANK_DIAGRAM: IDiagram = {
 	"contentHeight": 83,
 	"x": 0,
 	"y": 0,
-	"ref": "diagram",
+	"ref": "empty-diagram",
 	"id": "c8014d41f304e",
 	"type": "diagram"
 }

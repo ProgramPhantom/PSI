@@ -30,7 +30,7 @@ export const DEFAULT_DIAGRAM: IDiagram = {
 	"contentHeight": 83,
 	"x": 0,
 	"y": 0,
-	"ref": "diagram",
+	"ref": "default-diagram",
 	"id": "c8014d41f304e",
 	"type": "diagram"
 }

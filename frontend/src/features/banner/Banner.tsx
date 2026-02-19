@@ -8,6 +8,7 @@ import { AnnotateDropdown } from "./AnnotateDropdown";
 import { LoadStateDialog } from "./LoadStateDialog";
 import { PNGExportDialog } from "./PNGExportDialog";
 import { LoginDialog } from "./LoginDialog";
+import { DiagramsDialog } from "./DiagramsDialog";
 import { ILineStyle } from "../../logic/line";
 import { appToaster } from "../../app/Toaster";
 
@@ -84,6 +85,7 @@ export default function Banner(props: IBannerProps) {
 	};
 
 	const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+	const [isDiagramsDialogOpen, setIsDiagramsDialogOpen] = useState(false);
 
 	return (
 		<>
@@ -179,6 +181,13 @@ export default function Banner(props: IBannerProps) {
 				<Navbar.Group align={"right"}>
 					<Button
 						minimal={true}
+						icon="folder-open"
+						text="Diagrams"
+						onClick={() => setIsDiagramsDialogOpen(true)}
+						style={{ marginRight: "10px" }}
+					/>
+					<Button
+						minimal={true}
 						icon="user"
 						text="Sign in"
 						onClick={() => setIsLoginDialogOpen(true)}
@@ -208,6 +217,11 @@ export default function Banner(props: IBannerProps) {
 			<LoginDialog
 				isOpen={isLoginDialogOpen}
 				onClose={() => setIsLoginDialogOpen(false)}
+			/>
+
+			<DiagramsDialog
+				isOpen={isDiagramsDialogOpen}
+				onClose={() => setIsDiagramsDialogOpen(false)}
 			/>
 		</>
 	);
