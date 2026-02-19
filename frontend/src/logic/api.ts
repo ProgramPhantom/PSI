@@ -7,7 +7,7 @@ import { IDiagram } from "./hasComponents/diagram";
 
 
 
-const client = createClient<paths>({ baseUrl: "/api/" });
+const client = createClient<paths>({ baseUrl: "/api" });
 
 export const getUserDiagrams = async () => {
     return await client.GET('/users/diagrams')
