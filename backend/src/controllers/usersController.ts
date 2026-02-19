@@ -22,7 +22,7 @@ export const postLogin = async (
       const loginResponse = await login(formData.data, req.session)      
       res.status(loginResponse.code).json({message: loginResponse.message})
     } else {
-      res.status(400).json({error: z.treeifyError(formData.error)})
+      res.status(400).json({message: z.treeifyError(formData.error)})
     }
 
   } catch (error) {

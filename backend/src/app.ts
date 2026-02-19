@@ -16,8 +16,8 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(express.json());
-app.use(session(sessionOptns))
 
+app.use(session(sessionOptns))
 // Routes
 app.use('/api/diagrams', diagramRoutes);
 app.use('/api/users', userRoutes);

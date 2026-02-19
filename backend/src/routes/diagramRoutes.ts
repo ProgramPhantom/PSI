@@ -4,7 +4,7 @@ import {deleteDiagram, getDateModified, getLoadDiagram, postCreateDiagram, putSa
 const router = Router();
 
 router.delete('/:diagramId', deleteDiagram);
-router.put('/:diagramId', json(), putSaveDiagram)
+router.put('/:diagramId', putSaveDiagram)
 router.get('/:diagramId', getLoadDiagram)
 router.get('/:diagramId/modified', getDateModified)
 router.post('/', postCreateDiagram)
