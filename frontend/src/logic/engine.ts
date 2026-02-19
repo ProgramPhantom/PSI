@@ -14,6 +14,7 @@ import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Text, { IText } from "./text";
 import Visual, { GridCellElement, IVisual } from "./visual";
+import { createDiagram, saveDiagram } from "./api";
 
 
 //                                    scheme name
@@ -93,6 +94,13 @@ class ENGINE {
 		var stateObject: IDiagram = ENGINE.handler.diagram.state;
 		var stateString = JSON.stringify(stateObject, undefined, 4);
 		localStorage.setItem(ENGINE.StateName, stateString);
+
+		saveDiagram(ENGINE.handler.diagram.id, stateObject).then((response) => {
+			if (response.error) {
+				createDiagram(stateObject.ref)
+				return
+			}
+		})
 	}
 
 	static clearState() {
