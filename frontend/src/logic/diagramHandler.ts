@@ -212,6 +212,7 @@ export default class DiagramHandler implements IDraw {
 
 	@draws
 	public constructDiagram(state: IDiagram): Result<Diagram> {
+		console.log("constructing diagram")
 		this.erase();
 
 		let newDiagram: Diagram | undefined = undefined;

@@ -45,7 +45,7 @@ interface DiagramDTO {
 export function DiagramsDialog(props: IDiagramsDialogProps) {
     const handleSelect = (entry: DiagramDTO) => {
         //ENGINE.handler.constructDiagram(entry.diagram);
-
+        console.log("HANDLING OPEN")
         let success: boolean = true;
         if (entry.diagram_id === undefined) {
             success = false;
@@ -58,6 +58,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                 }
                 let diagramString: string | undefined = response.data?.data;
 
+                console.log(diagramString)
                 if (diagramString === undefined) {
                     success = false
                     return
@@ -65,15 +66,18 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
 
 
                 try {
-                    let diagramData: IDiagram = JSON.parse(diagramString); 
-
+                    console.log("parsing")
+                    let diagramData: IDiagram = diagramString as any as IDiagram; 
+                    console.log(diagramData)
                     ENGINE.handler.constructDiagram(diagramData)
+                    localStorage.setItem("diagramUUID", entry.diagram_id ?? "")
                 } catch (err) {
                     success = false
                 }
             })
         }
 
+        console.log(success)
         if (success === false) {
             appToaster.show({
                 "message": "Error loading diagram",
@@ -128,7 +132,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                             >
                                 <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name}</td>
                                 <td style={{ paddingTop: 4, paddingBottom: 4 }}>today</td>
-                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>Owner</td>
+                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.diagram_id}</td>
                             </tr>
                         ))}
                     </tbody>

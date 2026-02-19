@@ -95,9 +95,20 @@ class ENGINE {
 		var stateString = JSON.stringify(stateObject, undefined, 4);
 		localStorage.setItem(ENGINE.StateName, stateString);
 
-		saveDiagram(ENGINE.handler.diagram.id, stateObject).then((response) => {
+		saveDiagram(localStorage.getItem("diagramUUID") ?? "", stateObject).then((response) => {
 			if (response.error) {
-				createDiagram(stateObject.ref)
+				// Diagram has not been created
+				createDiagram(stateObject.ref).then((response) => {
+					if (response.error) {
+						return
+					}
+					
+					if (response.data?.id !== undefined) {
+						saveDiagram(response.data.id, stateObject)
+						localStorage.setItem("diagramUUID", response.data.id);
+					}
+					
+				})
 				return
 			}
 		})
