@@ -71,7 +71,7 @@ export default function Banner(props: IBannerProps) {
 	const saveState = () => {
 		ENGINE.save();
 		appToaster.show({
-			message: "State saved to localStorage",
+			message: "Saved",
 			intent: "success"
 		});
 	};
@@ -141,7 +141,7 @@ export default function Banner(props: IBannerProps) {
 						size="small"
 						variant="minimal"
 						icon="floppy-disk"
-						text="Save state"
+						text="Save"
 						onClick={() => saveState()}
 					/>
 					<Navbar.Divider />
