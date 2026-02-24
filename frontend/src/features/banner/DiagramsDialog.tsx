@@ -13,6 +13,8 @@ export interface IDiagramsDialogProps {
     onClose: () => void;
 }
 
+type DeepWriteable<T> = { -readonly [P in keyof T]: DeepWriteable<T[P]> };
+
 /** Metadata for a diagram entry in the list. */
 interface IDiagramEntry {
     diagram: IDiagram;
@@ -56,26 +58,22 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
             success = false;
         } else {
             // Get diagram via RTK Query trigger
-            try {
-                const response = await getDiagramTrigger(entry.diagram_id).unwrap();
-                let diagramString: string | undefined = response.data;
 
-                console.log(diagramString)
-                if (diagramString === undefined) {
-                    success = false;
-                } else {
-                    try {
-                        console.log("parsing")
-                        let diagramData: IDiagram = diagramString as any as IDiagram;
-                        console.log(diagramData)
-                        ENGINE.handler.constructDiagram(diagramData)
-                        localStorage.setItem("diagramUUID", entry.diagram_id ?? "")
-                    } catch (err) {
-                        success = false
-                    }
+            const response = await getDiagramTrigger(entry.diagram_id).unwrap();
+            let diagramString: string | undefined = response.data;
+
+            if (diagramString !== undefined) {
+                try {
+                    // Object must be copied because RTK Query freezes the object.s
+                    let copiedData: IDiagram = (structuredClone(diagramString) as unknown as IDiagram)
+                    ENGINE.handler.constructDiagram(copiedData)
+                    localStorage.setItem("diagramUUID", entry.diagram_id ?? "")
+                } catch (err) {
+                    success = false
+                    throw err
                 }
-            } catch (error) {
-                success = false;
+            } else {
+                success = false
             }
         }
 
