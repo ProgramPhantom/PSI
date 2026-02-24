@@ -13,7 +13,8 @@
             "url": "http://localhost:5173/PSI/",
             "webRoot": "${workspaceFolder}/frontend/src",
 			"sourceMaps": true,
-      		"trace": true
+      		"trace": true,
+			"port": 5173
         }
     ]
 }
