@@ -140,6 +140,14 @@ export default function Banner(props: IBannerProps) {
 					<Button
 						size="small"
 						variant="minimal"
+						icon="document"
+						text="New"
+						onClick={() => ENGINE.resetDiagram()}
+					/>
+					<Navbar.Divider />
+					<Button
+						size="small"
+						variant="minimal"
 						icon="floppy-disk"
 						text="Save"
 						onClick={() => saveState()}

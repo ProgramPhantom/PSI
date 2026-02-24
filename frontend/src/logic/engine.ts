@@ -118,6 +118,11 @@ class ENGINE {
 		localStorage.removeItem(ENGINE.StateName);
 	}
 
+	static resetDiagram() {
+		ENGINE.handler.resetDiagram();
+		localStorage.removeItem("diagramUUID");
+	}
+
 	static createSingletons() {
 		var singletonCollections: SingletonStorage = {};
 
