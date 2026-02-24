@@ -1,12 +1,12 @@
-import { Button, Dialog, DialogBody, DialogFooter, HTMLTable, Icon, Menu, MenuDivider, MenuItem, NonIdealState, Popover, Spinner } from "@blueprintjs/core";
+import { Button, Dialog, DialogBody, DialogFooter, HTMLTable, Icon, Menu, MenuItem, NonIdealState, Popover, Spinner } from "@blueprintjs/core";
 import { More } from "@blueprintjs/icons";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { appToaster } from "../../app/Toaster";
-import { deleteDiagram, getDiagram, getUserDiagrams } from "../../logic/api";
 import { BLANK_DIAGRAM } from "../../logic/default/blankDiagram";
 import { DEFAULT_DIAGRAM } from "../../logic/default/defaultDiagram";
 import ENGINE from "../../logic/engine";
-import Diagram, { IDiagram } from "../../logic/hasComponents/diagram";
+import { IDiagram } from "../../logic/hasComponents/diagram";
+import { useDeleteDiagramMutation, useGetUserDiagramsQuery, useLazyGetDiagramQuery } from "../../redux/api/api";
 
 export interface IDiagramsDialogProps {
     isOpen: boolean;
@@ -42,37 +42,41 @@ interface DiagramDTO {
 }
 
 export function DiagramsDialog(props: IDiagramsDialogProps) {
-    const handleSelect = (entry: DiagramDTO) => {
+    const { data, refetch: refetchDiagrams, isLoading } = useGetUserDiagramsQuery(undefined, {
+        skip: !props.isOpen,
+    });
+
+    const [getDiagramTrigger] = useLazyGetDiagramQuery();
+    const [deleteDiagramTrigger] = useDeleteDiagramMutation();
+
+    const handleSelect = async (entry: DiagramDTO) => {
         let success: boolean = true;
 
         if (entry.diagram_id === undefined) {
             success = false;
         } else {
-            // Get diagram
-            getDiagram(entry.diagram_id).then((response) => {
-                if (response.error) {
-                    success = false;
-                    return
-                }
-                let diagramString: string | undefined = response.data?.data;
+            // Get diagram via RTK Query trigger
+            try {
+                const response = await getDiagramTrigger(entry.diagram_id).unwrap();
+                let diagramString: string | undefined = response.data;
 
                 console.log(diagramString)
                 if (diagramString === undefined) {
-                    success = false
-                    return
+                    success = false;
+                } else {
+                    try {
+                        console.log("parsing")
+                        let diagramData: IDiagram = diagramString as any as IDiagram;
+                        console.log(diagramData)
+                        ENGINE.handler.constructDiagram(diagramData)
+                        localStorage.setItem("diagramUUID", entry.diagram_id ?? "")
+                    } catch (err) {
+                        success = false
+                    }
                 }
-
-
-                try {
-                    console.log("parsing")
-                    let diagramData: IDiagram = diagramString as any as IDiagram; 
-                    console.log(diagramData)
-                    ENGINE.handler.constructDiagram(diagramData)
-                    localStorage.setItem("diagramUUID", entry.diagram_id ?? "")
-                } catch (err) {
-                    success = false
-                }
-            })
+            } catch (error) {
+                success = false;
+            }
         }
 
         console.log(success)
@@ -86,19 +90,19 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         props.onClose();
     };
 
-    const handleDelete = (entry: DiagramDTO) => {
+    const handleDelete = async (entry: DiagramDTO) => {
         let success: boolean = true;
 
         if (entry.diagram_id === undefined) {
             success = false;
         } else {
-            deleteDiagram(entry.diagram_id).then((response) => {
-                if (response.error) {
-                    success = false;
-                    return
-                }
-                 refreshDiagrams();
-            })
+            try {
+                await deleteDiagramTrigger(entry.diagram_id).unwrap();
+                // Because of validatestags, the list will automatically refetch, 
+                // and the matchFulfilled in diagramSlice will automatically update the store.
+            } catch (error) {
+                success = false;
+            }
         }
 
         if (success === false) {
@@ -109,25 +113,11 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         }
     }
 
-    const refreshDiagrams = () => {
-        getUserDiagrams().then((response) => {
-            if (response.error) {
-                setIsLoaded(false)
-                return
-            }
-            let data: DiagramDTO[] = response.data?.diagrams?.filter(d => d !== undefined) ?? []
-            setDiagramList(data);
-            setIsLoaded(true)
-        })
-    }
-
-    const [diagramList, setDiagramList] = useState<DiagramDTO[]>([])
-    const [isLoaded, setIsLoaded] = useState<boolean>(false);
-
     useEffect(() => {
-        refreshDiagrams();
-    }, [props.isOpen])
-
+        if (props.isOpen) {
+            refetchDiagrams();
+        }
+    }, [props.isOpen, refetchDiagrams])
 
     return (
         <Dialog
@@ -137,7 +127,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
             style={{ width: "700px", height: "600px" }}
         >
             <DialogBody style={{ padding: "8px", overflowY: "auto" }}>
-                {isLoaded && <HTMLTable bordered striped interactive style={{ width: "100%" }}>
+                {!isLoading && <HTMLTable bordered striped interactive style={{ width: "100%" }}>
                     <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
                         <tr>
                             <th>Name</th>
@@ -146,7 +136,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                         </tr>
                     </thead>
                     <tbody>
-                        {diagramList.map((entry, i) => (
+                        {data?.diagrams?.map((entry, i) => (
                             <tr
                                 key={`${entry.diagram_id + Math.random().toString()}`}
                                 onClick={() => handleSelect(entry)}
@@ -155,23 +145,23 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                                 <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name}</td>
                                 <td style={{ paddingTop: 4, paddingBottom: 4 }}>today</td>
                                 <td onClick={(c) => {
-                                                c.preventDefault()
-                                                c.stopPropagation()
-                                            }}
-                                     style={{ paddingTop: 4, paddingBottom: 4, width: "16px" }}>
+                                    c.preventDefault()
+                                    c.stopPropagation()
+                                }}
+                                    style={{ paddingTop: 4, paddingBottom: 4, width: "16px" }}>
                                     <Popover
                                         minimal={true}
                                         interactionKind="click"
                                         placement="bottom-start"
                                         content={
                                             <Menu>
-                                                <MenuItem icon="trash" onClick={() => handleDelete(entry)} 
-                                                intent="danger" text="Delete" />
+                                                <MenuItem icon="trash" onClick={() => handleDelete(entry)}
+                                                    intent="danger" text="Delete" />
                                             </Menu>
                                         }
                                         renderTarget={({ isOpen, ...targetProps }) => (
                                             <Icon {...targetProps} size={16}
-                                              icon="more" />
+                                                icon="more" />
                                         )}
                                     />
                                 </td>
@@ -181,15 +171,15 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                 </HTMLTable>}
 
                 <div>
-                    {diagramList.length == 0 && 
-                <NonIdealState description="No diagrams saved" icon={<More></More>}></NonIdealState>}
+                    {data?.diagrams?.length == 0 &&
+                        <NonIdealState description="No diagrams saved" icon={<More></More>}></NonIdealState>}
 
-                {!isLoaded && diagramList.length != 0 && <>
-                    <div style={{
-                    }}>
-                        <NonIdealState description="Loading diagrams" icon={<Spinner></Spinner>}></NonIdealState>
-                    </div>
-                </>}
+                    {data?.diagrams?.length != 0 && isLoading && <>
+                        <div style={{
+                        }}>
+                            <NonIdealState description="Loading diagrams" icon={<Spinner></Spinner>}></NonIdealState>
+                        </div>
+                    </>}
                 </div>
             </DialogBody>
             <DialogFooter

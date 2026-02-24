@@ -1,7 +1,7 @@
 
 import { Button, Dialog, DialogBody, DialogFooter } from "@blueprintjs/core";
 import { GoogleLogin } from "@react-oauth/google";
-import { loginUser } from "../../logic/api";
+import { useLoginUserMutation } from "../../redux/api/api";
 
 export interface ILoginDialogProps {
     isOpen: boolean;
@@ -9,6 +9,8 @@ export interface ILoginDialogProps {
 }
 
 export function LoginDialog(props: ILoginDialogProps) {
+    const [loginUserMutation] = useLoginUserMutation();
+
     return (
         <Dialog
             isOpen={props.isOpen}
@@ -20,8 +22,8 @@ export function LoginDialog(props: ILoginDialogProps) {
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
                     <GoogleLogin useOneTap={false} ux_mode="popup"
                         onSuccess={(credentialResponse) => {
-                            loginUser(credentialResponse).then((response) => {
-                                if (response.error) {
+                            loginUserMutation(credentialResponse).then((response) => {
+                                if ('error' in response) {
                                     //TODO show failiure banner?
                                     console.log(response.error)
                                     return
@@ -30,8 +32,8 @@ export function LoginDialog(props: ILoginDialogProps) {
                             }
                             )
                         }}
-                        onError={() => {console.log("Login failed")}}
-                        >
+                        onError={() => { console.log("Login failed") }}
+                    >
                     </GoogleLogin>
                 </div>
             </DialogBody>

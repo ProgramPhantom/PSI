@@ -14,7 +14,8 @@ import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Text, { IText } from "./text";
 import Visual, { GridCellElement, IVisual } from "./visual";
-import { createDiagram, saveDiagram } from "./api";
+import { api } from "../redux/api/api";
+import { store } from "../redux/store";
 
 
 //                                    scheme name
@@ -95,23 +96,22 @@ class ENGINE {
 		var stateString = JSON.stringify(stateObject, undefined, 4);
 		localStorage.setItem(ENGINE.StateName, stateString);
 
-		saveDiagram(localStorage.getItem("diagramUUID") ?? "", stateObject).then((response) => {
-			if (response.error) {
-				// Diagram has not been created
-				createDiagram(stateObject.ref).then((response) => {
-					if (response.error) {
-						return
-					}
-					
-					if (response.data?.id !== undefined) {
-						saveDiagram(response.data.id, stateObject)
-						localStorage.setItem("diagramUUID", response.data.id);
-					}
-					
-				})
-				return
-			}
-		})
+		store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: localStorage.getItem("diagramUUID") ?? "", diagram: stateObject }))
+			.unwrap()
+			.then((response) => {
+				// Done
+			})
+			.catch((error) => {
+				store.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref))
+					.unwrap()
+					.then((createResponse) => {
+						if (createResponse.id !== undefined) {
+							store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
+							localStorage.setItem("diagramUUID", createResponse.id);
+						}
+					})
+					.catch(() => { });
+			});
 	}
 
 	static clearState() {
