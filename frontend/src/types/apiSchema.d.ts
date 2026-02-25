@@ -95,6 +95,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user data from the current session */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK - user data retrieved */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["meResponse"];
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/diagrams/{diagramId}": {
         parameters: {
             query?: never;
@@ -386,6 +429,13 @@ export interface components {
                 diagram_id?: string;
                 name?: string;
             }[];
+        };
+        meResponse: {
+            email?: string;
+            firstname?: string;
+            gsub?: string;
+            picture?: Record<string, never>;
+            surname?: Record<string, never>;
         };
         loginCredentialsRequest: {
             credential?: string;

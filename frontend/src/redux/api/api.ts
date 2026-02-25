@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { CredentialResponse } from "@react-oauth/google";
 import { IDiagram } from "../../logic/hasComponents/diagram";
-import { components } from "../../types/apiSchema";
+import { components } from "../../types/apiSchema"
 
 export const api = createApi({
     reducerPath: 'api',
@@ -12,6 +12,10 @@ export const api = createApi({
             query: () => '/users/diagrams',
             providesTags: ['Diagram'],
         }),
+		getMe: builder.query<components['schemas']['meResponse'], void>({
+            query: () => '/users/me',
+        }),
+
         getDiagram: builder.query<components['schemas']['diagramDataResponse'], string>({
             query: (diagramId) => `/diagrams/${diagramId}`,
         }),

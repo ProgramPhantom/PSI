@@ -16,7 +16,8 @@ export default defineConfig({
 		proxy: {
 			// If the request starts with /api, forward it to the backend
 			"/api": {
-				target: "http://90.251.68.254:8901",
+				// target: "http://90.251.68.254:8901",
+				target: "http://localhost:3000",
 				changeOrigin: true
 			}
 		}

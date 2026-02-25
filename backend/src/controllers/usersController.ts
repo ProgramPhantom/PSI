@@ -65,7 +65,7 @@ export const getMe = async (
     return res.status(401).json({ user: null });
   }
 
-  res.json({
+  res.status(200).json({
       user
   });
 }
