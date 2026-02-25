@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { login } from '../services/loginService.js';
 import { DiagramRepository } from '../repositories/DiagramRepository.js';
+import { UserRepository } from '../repositories/UserRepository.js';
 const LoginValidationSchema = z.object(
   {
     clientId: z.string().min(1),
@@ -48,3 +49,23 @@ export const getDiagrams = async (
     next(error);
   }
 };
+
+export const getMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (!req.session?.authenticated) {
+    return res.status(401).json({ user: null, error: "Not authenticated" });
+  }
+
+  const user = await UserRepository.getUserById(req.session.gsub ?? "");
+
+  if (!user) {
+    return res.status(401).json({ user: "null", error: "User does not exist" });
+  }
+
+  res.status(200).json({
+      ...user
+  });
+}

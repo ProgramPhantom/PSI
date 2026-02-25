@@ -30,6 +30,21 @@ components:
                 format: uuid
               name:
                 type: string
+    meResponse:
+      type: object
+      properties:
+          email:
+            type: string
+          firstname:
+            type: string
+          gsub:
+            type: string
+          picture:
+            type: 
+              - 'null'
+              - string
+          surname: 
+            type: string
     loginCredentialsRequest:
       type: object
       properties: 
@@ -125,6 +140,24 @@ paths:
         '401':
           description: Authentication required
 
+  /users/me:
+    get:
+      tags: 
+        -  Users
+      summary: Get user data from the current session
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK - user data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/meResponse"
+
+        '401':
+          description: Authentication required
+
   /diagrams/{diagramId}:
     delete: 
       parameters:
@@ -196,6 +229,7 @@ paths:
           application/json:
             schema: 
               type: object
+              additionalProperties: true
       tags: 
         -  Diagrams
       summary: Save the diagram data

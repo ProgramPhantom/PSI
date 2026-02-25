@@ -212,12 +212,14 @@ export default class DiagramHandler implements IDraw {
 
 	@draws
 	public constructDiagram(state: IDiagram): Result<Diagram> {
+		console.log("constructing diagram")
 		this.erase();
 
 		let newDiagram: Diagram | undefined = undefined;
 		try {
 			newDiagram = this.EngineConstructor(state, "diagram") as Diagram | undefined;
 		} catch (err) {
+			throw err
 			return { ok: false, error: (err as string) }
 		}
 
@@ -227,6 +229,7 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		this.diagram = newDiagram;
+		this.diagram.svg?.show();
 
 		return { ok: true, value: newDiagram };
 	}

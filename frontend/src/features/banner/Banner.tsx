@@ -8,8 +8,12 @@ import { AnnotateDropdown } from "./AnnotateDropdown";
 import { LoadStateDialog } from "./LoadStateDialog";
 import { PNGExportDialog } from "./PNGExportDialog";
 import { LoginDialog } from "./LoginDialog";
+import { UserDialog } from "./UserDrawer";
+import { DiagramsDialog } from "./DiagramsDialog";
+import { SaveAsDialog } from "./SaveAsDialog";
 import { ILineStyle } from "../../logic/line";
 import { appToaster } from "../../app/Toaster";
+import { useGetMeQuery } from "../../redux/api/api";
 
 export interface IBannerProps {
 	saveSVG: () => void;
@@ -23,6 +27,9 @@ export interface IBannerProps {
 export default function Banner(props: IBannerProps) {
 	const [isPNGDialogOpen, setIsPNGDialogOpen] = useState(false);
 	const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false);
+	const [isSaveAsDialogOpen, setIsSaveAsDialogOpen] = useState(false);
+
+	const { data: user, error, isLoading } = useGetMeQuery();
 
 	const copyState = () => {
 		var stateObject: IDiagram = ENGINE.handler.diagram.state;
@@ -68,9 +75,9 @@ export default function Banner(props: IBannerProps) {
 	};
 
 	const saveState = () => {
-		ENGINE.save();
+		ENGINE.saveAs();
 		appToaster.show({
-			message: "State saved to localStorage",
+			message: "Saved",
 			intent: "success"
 		});
 	};
@@ -84,6 +91,8 @@ export default function Banner(props: IBannerProps) {
 	};
 
 	const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+	const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
+	const [isDiagramsDialogOpen, setIsDiagramsDialogOpen] = useState(false);
 
 	return (
 		<>
@@ -92,23 +101,6 @@ export default function Banner(props: IBannerProps) {
 					<Icon icon="pulse" size={20} style={{ marginRight: "10px" }}></Icon>
 					<Navbar.Heading>Pulse Planner v0.5.3 (BETA)</Navbar.Heading>
 					<Navbar.Divider />
-
-					<Button
-						size="small"
-						variant="minimal"
-						icon="cloud-download"
-						text="Save SVG"
-						onClick={props.saveSVG}
-					/>
-					<Navbar.Divider />
-					<Button
-						size="small"
-						variant="minimal"
-						icon="media"
-						text="Save PNG"
-						onClick={() => setIsPNGDialogOpen(true)}
-					/>
-					<Navbar.Divider />
 					<Button
 						size="small"
 						variant="minimal"
@@ -116,9 +108,6 @@ export default function Banner(props: IBannerProps) {
 						text="Load"
 						onClick={() => setIsLoadDialogOpen(true)}
 					/>
-
-					<Navbar.Divider />
-
 					<Navbar.Divider />
 					<Button
 						size="small"
@@ -135,12 +124,29 @@ export default function Banner(props: IBannerProps) {
 						onClick={() => copyState()}
 					/>
 					<Navbar.Divider />
+
+					<Navbar.Divider />
+					<Button
+						size="small"
+						variant="minimal"
+						icon="document"
+						text="New"
+						onClick={() => ENGINE.resetDiagram()}
+					/>
+					<Navbar.Divider />
+					<Button
+						size="small"
+						variant="minimal"
+						icon="clean"
+						text="Save As"
+						onClick={() => setIsSaveAsDialogOpen(true)}
+					/>
+					<Navbar.Divider />
 					<Button
 						size="small"
 						variant="minimal"
 						icon="floppy-disk"
-						text="Save state"
-						onClick={() => saveState()}
+						onClick={() => ENGINE.save()}
 					/>
 					<Navbar.Divider />
 					<Button
@@ -174,16 +180,52 @@ export default function Banner(props: IBannerProps) {
 					<AnnotateDropdown
 						selectedTool={props.selectedTool}
 						setTool={props.setTool}></AnnotateDropdown>
+
+					<Navbar.Divider />
+					<Navbar.Divider />
+					<Navbar.Group>
+						<Button
+							size="small"
+							variant="minimal"
+							icon="cloud-download"
+							text="Save SVG"
+							onClick={props.saveSVG}
+						/>
+						<Navbar.Divider />
+						<Button
+							size="small"
+							variant="minimal"
+							icon="media"
+							text="Save PNG"
+							onClick={() => setIsPNGDialogOpen(true)}
+						/>
+					</Navbar.Group>
 				</Navbar.Group>
 
 				<Navbar.Group align={"right"}>
 					<Button
 						minimal={true}
-						icon="user"
-						text="Sign in"
-						onClick={() => setIsLoginDialogOpen(true)}
+						icon="folder-open"
+						text="Diagrams"
+						onClick={() => setIsDiagramsDialogOpen(true)}
 						style={{ marginRight: "10px" }}
 					/>
+					{user ? (
+						<Button
+							icon="user"
+							text={user.firstname || "User"}
+							onClick={() => setIsUserDialogOpen(true)}
+							style={{ marginRight: "10px" }}
+						/>
+					) : (
+						<Button
+							minimal={true}
+							icon="user"
+							text="Sign in"
+							onClick={() => setIsLoginDialogOpen(true)}
+							style={{ marginRight: "10px" }}
+						/>
+					)}
 
 					<Button
 						size="small"
@@ -191,8 +233,8 @@ export default function Banner(props: IBannerProps) {
 						icon="bug"
 						onClick={debugIssue}
 					/>
-				</Navbar.Group>
 
+				</Navbar.Group>
 
 			</Navbar>
 
@@ -208,6 +250,21 @@ export default function Banner(props: IBannerProps) {
 			<LoginDialog
 				isOpen={isLoginDialogOpen}
 				onClose={() => setIsLoginDialogOpen(false)}
+			/>
+
+			<UserDialog
+				isOpen={isUserDialogOpen}
+				onClose={() => setIsUserDialogOpen(false)}
+			/>
+
+			<DiagramsDialog
+				isOpen={isDiagramsDialogOpen}
+				onClose={() => setIsDiagramsDialogOpen(false)}
+			/>
+
+			<SaveAsDialog
+				isOpen={isSaveAsDialogOpen}
+				onClose={() => setIsSaveAsDialogOpen(false)}
 			/>
 		</>
 	);

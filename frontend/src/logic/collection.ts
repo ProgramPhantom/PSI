@@ -204,6 +204,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			this.draw(temporaryCanvas);
 		}
 
+		this.svg?.show();
 		var internalSVG = this.svg?.clone(true, true);
 		internalSVG
 			?.attr({ style: "display: block;" })
