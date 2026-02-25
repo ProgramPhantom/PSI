@@ -8,10 +8,12 @@ import { AnnotateDropdown } from "./AnnotateDropdown";
 import { LoadStateDialog } from "./LoadStateDialog";
 import { PNGExportDialog } from "./PNGExportDialog";
 import { LoginDialog } from "./LoginDialog";
+import { UserDialog } from "./UserDrawer";
 import { DiagramsDialog } from "./DiagramsDialog";
 import { SaveAsDialog } from "./SaveAsDialog";
 import { ILineStyle } from "../../logic/line";
 import { appToaster } from "../../app/Toaster";
+import { useGetMeQuery } from "../../redux/api/api";
 
 export interface IBannerProps {
 	saveSVG: () => void;
@@ -26,6 +28,8 @@ export default function Banner(props: IBannerProps) {
 	const [isPNGDialogOpen, setIsPNGDialogOpen] = useState(false);
 	const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false);
 	const [isSaveAsDialogOpen, setIsSaveAsDialogOpen] = useState(false);
+
+	const { data: user, error, isLoading } = useGetMeQuery();
 
 	const copyState = () => {
 		var stateObject: IDiagram = ENGINE.handler.diagram.state;
@@ -87,6 +91,7 @@ export default function Banner(props: IBannerProps) {
 	};
 
 	const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+	const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
 	const [isDiagramsDialogOpen, setIsDiagramsDialogOpen] = useState(false);
 
 	return (
@@ -205,13 +210,22 @@ export default function Banner(props: IBannerProps) {
 						onClick={() => setIsDiagramsDialogOpen(true)}
 						style={{ marginRight: "10px" }}
 					/>
-					<Button
-						minimal={true}
-						icon="user"
-						text="Sign in"
-						onClick={() => setIsLoginDialogOpen(true)}
-						style={{ marginRight: "10px" }}
-					/>
+					{user ? (
+						<Button
+							icon="user"
+							text={user.firstname || "User"}
+							onClick={() => setIsUserDialogOpen(true)}
+							style={{ marginRight: "10px" }}
+						/>
+					) : (
+						<Button
+							minimal={true}
+							icon="user"
+							text="Sign in"
+							onClick={() => setIsLoginDialogOpen(true)}
+							style={{ marginRight: "10px" }}
+						/>
+					)}
 
 					<Button
 						size="small"
@@ -236,6 +250,11 @@ export default function Banner(props: IBannerProps) {
 			<LoginDialog
 				isOpen={isLoginDialogOpen}
 				onClose={() => setIsLoginDialogOpen(false)}
+			/>
+
+			<UserDialog
+				isOpen={isUserDialogOpen}
+				onClose={() => setIsUserDialogOpen(false)}
 			/>
 
 			<DiagramsDialog

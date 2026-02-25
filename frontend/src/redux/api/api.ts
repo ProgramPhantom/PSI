@@ -6,7 +6,7 @@ import { components } from "../../types/apiSchema"
 export const api = createApi({
     reducerPath: 'api',
     baseQuery: fetchBaseQuery({ baseUrl: '/api', credentials: "include" }),
-    tagTypes: ['Diagram'],
+    tagTypes: ['Diagram', 'User'],
     endpoints: (builder) => ({
         getUserDiagrams: builder.query<components['schemas']['diagramsListResponse'], void>({
             query: () => '/users/diagrams',
@@ -14,6 +14,7 @@ export const api = createApi({
         }),
 		getMe: builder.query<components['schemas']['meResponse'], void>({
             query: () => '/users/me',
+			providesTags: ['User']
         }),
 
         getDiagram: builder.query<components['schemas']['diagramDataResponse'], string>({
@@ -28,6 +29,7 @@ export const api = createApi({
                 method: 'POST',
                 body: googleData,
             }),
+			invalidatesTags: ["User"]
         }),
         createDiagram: builder.mutation<components['schemas']['diagramCreateResponse'], string>({
             query: (name) => ({
@@ -57,6 +59,7 @@ export const api = createApi({
 
 export const {
     useGetUserDiagramsQuery,
+	useGetMeQuery,
     useLazyGetDiagramQuery,
     useGetDiagramQuery,
     useGetDateModifiedQuery,

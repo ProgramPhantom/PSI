@@ -11,6 +11,7 @@ export interface IElementDragPreviewProps {
 export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(function ElementDragPreview(
 	props: IElementDragPreviewProps
 ) {
+	if (props.element === undefined) return 
 	var visual = props.element.getInternalRepresentation()!;
 	const visualRef = useRef<HTMLDivElement | null>(null);
 

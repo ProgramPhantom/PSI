@@ -39,10 +39,12 @@ components:
             type: string
           gsub:
             type: string
-          picture: 
-            type: string | null;
+          picture:
+            type: 
+              - 'null'
+              - string
           surname: 
-            type: string;
+            type: string
     loginCredentialsRequest:
       type: object
       properties: 

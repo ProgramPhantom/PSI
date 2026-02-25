@@ -434,8 +434,8 @@ export interface components {
             email?: string;
             firstname?: string;
             gsub?: string;
-            picture?: Record<string, never>;
-            surname?: Record<string, never>;
+            picture?: null | string;
+            surname?: string;
         };
         loginCredentialsRequest: {
             credential?: string;

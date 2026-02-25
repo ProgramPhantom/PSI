@@ -56,16 +56,16 @@ export const getMe = async (
   next: NextFunction,
 ) => {
   if (!req.session?.authenticated) {
-    return res.status(401).json({ user: null });
+    return res.status(401).json({ user: null, error: "Not authenticated" });
   }
 
-  const user = await UserRepository.getUserById(req.session.id);
+  const user = await UserRepository.getUserById(req.session.gsub ?? "");
 
   if (!user) {
-    return res.status(401).json({ user: null });
+    return res.status(401).json({ user: "null", error: "User does not exist" });
   }
 
   res.status(200).json({
-      user
+      ...user
   });
 }

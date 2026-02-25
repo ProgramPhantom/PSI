@@ -15,6 +15,7 @@ import ENGINE from "../logic/engine";
 import Visual from "../logic/visual";
 import { WelcomeSplash } from "./WelcomeSplash";
 import { appToaster } from "./Toaster";
+import { useGetMeQuery } from "../redux/api/api";
 
 
 
