@@ -5,7 +5,7 @@ import { components } from "../../types/apiSchema";
 
 export const api = createApi({
     reducerPath: 'api',
-    baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+    baseQuery: fetchBaseQuery({ baseUrl: '/api', credentials: "include" }),
     tagTypes: ['Diagram'],
     endpoints: (builder) => ({
         getUserDiagrams: builder.query<components['schemas']['diagramsListResponse'], void>({
