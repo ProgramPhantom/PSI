@@ -14,15 +14,26 @@ export type IScheme = {
 export type SchemeDict = Record<ID, IScheme>;
 
 export const InternalSchemeId = "internal";
+export const SCHEMES_STORAGE_KEY = "psi-schemes-data";
 
-
+const loadSchemesFromStorage = (): SchemeDict | undefined => {
+    try {
+        const stored = localStorage.getItem(SCHEMES_STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored) as SchemeDict;
+        }
+    } catch (e) {
+        console.warn("Failed to load schemes from storage", e);
+    }
+    return undefined;
+};
 
 interface SchemesState {
     schemes: SchemeDict;
 }
 
 const initialState: SchemesState = {
-    schemes: DEFAULT_SCHEME_SET,
+    schemes: loadSchemesFromStorage() ?? DEFAULT_SCHEME_SET,
 };
 
 const schemesSlice = createSlice({

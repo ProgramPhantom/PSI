@@ -13,11 +13,15 @@ export const store = configureStore({
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(api.middleware),
-
-	devTools: true
+    devTools: true
 },);
 
-// @ts-ignore
+
+store.subscribe(() => {
+    const state = store.getState();
+    const schemes = state.schemes.schemes;
+    localStorage.setItem("psi-schemes-data", JSON.stringify(schemes));
+});
 
 
 
