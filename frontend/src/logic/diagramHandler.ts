@@ -231,7 +231,7 @@ export default class DiagramHandler implements IDraw {
 
 	@draws
 	public resetDiagram() {
-		this.constructDiagram(DEFAULT_DIAGRAM);
+		this.constructDiagram(structuredClone(DEFAULT_DIAGRAM));
 	}
 
 	@draws
