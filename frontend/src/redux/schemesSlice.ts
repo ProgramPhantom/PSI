@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ID } from '../logic/point';
 import { IVisual } from '../logic/visual';
+import { DEFAULT_SCHEME_SET } from '../logic/default/schemeSet';
 
 
 export type SchemeMetadata = {
@@ -8,9 +9,12 @@ export type SchemeMetadata = {
 }
 export type IScheme = {
     metadata: SchemeMetadata,
-    components: IVisual[]
+    components: Record<ID, IVisual>
 };
 export type SchemeDict = Record<ID, IScheme>;
+
+export const InternalSchemeId = "internal";
+
 
 
 interface SchemesState {
@@ -18,7 +22,7 @@ interface SchemesState {
 }
 
 const initialState: SchemesState = {
-    schemes: {},
+    schemes: DEFAULT_SCHEME_SET,
 };
 
 const schemesSlice = createSlice({
@@ -44,24 +48,20 @@ const schemesSlice = createSlice({
         addComponent(state, action: PayloadAction<{ schemeId: ID; component: IVisual }>) {
             const { schemeId, component } = action.payload;
             if (state.schemes[schemeId]) {
-                state.schemes[schemeId].components.push(component);
+                const id = Math.random().toString(16).slice(2);
+                state.schemes[schemeId].components[id] = component;
             }
         },
-        deleteComponent(state, action: PayloadAction<{ schemeId: ID; componentId: ID }>) {
-            const { schemeId, componentId } = action.payload;
+        deleteComponent(state, action: PayloadAction<{ schemeId: ID; templateId: ID }>) {
+            const { schemeId, templateId } = action.payload;
             if (state.schemes[schemeId]) {
-                state.schemes[schemeId].components = state.schemes[schemeId].components.filter(
-                    (c) => c.id !== componentId
-                );
+                delete state.schemes[schemeId].components[templateId];
             }
         },
-        updateComponent(state, action: PayloadAction<{ schemeId: ID; component: IVisual }>) {
-            const { schemeId, component } = action.payload;
+        updateComponent(state, action: PayloadAction<{ schemeId: ID; componentId: ID, component: IVisual }>) {
+            const { schemeId, componentId, component } = action.payload;
             if (state.schemes[schemeId]) {
-                const index = state.schemes[schemeId].components.findIndex((c) => c.id === component.id);
-                if (index !== -1) {
-                    state.schemes[schemeId].components[index] = component;
-                }
+                state.schemes[schemeId].components[componentId] = component;
             }
         },
     },
@@ -69,8 +69,10 @@ const schemesSlice = createSlice({
         selectSchemes: (state) => state.schemes,
         selectAllSchemeIDs: (state) => Object.keys(state.schemes),
         selectSchemeById: (state, schemeId: ID) => state.schemes[schemeId],
-        selectComponentsBySchemeId: (state, schemeId: ID) => state.schemes[schemeId]?.components ?? [],
-        selectAllComponents: (state) => Object.values(state.schemes).flatMap((scheme) => scheme.components),
+        selectComponentsBySchemeId: (state, schemeId: ID) =>
+            state.schemes[schemeId] ? Object.values(state.schemes[schemeId].components) : [],
+        selectAllComponents: (state) =>
+            Object.values(state.schemes).flatMap((scheme) => Object.values(scheme.components)),
     }
 });
 

@@ -8,12 +8,13 @@ import {
 	InputGroup,
 	Text
 } from "@blueprintjs/core";
-import React from "react";
-import { IScheme } from "../../logic/default";
+import React, { useMemo } from "react";
 import ENGINE from "../../logic/engine";
 import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
 import { appToaster } from "../../app/Toaster";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { addScheme, selectSchemes, IScheme } from "../../redux/schemesSlice";
 
 interface AddSchemeDialogProps {
 	isOpen: boolean;
@@ -25,6 +26,9 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 	const [newSchemeName, setNewSchemeName] = React.useState("");
 	const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
 	const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+	const schemes = useAppSelector(selectSchemes);
+	const dispatch = useAppDispatch();
 
 	const [uploadedSchemeData, setUploadedSchemeData] = React.useState<IScheme | null>(
 		null
@@ -79,21 +83,23 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 		setSvgUploads({});
 	};
 
-	// Check if svgDataRef is in SchemeManager or list of uploads
+	// Check if svgDataRef is in AssetStore or list of uploads
 	const isSvgRefSatisfied = (svgRef: string): boolean => {
-		if (ENGINE.schemeManager.allSVGDataRefs.includes(svgRef) === true) {
+		if (Object.keys(ENGINE.svgDict).includes(svgRef) === true) {
 			return true;
-		} // Scheme Manager
+		} // Asset Store
 		if (Object.prototype.hasOwnProperty.call(svgUploads, svgRef)) {
 			return true;
 		} // Uploads
 		return false;
 	};
-	const requiredSvgRefs: string[] = React.useMemo(() => {
-		if (!uploadedSchemeData?.svgElements) return [];
+
+	const requiredSvgRefs: string[] = useMemo(() => {
+		if (!uploadedSchemeData?.components) return [];
 		const refs = new Set<string>();
-		Object.values(uploadedSchemeData.svgElements).forEach((el: any) => {
+		Object.values(uploadedSchemeData.components).forEach((el: any) => {
 			if (el?.svgDataRef) refs.add(el.svgDataRef);
+			// Deep check? For now just top level if that's what's expected
 		});
 		return Array.from(refs);
 	}, [uploadedSchemeData]);
@@ -102,14 +108,16 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 		requiredSvgRefs.length === 0 || requiredSvgRefs.every((r) => isSvgRefSatisfied(r));
 
 	const handleSubmit = () => {
+		const name = newSchemeName.trim();
 		if (
-			!newSchemeName.trim()
-			|| ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())
+			!name
+			|| Object.keys(schemes).includes(name)
 		)
 			return;
+
 		if (selectedFile && uploadedSchemeData) {
 			try {
-				ENGINE.addScheme(newSchemeName.trim(), uploadedSchemeData);
+				dispatch(addScheme({ id: name, scheme: uploadedSchemeData }));
 				onSchemeCreated();
 				handleClose();
 				appToaster.show({
@@ -124,11 +132,17 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 				});
 			}
 		} else if (!selectedFile) {
-			ENGINE.addBlankScheme(newSchemeName.trim());
+			const blankScheme: IScheme = {
+				metadata: { name: name },
+				components: {}
+			};
+			dispatch(addScheme({ id: name, scheme: blankScheme }));
 			onSchemeCreated();
 			handleClose();
 		}
 	};
+
+	const schemeNames = useMemo(() => Object.keys(schemes), [schemes]);
 
 	return (
 		<Dialog
@@ -142,21 +156,21 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 				<FormGroup
 					intent={
 						!newSchemeName.trim()
-							|| ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())
+							|| schemeNames.includes(newSchemeName.trim())
 							? "danger"
 							: "primary"
 					}
 					helperText={
 						!newSchemeName.trim()
 							? "Cannot be empty"
-							: ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())
+							: schemeNames.includes(newSchemeName.trim())
 								? "Cannot have duplicate names"
 								: undefined
 					}>
 					<InputGroup
 						intent={
 							!newSchemeName.trim()
-								|| ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())
+								|| schemeNames.includes(newSchemeName.trim())
 								? "danger"
 								: "primary"
 						}
@@ -185,12 +199,12 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 					}}
 				/>
 
-				{uploadedSchemeData?.svgElements && (
+				{uploadedSchemeData?.components && (
 					<SVGUploadList
 						title={"SVG requirements"}
-						elements={Object.entries(uploadedSchemeData.svgElements).map(
-							([name, el]) => ({
-								name,
+						elements={Object.values(uploadedSchemeData.components).map(
+							(el) => ({
+								name: el.ref,
 								element: el as any
 							})
 						)}
@@ -198,7 +212,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 						setUploads={setSvgUploads}
 					/>
 				)}
-				{uploadedSchemeData?.svgElements && !allSvgsSatisfied && (
+				{uploadedSchemeData?.components && !allSvgsSatisfied && (
 					<Text style={{ color: "#a82a2a", marginTop: 8 }}>
 						Please upload missing SVG files before creating the scheme.
 					</Text>
@@ -215,10 +229,10 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 							onClick={handleSubmit}
 							disabled={
 								!newSchemeName.trim()
-								|| ENGINE.schemeManager.allSchemeNames.includes(
+								|| schemeNames.includes(
 									newSchemeName.trim()
 								)
-								|| (!!uploadedSchemeData?.svgElements && !allSvgsSatisfied)
+								|| (!!uploadedSchemeData?.components && !allSvgsSatisfied)
 							}
 						/>
 					</>

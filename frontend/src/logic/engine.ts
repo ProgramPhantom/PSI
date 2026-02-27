@@ -29,13 +29,16 @@ class ENGINE {
 	static StateName: string = "diagram-state";
 	static STATE: string | null = localStorage.getItem(ENGINE.StateName);
 
-	static assetStore: AssetStore;
+	static assetStore: AssetStore = new AssetStore();
 
 	private static _surface: Svg;
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
 		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
+
+
 		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, ENGINE.ConstructElement);
+
 		console.log("SURFACE ATTACHED");
 	}
 	static get surface(): Svg {
@@ -196,7 +199,7 @@ class ENGINE {
 		const usedAssets = new Set<string>();
 
 		const elements = scheme.components;
-		elements.forEach((el) => {
+		Object.values(elements).forEach((el) => {
 			componentsFolder.file(`${el.ref}.json`, JSON.stringify(el, null, 2));
 
 			// Add svg file if svg

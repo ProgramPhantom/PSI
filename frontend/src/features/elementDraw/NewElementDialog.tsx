@@ -9,18 +9,21 @@ import { IRectElement } from "../../logic/rectElement";
 import { ISVGElement } from "../../logic/svgElement";
 import { IVisual } from "../../logic/visual";
 import { LabelGroupComboForm, SubmitButtonRef } from "../form/LabelGroupComboForm";
+import { useDispatch } from "react-redux";
+import { addComponent } from "../../redux/schemesSlice";
 
 
 interface INewElementDialog {
 	isOpen: boolean;
 	close: () => void;
-	schemeName: string;
+	schemeId: string;
 }
 
 export default function NewElementDialog(props: INewElementDialog) {
 	const [tabId, setTabId] = useState<UserComponentType>("svg");
 	const submitRef = useRef<SubmitButtonRef>(null);
-
+	const dispatch = useDispatch()
+	
 	const rectFormControls = useForm<IRectElement>({
 
 		mode: "onChange"
@@ -31,7 +34,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 	});
 
 	const addNewTemplate = (values: IVisual) => {
-		ENGINE.addSingleton(values, props.schemeName);
+		dispatch(addComponent({schemeId: props.schemeId, component: values}))
 		props.close();
 	}
 

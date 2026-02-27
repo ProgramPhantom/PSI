@@ -12,15 +12,17 @@ import {
 	Tabs,
 	Text
 } from "@blueprintjs/core";
-import React, { useRef, useState, useSyncExternalStore } from "react";
+import React, { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ObjectInspector } from "react-inspector";
-import SchemeManager, { SchemeDict } from "../../logic/default";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import AddSchemeDialog from "./AddSchemeDialog";
 import NewElementDialog from "./NewElementDialog";
 import { appToaster } from "../../app/Toaster";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { deleteScheme, selectSchemes, InternalSchemeId } from "../../redux/schemesSlice";
+import { ID, AllComponentTypes } from "../../logic/point";
 
 import { isPulse } from "../../logic/spacial";
 
@@ -30,24 +32,62 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
 	const [isNewElementDialogOpen, setIsNewElementDialogOpen] = useState(false);
-	const [selectedScheme, setSelectedScheme] = useState(SchemeManager.InternalSchemeName);
+
+	const [selectedSchemeId, setSelectedSchemeId] = useState(InternalSchemeId);
+
 	const [isNewSchemeDialogOpen, setIsNewSchemeDialogOpen] = useState(false);
 	const [isDeleteSchemeDialogOpen, setIsDeleteSchemeDialogOpen] = useState(false);
-	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const schemes = useAppSelector(selectSchemes);
+	const dispatch = useAppDispatch();
 
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
-	const [schemeState, setSchemeState] = useState<SchemeDict>(ENGINE.schemeManager.allSchemes);
+
+	const singletonsCache = useRef<Record<string, Record<ID, Visual>>>({});
+
+	const singletons = useMemo(() => {
+		const newSingletons: Record<string, Record<string, Visual>> = {};
+
+		Object.entries(schemes).forEach(([schemeId, scheme]) => {
+			if (!singletonsCache.current[schemeId]) {
+				singletonsCache.current[schemeId] = {};
+			}
+
+			const currentCache = singletonsCache.current[schemeId];
+			const nextCache: Record<ID, Visual> = {};
+
+			const elements = Object.entries(scheme.components).map(([template_id, compData]) => {
+				const existing = currentCache[template_id];
+
+				// Only rebuild the diff: reuse if state is unchanged
+				if (existing) {
+					nextCache[template_id] = existing;
+					return existing;
+				} else {
+					const created = ENGINE.ConstructElement(structuredClone(compData), compData.type as AllComponentTypes);
+					if (created) {
+						nextCache[template_id] = created;
+					}
+					return created;
+				}
+			}).filter(v => v !== undefined) as Visual[];
+
+			singletonsCache.current[schemeId] = nextCache;
+			newSingletons[schemeId] = nextCache;
+		});
+
+		return newSingletons;
+	}, [schemes]);
+
 	const [filter, setFilter] = useState<string>("All");
 
-	const filterElements = (elements: Visual[], filter: string) => {
-		return elements.filter((e) => {
-			if (filter === "All") return true;
-			if (filter === "Channels") return e.type === "channel";
-			if (filter === "Sequences") return e.type === "sequence";
-			if (filter === "Pulses") return isPulse(e);
-			if (filter === "Annotation") return e.type === "label" || e.type === "text";
-			return true;
-		});
+	const filterElement = (element: Visual, filter: string) => {
+		if (filter === "All") return true;
+		if (filter === "Channels") return element.type === "channel";
+		if (filter === "Sequences") return element.type === "sequence";
+		if (filter === "Pulses") return isPulse(element);
+		if (filter === "Annotation") return element.type === "label" || element.type === "text";
+		return true;
 	};
 
 	const handleElementDoubleClick = (element: Visual) => {
@@ -61,7 +101,6 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	};
 
 	const handleSubmit = () => {
-		// Handle form submission here
 		handleDialogClose();
 	};
 
@@ -69,21 +108,16 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 		setIsNewElementDialogOpen(false);
 	};
 
-	const handleNewElementSubmit = () => {
-		// Handle new element form submission here
-		handleNewElementDialogClose();
-	};
-
 	const handleNewSchemeDialogClose = () => {
 		setIsNewSchemeDialogOpen(false);
 	};
 
 	const handleSchemeCreated = () => {
-		setSchemeState(ENGINE.schemeManager.allSchemes);
+		// setSchemeState(ENGINE.schemeManager.allSchemes);
 	};
 
 	const handleDeleteSchemeClick = () => {
-		if (selectedScheme === SchemeManager.InternalSchemeName) {
+		if (selectedSchemeId === InternalSchemeId) {
 			appToaster.show({
 				message: "Cannot delete the internal scheme",
 				intent: "danger"
@@ -98,13 +132,10 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	};
 
 	const handleDeleteSchemeConfirm = () => {
-		ENGINE.removeScheme(selectedScheme);
-		setSchemeState(ENGINE.schemeManager.allSchemes);
-		setSelectedScheme(SchemeManager.InternalSchemeName);
+		dispatch(deleteScheme(selectedSchemeId));
+		setSelectedSchemeId(InternalSchemeId);
 		setIsDeleteSchemeDialogOpen(false);
 	};
-
-	// (Dialog behavior moved to AddSchemeDialog)
 
 	return (
 		<div style={{ height: "100%", overflow: "hidden" }}>
@@ -153,29 +184,29 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 						<style>{`.bp5-tabs { height: 100% }`}</style>
 
 						<Tabs
-							onChange={(id) => setSelectedScheme(id as string)}
+							onChange={(id) => setSelectedSchemeId(id as string)}
 							vertical={true}
 							defaultSelectedTabId={"default"}
 							fill={true}
-							selectedTabId={selectedScheme}>
+							selectedTabId={selectedSchemeId}>
 							<style>{`.bp5-tab-panel { width: 100%; height: 100% !important; max-width: 100% !important; box-sizing: border-box; display: block; }`}</style>
 
-							{Object.entries(schemeState).map(([schemeName, singletonDict]) => {
-								var singletons: Visual[] | undefined =
-									ENGINE.singletons[schemeName];
-								if (singletons === undefined) {
-									return <></>;
+							{Object.entries(schemes).map(([schemeId, scheme]) => {
+								var schemeSingletons: Record<string, Visual> | undefined = singletons[schemeId];
+								if (schemeSingletons === undefined) {
+									return <React.Fragment key={schemeId}></React.Fragment>;
 								}
 
-								var noElements: number = singletons.length;
+								let schemeName = schemes[schemeId].metadata.name
+								var numElements: number = Object.values(schemeSingletons).length;
 								return (
 									<Tab
-										key={schemeName}
+										key={schemeId}
 										title={schemeName}
 										style={{ width: "100%", overflow: "auto" }}
 										tagProps={{ round: true }}
-										tagContent={noElements}
-										id={schemeName}
+										tagContent={numElements}
+										id={schemeId}
 										panel={
 											<div
 												style={{
@@ -222,8 +253,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 															padding: "4px 16px 16px 4px"
 														}}>
 														{/* Plus button for adding new elements */}
-														{schemeName !==
-															SchemeManager.InternalSchemeName ? (
+														{schemeName !== InternalSchemeId ? (
 															<div
 																style={{
 																	width: "120px",
@@ -281,16 +311,17 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 															<></>
 														)}
 
-														{filterElements(singletons, filter).map(
-															(s) => {
+														{Object.entries(schemeSingletons).filter(([id, com]) => filterElement(com, filter)).map(
+															([template_id, visual]) => {
 																return (
 																	<TemplateDraggableElement
-																		key={s.ref}
-																		element={s}
+																		key={template_id}
+																		element={visual}
 																		onDoubleClick={
 																			handleElementDoubleClick
 																		}
-																		schemeName={schemeName}
+																		schemeId={schemeId}
+																		templateId={template_id}
 																	/>
 																);
 															}
@@ -337,7 +368,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 								variant="outlined"
 								intent="danger"
 								onClick={handleDeleteSchemeClick}
-								disabled={selectedScheme === SchemeManager.InternalSchemeName}
+								disabled={selectedSchemeId === InternalSchemeId}
 								style={{
 									boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
 								}}
@@ -372,7 +403,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 			<NewElementDialog
 				isOpen={isNewElementDialogOpen}
 				close={handleNewElementDialogClose}
-				schemeName={selectedScheme}></NewElementDialog>
+				schemeId={selectedSchemeId}></NewElementDialog>
 			<AddSchemeDialog
 				isOpen={isNewSchemeDialogOpen}
 				onClose={handleNewSchemeDialogClose}
@@ -389,7 +420,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 				canEscapeKeyClose={true}>
 				<DialogBody>
 					<Text>
-						Are you sure you want to delete the scheme "{selectedScheme}"? This action
+						Are you sure you want to delete the scheme "{selectedSchemeId}"? This action
 						cannot be undone.
 					</Text>
 				</DialogBody>

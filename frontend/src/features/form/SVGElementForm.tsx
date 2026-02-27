@@ -8,25 +8,29 @@ import {
 	HTMLSelect,
 	InputGroup
 } from "@blueprintjs/core";
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import SchemeManager from "../../logic/default";
 import ENGINE from "../../logic/engine";
 import { ISVGElement } from "../../logic/svgElement";
 import UploadArea from "../UploadArea";
 import VisualForm from "./VisualForm";
 import { appToaster } from "../../app/Toaster";
 import { FormRequirements } from "./FormBase";
+import { useAppSelector } from "../../redux/hooks";
+import { selectSchemes, InternalSchemeId } from "../../redux/schemesSlice";
 
-interface ISVGElementFormProps extends FormRequirements {}
+interface ISVGElementFormProps extends FormRequirements { }
 
 const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 	const formControls = useFormContext<ISVGElement>();
 	const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [svgReference, setSvgReference] = useState("");
-	const [schemeName, setSchemeName] = useState<string>(SchemeManager.InternalSchemeName);
+	const [schemeName, setSchemeName] = useState<string>(InternalSchemeId);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const schemes = useAppSelector(selectSchemes);
+	const schemeNames = useMemo(() => Object.keys(schemes), [schemes]);
 
 	const handleFileSelect = (file: File) => {
 		if (file.type === "image/svg+xml" || file.name.endsWith(".svg")) {
@@ -53,7 +57,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 			reader.onload = (e) => {
 				try {
 					const svgString = e.target?.result as string;
-					ENGINE.schemeManager.addSVGStrData(svgString, svgReference.trim());
+					ENGINE.assetStore.addSVGData(svgString, svgReference.trim());
 
 					appToaster.show({
 						message: "SVG uploaded successfully",
@@ -88,9 +92,9 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 					<Controller
 						control={formControls.control}
 						name="svgDataRef"
-						render={({field}) => (
+						render={({ field }) => (
 							<HTMLSelect {...field} iconName="caret-down">
-								{Object.keys(ENGINE.schemeManager.svgStrings ?? {}).map((ref) => {
+								{Object.keys(ENGINE.svgDict).map((ref) => {
 									return (
 										<option key={ref} value={ref}>
 											{ref}
@@ -139,7 +143,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 							id="scheme-input"
 							value={schemeName}
 							onChange={(e) => setSchemeName(e.target.value)}>
-							{ENGINE.schemeManager.allSchemeNames.map((name) => {
+							{schemeNames.map((name) => {
 								return (
 									<option key={name} value={name}>
 										{name}
@@ -159,7 +163,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 						setInputRef={(el) => {
 							if (fileInputRef) (fileInputRef as any).current = el;
 						}}
-						style={{marginTop: "16px"}}
+						style={{ marginTop: "16px" }}
 					/>
 				</div>
 
