@@ -374,6 +374,26 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 								}}
 							/>
 						</div>
+
+						{/* Download Scheme button */}
+						<div
+							style={{
+								position: "absolute",
+								bottom: "16px",
+								left: "100px",
+								zIndex: 10,
+								width: "60px"
+							}}>
+							<Button
+								icon="download"
+								variant="outlined"
+								intent="success"
+								onClick={() => ENGINE.saveSchemeFile(selectedSchemeId)}
+								style={{
+									boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+								}}
+							/>
+						</div>
 					</div>
 				</SectionCard>
 			</Section>

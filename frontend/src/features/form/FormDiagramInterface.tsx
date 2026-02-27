@@ -111,26 +111,35 @@ export function FormDiagramInterface() {
 						)}
 
 						{target !== undefined ? (
-							<Button
-								style={{
-									height: "30px",
-									alignSelf: "center",
-									marginLeft: "auto"
-								}}
-								icon="trash"
-								intent="danger"
-								onClick={() => {
-									dispatchFormEffect(
-										target!,
-										"delete"
-									);
-									changeTarget(undefined);
-									appToaster.show({
-										message: `Deleted element '${target?.ref}'`,
-										intent: "danger",
-										timeout: 1000
-									});
-								}}></Button>
+							<>
+								<Button
+									style={{
+										height: "30px",
+										alignSelf: "center",
+										marginLeft: "auto"
+									}}
+									icon="export"
+									variant="minimal"
+									onClick={() => ENGINE.saveComponentFile(target.state)}
+									title="Export component"></Button>
+								<Button
+									style={{
+										height: "30px",
+										alignSelf: "center",
+										marginLeft: "8px"
+									}}
+									icon="trash"
+									intent="danger"
+									onClick={() => {
+										dispatchFormEffect(target!, "delete");
+										changeTarget(undefined);
+										appToaster.show({
+											message: `Deleted element '${target?.ref}'`,
+											intent: "danger",
+											timeout: 1000
+										});
+									}}></Button>
+							</>
 						) : (
 							<></>
 						)}

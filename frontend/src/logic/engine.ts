@@ -19,7 +19,7 @@ import { appToaster } from "../app/Toaster";
 import JSZip from "jszip"
 import { downloadBlob } from "./util2";
 import AssetStore from "./assetStore";
-import { selectSchemes, IScheme } from "../redux/schemesSlice";
+import { IScheme, selectSchemes } from "../redux/schemesSlice";
 
 
 class ENGINE {
@@ -44,6 +44,7 @@ class ENGINE {
 	static get surface(): Svg {
 		return ENGINE._surface;
 	}
+
 
 	static get diagramState(): IDiagram {
 		return ENGINE.handler.diagram.state
@@ -257,6 +258,8 @@ class ENGINE {
 		downloadBlob(blob, `${name}.nmrc`);
 	}
 
+
+
 	static getAssetRequirementsFromComponent(component: IVisual): Set<string> {
 		let assets: Set<string> = new Set<string>();
 
@@ -270,8 +273,6 @@ class ENGINE {
 
 		return assets
 	}
-	// -----------------------------------
-
 
 	static ConstructSVGElement(data: ISVGElement): SVGElement {
 		var result: SVGElement = new SVGElement(data);
