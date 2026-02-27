@@ -19,7 +19,7 @@ import { appToaster } from "../app/Toaster";
 import JSZip from "jszip"
 import { downloadBlob } from "./util2";
 import AssetStore from "./assetStore";
-import { IScheme, selectSchemes } from "../redux/schemesSlice";
+import { IScheme, selectSchemes, addScheme } from "../redux/schemesSlice";
 
 
 class ENGINE {
@@ -225,6 +225,67 @@ class ENGINE {
 		const file = await ENGINE.createSchemeFile(schemeName);
 		const blob = await file.generateAsync({ type: "blob" });
 		downloadBlob(blob, `${schemeName}.nmrs`);
+	}
+
+	static async uploadSchemeFile(file: File, nameOverride?: string) {
+		const zip = new JSZip();
+		const unzipped = await zip.loadAsync(file);
+
+		const manifestFile = unzipped.file("manifest.json");
+		if (!manifestFile) {
+			throw new Error("Invalid scheme file: missing manifest.json");
+		}
+		const manifestStr = await manifestFile.async("text");
+		const manifest = JSON.parse(manifestStr);
+
+		if (manifest.format !== "nmr-pulse-scheme") {
+			appToaster.show({
+				"message": "Invalid scheme format",
+				"intent": "danger"
+			})
+			return
+		}
+
+		const schemeName = nameOverride || manifest.name || "Imported Scheme";
+
+		// Load assets
+		const assetsFolder = unzipped.folder("assets");
+		if (assetsFolder) {
+			const promises: Promise<void>[] = [];
+			assetsFolder.forEach((relativePath, file) => {
+				if (!file.dir && relativePath.endsWith(".svg")) {
+					// Chop off .json
+					const assetRef = relativePath.substring(0, relativePath.length - 4);
+					promises.push(file.async("text").then(svgText => {
+						ENGINE.assetStore.svgStrings[assetRef] = svgText;
+					}));
+				}
+			});
+			await Promise.all(promises);
+		}
+
+		// Load components
+		const componentsFolder = unzipped.folder("components");
+		const components: Record<string, IVisual> = {};
+		if (componentsFolder) {
+			const promises: Promise<void>[] = [];
+			componentsFolder.forEach((relativePath, file) => {
+				if (!file.dir && relativePath.endsWith(".json")) {
+					promises.push(file.async("text").then(compStr => {
+						const comp = JSON.parse(compStr) as IVisual;
+						components[comp.ref] = comp;
+					}));
+				}
+			});
+			await Promise.all(promises);
+		}
+
+		const newScheme: IScheme = {
+			metadata: { name: schemeName },
+			components: components
+		};
+
+		store.dispatch(addScheme({ id: schemeName, scheme: newScheme }));
 	}
 
 	static async createComponentFile(component: IVisual): Promise<JSZip> {

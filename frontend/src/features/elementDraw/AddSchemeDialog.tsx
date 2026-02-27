@@ -15,6 +15,7 @@ import UploadArea from "../UploadArea";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { addScheme, selectSchemes, IScheme } from "../../redux/schemesSlice";
+import JSZip from "jszip";
 
 interface AddSchemeDialogProps {
 	isOpen: boolean;
@@ -30,17 +31,10 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 	const schemes = useAppSelector(selectSchemes);
 	const dispatch = useAppDispatch();
 
-	const [uploadedSchemeData, setUploadedSchemeData] = React.useState<IScheme | null>(
-		null
-	);
-	const [svgUploads, setSvgUploads] = React.useState<Record<string, string>>({});
-
 	const resetState = () => {
 		setNewSchemeName("");
 		setSelectedFile(null);
 		if (fileInputRef.current) fileInputRef.current.value = "";
-		setUploadedSchemeData(null);
-		setSvgUploads({});
 	};
 
 	const handleClose = () => {
@@ -48,29 +42,31 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 		onClose();
 	};
 
-	const handleFileSelect = (file: File) => {
-		if (file.type === "application/json" || file.name.endsWith(".json")) {
+	const handleFileSelect = async (file: File) => {
+		if (file.name.endsWith(".nmrs")) {
 			setSelectedFile(file);
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				try {
-					const schemeData = JSON.parse(e.target?.result as string) as IScheme;
-					setUploadedSchemeData(schemeData);
-					setSvgUploads({});
-				} catch (error) {
-					console.error(error);
-					setUploadedSchemeData(null);
-					setSvgUploads({});
-					appToaster.show({
-						message: "Invalid JSON file format. Please select a valid scheme file.",
-						intent: "danger"
-					});
+			try {
+				const zip = new JSZip();
+				const unzipped = await zip.loadAsync(file);
+				const manifestFile = unzipped.file("manifest.json");
+				if (manifestFile) {
+					const manifestStr = await manifestFile.async("text");
+					const manifest = JSON.parse(manifestStr);
+					if (manifest.name) {
+						setNewSchemeName(manifest.name);
+					}
 				}
-			};
-			reader.readAsText(file);
+			} catch (error) {
+				console.error(error);
+				appToaster.show({
+					message: "Invalid .nmrs file format or unreadable manifest.",
+					intent: "danger"
+				});
+				removeFile();
+			}
 		} else {
 			appToaster.show({
-				message: "Please select a JSON file",
+				message: "Please select an .nmrs file",
 				intent: "warning"
 			});
 		}
@@ -79,35 +75,10 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 	const removeFile = () => {
 		setSelectedFile(null);
 		if (fileInputRef.current) fileInputRef.current.value = "";
-		setUploadedSchemeData(null);
-		setSvgUploads({});
 	};
 
-	// Check if svgDataRef is in AssetStore or list of uploads
-	const isSvgRefSatisfied = (svgRef: string): boolean => {
-		if (Object.keys(ENGINE.svgDict).includes(svgRef) === true) {
-			return true;
-		} // Asset Store
-		if (Object.prototype.hasOwnProperty.call(svgUploads, svgRef)) {
-			return true;
-		} // Uploads
-		return false;
-	};
 
-	const requiredSvgRefs: string[] = useMemo(() => {
-		if (!uploadedSchemeData?.components) return [];
-		const refs = new Set<string>();
-		Object.values(uploadedSchemeData.components).forEach((el: any) => {
-			if (el?.svgDataRef) refs.add(el.svgDataRef);
-			// Deep check? For now just top level if that's what's expected
-		});
-		return Array.from(refs);
-	}, [uploadedSchemeData]);
-
-	const allSvgsSatisfied: boolean =
-		requiredSvgRefs.length === 0 || requiredSvgRefs.every((r) => isSvgRefSatisfied(r));
-
-	const handleSubmit = () => {
+	const handleSubmit = async () => {
 		const name = newSchemeName.trim();
 		if (
 			!name
@@ -115,13 +86,13 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 		)
 			return;
 
-		if (selectedFile && uploadedSchemeData) {
+		if (selectedFile) {
 			try {
-				dispatch(addScheme({ id: name, scheme: uploadedSchemeData }));
+				await ENGINE.uploadSchemeFile(selectedFile, name);
 				onSchemeCreated();
 				handleClose();
 				appToaster.show({
-					message: "Scheme created successfully from JSON file",
+					message: "Scheme created successfully from uploaded file",
 					intent: "success"
 				});
 			} catch (error) {
@@ -184,39 +155,20 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 				<Divider style={{ margin: "16px 0" }} />
 
 				<Text style={{ marginBottom: "12px" }}>
-					Optionally upload a JSON file to populate the scheme:
+					Optionally upload an .nmrs file to populate the scheme:
 				</Text>
 
 				<UploadArea
 					selectedFile={selectedFile}
 					onFileSelected={handleFileSelect}
 					onRemoveFile={removeFile}
-					accept={".json"}
-					promptText={"Drag and drop a JSON scheme file here, or"}
+					accept={".nmrs"}
+					promptText={"Drag and drop an .nmrs scheme file here, or"}
 					buttonText={"Choose File"}
 					setInputRef={(el) => {
 						if (fileInputRef) (fileInputRef as any).current = el;
 					}}
 				/>
-
-				{uploadedSchemeData?.components && (
-					<SVGUploadList
-						title={"SVG requirements"}
-						elements={Object.values(uploadedSchemeData.components).map(
-							(el) => ({
-								name: el.ref,
-								element: el as any
-							})
-						)}
-						uploads={svgUploads}
-						setUploads={setSvgUploads}
-					/>
-				)}
-				{uploadedSchemeData?.components && !allSvgsSatisfied && (
-					<Text style={{ color: "#a82a2a", marginTop: 8 }}>
-						Please upload missing SVG files before creating the scheme.
-					</Text>
-				)}
 			</div>
 
 			<DialogFooter
@@ -232,7 +184,6 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 								|| schemeNames.includes(
 									newSchemeName.trim()
 								)
-								|| (!!uploadedSchemeData?.components && !allSvgsSatisfied)
 							}
 						/>
 					</>

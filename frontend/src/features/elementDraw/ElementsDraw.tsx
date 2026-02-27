@@ -25,6 +25,7 @@ import { deleteScheme, selectSchemes, InternalSchemeId } from "../../redux/schem
 import { ID, AllComponentTypes } from "../../logic/point";
 
 import { isPulse } from "../../logic/spacial";
+import QuietUploadArea from "../QuietUploadArea";
 
 interface IElementDrawProps { }
 
@@ -137,331 +138,349 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 		setIsDeleteSchemeDialogOpen(false);
 	};
 
+	const handleSchemeDrop = async (file: File) => {
+		try {
+			const name = await ENGINE.uploadSchemeFile(file);
+			appToaster.show({
+				message: `Scheme '${name}' created successfully from dropped file`,
+				intent: "success"
+			});
+		} catch (error) {
+			console.error(error);
+			appToaster.show({
+				message: "Failed to create scheme from dropped file.",
+				intent: "danger"
+			});
+		}
+	};
+
 	return (
-		<div style={{ height: "100%", overflow: "hidden" }}>
-			<Section
-				style={{
-					padding: "0px",
-					overflow: "visible",
-					boxShadow: "none",
-					height: "100%"
-				}}>
-				<SectionCard
+		<QuietUploadArea onDrop={handleSchemeDrop} acceptExtension=".nmrs">
+			<div style={{ height: "100%", overflow: "hidden" }}>
+				<Section
 					style={{
 						padding: "0px",
-						height: "100%",
-						overflow: "hidden",
-						display: "flex",
-						flexDirection: "column"
+						overflow: "visible",
+						boxShadow: "none",
+						height: "100%"
 					}}>
-					<div
+					<SectionCard
 						style={{
-							position: "sticky",
-							top: "0px",
-							backgroundColor: "white",
-							zIndex: 10,
-							padding: "8px 16px 4px 16px",
-							userSelect: "none"
-						}}>
-						<EntityTitle
-							title={"Elements"}
-							subtitle={"Drag and drop these elements onto the canvas"}
-							icon="new-object"
-							heading={H5}></EntityTitle>
-					</div>
-
-					<Divider style={{ margin: "4px 8px 0 8px" }} />
-
-					<div
-						style={{
-							padding: "8px 16px",
-							width: "100%",
-							flex: "1 1 0",
-							minHeight: 0,
+							padding: "0px",
+							height: "100%",
+							overflow: "hidden",
 							display: "flex",
 							flexDirection: "column"
 						}}>
-						<style>{`.bp5-tabs { height: 100% }`}</style>
+						<div
+							style={{
+								position: "sticky",
+								top: "0px",
+								backgroundColor: "white",
+								zIndex: 10,
+								padding: "8px 16px 4px 16px",
+								userSelect: "none"
+							}}>
+							<EntityTitle
+								title={"Elements"}
+								subtitle={"Drag and drop these elements onto the canvas"}
+								icon="new-object"
+								heading={H5}></EntityTitle>
+						</div>
 
-						<Tabs
-							onChange={(id) => setSelectedSchemeId(id as string)}
-							vertical={true}
-							defaultSelectedTabId={"default"}
-							fill={true}
-							selectedTabId={selectedSchemeId}>
-							<style>{`.bp5-tab-panel { width: 100%; height: 100% !important; max-width: 100% !important; box-sizing: border-box; display: block; }`}</style>
+						<Divider style={{ margin: "4px 8px 0 8px" }} />
 
-							{Object.entries(schemes).map(([schemeId, scheme]) => {
-								var schemeSingletons: Record<string, Visual> | undefined = singletons[schemeId];
-								if (schemeSingletons === undefined) {
-									return <React.Fragment key={schemeId}></React.Fragment>;
-								}
+						<div
+							style={{
+								padding: "8px 16px",
+								width: "100%",
+								flex: "1 1 0",
+								minHeight: 0,
+								display: "flex",
+								flexDirection: "column"
+							}}>
+							<style>{`.bp5-tabs { height: 100% }`}</style>
 
-								let schemeName = schemes[schemeId].metadata.name
-								var numElements: number = Object.values(schemeSingletons).length;
-								return (
-									<Tab
-										key={schemeId}
-										title={schemeName}
-										style={{ width: "100%", overflow: "auto" }}
-										tagProps={{ round: true }}
-										tagContent={numElements}
-										id={schemeId}
-										panel={
-											<div
-												style={{
-													width: "100%",
-													display: "flex",
-													flexDirection: "row",
-													height: "100%"
-												}}>
-												<Divider style={{}}></Divider>
+							<Tabs
+								onChange={(id) => setSelectedSchemeId(id as string)}
+								vertical={true}
+								defaultSelectedTabId={"default"}
+								fill={true}
+								selectedTabId={selectedSchemeId}>
+								<style>{`.bp5-tab-panel { width: 100%; height: 100% !important; max-width: 100% !important; box-sizing: border-box; display: block; }`}</style>
+
+								{Object.entries(schemes).map(([schemeId, scheme]) => {
+									var schemeSingletons: Record<string, Visual> | undefined = singletons[schemeId];
+									if (schemeSingletons === undefined) {
+										return <React.Fragment key={schemeId}></React.Fragment>;
+									}
+
+									let schemeName = schemes[schemeId].metadata.name
+									var numElements: number = Object.values(schemeSingletons).length;
+									return (
+										<Tab
+											key={schemeId}
+											title={schemeName}
+											style={{ width: "100%", overflow: "auto" }}
+											tagProps={{ round: true }}
+											tagContent={numElements}
+											id={schemeId}
+											panel={
 												<div
 													style={{
 														width: "100%",
-														height: "100%",
-														overflow: "hidden",
 														display: "flex",
-														flexDirection: "column"
+														flexDirection: "row",
+														height: "100%"
 													}}>
-													{/* Filter Tabs */}
-													<div style={{ padding: "8px 16px 8px 4px", flexShrink: 0 }}>
-														<Tabs
-															id="filter-tabs"
-															onChange={(newFilter) =>
-																setFilter(newFilter as string)
-															}
-															selectedTabId={filter}
-															renderActiveTabPanelOnly={false}>
-															<Tab id="All" title="All" />
-															<Tab id="Sequences" title="Sequences" />
-															<Tab id="Channels" title="Channels" />
-															<Tab id="Pulses" title="Pulses" />
-															<Tab id="Annotation" title="Annotation" />
-														</Tabs>
-													</div>
-
+													<Divider style={{}}></Divider>
 													<div
 														style={{
 															width: "100%",
-															display: "grid",
-															overflow: "auto",
-															gridTemplateColumns:
-																"repeat(auto-fill, minmax(120px, 1fr))",
-															gridAutoRows: "120px",
-															gap: "12px",
-															padding: "4px 16px 16px 4px"
+															height: "100%",
+															overflow: "hidden",
+															display: "flex",
+															flexDirection: "column"
 														}}>
-														{/* Plus button for adding new elements */}
-														{schemeName !== InternalSchemeId ? (
-															<div
-																style={{
-																	width: "120px",
-																	height: "120px",
-																	padding: "12px 8px",
-																	border: "1px solid #d3d8de",
-																	borderRadius: "4px",
-																	backgroundColor: "white",
-																	display: "flex",
-																	flexDirection: "column",
-																	alignItems: "center",
-																	justifyContent: "center",
-																	cursor: "pointer",
-																	boxShadow:
-																		"0 1px 3px rgba(0, 0, 0, 0.1)",
-																	transition: "all 0.2s ease",
-																	userSelect: "none"
-																}}
-																onMouseEnter={(e) => {
-																	e.currentTarget.style.boxShadow =
-																		"0 2px 6px rgba(0, 0, 0, 0.15)";
-																	e.currentTarget.style.transform =
-																		"translateY(-1px)";
-																}}
-																onMouseLeave={(e) => {
-																	e.currentTarget.style.boxShadow =
-																		"0 1px 3px rgba(0, 0, 0, 0.1)";
-																	e.currentTarget.style.transform =
-																		"translateY(0)";
-																}}
-																onClick={() =>
-																	setIsNewElementDialogOpen(true)
+														{/* Filter Tabs */}
+														<div style={{ padding: "8px 16px 8px 4px", flexShrink: 0 }}>
+															<Tabs
+																id="filter-tabs"
+																onChange={(newFilter) =>
+																	setFilter(newFilter as string)
 																}
-																title="Add new template element">
+																selectedTabId={filter}
+																renderActiveTabPanelOnly={false}>
+																<Tab id="All" title="All" />
+																<Tab id="Sequences" title="Sequences" />
+																<Tab id="Channels" title="Channels" />
+																<Tab id="Pulses" title="Pulses" />
+																<Tab id="Annotation" title="Annotation" />
+															</Tabs>
+														</div>
+
+														<div
+															style={{
+																width: "100%",
+																display: "grid",
+																overflow: "auto",
+																gridTemplateColumns:
+																	"repeat(auto-fill, minmax(120px, 1fr))",
+																gridAutoRows: "120px",
+																gap: "12px",
+																padding: "4px 16px 16px 4px"
+															}}>
+															{/* Plus button for adding new elements */}
+															{schemeName !== InternalSchemeId ? (
 																<div
 																	style={{
-																		fontSize: "32px",
-																		color: "#5c7080",
-																		marginBottom: "8px"
-																	}}>
-																	+
+																		width: "120px",
+																		height: "120px",
+																		padding: "12px 8px",
+																		border: "1px solid #d3d8de",
+																		borderRadius: "4px",
+																		backgroundColor: "white",
+																		display: "flex",
+																		flexDirection: "column",
+																		alignItems: "center",
+																		justifyContent: "center",
+																		cursor: "pointer",
+																		boxShadow:
+																			"0 1px 3px rgba(0, 0, 0, 0.1)",
+																		transition: "all 0.2s ease",
+																		userSelect: "none"
+																	}}
+																	onMouseEnter={(e) => {
+																		e.currentTarget.style.boxShadow =
+																			"0 2px 6px rgba(0, 0, 0, 0.15)";
+																		e.currentTarget.style.transform =
+																			"translateY(-1px)";
+																	}}
+																	onMouseLeave={(e) => {
+																		e.currentTarget.style.boxShadow =
+																			"0 1px 3px rgba(0, 0, 0, 0.1)";
+																		e.currentTarget.style.transform =
+																			"translateY(0)";
+																	}}
+																	onClick={() =>
+																		setIsNewElementDialogOpen(true)
+																	}
+																	title="Add new template element">
+																	<div
+																		style={{
+																			fontSize: "32px",
+																			color: "#5c7080",
+																			marginBottom: "8px"
+																		}}>
+																		+
+																	</div>
+																	<span
+																		style={{
+																			fontSize: "12px",
+																			color: "#5c7080",
+																			fontWeight: "600",
+																			textAlign: "center",
+																			lineHeight: "1.4"
+																		}}>
+																		Add New
+																	</span>
 																</div>
-																<span
-																	style={{
-																		fontSize: "12px",
-																		color: "#5c7080",
-																		fontWeight: "600",
-																		textAlign: "center",
-																		lineHeight: "1.4"
-																	}}>
-																	Add New
-																</span>
-															</div>
-														) : (
-															<></>
-														)}
+															) : (
+																<></>
+															)}
 
-														{Object.entries(schemeSingletons).filter(([id, com]) => filterElement(com, filter)).map(
-															([template_id, visual]) => {
-																return (
-																	<TemplateDraggableElement
-																		key={template_id}
-																		element={visual}
-																		onDoubleClick={
-																			handleElementDoubleClick
-																		}
-																		schemeId={schemeId}
-																		templateId={template_id}
-																	/>
-																);
-															}
-														)}
+															{Object.entries(schemeSingletons).filter(([id, com]) => filterElement(com, filter)).map(
+																([template_id, visual]) => {
+																	return (
+																		<TemplateDraggableElement
+																			key={template_id}
+																			element={visual}
+																			onDoubleClick={
+																				handleElementDoubleClick
+																			}
+																			schemeId={schemeId}
+																			templateId={template_id}
+																		/>
+																	);
+																}
+															)}
+														</div>
 													</div>
 												</div>
-											</div>
-										}></Tab>
-								);
-							})}
-						</Tabs>
+											}></Tab>
+									);
+								})}
+							</Tabs>
 
-						{/* Add New Scheme Button */}
-						<div
-							style={{
-								position: "absolute",
-								bottom: "16px",
-								left: "20px",
-								zIndex: 10,
-								width: "60px"
-							}}>
-							<Button
-								icon="plus"
-								variant="outlined"
-								intent="primary"
-								onClick={() => setIsNewSchemeDialogOpen(true)}
+							{/* Add New Scheme Button */}
+							<div
 								style={{
-									boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-								}}
-							/>
-						</div>
+									position: "absolute",
+									bottom: "16px",
+									left: "20px",
+									zIndex: 10,
+									width: "60px"
+								}}>
+								<Button
+									icon="plus"
+									variant="outlined"
+									intent="primary"
+									onClick={() => setIsNewSchemeDialogOpen(true)}
+									style={{
+										boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+									}}
+								/>
+							</div>
 
-						{/* Delete Scheme button */}
-						<div
-							style={{
-								position: "absolute",
-								bottom: "16px",
-								left: "60px",
-								zIndex: 10,
-								width: "60px"
-							}}>
-							<Button
-								icon="trash"
-								variant="outlined"
-								intent="danger"
-								onClick={handleDeleteSchemeClick}
-								disabled={selectedSchemeId === InternalSchemeId}
+							{/* Delete Scheme button */}
+							<div
 								style={{
-									boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-								}}
-							/>
-						</div>
+									position: "absolute",
+									bottom: "16px",
+									left: "60px",
+									zIndex: 10,
+									width: "60px"
+								}}>
+								<Button
+									icon="trash"
+									variant="outlined"
+									intent="danger"
+									onClick={handleDeleteSchemeClick}
+									disabled={selectedSchemeId === InternalSchemeId}
+									style={{
+										boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+									}}
+								/>
+							</div>
 
-						{/* Download Scheme button */}
-						<div
-							style={{
-								position: "absolute",
-								bottom: "16px",
-								left: "100px",
-								zIndex: 10,
-								width: "60px"
-							}}>
-							<Button
-								icon="download"
-								variant="outlined"
-								intent="success"
-								onClick={() => ENGINE.saveSchemeFile(selectedSchemeId)}
+							{/* Download Scheme button */}
+							<div
 								style={{
-									boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-								}}
-							/>
+									position: "absolute",
+									bottom: "16px",
+									left: "100px",
+									zIndex: 10,
+									width: "60px"
+								}}>
+								<Button
+									icon="download"
+									variant="outlined"
+									intent="success"
+									onClick={() => ENGINE.saveSchemeFile(selectedSchemeId)}
+									style={{
+										boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
+									}}
+								/>
+							</div>
 						</div>
-					</div>
-				</SectionCard>
-			</Section>
+					</SectionCard>
+				</Section>
 
-			{/* Edit template dialog */}
-			<Dialog
-				isOpen={isDialogOpen}
-				onClose={handleDialogClose}
-				title="Edit element"
-				canOutsideClickClose={true}
-				canEscapeKeyClose={true}>
-				<DialogBody>
-					<Text>Editing element: {selectedElement?.ref} (WIP)</Text>
+				{/* Edit template dialog */}
+				<Dialog
+					isOpen={isDialogOpen}
+					onClose={handleDialogClose}
+					title="Edit element"
+					canOutsideClickClose={true}
+					canEscapeKeyClose={true}>
+					<DialogBody>
+						<Text>Editing element: {selectedElement?.ref} (WIP)</Text>
 
-					<ObjectInspector data={selectedElement}></ObjectInspector>
-				</DialogBody>
+						<ObjectInspector data={selectedElement}></ObjectInspector>
+					</DialogBody>
 
-				<DialogFooter
-					actions={
-						<>
-							<Button text="Cancel" onClick={handleDialogClose} variant="minimal" />
-							<Button text="Submit" intent="primary" onClick={handleSubmit} />
-						</>
-					}></DialogFooter>
-			</Dialog>
+					<DialogFooter
+						actions={
+							<>
+								<Button text="Cancel" onClick={handleDialogClose} variant="minimal" />
+								<Button text="Submit" intent="primary" onClick={handleSubmit} />
+							</>
+						}></DialogFooter>
+				</Dialog>
 
-			<NewElementDialog
-				isOpen={isNewElementDialogOpen}
-				close={handleNewElementDialogClose}
-				schemeId={selectedSchemeId}></NewElementDialog>
-			<AddSchemeDialog
-				isOpen={isNewSchemeDialogOpen}
-				onClose={handleNewSchemeDialogClose}
-				onSchemeCreated={handleSchemeCreated}
-			/>
+				<NewElementDialog
+					isOpen={isNewElementDialogOpen}
+					close={handleNewElementDialogClose}
+					schemeId={selectedSchemeId}></NewElementDialog>
+				<AddSchemeDialog
+					isOpen={isNewSchemeDialogOpen}
+					onClose={handleNewSchemeDialogClose}
+					onSchemeCreated={handleSchemeCreated}
+				/>
 
-			{/* Delete Scheme Confirmation Dialog */}
-			<Dialog
-				icon="warning-sign"
-				isOpen={isDeleteSchemeDialogOpen}
-				onClose={handleDeleteSchemeDialogClose}
-				title="Delete Scheme"
-				canOutsideClickClose={true}
-				canEscapeKeyClose={true}>
-				<DialogBody>
-					<Text>
-						Are you sure you want to delete the scheme "{selectedSchemeId}"? This action
-						cannot be undone.
-					</Text>
-				</DialogBody>
+				{/* Delete Scheme Confirmation Dialog */}
+				<Dialog
+					icon="warning-sign"
+					isOpen={isDeleteSchemeDialogOpen}
+					onClose={handleDeleteSchemeDialogClose}
+					title="Delete Scheme"
+					canOutsideClickClose={true}
+					canEscapeKeyClose={true}>
+					<DialogBody>
+						<Text>
+							Are you sure you want to delete the scheme "{selectedSchemeId}"? This action
+							cannot be undone.
+						</Text>
+					</DialogBody>
 
-				<DialogFooter
-					actions={
-						<>
-							<Button
-								text="Cancel"
-								onClick={handleDeleteSchemeDialogClose}
-								variant="minimal"
-							/>
-							<Button
-								text="Delete"
-								intent="danger"
-								onClick={handleDeleteSchemeConfirm}
-							/>
-						</>
-					}></DialogFooter>
-			</Dialog>
-		</div >
+					<DialogFooter
+						actions={
+							<>
+								<Button
+									text="Cancel"
+									onClick={handleDeleteSchemeDialogClose}
+									variant="minimal"
+								/>
+								<Button
+									text="Delete"
+									intent="danger"
+									onClick={handleDeleteSchemeConfirm}
+								/>
+							</>
+						}></DialogFooter>
+				</Dialog>
+			</div>
+		</QuietUploadArea >
 	);
 };
 
