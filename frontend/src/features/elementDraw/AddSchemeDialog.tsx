@@ -9,7 +9,7 @@ import {
 	Text
 } from "@blueprintjs/core";
 import React from "react";
-import { IUserSchemeData } from "../../logic/default";
+import { IScheme } from "../../logic/default";
 import ENGINE from "../../logic/engine";
 import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
@@ -21,12 +21,12 @@ interface AddSchemeDialogProps {
 	onSchemeCreated: () => void;
 }
 
-const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({isOpen, onClose, onSchemeCreated}) => {
+const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSchemeCreated }) => {
 	const [newSchemeName, setNewSchemeName] = React.useState("");
 	const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
 	const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-	const [uploadedSchemeData, setUploadedSchemeData] = React.useState<IUserSchemeData | null>(
+	const [uploadedSchemeData, setUploadedSchemeData] = React.useState<IScheme | null>(
 		null
 	);
 	const [svgUploads, setSvgUploads] = React.useState<Record<string, string>>({});
@@ -50,7 +50,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({isOpen, onClose, onSch
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				try {
-					const schemeData = JSON.parse(e.target?.result as string) as IUserSchemeData;
+					const schemeData = JSON.parse(e.target?.result as string) as IScheme;
 					setUploadedSchemeData(schemeData);
 					setSvgUploads({});
 				} catch (error) {
@@ -142,7 +142,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({isOpen, onClose, onSch
 				<FormGroup
 					intent={
 						!newSchemeName.trim()
-						|| ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())
+							|| ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())
 							? "danger"
 							: "primary"
 					}
@@ -156,20 +156,20 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({isOpen, onClose, onSch
 					<InputGroup
 						intent={
 							!newSchemeName.trim()
-							|| ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())
+								|| ENGINE.schemeManager.allSchemeNames.includes(newSchemeName.trim())
 								? "danger"
 								: "primary"
 						}
 						value={newSchemeName}
 						onChange={(e) => setNewSchemeName(e.target.value)}
 						placeholder="Scheme name"
-						style={{marginTop: "8px"}}
+						style={{ marginTop: "8px" }}
 					/>
 				</FormGroup>
 
-				<Divider style={{margin: "16px 0"}} />
+				<Divider style={{ margin: "16px 0" }} />
 
-				<Text style={{marginBottom: "12px"}}>
+				<Text style={{ marginBottom: "12px" }}>
 					Optionally upload a JSON file to populate the scheme:
 				</Text>
 
@@ -199,7 +199,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({isOpen, onClose, onSch
 					/>
 				)}
 				{uploadedSchemeData?.svgElements && !allSvgsSatisfied && (
-					<Text style={{color: "#a82a2a", marginTop: 8}}>
+					<Text style={{ color: "#a82a2a", marginTop: 8 }}>
 						Please upload missing SVG files before creating the scheme.
 					</Text>
 				)}

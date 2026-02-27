@@ -14,7 +14,7 @@ import {
 } from "@blueprintjs/core";
 import React, { useRef, useState, useSyncExternalStore } from "react";
 import { ObjectInspector } from "react-inspector";
-import SchemeManager, { SchemeSet } from "../../logic/default";
+import SchemeManager, { SchemeDict } from "../../logic/default";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
@@ -36,7 +36,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
-	const [schemeState, setSchemeState] = useState<SchemeSet>(ENGINE.schemeManager.allSchemes);
+	const [schemeState, setSchemeState] = useState<SchemeDict>(ENGINE.schemeManager.allSchemes);
 	const [filter, setFilter] = useState<string>("All");
 
 	const filterElements = (elements: Visual[], filter: string) => {

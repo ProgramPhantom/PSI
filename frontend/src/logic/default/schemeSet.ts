@@ -1,4 +1,4 @@
-import { SchemeSet } from "../default";
+import { SchemeDict } from "../default";
 import { ISequence } from "../hasComponents/sequence";
 import { DEFAULT_CHANNEL } from "./channel";
 import { DEFAULT_DIAGRAM } from "./defaultDiagram";
@@ -20,14 +20,14 @@ import { DEFAULT_TRAPEZIUM } from "./svgPulse/trapezium";
 import { DEFAULT_TEXT } from "./text";
 
 
-export const DEFAULT_SCHEME_SET: SchemeSet = {
+export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
 		"diagram": {
 			"default": DEFAULT_DIAGRAM
 		},
 		"sequence": {
 			"default": DEFAULT_SEQUENCE,
-			
+
 		},
 		"channel": {
 			"default": DEFAULT_CHANNEL

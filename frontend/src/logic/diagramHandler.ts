@@ -2,16 +2,13 @@ import { Rect, Svg } from "@svgdotjs/svg.js";
 import { sha256 } from 'js-sha256';
 import { appToaster } from "../app/Toaster.tsx";
 import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } from "./collection.ts";
-import SchemeManager from "./default.ts";
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
+import { ISubgrid } from "./grid.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram.ts";
 import Sequence from "./hasComponents/sequence.ts";
 import { AllComponentTypes, ID } from "./point.ts";
 import Visual, { IDraw, IVisual } from "./visual.ts";
-import { ISubgrid } from "./grid.ts";
-import Line, { ILineStyle } from "./line.ts";
-import { PointBind } from "./spacial.ts";
 
 
 /**
@@ -105,7 +102,6 @@ export default class DiagramHandler implements IDraw {
 	public diagram: Diagram;
 
 	surface?: Svg;
-	schemeManager: SchemeManager;
 	EngineConstructor: (data: IVisual, type: AllComponentTypes) => Visual | undefined
 
 	get id(): string {
@@ -143,9 +139,8 @@ export default class DiagramHandler implements IDraw {
 	}
 
 
-	constructor(surface: Svg, emitChange: () => void, schemeManager: SchemeManager, EngineConstructor: ((data: IVisual, type: AllComponentTypes) => Visual | undefined)) {
+	constructor(surface: Svg, emitChange: () => void, EngineConstructor: ((data: IVisual, type: AllComponentTypes) => Visual | undefined)) {
 		this.syncExternal = emitChange;
-		this.schemeManager = schemeManager;
 		this.surface = surface;
 		this.EngineConstructor = EngineConstructor;
 

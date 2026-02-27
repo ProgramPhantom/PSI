@@ -1,6 +1,5 @@
 import { Element, Svg, SVG } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
-import SchemeManager, { IUserSchemeData } from "./default";
 import DiagramHandler, { ActionResult, Result } from "./diagramHandler";
 import Grid, { IGrid, ISubgrid, Subgrid } from "./grid";
 import Channel, { IChannel } from "./hasComponents/channel";
@@ -17,10 +16,11 @@ import Visual, { GridCellElement, IVisual } from "./visual";
 import { api } from "../redux/api/api";
 import { store } from "../redux/store";
 import { appToaster } from "../app/Toaster";
+import JSZip from "jszip"
+import { downloadBlob } from "./util2";
+import AssetStore from "./assetStore";
+import { selectSchemes, IScheme } from "../redux/schemesSlice";
 
-
-//                                    scheme name
-export type SingletonStorage = Record<string, Visual[]>;
 
 class ENGINE {
 	static SURFACE_ID: string = "surface"
@@ -28,22 +28,25 @@ class ENGINE {
 	static currentImageName: string = "newPulseImage.svg";
 	static StateName: string = "diagram-state";
 	static STATE: string | null = localStorage.getItem(ENGINE.StateName);
-	static schemeManager: SchemeManager;
-	static singletons: SingletonStorage;
 
+	static assetStore: AssetStore;
+
+	private static _surface: Svg;
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
 		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
-		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager, ENGINE.ConstructElement);
+		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, ENGINE.ConstructElement);
 		console.log("SURFACE ATTACHED");
 	}
 	static get surface(): Svg {
 		return ENGINE._surface;
 	}
-	private static _surface: Svg;
 
-	static initialiseSchemeManager() {
-		ENGINE.schemeManager = new SchemeManager(ENGINE.emitChange);
+	static get diagramState(): IDiagram {
+		return ENGINE.handler.diagram.state
+	}
+	static get svgDict(): Record<string, string> {
+		return ENGINE.assetStore.svgStrings
 	}
 
 	static get handler(): DiagramHandler {
@@ -54,6 +57,7 @@ class ENGINE {
 	}
 	private static _handler: DiagramHandler;
 
+
 	static subscribe(listener: () => void) {
 		ENGINE.listeners = [...ENGINE.listeners, listener];
 		return (() => {
@@ -61,7 +65,7 @@ class ENGINE {
 		}).bind(ENGINE);
 	}
 	static getSnapshot() {
-		return ENGINE.handler.id + ENGINE.schemeManager.id;
+		return ENGINE.handler.id
 	}
 	static emitChange() {
 		ENGINE.listeners.forEach((l) => {
@@ -90,7 +94,7 @@ class ENGINE {
 		}
 	}
 	static async loadSVGData() {
-		await this.schemeManager.loadSVGs();
+		await ENGINE.assetStore.loadAllSVGs();
 	}
 	static saveAs() {
 		var stateObject: IDiagram = ENGINE.handler.diagram.state;
@@ -142,80 +146,139 @@ class ENGINE {
 		localStorage.removeItem("diagramUUID");
 	}
 
-	static createSingletons() {
-		var singletonCollections: SingletonStorage = {};
 
-		for (var [schemeName, scheme] of Object.entries(this.schemeManager.allSchemes)) {
-			var singletons: Visual[] = [];
+	// ---------- File savers and downloaders ------------
+	static async createDiagramFile(): Promise<JSZip> {
+		const zip = new JSZip();
 
-			this.schemeManager.allElementsInScheme(schemeName).forEach((element) => {
-				let clonedData: IVisual = structuredClone(element);
+		zip.file("diagram.json", JSON.stringify(ENGINE.diagramState, null, 2));
 
-				clonedData.id = undefined;
-				let singleton: Visual | undefined = ENGINE.ConstructElement(clonedData, element.type!);
-				if (singleton !== undefined) {
-					singletons.push(singleton)
+		const assetsFolder = zip.folder("assets")!;
+
+		for (const [id, svgText] of Object.entries(ENGINE.svgDict)) {
+			assetsFolder.file(`${id}.svg`, svgText);
+		}
+
+		zip.file("manifest.json", JSON.stringify({
+			format: "nmr-pulse-diagram",
+			version: 1
+		}));
+
+		return zip
+	}
+	static async saveDiagramFile() {
+		const file = await ENGINE.createDiagramFile()
+		const blob = await file.generateAsync({ type: "blob" });
+
+		downloadBlob(blob, "diagram.nmrd");
+	}
+
+	static async createSchemeFile(schemeName: string): Promise<JSZip> {
+		const zip = new JSZip();
+		const state = store.getState();
+		const schemes = selectSchemes(state);
+		const scheme: IScheme | undefined = schemes[schemeName];
+
+		if (!scheme) {
+			throw new Error(`Scheme ${schemeName} not found`);
+		}
+
+		zip.file("manifest.json", JSON.stringify({
+			format: "nmr-pulse-scheme",
+			version: 1,
+			name: schemeName
+		}));
+
+		const componentsFolder = zip.folder("components")!;
+		const assetsFolder = zip.folder("assets")!;
+
+		// Svg data refs
+		const usedAssets = new Set<string>();
+
+		const elements = scheme.components;
+		elements.forEach((el) => {
+			componentsFolder.file(`${el.ref}.json`, JSON.stringify(el, null, 2));
+
+			// Add svg file if svg
+			if (el.type === "svg") {
+				const svgEl = el as ISVGElement;
+				if (svgEl.svgDataRef) {
+					usedAssets.add(svgEl.svgDataRef);
 				}
+			}
+		});
+
+		usedAssets.forEach((assetId) => {
+			const svgText = ENGINE.svgDict[assetId];
+			if (svgText) {
+				assetsFolder.file(`${assetId}.svg`, svgText);
+			}
+		});
+
+		return zip;
+	}
+	static async saveSchemeFile(schemeName: string) {
+		const file = await ENGINE.createSchemeFile(schemeName);
+		const blob = await file.generateAsync({ type: "blob" });
+		downloadBlob(blob, `${schemeName}.nmrs`);
+	}
+
+	static async createComponentFile(component: IVisual): Promise<JSZip> {
+		const zip = new JSZip();
+		const state = component;
+
+		zip.file("component.json", JSON.stringify(state, null, 2));
+
+		zip.file("manifest.json", JSON.stringify({
+			format: "nmr-pulse-component",
+			version: 1,
+			name: state.ref
+		}));
+
+		const assetsFolder = zip.folder("assets")!;
+		const usedAssets: Set<string> = ENGINE.getAssetRequirementsFromComponent(component);
+
+		usedAssets.forEach((assetId) => {
+			const svgText = ENGINE.svgDict[assetId];
+			if (svgText) {
+				assetsFolder.file(`${assetId}.svg`, svgText);
+			}
+		});
+
+		return zip;
+	}
+	static async saveComponentFile(component: IVisual) {
+		const file = await ENGINE.createComponentFile(component);
+		const blob = await file.generateAsync({ type: "blob" });
+		const name = (component as any).ref ?? "component";
+		downloadBlob(blob, `${name}.nmrc`);
+	}
+
+	static getAssetRequirementsFromComponent(component: IVisual): Set<string> {
+		let assets: Set<string> = new Set<string>();
+
+		if (SVGElement.isSVGElement(component)) {
+			assets.add(component.svgDataRef)
+		} else if (Collection.isCollection(component)) {
+			component.children.forEach((c) => {
+				assets = new Set([...assets, ...ENGINE.getAssetRequirementsFromComponent(c)])
 			})
-
-			singletonCollections[schemeName] = singletons;
 		}
 
-		this.singletons = singletonCollections;
+		return assets
 	}
-
-	static addSingleton(
-		data: IVisual,
-		schemeName: string = SchemeManager.InternalSchemeName
-	) {
-		let clonedData: IVisual = structuredClone(data);
-		clonedData.id = undefined;
-		this.schemeManager.addElementData(clonedData, schemeName);
-
-
-		let singleton: Visual | undefined = ENGINE.ConstructElement(clonedData, data.type!);
-		if (singleton !== undefined) {
-			this.singletons[schemeName].push(singleton)
-		}
-	}
-
-	static removeSingleton(
-		data: IVisual,
-		schemeName: string = SchemeManager.InternalSchemeName
-	) {
-
-		this.schemeManager.removeElementData(data, schemeName);
-
-		this.singletons[schemeName] = this.singletons[
-			schemeName
-		].filter((singleton) => singleton.id !== data.id);
-		this.emitChange();
-	}
-
-
-	static addBlankScheme(name: string) {
-		ENGINE.singletons[name] = [];
-		ENGINE.schemeManager.setUserScheme(name.trim(), {});
-	}
-	static addScheme(name: string, data: IUserSchemeData) {
-		ENGINE.schemeManager.setUserScheme(name, data);
-		ENGINE.createSingletons();
-	}
-	static removeScheme(name: string) {
-		delete ENGINE.singletons[name];
-		ENGINE.schemeManager.deleteUserScheme(name);
-	}
+	// -----------------------------------
 
 
 	static ConstructSVGElement(data: ISVGElement): SVGElement {
 		var result: SVGElement = new SVGElement(data);
-		if (ENGINE.schemeManager.svgStrings && data.svgDataRef) {
-			if (ENGINE.schemeManager.svgStrings[data.svgDataRef] === undefined) {
+		if (ENGINE.assetStore.svgStrings && data.svgDataRef) {
+			if (ENGINE.assetStore.svgStrings[data.svgDataRef] === undefined) {
 				console.warn(
-					`SVG data reference '${data.svgDataRef}' not found in SchemeManager`
+					`SVG data reference '${data.svgDataRef}' not found in AssetStore`
 				);
 			} else {
-				let svgString: string = ENGINE.schemeManager.svgStrings[data.svgDataRef];
+				let svgString: string = ENGINE.assetStore.svgStrings[data.svgDataRef];
 				let svgObj: Element = SVG(svgString);
 
 				result.setSvgData(svgObj);
