@@ -2,6 +2,7 @@
 import { Button, Dialog, DialogBody, DialogFooter } from "@blueprintjs/core";
 import { GoogleLogin } from "@react-oauth/google";
 import { useLoginUserMutation } from "../../redux/api/api";
+import { appToaster } from "../../app/Toaster";
 
 export interface ILoginDialogProps {
     isOpen: boolean;
@@ -26,13 +27,27 @@ export function LoginDialog(props: ILoginDialogProps) {
                                 if ('error' in response) {
                                     //TODO show failiure banner?
                                     console.log(response.error)
+									appToaster.show({
+										"message": "Login Failed",
+										"intent": "danger"
+									})
                                     return
                                 }
                                 console.log(response.data?.message)
+								appToaster.show({
+									"message": "Logged in",
+									"intent": "success"
+								})
+								return
                             }
                             )
                         }}
-                        onError={() => { console.log("Login failed") }}
+                        onError={() => { 
+							appToaster.show({
+								"message": "Login Failed",
+								"intent": "danger"
+							})
+						}}
                     >
                     </GoogleLogin>
                 </div>

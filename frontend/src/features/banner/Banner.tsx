@@ -61,6 +61,15 @@ export default function Banner(props: IBannerProps) {
 		});
 	};
 
+	const exportDiagramFile = () => {
+		ENGINE.saveDiagramFile();
+
+		appToaster.show({
+			message: "Diagram file downloaded",
+			intent: "success"
+		});
+	}
+
 	const selectLineTool = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (props.selectedTool.type === "arrow") {
 			props.setTool({ type: "select", config: {} });
@@ -112,8 +121,15 @@ export default function Banner(props: IBannerProps) {
 					<Button
 						size="small"
 						variant="minimal"
+						icon="export"
+						text="Export"
+						onClick={() => exportDiagramFile()}
+					/>
+					<Navbar.Divider />
+					<Button
+						size="small"
+						variant="minimal"
 						icon="download"
-						text="Download State"
 						onClick={() => downloadState()}
 					/>
 					<Navbar.Divider />

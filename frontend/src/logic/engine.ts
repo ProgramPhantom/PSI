@@ -17,6 +17,8 @@ import Visual, { GridCellElement, IVisual } from "./visual";
 import { api } from "../redux/api/api";
 import { store } from "../redux/store";
 import { appToaster } from "../app/Toaster";
+import JSZip from "jszip"
+import { downloadBlob } from "./util2";
 
 
 //                                    scheme name
@@ -31,6 +33,7 @@ class ENGINE {
 	static schemeManager: SchemeManager;
 	static singletons: SingletonStorage;
 
+	private static _surface: Svg;
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
 		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
@@ -40,7 +43,14 @@ class ENGINE {
 	static get surface(): Svg {
 		return ENGINE._surface;
 	}
-	private static _surface: Svg;
+
+	static get diagramState(): IDiagram {
+		return ENGINE.handler.diagram.state
+	}
+	static get svgDict(): Record<string, string> {
+		return ENGINE.schemeManager.svgStrings
+	}
+
 
 	static initialiseSchemeManager() {
 		ENGINE.schemeManager = new SchemeManager(ENGINE.emitChange);
@@ -206,6 +216,125 @@ class ENGINE {
 		ENGINE.schemeManager.deleteUserScheme(name);
 	}
 
+
+	// ---------- File savers and downloaders ------------
+	static async createDiagramFile(): Promise<JSZip> {
+		const zip = new JSZip();
+
+		zip.file("diagram.json", JSON.stringify(ENGINE.diagramState, null, 2));
+
+		const assetsFolder = zip.folder("assets")!;
+
+		for (const [id, svgText] of Object.entries(ENGINE.svgDict)) {
+			assetsFolder.file(`${id}.svg`, svgText);
+		}
+
+		zip.file("manifest.json", JSON.stringify({
+			format: "nmr-pulse-diagram",
+			version: 1
+		}));
+
+		return zip
+	}
+	static async saveDiagramFile() {
+		const file = await ENGINE.createDiagramFile()
+		const blob = await file.generateAsync({ type: "blob" });
+
+		downloadBlob(blob, "diagram.nmrd");
+	}
+
+	static async createSchemeFile(schemeName: string): Promise<JSZip> {
+		const zip = new JSZip();
+		const scheme = ENGINE.schemeManager.allSchemes[schemeName];
+
+		if (!scheme) {
+			throw new Error(`Scheme ${schemeName} not found`);
+		}
+
+		zip.file("manifest.json", JSON.stringify({
+			format: "nmr-pulse-scheme",
+			version: 1,
+			name: schemeName
+		}));
+
+		const componentsFolder = zip.folder("components")!;
+		const assetsFolder = zip.folder("assets")!;
+
+		// Svg data refs
+		const usedAssets = new Set<string>();
+
+		const elements = ENGINE.schemeManager.allElementsInScheme(schemeName);
+		elements.forEach((el) => {
+			componentsFolder.file(`${el.ref}.json`, JSON.stringify(el, null, 2));
+
+			// Add svg file if svg
+			if (el.type === "svg") {
+				const svgEl = el as ISVGElement;
+				if (svgEl.svgDataRef) {
+					usedAssets.add(svgEl.svgDataRef);
+				}
+			}
+		});
+
+		usedAssets.forEach((assetId) => {
+			const svgText = ENGINE.svgDict[assetId];
+			if (svgText) {
+				assetsFolder.file(`${assetId}.svg`, svgText);
+			}
+		});
+
+		return zip;
+	}
+	static async saveSchemeFile(schemeName: string) {
+		const file = await ENGINE.createSchemeFile(schemeName);
+		const blob = await file.generateAsync({ type: "blob" });
+		downloadBlob(blob, `${schemeName}.nmrs`);
+	}
+
+	static async createComponentFile(component: IVisual): Promise<JSZip> {
+		const zip = new JSZip();
+		const state = component;
+
+		zip.file("component.json", JSON.stringify(state, null, 2));
+
+		zip.file("manifest.json", JSON.stringify({
+			format: "nmr-pulse-component",
+			version: 1,
+			name: state.ref
+		}));
+
+		const assetsFolder = zip.folder("assets")!;
+		const usedAssets: Set<string> = ENGINE.getAssetRequirementsFromComponent(component);
+
+		usedAssets.forEach((assetId) => {
+			const svgText = ENGINE.svgDict[assetId];
+			if (svgText) {
+				assetsFolder.file(`${assetId}.svg`, svgText);
+			}
+		});
+
+		return zip;
+	}
+	static async saveComponentFile(component: IVisual) {
+		const file = await ENGINE.createComponentFile(component);
+		const blob = await file.generateAsync({ type: "blob" });
+		const name = (component as any).ref ?? "component";
+		downloadBlob(blob, `${name}.nmrc`);
+	}
+
+	static getAssetRequirementsFromComponent(component: IVisual): Set<string> {
+		let assets: Set<string> = new Set<string>();
+
+		if (SVGElement.isSVGElement(component)) {
+			assets.add(component.svgDataRef)
+		} else if (Collection.isCollection(component)) {
+			component.children.forEach((c) => {
+				assets = new Set([...assets, ...ENGINE.getAssetRequirementsFromComponent(c)])
+			})
+		}
+
+		return assets
+	}
 
 	static ConstructSVGElement(data: ISVGElement): SVGElement {
 		var result: SVGElement = new SVGElement(data);
