@@ -34,6 +34,11 @@ export function LoginDialog(props: ILoginDialogProps) {
                                     return
                                 }
                                 console.log(response.data?.message)
+								appToaster.show({
+									"message": "Logged in",
+									"intent": "success"
+								})
+								return
                             }
                             )
                         }}

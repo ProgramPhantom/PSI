@@ -17,6 +17,8 @@ import Visual, { GridCellElement, IVisual } from "./visual";
 import { api } from "../redux/api/api";
 import { store } from "../redux/store";
 import { appToaster } from "../app/Toaster";
+import JSZip from "jszip"
+import { downloadBlob } from "./util2";
 
 
 //                                    scheme name
@@ -31,6 +33,7 @@ class ENGINE {
 	static schemeManager: SchemeManager;
 	static singletons: SingletonStorage;
 
+	private static _surface: Svg;
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
 		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
@@ -40,7 +43,14 @@ class ENGINE {
 	static get surface(): Svg {
 		return ENGINE._surface;
 	}
-	private static _surface: Svg;
+
+	static get diagramState(): IDiagram {
+		return ENGINE.handler.diagram.state
+	}
+	static get svgDict(): Record<string, string> {
+		return ENGINE.schemeManager.svgStrings
+	}
+	
 
 	static initialiseSchemeManager() {
 		ENGINE.schemeManager = new SchemeManager(ENGINE.emitChange);
@@ -206,6 +216,31 @@ class ENGINE {
 		ENGINE.schemeManager.deleteUserScheme(name);
 	}
 
+	static async createDiagramFile(): Promise<JSZip> {
+		const zip = new JSZip();
+
+		zip.file("diagram.json", JSON.stringify(ENGINE.diagramState, null, 2));
+
+		const svgFolder = zip.folder("svgs")!;
+		
+		for (const [id, svgText] of Object.entries(ENGINE.svgDict)) {
+			svgFolder.file(`${id}.svg`, svgText);
+		}
+
+		zip.file("manifest.json", JSON.stringify({
+			format: "nmr-pulse-diagram",
+			version: 1
+		}));
+
+		return zip
+	}
+	static async saveDiagramFile() {
+		const file = await ENGINE.createDiagramFile()
+
+		const blob = await file.generateAsync({ type: "blob" });
+
+		downloadBlob(blob, "diagram.nmrd");
+	}
 
 	static ConstructSVGElement(data: ISVGElement): SVGElement {
 		var result: SVGElement = new SVGElement(data);
