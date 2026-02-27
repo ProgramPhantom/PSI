@@ -1,13 +1,14 @@
 
-import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultSvgElement, defaultText, defaultVisual } from "../../logic/default/index";
+import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
+import { DEFAULT_180H } from "../../logic/default/simplePulse/180pulse";
+import { DEFAULT_180S } from "../../logic/default/svgPulse/180";
 import { ILabel } from "../../logic/hasComponents/label";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
 import { ISpace } from "../../logic/space";
-import { ISVGElement } from "../../logic/svgElement";
 import { IText } from "../../logic/text";
-import Visual, { IVisual } from "../../logic/visual";
+import { IVisual } from "../../logic/visual";
 import ChannelForm from "./ChannelForm";
 import { GridForm } from "./GridForm";
 import LabelForm from "./LabelForm";
@@ -31,7 +32,7 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	},
 	"svg": {
 		form: SVGElementForm,
-		defaults: defaultSvgElement as ISVGElement,
+		defaults: DEFAULT_180S,
 		allowLabels: true
 	},
 	"text": {

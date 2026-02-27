@@ -3,6 +3,7 @@ import {
 	Classes,
 	ControlGroup,
 	Dialog,
+	DialogBody,
 	DialogFooter,
 	FormGroup,
 	HTMLSelect,
@@ -22,7 +23,10 @@ import { selectSchemes, InternalSchemeId } from "../../redux/schemesSlice";
 interface ISVGElementFormProps extends FormRequirements { }
 
 const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
-	const formControls = useFormContext<ISVGElement>();
+	const fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
+
+	const formControls = useFormContext();
+
 	const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [svgReference, setSvgReference] = useState("");
@@ -31,6 +35,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 
 	const schemes = useAppSelector(selectSchemes);
 	const schemeNames = useMemo(() => Object.keys(schemes), [schemes]);
+
 
 	const handleFileSelect = (file: File) => {
 		if (file.type === "image/svg+xml" || file.name.endsWith(".svg")) {
@@ -58,6 +63,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 				try {
 					const svgString = e.target?.result as string;
 					ENGINE.assetStore.addSVGData(svgString, svgReference.trim());
+					ENGINE.emitChange();
 
 					appToaster.show({
 						message: "SVG uploaded successfully",
@@ -84,6 +90,8 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 		}
 	};
 
+
+	const vals = formControls.getValues();
 	return (
 		<>
 			{/* SVG Specific fields */}
@@ -91,18 +99,20 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 				<ControlGroup>
 					<Controller
 						control={formControls.control}
-						name="svgDataRef"
+						name={`${fullPrefix}svgDataRef`}
 						render={({ field }) => (
-							<HTMLSelect {...field} iconName="caret-down">
-								{Object.keys(ENGINE.svgDict).map((ref) => {
-									return (
-										<option key={ref} value={ref}>
-											{ref}
-										</option>
-									);
-								})}
-							</HTMLSelect>
-						)}></Controller>
+							<HTMLSelect
+								{...field}
+								id="svgDataRef-select"
+								fill={true}
+								options={[
+									...Object.keys(ENGINE.svgDict).map((ref) => ({
+										label: `${ref}`,
+										value: ref,
+									})),
+								]}
+							/>)}>
+					</Controller>
 					<Button
 						icon="plus"
 						onClick={() => setIsUploadDialogOpen(true)}
@@ -123,7 +133,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 				}}
 				title="Upload SVG File"
 				icon="upload">
-				<div className={Classes.DIALOG_BODY}>
+				<DialogBody>
 					<FormGroup
 						label="Reference Name"
 						labelFor="reference-input"
@@ -165,7 +175,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 						}}
 						style={{ marginTop: "16px" }}
 					/>
-				</div>
+				</DialogBody>
 
 				<DialogFooter
 					actions={

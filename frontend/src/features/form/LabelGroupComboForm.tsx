@@ -1,5 +1,5 @@
 import { Button, Divider, EntityTitle, Section, Tab, Tabs } from "@blueprintjs/core";
-import React, { useEffect, useImperativeHandle } from "react";
+import React, { useEffect, useImperativeHandle, useState } from "react";
 import { DefaultValues, FormProvider, useForm } from "react-hook-form";
 import { ILabel } from "../../logic/hasComponents/label";
 import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
@@ -32,8 +32,6 @@ export type SubmitButtonRef = {
 
 export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupComboForm>(
 	(props, ref) => {
-		const dispatch = useAppDispatch();
-
 		interface FormState {
 			MasterForm: React.FC<FormRequirements>;
 			ChildForm: React.FC<FormRequirements> | undefined;
@@ -46,7 +44,7 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			targetIsCollection: boolean;
 		}
 
-		const [formState, setFormState] = React.useState<FormState | null>(null);
+		const [formState, setFormState] = useState<FormState | null>(null);
 
 		useEffect(() => {
 			var MasterForm: React.FC<FormRequirements>;
@@ -60,8 +58,6 @@ export const LabelGroupComboForm = React.forwardRef<SubmitButtonRef, LabelGroupC
 			var parentType: AllComponentTypes;
 			var childType: UserComponentType | undefined = undefined;
 			var childTarget: Visual | undefined;
-
-
 
 			var targetIsLabelGroup: boolean = false;
 			var targetIsCollection: boolean = false;
