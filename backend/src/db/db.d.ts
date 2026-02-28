@@ -29,6 +29,15 @@ export interface Diagrams {
   owner: string;
 }
 
+export interface Schemes {
+  data: Json;
+  date_created: Timestamp;
+  date_modified: Timestamp;
+  name: string;
+  owner: string;
+  scheme_id: string;
+}
+
 export interface Users {
   email: string;
   firstname: string;
@@ -39,5 +48,6 @@ export interface Users {
 
 export interface DB {
   diagrams: Diagrams;
+  schemes: Schemes;
   users: Users;
 }

@@ -89,6 +89,37 @@ components:
           type: string
         copied:
           type: boolean
+    
+    schemeMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+
+    schemeDataResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+
+    schemeCreateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        id:
+          description: The scheme Id of the newly created scheme
+          type: string
+          format: uuid
+
+    saveSchemeResponse:
+      type: object
+      properties:
+        message:
+          type: string
 
   securitySchemes:
       sessionCookie:
@@ -328,4 +359,118 @@ paths:
           description: Malformed diagram Id
         '404':
           description: Diagram not found
+
+  /schemes/{schemeId}:
+    delete: 
+      parameters:
+        - name: schemeId
+          in: path
+          description: Scheme Id
+          required: true
+          schema:
+            type: string
+      tags: 
+        -  Schemes
+      summary: Delete the specified scheme belonging to the logged in user
+      security: 
+        -  sessionCookie: []
+      responses: 
+        '200':
+          description: OK - the scheme has been successfully deleted
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/genericResponse"
+        '400':
+          description: Malformed scheme Id
+        '401':
+          description: Authentication Required
+        '404':
+          description: Scheme not found
+    get: 
+      parameters:
+        - name: schemeId
+          in: path
+          description: Scheme Id
+          required: true
+          schema:
+            type: string
+      tags: 
+        -  Schemes
+      summary: Load the specified scheme
+      security: 
+        -  {}
+      responses: 
+        '200':
+          description: OK - the specified scheme data is returned
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/schemeDataResponse"
+        '400':
+          description: Malformed scheme Id
+        '404':
+          description: Scheme not found
+    put:
+      parameters:
+        - name: schemeId
+          in: path
+          description: Scheme Id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: JSON metadata/data to save
+        required: true
+        content:
+          application/json:
+            schema: 
+              type: object
+              additionalProperties: true
+      tags: 
+        -  Schemes
+      summary: Save the scheme data
+      security: 
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK - saving has been successful
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/saveSchemeResponse"
+        '400':
+          description: Malformed scheme Id/body is not a JSON object
+        '401':
+          description: Authentication Required
+        '404':
+          description: Scheme not found
+
+  /schemes:    
+    post:
+      requestBody:
+        description: The name given to the newly created scheme
+        required: true
+        content:
+          application/json:
+            schema: 
+              properties:
+                name:
+                  type: string
+      tags: 
+        -  Schemes
+      summary: Create a scheme belonging to the logged in user
+      security: 
+        - sessionCookie: []
+      responses:
+        '201':
+          description: OK - a blank scheme has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/schemeCreateResponse"
+        '400':
+          description: Malformed request body
+        '401':
+          description: Authentication Required
       

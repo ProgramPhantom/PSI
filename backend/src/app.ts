@@ -1,5 +1,6 @@
 import express from 'express';
 import diagramRoutes from './routes/diagramRoutes.js';
+import schemeRoutes from './routes/schemeRoutes.js';
 import userRoutes from './routes/userRoutes.js'
 import { errorHandler } from './middlewares/errorHandler.js';
 import session from 'express-session';
@@ -20,13 +21,14 @@ app.use(express.json());
 app.use(session(sessionOptns))
 // Routes
 app.use('/api/diagrams', diagramRoutes);
+app.use('/api/schemes', schemeRoutes);
 app.use('/api/users', userRoutes);
 
 const swaggerDocument = YAML.load(path.join(__dirname, '../docs/openapi.yml')) as JsonObject;
 
 app.use(
-  '/api-docs', 
-  swaggerUi.serve, 
+  '/api-docs',
+  swaggerUi.serve,
   swaggerUi.setup(swaggerDocument)
 );
 
