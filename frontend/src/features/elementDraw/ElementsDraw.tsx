@@ -225,18 +225,17 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 									let schemeName = schemes[schemeId].metadata.name
 									var numElements: number = Object.values(schemeSingletons).length;
 									return (
-										<Tab
-											key={schemeId}
+										<Tab key={schemeId}
 											title={
 												<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
 													{schemeName}
 													{schemeLocations[schemeId] === "server" && (
-														<Tooltip content="Uploaded">
+														<Tooltip hoverOpenDelay={500} content="Uploaded">
 															<Icon icon="cloud" intent="primary" size={14} />
 														</Tooltip>
 													)}
 													{schemeLocations[schemeId] === "local" && isLoggedIn && (
-														<Tooltip content="Upload">
+														<Tooltip hoverOpenDelay={500} content="Upload">
 															<Button
 																icon="upload"
 																variant="minimal"
