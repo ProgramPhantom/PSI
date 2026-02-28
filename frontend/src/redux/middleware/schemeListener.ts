@@ -1,5 +1,5 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
-import { addLocalScheme, addServerScheme, deleteScheme, removeAllServerSchemes, setSchemeLocation } from '../schemesSlice';
+import { addComponent, addLocalScheme, addServerScheme, deleteComponent, deleteScheme, removeAllServerSchemes, setSchemeLocation, updateComponent } from '../schemesSlice';
 import { api } from '../api/api';
 import type { RootState } from '../store';
 import ENGINE from '../../logic/engine';
@@ -89,6 +89,43 @@ schemeListenerMiddleware.startListening({
             ).unwrap();
         } catch (error) {
             console.error("Failed to delete scheme from server", error);
+        }
+    }
+});
+
+// On add/delete/update component: re-upload scheme to server if it lives on the server
+schemeListenerMiddleware.startListening({
+    matcher: isAnyOf(addComponent, deleteComponent, updateComponent),
+    effect: async (action, listenerApi) => {
+        const state = listenerApi.getState() as RootState;
+
+        const userState = api.endpoints.getMe.select()(state);
+        const isLoggedIn = userState?.isSuccess && userState?.data;
+
+        if (!isLoggedIn) {
+            return;
+        }
+
+        const schemeId = (action.payload as { schemeId: ID }).schemeId;
+        const entry = state.schemes.schemes[schemeId];
+
+        if (!entry || entry.location !== "server") {
+            return;
+        }
+
+        try {
+            const zip = await ENGINE.createSchemeFile(schemeId);
+            const blob = await zip.generateAsync({ type: "blob" });
+            const file = new File([blob], `${schemeId}.nmrs`, { type: "application/zip" });
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            await listenerApi.dispatch(
+                api.endpoints.saveScheme.initiate({ schemeId, formData })
+            ).unwrap();
+        } catch (error) {
+            console.error("Failed to re-upload scheme to server", error);
         }
     }
 });
