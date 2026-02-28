@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { api } from './api/api';
 import applicationReducer from './applicationSlice';
 import schemesReducer from './schemesSlice';
+import { schemeListenerMiddleware } from './schemeListener';
 
 
 export const store = configureStore({
@@ -12,15 +13,23 @@ export const store = configureStore({
         [api.reducerPath]: api.reducer,
     },
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(api.middleware),
+        getDefaultMiddleware()
+            .prepend(schemeListenerMiddleware.middleware)
+            .concat(api.middleware),
     devTools: true
 },);
 
 
 store.subscribe(() => {
     const state = store.getState();
-    const schemes = state.schemes.schemes;
-    localStorage.setItem("psi-schemes-data", JSON.stringify(schemes));
+    const rawSchemes = state.schemes.schemes;
+
+    // Only serialize "local" schemes to local storage
+    const localSchemes = Object.fromEntries(
+        Object.entries(rawSchemes).filter(([_, val]) => val.location === "local")
+    );
+
+    localStorage.setItem("psi-schemes-data", JSON.stringify(localSchemes));
 });
 
 

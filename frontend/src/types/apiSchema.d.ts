@@ -442,7 +442,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["schemeDataResponse"];
+                        "application/octet-stream": components["schemas"]["schemeDataResponse"];
                     };
                 };
                 /** @description Malformed scheme Id */
@@ -472,11 +472,12 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            /** @description JSON metadata/data to save */
+            /** @description A nmrs scheme file to save. */
             requestBody: {
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
+                    "multipart/form-data": {
+                        /** Format: binary */
+                        file?: string;
                     };
                 };
             };
@@ -675,12 +676,8 @@ export interface components {
         schemeMetadata: {
             name?: string;
         };
-        schemeDataResponse: {
-            name?: string;
-            data?: {
-                [key: string]: unknown;
-            };
-        };
+        /** Format: binary */
+        schemeDataResponse: string;
         schemeCreateResponse: {
             message?: string;
             /**

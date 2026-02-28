@@ -51,6 +51,9 @@ RUN npm run build
 FROM base as final
 
 
+# Create storage directory and set permissions
+RUN mkdir -p storage/schemes && chown -R node:node storage
+
 # Run the application as a non-root user.
 USER node
 

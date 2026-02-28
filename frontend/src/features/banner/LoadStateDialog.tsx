@@ -23,7 +23,8 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	// Check if svgDataRef is in AssetStore or list of uploads
-	const isSvgRefSatisfied = (svgRef: string): boolean => {
+	const isSvgRefSatisfied = (svgRef: string | undefined): boolean => {
+		if (svgRef === undefined) return true;
 		if (Object.keys(ENGINE.svgDict).includes(svgRef) === true) {
 			return true;
 		} // Asset Store
@@ -35,12 +36,14 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 
 	const extractSvgElements = (stateData: IDiagram): Array<{ name: string; element: any }> => {
 		const out: Array<{ name: string; element: any }> = [];
-		stateData.sequenceAligner.sequences.forEach((seq) => {
-			seq.channels?.forEach((ch) => {
-				ch.pulseElements.forEach((el: any, idx: number) => {
+		const seqs = stateData.children?.filter(c => c.type === "sequence-aligner")[0]?.children || [];
+
+		seqs.forEach((seq) => {
+			seq.children?.filter((c: any) => c.type === "channel").forEach((ch: any) => {
+				ch.children?.forEach((el: any, idx: number) => {
 					const hasRef = el && (el.type === "svg" || el.svgDataRef !== undefined);
 					if (hasRef) {
-						const name = el.ref || `${ch.sequenceID}-${idx}`;
+						const name = el.ref || `${ch.id}-${idx}`;
 						out.push({ name, element: el });
 					}
 				});

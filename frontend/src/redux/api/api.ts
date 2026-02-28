@@ -12,9 +12,9 @@ export const api = createApi({
             query: () => '/users/diagrams',
             providesTags: ['Diagram'],
         }),
-		getMe: builder.query<components['schemas']['meResponse'], void>({
+        getMe: builder.query<components['schemas']['meResponse'], void>({
             query: () => '/users/me',
-			providesTags: ['User']
+            providesTags: ['User']
         }),
 
         getDiagram: builder.query<components['schemas']['diagramDataResponse'], string>({
@@ -29,7 +29,7 @@ export const api = createApi({
                 method: 'POST',
                 body: googleData,
             }),
-			invalidatesTags: ["User"]
+            invalidatesTags: ["User"]
         }),
         createDiagram: builder.mutation<components['schemas']['diagramCreateResponse'], string>({
             query: (name) => ({
@@ -54,12 +54,39 @@ export const api = createApi({
             }),
             invalidatesTags: ['Diagram'],
         }),
+
+        getScheme: builder.query<Blob, string>({
+            query: (schemeId) => ({
+                url: `/schemes/${schemeId}`,
+                responseHandler: (response) => response.blob()
+            }),
+        }),
+        createScheme: builder.mutation<components['schemas']['schemeCreateResponse'], string>({
+            query: (name) => ({
+                url: '/schemes',
+                method: 'POST',
+                body: { name },
+            }),
+        }),
+        saveScheme: builder.mutation<components['schemas']['saveSchemeResponse'], { schemeId: string, formData: FormData }>({
+            query: ({ schemeId, formData }) => ({
+                url: `/schemes/${schemeId}`,
+                method: 'PUT',
+                body: formData,
+            }),
+        }),
+        deleteScheme: builder.mutation<components['schemas']['genericResponse'], string>({
+            query: (schemeId) => ({
+                url: `/schemes/${schemeId}`,
+                method: 'DELETE',
+            }),
+        }),
     }),
 });
 
 export const {
     useGetUserDiagramsQuery,
-	useGetMeQuery,
+    useGetMeQuery,
     useLazyGetDiagramQuery,
     useGetDiagramQuery,
     useGetDateModifiedQuery,
@@ -67,4 +94,9 @@ export const {
     useCreateDiagramMutation,
     useSaveDiagramMutation,
     useDeleteDiagramMutation,
+    useLazyGetSchemeQuery,
+    useGetSchemeQuery,
+    useCreateSchemeMutation,
+    useSaveSchemeMutation,
+    useDeleteSchemeMutation,
 } = api;

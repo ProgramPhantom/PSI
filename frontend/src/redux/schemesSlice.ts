@@ -4,6 +4,9 @@ import { IVisual } from '../logic/visual';
 import { DEFAULT_SCHEME_SET } from '../logic/default/schemeSet';
 
 
+export type SchemeSource = "builtin" | "local" | "server"
+
+
 export type SchemeMetadata = {
     name: string,
 }
@@ -11,7 +14,7 @@ export type IScheme = {
     metadata: SchemeMetadata,
     components: Record<ID, IVisual>
 };
-export type SchemeDict = Record<ID, IScheme>;
+export type SchemeDict = Record<ID, { scheme: IScheme, location: SchemeSource }>;
 
 export const InternalSchemeId = "internal";
 export const SCHEMES_STORAGE_KEY = "psi-schemes-data";
@@ -32,8 +35,9 @@ interface SchemesState {
     schemes: SchemeDict;
 }
 
+const localLoadedSchemes: SchemeDict = loadSchemesFromStorage() ?? {}
 const initialState: SchemesState = {
-    schemes: loadSchemesFromStorage() ?? DEFAULT_SCHEME_SET,
+    schemes: { ...localLoadedSchemes, ...DEFAULT_SCHEME_SET },
 };
 
 const schemesSlice = createSlice({
@@ -43,13 +47,13 @@ const schemesSlice = createSlice({
         setSchemes(state, action: PayloadAction<SchemeDict>) {
             state.schemes = action.payload;
         },
-        addScheme(state, action: PayloadAction<{ id?: ID; scheme: IScheme }>) {
-            const { id, scheme } = action.payload;
+        addScheme(state, action: PayloadAction<{ id?: ID; scheme: IScheme; location?: SchemeSource }>) {
+            const { id, scheme, location = "local" } = action.payload;
             if (id === undefined) {
                 const new_id = Math.random().toString(16).slice(2);
-                state.schemes[new_id] = scheme;
+                state.schemes[new_id] = { scheme, location };
             } else {
-                state.schemes[id] = scheme;
+                state.schemes[id] = { scheme, location };
             }
         },
         deleteScheme(state, action: PayloadAction<ID>) {
@@ -58,37 +62,46 @@ const schemesSlice = createSlice({
         updateSchemeMetadata(state, action: PayloadAction<{ id: ID; metadata: SchemeMetadata }>) {
             const { id, metadata } = action.payload;
             if (state.schemes[id]) {
-                state.schemes[id].metadata = metadata;
+                state.schemes[id].scheme.metadata = metadata;
             }
         },
         addComponent(state, action: PayloadAction<{ schemeId: ID; component: IVisual }>) {
             const { schemeId, component } = action.payload;
             if (state.schemes[schemeId]) {
                 const id = Math.random().toString(16).slice(2);
-                state.schemes[schemeId].components[id] = component;
+                state.schemes[schemeId].scheme.components[id] = component;
             }
         },
         deleteComponent(state, action: PayloadAction<{ schemeId: ID; templateId: ID }>) {
             const { schemeId, templateId } = action.payload;
             if (state.schemes[schemeId]) {
-                delete state.schemes[schemeId].components[templateId];
+                delete state.schemes[schemeId].scheme.components[templateId];
             }
         },
         updateComponent(state, action: PayloadAction<{ schemeId: ID; componentId: ID, component: IVisual }>) {
             const { schemeId, componentId, component } = action.payload;
             if (state.schemes[schemeId]) {
-                state.schemes[schemeId].components[componentId] = component;
+                state.schemes[schemeId].scheme.components[componentId] = component;
             }
         },
+        setSchemeLocation(state, action: PayloadAction<{ id: ID; location: SchemeSource }>) {
+            const { id, location } = action.payload;
+            if (state.schemes[id]) {
+                state.schemes[id].location = location;
+            }
+        }
     },
     selectors: {
-        selectSchemes: (state) => state.schemes,
+        selectSchemes: (state) => Object.fromEntries(
+            Object.entries(state.schemes).map(([id, val]) => [id, val.scheme])
+        ),
         selectAllSchemeIDs: (state) => Object.keys(state.schemes),
-        selectSchemeById: (state, schemeId: ID) => state.schemes[schemeId],
+        selectSchemeById: (state, schemeId: ID) => state.schemes[schemeId]?.scheme,
+        selectSchemeLocationById: (state, schemeId: ID) => state.schemes[schemeId]?.location,
         selectComponentsBySchemeId: (state, schemeId: ID) =>
-            state.schemes[schemeId] ? Object.values(state.schemes[schemeId].components) : [],
+            state.schemes[schemeId] ? Object.values(state.schemes[schemeId].scheme.components) : [],
         selectAllComponents: (state) =>
-            Object.values(state.schemes).flatMap((scheme) => Object.values(scheme.components)),
+            Object.values(state.schemes).flatMap((val) => Object.values(val.scheme.components)),
     }
 });
 
@@ -100,12 +113,14 @@ export const {
     addComponent,
     deleteComponent,
     updateComponent,
+    setSchemeLocation,
 } = schemesSlice.actions;
 
 export const {
     selectSchemes,
     selectAllSchemeIDs,
     selectSchemeById,
+    selectSchemeLocationById,
     selectComponentsBySchemeId,
     selectAllComponents,
 } = schemesSlice.selectors;
