@@ -1,5 +1,6 @@
 import React, { useEffect, useState, ReactNode } from "react";
 import { Icon } from "@blueprintjs/core";
+import { appToaster } from "../app/Toaster";
 
 export interface QuietUploadAreaProps {
     children: ReactNode;
@@ -59,10 +60,16 @@ const QuietUploadArea: React.FC<QuietUploadAreaProps> = ({ children, onDrop, acc
         setIsDraggingInWindow(false);
         setIsDirectlyOver(false);
         const files = Array.from(e.dataTransfer.files);
+
         if (files.length > 0) {
             const file = files[0];
             if (!acceptExtension || file.name.endsWith(acceptExtension)) {
                 onDrop(file);
+            } else {
+                appToaster.show({
+                    message: `Please upload a ${acceptExtension} file`,
+                    intent: "warning"
+                })
             }
         }
     };

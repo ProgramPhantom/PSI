@@ -113,10 +113,6 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 		setIsNewSchemeDialogOpen(false);
 	};
 
-	const handleSchemeCreated = () => {
-		// setSchemeState(ENGINE.schemeManager.allSchemes);
-	};
-
 	const handleDeleteSchemeClick = () => {
 		if (selectedSchemeId === InternalSchemeId) {
 			appToaster.show({
@@ -140,9 +136,9 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 	const handleSchemeDrop = async (file: File) => {
 		try {
-			const name = await ENGINE.uploadSchemeFile(file);
+			await ENGINE.uploadSchemeFile(file);
 			appToaster.show({
-				message: `Scheme '${name}' created successfully from dropped file`,
+				message: `Scheme created successfully from dropped file`,
 				intent: "success"
 			});
 		} catch (error) {
@@ -445,7 +441,6 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 				<AddSchemeDialog
 					isOpen={isNewSchemeDialogOpen}
 					onClose={handleNewSchemeDialogClose}
-					onSchemeCreated={handleSchemeCreated}
 				/>
 
 				{/* Delete Scheme Confirmation Dialog */}

@@ -20,10 +20,9 @@ import JSZip from "jszip";
 interface AddSchemeDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onSchemeCreated: () => void;
 }
 
-const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSchemeCreated }) => {
+const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose }) => {
 	const [newSchemeName, setNewSchemeName] = React.useState("");
 	const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
 	const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -80,16 +79,10 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 
 	const handleSubmit = async () => {
 		const name = newSchemeName.trim();
-		if (
-			!name
-			|| Object.keys(schemes).includes(name)
-		)
-			return;
 
 		if (selectedFile) {
 			try {
 				await ENGINE.uploadSchemeFile(selectedFile, name);
-				onSchemeCreated();
 				handleClose();
 				appToaster.show({
 					message: "Scheme created successfully from uploaded file",
@@ -108,7 +101,6 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 				components: {}
 			};
 			dispatch(addScheme({ id: name, scheme: blankScheme }));
-			onSchemeCreated();
 			handleClose();
 		}
 	};
@@ -127,21 +119,17 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 				<FormGroup
 					intent={
 						!newSchemeName.trim()
-							|| schemeNames.includes(newSchemeName.trim())
 							? "danger"
 							: "primary"
 					}
 					helperText={
 						!newSchemeName.trim()
 							? "Cannot be empty"
-							: schemeNames.includes(newSchemeName.trim())
-								? "Cannot have duplicate names"
-								: undefined
+							: ""
 					}>
 					<InputGroup
 						intent={
 							!newSchemeName.trim()
-								|| schemeNames.includes(newSchemeName.trim())
 								? "danger"
 								: "primary"
 						}
@@ -181,9 +169,6 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose, onSc
 							onClick={handleSubmit}
 							disabled={
 								!newSchemeName.trim()
-								|| schemeNames.includes(
-									newSchemeName.trim()
-								)
 							}
 						/>
 					</>

@@ -43,9 +43,14 @@ const schemesSlice = createSlice({
         setSchemes(state, action: PayloadAction<SchemeDict>) {
             state.schemes = action.payload;
         },
-        addScheme(state, action: PayloadAction<{ id: ID; scheme: IScheme }>) {
+        addScheme(state, action: PayloadAction<{ id?: ID; scheme: IScheme }>) {
             const { id, scheme } = action.payload;
-            state.schemes[id] = scheme;
+            if (id === undefined) {
+                const new_id = Math.random().toString(16).slice(2);
+                state.schemes[new_id] = scheme;
+            } else {
+                state.schemes[id] = scheme;
+            }
         },
         deleteScheme(state, action: PayloadAction<ID>) {
             delete state.schemes[action.payload];

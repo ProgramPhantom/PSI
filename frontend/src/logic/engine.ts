@@ -285,7 +285,7 @@ class ENGINE {
 			components: components
 		};
 
-		store.dispatch(addScheme({ id: schemeName, scheme: newScheme }));
+		store.dispatch(addScheme({ scheme: newScheme }));
 	}
 
 	static async createComponentFile(component: IVisual): Promise<JSZip> {
