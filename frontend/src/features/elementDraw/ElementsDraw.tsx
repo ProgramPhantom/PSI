@@ -34,6 +34,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
 	const [isNewElementDialogOpen, setIsNewElementDialogOpen] = useState(false);
 
+	const [selectedSchemeName, setSelectedSchemeName] = useState(InternalSchemeId)
 	const [selectedSchemeId, setSelectedSchemeId] = useState(InternalSchemeId);
 
 	const [isNewSchemeDialogOpen, setIsNewSchemeDialogOpen] = useState(false);

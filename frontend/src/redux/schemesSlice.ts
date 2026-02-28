@@ -10,7 +10,8 @@ export type SchemeSource = "builtin" | "local" | "server"
 
 export type SchemeMetadata = {
     name: string,
-    id: string
+    id: string,
+    format: string
 }
 export type IScheme = {
     metadata: SchemeMetadata,

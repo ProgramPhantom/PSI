@@ -19,7 +19,7 @@ import { appToaster } from "../app/Toaster";
 import JSZip from "jszip"
 import { downloadBlob } from "./util2";
 import AssetStore from "./assetStore";
-import { IScheme, selectSchemes, addLocalScheme } from "../redux/schemesSlice";
+import { IScheme, selectSchemes, addLocalScheme, SchemeMetadata } from "../redux/schemesSlice";
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -178,21 +178,22 @@ class ENGINE {
 		downloadBlob(blob, "diagram.nmrd");
 	}
 
-	static async createSchemeFile(schemeName: string): Promise<JSZip> {
+	static async createSchemeFile(schemeId: string): Promise<JSZip> {
 		const zip = new JSZip();
 		const state = store.getState();
 		const schemes = selectSchemes(state);
-		const scheme: IScheme | undefined = schemes[schemeName];
+		const scheme: IScheme | undefined = schemes[schemeId];
 
 		if (!scheme) {
-			throw new Error(`Scheme ${schemeName} not found`);
+			throw new Error(`Scheme ${schemeId} not found`);
 		}
 
-		zip.file("manifest.json", JSON.stringify({
-			format: "nmr-pulse-scheme",
-			version: 1,
-			name: schemeName
-		}));
+		const manifestData: SchemeMetadata = {
+			id: schemeId,
+			name: scheme.metadata.name,
+			format: "nmr-pulse-scheme"
+		}
+		zip.file("manifest.json", JSON.stringify(manifestData));
 
 		const componentsFolder = zip.folder("components")!;
 		const assetsFolder = zip.folder("assets")!;
@@ -222,10 +223,10 @@ class ENGINE {
 
 		return zip;
 	}
-	static async saveSchemeFile(schemeName: string) {
-		const file = await ENGINE.createSchemeFile(schemeName);
+	static async saveSchemeFile(schemeId: string) {
+		const file = await ENGINE.createSchemeFile(schemeId);
 		const blob = await file.generateAsync({ type: "blob" });
-		downloadBlob(blob, `${schemeName}.nmrs`);
+		downloadBlob(blob, `${schemeId}.nmrs`);
 	}
 
 	static async uploadSchemeFile(file: File, nameOverride?: string) {
@@ -273,7 +274,7 @@ class ENGINE {
 		}
 
 		const newScheme: IScheme = {
-			metadata: { name: schemeName, id: schemeUUID },
+			metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
 			components: components
 		};
 
@@ -300,6 +301,7 @@ class ENGINE {
 		}
 	}
 
+	
 	static async createComponentFile(component: IVisual): Promise<JSZip> {
 		const zip = new JSZip();
 		const state = component;
