@@ -6,11 +6,13 @@ import {
 	Divider,
 	EntityTitle,
 	H5,
+	Icon,
 	Section,
 	SectionCard,
 	Tab,
 	Tabs,
-	Text
+	Text,
+	Tooltip
 } from "@blueprintjs/core";
 import React, { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ObjectInspector } from "react-inspector";
@@ -41,6 +43,11 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const [isDeleteSchemeDialogOpen, setIsDeleteSchemeDialogOpen] = useState(false);
 
 	const schemes = useAppSelector(selectSchemes);
+	const schemeLocations = useAppSelector((state) =>
+		Object.fromEntries(
+			Object.entries(state.schemes.schemes || {}).map(([id, v]) => [id, v.location])
+		)
+	);
 	const dispatch = useAppDispatch();
 
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
@@ -217,7 +224,16 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 									return (
 										<Tab
 											key={schemeId}
-											title={schemeName}
+											title={
+												<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+													{schemeName}
+													{schemeLocations[schemeId] === "server" && (
+														<Tooltip content="Uploaded">
+															<Icon icon="cloud" size={14} />
+														</Tooltip>
+													)}
+												</span>
+											}
 											style={{ width: "100%", overflow: "auto" }}
 											tagProps={{ round: true }}
 											tagContent={numElements}
