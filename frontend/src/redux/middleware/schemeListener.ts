@@ -1,5 +1,6 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
-import { addComponent, addLocalScheme, addServerScheme, deleteComponent, deleteScheme, removeAllServerSchemes, setSchemeLocation, updateComponent } from '../schemesSlice';
+import { addComponent, addLocalScheme, addServerScheme, deleteComponent, deleteScheme, removeAllServerSchemes, 
+    setSchemeLocation, setSchemeLocationServer, updateComponent } from '../schemesSlice';
 import { api } from '../api/api';
 import type { RootState } from '../store';
 import ENGINE from '../../logic/engine';
@@ -54,11 +55,50 @@ schemeListenerMiddleware.startListening({
                 api.endpoints.createScheme.initiate({ schemeId: id, formData, schemeName: name })
             ).unwrap();
 
-            // Setup the scheme location to "server" if successful
-            listenerApi.dispatch(setSchemeLocation({ id, location: "server" }));
+            // Setup the scheme location to "server" if successful (ServerSync avoids triggering upload listener)
+            listenerApi.dispatch(setSchemeLocationServer({ id }));
 
         } catch (error) {
             console.error("Failed to upload scheme to server", error);
+        }
+    }
+});
+
+// When user moves a scheme to "server" (e.g. Upload button): run upload; revert to "local" on failure
+schemeListenerMiddleware.startListening({
+    matcher: setSchemeLocation.match,
+    effect: async (action, listenerApi) => {
+        const { id, location } = action.payload;
+        if (location !== "server" || id === undefined) {
+            return;
+        }
+
+        const state = listenerApi.getState() as RootState;
+        const userState = api.endpoints.getMe.select()(state);
+        const isLoggedIn = userState?.isSuccess && userState?.data;
+        if (!isLoggedIn) {
+            listenerApi.dispatch(setSchemeLocation({ id, location: "local" }));
+            return;
+        }
+
+        const entry = state.schemes.schemes[id];
+        if (!entry) {
+            return;
+        }
+
+        const name = entry.scheme.metadata.name ?? "unnamed scheme";
+        try {
+            const zip = await ENGINE.createSchemeFile(id);
+            const blob = await zip.generateAsync({ type: "blob" });
+            const file = new File([blob], `${id}.nmrs`, { type: "application/zip" });
+            const formData = new FormData();
+            formData.append("file", file);
+            await listenerApi.dispatch(
+                api.endpoints.createScheme.initiate({ schemeId: id, formData, schemeName: name })
+            ).unwrap();
+        } catch (error) {
+            console.error("Failed to upload scheme to server", error);
+            listenerApi.dispatch(setSchemeLocation({ id, location: "local" }));
         }
     }
 });

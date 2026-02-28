@@ -93,6 +93,13 @@ const schemesSlice = createSlice({
                 state.schemes[id].location = location;
             }
         },
+        /** Sets location to "server" without triggering upload listener (e.g. after sync/addLocalScheme upload). */
+        setSchemeLocationServer(state, action: PayloadAction<{ id: ID }>) {
+            const { id } = action.payload;
+            if (state.schemes[id]) {
+                state.schemes[id].location = "server";
+            }
+        },
         removeAllServerSchemes(state) {
             for (const id in state.schemes) {
                 if (state.schemes[id].location === "server") {
@@ -125,6 +132,7 @@ export const {
     deleteComponent,
     updateComponent,
     setSchemeLocation,
+    setSchemeLocationServer,
     removeAllServerSchemes,
 } = schemesSlice.actions;
 
