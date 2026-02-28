@@ -224,9 +224,14 @@ class ENGINE {
 		return zip;
 	}
 	static async saveSchemeFile(schemeId: string) {
+		const state = store.getState();
+		const schemes = selectSchemes(state);
+		const scheme: IScheme | undefined = schemes[schemeId];
+		const name = scheme.metadata.name
+
 		const file = await ENGINE.createSchemeFile(schemeId);
 		const blob = await file.generateAsync({ type: "blob" });
-		downloadBlob(blob, `${schemeId}.nmrs`);
+		downloadBlob(blob, `${name}.nmrs`);
 	}
 
 	static async uploadSchemeFile(file: File, nameOverride?: string) {
@@ -301,7 +306,7 @@ class ENGINE {
 		}
 	}
 
-	
+
 	static async createComponentFile(component: IVisual): Promise<JSZip> {
 		const zip = new JSZip();
 		const state = component;
