@@ -16,6 +16,8 @@ import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { addScheme, selectSchemes, IScheme } from "../../redux/schemesSlice";
 import JSZip from "jszip";
+import { v4 as uuidv4 } from 'uuid';
+
 
 interface AddSchemeDialogProps {
 	isOpen: boolean;
@@ -97,10 +99,10 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose }) =>
 			}
 		} else if (!selectedFile) {
 			const blankScheme: IScheme = {
-				metadata: { name: name },
+				metadata: { name: name, id: uuidv4() },
 				components: {}
 			};
-			dispatch(addScheme({ id: name, scheme: blankScheme }));
+			dispatch(addScheme({ scheme: blankScheme }));
 			handleClose();
 		}
 	};

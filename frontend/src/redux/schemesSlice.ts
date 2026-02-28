@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ID } from '../logic/point';
 import { IVisual } from '../logic/visual';
 import { DEFAULT_SCHEME_SET } from '../logic/default/schemeSet';
+import { UUID } from 'crypto';
 
 
 export type SchemeSource = "builtin" | "local" | "server"
@@ -9,6 +10,7 @@ export type SchemeSource = "builtin" | "local" | "server"
 
 export type SchemeMetadata = {
     name: string,
+    id: string
 }
 export type IScheme = {
     metadata: SchemeMetadata,
@@ -47,14 +49,10 @@ const schemesSlice = createSlice({
         setSchemes(state, action: PayloadAction<SchemeDict>) {
             state.schemes = action.payload;
         },
-        addScheme(state, action: PayloadAction<{ id?: ID; scheme: IScheme; location?: SchemeSource }>) {
-            const { id, scheme, location = "local" } = action.payload;
-            if (id === undefined) {
-                const new_id = Math.random().toString(16).slice(2);
-                state.schemes[new_id] = { scheme, location };
-            } else {
-                state.schemes[id] = { scheme, location };
-            }
+        addScheme(state, action: PayloadAction<{ scheme: IScheme; location?: SchemeSource }>) {
+            const { scheme, location = "local" } = action.payload;
+            const uuid = scheme.metadata.id;
+            state.schemes[uuid] = { scheme, location }; 
         },
         deleteScheme(state, action: PayloadAction<ID>) {
             delete state.schemes[action.payload];

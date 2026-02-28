@@ -356,6 +356,45 @@ paths:
           description: Diagram not found
 
   /schemes/{schemeId}:
+    post:
+      parameters:
+        - name: schemeId
+          in: path
+          description: Scheme Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: The name given to the newly created scheme and the nmrs file
+        required: true
+        content:
+          multipart/form-data:
+            schema: 
+              type: object
+              properties:
+                name:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      tags: 
+        -  Schemes
+      summary: Create a scheme belonging to the logged in user
+      security: 
+        - sessionCookie: []
+      responses:
+        '201':
+          description: OK - a blank scheme has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/schemeCreateResponse"
+        '400':
+          description: Malformed request body
+        '401':
+          description: Authentication Required
+
     delete: 
       parameters:
         - name: schemeId
@@ -382,6 +421,7 @@ paths:
           description: Authentication Required
         '404':
           description: Scheme not found
+
     get: 
       parameters:
         - name: schemeId
@@ -406,6 +446,7 @@ paths:
           description: Malformed scheme Id
         '404':
           description: Scheme not found
+
     put:
       parameters:
         - name: schemeId
@@ -443,32 +484,3 @@ paths:
           description: Authentication Required
         '404':
           description: Scheme not found
-
-  /schemes:    
-    post:
-      requestBody:
-        description: The name given to the newly created scheme
-        required: true
-        content:
-          application/json:
-            schema: 
-              properties:
-                name:
-                  type: string
-      tags: 
-        -  Schemes
-      summary: Create a scheme belonging to the logged in user
-      security: 
-        - sessionCookie: []
-      responses:
-        '201':
-          description: OK - a blank scheme has been created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/schemeCreateResponse"
-        '400':
-          description: Malformed request body
-        '401':
-          description: Authentication Required
-      

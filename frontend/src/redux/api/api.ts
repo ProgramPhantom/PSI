@@ -61,12 +61,18 @@ export const api = createApi({
                 responseHandler: (response) => response.blob()
             }),
         }),
-        createScheme: builder.mutation<components['schemas']['schemeCreateResponse'], string>({
-            query: (name) => ({
-                url: '/schemes',
-                method: 'POST',
-                body: { name },
-            }),
+        createScheme: builder.mutation<components['schemas']['schemeCreateResponse'], { schemeId: string, schemeName: string, formData: FormData }>({
+            query: ({ schemeId, schemeName, formData }) => {
+                // Ensure the name is included in the multipart form data
+                if (!formData.has('name')) {
+                    formData.append('name', schemeName);
+                }
+                return {
+                    url: `/schemes/${schemeId}`,
+                    method: 'POST',
+                    body: formData,
+                };
+            },
         }),
         saveScheme: builder.mutation<components['schemas']['saveSchemeResponse'], { schemeId: string, formData: FormData }>({
             query: ({ schemeId, formData }) => ({

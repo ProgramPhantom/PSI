@@ -25,11 +25,17 @@ schemeListenerMiddleware.startListening({
         }
 
         const actionPayload = action.payload as { id?: ID; scheme: IScheme; location?: SchemeSource };
-        const { id, scheme, location = "local" } = actionPayload;
+        const { scheme, location = "local" } = actionPayload;
+        const id = scheme.metadata.id;
+        let name = scheme.metadata.name
 
         // Only upload local schemes. If it's builtin or already from the server, do not upload.
         if (location !== "local" || id === undefined) {
             return;
+        }
+
+        if (name === undefined) {
+            name = "unnamed scheme"
         }
 
         try {
@@ -44,7 +50,7 @@ schemeListenerMiddleware.startListening({
 
             // Dispatch the saveScheme mutation
             await listenerApi.dispatch(
-                api.endpoints.saveScheme.initiate({ schemeId: id, formData })
+                api.endpoints.createScheme.initiate({ schemeId: id, formData, schemeName: name })
             ).unwrap();
 
             // Setup the scheme location to "server" if successful

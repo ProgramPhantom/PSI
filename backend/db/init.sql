@@ -35,7 +35,6 @@ create table if not exists schemes
         constraint schemes_pk
             primary key,
     name          varchar   not null,
-    data          jsonb     not null,
     date_created  timestamptz not null,
     date_modified timestamptz not null,
     owner         varchar   not null

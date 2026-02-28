@@ -1,5 +1,4 @@
 import { db } from '../db/database.js';
-import type { JsonObject } from '../db/db.js';
 
 export const SchemeRepository = {
     async deleteById(id: string) {
@@ -8,17 +7,17 @@ export const SchemeRepository = {
             .where('scheme_id', '=', id)
             .executeTakeFirst();
     },
-    async saveById(id: string, json: JsonObject) {
+    async saveById(id: string) {
         return await db
             .updateTable('schemes')
-            .set({ data: json, date_modified: new Date() })
+            .set({ date_modified: new Date() })
             .where('scheme_id', '=', id)
             .executeTakeFirst();
     },
     async loadById(id: string) {
         return await db
             .selectFrom('schemes')
-            .select(['data', 'name'])
+            .selectAll()
             .where('scheme_id', '=', id)
             .executeTakeFirst();
     },
@@ -36,7 +35,6 @@ export const SchemeRepository = {
                 name: name,
                 date_created: datetime,
                 date_modified: datetime,
-                data: {},
             })
             .returning('scheme_id')
             .executeTakeFirst();

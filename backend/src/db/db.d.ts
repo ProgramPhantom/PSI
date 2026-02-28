@@ -30,7 +30,6 @@ export interface Diagrams {
 }
 
 export interface Schemes {
-  data: Json;
   date_created: Timestamp;
   date_modified: Timestamp;
   name: string;

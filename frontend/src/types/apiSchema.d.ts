@@ -514,7 +514,53 @@ export interface paths {
                 };
             };
         };
-        post?: never;
+        /** Create a scheme belonging to the logged in user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Scheme Id */
+                    schemeId: string;
+                };
+                cookie?: never;
+            };
+            /** @description The name given to the newly created scheme and the nmrs file */
+            requestBody: {
+                content: {
+                    "multipart/form-data": {
+                        name?: string;
+                        /** Format: binary */
+                        file?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description OK - a blank scheme has been created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["schemeCreateResponse"];
+                    };
+                };
+                /** @description Malformed request body */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Authentication Required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         /** Delete the specified scheme belonging to the logged in user */
         delete: {
             parameters: {
@@ -560,63 +606,6 @@ export interface paths {
                 };
             };
         };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/schemes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create a scheme belonging to the logged in user */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description The name given to the newly created scheme */
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description OK - a blank scheme has been created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["schemeCreateResponse"];
-                    };
-                };
-                /** @description Malformed request body */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Authentication Required */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;

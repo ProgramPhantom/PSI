@@ -1,10 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
 import { SchemeRepository } from '../repositories/schemeRepository.js';
-import { v7 as uuidv7 } from 'uuid';
 import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
-import type { JsonObject } from '../db/db.js';
 
 const CreateSchemeSchema = z.object({
     name: z.string().min(1),
@@ -73,10 +71,7 @@ export const saveScheme = async (
             return;
         }
 
-        const updateResponse = await SchemeRepository.saveById(
-            resource,
-            {}, // No longer storing json data in db
-        );
+        const updateResponse = await SchemeRepository.saveById(resource);
 
         if (updateResponse.numUpdatedRows > 0) {
             res.status(200).json({ message: `Saved scheme file for Id: ${resource}` });
@@ -101,13 +96,25 @@ export const createScheme = async (
             return;
         }
 
-        const id = uuidv7();
+        const pathResult = IdSchema.safeParse(req.params.schemeId);
+        if (!pathResult.success) {
+            res.status(400).json({ message: z.treeifyError(pathResult.error) });
+            return;
+        }
+        const id = pathResult.data;
+
+
         const result = CreateSchemeSchema.safeParse(req.body);
         if (!result.success) {
             res.status(400).json({ message: z.treeifyError(result.error) });
             return;
         }
         const { name } = result.data;
+
+        if (!req.file) {
+            res.status(400).json({ message: 'No file uploaded' });
+            return;
+        }
 
         const dbResponse = await SchemeRepository.createScheme(
             id,
@@ -121,6 +128,13 @@ export const createScheme = async (
                 id: dbResponse.scheme_id,
             });
         } else {
+            // Clean up orphaned file on db failure
+            if (req.file) {
+                const filePath = path.join(STORAGE_DIR, req.file.filename);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            }
             throw new Error('Database error during creation.');
         }
     } catch (error) {

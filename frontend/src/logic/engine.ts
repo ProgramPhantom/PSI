@@ -20,6 +20,7 @@ import JSZip from "jszip"
 import { downloadBlob } from "./util2";
 import AssetStore from "./assetStore";
 import { IScheme, selectSchemes, addScheme } from "../redux/schemesSlice";
+import { v4 as uuidv4 } from 'uuid';
 
 
 class ENGINE {
@@ -247,6 +248,10 @@ class ENGINE {
 		}
 
 		const schemeName = nameOverride || manifest.name || "Imported Scheme";
+		const schemeUUID = manifest.id;
+		if (schemeUUID === undefined) {
+			throw new Error("Invalid scheme file: missing id in manifest");
+		}
 
 		// Load assets
 		const assetsFolder = unzipped.folder("assets");
@@ -281,7 +286,7 @@ class ENGINE {
 		}
 
 		const newScheme: IScheme = {
-			metadata: { name: schemeName },
+			metadata: { name: schemeName, id: schemeUUID },
 			components: components
 		};
 
