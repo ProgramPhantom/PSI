@@ -97,13 +97,8 @@ components:
           type: string
 
     schemeDataResponse:
-      type: object
-      properties:
-        name:
-          type: string
-        data:
-          type: object
-          additionalProperties: true
+      type: string
+      format: binary
 
     schemeCreateResponse:
       type: object
@@ -404,7 +399,7 @@ paths:
         '200':
           description: OK - the specified scheme data is returned
           content:
-            application/json:
+            application/octet-stream:
               schema: 
                 $ref: "#/components/schemas/schemeDataResponse"
         '400':
@@ -420,13 +415,16 @@ paths:
           schema:
             type: string
       requestBody:
-        description: JSON metadata/data to save
+        description: A nmrs scheme file to save.
         required: true
         content:
-          application/json:
-            schema: 
+          multipart/form-data:
+            schema:
               type: object
-              additionalProperties: true
+              properties:
+                file:
+                  type: string
+                  format: binary
       tags: 
         -  Schemes
       summary: Save the scheme data
