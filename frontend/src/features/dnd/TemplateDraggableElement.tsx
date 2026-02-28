@@ -5,15 +5,13 @@ import React, { CSSProperties, useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { appToaster } from "../../app/Toaster";
-import SchemeManager from "../../logic/default";
-import { ActionResult } from "../../logic/diagramHandler";
 import ENGINE from "../../logic/engine";
-import { UserComponentType } from "../../logic/point";
-import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
-import Grid, { IGrid, ISubgrid, Subgrid } from "../../logic/grid";
+import { Subgrid } from "../../logic/grid";
 import Collection from "../../logic/collection";
+import { useAppDispatch } from "../../redux/hooks";
+import { deleteComponent, InternalSchemeId } from "../../redux/schemesSlice";
 
 
 const style: CSSProperties = {
@@ -41,7 +39,8 @@ const style: CSSProperties = {
 interface ITemplateDraggableElementProps {
 	element: Visual;
 	onDoubleClick?: (element: Visual) => void;
-	schemeName: string;
+	schemeId: string;
+	templateId: string;
 }
 
 export interface IDraggableElementDropItem {
@@ -51,6 +50,8 @@ export interface IDraggableElementDropItem {
 /* When an element is selected, the svg on the canvas is hidden and the element is replaced
 by this. It is a different object that can be dragged. */
 const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (props) => {
+	const dispatch = useAppDispatch();
+
 	// Compute drag element type:
 	let dragElementType = DragElementTypes.ATOMIC_PREFAB;
 	if (props.element instanceof Subgrid) {
@@ -58,7 +59,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 	} else if (props.element instanceof Collection) {
 		dragElementType = DragElementTypes.OTHER
 	}
-	
+
 	const [{ isDragging }, drag, preview] = useDrag(() => ({
 		type: dragElementType,
 		item: { element: props.element } as IDraggableElementDropItem,
@@ -97,7 +98,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 						index: dropResult.data.index,
 
 						orientation: singletonState.pulseData?.orientation !== "both" ? dropResult.data.orientation : "both",
-						alignment: singletonState.pulseData?.alignment ?? {x: "centre", y: "far"},
+						alignment: singletonState.pulseData?.alignment ?? { x: "centre", y: "far" },
 						noSections: singletonState.pulseData?.noSections ?? 1,
 						clipBar: singletonState.pulseData?.clipBar ?? false
 					}
@@ -171,7 +172,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 	};
 
 	const deleteTemplate = () => {
-		ENGINE.removeSingleton(props.element.state, props.schemeName);
+		dispatch(deleteComponent({ schemeId: props.schemeId, templateId: props.templateId }));
 
 		appToaster.show({
 			"message": `Deleted ${props.element.ref}`,
@@ -212,7 +213,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 			}}
 			onDoubleClick={handleDoubleClick}
 			title={`Drag ${props.element.ref} to canvas`}>
-			{props.schemeName !== SchemeManager.InternalSchemeName ? (
+			{props.schemeId !== InternalSchemeId ? (
 				<Button
 					title={`Delete ${props.element.ref}`}
 					icon="trash"

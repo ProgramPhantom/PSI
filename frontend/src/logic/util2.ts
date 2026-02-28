@@ -6,7 +6,7 @@ import { Element } from "@svgdotjs/svg.js";
 
 export function cascadeID(el: Element, id: string) {
 	el.children().forEach((e) => {
-		e.attr({id: id});
+		e.attr({ id: id });
 		cascadeID(e, id);
 	});
 }
@@ -25,14 +25,14 @@ export function getByPath(obj: any, path: string | undefined) {
 }
 
 export const downloadBlob = (function () {
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-    return function (blob: Blob | MediaSource, fileName: string) {
-        var url = window.URL.createObjectURL(blob);
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    };
+	var a = document.createElement("a");
+	document.body.appendChild(a);
+	a.style = "display: none";
+	return function (blob: Blob | MediaSource, fileName: string) {
+		var url = window.URL.createObjectURL(blob);
+		a.href = url;
+		a.download = fileName;
+		a.click();
+		window.URL.revokeObjectURL(url);
+	};
 }());

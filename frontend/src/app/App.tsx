@@ -20,13 +20,10 @@ import { useGetMeQuery } from "../redux/api/api";
 
 
 
-ENGINE.initialiseSchemeManager();
-await ENGINE.loadSVGData();
+
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
-
+await ENGINE.loadSVGData();
 ENGINE.loadDiagramState();
-
-ENGINE.createSingletons();
 
 export interface IToolConfig { }
 

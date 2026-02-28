@@ -9,29 +9,23 @@ import { IRectElement } from "../../logic/rectElement";
 import { ISVGElement } from "../../logic/svgElement";
 import { IVisual } from "../../logic/visual";
 import { LabelGroupComboForm, SubmitButtonRef } from "../form/LabelGroupComboForm";
+import { useDispatch } from "react-redux";
+import { addComponent } from "../../redux/schemesSlice";
 
 
 interface INewElementDialog {
 	isOpen: boolean;
 	close: () => void;
-	schemeName: string;
+	schemeId: string;
 }
 
 export default function NewElementDialog(props: INewElementDialog) {
 	const [tabId, setTabId] = useState<UserComponentType>("svg");
 	const submitRef = useRef<SubmitButtonRef>(null);
-
-	const rectFormControls = useForm<IRectElement>({
-
-		mode: "onChange"
-	});
-	const svgFormControls = useForm<ISVGElement>({
-
-		mode: "onChange"
-	});
+	const dispatch = useDispatch()
 
 	const addNewTemplate = (values: IVisual) => {
-		ENGINE.addSingleton(values, props.schemeName);
+		dispatch(addComponent({ schemeId: props.schemeId, component: values }))
 		props.close();
 	}
 
@@ -50,6 +44,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 						id="newElementTabs"
 						defaultSelectedTabId="rect"
 						selectedTabId={tabId}
+						renderActiveTabPanelOnly={true}
 						onChange={(id) => setTabId(id as UserComponentType)}>
 						<Tab
 							id="rect"
@@ -57,7 +52,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 							panel={
 								<LabelGroupComboForm
 									ref={submitRef}
-									objectType={tabId}
+									objectType="rect"
 									callback={addNewTemplate}></LabelGroupComboForm>
 							}
 						/>
@@ -67,7 +62,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 							panel={
 								<LabelGroupComboForm
 									ref={submitRef}
-									objectType={tabId}
+									objectType="svg"
 									callback={addNewTemplate}></LabelGroupComboForm>
 							}
 						/>
@@ -77,7 +72,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 							panel={
 								<LabelGroupComboForm
 									ref={submitRef}
-									objectType={tabId}
+									objectType="label"
 									callback={addNewTemplate}></LabelGroupComboForm>
 							}
 						/>

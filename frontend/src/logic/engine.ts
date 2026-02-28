@@ -1,6 +1,5 @@
 import { Element, Svg, SVG } from "@svgdotjs/svg.js";
 import Collection, { ICollection } from "./collection";
-import SchemeManager, { IUserSchemeData } from "./default";
 import DiagramHandler, { ActionResult, Result } from "./diagramHandler";
 import Grid, { IGrid, ISubgrid, Subgrid } from "./grid";
 import Channel, { IChannel } from "./hasComponents/channel";
@@ -19,10 +18,9 @@ import { store } from "../redux/store";
 import { appToaster } from "../app/Toaster";
 import JSZip from "jszip"
 import { downloadBlob } from "./util2";
+import AssetStore from "./assetStore";
+import { IScheme, selectSchemes, addScheme } from "../redux/schemesSlice";
 
-
-//                                    scheme name
-export type SingletonStorage = Record<string, Visual[]>;
 
 class ENGINE {
 	static SURFACE_ID: string = "surface"
@@ -30,30 +28,29 @@ class ENGINE {
 	static currentImageName: string = "newPulseImage.svg";
 	static StateName: string = "diagram-state";
 	static STATE: string | null = localStorage.getItem(ENGINE.StateName);
-	static schemeManager: SchemeManager;
-	static singletons: SingletonStorage;
+
+	static assetStore: AssetStore = new AssetStore();
 
 	private static _surface: Svg;
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
 		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
-		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, this.schemeManager, ENGINE.ConstructElement);
+
+
+		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, ENGINE.ConstructElement);
+
 		console.log("SURFACE ATTACHED");
 	}
 	static get surface(): Svg {
 		return ENGINE._surface;
 	}
 
+
 	static get diagramState(): IDiagram {
 		return ENGINE.handler.diagram.state
 	}
 	static get svgDict(): Record<string, string> {
-		return ENGINE.schemeManager.svgStrings
-	}
-
-
-	static initialiseSchemeManager() {
-		ENGINE.schemeManager = new SchemeManager(ENGINE.emitChange);
+		return ENGINE.assetStore.svgStrings
 	}
 
 	static get handler(): DiagramHandler {
@@ -64,6 +61,7 @@ class ENGINE {
 	}
 	private static _handler: DiagramHandler;
 
+
 	static subscribe(listener: () => void) {
 		ENGINE.listeners = [...ENGINE.listeners, listener];
 		return (() => {
@@ -71,7 +69,7 @@ class ENGINE {
 		}).bind(ENGINE);
 	}
 	static getSnapshot() {
-		return ENGINE.handler.id + ENGINE.schemeManager.id;
+		return ENGINE.handler.id
 	}
 	static emitChange() {
 		ENGINE.listeners.forEach((l) => {
@@ -100,7 +98,7 @@ class ENGINE {
 		}
 	}
 	static async loadSVGData() {
-		await this.schemeManager.loadSVGs();
+		await ENGINE.assetStore.loadAllSVGs();
 	}
 	static saveAs() {
 		var stateObject: IDiagram = ENGINE.handler.diagram.state;
@@ -152,70 +150,6 @@ class ENGINE {
 		localStorage.removeItem("diagramUUID");
 	}
 
-	static createSingletons() {
-		var singletonCollections: SingletonStorage = {};
-
-		for (var [schemeName, scheme] of Object.entries(this.schemeManager.allSchemes)) {
-			var singletons: Visual[] = [];
-
-			this.schemeManager.allElementsInScheme(schemeName).forEach((element) => {
-				let clonedData: IVisual = structuredClone(element);
-
-				clonedData.id = undefined;
-				let singleton: Visual | undefined = ENGINE.ConstructElement(clonedData, element.type!);
-				if (singleton !== undefined) {
-					singletons.push(singleton)
-				}
-			})
-
-			singletonCollections[schemeName] = singletons;
-		}
-
-		this.singletons = singletonCollections;
-	}
-
-	static addSingleton(
-		data: IVisual,
-		schemeName: string = SchemeManager.InternalSchemeName
-	) {
-		let clonedData: IVisual = structuredClone(data);
-		clonedData.id = undefined;
-		this.schemeManager.addElementData(clonedData, schemeName);
-
-
-		let singleton: Visual | undefined = ENGINE.ConstructElement(clonedData, data.type!);
-		if (singleton !== undefined) {
-			this.singletons[schemeName].push(singleton)
-		}
-	}
-
-	static removeSingleton(
-		data: IVisual,
-		schemeName: string = SchemeManager.InternalSchemeName
-	) {
-
-		this.schemeManager.removeElementData(data, schemeName);
-
-		this.singletons[schemeName] = this.singletons[
-			schemeName
-		].filter((singleton) => singleton.id !== data.id);
-		this.emitChange();
-	}
-
-
-	static addBlankScheme(name: string) {
-		ENGINE.singletons[name] = [];
-		ENGINE.schemeManager.setUserScheme(name.trim(), {});
-	}
-	static addScheme(name: string, data: IUserSchemeData) {
-		ENGINE.schemeManager.setUserScheme(name, data);
-		ENGINE.createSingletons();
-	}
-	static removeScheme(name: string) {
-		delete ENGINE.singletons[name];
-		ENGINE.schemeManager.deleteUserScheme(name);
-	}
-
 
 	// ---------- File savers and downloaders ------------
 	static async createDiagramFile(): Promise<JSZip> {
@@ -245,7 +179,9 @@ class ENGINE {
 
 	static async createSchemeFile(schemeName: string): Promise<JSZip> {
 		const zip = new JSZip();
-		const scheme = ENGINE.schemeManager.allSchemes[schemeName];
+		const state = store.getState();
+		const schemes = selectSchemes(state);
+		const scheme: IScheme | undefined = schemes[schemeName];
 
 		if (!scheme) {
 			throw new Error(`Scheme ${schemeName} not found`);
@@ -263,8 +199,8 @@ class ENGINE {
 		// Svg data refs
 		const usedAssets = new Set<string>();
 
-		const elements = ENGINE.schemeManager.allElementsInScheme(schemeName);
-		elements.forEach((el) => {
+		const elements = scheme.components;
+		Object.values(elements).forEach((el) => {
 			componentsFolder.file(`${el.ref}.json`, JSON.stringify(el, null, 2));
 
 			// Add svg file if svg
@@ -289,6 +225,67 @@ class ENGINE {
 		const file = await ENGINE.createSchemeFile(schemeName);
 		const blob = await file.generateAsync({ type: "blob" });
 		downloadBlob(blob, `${schemeName}.nmrs`);
+	}
+
+	static async uploadSchemeFile(file: File, nameOverride?: string) {
+		const zip = new JSZip();
+		const unzipped = await zip.loadAsync(file);
+
+		const manifestFile = unzipped.file("manifest.json");
+		if (!manifestFile) {
+			throw new Error("Invalid scheme file: missing manifest.json");
+		}
+		const manifestStr = await manifestFile.async("text");
+		const manifest = JSON.parse(manifestStr);
+
+		if (manifest.format !== "nmr-pulse-scheme") {
+			appToaster.show({
+				"message": "Invalid scheme format",
+				"intent": "danger"
+			})
+			return
+		}
+
+		const schemeName = nameOverride || manifest.name || "Imported Scheme";
+
+		// Load assets
+		const assetsFolder = unzipped.folder("assets");
+		if (assetsFolder) {
+			const promises: Promise<void>[] = [];
+			assetsFolder.forEach((relativePath, file) => {
+				if (!file.dir && relativePath.endsWith(".svg")) {
+					// Chop off .json
+					const assetRef = relativePath.substring(0, relativePath.length - 4);
+					promises.push(file.async("text").then(svgText => {
+						ENGINE.assetStore.svgStrings[assetRef] = svgText;
+					}));
+				}
+			});
+			await Promise.all(promises);
+		}
+
+		// Load components
+		const componentsFolder = unzipped.folder("components");
+		const components: Record<string, IVisual> = {};
+		if (componentsFolder) {
+			const promises: Promise<void>[] = [];
+			componentsFolder.forEach((relativePath, file) => {
+				if (!file.dir && relativePath.endsWith(".json")) {
+					promises.push(file.async("text").then(compStr => {
+						const comp = JSON.parse(compStr) as IVisual;
+						components[comp.ref] = comp;
+					}));
+				}
+			});
+			await Promise.all(promises);
+		}
+
+		const newScheme: IScheme = {
+			metadata: { name: schemeName },
+			components: components
+		};
+
+		store.dispatch(addScheme({ scheme: newScheme }));
 	}
 
 	static async createComponentFile(component: IVisual): Promise<JSZip> {
@@ -322,6 +319,8 @@ class ENGINE {
 		downloadBlob(blob, `${name}.nmrc`);
 	}
 
+
+
 	static getAssetRequirementsFromComponent(component: IVisual): Set<string> {
 		let assets: Set<string> = new Set<string>();
 
@@ -338,13 +337,13 @@ class ENGINE {
 
 	static ConstructSVGElement(data: ISVGElement): SVGElement {
 		var result: SVGElement = new SVGElement(data);
-		if (ENGINE.schemeManager.svgStrings && data.svgDataRef) {
-			if (ENGINE.schemeManager.svgStrings[data.svgDataRef] === undefined) {
+		if (ENGINE.assetStore.svgStrings && data.svgDataRef) {
+			if (ENGINE.assetStore.svgStrings[data.svgDataRef] === undefined) {
 				console.warn(
-					`SVG data reference '${data.svgDataRef}' not found in SchemeManager`
+					`SVG data reference '${data.svgDataRef}' not found in AssetStore`
 				);
 			} else {
-				let svgString: string = ENGINE.schemeManager.svgStrings[data.svgDataRef];
+				let svgString: string = ENGINE.assetStore.svgStrings[data.svgDataRef];
 				let svgObj: Element = SVG(svgString);
 
 				result.setSvgData(svgObj);

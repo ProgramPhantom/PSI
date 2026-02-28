@@ -15,33 +15,33 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [pendingState, setPendingState] = useState<IDiagram | null>(null);
 	const [isSVGRequirementsOpen, setIsSVGDialogOpen] = useState(false);
-	const [stateSvgElements, setStateSvgElements] = useState<Array<{name: string; element: any}>>(
+	const [stateSvgElements, setStateSvgElements] = useState<Array<{ name: string; element: any }>>(
 		[]
 	);
 	const [svgUploads, setSvgUploads] = useState<Record<string, string>>({});
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	// Check if svgDataRef is in SchemeManager or list of uploads
+	// Check if svgDataRef is in AssetStore or list of uploads
 	const isSvgRefSatisfied = (svgRef: string): boolean => {
-		if (ENGINE.schemeManager.allSVGDataRefs.includes(svgRef) === true) {
+		if (Object.keys(ENGINE.svgDict).includes(svgRef) === true) {
 			return true;
-		} // Scheme Manager
+		} // Asset Store
 		if (Object.prototype.hasOwnProperty.call(svgUploads, svgRef)) {
 			return true;
 		} // Uploads
 		return false;
 	};
 
-	const extractSvgElements = (stateData: IDiagram): Array<{name: string; element: any}> => {
-		const out: Array<{name: string; element: any}> = [];
+	const extractSvgElements = (stateData: IDiagram): Array<{ name: string; element: any }> => {
+		const out: Array<{ name: string; element: any }> = [];
 		stateData.sequenceAligner.sequences.forEach((seq) => {
 			seq.channels?.forEach((ch) => {
 				ch.pulseElements.forEach((el: any, idx: number) => {
 					const hasRef = el && (el.type === "svg" || el.svgDataRef !== undefined);
 					if (hasRef) {
 						const name = el.ref || `${ch.sequenceID}-${idx}`;
-						out.push({name, element: el});
+						out.push({ name, element: el });
 					}
 				});
 			});
@@ -79,7 +79,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 					setSvgUploads({});
 					if (
 						svgs.length === 0
-						|| svgs.every(({element}) => isSvgRefSatisfied(element?.svgDataRef))
+						|| svgs.every(({ element }) => isSvgRefSatisfied(element?.svgDataRef))
 					) {
 						ENGINE.handler.constructDiagram(stateData);
 						appToaster.show({
@@ -90,6 +90,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 						setSelectedFile(null);
 						setPendingState(null);
 					} else {
+						setIsSVGDialogOpen(true);
 					}
 				} catch (error) {
 					console.error(error);
@@ -110,7 +111,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 		}
 		// Ensure all refs satisfied
 		const missing = stateSvgElements.filter(
-			({element}) => !isSvgRefSatisfied(element?.svgDataRef)
+			({ element }) => !isSvgRefSatisfied(element?.svgDataRef)
 		);
 		if (missing.length > 0) {
 			appToaster.show({
@@ -119,9 +120,9 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 			});
 			return;
 		}
-		// Commit uploads to internal scheme
+		// Commit uploads to AssetStore
 		Object.entries(svgUploads).forEach(([ref, str]) => {
-			ENGINE.schemeManager.addSVGStrData(str, ref);
+			ENGINE.assetStore.addSVGData(str, ref);
 		});
 		// Now construct diagram
 		try {
@@ -147,7 +148,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 
 	const allStateSvgsSatisfied =
 		stateSvgElements.length === 0
-		|| stateSvgElements.every(({element}) => isSvgRefSatisfied(element?.svgDataRef));
+		|| stateSvgElements.every(({ element }) => isSvgRefSatisfied(element?.svgDataRef));
 
 	return (
 		<>
@@ -208,7 +209,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 				title="Missing SVG Data"
 				icon="warning-sign">
 				<DialogBody>
-					<Text style={{marginBottom: 8}}>
+					<Text style={{ marginBottom: 8 }}>
 						Some SVG elements in the uploaded state are missing their SVG data. Please
 						upload the missing SVG files.
 					</Text>
@@ -221,7 +222,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 					/>
 
 					{!allStateSvgsSatisfied && (
-						<Text style={{color: "#a82a2a", marginTop: 8}}>
+						<Text style={{ color: "#a82a2a", marginTop: 8 }}>
 							Please upload missing SVG files before continuing.
 						</Text>
 					)}
