@@ -156,7 +156,7 @@ schemeListenerMiddleware.startListening({
                     }
 
                     const scheme: IScheme = {
-                        metadata: { name: name || "Unnamed", id: scheme_id },
+                        metadata: { name: name || "Unnamed", id: scheme_id, format: "nmr-pulse-scheme" },
                         components: components
                     };
 
