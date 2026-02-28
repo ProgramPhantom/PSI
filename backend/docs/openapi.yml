@@ -30,6 +30,19 @@ components:
                 format: uuid
               name:
                 type: string
+    schemesListResponse:
+      type: object
+      properties:
+        schemes:
+          type: array
+          items:
+            type: object
+            properties:
+              scheme_id: 
+                type: string
+                format: uuid
+              name:
+                type: string
     meResponse:
       type: object
       properties:
@@ -162,6 +175,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/diagramsListResponse"
+
+        '401':
+          description: Authentication required
+
+  /users/schemes:
+    get:
+      tags: 
+        -  Users
+      summary: Get a list of schemes belonging to the logged in user
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK - a list of schemes is returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/schemesListResponse"
 
         '401':
           description: Authentication required

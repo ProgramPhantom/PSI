@@ -39,4 +39,11 @@ export const SchemeRepository = {
             .returning('scheme_id')
             .executeTakeFirst();
     },
+    async getSchemesByOwner(ownerId: string) {
+        return await db
+            .selectFrom('schemes')
+            .select(['name', 'scheme_id'])
+            .where('owner', '=', ownerId)
+            .execute();
+    },
 };

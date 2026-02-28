@@ -19,7 +19,7 @@ import { appToaster } from "../app/Toaster";
 import JSZip from "jszip"
 import { downloadBlob } from "./util2";
 import AssetStore from "./assetStore";
-import { IScheme, selectSchemes, addScheme } from "../redux/schemesSlice";
+import { IScheme, selectSchemes, addLocalScheme } from "../redux/schemesSlice";
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -254,20 +254,7 @@ class ENGINE {
 		}
 
 		// Load assets
-		const assetsFolder = unzipped.folder("assets");
-		if (assetsFolder) {
-			const promises: Promise<void>[] = [];
-			assetsFolder.forEach((relativePath, file) => {
-				if (!file.dir && relativePath.endsWith(".svg")) {
-					// Chop off .json
-					const assetRef = relativePath.substring(0, relativePath.length - 4);
-					promises.push(file.async("text").then(svgText => {
-						ENGINE.assetStore.svgStrings[assetRef] = svgText;
-					}));
-				}
-			});
-			await Promise.all(promises);
-		}
+		ENGINE.loadSchemeAssets(file);
 
 		// Load components
 		const componentsFolder = unzipped.folder("components");
@@ -290,7 +277,27 @@ class ENGINE {
 			components: components
 		};
 
-		store.dispatch(addScheme({ scheme: newScheme }));
+		store.dispatch(addLocalScheme({ scheme: newScheme }));
+	}
+
+	static async loadSchemeAssets(file: File) {
+		const zip = new JSZip();
+		const unzipped = await zip.loadAsync(file);
+
+		const assetsFolder = unzipped.folder("assets");
+		if (assetsFolder) {
+			const promises: Promise<void>[] = [];
+			assetsFolder.forEach((relativePath, file) => {
+				if (!file.dir && relativePath.endsWith(".svg")) {
+					// Chop off .json
+					const assetRef = relativePath.substring(0, relativePath.length - 4);
+					promises.push(file.async("text").then(svgText => {
+						ENGINE.assetStore.svgStrings[assetRef] = svgText;
+					}));
+				}
+			});
+			await Promise.all(promises);
+		}
 	}
 
 	static async createComponentFile(component: IVisual): Promise<JSZip> {

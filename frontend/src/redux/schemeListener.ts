@@ -1,16 +1,17 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
-import { addScheme, deleteScheme, setSchemeLocation } from './schemesSlice';
+import { addLocalScheme, addServerScheme, deleteScheme, removeAllServerSchemes, setSchemeLocation } from './schemesSlice';
 import { api } from './api/api';
 import type { RootState } from './store';
 import ENGINE from '../logic/engine';
 import { ID } from '../logic/point';
 import { IScheme, SchemeSource } from './schemesSlice';
+import JSZip from 'jszip';
 
 export const schemeListenerMiddleware = createListenerMiddleware();
 
 // On upload scheme
 schemeListenerMiddleware.startListening({
-    matcher: isAnyOf(addScheme),
+    matcher: isAnyOf(addLocalScheme),
     effect: async (action, listenerApi) => {
         const state = listenerApi.getState() as RootState;
 
@@ -88,6 +89,85 @@ schemeListenerMiddleware.startListening({
             ).unwrap();
         } catch (error) {
             console.error("Failed to delete scheme from server", error);
+        }
+    }
+});
+
+// Sync schemes on login/logout
+schemeListenerMiddleware.startListening({
+    matcher: api.endpoints.getMe.matchFulfilled,
+    effect: async (action, listenerApi) => {
+        const user = action.payload;
+
+        if (!user || action.meta.requestStatus !== "fulfilled") {
+            // Logout case
+            listenerApi.dispatch(removeAllServerSchemes());
+            return;
+        }
+
+        // Login case: Fetch schemes from server
+        try {
+            const schemesListResponse: {
+                schemes?: {
+                    scheme_id?: string | undefined;
+                    name?: string | undefined;
+                }[] | undefined;
+            } = await listenerApi.dispatch(
+                api.endpoints.getUserSchemes.initiate()
+            ).unwrap();
+
+            if (!schemesListResponse.schemes) {
+                return;
+            }
+
+            for (const schemeInfo of schemesListResponse.schemes) {
+                const { scheme_id, name } = schemeInfo;
+                if (scheme_id === undefined) { continue }
+
+                try {
+                    // Fetch the actual scheme file (.nmrs blob)
+                    const file = await listenerApi.dispatch(
+                        api.endpoints.getScheme.initiate(scheme_id)
+                    ).unwrap();
+
+                    // Load assets from the zip
+                    await ENGINE.loadSchemeAssets(file);
+
+                    // Extract components from the zip
+                    const zip = new JSZip();
+                    const unzipped = await zip.loadAsync(file);
+
+                    const componentsFolder = unzipped.folder("components");
+                    const components: Record<string, any> = {};
+
+                    if (componentsFolder) {
+                        const filePromises: Promise<void>[] = [];
+                        componentsFolder.forEach((relativePath, file) => {
+                            if (!file.dir && relativePath.endsWith(".json")) {
+                                filePromises.push(
+                                    file.async("text").then((text) => {
+                                        const comp = JSON.parse(text);
+                                        components[comp.ref] = comp;
+                                    })
+                                );
+                            }
+                        });
+                        await Promise.all(filePromises);
+                    }
+
+                    const scheme: IScheme = {
+                        metadata: { name: name || "Unnamed", id: scheme_id },
+                        components: components
+                    };
+
+                    listenerApi.dispatch(addServerScheme({ id: scheme_id, scheme }));
+
+                } catch (error) {
+                    console.error(`Failed to load scheme ${scheme_id} from server`, error);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch user schemes list", error);
         }
     }
 });

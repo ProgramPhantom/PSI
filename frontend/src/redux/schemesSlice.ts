@@ -49,10 +49,14 @@ const schemesSlice = createSlice({
         setSchemes(state, action: PayloadAction<SchemeDict>) {
             state.schemes = action.payload;
         },
-        addScheme(state, action: PayloadAction<{ scheme: IScheme; location?: SchemeSource }>) {
+        addLocalScheme(state, action: PayloadAction<{ scheme: IScheme; location?: SchemeSource }>) {
             const { scheme, location = "local" } = action.payload;
             const uuid = scheme.metadata.id;
-            state.schemes[uuid] = { scheme, location }; 
+            state.schemes[uuid] = { scheme, location };
+        },
+        addServerScheme(state, action: PayloadAction<{ id: string, scheme: IScheme; }>) {
+            const { id, scheme, } = action.payload;
+            state.schemes[id] = { scheme, location: "server" };
         },
         deleteScheme(state, action: PayloadAction<ID>) {
             delete state.schemes[action.payload];
@@ -87,6 +91,13 @@ const schemesSlice = createSlice({
             if (state.schemes[id]) {
                 state.schemes[id].location = location;
             }
+        },
+        removeAllServerSchemes(state) {
+            for (const id in state.schemes) {
+                if (state.schemes[id].location === "server") {
+                    delete state.schemes[id]
+                }
+            }
         }
     },
     selectors: {
@@ -105,13 +116,15 @@ const schemesSlice = createSlice({
 
 export const {
     setSchemes,
-    addScheme,
+    addLocalScheme,
+    addServerScheme,
     deleteScheme,
     updateSchemeMetadata,
     addComponent,
     deleteComponent,
     updateComponent,
     setSchemeLocation,
+    removeAllServerSchemes,
 } = schemesSlice.actions;
 
 export const {

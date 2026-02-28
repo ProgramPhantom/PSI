@@ -14,7 +14,7 @@ import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { addScheme, selectSchemes, IScheme } from "../../redux/schemesSlice";
+import { addLocalScheme, selectSchemes, IScheme } from "../../redux/schemesSlice";
 import JSZip from "jszip";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -102,7 +102,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose }) =>
 				metadata: { name: name, id: uuidv4() },
 				components: {}
 			};
-			dispatch(addScheme({ scheme: blankScheme }));
+			dispatch(addLocalScheme({ scheme: blankScheme }));
 			handleClose();
 		}
 	};

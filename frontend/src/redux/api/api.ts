@@ -12,6 +12,9 @@ export const api = createApi({
             query: () => '/users/diagrams',
             providesTags: ['Diagram'],
         }),
+        getUserSchemes: builder.query<components['schemas']['schemesListResponse'], void>({
+            query: () => '/users/schemes',
+        }),
         getMe: builder.query<components['schemas']['meResponse'], void>({
             query: () => '/users/me',
             providesTags: ['User']
@@ -55,11 +58,12 @@ export const api = createApi({
             invalidatesTags: ['Diagram'],
         }),
 
-        getScheme: builder.query<Blob, string>({
+        getScheme: builder.query<File, string>({
             query: (schemeId) => ({
                 url: `/schemes/${schemeId}`,
                 responseHandler: (response) => response.blob()
             }),
+            keepUnusedDataFor: 0,
         }),
         createScheme: builder.mutation<components['schemas']['schemeCreateResponse'], { schemeId: string, schemeName: string, formData: FormData }>({
             query: ({ schemeId, schemeName, formData }) => {
@@ -92,6 +96,7 @@ export const api = createApi({
 
 export const {
     useGetUserDiagramsQuery,
+    useGetUserSchemesQuery,
     useGetMeQuery,
     useLazyGetDiagramQuery,
     useGetDiagramQuery,
@@ -100,8 +105,6 @@ export const {
     useCreateDiagramMutation,
     useSaveDiagramMutation,
     useDeleteDiagramMutation,
-    useLazyGetSchemeQuery,
-    useGetSchemeQuery,
     useCreateSchemeMutation,
     useSaveSchemeMutation,
     useDeleteSchemeMutation,
