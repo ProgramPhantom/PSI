@@ -1,10 +1,10 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
-import { addLocalScheme, addServerScheme, deleteScheme, removeAllServerSchemes, setSchemeLocation } from './schemesSlice';
-import { api } from './api/api';
-import type { RootState } from './store';
-import ENGINE from '../logic/engine';
-import { ID } from '../logic/point';
-import { IScheme, SchemeSource } from './schemesSlice';
+import { addLocalScheme, addServerScheme, deleteScheme, removeAllServerSchemes, setSchemeLocation } from '../schemesSlice';
+import { api } from '../api/api';
+import type { RootState } from '../store';
+import ENGINE from '../../logic/engine';
+import { ID } from '../../logic/point';
+import { IScheme, SchemeSource } from '../schemesSlice';
 import JSZip from 'jszip';
 
 export const schemeListenerMiddleware = createListenerMiddleware();

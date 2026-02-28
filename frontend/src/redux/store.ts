@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { api } from './api/api';
 import applicationReducer from './applicationSlice';
 import schemesReducer from './schemesSlice';
-import { schemeListenerMiddleware } from './schemeListener';
+import { schemeListenerMiddleware } from './middleware/schemeListener';
 
 
 export const store = configureStore({
