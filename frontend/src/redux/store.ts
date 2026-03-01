@@ -13,7 +13,7 @@ export const store = configureStore({
         [api.reducerPath]: api.reducer,
     },
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware()
+        getDefaultMiddleware({ serializableCheck: false })
             .prepend(schemeListenerMiddleware.middleware)
             .concat(api.middleware),
     devTools: true

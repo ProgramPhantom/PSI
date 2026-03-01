@@ -144,12 +144,59 @@ export const uploadScheme = createAsyncThunk<void, ID>(
             const formData = new FormData();
             formData.append("file", file);
             await thunkAPI.dispatch(
-                api.endpoints.createScheme.initiate({ schemeId: id, formData, schemeName: name })
+                createScheme({ schemeId: id, formData, schemeName: name })
             ).unwrap();
         } catch (error) {
             console.error("Failed to upload scheme to server", error);
             thunkAPI.dispatch(setSchemeLocation({ id, location: "local" }));
         }
+    }
+);
+
+export const getScheme = createAsyncThunk<File, string>(
+    'schemes/getScheme',
+    async (schemeId) => {
+        const response = await fetch(`/api/schemes/${schemeId}`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to fetch scheme');
+        return response.blob() as unknown as File;
+    }
+);
+
+export const createScheme = createAsyncThunk<void, { schemeId: string, schemeName: string, formData: FormData }>(
+    'schemes/createScheme',
+    async ({ schemeId, schemeName, formData }) => {
+        if (!formData.has('name')) {
+            formData.append('name', schemeName);
+        }
+        const response = await fetch(`/api/schemes/${schemeId}`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to create scheme');
+    }
+);
+
+export const saveScheme = createAsyncThunk<void, { schemeId: string, formData: FormData }>(
+    'schemes/saveScheme',
+    async ({ schemeId, formData }) => {
+        const response = await fetch(`/api/schemes/${schemeId}`, {
+            method: 'PUT',
+            body: formData,
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to save scheme');
+    }
+);
+
+export const deleteSchemeServer = createAsyncThunk<void, string>(
+    'schemes/deleteSchemeServer',
+    async (schemeId) => {
+        const response = await fetch(`/api/schemes/${schemeId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to delete scheme');
     }
 );
 

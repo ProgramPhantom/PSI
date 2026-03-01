@@ -1,7 +1,7 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
 import {
     addComponent, addLocalScheme, addServerScheme, deleteComponent, deleteScheme, removeAllServerSchemes,
-    setSchemeLocation, updateComponent
+    setSchemeLocation, updateComponent, saveScheme, deleteSchemeServer, getScheme, uploadScheme
 } from '../schemesSlice';
 import { api } from '../api/api';
 import type { RootState } from '../store';
@@ -16,53 +16,13 @@ export const schemeListenerMiddleware = createListenerMiddleware();
 schemeListenerMiddleware.startListening({
     matcher: isAnyOf(addLocalScheme),
     effect: async (action, listenerApi) => {
-        const state = listenerApi.getState() as RootState;
-
-        // We only attempt to upload if the user is logged in
-        // A user is logged in if we have the "getMe" query fulfilled.
-        // We can check the RTK query cache for getMe.
-        const userState = api.endpoints.getMe.select()(state);
-        const isLoggedIn = userState?.isSuccess && userState?.data;
-
-        if (!isLoggedIn) {
-            return;
-        }
-
         const actionPayload = action.payload as { id?: ID; scheme: IScheme; location?: SchemeSource };
-        const { scheme, location = "local" } = actionPayload;
-        const id = scheme.metadata.id;
-        let name = scheme.metadata.name
+        const id = actionPayload.scheme.metadata.id;
 
-        // Only upload local schemes. If it's builtin or already from the server, do not upload.
-        if (location !== "local" || id === undefined) {
-            return;
-        }
+        if (!id) return;
 
-        if (name === undefined) {
-            name = "unnamed scheme"
-        }
-
-        try {
-            // Reconstruct the nmrs file for this specific scheme
-            // ENGINE.createSchemeFile technically takes a schemeName, which maps to the ID in the store
-            const zip = await ENGINE.createSchemeFile(id);
-            const blob = await zip.generateAsync({ type: "blob" });
-            const file = new File([blob], `${id}.nmrs`, { type: "application/zip" });
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            // Dispatch the saveScheme mutation
-            await listenerApi.dispatch(
-                api.endpoints.createScheme.initiate({ schemeId: id, formData, schemeName: name })
-            ).unwrap();
-
-            // Setup the scheme location to "server" if successful (ServerSync avoids triggering upload listener)
-            listenerApi.dispatch(setSchemeLocation({ id, location: "server" }));
-
-        } catch (error) {
-            console.error("Failed to upload scheme to server", error);
-        }
+        // The uploadScheme thunk handles login check and location logic internally
+        await listenerApi.dispatch(uploadScheme(id));
     }
 });
 
@@ -72,26 +32,11 @@ schemeListenerMiddleware.startListening({
 schemeListenerMiddleware.startListening({
     matcher: isAnyOf(deleteScheme),
     effect: async (action, listenerApi) => {
-        const state = listenerApi.getState() as RootState;
-
-        const userState = api.endpoints.getMe.select()(state);
-        const isLoggedIn = userState?.isSuccess && userState?.data;
-
-        if (!isLoggedIn) {
-            return;
-        }
-
         const id = action.payload as ID;
 
-        // At this point the scheme is already deleted from local state, so we couldn't easily check its location.
-        // But since we want the state of the backend to mirror reality, if they are logged in and delete a scheme,
-        // we'll attempt to delete it from the server. If it's a "local" scheme or doesn't exist on the server,
-        // it may just 404 which is fine.
-
         try {
-            await listenerApi.dispatch(
-                api.endpoints.deleteScheme.initiate(id)
-            ).unwrap();
+            // deleteSchemeServer thunk handles the server-side deletion
+            await listenerApi.dispatch(deleteSchemeServer(id)).unwrap();
         } catch (error) {
             console.error("Failed to delete scheme from server", error);
         }
@@ -103,14 +48,6 @@ schemeListenerMiddleware.startListening({
     matcher: isAnyOf(addComponent, deleteComponent, updateComponent),
     effect: async (action, listenerApi) => {
         const state = listenerApi.getState() as RootState;
-
-        const userState = api.endpoints.getMe.select()(state);
-        const isLoggedIn = userState?.isSuccess && userState?.data;
-
-        if (!isLoggedIn) {
-            return;
-        }
-
         const schemeId = (action.payload as { schemeId: ID }).schemeId;
         const entry = state.schemes.schemes[schemeId];
 
@@ -126,8 +63,9 @@ schemeListenerMiddleware.startListening({
             const formData = new FormData();
             formData.append('file', file);
 
+            // Using saveScheme thunk
             await listenerApi.dispatch(
-                api.endpoints.saveScheme.initiate({ schemeId, formData })
+                saveScheme({ schemeId, formData })
             ).unwrap();
         } catch (error) {
             console.error("Failed to re-upload scheme to server", error);
@@ -169,7 +107,7 @@ schemeListenerMiddleware.startListening({
                 try {
                     // Fetch the actual scheme file (.nmrs blob)
                     const file = await listenerApi.dispatch(
-                        api.endpoints.getScheme.initiate(scheme_id)
+                        getScheme(scheme_id)
                     ).unwrap();
 
                     // Load assets from the zip

@@ -58,39 +58,7 @@ export const api = createApi({
             invalidatesTags: ['Diagram'],
         }),
 
-        getScheme: builder.query<File, string>({
-            query: (schemeId) => ({
-                url: `/schemes/${schemeId}`,
-                responseHandler: (response) => response.blob()
-            }),
-            keepUnusedDataFor: 0,
-        }),
-        createScheme: builder.mutation<components['schemas']['schemeCreateResponse'], { schemeId: string, schemeName: string, formData: FormData }>({
-            query: ({ schemeId, schemeName, formData }) => {
-                // Ensure the name is included in the multipart form data
-                if (!formData.has('name')) {
-                    formData.append('name', schemeName);
-                }
-                return {
-                    url: `/schemes/${schemeId}`,
-                    method: 'POST',
-                    body: formData,
-                };
-            },
-        }),
-        saveScheme: builder.mutation<components['schemas']['saveSchemeResponse'], { schemeId: string, formData: FormData }>({
-            query: ({ schemeId, formData }) => ({
-                url: `/schemes/${schemeId}`,
-                method: 'PUT',
-                body: formData,
-            }),
-        }),
-        deleteScheme: builder.mutation<components['schemas']['genericResponse'], string>({
-            query: (schemeId) => ({
-                url: `/schemes/${schemeId}`,
-                method: 'DELETE',
-            }),
-        }),
+
     }),
 });
 
@@ -105,7 +73,4 @@ export const {
     useCreateDiagramMutation,
     useSaveDiagramMutation,
     useDeleteDiagramMutation,
-    useCreateSchemeMutation,
-    useSaveSchemeMutation,
-    useDeleteSchemeMutation,
 } = api;
