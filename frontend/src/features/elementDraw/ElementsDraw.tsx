@@ -29,6 +29,7 @@ import { ID, AllComponentTypes } from "../../logic/point";
 
 import { isPulse } from "../../logic/spacial";
 import QuietUploadArea from "../QuietUploadArea";
+import { AssetStoreList } from "../assetManagement";
 
 interface IElementDrawProps { }
 
@@ -42,6 +43,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 	const [isNewSchemeDialogOpen, setIsNewSchemeDialogOpen] = useState(false);
 	const [isDeleteSchemeDialogOpen, setIsDeleteSchemeDialogOpen] = useState(false);
+	const [isAssetStoreOpen, setIsAssetStoreOpen] = useState(false);
 
 	const schemes = useAppSelector(selectSchemes);
 	const schemeLocations = useAppSelector((state) =>
@@ -186,13 +188,21 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 								backgroundColor: "white",
 								zIndex: 10,
 								padding: "8px 16px 4px 16px",
-								userSelect: "none"
+								userSelect: "none",
+								display: "flex",
+								justifyContent: "space-between",
+								alignItems: "center"
 							}}>
 							<EntityTitle
 								title={"Elements"}
 								subtitle={"Drag and drop these elements onto the canvas"}
 								icon="new-object"
 								heading={H5}></EntityTitle>
+							<Button
+								icon="database"
+								variant="minimal"
+								onClick={() => setIsAssetStoreOpen(true)}
+							/>
 						</div>
 
 						<Divider style={{ margin: "4px 8px 0 8px" }} />
@@ -472,6 +482,11 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 				<AddSchemeDialog
 					isOpen={isNewSchemeDialogOpen}
 					onClose={handleNewSchemeDialogClose}
+				/>
+
+				<AssetStoreList
+					isOpen={isAssetStoreOpen}
+					onClose={() => setIsAssetStoreOpen(false)}
 				/>
 
 				{/* Delete Scheme Confirmation Dialog */}
