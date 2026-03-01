@@ -29,3 +29,19 @@ create table if not exists diagrams
 alter table diagrams
     owner to postgres;
 
+create table if not exists schemes
+(
+    scheme_id     uuid      not null
+        constraint schemes_pk
+            primary key,
+    name          varchar   not null,
+    date_created  timestamptz not null,
+    date_modified timestamptz not null,
+    owner         varchar   not null
+        constraint schemes_users_gsub_fk
+            references users
+);
+
+alter table schemes
+    owner to postgres;
+

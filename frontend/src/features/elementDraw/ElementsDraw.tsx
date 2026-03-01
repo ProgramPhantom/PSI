@@ -6,11 +6,13 @@ import {
 	Divider,
 	EntityTitle,
 	H5,
+	Icon,
 	Section,
 	SectionCard,
 	Tab,
 	Tabs,
-	Text
+	Text,
+	Tooltip
 } from "@blueprintjs/core";
 import React, { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ObjectInspector } from "react-inspector";
@@ -21,7 +23,8 @@ import AddSchemeDialog from "./AddSchemeDialog";
 import NewElementDialog from "./NewElementDialog";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { deleteScheme, selectSchemes, InternalSchemeId } from "../../redux/schemesSlice";
+import { useGetMeQuery } from "../../redux/api/api";
+import { deleteScheme, selectSchemes, setSchemeLocation, uploadScheme, InternalSchemeId } from "../../redux/schemesSlice";
 import { ID, AllComponentTypes } from "../../logic/point";
 
 import { isPulse } from "../../logic/spacial";
@@ -34,12 +37,20 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const [selectedElement, setSelectedElement] = useState<Visual | null>(null);
 	const [isNewElementDialogOpen, setIsNewElementDialogOpen] = useState(false);
 
+	const [selectedSchemeName, setSelectedSchemeName] = useState(InternalSchemeId)
 	const [selectedSchemeId, setSelectedSchemeId] = useState(InternalSchemeId);
 
 	const [isNewSchemeDialogOpen, setIsNewSchemeDialogOpen] = useState(false);
 	const [isDeleteSchemeDialogOpen, setIsDeleteSchemeDialogOpen] = useState(false);
 
 	const schemes = useAppSelector(selectSchemes);
+	const schemeLocations = useAppSelector((state) =>
+		Object.fromEntries(
+			Object.entries(state.schemes.schemes || {}).map(([id, v]) => [id, v.location])
+		)
+	);
+	const { data: me } = useGetMeQuery();
+	const isLoggedIn = Boolean(me);
 	const dispatch = useAppDispatch();
 
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
@@ -214,9 +225,29 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 									let schemeName = schemes[schemeId].metadata.name
 									var numElements: number = Object.values(schemeSingletons).length;
 									return (
-										<Tab
-											key={schemeId}
-											title={schemeName}
+										<Tab key={schemeId}
+											title={
+												<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+													{schemeName}
+													{schemeLocations[schemeId] === "server" && (
+														<Tooltip hoverOpenDelay={500} content="Uploaded">
+															<Icon icon="cloud" intent="primary" size={14} />
+														</Tooltip>
+													)}
+													{schemeLocations[schemeId] === "local" && isLoggedIn && (
+														<Tooltip hoverOpenDelay={500} content="Upload">
+															<Button
+																icon="upload"
+																variant="minimal"
+																onClick={(e) => {
+																	e.stopPropagation();
+																	dispatch(uploadScheme(schemeId));
+																}}
+															/>
+														</Tooltip>
+													)}
+												</span>
+											}
 											style={{ width: "100%", overflow: "auto" }}
 											tagProps={{ round: true }}
 											tagContent={numElements}

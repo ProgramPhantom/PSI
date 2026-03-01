@@ -19,7 +19,8 @@ import { appToaster } from "../app/Toaster";
 import JSZip from "jszip"
 import { downloadBlob } from "./util2";
 import AssetStore from "./assetStore";
-import { IScheme, selectSchemes, addScheme } from "../redux/schemesSlice";
+import { IScheme, selectSchemes, addLocalScheme, SchemeMetadata } from "../redux/schemesSlice";
+import { v4 as uuidv4 } from 'uuid';
 
 
 class ENGINE {
@@ -177,21 +178,22 @@ class ENGINE {
 		downloadBlob(blob, "diagram.nmrd");
 	}
 
-	static async createSchemeFile(schemeName: string): Promise<JSZip> {
+	static async createSchemeFile(schemeId: string): Promise<JSZip> {
 		const zip = new JSZip();
 		const state = store.getState();
 		const schemes = selectSchemes(state);
-		const scheme: IScheme | undefined = schemes[schemeName];
+		const scheme: IScheme | undefined = schemes[schemeId];
 
 		if (!scheme) {
-			throw new Error(`Scheme ${schemeName} not found`);
+			throw new Error(`Scheme ${schemeId} not found`);
 		}
 
-		zip.file("manifest.json", JSON.stringify({
-			format: "nmr-pulse-scheme",
-			version: 1,
-			name: schemeName
-		}));
+		const manifestData: SchemeMetadata = {
+			id: schemeId,
+			name: scheme.metadata.name,
+			format: "nmr-pulse-scheme"
+		}
+		zip.file("manifest.json", JSON.stringify(manifestData));
 
 		const componentsFolder = zip.folder("components")!;
 		const assetsFolder = zip.folder("assets")!;
@@ -221,10 +223,15 @@ class ENGINE {
 
 		return zip;
 	}
-	static async saveSchemeFile(schemeName: string) {
-		const file = await ENGINE.createSchemeFile(schemeName);
+	static async saveSchemeFile(schemeId: string) {
+		const state = store.getState();
+		const schemes = selectSchemes(state);
+		const scheme: IScheme | undefined = schemes[schemeId];
+		const name = scheme.metadata.name
+
+		const file = await ENGINE.createSchemeFile(schemeId);
 		const blob = await file.generateAsync({ type: "blob" });
-		downloadBlob(blob, `${schemeName}.nmrs`);
+		downloadBlob(blob, `${name}.nmrs`);
 	}
 
 	static async uploadSchemeFile(file: File, nameOverride?: string) {
@@ -247,22 +254,13 @@ class ENGINE {
 		}
 
 		const schemeName = nameOverride || manifest.name || "Imported Scheme";
+		const schemeUUID = manifest.id;
+		if (schemeUUID === undefined) {
+			throw new Error("Invalid scheme file: missing id in manifest");
+		}
 
 		// Load assets
-		const assetsFolder = unzipped.folder("assets");
-		if (assetsFolder) {
-			const promises: Promise<void>[] = [];
-			assetsFolder.forEach((relativePath, file) => {
-				if (!file.dir && relativePath.endsWith(".svg")) {
-					// Chop off .json
-					const assetRef = relativePath.substring(0, relativePath.length - 4);
-					promises.push(file.async("text").then(svgText => {
-						ENGINE.assetStore.svgStrings[assetRef] = svgText;
-					}));
-				}
-			});
-			await Promise.all(promises);
-		}
+		ENGINE.loadSchemeAssets(file);
 
 		// Load components
 		const componentsFolder = unzipped.folder("components");
@@ -281,12 +279,33 @@ class ENGINE {
 		}
 
 		const newScheme: IScheme = {
-			metadata: { name: schemeName },
+			metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
 			components: components
 		};
 
-		store.dispatch(addScheme({ scheme: newScheme }));
+		store.dispatch(addLocalScheme({ scheme: newScheme }));
 	}
+
+	static async loadSchemeAssets(file: File) {
+		const zip = new JSZip();
+		const unzipped = await zip.loadAsync(file);
+
+		const assetsFolder = unzipped.folder("assets");
+		if (assetsFolder) {
+			const promises: Promise<void>[] = [];
+			assetsFolder.forEach((relativePath, file) => {
+				if (!file.dir && relativePath.endsWith(".svg")) {
+					// Chop off .json
+					const assetRef = relativePath.substring(0, relativePath.length - 4);
+					promises.push(file.async("text").then(svgText => {
+						ENGINE.assetStore.svgStrings[assetRef] = svgText;
+					}));
+				}
+			});
+			await Promise.all(promises);
+		}
+	}
+
 
 	static async createComponentFile(component: IVisual): Promise<JSZip> {
 		const zip = new JSZip();

@@ -485,7 +485,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/octet-stream": components["schemas"]["schemeDataResponse"];
+                        "application/zip": components["schemas"]["schemeDataResponse"];
                     };
                 };
                 /** @description Malformed scheme Id */

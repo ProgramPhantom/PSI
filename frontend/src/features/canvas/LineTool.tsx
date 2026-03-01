@@ -39,8 +39,8 @@ export function LineTool(props: IDrawArrowProps) {
 	const overlaySvgRef = useRef<SVGSVGElement | null>(null);
 
 	const createArrow = (startBind: PointBind, endBind: PointBind) => {
-		var result: ActionResult<any> = ENGINE.handler.createLine(
-			{ lineStyle: props.config.lineStyle },
+		var result: ActionResult<any> = (ENGINE.handler as any).createLine(
+			{ lineStyle: props.config.lineStyle } as any,
 			startBind,
 			endBind
 		);

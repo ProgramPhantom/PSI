@@ -30,6 +30,19 @@ components:
                 format: uuid
               name:
                 type: string
+    schemesListResponse:
+      type: object
+      properties:
+        schemes:
+          type: array
+          items:
+            type: object
+            properties:
+              scheme_id: 
+                type: string
+                format: uuid
+              name:
+                type: string
     meResponse:
       type: object
       properties:
@@ -89,6 +102,32 @@ components:
           type: string
         copied:
           type: boolean
+    
+    schemeMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+
+    schemeDataResponse:
+      type: string
+      format: binary
+
+    schemeCreateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        id:
+          description: The scheme Id of the newly created scheme
+          type: string
+          format: uuid
+
+    saveSchemeResponse:
+      type: object
+      properties:
+        message:
+          type: string
 
   securitySchemes:
       sessionCookie:
@@ -136,6 +175,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/diagramsListResponse"
+
+        '401':
+          description: Authentication required
+
+  /users/schemes:
+    get:
+      tags: 
+        -  Users
+      summary: Get a list of schemes belonging to the logged in user
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK - a list of schemes is returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/schemesListResponse"
 
         '401':
           description: Authentication required
@@ -328,4 +385,133 @@ paths:
           description: Malformed diagram Id
         '404':
           description: Diagram not found
-      
+
+  /schemes/{schemeId}:
+    post:
+      parameters:
+        - name: schemeId
+          in: path
+          description: Scheme Id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: The name given to the newly created scheme and the nmrs file
+        required: true
+        content:
+          multipart/form-data:
+            schema: 
+              type: object
+              properties:
+                name:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      tags: 
+        -  Schemes
+      summary: Create a scheme belonging to the logged in user
+      security: 
+        - sessionCookie: []
+      responses:
+        '201':
+          description: OK - a blank scheme has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/schemeCreateResponse"
+        '400':
+          description: Malformed request body
+        '401':
+          description: Authentication Required
+
+    delete: 
+      parameters:
+        - name: schemeId
+          in: path
+          description: Scheme Id
+          required: true
+          schema:
+            type: string
+      tags: 
+        -  Schemes
+      summary: Delete the specified scheme belonging to the logged in user
+      security: 
+        -  sessionCookie: []
+      responses: 
+        '200':
+          description: OK - the scheme has been successfully deleted
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/genericResponse"
+        '400':
+          description: Malformed scheme Id
+        '401':
+          description: Authentication Required
+        '404':
+          description: Scheme not found
+
+    get: 
+      parameters:
+        - name: schemeId
+          in: path
+          description: Scheme Id
+          required: true
+          schema:
+            type: string
+      tags: 
+        -  Schemes
+      summary: Load the specified scheme
+      security: 
+        -  {}
+      responses: 
+        '200':
+          description: OK - the specified scheme data is returned
+          content:
+            application/octet-stream:
+              schema: 
+                $ref: "#/components/schemas/schemeDataResponse"
+        '400':
+          description: Malformed scheme Id
+        '404':
+          description: Scheme not found
+
+    put:
+      parameters:
+        - name: schemeId
+          in: path
+          description: Scheme Id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: A nmrs scheme file to save.
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      tags: 
+        -  Schemes
+      summary: Save the scheme data
+      security: 
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK - saving has been successful
+          content:
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/saveSchemeResponse"
+        '400':
+          description: Malformed scheme Id/body is not a JSON object
+        '401':
+          description: Authentication Required
+        '404':
+          description: Scheme not found

@@ -1,17 +1,26 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import type { RootState } from './store';
+import { api } from './api/api';
+import ENGINE from '../logic/engine';
 import { ID } from '../logic/point';
 import { IVisual } from '../logic/visual';
 import { DEFAULT_SCHEME_SET } from '../logic/default/schemeSet';
+import { UUID } from 'crypto';
+
+
+export type SchemeSource = "builtin" | "local" | "server"
 
 
 export type SchemeMetadata = {
     name: string,
+    id: string,
+    format: string
 }
 export type IScheme = {
     metadata: SchemeMetadata,
     components: Record<ID, IVisual>
 };
-export type SchemeDict = Record<ID, IScheme>;
+export type SchemeDict = Record<ID, { scheme: IScheme, location: SchemeSource }>;
 
 export const InternalSchemeId = "internal";
 export const SCHEMES_STORAGE_KEY = "psi-schemes-data";
@@ -32,8 +41,9 @@ interface SchemesState {
     schemes: SchemeDict;
 }
 
+const localLoadedSchemes: SchemeDict = loadSchemesFromStorage() ?? {}
 const initialState: SchemesState = {
-    schemes: loadSchemesFromStorage() ?? DEFAULT_SCHEME_SET,
+    schemes: { ...localLoadedSchemes, ...DEFAULT_SCHEME_SET },
 };
 
 const schemesSlice = createSlice({
@@ -43,14 +53,14 @@ const schemesSlice = createSlice({
         setSchemes(state, action: PayloadAction<SchemeDict>) {
             state.schemes = action.payload;
         },
-        addScheme(state, action: PayloadAction<{ id?: ID; scheme: IScheme }>) {
-            const { id, scheme } = action.payload;
-            if (id === undefined) {
-                const new_id = Math.random().toString(16).slice(2);
-                state.schemes[new_id] = scheme;
-            } else {
-                state.schemes[id] = scheme;
-            }
+        addLocalScheme(state, action: PayloadAction<{ scheme: IScheme; location?: SchemeSource }>) {
+            const { scheme, location = "local" } = action.payload;
+            const uuid = scheme.metadata.id;
+            state.schemes[uuid] = { scheme, location };
+        },
+        addServerScheme(state, action: PayloadAction<{ id: string, scheme: IScheme; }>) {
+            const { id, scheme, } = action.payload;
+            state.schemes[id] = { scheme, location: "server" };
         },
         deleteScheme(state, action: PayloadAction<ID>) {
             delete state.schemes[action.payload];
@@ -58,54 +68,156 @@ const schemesSlice = createSlice({
         updateSchemeMetadata(state, action: PayloadAction<{ id: ID; metadata: SchemeMetadata }>) {
             const { id, metadata } = action.payload;
             if (state.schemes[id]) {
-                state.schemes[id].metadata = metadata;
+                state.schemes[id].scheme.metadata = metadata;
             }
         },
         addComponent(state, action: PayloadAction<{ schemeId: ID; component: IVisual }>) {
             const { schemeId, component } = action.payload;
             if (state.schemes[schemeId]) {
                 const id = Math.random().toString(16).slice(2);
-                state.schemes[schemeId].components[id] = component;
+                state.schemes[schemeId].scheme.components[id] = component;
             }
         },
         deleteComponent(state, action: PayloadAction<{ schemeId: ID; templateId: ID }>) {
             const { schemeId, templateId } = action.payload;
             if (state.schemes[schemeId]) {
-                delete state.schemes[schemeId].components[templateId];
+                delete state.schemes[schemeId].scheme.components[templateId];
             }
         },
         updateComponent(state, action: PayloadAction<{ schemeId: ID; componentId: ID, component: IVisual }>) {
             const { schemeId, componentId, component } = action.payload;
             if (state.schemes[schemeId]) {
-                state.schemes[schemeId].components[componentId] = component;
+                state.schemes[schemeId].scheme.components[componentId] = component;
             }
         },
+        setSchemeLocation(state, action: PayloadAction<{ id: ID; location: SchemeSource }>) {
+            const { id, location } = action.payload;
+            if (state.schemes[id]) {
+                state.schemes[id].location = location;
+            }
+        },
+        removeAllServerSchemes(state) {
+            for (const id in state.schemes) {
+                if (state.schemes[id].location === "server") {
+                    delete state.schemes[id]
+                }
+            }
+        }
     },
     selectors: {
-        selectSchemes: (state) => state.schemes,
+        selectSchemes: (state) => Object.fromEntries(
+            Object.entries(state.schemes).map(([id, val]) => [id, val.scheme])
+        ),
         selectAllSchemeIDs: (state) => Object.keys(state.schemes),
-        selectSchemeById: (state, schemeId: ID) => state.schemes[schemeId],
+        selectSchemeById: (state, schemeId: ID) => state.schemes[schemeId]?.scheme,
+        selectSchemeLocationById: (state, schemeId: ID) => state.schemes[schemeId]?.location,
         selectComponentsBySchemeId: (state, schemeId: ID) =>
-            state.schemes[schemeId] ? Object.values(state.schemes[schemeId].components) : [],
+            state.schemes[schemeId] ? Object.values(state.schemes[schemeId].scheme.components) : [],
         selectAllComponents: (state) =>
-            Object.values(state.schemes).flatMap((scheme) => Object.values(scheme.components)),
+            Object.values(state.schemes).flatMap((val) => Object.values(val.scheme.components)),
     }
 });
 
+export const uploadScheme = createAsyncThunk<void, ID>(
+    'schemes/uploadScheme',
+    async (id, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+        const userState = api.endpoints.getMe.select()(state);
+        const isLoggedIn = userState?.isSuccess && userState?.data;
+        if (!isLoggedIn) {
+            thunkAPI.dispatch(setSchemeLocation({ id, location: "local" }));
+            return;
+        }
+
+        const entry = state.schemes.schemes[id];
+        if (!entry) {
+            return;
+        }
+
+        const name = entry.scheme.metadata.name ?? "unnamed scheme";
+        thunkAPI.dispatch(setSchemeLocation({ id, location: "server" }));
+
+        try {
+            const zip = await ENGINE.createSchemeFile(id);
+            const blob = await zip.generateAsync({ type: "blob" });
+            const file = new File([blob], `${id}.nmrs`, { type: "application/zip" });
+            const formData = new FormData();
+            formData.append("file", file);
+            await thunkAPI.dispatch(
+                createScheme({ schemeId: id, formData, schemeName: name })
+            ).unwrap();
+        } catch (error) {
+            console.error("Failed to upload scheme to server", error);
+            thunkAPI.dispatch(setSchemeLocation({ id, location: "local" }));
+        }
+    }
+);
+
+export const getScheme = createAsyncThunk<File, string>(
+    'schemes/getScheme',
+    async (schemeId) => {
+        const response = await fetch(`/api/schemes/${schemeId}`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to fetch scheme');
+        return response.blob() as unknown as File;
+    }
+);
+
+export const createScheme = createAsyncThunk<void, { schemeId: string, schemeName: string, formData: FormData }>(
+    'schemes/createScheme',
+    async ({ schemeId, schemeName, formData }) => {
+        if (!formData.has('name')) {
+            formData.append('name', schemeName);
+        }
+        const response = await fetch(`/api/schemes/${schemeId}`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to create scheme');
+    }
+);
+
+export const saveScheme = createAsyncThunk<void, { schemeId: string, formData: FormData }>(
+    'schemes/saveScheme',
+    async ({ schemeId, formData }) => {
+        const response = await fetch(`/api/schemes/${schemeId}`, {
+            method: 'PUT',
+            body: formData,
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to save scheme');
+    }
+);
+
+export const deleteSchemeServer = createAsyncThunk<void, string>(
+    'schemes/deleteSchemeServer',
+    async (schemeId) => {
+        const response = await fetch(`/api/schemes/${schemeId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to delete scheme');
+    }
+);
+
 export const {
     setSchemes,
-    addScheme,
+    addLocalScheme,
+    addServerScheme,
     deleteScheme,
     updateSchemeMetadata,
     addComponent,
     deleteComponent,
     updateComponent,
+    setSchemeLocation,
+    removeAllServerSchemes,
 } = schemesSlice.actions;
 
 export const {
     selectSchemes,
     selectAllSchemeIDs,
     selectSchemeById,
+    selectSchemeLocationById,
     selectComponentsBySchemeId,
     selectAllComponents,
 } = schemesSlice.selectors;

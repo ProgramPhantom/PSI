@@ -14,8 +14,10 @@ import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { addScheme, selectSchemes, IScheme } from "../../redux/schemesSlice";
+import { addLocalScheme, selectSchemes, IScheme } from "../../redux/schemesSlice";
 import JSZip from "jszip";
+import { v4 as uuidv4 } from 'uuid';
+
 
 interface AddSchemeDialogProps {
 	isOpen: boolean;
@@ -97,10 +99,10 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose }) =>
 			}
 		} else if (!selectedFile) {
 			const blankScheme: IScheme = {
-				metadata: { name: name },
+				metadata: { name: name, id: uuidv4(), format: "nmr-pulse-scheme" },
 				components: {}
 			};
-			dispatch(addScheme({ id: name, scheme: blankScheme }));
+			dispatch(addLocalScheme({ scheme: blankScheme }));
 			handleClose();
 		}
 	};

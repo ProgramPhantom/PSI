@@ -12,9 +12,12 @@ export const api = createApi({
             query: () => '/users/diagrams',
             providesTags: ['Diagram'],
         }),
-		getMe: builder.query<components['schemas']['meResponse'], void>({
+        getUserSchemes: builder.query<components['schemas']['schemesListResponse'], void>({
+            query: () => '/users/schemes',
+        }),
+        getMe: builder.query<components['schemas']['meResponse'], void>({
             query: () => '/users/me',
-			providesTags: ['User']
+            providesTags: ['User']
         }),
 
         getDiagram: builder.query<components['schemas']['diagramDataResponse'], string>({
@@ -29,7 +32,7 @@ export const api = createApi({
                 method: 'POST',
                 body: googleData,
             }),
-			invalidatesTags: ["User"]
+            invalidatesTags: ["User"]
         }),
         createDiagram: builder.mutation<components['schemas']['diagramCreateResponse'], string>({
             query: (name) => ({
@@ -54,12 +57,15 @@ export const api = createApi({
             }),
             invalidatesTags: ['Diagram'],
         }),
+
+
     }),
 });
 
 export const {
     useGetUserDiagramsQuery,
-	useGetMeQuery,
+    useGetUserSchemesQuery,
+    useGetMeQuery,
     useLazyGetDiagramQuery,
     useGetDiagramQuery,
     useGetDateModifiedQuery,
