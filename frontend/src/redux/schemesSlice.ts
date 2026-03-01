@@ -1,4 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import type { RootState } from './store';
+import { api } from './api/api';
+import ENGINE from '../logic/engine';
 import { ID } from '../logic/point';
 import { IVisual } from '../logic/visual';
 import { DEFAULT_SCHEME_SET } from '../logic/default/schemeSet';
@@ -93,13 +96,6 @@ const schemesSlice = createSlice({
                 state.schemes[id].location = location;
             }
         },
-        /** Sets location to "server" without triggering upload listener (e.g. after sync/addLocalScheme upload). */
-        setSchemeLocationServer(state, action: PayloadAction<{ id: ID }>) {
-            const { id } = action.payload;
-            if (state.schemes[id]) {
-                state.schemes[id].location = "server";
-            }
-        },
         removeAllServerSchemes(state) {
             for (const id in state.schemes) {
                 if (state.schemes[id].location === "server") {
@@ -122,6 +118,41 @@ const schemesSlice = createSlice({
     }
 });
 
+export const uploadScheme = createAsyncThunk<void, ID>(
+    'schemes/uploadScheme',
+    async (id, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+        const userState = api.endpoints.getMe.select()(state);
+        const isLoggedIn = userState?.isSuccess && userState?.data;
+        if (!isLoggedIn) {
+            thunkAPI.dispatch(setSchemeLocation({ id, location: "local" }));
+            return;
+        }
+
+        const entry = state.schemes.schemes[id];
+        if (!entry) {
+            return;
+        }
+
+        const name = entry.scheme.metadata.name ?? "unnamed scheme";
+        thunkAPI.dispatch(setSchemeLocation({ id, location: "server" }));
+
+        try {
+            const zip = await ENGINE.createSchemeFile(id);
+            const blob = await zip.generateAsync({ type: "blob" });
+            const file = new File([blob], `${id}.nmrs`, { type: "application/zip" });
+            const formData = new FormData();
+            formData.append("file", file);
+            await thunkAPI.dispatch(
+                api.endpoints.createScheme.initiate({ schemeId: id, formData, schemeName: name })
+            ).unwrap();
+        } catch (error) {
+            console.error("Failed to upload scheme to server", error);
+            thunkAPI.dispatch(setSchemeLocation({ id, location: "local" }));
+        }
+    }
+);
+
 export const {
     setSchemes,
     addLocalScheme,
@@ -132,7 +163,6 @@ export const {
     deleteComponent,
     updateComponent,
     setSchemeLocation,
-    setSchemeLocationServer,
     removeAllServerSchemes,
 } = schemesSlice.actions;
 

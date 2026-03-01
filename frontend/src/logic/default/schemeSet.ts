@@ -1,9 +1,7 @@
+import { v4 as uuidv4 } from "uuid";
 import { SchemeDict } from "../../redux/schemesSlice";
-import { ISequence } from "../hasComponents/sequence";
 import { DEFAULT_CHANNEL } from "./channel";
-import { DEFAULT_DIAGRAM } from "./defaultDiagram";
 import { DEFAULT_LINE } from "./line";
-import { DEFAULT_SEQUENCE } from "./sequence";
 import { DEFAULT_180H } from "./simplePulse/180pulse";
 import { DEFAULT_90H } from "./simplePulse/90pulse";
 import { DEFAULT_SUBSEQUENCE } from "./subsequence";
@@ -19,13 +17,14 @@ import { DEFAULT_TALLTRAPEZIUM } from "./svgPulse/talltrapezium";
 import { DEFAULT_TRAPEZIUM } from "./svgPulse/trapezium";
 import { DEFAULT_TEXT } from "./text";
 
-
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
 		location: "builtin",
 		scheme: {
 			metadata: {
-				name: "internal"
+				name: "internal",
+				id: uuidv4(),
+				format: "psi-scheme-format"
 			},
 			components: {
 				"6032ad89-7b6f-4f61-8406-4aea64f59339": DEFAULT_CHANNEL,

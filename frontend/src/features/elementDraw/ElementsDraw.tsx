@@ -24,7 +24,7 @@ import NewElementDialog from "./NewElementDialog";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { useGetMeQuery } from "../../redux/api/api";
-import { deleteScheme, selectSchemes, setSchemeLocation, InternalSchemeId } from "../../redux/schemesSlice";
+import { deleteScheme, selectSchemes, setSchemeLocation, uploadScheme, InternalSchemeId } from "../../redux/schemesSlice";
 import { ID, AllComponentTypes } from "../../logic/point";
 
 import { isPulse } from "../../logic/spacial";
@@ -241,7 +241,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 																variant="minimal"
 																onClick={(e) => {
 																	e.stopPropagation();
-																	dispatch(setSchemeLocation({ id: schemeId, location: "server" }));
+																	dispatch(uploadScheme(schemeId));
 																}}
 															/>
 														</Tooltip>
