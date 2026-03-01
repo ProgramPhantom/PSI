@@ -303,6 +303,8 @@ class ENGINE {
 				}
 			});
 			await Promise.all(promises);
+		} else {
+			console.log("Missing assets fold in uploaded scheme")
 		}
 	}
 

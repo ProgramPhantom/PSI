@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { api } from './api/api';
 import applicationReducer from './applicationSlice';
 import schemesReducer from './schemesSlice';
+import assetReducer from './assetSlice';
 import { schemeListenerMiddleware } from './middleware/schemeListener';
 
 
@@ -10,6 +11,7 @@ export const store = configureStore({
     reducer: {
         application: applicationReducer,
         schemes: schemesReducer,
+        assets: assetReducer,
         [api.reducerPath]: api.reducer,
     },
     middleware: (getDefaultMiddleware) =>
