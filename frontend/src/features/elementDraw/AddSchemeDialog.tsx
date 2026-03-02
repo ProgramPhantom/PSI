@@ -14,9 +14,11 @@ import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { addLocalScheme, selectSchemes, IScheme } from "../../redux/schemesSlice";
+import { addLocalScheme, selectSchemes } from "../../redux/slices/schemesSlice";
 import JSZip from "jszip";
 import { v4 as uuidv4 } from 'uuid';
+import { importSchemeFile } from "../../redux/thunks/schemeThunks";
+import { IScheme } from "../../types/schemes";
 
 
 interface AddSchemeDialogProps {
@@ -84,7 +86,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose }) =>
 
 		if (selectedFile) {
 			try {
-				await ENGINE.uploadSchemeFile(selectedFile, name);
+				await dispatch(importSchemeFile({ file: selectedFile, nameOverride: name })).unwrap();
 				handleClose();
 				appToaster.show({
 					message: "Scheme created successfully from uploaded file",

@@ -1,19 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { api } from './api/api';
-import applicationReducer from './applicationSlice';
-import schemesReducer from './schemesSlice';
-import assetReducer from './assetSlice';
 import { schemeListenerMiddleware } from './middleware/schemeListener';
+import { rootReducer } from './rootReducer';
 
 
 export const store = configureStore({
-
-    reducer: {
-        application: applicationReducer,
-        schemes: schemesReducer,
-        assets: assetReducer,
-        [api.reducerPath]: api.reducer,
-    },
+    reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({ serializableCheck: false })
             .prepend(schemeListenerMiddleware.middleware)
@@ -37,6 +29,5 @@ store.subscribe(() => {
 
 
 
-export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 

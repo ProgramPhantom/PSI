@@ -11,7 +11,7 @@ import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { Subgrid } from "../../logic/grid";
 import Collection from "../../logic/collection";
 import { useAppDispatch } from "../../redux/hooks";
-import { deleteComponent, InternalSchemeId } from "../../redux/schemesSlice";
+import { deleteComponent, InternalSchemeId } from "../../redux/slices/schemesSlice";
 
 
 const style: CSSProperties = {

@@ -1,9 +1,7 @@
 import { Drawer, Position } from "@blueprintjs/core";
 import { SVG } from "@svgdotjs/svg.js";
 import { saveAs } from "file-saver";
-import { ReactNode, useState, useSyncExternalStore } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { setSelectedElementId } from "../redux/applicationSlice";
+import { ReactNode, useState, useSyncExternalStore, useEffect } from "react";
 import Banner from "../features/banner/Banner";
 import Console from "../features/banner/Console";
 import Canvas from "../features/canvas/Canvas";
@@ -13,16 +11,15 @@ import ElementsDraw from "../features/elementDraw/ElementsDraw";
 import Form from "../features/Form";
 import ENGINE from "../logic/engine";
 import Visual from "../logic/visual";
-import { WelcomeSplash } from "./WelcomeSplash";
+import { setSelectedElementId } from "../redux/slices/applicationSlice";
+import { initializeAssets } from "../redux/slices/assetSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { appToaster } from "./Toaster";
-import { useGetMeQuery } from "../redux/api/api";
-
-
+import { WelcomeSplash } from "./WelcomeSplash";
 
 
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
-await ENGINE.loadSVGData();
 ENGINE.loadDiagramState();
 
 export interface IToolConfig { }
@@ -32,11 +29,15 @@ export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDr
 function App() {
 	console.info("Application initialized successfully");
 
+	const dispatch = useAppDispatch();
+	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
+	useEffect(() => {
+		dispatch(initializeAssets());
+	}, [dispatch]);
+
 	const [form, setForm] = useState<ReactNode | null>(null);
-	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
-	const dispatch = useAppDispatch();
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "");
 
 	const [isConsoleOpen, setIsConsoleOpen] = useState(false);

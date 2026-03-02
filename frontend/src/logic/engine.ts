@@ -1,6 +1,9 @@
 import { Element, Svg, SVG } from "@svgdotjs/svg.js";
+import JSZip from "jszip";
+import { IScheme, SchemeDict, SchemeMetadata } from "../types/schemes";
+import AssetStore from "./assetStore";
 import Collection, { ICollection } from "./collection";
-import DiagramHandler, { ActionResult, Result } from "./diagramHandler";
+import DiagramHandler, { Result } from "./diagramHandler";
 import Grid, { IGrid, ISubgrid, Subgrid } from "./grid";
 import Channel, { IChannel } from "./hasComponents/channel";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
@@ -12,15 +15,8 @@ import { AllComponentTypes } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Text, { IText } from "./text";
-import Visual, { GridCellElement, IVisual } from "./visual";
-import { api } from "../redux/api/api";
-import { store } from "../redux/store";
-import { appToaster } from "../app/Toaster";
-import JSZip from "jszip"
 import { downloadBlob } from "./util2";
-import AssetStore from "./assetStore";
-import { IScheme, selectSchemes, addLocalScheme, SchemeMetadata } from "../redux/schemesSlice";
-import { v4 as uuidv4 } from 'uuid';
+import Visual, { GridCellElement, IVisual } from "./visual";
 
 
 class ENGINE {
@@ -98,49 +94,47 @@ class ENGINE {
 			this.handler.resetDiagram();
 		}
 	}
-	static async loadSVGData() {
-		await ENGINE.assetStore.loadAllSVGs();
-	}
-	static saveAs() {
-		var stateObject: IDiagram = ENGINE.handler.diagram.state;
-		var stateString = JSON.stringify(stateObject, undefined, 4);
-		localStorage.setItem(ENGINE.StateName, stateString);
 
-		// Creates diagram with fresh UUID
-		store.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref))
-			.unwrap()
-			.then((createResponse) => {
-				if (createResponse.id !== undefined) {
-					store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
-					localStorage.setItem("diagramUUID", createResponse.id);
-				}
-			})
-			.catch(() => { });
-	}
-	static save() {
-		var stateObject: IDiagram = ENGINE.handler.diagram.state;
-		var stateString = JSON.stringify(stateObject, undefined, 4);
-		localStorage.setItem(ENGINE.StateName, stateString);
-
-		store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: localStorage.getItem("diagramUUID") ?? "", diagram: stateObject }))
-			.unwrap()
-			.then((response) => {
-				appToaster.show({ message: "Diagram saved", intent: "success" })
-			})
-			.catch((error) => {
-				store.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref))
-					.unwrap()
-					.then((createResponse) => {
-						if (createResponse.id !== undefined) {
-							store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
-							localStorage.setItem("diagramUUID", createResponse.id);
-
-							appToaster.show({ message: "Diagram saved", intent: "success" })
-						}
-					})
-					.catch(() => { });
-			});
-	}
+	// static saveAs() {
+	// 	var stateObject: IDiagram = ENGINE.handler.diagram.state;
+	// 	var stateString = JSON.stringify(stateObject, undefined, 4);
+	// 	localStorage.setItem(ENGINE.StateName, stateString);
+	// 
+	// 	// Creates diagram with fresh UUID
+	// 	store.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref))
+	// 		.unwrap()
+	// 		.then((createResponse) => {
+	// 			if (createResponse.id !== undefined) {
+	// 				store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
+	// 				localStorage.setItem("diagramUUID", createResponse.id);
+	// 			}
+	// 		})
+	// 		.catch(() => { });
+	// }
+	// static save() {
+	// 	var stateObject: IDiagram = ENGINE.handler.diagram.state;
+	// 	var stateString = JSON.stringify(stateObject, undefined, 4);
+	// 	localStorage.setItem(ENGINE.StateName, stateString);
+	// 
+	// 	store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: localStorage.getItem("diagramUUID") ?? "", diagram: stateObject }))
+	// 		.unwrap()
+	// 		.then((response) => {
+	// 			appToaster.show({ message: "Diagram saved", intent: "success" })
+	// 		})
+	// 		.catch((error) => {
+	// 			store.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref))
+	// 				.unwrap()
+	// 				.then((createResponse) => {
+	// 					if (createResponse.id !== undefined) {
+	// 						store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
+	// 						localStorage.setItem("diagramUUID", createResponse.id);
+	// 
+	// 						appToaster.show({ message: "Diagram saved", intent: "success" })
+	// 					}
+	// 				})
+	// 				.catch(() => { });
+	// 		});
+	// }
 
 	static clearState() {
 		localStorage.removeItem(ENGINE.StateName);
@@ -178,11 +172,9 @@ class ENGINE {
 		downloadBlob(blob, "diagram.nmrd");
 	}
 
-	static async createSchemeFile(schemeId: string): Promise<JSZip> {
+	static async createSchemeFile(schemeId: string, schemes: SchemeDict): Promise<JSZip> {
 		const zip = new JSZip();
-		const state = store.getState();
-		const schemes = selectSchemes(state);
-		const scheme: IScheme | undefined = schemes[schemeId];
+		const scheme: IScheme | undefined = schemes[schemeId]?.scheme;
 
 		if (!scheme) {
 			throw new Error(`Scheme ${schemeId} not found`);
@@ -223,122 +215,122 @@ class ENGINE {
 
 		return zip;
 	}
-	static async saveSchemeFile(schemeId: string) {
-		const state = store.getState();
-		const schemes = selectSchemes(state);
-		const scheme: IScheme | undefined = schemes[schemeId];
-		const name = scheme.metadata.name
+	// static async saveSchemeFile(schemeId: string) {
+	// 	const state = store.getState();
+	// 	const schemes = selectSchemes(state);
+	// 	const scheme: IScheme | undefined = schemes[schemeId];
+	// 	const name = scheme.metadata.name
+	// 
+	// 	const file = await ENGINE.createSchemeFile(schemeId);
+	// 	const blob = await file.generateAsync({ type: "blob" });
+	// 	downloadBlob(blob, `${name}.nmrs`);
+	// }
+	// 
+	// static async uploadSchemeFile(file: File, nameOverride?: string) {
+	// 	const zip = new JSZip();
+	// 	const unzipped = await zip.loadAsync(file);
+	// 
+	// 	const manifestFile = unzipped.file("manifest.json");
+	// 	if (!manifestFile) {
+	// 		throw new Error("Invalid scheme file: missing manifest.json");
+	// 	}
+	// 	const manifestStr = await manifestFile.async("text");
+	// 	const manifest = JSON.parse(manifestStr);
+	// 
+	// 	if (manifest.format !== "nmr-pulse-scheme") {
+	// 		appToaster.show({
+	// 			"message": "Invalid scheme format",
+	// 			"intent": "danger"
+	// 		})
+	// 		return
+	// 	}
+	// 
+	// 	const schemeName = nameOverride || manifest.name || "Imported Scheme";
+	// 	const schemeUUID = manifest.id;
+	// 	if (schemeUUID === undefined) {
+	// 		throw new Error("Invalid scheme file: missing id in manifest");
+	// 	}
+	// 
+	// 	// Load assets
+	// 	ENGINE.loadSchemeAssets(file);
+	// 
+	// 	// Load components
+	// 	const componentsFolder = unzipped.folder("components");
+	// 	const components: Record<string, IVisual> = {};
+	// 	if (componentsFolder) {
+	// 		const promises: Promise<void>[] = [];
+	// 		componentsFolder.forEach((relativePath, file) => {
+	// 			if (!file.dir && relativePath.endsWith(".json")) {
+	// 				promises.push(file.async("text").then(compStr => {
+	// 					const comp = JSON.parse(compStr) as IVisual;
+	// 					components[comp.ref] = comp;
+	// 				}));
+	// 			}
+	// 		});
+	// 		await Promise.all(promises);
+	// 	}
+	// 
+	// 	const newScheme: IScheme = {
+	// 		metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
+	// 		components: components
+	// 	};
+	// 
+	// 	store.dispatch(addLocalScheme({ scheme: newScheme }));
+	// }
+	// 
+	// static async loadSchemeAssets(file: File) {
+	// 	const zip = new JSZip();
+	// 	const unzipped = await zip.loadAsync(file);
+	// 
+	// 	const assetsFolder = unzipped.folder("assets");
+	// 	if (assetsFolder) {
+	// 		const promises: Promise<void>[] = [];
+	// 		assetsFolder.forEach((relativePath, file) => {
+	// 			if (!file.dir && relativePath.endsWith(".svg")) {
+	// 				// Chop off .json
+	// 				const assetRef = relativePath.substring(0, relativePath.length - 4);
+	// 				promises.push(file.async("text").then(svgText => {
+	// 					ENGINE.assetStore.svgStrings[assetRef] = svgText;
+	// 				}));
+	// 			}
+	// 		});
+	// 		await Promise.all(promises);
+	// 	} else {
+	// 		console.log("Missing assets fold in uploaded scheme")
+	// 	}
+	// }
 
-		const file = await ENGINE.createSchemeFile(schemeId);
-		const blob = await file.generateAsync({ type: "blob" });
-		downloadBlob(blob, `${name}.nmrs`);
-	}
 
-	static async uploadSchemeFile(file: File, nameOverride?: string) {
-		const zip = new JSZip();
-		const unzipped = await zip.loadAsync(file);
-
-		const manifestFile = unzipped.file("manifest.json");
-		if (!manifestFile) {
-			throw new Error("Invalid scheme file: missing manifest.json");
-		}
-		const manifestStr = await manifestFile.async("text");
-		const manifest = JSON.parse(manifestStr);
-
-		if (manifest.format !== "nmr-pulse-scheme") {
-			appToaster.show({
-				"message": "Invalid scheme format",
-				"intent": "danger"
-			})
-			return
-		}
-
-		const schemeName = nameOverride || manifest.name || "Imported Scheme";
-		const schemeUUID = manifest.id;
-		if (schemeUUID === undefined) {
-			throw new Error("Invalid scheme file: missing id in manifest");
-		}
-
-		// Load assets
-		ENGINE.loadSchemeAssets(file);
-
-		// Load components
-		const componentsFolder = unzipped.folder("components");
-		const components: Record<string, IVisual> = {};
-		if (componentsFolder) {
-			const promises: Promise<void>[] = [];
-			componentsFolder.forEach((relativePath, file) => {
-				if (!file.dir && relativePath.endsWith(".json")) {
-					promises.push(file.async("text").then(compStr => {
-						const comp = JSON.parse(compStr) as IVisual;
-						components[comp.ref] = comp;
-					}));
-				}
-			});
-			await Promise.all(promises);
-		}
-
-		const newScheme: IScheme = {
-			metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
-			components: components
-		};
-
-		store.dispatch(addLocalScheme({ scheme: newScheme }));
-	}
-
-	static async loadSchemeAssets(file: File) {
-		const zip = new JSZip();
-		const unzipped = await zip.loadAsync(file);
-
-		const assetsFolder = unzipped.folder("assets");
-		if (assetsFolder) {
-			const promises: Promise<void>[] = [];
-			assetsFolder.forEach((relativePath, file) => {
-				if (!file.dir && relativePath.endsWith(".svg")) {
-					// Chop off .json
-					const assetRef = relativePath.substring(0, relativePath.length - 4);
-					promises.push(file.async("text").then(svgText => {
-						ENGINE.assetStore.svgStrings[assetRef] = svgText;
-					}));
-				}
-			});
-			await Promise.all(promises);
-		} else {
-			console.log("Missing assets fold in uploaded scheme")
-		}
-	}
-
-
-	static async createComponentFile(component: IVisual): Promise<JSZip> {
-		const zip = new JSZip();
-		const state = component;
-
-		zip.file("component.json", JSON.stringify(state, null, 2));
-
-		zip.file("manifest.json", JSON.stringify({
-			format: "nmr-pulse-component",
-			version: 1,
-			name: state.ref
-		}));
-
-		const assetsFolder = zip.folder("assets")!;
-		const usedAssets: Set<string> = ENGINE.getAssetRequirementsFromComponent(component);
-
-		usedAssets.forEach((assetId) => {
-			const svgText = ENGINE.svgDict[assetId];
-			if (svgText) {
-				assetsFolder.file(`${assetId}.svg`, svgText);
-			}
-		});
-
-		return zip;
-	}
-	static async saveComponentFile(component: IVisual) {
-		const file = await ENGINE.createComponentFile(component);
-		const blob = await file.generateAsync({ type: "blob" });
-		const name = (component as any).ref ?? "component";
-		downloadBlob(blob, `${name}.nmrc`);
-	}
+	// static async createComponentFile(component: IVisual): Promise<JSZip> {
+	// 	const zip = new JSZip();
+	// 	const state = component;
+	// 
+	// 	zip.file("component.json", JSON.stringify(state, null, 2));
+	// 
+	// 	zip.file("manifest.json", JSON.stringify({
+	// 		format: "nmr-pulse-component",
+	// 		version: 1,
+	// 		name: state.ref
+	// 	}));
+	// 
+	// 	const assetsFolder = zip.folder("assets")!;
+	// 	const usedAssets: Set<string> = ENGINE.getAssetRequirementsFromComponent(component);
+	// 
+	// 	usedAssets.forEach((assetId) => {
+	// 		const svgText = ENGINE.svgDict[assetId];
+	// 		if (svgText) {
+	// 			assetsFolder.file(`${assetId}.svg`, svgText);
+	// 		}
+	// 	});
+	// 
+	// 	return zip;
+	// }
+	// static async saveComponentFile(component: IVisual) {
+	// 	const file = await ENGINE.createComponentFile(component);
+	// 	const blob = await file.generateAsync({ type: "blob" });
+	// 	const name = (component as any).ref ?? "component";
+	// 	downloadBlob(blob, `${name}.nmrc`);
+	// }
 
 
 

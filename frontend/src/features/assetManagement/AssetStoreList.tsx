@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogBody, DialogFooter, HTMLTable, Icon, NonIdealState, Tooltip } from "@blueprintjs/core";
 import { InfoSign } from "@blueprintjs/icons";
 import { useSelector } from "react-redux";
-import { selectAssets } from "../../redux/assetSlice";
+import { selectAssets } from "../../redux/slices/assetSlice";
 
 export interface IAssetStoreListProps {
     isOpen: boolean;

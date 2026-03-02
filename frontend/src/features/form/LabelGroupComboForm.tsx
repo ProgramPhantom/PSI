@@ -13,7 +13,7 @@ import FormDivider from "./FormDivider";
 import { Position } from "../../logic/text";
 import { CollectionChildrenList } from "./CollectionChildrenList";
 import { useAppDispatch } from "../../redux/hooks";
-import { setSelectedElementId } from "../../redux/applicationSlice";
+import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 
 export interface LabelGroupComboForm {
 	target?: Visual;

@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { ObjectInspector } from "react-inspector";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
-import { setSelectedElementId } from "../../redux/applicationSlice";
+import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";

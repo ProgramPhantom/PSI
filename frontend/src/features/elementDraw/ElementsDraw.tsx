@@ -24,12 +24,14 @@ import NewElementDialog from "./NewElementDialog";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { useGetMeQuery } from "../../redux/api/api";
-import { deleteScheme, selectSchemes, setSchemeLocation, uploadScheme, InternalSchemeId } from "../../redux/schemesSlice";
+import { deleteScheme, selectSchemes, InternalSchemeId } from "../../redux/slices/schemesSlice";
 import { ID, AllComponentTypes } from "../../logic/point";
 
 import { isPulse } from "../../logic/spacial";
 import QuietUploadArea from "../QuietUploadArea";
 import { AssetStoreList } from "../assetManagement";
+import { addAsset } from "../../redux/slices/assetSlice";
+import { downloadSchemeFile, importSchemeFile, uploadScheme } from "../../redux/thunks/schemeThunks";
 
 interface IElementDrawProps { }
 
@@ -149,7 +151,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 	const handleSchemeDrop = async (file: File) => {
 		try {
-			await ENGINE.uploadSchemeFile(file);
+			await dispatch(importSchemeFile({ file })).unwrap();
 			appToaster.show({
 				message: `Scheme created successfully from dropped file`,
 				intent: "success"
@@ -443,7 +445,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 									icon="download"
 									variant="outlined"
 									intent="success"
-									onClick={() => ENGINE.saveSchemeFile(selectedSchemeId)}
+									onClick={() => dispatch(downloadSchemeFile(selectedSchemeId))}
 									style={{
 										boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
 									}}

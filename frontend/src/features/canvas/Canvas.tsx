@@ -12,7 +12,7 @@ import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedElementId } from "../../redux/applicationSlice";
+import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes } from "../../logic/point";
 import Visual from "../../logic/visual";

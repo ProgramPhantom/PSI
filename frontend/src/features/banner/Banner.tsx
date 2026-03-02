@@ -14,6 +14,8 @@ import { SaveAsDialog } from "./SaveAsDialog";
 import { ILineStyle } from "../../logic/line";
 import { appToaster } from "../../app/Toaster";
 import { useGetMeQuery } from "../../redux/api/api";
+import { useAppDispatch } from "../../redux/hooks";
+import { saveDiagram, saveDiagramAs } from "../../redux/slices/applicationSlice";
 
 export interface IBannerProps {
 	saveSVG: () => void;
@@ -30,6 +32,7 @@ export default function Banner(props: IBannerProps) {
 	const [isSaveAsDialogOpen, setIsSaveAsDialogOpen] = useState(false);
 
 	const { data: user, error, isLoading } = useGetMeQuery();
+	const dispatch = useAppDispatch();
 
 	const copyState = () => {
 		var stateObject: IDiagram = ENGINE.handler.diagram.state;
@@ -84,11 +87,7 @@ export default function Banner(props: IBannerProps) {
 	};
 
 	const saveState = () => {
-		ENGINE.saveAs();
-		appToaster.show({
-			message: "Saved",
-			intent: "success"
-		});
+		dispatch(saveDiagramAs());
 	};
 
 	const clearState = () => {
@@ -162,7 +161,7 @@ export default function Banner(props: IBannerProps) {
 						size="small"
 						variant="minimal"
 						icon="floppy-disk"
-						onClick={() => ENGINE.save()}
+						onClick={() => dispatch(saveDiagram())}
 					/>
 					<Navbar.Divider />
 					<Button

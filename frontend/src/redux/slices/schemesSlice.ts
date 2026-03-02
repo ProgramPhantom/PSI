@@ -1,26 +1,11 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import type { RootState } from './store';
-import { api } from './api/api';
-import ENGINE from '../logic/engine';
-import { ID } from '../logic/point';
-import { IVisual } from '../logic/visual';
-import { DEFAULT_SCHEME_SET } from '../logic/default/schemeSet';
-import { UUID } from 'crypto';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { DEFAULT_SCHEME_SET } from '../../logic/default/schemeSet';
+import ENGINE from '../../logic/engine';
+import { ID } from '../../logic/point';
+import { downloadBlob } from '../../logic/util2';
+import { IVisual } from '../../logic/visual';
+import { IScheme, SchemeDict, SchemeMetadata, SchemeSource } from '../../types/schemes';
 
-
-export type SchemeSource = "builtin" | "local" | "server"
-
-
-export type SchemeMetadata = {
-    name: string,
-    id: string,
-    format: string
-}
-export type IScheme = {
-    metadata: SchemeMetadata,
-    components: Record<ID, IVisual>
-};
-export type SchemeDict = Record<ID, { scheme: IScheme, location: SchemeSource }>;
 
 export const InternalSchemeId = "internal";
 export const SCHEMES_STORAGE_KEY = "psi-schemes-data";
@@ -118,87 +103,6 @@ const schemesSlice = createSlice({
     }
 });
 
-export const uploadScheme = createAsyncThunk<void, ID>(
-    'schemes/uploadScheme',
-    async (id, thunkAPI) => {
-        const state = thunkAPI.getState() as RootState;
-        const userState = api.endpoints.getMe.select()(state);
-        const isLoggedIn = userState?.isSuccess && userState?.data;
-        if (!isLoggedIn) {
-            thunkAPI.dispatch(setSchemeLocation({ id, location: "local" }));
-            return;
-        }
-
-        const entry = state.schemes.schemes[id];
-        if (!entry) {
-            return;
-        }
-
-        const name = entry.scheme.metadata.name ?? "unnamed scheme";
-        thunkAPI.dispatch(setSchemeLocation({ id, location: "server" }));
-
-        try {
-            const zip = await ENGINE.createSchemeFile(id);
-            const blob = await zip.generateAsync({ type: "blob" });
-            const file = new File([blob], `${id}.nmrs`, { type: "application/zip" });
-            const formData = new FormData();
-            formData.append("file", file);
-            await thunkAPI.dispatch(
-                createScheme({ schemeId: id, formData, schemeName: name })
-            ).unwrap();
-        } catch (error) {
-            console.error("Failed to upload scheme to server", error);
-            thunkAPI.dispatch(setSchemeLocation({ id, location: "local" }));
-        }
-    }
-);
-
-export const getScheme = createAsyncThunk<File, string>(
-    'schemes/getScheme',
-    async (schemeId) => {
-        const response = await fetch(`/api/schemes/${schemeId}`, { credentials: 'include' });
-        if (!response.ok) throw new Error('Failed to fetch scheme');
-        return response.blob() as unknown as File;
-    }
-);
-
-export const createScheme = createAsyncThunk<void, { schemeId: string, schemeName: string, formData: FormData }>(
-    'schemes/createScheme',
-    async ({ schemeId, schemeName, formData }) => {
-        if (!formData.has('name')) {
-            formData.append('name', schemeName);
-        }
-        const response = await fetch(`/api/schemes/${schemeId}`, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include'
-        });
-        if (!response.ok) throw new Error('Failed to create scheme');
-    }
-);
-
-export const saveScheme = createAsyncThunk<void, { schemeId: string, formData: FormData }>(
-    'schemes/saveScheme',
-    async ({ schemeId, formData }) => {
-        const response = await fetch(`/api/schemes/${schemeId}`, {
-            method: 'PUT',
-            body: formData,
-            credentials: 'include'
-        });
-        if (!response.ok) throw new Error('Failed to save scheme');
-    }
-);
-
-export const deleteSchemeServer = createAsyncThunk<void, string>(
-    'schemes/deleteSchemeServer',
-    async (schemeId) => {
-        const response = await fetch(`/api/schemes/${schemeId}`, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
-        if (!response.ok) throw new Error('Failed to delete scheme');
-    }
-);
 
 export const {
     setSchemes,

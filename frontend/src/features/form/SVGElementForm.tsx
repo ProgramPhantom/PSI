@@ -18,7 +18,7 @@ import VisualForm from "./VisualForm";
 import { appToaster } from "../../app/Toaster";
 import { FormRequirements } from "./FormBase";
 import { useAppSelector } from "../../redux/hooks";
-import { selectSchemes, InternalSchemeId } from "../../redux/schemesSlice";
+import { selectSchemes, InternalSchemeId } from "../../redux/slices/schemesSlice";
 
 interface ISVGElementFormProps extends FormRequirements { }
 
