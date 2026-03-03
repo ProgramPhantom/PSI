@@ -24,7 +24,7 @@ import NewElementDialog from "./NewElementDialog";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { useGetMeQuery } from "../../redux/api/api";
-import { deleteScheme, selectSchemes, InternalSchemeId } from "../../redux/slices/schemesSlice";
+import { deleteScheme, selectSchemes, selectSchemeLocations, InternalSchemeId } from "../../redux/slices/schemesSlice";
 import { ID, AllComponentTypes } from "../../logic/point";
 
 import { isPulse } from "../../logic/spacial";
@@ -48,11 +48,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const [isAssetStoreOpen, setIsAssetStoreOpen] = useState(false);
 
 	const schemes = useAppSelector(selectSchemes);
-	const schemeLocations = useAppSelector((state) =>
-		Object.fromEntries(
-			Object.entries(state.schemes.schemes || {}).map(([id, v]) => [id, v.location])
-		)
-	);
+	const schemeLocations = useAppSelector(selectSchemeLocations);
 	const { data: me } = useGetMeQuery();
 	const isLoggedIn = Boolean(me);
 	const dispatch = useAppDispatch();

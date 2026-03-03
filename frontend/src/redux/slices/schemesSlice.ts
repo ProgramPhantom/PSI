@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { DEFAULT_SCHEME_SET } from '../../logic/default/schemeSet';
 import ENGINE from '../../logic/engine';
 import { ID } from '../../logic/point';
@@ -90,16 +90,32 @@ const schemesSlice = createSlice({
         }
     },
     selectors: {
-        selectSchemes: (state) => Object.fromEntries(
-            Object.entries(state.schemes).map(([id, val]) => [id, val.scheme])
+        selectSchemes: createSelector(
+            (state: SchemesState) => state.schemes,
+            (schemes) => Object.fromEntries(
+                Object.entries(schemes).map(([id, val]) => [id, val.scheme])
+            )
         ),
-        selectAllSchemeIDs: (state) => Object.keys(state.schemes),
-        selectSchemeById: (state, schemeId: ID) => state.schemes[schemeId]?.scheme,
-        selectSchemeLocationById: (state, schemeId: ID) => state.schemes[schemeId]?.location,
-        selectComponentsBySchemeId: (state, schemeId: ID) =>
-            state.schemes[schemeId] ? Object.values(state.schemes[schemeId].scheme.components) : [],
-        selectAllComponents: (state) =>
-            Object.values(state.schemes).flatMap((val) => Object.values(val.scheme.components)),
+        selectSchemeLocations: createSelector(
+            (state: SchemesState) => state.schemes,
+            (schemes) => Object.fromEntries(
+                Object.entries(schemes).map(([id, val]) => [id, val.location])
+            )
+        ),
+        selectAllSchemeIDs: createSelector(
+            (state: SchemesState) => state.schemes,
+            (schemes) => Object.keys(schemes)
+        ),
+        selectSchemeById: (state: SchemesState, schemeId: ID) => state.schemes[schemeId]?.scheme,
+        selectSchemeLocationById: (state: SchemesState, schemeId: ID) => state.schemes[schemeId]?.location,
+        selectComponentsBySchemeId: createSelector(
+            [(state: SchemesState) => state.schemes, (state: SchemesState, schemeId: ID) => schemeId],
+            (schemes, schemeId) => schemes[schemeId] ? Object.values(schemes[schemeId].scheme.components) : []
+        ),
+        selectAllComponents: createSelector(
+            (state: SchemesState) => state.schemes,
+            (schemes) => Object.values(schemes).flatMap((val) => Object.values(val.scheme.components))
+        ),
     }
 });
 
@@ -119,6 +135,7 @@ export const {
 
 export const {
     selectSchemes,
+    selectSchemeLocations,
     selectAllSchemeIDs,
     selectSchemeById,
     selectSchemeLocationById,

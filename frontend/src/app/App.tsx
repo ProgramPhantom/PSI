@@ -16,10 +16,11 @@ import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { appToaster } from "./Toaster";
 import { WelcomeSplash } from "./WelcomeSplash";
 import { initializeAssets } from "../redux/thunks/assetThunks";
-
+import { store } from "../redux/store";
 
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
+store.dispatch(initializeAssets());
 ENGINE.loadDiagramState();
 
 export interface IToolConfig { }
@@ -32,7 +33,7 @@ function App() {
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	useEffect(() => {
-		dispatch(initializeAssets());
+
 	}, [dispatch]);
 
 	const [form, setForm] = useState<ReactNode | null>(null);
