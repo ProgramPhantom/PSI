@@ -13,6 +13,14 @@ export const saveDiagramAs = createAsyncThunk<void, void>(
         const stateString = JSON.stringify(stateObject, undefined, 4);
         localStorage.setItem(ENGINE.StateName, stateString);
 
+        const state = thunkAPI.getState() as RootState;
+        const userState = api.endpoints.getMe.select()(state);
+        const isLoggedIn = userState?.isSuccess && userState?.data;
+        if (!isLoggedIn) {
+            appToaster.show({ message: "Diagram saved", intent: "success" });
+            return;
+        }
+
         try {
             const createResponse = await thunkAPI.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref)).unwrap();
             if (createResponse.id !== undefined) {
