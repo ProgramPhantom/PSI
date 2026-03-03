@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
 import { useDispatch } from "react-redux";
-import { saveDiagramAs } from "../../redux/slices/applicationSlice";
 import { useAppDispatch } from "../../redux/hooks";
+import { saveDiagramAs } from "../../redux/thunks/diagramThunks";
 
 export interface ISaveAsDialogProps {
     isOpen: boolean;
