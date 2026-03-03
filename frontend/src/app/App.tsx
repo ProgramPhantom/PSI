@@ -12,10 +12,10 @@ import Form from "../features/Form";
 import ENGINE from "../logic/engine";
 import Visual from "../logic/visual";
 import { setSelectedElementId } from "../redux/slices/applicationSlice";
-import { initializeAssets } from "../redux/slices/assetSlice";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { appToaster } from "./Toaster";
 import { WelcomeSplash } from "./WelcomeSplash";
+import { initializeAssets } from "../redux/thunks/assetThunks";
 
 
 
@@ -27,8 +27,6 @@ export interface IToolConfig { }
 export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDrawArrowConfig };
 
 function App() {
-	console.info("Application initialized successfully");
-
 	const dispatch = useAppDispatch();
 	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);

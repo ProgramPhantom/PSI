@@ -1,14 +1,14 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { RootState } from "../rootReducer";
-import { api } from "../api/api";
-import { addLocalScheme, setSchemeLocation } from "../slices/schemesSlice";
-import ENGINE from "../../logic/engine";
 import JSZip from "jszip";
 import { appToaster } from "../../app/Toaster";
-import { loadAsset } from "../slices/assetSlice";
+import ENGINE from "../../logic/engine";
+import { downloadBlob } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
 import { IScheme } from "../../types/schemes";
-import { downloadBlob } from "../../logic/util2";
+import { api } from "../api/api";
+import { RootState } from "../rootReducer";
+import { addLocalScheme, setSchemeLocation } from "../slices/schemesSlice";
+import { loadAsset } from "./assetThunks";
 
 
 export const uploadScheme = createAsyncThunk<void, string>(

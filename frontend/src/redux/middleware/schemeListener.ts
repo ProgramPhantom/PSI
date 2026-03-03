@@ -4,13 +4,13 @@ import { ID } from '../../logic/point';
 import { IScheme, SchemeSource } from '../../types/schemes';
 import { api } from '../api/api';
 import { RootState } from '../rootReducer';
-import { loadAsset } from '../slices/assetSlice';
 import {
     addComponent, addLocalScheme, addServerScheme, deleteComponent, deleteScheme,
     removeAllServerSchemes,
     updateComponent,
 } from '../slices/schemesSlice';
 import { deleteSchemeServer, getScheme, saveSchemeByID, uploadScheme } from '../thunks/schemeThunks';
+import { loadAsset } from '../thunks/assetThunks';
 
 export const schemeListenerMiddleware = createListenerMiddleware();
 
