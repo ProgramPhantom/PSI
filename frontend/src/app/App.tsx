@@ -1,4 +1,4 @@
-import { Drawer, Position } from "@blueprintjs/core";
+import { Drawer, Position, Spinner } from "@blueprintjs/core";
 import { SVG } from "@svgdotjs/svg.js";
 import { saveAs } from "file-saver";
 import { ReactNode, useState, useSyncExternalStore, useEffect } from "react";
@@ -16,13 +16,10 @@ import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { appToaster } from "./Toaster";
 import { WelcomeSplash } from "./WelcomeSplash";
 import { initializeAssets } from "../redux/thunks/assetThunks";
-import { store } from "../redux/store";
-
+import { syncSchemes } from "../redux/thunks/schemeThunks";
+import { api } from "../redux/api/api";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
-store.dispatch(initializeAssets());
-ENGINE.loadDiagramState();
-
 export interface IToolConfig { }
 
 export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDrawArrowConfig };
@@ -32,8 +29,36 @@ function App() {
 	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
-	useEffect(() => {
+	const [isInitializing, setIsInitializing] = useState(true);
 
+	useEffect(() => {
+		let isMounted = true;
+
+		async function startApp() {
+			// 1. Initialize core application assets
+			await dispatch(initializeAssets());
+
+			// 2. Await the authentication state 
+			// (Either it succeeds to load the user, or it predictably fails because we are not logged in)
+			try {
+				await dispatch(api.endpoints.getMe.initiate(undefined)).unwrap();
+			} catch (e) {
+				// Handled inherently by RTK Query / auth logic downstream
+			}
+
+			// 3. Sync schemes. This only does anything if step 2 succeeded, fetching user schemes from the DB.
+			await dispatch(syncSchemes());
+
+			if (isMounted) {
+				// 4. Finally, populate diagram elements given that assets/schemes are populated
+				ENGINE.loadDiagramState();
+				setIsInitializing(false);
+			}
+		}
+
+		startApp();
+
+		return () => { isMounted = false; };
 	}, [dispatch]);
 
 	const [form, setForm] = useState<ReactNode | null>(null);
@@ -45,6 +70,15 @@ function App() {
 		type: "select",
 		config: {}
 	});
+
+	if (isInitializing) {
+		return (
+			<div style={{ display: "flex", width: "100vw", height: "100vh", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: "20px" }}>
+				<Spinner size={50} intent="primary" />
+				<h3 className="bp5-heading text-muted">Loading Engine</h3>
+			</div>
+		);
+	}
 
 	// Set up automatic saving every 2 seconds
 	// useEffect(() => {

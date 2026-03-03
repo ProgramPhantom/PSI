@@ -7,7 +7,7 @@ import { IVisual } from "../../logic/visual";
 import { IScheme } from "../../types/schemes";
 import { api } from "../api/api";
 import { RootState } from "../rootReducer";
-import { addLocalScheme, setSchemeLocation } from "../slices/schemesSlice";
+import { addLocalScheme, setSchemeLocation, addServerScheme } from "../slices/schemesSlice";
 import { loadAsset } from "./assetThunks";
 
 
@@ -132,6 +132,103 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, nameOverrid
         };
 
         thunkAPI.dispatch(addLocalScheme({ scheme: newScheme }));
+    }
+);
+
+export const syncSchemes = createAsyncThunk<void, void>(
+    'schemes/syncSchemes',
+    async (_, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+        const userState = api.endpoints.getMe.select()(state);
+        const isLoggedIn = userState?.isSuccess && userState?.data;
+
+        if (!isLoggedIn) {
+            return;
+        }
+
+        try {
+            const schemesListResponse: {
+                schemes?: {
+                    scheme_id?: string | undefined;
+                    name?: string | undefined;
+                }[] | undefined;
+            } = await thunkAPI.dispatch(
+                api.endpoints.getUserSchemes.initiate()
+            ).unwrap();
+
+            if (!schemesListResponse.schemes) {
+                return;
+            }
+
+            for (const schemeInfo of schemesListResponse.schemes) {
+                const { scheme_id, name } = schemeInfo;
+                if (scheme_id === undefined) { continue }
+
+                // Check if already loaded
+                const currentState = thunkAPI.getState() as RootState;
+                if (currentState.schemes.schemes[scheme_id]) {
+                    continue;
+                }
+
+                try {
+                    // Fetch the actual scheme file (.nmrs blob)
+                    const file = await thunkAPI.dispatch(
+                        getScheme(scheme_id)
+                    ).unwrap();
+
+                    // Extract components from the zip
+                    const zip = new JSZip();
+                    const unzipped = await zip.loadAsync(file);
+
+                    // Load assets from the zip
+                    const assetsFolder = unzipped.folder("assets");
+                    if (assetsFolder) {
+                        const assetPromises: Promise<void>[] = [];
+                        assetsFolder.forEach((relativePath, assetFile) => {
+                            if (!assetFile.dir && relativePath.endsWith(".svg")) {
+                                const assetRef = relativePath.substring(0, relativePath.length - 4);
+                                assetPromises.push(assetFile.async("text").then(svgText => {
+                                    thunkAPI.dispatch(loadAsset({ dataString: svgText, reference: assetRef }));
+                                }));
+                            }
+                        });
+                        await Promise.all(assetPromises);
+                    } else {
+                        console.log("Missing assets folder in uploaded scheme");
+                    }
+
+                    const componentsFolder = unzipped.folder("components");
+                    const components: Record<string, any> = {};
+
+                    if (componentsFolder) {
+                        const filePromises: Promise<void>[] = [];
+                        componentsFolder.forEach((relativePath, file) => {
+                            if (!file.dir && relativePath.endsWith(".json")) {
+                                filePromises.push(
+                                    file.async("text").then((text) => {
+                                        const comp = JSON.parse(text);
+                                        components[comp.ref] = comp;
+                                    })
+                                );
+                            }
+                        });
+                        await Promise.all(filePromises);
+                    }
+
+                    const scheme: IScheme = {
+                        metadata: { name: name || "Unnamed", id: scheme_id, format: "nmr-pulse-scheme" },
+                        components: components
+                    };
+
+                    thunkAPI.dispatch(addServerScheme({ id: scheme_id, scheme }));
+
+                } catch (error) {
+                    console.error(`Failed to load scheme ${scheme_id} from server`, error);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch user schemes list", error);
+        }
     }
 );
 
