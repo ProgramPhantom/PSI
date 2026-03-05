@@ -20,6 +20,8 @@ import { syncSchemes } from "../redux/thunks/schemeThunks";
 import { api } from "../redux/api/api";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
+
+
 export interface IToolConfig { }
 
 export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDrawArrowConfig };

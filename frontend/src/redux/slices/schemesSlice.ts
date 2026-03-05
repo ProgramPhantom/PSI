@@ -1,34 +1,18 @@
-import { createAsyncThunk, createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_SCHEME_SET } from '../../logic/default/schemeSet';
-import ENGINE from '../../logic/engine';
 import { ID } from '../../logic/point';
-import { downloadBlob } from '../../logic/util2';
 import { IVisual } from '../../logic/visual';
 import { IScheme, SchemeDict, SchemeMetadata, SchemeSource } from '../../types/schemes';
 
 
 export const InternalSchemeId = "internal";
-export const SCHEMES_STORAGE_KEY = "psi-schemes-data";
 
-const loadSchemesFromStorage = (): SchemeDict | undefined => {
-    try {
-        const stored = localStorage.getItem(SCHEMES_STORAGE_KEY);
-        if (stored) {
-            return JSON.parse(stored) as SchemeDict;
-        }
-    } catch (e) {
-        console.warn("Failed to load schemes from storage", e);
-    }
-    return undefined;
-};
-
-interface SchemesState {
+export interface SchemesState {
     schemes: SchemeDict;
 }
 
-const localLoadedSchemes: SchemeDict = loadSchemesFromStorage() ?? {}
 const initialState: SchemesState = {
-    schemes: { ...localLoadedSchemes, ...DEFAULT_SCHEME_SET },
+    schemes: { ...DEFAULT_SCHEME_SET },
 };
 
 const schemesSlice = createSlice({

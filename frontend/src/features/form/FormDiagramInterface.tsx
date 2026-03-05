@@ -120,7 +120,7 @@ export function FormDiagramInterface() {
 									}}
 									icon="export"
 									variant="minimal"
-									onClick={() => ENGINE.saveComponentFile(target.state)}
+									onClick={() => { }/* ENGINE.saveComponentFile(target.state) */}
 									title="Export component"></Button>
 								<Button
 									style={{

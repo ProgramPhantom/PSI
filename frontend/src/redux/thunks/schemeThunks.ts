@@ -57,7 +57,7 @@ export const saveSchemeByID = createAsyncThunk<void, string>(
             const formData = new FormData();
             formData.append("file", file);
             await thunkAPI.dispatch(
-                saveScheme({ schemeId, formData })
+                saveSchemeServer({ schemeId, formData })
             ).unwrap();
         } catch (error) {
             console.error("Failed to save scheme by ID to server", error);
@@ -258,7 +258,7 @@ export const createScheme = createAsyncThunk<void, { schemeId: string, schemeNam
     }
 );
 
-export const saveScheme = createAsyncThunk<void, { schemeId: string, formData: FormData }>(
+export const saveSchemeServer = createAsyncThunk<void, { schemeId: string, formData: FormData }>(
     'schemes/saveScheme',
     async ({ schemeId, formData }) => {
         const response = await fetch(`/api/schemes/${schemeId}`, {
