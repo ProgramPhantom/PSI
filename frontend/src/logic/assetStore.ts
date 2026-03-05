@@ -1,27 +1,28 @@
 import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
+import { SVG, Element as SVGElementObject } from "@svgdotjs/svg.js";
+import localforage from "localforage";
 
-
-export type SVGDict = Record<string, string>;
-
+export type SVGDict = Record<string, SVGElementObject>;
 
 export default class AssetStore {
-    static SVGStringsStorageName: string = "svgs";
     static MissingSVGAssetStr: string = MissingAssetSVG;
 
-    public svgStrings: SVGDict = {};
+    public svgObjects: SVGDict = {};
 
     // Method for adding svg data to a scheme
-    public addSVGData(dataString: string, reference: string) {
-        if (this.svgStrings?.[reference] !== undefined) {
+    public async addSVGData(file: Blob | File, reference: string) {
+        if (this.svgObjects?.[reference] !== undefined) {
             console.warn(`Overriding svg ${reference}`);
         }
 
-        this.svgStrings[reference] = dataString;
+        const text = await file.text();
+        this.svgObjects[reference] = SVG(text);
+
+        await localforage.setItem(reference, file);
     }
 
-    public removeSVGData(reference: string) {
-        delete this.svgStrings[reference];
+    public async removeSVGData(reference: string) {
+        delete this.svgObjects[reference];
+        await localforage.removeItem(reference);
     }
 }
-
-

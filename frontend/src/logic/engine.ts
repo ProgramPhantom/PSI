@@ -47,7 +47,11 @@ class ENGINE {
 		return ENGINE.handler.diagram.state
 	}
 	static get svgDict(): Record<string, string> {
-		return ENGINE.assetStore.svgStrings
+		const dict: Record<string, string> = {};
+		for (const [key, obj] of Object.entries(ENGINE.assetStore.svgObjects)) {
+			dict[key] = obj.svg();
+		}
+		return dict;
 	}
 
 	static get handler(): DiagramHandler {
@@ -350,14 +354,13 @@ class ENGINE {
 
 	static ConstructSVGElement(data: ISVGElement): SVGElement {
 		var result: SVGElement = new SVGElement(data);
-		if (ENGINE.assetStore.svgStrings && data.svgDataRef) {
-			if (ENGINE.assetStore.svgStrings[data.svgDataRef] === undefined) {
+		if (ENGINE.assetStore.svgObjects && data.svgDataRef) {
+			if (ENGINE.assetStore.svgObjects[data.svgDataRef] === undefined) {
 				console.warn(
 					`SVG data reference '${data.svgDataRef}' not found in AssetStore`
 				);
 			} else {
-				let svgString: string = ENGINE.assetStore.svgStrings[data.svgDataRef];
-				let svgObj: Element = SVG(svgString);
+				let svgObj: Element = ENGINE.assetStore.svgObjects[data.svgDataRef].clone(true, true) as Element;
 
 				result.setSvgData(svgObj);
 			}

@@ -100,8 +100,9 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, nameOverrid
             assetsFolder.forEach((relativePath, assetFile) => {
                 if (!assetFile.dir && relativePath.endsWith(".svg")) {
                     const assetRef = relativePath.substring(0, relativePath.length - 4);
-                    assetPromises.push(assetFile.async("text").then(svgText => {
-                        thunkAPI.dispatch(loadAsset({ dataString: svgText, reference: assetRef }));
+                    assetPromises.push(assetFile.async("blob").then(blob => {
+                        const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
+                        thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef }));
                     }));
                 }
             });
@@ -187,8 +188,9 @@ export const syncSchemes = createAsyncThunk<void, void>(
                         assetsFolder.forEach((relativePath, assetFile) => {
                             if (!assetFile.dir && relativePath.endsWith(".svg")) {
                                 const assetRef = relativePath.substring(0, relativePath.length - 4);
-                                assetPromises.push(assetFile.async("text").then(svgText => {
-                                    thunkAPI.dispatch(loadAsset({ dataString: svgText, reference: assetRef }));
+                                assetPromises.push(assetFile.async("blob").then(blob => {
+                                    const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
+                                    thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef }));
                                 }));
                             }
                         });
