@@ -4,25 +4,26 @@ import { IScheme, SchemeSource } from '../../types/schemes';
 import { api } from '../api/api';
 import { RootState } from '../rootReducer';
 import {
-    addComponent, addLocalScheme,
+    addComponent, addScheme,
     deleteComponent, deleteScheme,
     removeAllServerSchemes,
     updateComponent
 } from '../slices/schemesSlice';
-import { deleteSchemeServer, saveSchemeByID, syncSchemes, uploadScheme } from '../thunks/schemeThunks';
+import { deleteSchemeServer, saveSchemeByID, syncUserSchemes, uploadScheme } from '../thunks/schemeThunks';
 
 export const schemeListenerMiddleware = createListenerMiddleware();
 
 
 // On upload scheme
 schemeListenerMiddleware.startListening({
-    matcher: isAnyOf(addLocalScheme),
+    matcher: isAnyOf(addScheme),
 
     effect: async (action, listenerApi) => {
         const actionPayload = action.payload as { id?: ID; scheme: IScheme; location?: SchemeSource };
         const id = actionPayload.scheme.metadata.id;
 
         if (!id) return;
+        if (actionPayload.location === "server") return
 
         // The uploadScheme thunk handles login check and location logic internally
         await listenerApi.dispatch(uploadScheme(id));
@@ -90,6 +91,6 @@ schemeListenerMiddleware.startListening({
         }
 
         // Login case: Fetch schemes from server
-        await listenerApi.dispatch(syncSchemes());
+        await listenerApi.dispatch(syncUserSchemes());
     }
 });

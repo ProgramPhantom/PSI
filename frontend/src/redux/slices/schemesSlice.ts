@@ -22,14 +22,10 @@ const schemesSlice = createSlice({
         setSchemes(state, action: PayloadAction<SchemeDict>) {
             state.schemes = action.payload;
         },
-        addLocalScheme(state, action: PayloadAction<{ scheme: IScheme; location?: SchemeSource }>) {
+        addScheme(state, action: PayloadAction<{ scheme: IScheme; location?: SchemeSource }>) {
             const { scheme, location = "local" } = action.payload;
             const uuid = scheme.metadata.id;
             state.schemes[uuid] = { scheme, location };
-        },
-        addServerScheme(state, action: PayloadAction<{ id: string, scheme: IScheme; }>) {
-            const { id, scheme, } = action.payload;
-            state.schemes[id] = { scheme, location: "server" };
         },
         deleteScheme(state, action: PayloadAction<ID>) {
             delete state.schemes[action.payload];
@@ -106,8 +102,7 @@ const schemesSlice = createSlice({
 
 export const {
     setSchemes,
-    addLocalScheme,
-    addServerScheme,
+    addScheme,
     deleteScheme,
     updateSchemeMetadata,
     addComponent,

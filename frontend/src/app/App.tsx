@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { appToaster } from "./Toaster";
 import { WelcomeSplash } from "./WelcomeSplash";
 import { initializeAssets } from "../redux/thunks/assetThunks";
-import { syncSchemes } from "../redux/thunks/schemeThunks";
+import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 import { api } from "../redux/api/api";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
@@ -49,7 +49,7 @@ function App() {
 			}
 
 			// 3. Sync schemes. This only does anything if step 2 succeeded, fetching user schemes from the DB.
-			await dispatch(syncSchemes());
+			await dispatch(syncUserSchemes());
 
 			if (isMounted) {
 				// 4. Finally, populate diagram elements given that assets/schemes are populated

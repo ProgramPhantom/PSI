@@ -14,7 +14,7 @@ import SVGUploadList from "../SVGUploadList";
 import UploadArea from "../UploadArea";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { addLocalScheme, selectSchemes } from "../../redux/slices/schemesSlice";
+import { addScheme, selectSchemes } from "../../redux/slices/schemesSlice";
 import JSZip from "jszip";
 import { v4 as uuidv4 } from 'uuid';
 import { importSchemeFile } from "../../redux/thunks/schemeThunks";
@@ -104,7 +104,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose }) =>
 				metadata: { name: name, id: uuidv4(), format: "nmr-pulse-scheme" },
 				components: {}
 			};
-			dispatch(addLocalScheme({ scheme: blankScheme }));
+			dispatch(addScheme({ scheme: blankScheme }));
 			handleClose();
 		}
 	};

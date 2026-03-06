@@ -4,10 +4,10 @@ import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
 import { downloadBlob } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
-import { IScheme } from "../../types/schemes";
+import { IScheme, SchemeSource } from "../../types/schemes";
 import { api } from "../api/api";
 import { RootState } from "../rootReducer";
-import { addLocalScheme, setSchemeLocation, addServerScheme } from "../slices/schemesSlice";
+import { addScheme, setSchemeLocation } from "../slices/schemesSlice";
 import { loadAsset } from "./assetThunks";
 
 
@@ -66,9 +66,9 @@ export const saveSchemeByID = createAsyncThunk<void, string>(
     }
 );
 
-export const importSchemeFile = createAsyncThunk<void, { file: File, nameOverride?: string }>(
+export const importSchemeFile = createAsyncThunk<void, { file: File, location?: SchemeSource, nameOverride?: string }>(
     'schemes/importSchemeFile',
-    async ({ file, nameOverride }, thunkAPI) => {
+    async ({ file, location, nameOverride }, thunkAPI) => {
         const zip = new JSZip;
         const unzipped = await zip.loadAsync(file);
 
@@ -94,50 +94,60 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, nameOverrid
         }
 
         // Load assets
-        const assetsFolder = unzipped.folder("assets");
-        if (assetsFolder) {
-            const assetPromises: Promise<void>[] = [];
-            assetsFolder.forEach((relativePath, assetFile) => {
-                if (!assetFile.dir && relativePath.endsWith(".svg")) {
-                    const assetRef = relativePath.substring(0, relativePath.length - 4);
-                    assetPromises.push(assetFile.async("blob").then(blob => {
-                        const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
-                        thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef }));
-                    }));
-                }
-            });
-            await Promise.all(assetPromises);
-        } else {
-            console.log("Missing assets folder in uploaded scheme");
+        try {
+            const assetsFolder = unzipped.folder("assets");
+            if (assetsFolder) {
+                const assetPromises: Promise<void>[] = [];
+                assetsFolder.forEach((relativePath, assetFile) => {
+                    if (!assetFile.dir && relativePath.endsWith(".svg")) {
+                        const assetRef = relativePath.substring(0, relativePath.length - 4);
+                        assetPromises.push(assetFile.async("blob").then(blob => {
+                            const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
+                            thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef }));
+                        }));
+                    }
+                });
+                await Promise.all(assetPromises);
+            } else {
+                console.log("Missing assets folder in uploaded scheme");
+            }
+        } catch (err) {
+            console.log(`Error opening assets file for scheme ${schemeName}`)
         }
+
 
         // Load components
-        const componentsFolder = unzipped.folder("components");
-        const components: Record<string, IVisual> = {};
-        if (componentsFolder) {
-            const promises: Promise<void>[] = [];
-            componentsFolder.forEach((relativePath, compFile) => {
-                if (!compFile.dir && relativePath.endsWith(".json")) {
-                    promises.push(compFile.async("text").then(compStr => {
-                        const comp = JSON.parse(compStr) as IVisual;
-                        components[comp.ref] = comp;
-                    }));
-                }
-            });
-            await Promise.all(promises);
+        try {
+            const componentsFolder = unzipped.folder("components");
+            const components: Record<string, IVisual> = {};
+            if (componentsFolder) {
+                const promises: Promise<void>[] = [];
+                componentsFolder.forEach((relativePath, compFile) => {
+                    if (!compFile.dir && relativePath.endsWith(".json")) {
+                        promises.push(compFile.async("text").then(compStr => {
+                            const comp = JSON.parse(compStr) as IVisual;
+                            components[comp.ref] = comp;
+                        }));
+                    }
+                });
+                await Promise.all(promises);
+            }
+
+            const newScheme: IScheme = {
+                metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
+                components: components
+            };
+
+            thunkAPI.dispatch(addScheme({ scheme: newScheme, location: location ?? "local" }));
+
+        } catch (err) {
+            console.log(`Error opening componetns file for scheme ${schemeName}`);
         }
-
-        const newScheme: IScheme = {
-            metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
-            components: components
-        };
-
-        thunkAPI.dispatch(addLocalScheme({ scheme: newScheme }));
     }
 );
 
-export const syncSchemes = createAsyncThunk<void, void>(
-    'schemes/syncSchemes',
+export const syncUserSchemes = createAsyncThunk<void, void>(
+    'schemes/syncUserSchemes',
     async (_, thunkAPI) => {
         const state = thunkAPI.getState() as RootState;
         const userState = api.endpoints.getMe.select()(state);
@@ -161,6 +171,7 @@ export const syncSchemes = createAsyncThunk<void, void>(
                 return;
             }
 
+            // Iterate over all schemes on user
             for (const schemeInfo of schemesListResponse.schemes) {
                 const { scheme_id, name } = schemeInfo;
                 if (scheme_id === undefined) { continue }
@@ -177,53 +188,7 @@ export const syncSchemes = createAsyncThunk<void, void>(
                         getScheme(scheme_id)
                     ).unwrap();
 
-                    // Extract components from the zip
-                    const zip = new JSZip();
-                    const unzipped = await zip.loadAsync(file);
-
-                    // Load assets from the zip
-                    const assetsFolder = unzipped.folder("assets");
-                    if (assetsFolder) {
-                        const assetPromises: Promise<void>[] = [];
-                        assetsFolder.forEach((relativePath, assetFile) => {
-                            if (!assetFile.dir && relativePath.endsWith(".svg")) {
-                                const assetRef = relativePath.substring(0, relativePath.length - 4);
-                                assetPromises.push(assetFile.async("blob").then(blob => {
-                                    const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
-                                    thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef }));
-                                }));
-                            }
-                        });
-                        await Promise.all(assetPromises);
-                    } else {
-                        console.log("Missing assets folder in uploaded scheme");
-                    }
-
-                    const componentsFolder = unzipped.folder("components");
-                    const components: Record<string, any> = {};
-
-                    if (componentsFolder) {
-                        const filePromises: Promise<void>[] = [];
-                        componentsFolder.forEach((relativePath, file) => {
-                            if (!file.dir && relativePath.endsWith(".json")) {
-                                filePromises.push(
-                                    file.async("text").then((text) => {
-                                        const comp = JSON.parse(text);
-                                        components[comp.ref] = comp;
-                                    })
-                                );
-                            }
-                        });
-                        await Promise.all(filePromises);
-                    }
-
-                    const scheme: IScheme = {
-                        metadata: { name: name || "Unnamed", id: scheme_id, format: "nmr-pulse-scheme" },
-                        components: components
-                    };
-
-                    thunkAPI.dispatch(addServerScheme({ id: scheme_id, scheme }));
-
+                    await thunkAPI.dispatch(importSchemeFile({ file: file, location: "server" }));
                 } catch (error) {
                     console.error(`Failed to load scheme ${scheme_id} from server`, error);
                 }
@@ -239,7 +204,7 @@ export const syncSchemes = createAsyncThunk<void, void>(
 export const getScheme = createAsyncThunk<File, string>(
     'schemes/getScheme',
     async (schemeId) => {
-        const response = await fetch(`/api/schemes/${schemeId}`, { credentials: 'include' });
+        const response = await fetch(`/api/schemes/${schemeId}`, { credentials: 'include', cache: "reload" });
         if (!response.ok) throw new Error('Failed to fetch scheme');
         return response.blob() as unknown as File;
     }

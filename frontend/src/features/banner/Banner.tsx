@@ -223,7 +223,7 @@ export default function Banner(props: IBannerProps) {
 					/>
 					{user ? (
 						<Button
-							icon="user"
+							icon="user" intent="primary"
 							text={user.firstname || "User"}
 							onClick={() => setIsUserDialogOpen(true)}
 							style={{ marginRight: "10px" }}
