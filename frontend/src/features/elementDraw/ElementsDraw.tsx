@@ -23,14 +23,14 @@ import { AllComponentTypes, ID } from "../../logic/point";
 import Visual from "../../logic/visual";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { deleteScheme, InternalSchemeId, selectSchemeLocations, selectSchemes } from "../../redux/slices/schemesSlice";
+import { InternalSchemeId, selectSchemeLocations, selectSchemes } from "../../redux/slices/schemesSlice";
 import { selectAssets } from "../../redux/slices/assetSlice";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import AddSchemeDialog from "./AddSchemeDialog";
 import NewElementDialog from "./NewElementDialog";
 
 import { isPulse } from "../../logic/spacial";
-import { downloadSchemeFile, importSchemeFile, uploadScheme } from "../../redux/thunks/schemeThunks";
+import { deleteScheme, downloadSchemeFile, importSchemeFile, uploadSchemeServer } from "../../redux/thunks/schemeThunks";
 import { AssetStoreList } from "../assetManagement/AssetStoreList";
 import QuietUploadArea from "../QuietUploadArea";
 
@@ -266,7 +266,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 																variant="minimal"
 																onClick={(e) => {
 																	e.stopPropagation();
-																	dispatch(uploadScheme(schemeId));
+																	dispatch(uploadSchemeServer(schemeId));
 																}}
 															/>
 														</Tooltip>

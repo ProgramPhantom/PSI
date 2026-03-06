@@ -5,11 +5,11 @@ import { api } from '../api/api';
 import { RootState } from '../rootReducer';
 import {
     addComponent, addScheme,
-    deleteComponent, deleteScheme,
+    deleteComponent,
     removeAllServerSchemes, updateComponent
 } from '../slices/schemesSlice';
-import { deleteSchemeServer, saveSchemeByID, syncUserSchemes, uploadScheme } from '../thunks/schemeThunks';
-import { removeDependencyAndCheckDeload } from '../thunks/assetThunks';
+import { saveSchemeByID, syncUserSchemes, uploadSchemeServer } from '../thunks/schemeThunks';
+import ENGINE from '../../logic/engine';
 
 export const schemeListenerMiddleware = createListenerMiddleware();
 
@@ -26,32 +26,7 @@ schemeListenerMiddleware.startListening({
         if (actionPayload.location === "server") return
 
         // The uploadScheme thunk handles login check and location logic internally
-        await listenerApi.dispatch(uploadScheme(id));
-    }
-});
-
-
-
-// On delete scheme
-schemeListenerMiddleware.startListening({
-    matcher: isAnyOf(deleteScheme),
-    effect: async (action, listenerApi) => {
-        const id = action.payload as ID;
-        const state = listenerApi.getState() as RootState;
-        const schemeData = state.schemes.schemes[id]?.scheme;
-
-        try {
-            // deleteSchemeServer thunk handles the server-side deletion
-            await listenerApi.dispatch(deleteSchemeServer(id)).unwrap();
-        } catch (error) {
-            console.error("Failed to delete scheme from server", error);
-        }
-
-        if (schemeData && schemeData.associatedAssets) {
-            for (const assetId of schemeData.associatedAssets) {
-                listenerApi.dispatch(removeDependencyAndCheckDeload({ assetId, dependencyId: id }));
-            }
-        }
+        await listenerApi.dispatch(uploadSchemeServer(id));
     }
 });
 
@@ -67,22 +42,9 @@ schemeListenerMiddleware.startListening({
             return;
         }
 
-        // try {
-        //     const zip = await ENGINE.createSchemeFile(schemeId);
-        //     const blob = await zip.generateAsync({ type: "blob" });
-        //     const file = new File([blob], `${schemeId}.nmrs`, { type: "application/zip" });
-        // 
-        //     const formData = new FormData();
-        //     formData.append('file', file);
-        // 
-        //     // Using saveScheme thunk
-        //     await listenerApi.dispatch(
-        //         saveScheme({ schemeId, formData })
-        //     ).unwrap();
-        // } catch (error) {
-        //     console.error("Failed to re-upload scheme to server", error);
-        // }
         await listenerApi.dispatch(saveSchemeByID(schemeId));
+
+        ENGINE.handler.refreshDiagram();
     }
 });
 

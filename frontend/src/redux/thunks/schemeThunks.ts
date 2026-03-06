@@ -8,11 +8,11 @@ import { IVisual } from "../../logic/visual";
 import { IScheme, SchemeSource } from "../../types/schemes";
 import { api } from "../api/api";
 import { RootState } from "../rootReducer";
-import { addScheme, setSchemeLocation } from "../slices/schemesSlice";
-import { loadAsset } from "./assetThunks";
+import { addScheme, removeScheme, setSchemeLocation } from "../slices/schemesSlice";
+import { loadAsset, removeDependencyAndCheckDeload } from "./assetThunks";
 
 
-export const uploadScheme = createAsyncThunk<void, string>(
+export const uploadSchemeServer = createAsyncThunk<void, string>(
     'schemes/uploadScheme',
     async (id, thunkAPI) => {
         const state = thunkAPI.getState() as RootState;
@@ -44,6 +44,29 @@ export const uploadScheme = createAsyncThunk<void, string>(
             console.error("Failed to upload scheme to server", error);
             thunkAPI.dispatch(setSchemeLocation({ id, location: "local" }));
         }
+    }
+);
+
+export const deleteScheme = createAsyncThunk<void, string>(
+    'schemes/deleteScheme',
+    async (id, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+        const schemeData = state.schemes.schemes[id]?.scheme;
+
+        try {
+            // deleteSchemeServer thunk handles the server-side deletion
+            await thunkAPI.dispatch(deleteSchemeServer(id)).unwrap();
+        } catch (error) {
+            console.error("Failed to delete scheme from server", error);
+        }
+
+        if (schemeData && schemeData.associatedAssets) {
+            for (const assetId of schemeData.associatedAssets) {
+                thunkAPI.dispatch(removeDependencyAndCheckDeload({ assetId, dependencyId: id }));
+            }
+        }
+
+        thunkAPI.dispatch(removeScheme(id));
     }
 );
 
@@ -95,21 +118,21 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
         }
 
         // Load assets
-		const associatedAssets: string[] = [];
-		try {
-			const assetsFolder = unzipped.folder("assets");
+        const associatedAssets: string[] = [];
+        try {
+            const assetsFolder = unzipped.folder("assets");
             if (assetsFolder) {
                 const assetPromises: Promise<void>[] = [];
                 assetsFolder.forEach((relativePath, assetFile) => {
                     if (!assetFile.dir && relativePath.endsWith(".svg")) {
                         const assetRef = relativePath.substring(0, relativePath.length - 4);
                         assetPromises.push(assetFile.async("blob").then(async blob => {
-							const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
-							const dataString = await file.text();
-							const id = await sha256(dataString);
-							associatedAssets.push(id);
-							thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef, dependencies: [schemeUUID] }));
-						}));
+                            const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
+                            const dataString = await file.text();
+                            const id = await sha256(dataString);
+                            associatedAssets.push(id);
+                            thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef, dependencies: [schemeUUID] }));
+                        }));
                     }
                 });
                 await Promise.all(assetPromises);
@@ -139,13 +162,14 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
             }
 
             const newScheme: IScheme = {
-				metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
-				components: components,
-				associatedAssets: associatedAssets
-			};
+                metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
+                components: components,
+                associatedAssets: associatedAssets
+            };
 
             thunkAPI.dispatch(addScheme({ scheme: newScheme, location: location ?? "local" }));
 
+            ENGINE.handler.refreshDiagram();
         } catch (err) {
             console.log(`Error opening componetns file for scheme ${schemeName}`);
         }

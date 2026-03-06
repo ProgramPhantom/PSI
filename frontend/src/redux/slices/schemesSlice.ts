@@ -27,7 +27,7 @@ const schemesSlice = createSlice({
             const uuid = scheme.metadata.id;
             state.schemes[uuid] = { scheme, location };
         },
-        deleteScheme(state, action: PayloadAction<ID>) {
+        removeScheme(state, action: PayloadAction<ID>) {
             delete state.schemes[action.payload];
         },
         updateSchemeMetadata(state, action: PayloadAction<{ id: ID; metadata: SchemeMetadata }>) {
@@ -103,7 +103,7 @@ const schemesSlice = createSlice({
 export const {
     setSchemes,
     addScheme,
-    deleteScheme,
+    removeScheme,
     updateSchemeMetadata,
     addComponent,
     deleteComponent,

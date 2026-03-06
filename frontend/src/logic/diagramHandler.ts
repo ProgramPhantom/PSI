@@ -147,6 +147,10 @@ export default class DiagramHandler implements IDraw {
 		this.diagram = this.emptyDiagram();
 	}
 
+	public refreshDiagram() {
+		this.draw();
+	}
+
 	draw() {
 		if (!this.surface) {
 			throw new Error("Svg surface not attached!");
