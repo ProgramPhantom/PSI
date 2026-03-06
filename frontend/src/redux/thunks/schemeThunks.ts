@@ -1,4 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { sha256 } from "js-sha256";
 import JSZip from "jszip";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
@@ -94,17 +95,21 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
         }
 
         // Load assets
-        try {
-            const assetsFolder = unzipped.folder("assets");
+		const associatedAssets: string[] = [];
+		try {
+			const assetsFolder = unzipped.folder("assets");
             if (assetsFolder) {
                 const assetPromises: Promise<void>[] = [];
                 assetsFolder.forEach((relativePath, assetFile) => {
                     if (!assetFile.dir && relativePath.endsWith(".svg")) {
                         const assetRef = relativePath.substring(0, relativePath.length - 4);
-                        assetPromises.push(assetFile.async("blob").then(blob => {
-                            const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
-                            thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef }));
-                        }));
+                        assetPromises.push(assetFile.async("blob").then(async blob => {
+							const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
+							const dataString = await file.text();
+							const id = await sha256(dataString);
+							associatedAssets.push(id);
+							thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef, dependencies: [schemeUUID] }));
+						}));
                     }
                 });
                 await Promise.all(assetPromises);
@@ -134,9 +139,10 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
             }
 
             const newScheme: IScheme = {
-                metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
-                components: components
-            };
+				metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
+				components: components,
+				associatedAssets: associatedAssets
+			};
 
             thunkAPI.dispatch(addScheme({ scheme: newScheme, location: location ?? "local" }));
 

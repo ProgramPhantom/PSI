@@ -1,5 +1,4 @@
 import { Button, Dialog, DialogBody, DialogFooter, HTMLTable, Icon, NonIdealState, Tooltip } from "@blueprintjs/core";
-import { InfoSign } from "@blueprintjs/icons";
 import { useSelector } from "react-redux";
 import { selectAssets } from "../../redux/slices/assetSlice";
 
@@ -21,13 +20,12 @@ export function AssetStoreList(props: IAssetStoreListProps) {
         >
             <DialogBody style={{ padding: "8px", overflowY: "auto" }}>
                 {assetList.length > 0 ? (
-                    <HTMLTable bordered striped interactive style={{ width: "100%" }}>
+                    <HTMLTable bordered striped style={{ width: "100%" }}>
                         <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
                             <tr>
                                 <th>Ref</th>
-                                <th>Author</th>
+                                <th>Id</th>
                                 <th>Size</th>
-                                <th>Status</th>
                                 <th style={{ width: "40px" }}></th>
                             </tr>
                         </thead>
@@ -35,9 +33,8 @@ export function AssetStoreList(props: IAssetStoreListProps) {
                             {assetList.map((asset) => (
                                 <tr key={asset.id}>
                                     <td style={{ paddingTop: 4, paddingBottom: 4 }}>{asset.reference}</td>
-                                    <td style={{ paddingTop: 4, paddingBottom: 4 }}>{asset.author}</td>
+                                    <td style={{ paddingTop: 4, paddingBottom: 4 }}>{asset.id}</td>
                                     <td style={{ paddingTop: 4, paddingBottom: 4 }}>{asset.size}</td>
-                                    <td style={{ paddingTop: 4, paddingBottom: 4 }}>{asset.status}</td>
                                     <td style={{ paddingTop: 4, paddingBottom: 4, textAlign: "center" }}>
                                         <Tooltip
                                             content={
@@ -49,7 +46,7 @@ export function AssetStoreList(props: IAssetStoreListProps) {
                                                         : "None"}
                                                 </div>
                                             }
-                                            placement="left"
+                                            placement="bottom"
                                         >
                                             <Icon icon={"info-sign"} size={16} style={{ cursor: "help" }} />
                                         </Tooltip>

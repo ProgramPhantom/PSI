@@ -204,8 +204,8 @@ class ENGINE {
 			// Add svg file if svg
 			if (el.type === "svg") {
 				const svgEl = el as ISVGElement;
-				if (svgEl.svgDataRef) {
-					usedAssets.add(svgEl.svgDataRef);
+				if (svgEl.asset) {
+					usedAssets.add(svgEl.asset.ref);
 				}
 			}
 		});
@@ -337,12 +337,15 @@ class ENGINE {
 	// }
 
 
+	static getAssetRequirementsFromDiagram(): Set<string> {
+		return ENGINE.getAssetRequirementsFromComponent(ENGINE.handler.diagram)
+	}
 
 	static getAssetRequirementsFromComponent(component: IVisual): Set<string> {
 		let assets: Set<string> = new Set<string>();
 
 		if (SVGElement.isSVGElement(component)) {
-			assets.add(component.svgDataRef)
+			assets.add(component.asset.ref)
 		} else if (Collection.isCollection(component)) {
 			component.children.forEach((c) => {
 				assets = new Set([...assets, ...ENGINE.getAssetRequirementsFromComponent(c)])
@@ -354,13 +357,13 @@ class ENGINE {
 
 	static ConstructSVGElement(data: ISVGElement): SVGElement {
 		var result: SVGElement = new SVGElement(data);
-		if (ENGINE.assetStore.svgObjects && data.svgDataRef) {
-			if (ENGINE.assetStore.svgObjects[data.svgDataRef] === undefined) {
+		if (ENGINE.assetStore.svgObjects && data.asset) {
+			if (ENGINE.assetStore.svgObjects[data.asset.ref] === undefined) {
 				console.warn(
-					`SVG data reference '${data.svgDataRef}' not found in AssetStore`
+					`SVG data reference '${data.asset.ref}' not found in AssetStore`
 				);
 			} else {
-				let svgObj: Element = ENGINE.assetStore.svgObjects[data.svgDataRef].clone(true, true) as Element;
+				let svgObj: Element = ENGINE.assetStore.svgObjects[data.asset.ref].clone(true, true) as Element;
 
 				result.setSvgData(svgObj);
 			}

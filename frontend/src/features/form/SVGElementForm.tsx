@@ -62,7 +62,8 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 			reader.onload = (e) => {
 				try {
 					const svgString = e.target?.result as string;
-					ENGINE.assetStore.addSVGData(svgString, svgReference.trim());
+					const blob = new Blob([svgString], { type: "image/svg+xml" });
+					ENGINE.assetStore.addSVGData(blob, svgReference.trim());
 					ENGINE.emitChange();
 
 					appToaster.show({
@@ -99,7 +100,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 				<ControlGroup>
 					<Controller
 						control={formControls.control}
-						name={`${fullPrefix}svgDataRef`}
+						name={`${fullPrefix}asset.ref`}
 						render={({ field }) => (
 							<HTMLSelect
 								{...field}

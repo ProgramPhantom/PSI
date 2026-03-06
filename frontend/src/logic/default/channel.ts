@@ -12,7 +12,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 		DEFAULT_CHANNEL_TEXT,
 		DEFAULT_BAR,
 		{
-			"svgDataRef": "chirplohi",
+			"asset": { ref: "chirplohi", id: "builtin" },
 			"style": {},
 			"offset": [
 				0,

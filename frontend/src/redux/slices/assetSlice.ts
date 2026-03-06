@@ -36,6 +36,13 @@ const assetSlice = createSlice({
                 asset.dependencies.push(dependencyId);
             }
         },
+        removeDependency(state, action: PayloadAction<{ assetId: ID; dependencyId: ID }>) {
+            const { assetId, dependencyId } = action.payload;
+            const asset = state.assets[assetId];
+            if (asset) {
+                asset.dependencies = asset.dependencies.filter(id => id !== dependencyId);
+            }
+        },
     },
     selectors: {
         selectAssets: (state) => state.assets,
@@ -50,6 +57,7 @@ export const {
     deleteAsset,
     modifyAsset,
     addDependency,
+    removeDependency,
 } = assetSlice.actions;
 
 export const {

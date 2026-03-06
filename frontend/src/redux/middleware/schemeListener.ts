@@ -6,10 +6,10 @@ import { RootState } from '../rootReducer';
 import {
     addComponent, addScheme,
     deleteComponent, deleteScheme,
-    removeAllServerSchemes,
-    updateComponent
+    removeAllServerSchemes, updateComponent
 } from '../slices/schemesSlice';
 import { deleteSchemeServer, saveSchemeByID, syncUserSchemes, uploadScheme } from '../thunks/schemeThunks';
+import { removeDependencyAndCheckDeload } from '../thunks/assetThunks';
 
 export const schemeListenerMiddleware = createListenerMiddleware();
 
@@ -37,12 +37,20 @@ schemeListenerMiddleware.startListening({
     matcher: isAnyOf(deleteScheme),
     effect: async (action, listenerApi) => {
         const id = action.payload as ID;
+        const state = listenerApi.getState() as RootState;
+        const schemeData = state.schemes.schemes[id]?.scheme;
 
         try {
             // deleteSchemeServer thunk handles the server-side deletion
             await listenerApi.dispatch(deleteSchemeServer(id)).unwrap();
         } catch (error) {
             console.error("Failed to delete scheme from server", error);
+        }
+
+        if (schemeData && schemeData.associatedAssets) {
+            for (const assetId of schemeData.associatedAssets) {
+                listenerApi.dispatch(removeDependencyAndCheckDeload({ assetId, dependencyId: id }));
+            }
         }
     }
 });

@@ -3,7 +3,7 @@ import { ISVGElement } from "../../svgElement"
 export const DEFAULT_TRAPEZIUM: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
-	"svgDataRef": "trapezium",
+	"asset": { ref: "trapezium", id: "builtin" },
 	"contentWidth": 60,
 	"contentHeight": 10,
 

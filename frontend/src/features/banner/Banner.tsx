@@ -215,7 +215,7 @@ export default function Banner(props: IBannerProps) {
 
 				<Navbar.Group align={"right"}>
 					<Button
-						minimal={true}
+						variant="minimal"
 						icon="folder-open"
 						text="Diagrams"
 						onClick={() => setIsDiagramsDialogOpen(true)}
@@ -230,7 +230,7 @@ export default function Banner(props: IBannerProps) {
 						/>
 					) : (
 						<Button
-							minimal={true}
+							variant="minimal"
 							icon="user"
 							text="Sign in"
 							onClick={() => setIsLoginDialogOpen(true)}

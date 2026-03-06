@@ -1,4 +1,5 @@
 import {
+	Alert,
 	Button,
 	Dialog,
 	DialogBody,
@@ -16,24 +17,26 @@ import {
 } from "@blueprintjs/core";
 import React, { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ObjectInspector } from "react-inspector";
+import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
+import { AllComponentTypes, ID } from "../../logic/point";
 import Visual from "../../logic/visual";
+import { useGetMeQuery } from "../../redux/api/api";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { deleteScheme, InternalSchemeId, selectSchemeLocations, selectSchemes } from "../../redux/slices/schemesSlice";
+import { selectAssets } from "../../redux/slices/assetSlice";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import AddSchemeDialog from "./AddSchemeDialog";
 import NewElementDialog from "./NewElementDialog";
-import { appToaster } from "../../app/Toaster";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { useGetMeQuery } from "../../redux/api/api";
-import { deleteScheme, selectSchemes, selectSchemeLocations, InternalSchemeId } from "../../redux/slices/schemesSlice";
-import { ID, AllComponentTypes } from "../../logic/point";
 
 import { isPulse } from "../../logic/spacial";
-import QuietUploadArea from "../QuietUploadArea";
-import { AssetStoreList } from "../assetManagement";
-import { addAsset } from "../../redux/slices/assetSlice";
 import { downloadSchemeFile, importSchemeFile, uploadScheme } from "../../redux/thunks/schemeThunks";
+import { AssetStoreList } from "../assetManagement/AssetStoreList";
+import QuietUploadArea from "../QuietUploadArea";
+
 
 interface IElementDrawProps { }
+
 
 const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -45,9 +48,11 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 	const [isNewSchemeDialogOpen, setIsNewSchemeDialogOpen] = useState(false);
 	const [isDeleteSchemeDialogOpen, setIsDeleteSchemeDialogOpen] = useState(false);
+	const [schemeAssetsToDelete, setSchemeAssetsToDelete] = useState<string[]>([]);
 	const [isAssetStoreOpen, setIsAssetStoreOpen] = useState(false);
 
 	const schemes = useAppSelector(selectSchemes);
+	const appAssets = useAppSelector(selectAssets);
 	const schemeLocations = useAppSelector(selectSchemeLocations);
 	const { data: me } = useGetMeQuery();
 	const isLoggedIn = Boolean(me);
@@ -131,18 +136,30 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 				intent: "danger"
 			});
 		} else {
+			const schemeData = schemes[selectedSchemeId];
+			if (schemeData && schemeData.associatedAssets && schemeData.associatedAssets.length > 0) {
+				const diagramReqs = ENGINE.getAssetRequirementsFromDiagram();
+				const usedRefs = schemeData.associatedAssets
+					.map((id: string) => appAssets[id]?.reference)
+					.filter((ref: string | undefined): ref is string => ref !== undefined && diagramReqs.has(ref));
+				setSchemeAssetsToDelete(usedRefs);
+			} else {
+				setSchemeAssetsToDelete([]);
+			}
 			setIsDeleteSchemeDialogOpen(true);
 		}
 	};
 
 	const handleDeleteSchemeDialogClose = () => {
 		setIsDeleteSchemeDialogOpen(false);
+		setSchemeAssetsToDelete([]);
 	};
 
 	const handleDeleteSchemeConfirm = () => {
 		dispatch(deleteScheme(selectedSchemeId));
 		setSelectedSchemeId(InternalSchemeId);
 		setIsDeleteSchemeDialogOpen(false);
+		setSchemeAssetsToDelete([]);
 	};
 
 	const handleSchemeDrop = async (file: File) => {
@@ -488,36 +505,33 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 				/>
 
 				{/* Delete Scheme Confirmation Dialog */}
-				<Dialog
-					icon="warning-sign"
+				<Alert
+					cancelButtonText="Cancel"
+					confirmButtonText="Delete Scheme"
+					icon="trash"
+					intent="danger"
 					isOpen={isDeleteSchemeDialogOpen}
-					onClose={handleDeleteSchemeDialogClose}
-					title="Delete Scheme"
-					canOutsideClickClose={true}
-					canEscapeKeyClose={true}>
-					<DialogBody>
-						<Text>
-							Are you sure you want to delete the scheme "{selectedSchemeId}"? This action
-							cannot be undone.
-						</Text>
-					</DialogBody>
-
-					<DialogFooter
-						actions={
-							<>
-								<Button
-									text="Cancel"
-									onClick={handleDeleteSchemeDialogClose}
-									variant="minimal"
-								/>
-								<Button
-									text="Delete"
-									intent="danger"
-									onClick={handleDeleteSchemeConfirm}
-								/>
-							</>
-						}></DialogFooter>
-				</Dialog>
+					onCancel={handleDeleteSchemeDialogClose}
+					onConfirm={handleDeleteSchemeConfirm}
+				>
+					<p>
+						Are you sure you want to delete the scheme "{schemes[selectedSchemeId]?.metadata?.name || selectedSchemeId}"? This action
+						cannot be undone.
+					</p>
+					{schemeAssetsToDelete.length > 0 && (
+						<div style={{ marginTop: 12 }}>
+							<Text style={{ fontWeight: "bold" }}>Warning:</Text>
+							<Text>The following assets are currently used in your diagram and will be untracked:</Text>
+							<ul style={{ margin: "4px 0 0 0", paddingLeft: "20px" }}>
+								{schemeAssetsToDelete.map(assetRef => (
+									<li key={assetRef}>
+										<Text className="bp5-text-muted">{assetRef}</Text>
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
+				</Alert>
 			</div>
 		</QuietUploadArea >
 	);

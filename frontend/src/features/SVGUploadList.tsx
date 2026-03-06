@@ -12,23 +12,23 @@ export interface ISVGUploadListProps {
 }
 
 const SVGUploadList: React.FC<ISVGUploadListProps> = ({ elements, uploads, setUploads, title }) => {
-	// Check if scheme manager or uploads contains required svgDataRef
-	const isSvgRefSatisfied = (svgRef: string | undefined): boolean => {
-		if (svgRef === undefined) return true;
-		if (ENGINE.svgDict[svgRef] !== undefined) {
+	// Check if scheme manager or uploads contains required svgAssetRef
+	const isSvgRefSatisfied = (assetRef: string | undefined): boolean => {
+		if (assetRef === undefined) return true;
+		if (ENGINE.svgDict[assetRef] !== undefined) {
 			return true;
 		} // Asset Store
-		if (Object.prototype.hasOwnProperty.call(uploads, svgRef)) {
+		if (Object.prototype.hasOwnProperty.call(uploads, assetRef)) {
 			return true;
 		} // Uploads
 		return false;
 	};
 
-	// unique by svgDataRef, but display all entries
+	// unique by asset.ref, but display all entries
 	const svgRequirementRow = elements.map(({ name, element }) => {
-		const svgDataRef = element.svgDataRef;
-		const found = svgDataRef ? isSvgRefSatisfied(svgDataRef) : true;
-		return { name, svgDataRef, found };
+		const svgAssetRef = element.asset?.ref;
+		const found = svgAssetRef ? isSvgRefSatisfied(svgAssetRef) : true;
+		return { name, svgAssetRef, found };
 	});
 
 	// When received file input:
@@ -53,7 +53,7 @@ const SVGUploadList: React.FC<ISVGUploadListProps> = ({ elements, uploads, setUp
 			)}
 
 			<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-				{svgRequirementRow.map(({ name, svgDataRef, found }) => (
+				{svgRequirementRow.map(({ name, svgAssetRef, found }) => (
 					<div
 						key={name}
 						style={{
@@ -66,8 +66,8 @@ const SVGUploadList: React.FC<ISVGUploadListProps> = ({ elements, uploads, setUp
 						}}>
 						<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 							<Text style={{ fontWeight: 600 }}>{name}</Text>
-							{svgDataRef && (
-								<Text style={{ color: "#5c7080" }}>svgDataRef: {svgDataRef}</Text>
+							{svgAssetRef && (
+								<Text style={{ color: "#5c7080" }}>asset reference: {svgAssetRef}</Text>
 							)}
 						</div>
 						<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -80,7 +80,7 @@ const SVGUploadList: React.FC<ISVGUploadListProps> = ({ elements, uploads, setUp
 										type="file"
 										accept=".svg"
 										style={{ display: "none" }}
-										onChange={(e) => onFileInput(e, svgDataRef)}
+										onChange={(e) => onFileInput(e, svgAssetRef)}
 									/>
 									<Button
 										icon="upload"
