@@ -1,24 +1,15 @@
 import {
 	Button,
-	Classes,
 	ControlGroup,
-	Dialog,
-	DialogBody,
-	DialogFooter,
 	FormGroup,
-	HTMLSelect,
-	InputGroup
+	HTMLSelect
 } from "@blueprintjs/core";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import ENGINE from "../../logic/engine";
-import { ISVGElement } from "../../logic/svgElement";
-import UploadArea from "../UploadArea";
 import VisualForm from "./VisualForm";
-import { appToaster } from "../../app/Toaster";
 import { FormRequirements } from "./FormBase";
-import { useAppSelector } from "../../redux/hooks";
-import { selectSchemes, InternalSchemeId } from "../../redux/slices/schemesSlice";
+import SVGUploadDialog from "./SVGUploadDialog";
 
 interface ISVGElementFormProps extends FormRequirements { }
 
@@ -28,71 +19,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 	const formControls = useFormContext();
 
 	const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-	const [selectedFile, setSelectedFile] = useState<File | null>(null);
-	const [svgReference, setSvgReference] = useState("");
-	const [schemeName, setSchemeName] = useState<string>(InternalSchemeId);
-	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const schemes = useAppSelector(selectSchemes);
-	const schemeNames = useMemo(() => Object.keys(schemes), [schemes]);
-
-
-	const handleFileSelect = (file: File) => {
-		if (file.type === "image/svg+xml" || file.name.endsWith(".svg")) {
-			setSelectedFile(file);
-		} else {
-			appToaster.show({
-				message: "Please select an SVG file",
-				intent: "warning"
-			});
-		}
-	};
-
-	const removeFile = () => {
-		setSelectedFile(null);
-		if (fileInputRef.current) {
-			fileInputRef.current.value = "";
-		}
-	};
-
-	// Handle upload
-	const handleUploadSVG = () => {
-		if (selectedFile && svgReference.trim()) {
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				try {
-					const svgString = e.target?.result as string;
-					const blob = new Blob([svgString], { type: "image/svg+xml" });
-					ENGINE.assetStore.addSVGData(blob, svgReference.trim());
-					ENGINE.emitChange();
-
-					appToaster.show({
-						message: "SVG uploaded successfully",
-						intent: "success"
-					});
-
-					setIsUploadDialogOpen(false);
-					setSelectedFile(null);
-					setSvgReference("");
-				} catch (error) {
-					console.error(error);
-					appToaster.show({
-						message: "Error uploading SVG file",
-						intent: "danger"
-					});
-				}
-			};
-			reader.readAsText(selectedFile);
-		} else {
-			appToaster.show({
-				message: "Please select an SVG file and provide a reference name",
-				intent: "warning"
-			});
-		}
-	};
-
-
-	const vals = formControls.getValues();
 	return (
 		<>
 			{/* SVG Specific fields */}
@@ -124,81 +51,10 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 
 			<VisualForm target={props.target} heightDisplay={true} widthDisplay={true}></VisualForm>
 
-			{/* Upload SVG Dialog */}
-			<Dialog
+			<SVGUploadDialog
 				isOpen={isUploadDialogOpen}
-				onClose={() => {
-					setIsUploadDialogOpen(false);
-					setSelectedFile(null);
-					setSvgReference("");
-				}}
-				title="Upload SVG File"
-				icon="upload">
-				<DialogBody>
-					<FormGroup
-						label="Reference Name"
-						labelFor="reference-input"
-						intent={svgReference.trim() === "" ? "danger" : "none"}
-						helperText={svgReference.trim() === "" ? "Enter reference" : ""}>
-						<InputGroup
-							id="reference-input"
-							value={svgReference}
-							intent={svgReference.trim() === "" ? "danger" : "none"}
-							onChange={(e) => setSvgReference(e.target.value)}
-							placeholder="Enter reference name..."
-						/>
-					</FormGroup>
-
-					<FormGroup label="Add to scheme" labelFor="scheme-input">
-						<HTMLSelect
-							id="scheme-input"
-							value={schemeName}
-							onChange={(e) => setSchemeName(e.target.value)}>
-							{schemeNames.map((name) => {
-								return (
-									<option key={name} value={name}>
-										{name}
-									</option>
-								);
-							})}
-						</HTMLSelect>
-					</FormGroup>
-
-					<UploadArea
-						selectedFile={selectedFile}
-						onFileSelected={handleFileSelect}
-						onRemoveFile={removeFile}
-						accept={".svg"}
-						promptText={"Drag and drop an SVG file here, or"}
-						buttonText={"Choose File"}
-						setInputRef={(el) => {
-							if (fileInputRef) (fileInputRef as any).current = el;
-						}}
-						style={{ marginTop: "16px" }}
-					/>
-				</DialogBody>
-
-				<DialogFooter
-					actions={
-						<>
-							<Button
-								text="Cancel"
-								onClick={() => {
-									setIsUploadDialogOpen(false);
-									setSelectedFile(null);
-									setSvgReference("");
-								}}
-							/>
-							<Button
-								text="Upload"
-								intent="primary"
-								onClick={handleUploadSVG}
-								disabled={!selectedFile || !svgReference.trim()}
-							/>
-						</>
-					}
-				/>
-			</Dialog>
+				onClose={() => setIsUploadDialogOpen(false)}
+			/>
 		</>
 	);
 };
