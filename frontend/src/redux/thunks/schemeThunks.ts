@@ -3,6 +3,7 @@ import { sha256 } from "js-sha256";
 import JSZip from "jszip";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
+import { createSchemeFile } from "../../fileCreation/createSchemeFile";
 import { downloadBlob } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
 import { IScheme, SchemeSource } from "../../types/schemes";
@@ -32,9 +33,11 @@ export const uploadSchemeServer = createAsyncThunk<void, string>(
         thunkAPI.dispatch(setSchemeLocation({ id, location: "server" }));
 
         try {
-            const zip = await ENGINE.createSchemeFile(id, state.schemes.schemes);
+            const zip = await createSchemeFile(id, state.schemes.schemes);
+
             const blob = await zip.generateAsync({ type: "blob" });
             const file = new File([blob], `${id}.nmrs`, { type: "application/zip" });
+
             const formData = new FormData();
             formData.append("file", file);
             await thunkAPI.dispatch(
@@ -75,7 +78,7 @@ export const saveSchemeByID = createAsyncThunk<void, string>(
     async (schemeId, thunkAPI) => {
         try {
             const state = thunkAPI.getState() as RootState;
-            const zip = await ENGINE.createSchemeFile(schemeId, state.schemes.schemes);
+            const zip = await createSchemeFile(schemeId, state.schemes.schemes);
             const blob = await zip.generateAsync({ type: "blob" });
             const file = new File([blob], `${schemeId}.nmrs`, { type: "application/zip" });
             const formData = new FormData();
@@ -291,7 +294,7 @@ export const downloadSchemeFile = createAsyncThunk<void, string>(
         if (!scheme) return;
 
         const name = scheme.metadata.name;
-        const file = await ENGINE.createSchemeFile(schemeId, schemes);
+        const file = await createSchemeFile(schemeId, schemes);
         const blob = await file.generateAsync({ type: "blob" });
         downloadBlob(blob, `${name}.nmrs`);
     }

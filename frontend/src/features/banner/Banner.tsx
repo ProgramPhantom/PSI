@@ -4,6 +4,7 @@ import { Tool } from "../../app/App";
 import { appToaster } from "../../app/Toaster";
 import { defaultLine } from "../../logic/default/index";
 import ENGINE from "../../logic/engine";
+import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import { IDiagram } from "../../logic/hasComponents/diagram";
 import { ILineStyle } from "../../logic/line";
 import { useGetMeQuery } from "../../redux/api/api";
@@ -65,7 +66,7 @@ export default function Banner(props: IBannerProps) {
 	};
 
 	const exportDiagramFile = () => {
-		ENGINE.saveDiagramFile();
+		saveDiagramFile();
 
 		appToaster.show({
 			message: "Diagram file downloaded",

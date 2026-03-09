@@ -27,20 +27,31 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 				<ControlGroup>
 					<Controller
 						control={formControls.control}
-						name={`${fullPrefix}asset.ref`}
-						render={({ field }) => (
+						name={`${fullPrefix}asset`}
+						render={({ field: { value, onChange, ...fieldProps } }) => (
 							<HTMLSelect
-								{...field}
+								{...fieldProps}
 								id="svgDataRef-select"
 								fill={true}
+								value={typeof value === 'object' ? value?.id || "" : value || ""}
+								onChange={(e) => {
+									const selectedId = e.target.value;
+									const entry = ENGINE.svgDict[selectedId];
+									if (entry) {
+										onChange({ id: selectedId, ref: entry.ref });
+									} else {
+										onChange({ id: "", ref: "" });
+									}
+								}}
 								options={[
-									...Object.keys(ENGINE.svgDict).map((ref) => ({
-										label: `${ref}`,
-										value: ref,
+									...Object.entries(ENGINE.svgDict).map(([id, entry]) => ({
+										label: entry.ref,
+										value: id,
 									})),
 								]}
-							/>)}>
-					</Controller>
+							/>
+						)}
+					/>
 					<Button
 						icon="plus"
 						onClick={() => setIsUploadDialogOpen(true)}
