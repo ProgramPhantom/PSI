@@ -4,6 +4,7 @@ import localforage from "localforage";
 import ENGINE from "../../logic/engine";
 import { RootState } from "../rootReducer";
 import { addAsset, deleteAsset, removeDependency, SVGDict } from "../slices/assetSlice";
+import { SVGDBEntry } from "../../logic/assetStore";
 
 // Load client SVGs
 const CLIENT_SVGS: SVGDict = import.meta.glob("../../assets/svg/*.svg", {
@@ -63,11 +64,11 @@ export const removeDependencyAndCheckDeload = createAsyncThunk<void, { assetId: 
     async ({ assetId, dependencyId }, thunkAPI) => {
         const state = thunkAPI.getState() as RootState;
         const asset = state.assets.assets[assetId];
-        
+
         if (!asset) return;
 
         thunkAPI.dispatch(removeDependency({ assetId, dependencyId }));
-        
+
         // After removing, check if dependencies are empty
         const updatedAsset = (thunkAPI.getState() as RootState).assets.assets[assetId];
         if (updatedAsset && updatedAsset.dependencies.length === 0) {
@@ -83,43 +84,42 @@ export const initializeAssets = createAsyncThunk<void, void>(
     async (_, thunkAPI) => {
 
         try {
-            let assetData: Record<string, Blob> = {};
+            let assetData: Set<SVGDBEntry> = new Set<SVGDBEntry>;
             try {
-                assetData = Object.fromEntries(
-                    Object.entries(CLIENT_SVGS).map(([path, content]) => {
-                        const name = (path.split("/").pop() ?? "").replace(".svg", "");
-                        const blob = new Blob([content as string], { type: "image/svg+xml" });
-                        return [name, blob];
-                    })
-                )
+                for (const [path, svgString] of Object.entries(CLIENT_SVGS)) {
+
+                    const ref = (path.split("/").pop() ?? "").replace(".svg", "");
+                    const blob = new Blob([svgString as string], { type: "image/svg+xml" });
+
+                    assetData.add({ ref: ref, file: blob });
+                }
             } catch (e) {
                 console.warn("Failed to load asset svg data");
             }
 
-            let localStoreAssetData: Record<string, Blob | File> = {};
+            let localStoreAssetData: Set<SVGDBEntry> = new Set<SVGDBEntry>;
             try {
                 const keys = await localforage.keys();
                 for (const key of keys) {
-                    const blob = await localforage.getItem<Blob | File>(key);
-                    if (blob) {
-                        localStoreAssetData[key] = blob;
+                    const svgStore: SVGDBEntry | null = await localforage.getItem<SVGDBEntry>(key);
+                    if (svgStore) {
+                        localStoreAssetData.add(svgStore)
                     }
                 }
             } catch (e) {
                 console.warn("Failed to load local svg data");
             }
 
-            const allFileRefs = new Set([...Object.keys(assetData), ...Object.keys(localStoreAssetData)]);
+            const allDBEntries: Set<SVGDBEntry> = new Set([...assetData, ...localStoreAssetData])
 
-            for (const ref of allFileRefs) {
-                const fileToLoad = localStoreAssetData[ref] || assetData[ref];
-                if (fileToLoad) {
-                    thunkAPI.dispatch(loadAsset({
-                        file: fileToLoad,
-                        reference: ref,
-                        dependencies: ["built-in"]
-                    }));
-                }
+            for (const entry of allDBEntries) {
+
+                thunkAPI.dispatch(loadAsset({
+                    file: entry.file,
+                    reference: entry.ref,
+                    dependencies: ["built-in"]
+                }));
+
             }
 
         } catch (e) {

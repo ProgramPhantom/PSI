@@ -11,12 +11,13 @@ import Label, { ILabel } from "./hasComponents/label";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import Sequence, { ISequence } from "./hasComponents/sequence";
 import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
-import { AllComponentTypes } from "./point";
+import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Text, { IText } from "./text";
 import { downloadBlob } from "./util2";
 import Visual, { GridCellElement, IVisual } from "./visual";
+import localforage from "localforage";
 
 
 class ENGINE {
@@ -46,12 +47,8 @@ class ENGINE {
 	static get diagramState(): IDiagram {
 		return ENGINE.handler.diagram.state
 	}
-	static get svgDict(): Record<string, string> {
-		const dict: Record<string, string> = {};
-		for (const [key, obj] of Object.entries(ENGINE.assetStore.svgObjects)) {
-			dict[key] = obj.svg();
-		}
-		return dict;
+	static get svgDict(): Record<ID, { ref: string, object: Element }> {
+		return ENGINE.assetStore.svgObjects;
 	}
 
 	static get handler(): DiagramHandler {
@@ -158,8 +155,15 @@ class ENGINE {
 
 		const assetsFolder = zip.folder("assets")!;
 
-		for (const [id, svgText] of Object.entries(ENGINE.svgDict)) {
-			assetsFolder.file(`${id}.svg`, svgText);
+		for (const [id, refObj] of Object.entries(ENGINE.svgDict)) {
+			const file = await localforage.getItem<File>(id)
+
+			if (!file) {
+				console.warn(`Cannot collect asset '${refObj.ref}' for diagram file`);
+				continue
+			}
+
+			assetsFolder.file(`${id}.svg`, file);
 		}
 
 		zip.file("manifest.json", JSON.stringify({
@@ -211,9 +215,9 @@ class ENGINE {
 		});
 
 		usedAssets.forEach((assetId) => {
-			const svgText = ENGINE.svgDict[assetId];
-			if (svgText) {
-				assetsFolder.file(`${assetId}.svg`, svgText);
+			const svgObj = ENGINE.svgDict[assetId]?.object;
+			if (svgObj) {
+				assetsFolder.file(`${assetId}.svg`, svgObj.toString());
 			}
 		});
 
@@ -358,12 +362,14 @@ class ENGINE {
 	static ConstructSVGElement(data: ISVGElement): SVGElement {
 		var result: SVGElement = new SVGElement(data);
 		if (ENGINE.assetStore.svgObjects && data.asset) {
-			if (ENGINE.assetStore.svgObjects[data.asset.ref] === undefined) {
+			const id = data.asset.id === "builtin" ? data.asset.ref : data.asset.id
+
+			if (ENGINE.assetStore.svgObjects[data.asset.id] === undefined) {
 				console.warn(
 					`SVG data reference '${data.asset.ref}' not found in AssetStore`
 				);
 			} else {
-				let svgObj: Element = ENGINE.assetStore.svgObjects[data.asset.ref].clone(true, true) as Element;
+				let svgObj: Element = ENGINE.assetStore.svgObjects[id].object.clone(true, true) as Element;
 
 				result.setSvgData(svgObj);
 			}

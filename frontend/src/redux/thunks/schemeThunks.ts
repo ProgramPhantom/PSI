@@ -124,14 +124,18 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
             if (assetsFolder) {
                 const assetPromises: Promise<void>[] = [];
                 assetsFolder.forEach((relativePath, assetFile) => {
+
+
                     if (!assetFile.dir && relativePath.endsWith(".svg")) {
+
                         const assetRef = relativePath.substring(0, relativePath.length - 4);
+
                         assetPromises.push(assetFile.async("blob").then(async blob => {
                             const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
                             const dataString = await file.text();
                             const id = await sha256(dataString);
                             associatedAssets.push(id);
-                            thunkAPI.dispatch(loadAsset({ file: file, reference: assetRef, dependencies: [schemeUUID] }));
+                            thunkAPI.dispatch(loadAsset({ file: file, reference: "loaded", dependencies: [schemeUUID] }));
                         }));
                     }
                 });

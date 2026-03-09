@@ -83,7 +83,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		}
 
 
-		
+
 		// Clear old svg
 		if (this.svg) {
 			this.svg.remove();
@@ -110,7 +110,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		//this.svg.attr({"style": 'display: "block"'})
 		this.svg.show();
 		surface.add(this.svg);
-		
+
 
 		super.draw(surface);
 	}

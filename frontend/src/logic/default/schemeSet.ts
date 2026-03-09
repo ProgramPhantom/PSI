@@ -21,6 +21,7 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
 		location: "builtin",
 		scheme: {
+			associatedAssets: [],
 			metadata: {
 				name: "internal",
 				id: uuidv4(),

@@ -23,7 +23,7 @@ export function AssetStoreList(props: IAssetStoreListProps) {
                     <HTMLTable bordered striped style={{ width: "100%" }}>
                         <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
                             <tr>
-                                <th>Ref</th>
+                                <th>Reference</th>
                                 <th>Id</th>
                                 <th>Size</th>
                                 <th style={{ width: "40px" }}></th>
