@@ -27,8 +27,7 @@ export async function createSchemeFile(schemeId: string, schemes: SchemeDict): P
     const usedAssets = new Set<string>();
 
     const elements = scheme.components;
-    Object.values(elements).forEach((el) => {
-        const id = sha256(JSON.stringify(el));
+    Object.entries(elements).forEach(([id, el]) => {
         componentsFolder.file(`${id}.json`, JSON.stringify(el, null, 2));
 
         // Add svg file if svg

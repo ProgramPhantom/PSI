@@ -3,6 +3,7 @@ import { DEFAULT_SCHEME_SET } from '../../logic/default/schemeSet';
 import { ID } from '../../logic/point';
 import { IVisual } from '../../logic/visual';
 import { IScheme, SchemeDict, SchemeMetadata, SchemeSource } from '../../types/schemes';
+import { sha256 } from 'js-sha256';
 
 
 export const InternalSchemeId = "internal";
@@ -39,7 +40,7 @@ const schemesSlice = createSlice({
         addComponent(state, action: PayloadAction<{ schemeId: ID; component: IVisual }>) {
             const { schemeId, component } = action.payload;
             if (state.schemes[schemeId]) {
-                const id = Math.random().toString(16).slice(2);
+                const id = sha256(JSON.stringify(component));
                 state.schemes[schemeId].scheme.components[id] = component;
             }
         },

@@ -175,9 +175,10 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
                 const promises: Promise<void>[] = [];
                 componentsFolder.forEach((relativePath, compFile) => {
                     if (!compFile.dir && relativePath.endsWith(".json")) {
+                        const compId = relativePath.substring(0, relativePath.length - 5);
                         promises.push(compFile.async("text").then(compStr => {
                             const comp = JSON.parse(compStr) as IVisual;
-                            components[comp.ref] = comp;
+                            components[compId] = comp;
                         }));
                     }
                 });
