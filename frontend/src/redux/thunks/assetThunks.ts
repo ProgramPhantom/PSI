@@ -78,7 +78,7 @@ export const removeDependencyAndCheckDeload = createAsyncThunk<void, { assetId: 
 
         // After removing, check if dependencies are empty
         const updatedAsset = (thunkAPI.getState() as RootState).assets.assets[assetId];
-        if (updatedAsset && updatedAsset.dependents.length === 0) {
+        if (updatedAsset && updatedAsset.dependents.length === 0 && updatedAsset.source !== "builtin") {
             console.log(`Deloading asset '${updatedAsset.reference}'`)
             thunkAPI.dispatch(deloadAsset({ reference: updatedAsset.reference, id: assetId }));
         }
