@@ -1,5 +1,4 @@
 import JSZip from "jszip";
-import localforage from "localforage";
 import { downloadBlob } from "../logic/util2";
 import ENGINE from "../logic/engine";
 
@@ -10,15 +9,20 @@ export async function createDiagramFile(): Promise<JSZip> {
 
     const assetsFolder = zip.folder("assets")!;
 
-    for (const [id, refObj] of Object.entries(ENGINE.svgDict)) {
-        const file = await localforage.getItem<File>(id)
+    // We must find which assets are actually used in the diagram
+    const requiredIds = ENGINE.getAssetRequirementsFromDiagram();
 
-        if (!file) {
-            console.warn(`Cannot collect asset '${refObj.ref}' for diagram file`);
-            continue
+    // Mapping over all known dict entries to find matches
+    for (const [id, refObj] of Object.entries(ENGINE.svgDict)) {
+        if (!requiredIds.has(id)) {
+            continue; // Only bundle used assets
         }
 
-        assetsFolder.file(`${id}.svg`, file);
+        // SVG.js elements can export their SVG string directly
+        const svgString = refObj.object.svg();
+
+        assetsFolder.file(`${id}.svg`, svgString);
+        assetsFolder.file(`${id}.json`, JSON.stringify({ ref: refObj.ref }));
     }
 
     zip.file("manifest.json", JSON.stringify({

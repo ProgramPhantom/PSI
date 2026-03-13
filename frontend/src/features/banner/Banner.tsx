@@ -109,31 +109,17 @@ export default function Banner(props: IBannerProps) {
 					<Button
 						size="small"
 						variant="minimal"
-						icon="upload"
-						text="Load"
+						icon="folder-open"
+						text="Open"
 						onClick={() => setIsLoadDialogOpen(true)}
 					/>
 					<Navbar.Divider />
 					<Button
 						size="small"
 						variant="minimal"
-						icon="export"
-						text="Export"
-						onClick={() => exportDiagramFile()}
-					/>
-					<Navbar.Divider />
-					<Button
-						size="small"
-						variant="minimal"
 						icon="download"
-						onClick={() => downloadState()}
-					/>
-					<Navbar.Divider />
-					<Button
-						size="small"
-						variant="minimal"
-						icon="cut"
-						onClick={() => copyState()}
+						text="Download"
+						onClick={() => exportDiagramFile()}
 					/>
 					<Navbar.Divider />
 

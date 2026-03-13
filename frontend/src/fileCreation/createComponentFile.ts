@@ -18,12 +18,13 @@ export async function createComponentFile(component: IVisual): Promise<JSZip> {
     const assetsFolder = zip.folder("assets")!;
     const usedAssets: Set<string> = ENGINE.getAssetRequirementsFromComponent(component);
 
-    usedAssets.forEach((assetId) => {
-        const svgText = ENGINE.svgDict[assetId]?.ref; //  Warning svgText used to just use ENGINE.svgDict[assetId]
-        if (svgText) {
-            assetsFolder.file(`${assetId}.svg`, svgText);
+    for (const assetId of usedAssets) {
+        const assetFile = await ENGINE.assetStore.getAsset(assetId);
+        if (assetFile) {
+            assetsFolder.file(`${assetId}.svg`, assetFile.file);
+            assetsFolder.file(`${assetId}.json`, JSON.stringify({ ref: assetFile.ref }));
         }
-    });
+    }
 
     return zip;
 }

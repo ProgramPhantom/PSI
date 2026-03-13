@@ -74,8 +74,10 @@ class ENGINE {
 			l();
 		});
 	}
-	static loadDiagramState() {
+	static loadDiagramState(newState?: IDiagram) {
 		var stateObj: IDiagram | undefined = undefined;
+
+		if (newState !== undefined) { this.STATE = JSON.stringify(newState) };
 		if (this.STATE !== null) {
 			try {
 				stateObj = JSON.parse(this.STATE) as IDiagram;
@@ -113,7 +115,7 @@ class ENGINE {
 		let assets: Set<string> = new Set<string>();
 
 		if (SVGElement.isSVGElement(component)) {
-			assets.add(component.asset.ref)
+			assets.add(component.asset.id)
 		} else if (Collection.isCollection(component)) {
 			component.children.forEach((c) => {
 				assets = new Set([...assets, ...ENGINE.getAssetRequirementsFromComponent(c)])
