@@ -2,6 +2,8 @@ import JSZip from "jszip";
 import ENGINE from "../logic/engine";
 import { ISVGElement } from "../logic/svgElement";
 import { IScheme, SchemeDict, SchemeMetadata } from "../types/schemes";
+import { sha256 } from "js-sha256";
+import { SVGDBEntry } from "../logic/assetStore";
 
 export async function createSchemeFile(schemeId: string, schemes: SchemeDict): Promise<JSZip> {
     const zip = new JSZip();
@@ -26,23 +28,25 @@ export async function createSchemeFile(schemeId: string, schemes: SchemeDict): P
 
     const elements = scheme.components;
     Object.values(elements).forEach((el) => {
-        componentsFolder.file(`${el.ref}.json`, JSON.stringify(el, null, 2));
+        const id = sha256(JSON.stringify(el));
+        componentsFolder.file(`${id}.json`, JSON.stringify(el, null, 2));
 
         // Add svg file if svg
         if (el.type === "svg") {
             const svgEl = el as ISVGElement;
             if (svgEl.asset) {
-                usedAssets.add(svgEl.asset.ref);
+                usedAssets.add(svgEl.asset.id);
             }
         }
     });
 
-    usedAssets.forEach((assetId) => {
-        const svgObj = ENGINE.svgDict[assetId]?.object;
-        if (svgObj) {
-            assetsFolder.file(`${assetId}.svg`, svgObj.toString());
+    for (const assetId of usedAssets) {
+        const assetFile: SVGDBEntry | null = await ENGINE.assetStore.getAsset(assetId);
+
+        if (assetFile) {
+            assetsFolder.file(`${assetId}.svg`, assetFile.file);
         }
-    });
+    }
 
     return zip;
 }

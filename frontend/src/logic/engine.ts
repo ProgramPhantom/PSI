@@ -96,47 +96,6 @@ class ENGINE {
 		}
 	}
 
-	// static saveAs() {
-	// 	var stateObject: IDiagram = ENGINE.handler.diagram.state;
-	// 	var stateString = JSON.stringify(stateObject, undefined, 4);
-	// 	localStorage.setItem(ENGINE.StateName, stateString);
-	// 
-	// 	// Creates diagram with fresh UUID
-	// 	store.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref))
-	// 		.unwrap()
-	// 		.then((createResponse) => {
-	// 			if (createResponse.id !== undefined) {
-	// 				store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
-	// 				localStorage.setItem("diagramUUID", createResponse.id);
-	// 			}
-	// 		})
-	// 		.catch(() => { });
-	// }
-	// static save() {
-	// 	var stateObject: IDiagram = ENGINE.handler.diagram.state;
-	// 	var stateString = JSON.stringify(stateObject, undefined, 4);
-	// 	localStorage.setItem(ENGINE.StateName, stateString);
-	// 
-	// 	store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: localStorage.getItem("diagramUUID") ?? "", diagram: stateObject }))
-	// 		.unwrap()
-	// 		.then((response) => {
-	// 			appToaster.show({ message: "Diagram saved", intent: "success" })
-	// 		})
-	// 		.catch((error) => {
-	// 			store.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref))
-	// 				.unwrap()
-	// 				.then((createResponse) => {
-	// 					if (createResponse.id !== undefined) {
-	// 						store.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
-	// 						localStorage.setItem("diagramUUID", createResponse.id);
-	// 
-	// 						appToaster.show({ message: "Diagram saved", intent: "success" })
-	// 					}
-	// 				})
-	// 				.catch(() => { });
-	// 		});
-	// }
-
 	static clearState() {
 		localStorage.removeItem(ENGINE.StateName);
 	}
@@ -145,7 +104,6 @@ class ENGINE {
 		ENGINE.handler.resetDiagram();
 		localStorage.removeItem("diagramUUID");
 	}
-
 
 	static getAssetRequirementsFromDiagram(): Set<string> {
 		return ENGINE.getAssetRequirementsFromComponent(ENGINE.handler.diagram)

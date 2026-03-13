@@ -78,10 +78,12 @@ export const saveSchemeByID = createAsyncThunk<void, string>(
     async (schemeId, thunkAPI) => {
         try {
             const state = thunkAPI.getState() as RootState;
+
             const zip = await createSchemeFile(schemeId, state.schemes.schemes);
             const blob = await zip.generateAsync({ type: "blob" });
             const file = new File([blob], `${schemeId}.nmrs`, { type: "application/zip" });
             const formData = new FormData();
+
             formData.append("file", file);
             await thunkAPI.dispatch(
                 saveSchemeServer({ schemeId, formData })

@@ -31,4 +31,8 @@ export default class AssetStore {
         delete this.svgObjects[reference];
         await localforage.removeItem(reference);
     }
+
+    public async getAsset(id: string): Promise<SVGDBEntry | null> {
+        return await localforage.getItem<SVGDBEntry>(id);
+    }
 }
