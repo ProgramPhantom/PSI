@@ -2,6 +2,7 @@ import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_SCHEME_SET } from '../../logic/default/schemeSet';
 import { ID } from '../../logic/point';
 import { IVisual } from '../../logic/visual';
+import { ISVGElement } from '../../logic/svgElement';
 import { IScheme, SchemeDict, SchemeMetadata, SchemeSource } from '../../types/schemes';
 import { sha256 } from 'js-sha256';
 
@@ -97,6 +98,23 @@ const schemesSlice = createSlice({
             (state: SchemesState) => state.schemes,
             (schemes) => Object.values(schemes).flatMap((val) => Object.values(val.scheme.components))
         ),
+        selectAssociatedAssetsBySchemeId: createSelector(
+            [(state: SchemesState) => state.schemes, (state: SchemesState, schemeId: ID) => schemeId],
+            (schemes, schemeId) => {
+                const scheme = schemes[schemeId]?.scheme;
+                if (!scheme) return [];
+                const assets = new Set<string>();
+                Object.values(scheme.components).forEach(comp => {
+                    if (comp.type === "svg") {
+                        const svgComp = comp as ISVGElement;
+                        if (svgComp.asset?.id) {
+                            assets.add(svgComp.asset.id);
+                        }
+                    }
+                });
+                return Array.from(assets);
+            }
+        ),
     }
 });
 
@@ -121,6 +139,7 @@ export const {
     selectSchemeLocationById,
     selectComponentsBySchemeId,
     selectAllComponents,
+    selectAssociatedAssetsBySchemeId,
 } = schemesSlice.selectors;
 
 export default schemesSlice.reducer;

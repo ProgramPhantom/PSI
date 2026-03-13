@@ -1,9 +1,8 @@
 import JSZip from "jszip";
-import ENGINE from "../logic/engine";
-import { ISVGElement } from "../logic/svgElement";
-import { IScheme, SchemeDict, SchemeMetadata } from "../types/schemes";
-import { sha256 } from "js-sha256";
 import { SVGDBEntry } from "../logic/assetStore";
+import ENGINE from "../logic/engine";
+import { selectAssociatedAssetsBySchemeId } from "../redux/slices/schemesSlice";
+import { IScheme, SchemeDict, SchemeMetadata } from "../types/schemes";
 
 export async function createSchemeFile(schemeId: string, schemes: SchemeDict): Promise<JSZip> {
     const zip = new JSZip();
@@ -23,21 +22,12 @@ export async function createSchemeFile(schemeId: string, schemes: SchemeDict): P
     const componentsFolder = zip.folder("components")!;
     const assetsFolder = zip.folder("assets")!;
 
-    // Svg data refs
-    const usedAssets = new Set<string>();
-
     const elements = scheme.components;
     Object.entries(elements).forEach(([id, el]) => {
         componentsFolder.file(`${id}.json`, JSON.stringify(el, null, 2));
-
-        // Add svg file if svg
-        if (el.type === "svg") {
-            const svgEl = el as ISVGElement;
-            if (svgEl.asset) {
-                usedAssets.add(svgEl.asset.id);
-            }
-        }
     });
+
+    const usedAssets: string[] = selectAssociatedAssetsBySchemeId({ schemes: { schemes } } as any, schemeId);
 
     for (const assetId of usedAssets) {
         const assetFile: SVGDBEntry | null = await ENGINE.assetStore.getAsset(assetId);

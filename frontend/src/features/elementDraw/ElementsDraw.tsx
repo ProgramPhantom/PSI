@@ -23,7 +23,7 @@ import { AllComponentTypes, ID } from "../../logic/point";
 import Visual from "../../logic/visual";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { InternalSchemeId, selectSchemeLocations, selectSchemes } from "../../redux/slices/schemesSlice";
+import { InternalSchemeId, selectAssociatedAssetsBySchemeId, selectSchemeLocations, selectSchemes } from "../../redux/slices/schemesSlice";
 import { selectAssets } from "../../redux/slices/assetSlice";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import AddSchemeDialog from "./AddSchemeDialog";
@@ -137,9 +137,10 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 			});
 		} else {
 			const schemeData = schemes[selectedSchemeId];
-			if (schemeData && schemeData.associatedAssets && schemeData.associatedAssets.length > 0) {
+			const associatedAssets = selectAssociatedAssetsBySchemeId({ schemes: { schemes } } as any, selectedSchemeId);
+			if (associatedAssets && associatedAssets.length > 0) {
 				const diagramReqs = ENGINE.getAssetRequirementsFromDiagram();
-				const usedRefs = schemeData.associatedAssets
+				const usedRefs = associatedAssets
 					.map((id: string) => appAssets[id]?.reference)
 					.filter((ref: string | undefined): ref is string => ref !== undefined && diagramReqs.has(ref));
 				setSchemeAssetsToDelete(usedRefs);

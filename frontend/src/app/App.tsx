@@ -15,7 +15,7 @@ import { setSelectedElementId } from "../redux/slices/applicationSlice";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { appToaster } from "./Toaster";
 import { WelcomeSplash } from "./WelcomeSplash";
-import { initializeAssets } from "../redux/thunks/assetThunks";
+import { initialiseAssets } from "../redux/thunks/assetThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 import { api } from "../redux/api/api";
 
@@ -38,7 +38,7 @@ function App() {
 
 		async function startApp() {
 			// 1. Initialize core application assets
-			await dispatch(initializeAssets());
+			await dispatch(initialiseAssets());
 
 			// 2. Await the authentication state 
 			// (Either it succeeds to load the user, or it predictably fails because we are not logged in)

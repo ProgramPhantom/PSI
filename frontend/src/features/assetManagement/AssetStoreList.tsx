@@ -27,6 +27,7 @@ export function AssetStoreList(props: IAssetStoreListProps) {
                                 <th>Id</th>
                                 <th>Size</th>
                                 <th style={{ width: "40px" }}></th>
+                                <th style={{ width: "40px" }}></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -36,13 +37,20 @@ export function AssetStoreList(props: IAssetStoreListProps) {
                                     <td style={{ paddingTop: 4, paddingBottom: 4 }}>{asset.id}</td>
                                     <td style={{ paddingTop: 4, paddingBottom: 4 }}>{asset.size}</td>
                                     <td style={{ paddingTop: 4, paddingBottom: 4, textAlign: "center" }}>
+                                        <Tooltip content={asset.source}
+                                            placement="bottom"
+                                        >
+                                            <Icon icon={asset.source === "builtin" ? "target" : (asset.source === "local" ? "geofence" : "cloud")} size={16} style={{ cursor: "help" }} />
+                                        </Tooltip>
+                                    </td>
+                                    <td style={{ paddingTop: 4, paddingBottom: 4, textAlign: "center" }}>
                                         <Tooltip
                                             content={
                                                 <div>
-                                                    <strong>Dependencies:</strong>
+                                                    <strong>Dependants:</strong>
                                                     <br />
-                                                    {asset.dependencies.length > 0
-                                                        ? asset.dependencies.join(", ")
+                                                    {asset.dependents.length > 0
+                                                        ? asset.dependents.join(", ")
                                                         : "None"}
                                                 </div>
                                             }

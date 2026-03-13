@@ -8,6 +8,5 @@ export type SchemeMetadata = {
 export type IScheme = {
     metadata: SchemeMetadata,
     components: Record<ID, IVisual>,
-    associatedAssets: string[]
 };
 export type SchemeDict = Record<ID, { scheme: IScheme, location: SchemeSource }>;

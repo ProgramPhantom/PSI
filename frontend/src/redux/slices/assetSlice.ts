@@ -32,21 +32,22 @@ const assetSlice = createSlice({
         addDependency(state, action: PayloadAction<{ assetId: ID; dependencyId: ID }>) {
             const { assetId, dependencyId } = action.payload;
             const asset = state.assets[assetId];
-            if (asset && !asset.dependencies.includes(dependencyId)) {
-                asset.dependencies.push(dependencyId);
+            if (asset && !asset.dependents.includes(dependencyId)) {
+                asset.dependents.push(dependencyId);
             }
         },
         removeDependency(state, action: PayloadAction<{ assetId: ID; dependencyId: ID }>) {
             const { assetId, dependencyId } = action.payload;
             const asset = state.assets[assetId];
             if (asset) {
-                asset.dependencies = asset.dependencies.filter(id => id !== dependencyId);
+                asset.dependents = asset.dependents.filter(id => id !== dependencyId);
             }
         },
     },
     selectors: {
         selectAssets: (state) => state.assets,
         selectAssetById: (state, id: ID) => state.assets[id],
+        selectAssetSourceById: (state, id: ID) => state.assets[id]?.source,
     }
 });
 
@@ -63,6 +64,7 @@ export const {
 export const {
     selectAssets,
     selectAssetById,
+    selectAssetSourceById,
 } = assetSlice.selectors;
 
 export default assetSlice.reducer;

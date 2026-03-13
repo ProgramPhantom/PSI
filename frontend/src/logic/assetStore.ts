@@ -14,7 +14,7 @@ export default class AssetStore {
     public svgObjects: SVGDict = {};
 
     // Method for adding svg data to a scheme
-    public async addSVGData(file: Blob | File, reference: string) {
+    public async addSVGData(file: Blob | File, reference: string, source: "builtin" | "server" | "local") {
         const dataString = await file.text();
         const id = sha256(dataString);
 
@@ -24,12 +24,15 @@ export default class AssetStore {
 
         this.svgObjects[id] = { ref: reference, object: SVG(dataString) };
 
-        await localforage.setItem<SVGDBEntry>(id, { ref: reference, file: file });
+        if (source === "local") {
+            await localforage.setItem<SVGDBEntry>(id, { ref: reference, file: file });
+        }
+
     }
 
-    public async removeSVGData(reference: string) {
-        delete this.svgObjects[reference];
-        await localforage.removeItem(reference);
+    public async removeSVGData(id: string) {
+        delete this.svgObjects[id];
+        await localforage.removeItem(id);
     }
 
     public async getAsset(id: string): Promise<SVGDBEntry | null> {

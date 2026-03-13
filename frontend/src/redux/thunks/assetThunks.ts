@@ -5,6 +5,7 @@ import ENGINE from "../../logic/engine";
 import { RootState } from "../rootReducer";
 import { addAsset, deleteAsset, removeDependency, SVGDict } from "../slices/assetSlice";
 import { SVGDBEntry } from "../../logic/assetStore";
+import { AssetSource } from "../../types/assets";
 
 // Load client SVGs
 const CLIENT_SVGS: SVGDict = import.meta.glob("../../assets/svg/*.svg", {
@@ -15,9 +16,17 @@ const CLIENT_SVGS: SVGDict = import.meta.glob("../../assets/svg/*.svg", {
 
 
 
-export const loadAsset = createAsyncThunk<void, { file: Blob | File, reference: string, dependencies?: string[] }>(
+export const loadAsset = createAsyncThunk<void, { file: Blob | File, reference: string, source: AssetSource, dependants?: string[], }>(
     'assets/loadAsset',
-    async ({ file, reference, dependencies }, thunkAPI) => {
+    async ({ file, reference, source, dependants: dependencies }, thunkAPI) => {
+        const dataString = await file.text();
+        const id = sha256(dataString);
+
+        const state = thunkAPI.getState() as RootState;
+        if (state.assets.assets[id]) {
+            return;
+        }
+
         const fileType = file.type;
         const fileName = (file as File).name || "";
 
@@ -28,24 +37,22 @@ export const loadAsset = createAsyncThunk<void, { file: Blob | File, reference: 
             case "": // If the file was created without type
             default:
                 if (fileName.endsWith(".svg") || fileType === "image/svg+xml" || fileType === "") {
-                    await ENGINE.assetStore.addSVGData(file, reference);
+                    await ENGINE.assetStore.addSVGData(file, reference, source);
                 } else {
                     console.warn(`Unsupported file type: ${fileType} for asset ${reference}`);
                     return;
                 }
                 break;
         }
-
-        const dataString = await file.text();
-        const id = sha256(dataString);
         thunkAPI.dispatch(addAsset({
             id: id,
             asset: {
                 reference: reference,
                 id: id,
                 size: file.size,
-                dependencies: dependencies ?? [],
-                status: "loaded"
+                dependents: dependencies ?? [],
+                status: "loaded",
+                source: source ?? "local"
             }
         }));
     }
@@ -54,7 +61,7 @@ export const loadAsset = createAsyncThunk<void, { file: Blob | File, reference: 
 export const deloadAsset = createAsyncThunk<void, { reference: string, id: string }>(
     'assets/deloadAsset',
     async ({ reference, id }, thunkAPI) => {
-        await ENGINE.assetStore.removeSVGData(reference);
+        await ENGINE.assetStore.removeSVGData(id);
         thunkAPI.dispatch(deleteAsset(id));
     }
 );
@@ -71,7 +78,8 @@ export const removeDependencyAndCheckDeload = createAsyncThunk<void, { assetId: 
 
         // After removing, check if dependencies are empty
         const updatedAsset = (thunkAPI.getState() as RootState).assets.assets[assetId];
-        if (updatedAsset && updatedAsset.dependencies.length === 0) {
+        if (updatedAsset && updatedAsset.dependents.length === 0) {
+            console.log(`Deloading asset '${updatedAsset.reference}'`)
             thunkAPI.dispatch(deloadAsset({ reference: updatedAsset.reference, id: assetId }));
         }
     }
@@ -79,19 +87,19 @@ export const removeDependencyAndCheckDeload = createAsyncThunk<void, { assetId: 
 
 
 
-export const initializeAssets = createAsyncThunk<void, void>(
+export const initialiseAssets = createAsyncThunk<void, void>(
     'assets/initializeAssets',
     async (_, thunkAPI) => {
 
         try {
-            let assetData: Set<SVGDBEntry> = new Set<SVGDBEntry>;
+            let builtInAssets: Set<SVGDBEntry> = new Set<SVGDBEntry>;
             try {
                 for (const [path, svgString] of Object.entries(CLIENT_SVGS)) {
 
                     const ref = (path.split("/").pop() ?? "").replace(".svg", "");
                     const blob = new Blob([svgString as string], { type: "image/svg+xml" });
 
-                    assetData.add({ ref: ref, file: blob });
+                    builtInAssets.add({ ref: ref, file: blob });
                 }
             } catch (e) {
                 console.warn("Failed to load asset svg data");
@@ -110,16 +118,21 @@ export const initializeAssets = createAsyncThunk<void, void>(
                 console.warn("Failed to load local svg data");
             }
 
-            const allDBEntries: Set<SVGDBEntry> = new Set([...assetData, ...localStoreAssetData])
 
-            for (const entry of allDBEntries) {
-
+            for (const entry of builtInAssets) {
                 thunkAPI.dispatch(loadAsset({
                     file: entry.file,
                     reference: entry.ref,
-                    dependencies: ["built-in"]
+                    source: "builtin"
                 }));
+            }
 
+            for (const entry of localStoreAssetData) {
+                thunkAPI.dispatch(loadAsset({
+                    file: entry.file,
+                    reference: entry.ref,
+                    source: "local"
+                }));
             }
 
         } catch (e) {

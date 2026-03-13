@@ -9,8 +9,9 @@ import { IVisual } from "../../logic/visual";
 import { IScheme, SchemeSource } from "../../types/schemes";
 import { api } from "../api/api";
 import { RootState } from "../rootReducer";
-import { addScheme, removeScheme, setSchemeLocation } from "../slices/schemesSlice";
+import { addScheme, deleteComponent, removeScheme, selectAssociatedAssetsBySchemeId, setSchemeLocation } from "../slices/schemesSlice";
 import { loadAsset, removeDependencyAndCheckDeload } from "./assetThunks";
+import { selectAssetSourceById } from "../slices/assetSlice";
 
 
 export const uploadSchemeServer = createAsyncThunk<void, string>(
@@ -63,13 +64,40 @@ export const deleteScheme = createAsyncThunk<void, string>(
             console.error("Failed to delete scheme from server", error);
         }
 
-        if (schemeData && schemeData.associatedAssets) {
-            for (const assetId of schemeData.associatedAssets) {
-                thunkAPI.dispatch(removeDependencyAndCheckDeload({ assetId, dependencyId: id }));
+        const associatedAssets = selectAssociatedAssetsBySchemeId(state, id);
+        if (associatedAssets && associatedAssets.length > 0) {
+            for (const assetId of associatedAssets) {
+                const source = selectAssetSourceById(state, assetId);
+                if (source !== "builtin") {
+                    thunkAPI.dispatch(removeDependencyAndCheckDeload({ assetId, dependencyId: id }));
+                }
             }
         }
 
         thunkAPI.dispatch(removeScheme(id));
+    }
+);
+
+export const deleteComponentThunk = createAsyncThunk<void, { schemeId: string, templateId: string }>(
+    'schemes/deleteComponent',
+    async ({ schemeId, templateId }, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+
+        // 1. Get old associated assets
+        const oldAssets = selectAssociatedAssetsBySchemeId(state, schemeId);
+
+        // 2. Dispatch component deletion
+        thunkAPI.dispatch(deleteComponent({ schemeId, templateId }));
+
+        // 3. Get new associated assets
+        const newState = thunkAPI.getState() as RootState;
+        const newAssets = selectAssociatedAssetsBySchemeId(newState, schemeId);
+
+        // 4. Check for removed assets and dispatch removal
+        const removedAssets = oldAssets.filter(asset => !newAssets.includes(asset));
+        for (const assetId of removedAssets) {
+            thunkAPI.dispatch(removeDependencyAndCheckDeload({ assetId, dependencyId: schemeId }));
+        }
     }
 );
 
@@ -123,7 +151,6 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
         }
 
         // Load assets
-        const associatedAssets: string[] = [];
         try {
             const assetsFolder = unzipped.folder("assets");
             if (assetsFolder) {
@@ -153,8 +180,10 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
                             const file = new File([blob], `${assetRef}.svg`, { type: "image/svg+xml" });
                             const dataString = await file.text();
                             const id = await sha256(dataString);
-                            associatedAssets.push(id);
-                            thunkAPI.dispatch(loadAsset({ file: file, reference: reference, dependencies: [schemeUUID] }));
+                            thunkAPI.dispatch(loadAsset({
+                                file: file, reference: reference,
+                                dependants: [schemeUUID], source: location ?? "local"
+                            }));
                         }));
                     }
                 });
@@ -187,8 +216,7 @@ export const importSchemeFile = createAsyncThunk<void, { file: File, location?: 
 
             const newScheme: IScheme = {
                 metadata: { name: schemeName, id: schemeUUID, format: "nmr-pulse-scheme" },
-                components: components,
-                associatedAssets: associatedAssets
+                components: components
             };
 
             thunkAPI.dispatch(addScheme({ scheme: newScheme, location: location ?? "local" }));

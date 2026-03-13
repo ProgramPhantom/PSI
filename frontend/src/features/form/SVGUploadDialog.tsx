@@ -63,7 +63,8 @@ const SVGUploadDialog: React.FC<ISVGUploadDialogProps> = ({ isOpen, onClose, dep
                     const blob = new Blob([cleanSVG], { type: "image/svg+xml" });
                     dispatch(loadAsset({
                         file: blob, reference: svgReference.trim(),
-                        dependencies: dependencies
+                        dependants: dependencies,
+                        source: "local"
                     }));
 
                     appToaster.show({
