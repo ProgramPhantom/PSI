@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import {
     Button,
     Dialog,
@@ -58,7 +59,8 @@ const SVGUploadDialog: React.FC<ISVGUploadDialogProps> = ({ isOpen, onClose, dep
             reader.onload = (e) => {
                 try {
                     const svgString = e.target?.result as string;
-                    const blob = new Blob([svgString], { type: "image/svg+xml" });
+                    const cleanSVG = DOMPurify.sanitize(svgString, { USE_PROFILES: { svg: true } });
+                    const blob = new Blob([cleanSVG], { type: "image/svg+xml" });
                     dispatch(loadAsset({
                         file: blob, reference: svgReference.trim(),
                         dependencies: dependencies
