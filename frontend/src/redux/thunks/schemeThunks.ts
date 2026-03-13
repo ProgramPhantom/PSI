@@ -51,6 +51,20 @@ export const uploadSchemeServer = createAsyncThunk<void, string>(
     }
 );
 
+export const deloadServerSchemes = createAsyncThunk<void, void>(
+    'schemes/deloadServerSchemes',
+    async (_, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+        const schemes = Object.entries(state.schemes.schemes);
+
+        for (const [id, entry] of schemes) {
+            if (entry.location === "server") {
+                thunkAPI.dispatch(deleteScheme(id));
+            }
+        }
+    }
+);
+
 export const deleteScheme = createAsyncThunk<void, string>(
     'schemes/deleteScheme',
     async (id, thunkAPI) => {

@@ -27,27 +27,29 @@ export function LoginDialog(props: ILoginDialogProps) {
                                 if ('error' in response) {
                                     //TODO show failiure banner?
                                     console.log(response.error)
-									appToaster.show({
-										"message": "Login Failed",
-										"intent": "danger"
-									})
+                                    appToaster.show({
+                                        "message": "Login Failed",
+                                        "intent": "danger"
+                                    })
+
                                     return
                                 }
                                 console.log(response.data?.message)
-								appToaster.show({
-									"message": "Logged in",
-									"intent": "success"
-								})
-								return
+                                appToaster.show({
+                                    "message": "Logged in",
+                                    "intent": "success"
+                                })
+                                props.onClose()
+                                return
                             }
                             )
                         }}
-                        onError={() => { 
-							appToaster.show({
-								"message": "Login Failed",
-								"intent": "danger"
-							})
-						}}
+                        onError={() => {
+                            appToaster.show({
+                                "message": "Login Failed",
+                                "intent": "danger"
+                            })
+                        }}
                     >
                     </GoogleLogin>
                 </div>

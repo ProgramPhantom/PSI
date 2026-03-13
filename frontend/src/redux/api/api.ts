@@ -34,6 +34,21 @@ export const api = createApi({
             }),
             invalidatesTags: ["User"]
         }),
+        logoutUser: builder.mutation<components['schemas']['genericResponse'], void>({
+            query: () => ({
+                url: '/users/logout',
+                method: 'POST',
+            }),
+            async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    // Nuke cache
+                    dispatch(api.util.resetApiState());
+
+                } catch (err) {
+                }
+            },
+        }),
         createDiagram: builder.mutation<components['schemas']['diagramCreateResponse'], string>({
             query: (name) => ({
                 url: '/diagrams',
@@ -70,6 +85,7 @@ export const {
     useGetDiagramQuery,
     useGetDateModifiedQuery,
     useLoginUserMutation,
+    useLogoutUserMutation,
     useCreateDiagramMutation,
     useSaveDiagramMutation,
     useDeleteDiagramMutation,

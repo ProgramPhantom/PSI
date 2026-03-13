@@ -6,9 +6,9 @@ import { RootState } from '../rootReducer';
 import {
     addComponent, addScheme,
     deleteComponent,
-    removeAllServerSchemes, updateComponent
+    updateComponent
 } from '../slices/schemesSlice';
-import { saveSchemeByID, syncUserSchemes, uploadSchemeServer } from '../thunks/schemeThunks';
+import { deloadServerSchemes, saveSchemeByID, syncUserSchemes, uploadSchemeServer } from '../thunks/schemeThunks';
 import ENGINE from '../../logic/engine';
 
 export const schemeListenerMiddleware = createListenerMiddleware();
@@ -50,13 +50,18 @@ schemeListenerMiddleware.startListening({
 
 // Sync schemes on login/logout
 schemeListenerMiddleware.startListening({
-    matcher: api.endpoints.getMe.matchFulfilled,
+    matcher: isAnyOf(api.endpoints.getMe.matchFulfilled, api.util.resetApiState.match),
     effect: async (action, listenerApi) => {
+        if (api.util.resetApiState.match(action)) {
+            listenerApi.dispatch(deloadServerSchemes());
+            return;
+        }
+
         const user = action.payload;
 
-        if (!user || action.meta.requestStatus !== "fulfilled") {
+        if (!user) {
             // Logout case
-            listenerApi.dispatch(removeAllServerSchemes());
+            listenerApi.dispatch(deloadServerSchemes());
             return;
         }
 

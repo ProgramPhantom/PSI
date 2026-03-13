@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup, Card, Elevation, H4, Label, Drawer } from "@blueprintjs/core";
-import React from "react";
-import { useGetMeQuery } from "../../redux/api/api";
+import { useGetMeQuery, useLogoutUserMutation } from "../../redux/api/api";
+import { appToaster } from "../../app/Toaster";
 
 export interface IUserDialogProps {
     isOpen: boolean;
@@ -9,6 +9,24 @@ export interface IUserDialogProps {
 
 export function UserDialog(props: IUserDialogProps) {
     const { data: user, isLoading, isError } = useGetMeQuery();
+    const [logoutUser] = useLogoutUserMutation();
+
+    const handleLogout = async () => {
+        try {
+            await logoutUser().unwrap();
+            props.onClose();
+            appToaster.show({
+                "message": "Logged out",
+                "intent": "success"
+            })
+        } catch (error) {
+            appToaster.show({
+                "message": "Failed to logout",
+                "intent": "danger"
+            })
+            console.log(error)
+        }
+    };
 
     return (
         <Drawer
@@ -20,7 +38,7 @@ export function UserDialog(props: IUserDialogProps) {
 
             {isLoading && <div>Loading user profile...</div>}
             {isError && <div>Error loading user profile.</div>}
-            {user && (
+            {!isError && user && (
                 <div style={{ padding: "10px" }}>
                     <Card elevation={Elevation.ONE} style={{ marginBottom: "20px", textAlign: "center" }}>
                         {user.picture && (
@@ -54,6 +72,15 @@ export function UserDialog(props: IUserDialogProps) {
                     >
                         <InputGroup id="email" value={user.email || ""} readOnly />
                     </FormGroup>
+
+                    <Button
+                        intent="danger"
+                        icon="log-out"
+                        text="Logout"
+                        onClick={handleLogout}
+                        fill={true}
+                        style={{ marginTop: "16px" }}
+                    />
                 </div>
             )}
 
