@@ -45,6 +45,7 @@ export async function createSchemeFile(schemeId: string, schemes: SchemeDict): P
 
         if (assetFile) {
             assetsFolder.file(`${assetId}.svg`, assetFile.file);
+            assetsFolder.file(`${assetId}.json`, JSON.stringify({ ref: assetFile.ref }));
         }
     }
 

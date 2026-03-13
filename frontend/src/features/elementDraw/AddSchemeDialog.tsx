@@ -102,6 +102,7 @@ const AddSchemeDialog: React.FC<AddSchemeDialogProps> = ({ isOpen, onClose }) =>
 		} else if (!selectedFile) {
 			const blankScheme: IScheme = {
 				metadata: { name: name, id: uuidv4(), format: "nmr-pulse-scheme" },
+				associatedAssets: [],
 				components: {}
 			};
 			dispatch(addScheme({ scheme: blankScheme }));
