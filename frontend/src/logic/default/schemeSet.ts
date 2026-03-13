@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-import { SchemeDict } from "../../redux/schemesSlice";
 import { DEFAULT_CHANNEL } from "./channel";
 import { DEFAULT_LINE } from "./line";
 import { DEFAULT_180H } from "./simplePulse/180pulse";
@@ -16,11 +15,13 @@ import { DEFAULT_SALTIRELOHI } from "./svgPulse/saltirelohi";
 import { DEFAULT_TALLTRAPEZIUM } from "./svgPulse/talltrapezium";
 import { DEFAULT_TRAPEZIUM } from "./svgPulse/trapezium";
 import { DEFAULT_TEXT } from "./text";
+import { SchemeDict } from "../../types/schemes";
 
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
 		location: "builtin",
 		scheme: {
+			associatedAssets: [],
 			metadata: {
 				name: "internal",
 				id: uuidv4(),

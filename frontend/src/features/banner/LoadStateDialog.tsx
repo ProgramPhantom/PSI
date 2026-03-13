@@ -22,7 +22,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	// Check if svgDataRef is in AssetStore or list of uploads
+	// Check if asset.ref is in AssetStore or list of uploads
 	const isSvgRefSatisfied = (svgRef: string | undefined): boolean => {
 		if (svgRef === undefined) return true;
 		if (Object.keys(ENGINE.svgDict).includes(svgRef) === true) {
@@ -41,7 +41,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 		seqs.forEach((seq) => {
 			seq.children?.filter((c: any) => c.type === "channel").forEach((ch: any) => {
 				ch.children?.forEach((el: any, idx: number) => {
-					const hasRef = el && (el.type === "svg" || el.svgDataRef !== undefined);
+					const hasRef = el && (el.type === "svg" || el.asset !== undefined);
 					if (hasRef) {
 						const name = el.ref || `${ch.id}-${idx}`;
 						out.push({ name, element: el });
@@ -82,7 +82,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 					setSvgUploads({});
 					if (
 						svgs.length === 0
-						|| svgs.every(({ element }) => isSvgRefSatisfied(element?.svgDataRef))
+						|| svgs.every(({ element }) => isSvgRefSatisfied(element?.asset?.ref))
 					) {
 						ENGINE.handler.constructDiagram(stateData);
 						appToaster.show({
@@ -114,7 +114,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 		}
 		// Ensure all refs satisfied
 		const missing = stateSvgElements.filter(
-			({ element }) => !isSvgRefSatisfied(element?.svgDataRef)
+			({ element }) => !isSvgRefSatisfied(element?.asset?.ref)
 		);
 		if (missing.length > 0) {
 			appToaster.show({
@@ -151,7 +151,7 @@ export function LoadStateDialog(props: ILoadStateDialogProps) {
 
 	const allStateSvgsSatisfied =
 		stateSvgElements.length === 0
-		|| stateSvgElements.every(({ element }) => isSvgRefSatisfied(element?.svgDataRef));
+		|| stateSvgElements.every(({ element }) => isSvgRefSatisfied(element?.asset?.ref));
 
 	return (
 		<>

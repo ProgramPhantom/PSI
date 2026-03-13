@@ -1,9 +1,7 @@
-import { Drawer, Position } from "@blueprintjs/core";
+import { Drawer, Position, Spinner } from "@blueprintjs/core";
 import { SVG } from "@svgdotjs/svg.js";
 import { saveAs } from "file-saver";
-import { ReactNode, useState, useSyncExternalStore } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { setSelectedElementId } from "../redux/applicationSlice";
+import { ReactNode, useState, useSyncExternalStore, useEffect } from "react";
 import Banner from "../features/banner/Banner";
 import Console from "../features/banner/Console";
 import Canvas from "../features/canvas/Canvas";
@@ -13,30 +11,59 @@ import ElementsDraw from "../features/elementDraw/ElementsDraw";
 import Form from "../features/Form";
 import ENGINE from "../logic/engine";
 import Visual from "../logic/visual";
-import { WelcomeSplash } from "./WelcomeSplash";
+import { setSelectedElementId } from "../redux/slices/applicationSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { appToaster } from "./Toaster";
-import { useGetMeQuery } from "../redux/api/api";
-
-
-
-
+import { WelcomeSplash } from "./WelcomeSplash";
+import { initialiseAssets } from "../redux/thunks/assetThunks";
+import { syncUserSchemes } from "../redux/thunks/schemeThunks";
+import { api } from "../redux/api/api";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
-await ENGINE.loadSVGData();
-ENGINE.loadDiagramState();
+
 
 export interface IToolConfig { }
 
 export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDrawArrowConfig };
 
 function App() {
-	console.info("Application initialized successfully");
-
+	const dispatch = useAppDispatch();
+	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
+	const [isInitializing, setIsInitializing] = useState(true);
+
+	useEffect(() => {
+		let isMounted = true;
+
+		async function startApp() {
+			// 1. Initialize core application assets
+			await dispatch(initialiseAssets());
+
+			// 2. Await the authentication state 
+			// (Either it succeeds to load the user, or it predictably fails because we are not logged in)
+			try {
+				await dispatch(api.endpoints.getMe.initiate(undefined)).unwrap();
+			} catch (e) {
+				// Handled inherently by RTK Query / auth logic downstream
+			}
+
+			// 3. Sync schemes. This only does anything if step 2 succeeded, fetching user schemes from the DB.
+			await dispatch(syncUserSchemes());
+
+			if (isMounted) {
+				// 4. Finally, populate diagram elements given that assets/schemes are populated
+				ENGINE.loadDiagramState();
+				setIsInitializing(false);
+			}
+		}
+
+		startApp();
+
+		return () => { isMounted = false; };
+	}, [dispatch]);
+
 	const [form, setForm] = useState<ReactNode | null>(null);
-	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
-	const dispatch = useAppDispatch();
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "");
 
 	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
@@ -45,6 +72,15 @@ function App() {
 		type: "select",
 		config: {}
 	});
+
+	if (isInitializing) {
+		return (
+			<div style={{ display: "flex", width: "100vw", height: "100vh", justifyContent: "center", alignItems: "center", flexDirection: "column", gap: "20px" }}>
+				<Spinner size={50} intent="primary" />
+				<h3 className="bp5-heading text-muted">Loading Engine</h3>
+			</div>
+		);
+	}
 
 	// Set up automatic saving every 2 seconds
 	// useEffect(() => {

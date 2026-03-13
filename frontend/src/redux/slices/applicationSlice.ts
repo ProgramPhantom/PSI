@@ -18,6 +18,8 @@ export const applicationSlice = createSlice({
     },
 });
 
+
+
 export const { setSelectedElementId } = applicationSlice.actions;
 
 export default applicationSlice.reducer;

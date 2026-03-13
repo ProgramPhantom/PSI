@@ -36,3 +36,17 @@ export const downloadBlob = (function () {
 		window.URL.revokeObjectURL(url);
 	};
 }());
+
+export function mergeObjectsPreferNonEmpty(obj1: any, obj2: any) {
+	const result: any = {};
+	for (const key of new Set([...Object.keys(obj1), ...Object.keys(obj2)])) {
+		const val1 = obj1[key];
+		const val2 = obj2[key];
+		if (val1 && typeof val1 === "object" && !Array.isArray(val1) && Object.keys(val1).length === 0) {
+			result[key] = val2;
+		} else {
+			result[key] = val1 ?? val2;
+		}
+	}
+	return result;
+}

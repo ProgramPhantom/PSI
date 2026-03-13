@@ -10,7 +10,7 @@ import { ISVGElement } from "../../logic/svgElement";
 import { IVisual } from "../../logic/visual";
 import { LabelGroupComboForm, SubmitButtonRef } from "../form/LabelGroupComboForm";
 import { useDispatch } from "react-redux";
-import { addComponent } from "../../redux/schemesSlice";
+import { addComponent } from "../../redux/slices/schemesSlice";
 
 
 interface INewElementDialog {

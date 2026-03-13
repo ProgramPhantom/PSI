@@ -5,7 +5,7 @@ import FormDivider from "./FormDivider";
 import { ID, AllComponentTypes } from "../../logic/point";
 import { IconName } from "@blueprintjs/core";
 import { useAppDispatch } from "../../redux/hooks";
-import { setSelectedElementId } from "../../redux/applicationSlice";
+import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 
 interface CollectionChildrenListProps {
     target: Collection;

@@ -1,7 +1,10 @@
 import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup } from "@blueprintjs/core";
-import React, { useState, useEffect } from "react";
-import ENGINE from "../../logic/engine";
+import { useEffect, useState } from "react";
 import { appToaster } from "../../app/Toaster";
+import ENGINE from "../../logic/engine";
+import { useDispatch } from "react-redux";
+import { useAppDispatch } from "../../redux/hooks";
+import { saveDiagramAs } from "../../redux/thunks/diagramThunks";
 
 export interface ISaveAsDialogProps {
     isOpen: boolean;
@@ -10,6 +13,7 @@ export interface ISaveAsDialogProps {
 
 export function SaveAsDialog(props: ISaveAsDialogProps) {
     const [ref, setRef] = useState(ENGINE.handler.diagram.ref);
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
         if (props.isOpen) {
@@ -19,11 +23,7 @@ export function SaveAsDialog(props: ISaveAsDialogProps) {
 
     const handleSave = () => {
         ENGINE.handler.diagram.ref = ref;
-        ENGINE.saveAs();
-        appToaster.show({
-            message: "Saved",
-            intent: "success"
-        });
+        dispatch(saveDiagramAs())
         props.onClose();
     };
 

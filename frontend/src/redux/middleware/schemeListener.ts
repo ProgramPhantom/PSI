@@ -1,45 +1,32 @@
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
-import {
-    addComponent, addLocalScheme, addServerScheme, deleteComponent, deleteScheme, removeAllServerSchemes,
-    setSchemeLocation, updateComponent, saveScheme, deleteSchemeServer, getScheme, uploadScheme
-} from '../schemesSlice';
-import { api } from '../api/api';
-import type { RootState } from '../store';
-import ENGINE from '../../logic/engine';
 import { ID } from '../../logic/point';
-import { IScheme, SchemeSource } from '../schemesSlice';
-import JSZip from 'jszip';
+import { IScheme, SchemeSource } from '../../types/schemes';
+import { api } from '../api/api';
+import { RootState } from '../rootReducer';
+import {
+    addComponent, addScheme,
+    deleteComponent,
+    removeAllServerSchemes, updateComponent
+} from '../slices/schemesSlice';
+import { saveSchemeByID, syncUserSchemes, uploadSchemeServer } from '../thunks/schemeThunks';
+import ENGINE from '../../logic/engine';
 
 export const schemeListenerMiddleware = createListenerMiddleware();
 
+
 // On upload scheme
 schemeListenerMiddleware.startListening({
-    matcher: isAnyOf(addLocalScheme),
+    matcher: isAnyOf(addScheme),
+
     effect: async (action, listenerApi) => {
         const actionPayload = action.payload as { id?: ID; scheme: IScheme; location?: SchemeSource };
         const id = actionPayload.scheme.metadata.id;
 
         if (!id) return;
+        if (actionPayload.location === "server") return
 
         // The uploadScheme thunk handles login check and location logic internally
-        await listenerApi.dispatch(uploadScheme(id));
-    }
-});
-
-
-
-// On delete scheme
-schemeListenerMiddleware.startListening({
-    matcher: isAnyOf(deleteScheme),
-    effect: async (action, listenerApi) => {
-        const id = action.payload as ID;
-
-        try {
-            // deleteSchemeServer thunk handles the server-side deletion
-            await listenerApi.dispatch(deleteSchemeServer(id)).unwrap();
-        } catch (error) {
-            console.error("Failed to delete scheme from server", error);
-        }
+        await listenerApi.dispatch(uploadSchemeServer(id));
     }
 });
 
@@ -55,21 +42,9 @@ schemeListenerMiddleware.startListening({
             return;
         }
 
-        try {
-            const zip = await ENGINE.createSchemeFile(schemeId);
-            const blob = await zip.generateAsync({ type: "blob" });
-            const file = new File([blob], `${schemeId}.nmrs`, { type: "application/zip" });
+        await listenerApi.dispatch(saveSchemeByID(schemeId));
 
-            const formData = new FormData();
-            formData.append('file', file);
-
-            // Using saveScheme thunk
-            await listenerApi.dispatch(
-                saveScheme({ schemeId, formData })
-            ).unwrap();
-        } catch (error) {
-            console.error("Failed to re-upload scheme to server", error);
-        }
+        ENGINE.handler.refreshDiagram();
     }
 });
 
@@ -86,68 +61,6 @@ schemeListenerMiddleware.startListening({
         }
 
         // Login case: Fetch schemes from server
-        try {
-            const schemesListResponse: {
-                schemes?: {
-                    scheme_id?: string | undefined;
-                    name?: string | undefined;
-                }[] | undefined;
-            } = await listenerApi.dispatch(
-                api.endpoints.getUserSchemes.initiate()
-            ).unwrap();
-
-            if (!schemesListResponse.schemes) {
-                return;
-            }
-
-            for (const schemeInfo of schemesListResponse.schemes) {
-                const { scheme_id, name } = schemeInfo;
-                if (scheme_id === undefined) { continue }
-
-                try {
-                    // Fetch the actual scheme file (.nmrs blob)
-                    const file = await listenerApi.dispatch(
-                        getScheme(scheme_id)
-                    ).unwrap();
-
-                    // Load assets from the zip
-                    await ENGINE.loadSchemeAssets(file);
-
-                    // Extract components from the zip
-                    const zip = new JSZip();
-                    const unzipped = await zip.loadAsync(file);
-
-                    const componentsFolder = unzipped.folder("components");
-                    const components: Record<string, any> = {};
-
-                    if (componentsFolder) {
-                        const filePromises: Promise<void>[] = [];
-                        componentsFolder.forEach((relativePath, file) => {
-                            if (!file.dir && relativePath.endsWith(".json")) {
-                                filePromises.push(
-                                    file.async("text").then((text) => {
-                                        const comp = JSON.parse(text);
-                                        components[comp.ref] = comp;
-                                    })
-                                );
-                            }
-                        });
-                        await Promise.all(filePromises);
-                    }
-
-                    const scheme: IScheme = {
-                        metadata: { name: name || "Unnamed", id: scheme_id, format: "nmr-pulse-scheme" },
-                        components: components
-                    };
-
-                    listenerApi.dispatch(addServerScheme({ id: scheme_id, scheme }));
-
-                } catch (error) {
-                    console.error(`Failed to load scheme ${scheme_id} from server`, error);
-                }
-            }
-        } catch (error) {
-            console.error("Failed to fetch user schemes list", error);
-        }
+        await listenerApi.dispatch(syncUserSchemes());
     }
 });

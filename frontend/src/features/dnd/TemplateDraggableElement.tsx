@@ -11,7 +11,8 @@ import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { Subgrid } from "../../logic/grid";
 import Collection from "../../logic/collection";
 import { useAppDispatch } from "../../redux/hooks";
-import { deleteComponent, InternalSchemeId } from "../../redux/schemesSlice";
+import { InternalSchemeId } from "../../redux/slices/schemesSlice";
+import { deleteComponentThunk } from "../../redux/thunks/schemeThunks";
 
 
 const style: CSSProperties = {
@@ -172,7 +173,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 	};
 
 	const deleteTemplate = () => {
-		dispatch(deleteComponent({ schemeId: props.schemeId, templateId: props.templateId }));
+		dispatch(deleteComponentThunk({ schemeId: props.schemeId, templateId: props.templateId }));
 
 		appToaster.show({
 			"message": `Deleted ${props.element.ref}`,

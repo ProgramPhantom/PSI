@@ -2,7 +2,8 @@ import React, { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import App from "./App.tsx";
-import { store } from "../redux/store.ts";
+import { store, persistor } from "../redux/store.ts";
+import { PersistGate } from "redux-persist/integration/react";
 
 import { HotkeysProvider } from "@blueprintjs/core";
 import { MathJaxContext } from "better-react-mathjax";
@@ -19,7 +20,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 				<HotkeysProvider>
 					<MathJaxContext>
 						<StrictMode>
-							<App />
+							<PersistGate loading={null} persistor={persistor}>
+								<App />
+							</PersistGate>
 						</StrictMode>
 					</MathJaxContext>
 				</HotkeysProvider>

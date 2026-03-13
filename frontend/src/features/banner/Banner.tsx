@@ -1,19 +1,22 @@
 import { Button, Icon, Navbar } from "@blueprintjs/core";
 import React, { useState } from "react";
 import { Tool } from "../../app/App";
+import { appToaster } from "../../app/Toaster";
 import { defaultLine } from "../../logic/default/index";
 import ENGINE from "../../logic/engine";
+import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import { IDiagram } from "../../logic/hasComponents/diagram";
-import { AnnotateDropdown } from "./AnnotateDropdown";
-import { LoadStateDialog } from "./LoadStateDialog";
-import { PNGExportDialog } from "./PNGExportDialog";
-import { LoginDialog } from "./LoginDialog";
-import { UserDialog } from "./UserDrawer";
-import { DiagramsDialog } from "./DiagramsDialog";
-import { SaveAsDialog } from "./SaveAsDialog";
 import { ILineStyle } from "../../logic/line";
-import { appToaster } from "../../app/Toaster";
 import { useGetMeQuery } from "../../redux/api/api";
+import { useAppDispatch } from "../../redux/hooks";
+import { saveDiagram } from "../../redux/thunks/diagramThunks";
+import { AnnotateDropdown } from "./AnnotateDropdown";
+import { DiagramsDialog } from "./DiagramsDialog";
+import { LoadStateDialog } from "./LoadStateDialog";
+import { LoginDialog } from "./LoginDialog";
+import { PNGExportDialog } from "./PNGExportDialog";
+import { SaveAsDialog } from "./SaveAsDialog";
+import { UserDialog } from "./UserDrawer";
 
 export interface IBannerProps {
 	saveSVG: () => void;
@@ -30,6 +33,7 @@ export default function Banner(props: IBannerProps) {
 	const [isSaveAsDialogOpen, setIsSaveAsDialogOpen] = useState(false);
 
 	const { data: user, error, isLoading } = useGetMeQuery();
+	const dispatch = useAppDispatch();
 
 	const copyState = () => {
 		var stateObject: IDiagram = ENGINE.handler.diagram.state;
@@ -62,7 +66,7 @@ export default function Banner(props: IBannerProps) {
 	};
 
 	const exportDiagramFile = () => {
-		ENGINE.saveDiagramFile();
+		saveDiagramFile();
 
 		appToaster.show({
 			message: "Diagram file downloaded",
@@ -81,14 +85,6 @@ export default function Banner(props: IBannerProps) {
 				config: { lineStyle: defaultLine.lineStyle as ILineStyle, mode: "bind" }
 			});
 		}
-	};
-
-	const saveState = () => {
-		ENGINE.saveAs();
-		appToaster.show({
-			message: "Saved",
-			intent: "success"
-		});
 	};
 
 	const clearState = () => {
@@ -162,7 +158,7 @@ export default function Banner(props: IBannerProps) {
 						size="small"
 						variant="minimal"
 						icon="floppy-disk"
-						onClick={() => ENGINE.save()}
+						onClick={() => dispatch(saveDiagram())}
 					/>
 					<Navbar.Divider />
 					<Button
@@ -220,7 +216,7 @@ export default function Banner(props: IBannerProps) {
 
 				<Navbar.Group align={"right"}>
 					<Button
-						minimal={true}
+						variant="minimal"
 						icon="folder-open"
 						text="Diagrams"
 						onClick={() => setIsDiagramsDialogOpen(true)}
@@ -228,14 +224,14 @@ export default function Banner(props: IBannerProps) {
 					/>
 					{user ? (
 						<Button
-							icon="user"
+							icon="user" intent="primary"
 							text={user.firstname || "User"}
 							onClick={() => setIsUserDialogOpen(true)}
 							style={{ marginRight: "10px" }}
 						/>
 					) : (
 						<Button
-							minimal={true}
+							variant="minimal"
 							icon="user"
 							text="Sign in"
 							onClick={() => setIsLoginDialogOpen(true)}

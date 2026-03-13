@@ -14,14 +14,14 @@ const MISSING_ASSET_SVG_DATA: string = MISSING_ASSET["../assets/app/MissingAsset
 interface ISVGStyle { }
 
 export interface ISVGElement extends IVisual {
-	svgDataRef: string;
+	asset: { ref: string; id: string };
 	style: ISVGStyle;
 }
 
 export default class SVGElement extends Visual implements ISVGElement, IDraw {
 	get state(): ISVGElement {
 		return {
-			svgDataRef: this.svgDataRef,
+			asset: this.asset,
 			style: this.style,
 			...super.state
 		};
@@ -31,14 +31,14 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 
 	elementGroup: G = new G();
 	style: ISVGStyle;
-	svgDataRef: string;
+	asset: { ref: string; id: string };
 
 
 	constructor(params: ISVGElement) {
 		super(params);
 
 		this.style = params.style;
-		this.svgDataRef = params.svgDataRef;
+		this.asset = params.asset;
 	}
 
 	public setSvgData(rawSVG: Element) {
@@ -83,7 +83,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		}
 
 
-		
+
 		// Clear old svg
 		if (this.svg) {
 			this.svg.remove();
@@ -110,7 +110,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		//this.svg.attr({"style": 'display: "block"'})
 		this.svg.show();
 		surface.add(this.svg);
-		
+
 
 		super.draw(surface);
 	}
@@ -129,6 +129,6 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 	}
 
 	public static isSVGElement(obj: any): obj is SVGElement {
-		return (obj as SVGElement).svgDataRef !== undefined;
+		return (obj as SVGElement).asset !== undefined;
 	}
 }
