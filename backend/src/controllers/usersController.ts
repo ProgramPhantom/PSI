@@ -13,6 +13,20 @@ const LoginValidationSchema = z.object(
 )
 export type loginValidationData = z.infer<typeof LoginValidationSchema>;
 
+export const postLogout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.clearCookie('connect.sid');
+    return res.status(200).json({ message: "Logged out successfully" });
+  });
+};
+
 export const postLogin = async (
   req: Request,
   res: Response,
