@@ -28,6 +28,8 @@ const SVGUploadDialog: React.FC<ISVGUploadDialogProps> = ({ isOpen, onClose, dep
     const handleFileSelect = (file: File) => {
         if (file.type === "image/svg+xml" || file.name.endsWith(".svg")) {
             setSelectedFile(file);
+            const nameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
+            setSvgReference(nameWithoutExtension);
         } else {
             appToaster.show({
                 message: "Please select an SVG file",
