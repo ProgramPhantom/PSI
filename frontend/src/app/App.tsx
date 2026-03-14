@@ -18,6 +18,8 @@ import { WelcomeSplash } from "./WelcomeSplash";
 import { initialiseAssets } from "../redux/thunks/assetThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 import { api } from "../redux/api/api";
+import { openDiagram } from "../redux/thunks/diagramThunks";
+import localforage from "localforage";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
@@ -52,8 +54,20 @@ function App() {
 			await dispatch(syncUserSchemes());
 
 			if (isMounted) {
-				// 4. Finally, populate diagram elements given that assets/schemes are populated
-				ENGINE.loadDiagramState();
+				// 4. Open local diagram file
+				try {
+					const blob = await localforage.getItem<Blob>(ENGINE.StateName);
+					if (blob) {
+						const file = new File([blob], "local-diagram.nmrd");
+						await dispatch(openDiagram(file)).unwrap();
+					} else {
+						ENGINE.loadDiagramState();
+					}
+				} catch (e) {
+					console.warn("Failed to load local diagram", e);
+					ENGINE.loadDiagramState();
+				}
+
 				setIsInitializing(false);
 			}
 		}

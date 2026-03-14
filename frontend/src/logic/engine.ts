@@ -1,8 +1,8 @@
-import { Element, Svg, SVG } from "@svgdotjs/svg.js";
-import JSZip from "jszip";
-import { IScheme, SchemeDict, SchemeMetadata } from "../types/schemes";
+import { Element, Svg } from "@svgdotjs/svg.js";
+import localforage from "localforage";
 import AssetStore from "./assetStore";
 import Collection, { ICollection } from "./collection";
+import { DEFAULT_DIAGRAM } from "./default/defaultDiagram";
 import DiagramHandler, { Result } from "./diagramHandler";
 import Grid, { IGrid, ISubgrid, Subgrid } from "./grid";
 import Channel, { IChannel } from "./hasComponents/channel";
@@ -15,9 +15,7 @@ import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Text, { IText } from "./text";
-import { downloadBlob } from "./util2";
 import Visual, { GridCellElement, IVisual } from "./visual";
-import localforage from "localforage";
 
 
 class ENGINE {
@@ -25,7 +23,7 @@ class ENGINE {
 	static listeners: (() => void)[] = [];
 	static currentImageName: string = "newPulseImage.svg";
 	static StateName: string = "diagram-state";
-	static STATE: string | null = localStorage.getItem(ENGINE.StateName);
+	static STATE: string | null = JSON.stringify(DEFAULT_DIAGRAM);
 
 	static assetStore: AssetStore = new AssetStore();
 
@@ -99,7 +97,7 @@ class ENGINE {
 	}
 
 	static clearState() {
-		localStorage.removeItem(ENGINE.StateName);
+		localforage.removeItem(ENGINE.StateName);
 	}
 
 	static resetDiagram() {

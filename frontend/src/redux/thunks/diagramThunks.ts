@@ -6,72 +6,85 @@ import { appToaster } from "../../app/Toaster";
 import { RootState } from "../rootReducer";
 import { loadAsset } from "./assetThunks";
 import JSZip from "jszip";
+import localforage from "localforage";
+import { createDiagramFile } from "../../fileCreation/createDiagramFile";
 
 
-export const saveDiagramAs = createAsyncThunk<void, void>(
-    'application/saveDiagramAs',
-    async (_, thunkAPI) => {
-        const stateObject: IDiagram = ENGINE.handler.diagram.state;
-        const stateString = JSON.stringify(stateObject, undefined, 4);
-        localStorage.setItem(ENGINE.StateName, stateString);
 
+export const saveDiagramServer = createAsyncThunk<void, { stateObject: IDiagram, asNew: boolean }>(
+    'application/saveDiagramServer',
+    async ({ stateObject, asNew }, thunkAPI) => {
         const state = thunkAPI.getState() as RootState;
         const userState = api.endpoints.getMe.select()(state);
         const isLoggedIn = userState?.isSuccess && userState?.data;
         if (!isLoggedIn) {
-            appToaster.show({ message: "Diagram saved", intent: "success" });
+            appToaster.show({ message: "Diagram saved locally", intent: "success" });
             return;
         }
 
-        try {
-            const createResponse = await thunkAPI.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref)).unwrap();
-            if (createResponse.id !== undefined) {
-                await thunkAPI.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
-                localStorage.setItem("diagramUUID", createResponse.id);
-                appToaster.show({ message: "Diagram saved successfully", intent: "success" });
+        if (asNew) {
+            // Save As
+            try {
+                // CREATE diagram, this will give a new id
+                const createResponse = await thunkAPI.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref)).unwrap();
+
+                if (createResponse.id !== undefined) {
+                    // Save diagram data
+                    await thunkAPI.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
+
+                    localStorage.setItem("diagramUUID", createResponse.id);
+
+                    appToaster.show({ message: "Diagram saved successfully", intent: "success" });
+                }
+            } catch (error) {
+                console.error("Failed to save diagram as:", error);
+                appToaster.show({ message: "Failed to save diagram", intent: "danger" });
             }
-        } catch (error) {
-            console.error("Failed to save diagram as:", error);
-            appToaster.show({ message: "Failed to save diagram", intent: "danger" });
+
+        } else {
+            // Save
+            const currentUUID = localStorage.getItem("diagramUUID") ?? "";
+
+            try {
+                // Try save
+                await thunkAPI.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: currentUUID, diagram: stateObject })).unwrap();
+                appToaster.show({ message: "Diagram saved", intent: "success" });
+            } catch (error) {
+                // Try save as
+                try {
+                    // CREATE diagram and get id
+                    const createResponse = await thunkAPI.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref)).unwrap();
+                    if (createResponse.id !== undefined) {
+                        await thunkAPI.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
+                        localStorage.setItem("diagramUUID", createResponse.id);
+                        appToaster.show({ message: "Diagram saved", intent: "success" });
+                    }
+                } catch (createError) {
+                    console.error("Failed to save and create diagram:", createError);
+                    appToaster.show({ message: "Failed to save diagram", intent: "danger" });
+                }
+
+            }
         }
     }
 );
 
-export const saveDiagram = createAsyncThunk<void, void>(
+export const saveDiagram = createAsyncThunk<void, boolean>(
     'application/saveDiagram',
-    async (_, thunkAPI) => {
+    async (saveAs, thunkAPI) => {
         const stateObject: IDiagram = ENGINE.handler.diagram.state;
-        const stateString = JSON.stringify(stateObject, undefined, 4);
-        localStorage.setItem(ENGINE.StateName, stateString);
-
-        const state = thunkAPI.getState() as RootState;
-        const userState = api.endpoints.getMe.select()(state);
-        const isLoggedIn = userState?.isSuccess && userState?.data;
-        if (!isLoggedIn) {
-            appToaster.show({ message: "Diagram saved", intent: "success" });
-            return;
-        }
-
-
-        const currentUUID = localStorage.getItem("diagramUUID") ?? "";
 
         try {
-            await thunkAPI.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: currentUUID, diagram: stateObject })).unwrap();
-            appToaster.show({ message: "Diagram saved", intent: "success" });
+            const file = await createDiagramFile();
+            const blob = await file.generateAsync({ type: "blob" });
+            await localforage.setItem(ENGINE.StateName, blob);
         } catch (error) {
-            try {
-                const createResponse = await thunkAPI.dispatch(api.endpoints.createDiagram.initiate(stateObject.ref)).unwrap();
-                if (createResponse.id !== undefined) {
-                    await thunkAPI.dispatch(api.endpoints.saveDiagram.initiate({ diagramId: createResponse.id, diagram: stateObject }));
-                    localStorage.setItem("diagramUUID", createResponse.id);
-                    appToaster.show({ message: "Diagram saved", intent: "success" });
-                }
-            } catch (createError) {
-                console.error("Failed to save and create diagram:", createError);
-                appToaster.show({ message: "Failed to save diagram", intent: "danger" });
-            }
+            console.error("Failed to save local diagram file:", error);
         }
-    }
+
+        await thunkAPI.dispatch(saveDiagramServer({ stateObject, asNew: saveAs }));
+    },
+
 );
 
 export const openDiagram = createAsyncThunk<void, File>(

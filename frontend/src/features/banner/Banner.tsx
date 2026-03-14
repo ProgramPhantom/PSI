@@ -144,7 +144,7 @@ export default function Banner(props: IBannerProps) {
 						size="small"
 						variant="minimal"
 						icon="floppy-disk"
-						onClick={() => dispatch(saveDiagram())}
+						onClick={() => dispatch(saveDiagram(false))}
 					/>
 					<Navbar.Divider />
 					<Button
