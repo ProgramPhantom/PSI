@@ -25,6 +25,8 @@ import { DebugLayerDialog } from "./DebugLayerDialog";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import GridDropField from "../dnd/GridDropField";
+import QuietUploadArea from "../QuietUploadArea";
+import { openDiagram } from "../../redux/thunks/diagramThunks";
 
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
@@ -281,6 +283,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		}
 	}, [selectedElementId]);
 
+	const handleDiagramDrop = async (file: File) => {
+		dispatch(openDiagram(file));
+	};
+
 	useEffect(() => {
 		if (diagramSvgRef.current && ENGINE.handler.diagram.svg) {
 			diagramSvgRef.current.replaceChildren();
@@ -293,21 +299,22 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	return (
 		<>
-			<div
-				style={{
-					width: "100%",
-					height: "100%",
-					display: "flex",
-					position: "relative"
-				}}
-				onClick={(e) => {
-					onClick(e);
-				}}
-				onMouseUp={(e) => {
-					singleClick(e);
-					deselect();
-				}}>
-				{/* Image name display text box - positioned outside TransformWrapper */}
+			<QuietUploadArea onDrop={handleDiagramDrop} acceptExtension=".nmrd">
+				<div
+					style={{
+						width: "100%",
+						height: "100%",
+						display: "flex",
+						position: "relative"
+					}}
+					onClick={(e) => {
+						onClick(e);
+					}}
+					onMouseUp={(e) => {
+						singleClick(e);
+						deselect();
+					}}>
+					{/* Image name display text box - positioned outside TransformWrapper */}
 				<div
 					style={{
 						position: "absolute",
@@ -481,6 +488,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				</CanvasDropContainer>
 
 			</div>
+			</QuietUploadArea>
 
 			<DebugLayerDialog
 				open={debugDialogOpen}
