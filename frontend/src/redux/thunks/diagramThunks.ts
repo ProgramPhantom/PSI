@@ -49,7 +49,7 @@ export const putSaveDiagramServerThunk = createAsyncThunk<{ copied: boolean, sav
 
 // ------------ Main thunks ----------------
 
-export const saveDiagramServer = createAsyncThunk<void, { stateObject: IDiagram, asNew: boolean }>(
+export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asNew: boolean }>(
     'application/saveDiagramServer',
     async ({ stateObject, asNew }, thunkAPI) => {
         const state = thunkAPI.getState() as RootState;
@@ -126,7 +126,7 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
             console.error("Failed to save local diagram file:", error);
         }
 
-        await thunkAPI.dispatch(saveDiagramServer({ stateObject, asNew: saveAs }));
+        await thunkAPI.dispatch(uploadDiagram({ stateObject, asNew: saveAs }));
     },
 
 );

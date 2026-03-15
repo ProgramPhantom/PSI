@@ -3,7 +3,7 @@ import { ISVGElement } from "../../svgElement"
 export const DEFAULT_TALLTRAPEZIUM: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
-	"asset": { ref: "tall-trapezium", id: "266962d1e3901d6b01f8adef95bb2e2b9206b80831252cbd3f79e2f668f74b3b" },
+	"asset": { ref: "tall-trapezium", id: "49e13e45861b97e81d91287812998a1ea4f63a813d1ea9bc63e78b556c339551" },
 	"contentWidth": 15,
 	"contentHeight": 25,
 

@@ -3,7 +3,7 @@ import { ISVGElement } from "../../svgElement"
 export const DEFAULT_AMP: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
-	"asset": { ref: "amp", id: "6b14481f0e764018b7eeaee5b10eb29313d53554765837739cb084b12e76e083" },
+	"asset": { ref: "amp", id: "4d910561f6397a61caefbcd0107a1fa9d4ccddcff7a0bd1bc1b365db622765d9" },
 	"contentWidth": 15,
 	"contentHeight": 40,
 

@@ -3,7 +3,7 @@ import { ISVGElement } from "../../svgElement"
 export const DEFAULT_180S: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
-	"asset": { ref: "180", id: "303fdc53b60ddaf5bb159cd6cda5d49b048b0695005a05eee5e23b62f0586948" },
+	"asset": { ref: "180", id: "4e1938c5b212296b8b7b22b6d12a9300cc4d490a29326d2617ff75de48ce6d2b" },
 	"contentWidth": 50,
 	"contentHeight": 50,
 

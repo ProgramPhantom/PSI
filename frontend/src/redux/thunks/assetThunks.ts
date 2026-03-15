@@ -30,52 +30,45 @@ export const loadAsset = createAsyncThunk<void, {
 
         let processedFile = file;
 
-        // If it's an SVG, sanitize it
+
+
         if (fileName.endsWith(".svg") || fileType === "image/svg+xml" || fileType === "") {
+            const cleanSVG = DOMPurify.sanitize(dataString, { USE_PROFILES: { svg: true } });
 
-        }
+            // Repackage cleaned svg
+            if (cleanSVG !== dataString) {
+                console.log(reference)
+                dataString = cleanSVG;
+                processedFile = new Blob([cleanSVG], { type: "image/svg+xml" });
+            }
 
-        switch (fileType) {
-            case "image/svg+xml":
-            case "text/xml":
-            case "application/xml":
-            case "": // If the file was created without type
-            default:
-                if (fileName.endsWith(".svg") || fileType === "image/svg+xml" || fileType === "") {
-                    const cleanSVG = DOMPurify.sanitize(dataString, { USE_PROFILES: { svg: true } });
+            const id = sha256(dataString);
 
-                    // Repackage cleaned svg
-                    if (cleanSVG !== dataString) {
-                        dataString = cleanSVG;
-                        processedFile = new Blob([cleanSVG], { type: "image/svg+xml" });
-                    }
+            const state = thunkAPI.getState() as RootState;
+            if (state.assets.assets[id]) {
+                console.log(`Skipping ${reference}`)
+                return;
+            }
 
-                    const id = sha256(dataString);
+            await ENGINE.assetStore.addSVGData(processedFile, reference, source);
 
-                    const state = thunkAPI.getState() as RootState;
-                    if (state.assets.assets[id]) {
-                        return;
-                    }
-
-                    await ENGINE.assetStore.addSVGData(processedFile, reference, source);
-
-                    thunkAPI.dispatch(addAsset({
-                        id: id,
-                        asset: {
-                            reference: reference,
-                            id: id,
-                            size: processedFile.size,
-                            dependents: dependants ?? [],
-                            status: "loaded",
-                            source: source ?? "local"
-                        }
-                    }));
-                } else {
-                    console.warn(`Unsupported file type: ${fileType} for asset ${reference}`);
-                    return;
+            thunkAPI.dispatch(addAsset({
+                id: id,
+                asset: {
+                    reference: reference,
+                    id: id,
+                    size: processedFile.size,
+                    dependents: dependants ?? [],
+                    status: "loaded",
+                    source: source ?? "local"
                 }
-                break;
+            }));
+        } else {
+            console.warn(`Unsupported file type: ${fileType} for asset ${reference}`);
+            return;
         }
+
+
     }
 );
 
@@ -116,9 +109,11 @@ export const initialiseAssets = createAsyncThunk<void, void>(
             let builtInAssets: Set<SVGDBEntry> = new Set<SVGDBEntry>;
             try {
                 for (const [path, svgString] of Object.entries(CLIENT_SVGS)) {
+                    // Important so /n does not cause id problems when hashing
+                    const cleanString: string = svgString.trim()
 
                     const ref = (path.split("/").pop() ?? "").replace(".svg", "");
-                    const blob = new Blob([svgString as string], { type: "image/svg+xml" });
+                    const blob = new Blob([cleanString], { type: "image/svg+xml" });
 
                     builtInAssets.add({ ref: ref, file: blob });
                 }
