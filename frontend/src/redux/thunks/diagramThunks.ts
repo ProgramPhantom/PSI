@@ -138,7 +138,7 @@ export const openDiagram = createAsyncThunk<void, File>(
                     await thunkAPI.dispatch(loadAsset({
                         file: blob,
                         reference: reference,
-                        source: "local"
+                        source: "diagram",
                     })).unwrap();
                 }
             }

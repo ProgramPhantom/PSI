@@ -1,4 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import DOMPurify from "dompurify";
 import { sha256 } from "js-sha256";
 import localforage from "localforage";
 import ENGINE from "../../logic/engine";
@@ -16,19 +17,23 @@ const CLIENT_SVGS: SVGDict = import.meta.glob("../../assets/svg/*.svg", {
 
 
 
-export const loadAsset = createAsyncThunk<void, { file: Blob | File, reference: string, source: AssetSource, dependants?: string[], }>(
+export const loadAsset = createAsyncThunk<void, {
+    file: Blob | File, reference: string,
+    source: AssetSource,
+    dependants?: string[],
+}>(
     'assets/loadAsset',
-    async ({ file, reference, source, dependants: dependencies }, thunkAPI) => {
-        const dataString = await file.text();
-        const id = sha256(dataString);
-
-        const state = thunkAPI.getState() as RootState;
-        if (state.assets.assets[id]) {
-            return;
-        }
-
+    async ({ file, reference, source, dependants }, thunkAPI) => {
+        let dataString = await file.text();
         const fileType = file.type;
         const fileName = (file as File).name || "";
+
+        let processedFile = file;
+
+        // If it's an SVG, sanitize it
+        if (fileName.endsWith(".svg") || fileType === "image/svg+xml" || fileType === "") {
+
+        }
 
         switch (fileType) {
             case "image/svg+xml":
@@ -37,24 +42,40 @@ export const loadAsset = createAsyncThunk<void, { file: Blob | File, reference: 
             case "": // If the file was created without type
             default:
                 if (fileName.endsWith(".svg") || fileType === "image/svg+xml" || fileType === "") {
-                    await ENGINE.assetStore.addSVGData(file, reference, source);
+                    const cleanSVG = DOMPurify.sanitize(dataString, { USE_PROFILES: { svg: true } });
+
+                    // Repackage cleaned svg
+                    if (cleanSVG !== dataString) {
+                        dataString = cleanSVG;
+                        processedFile = new Blob([cleanSVG], { type: "image/svg+xml" });
+                    }
+
+                    const id = sha256(dataString);
+
+                    const state = thunkAPI.getState() as RootState;
+                    if (state.assets.assets[id]) {
+                        return;
+                    }
+
+                    await ENGINE.assetStore.addSVGData(processedFile, reference, source);
+
+                    thunkAPI.dispatch(addAsset({
+                        id: id,
+                        asset: {
+                            reference: reference,
+                            id: id,
+                            size: processedFile.size,
+                            dependents: dependants ?? [],
+                            status: "loaded",
+                            source: source ?? "local"
+                        }
+                    }));
                 } else {
                     console.warn(`Unsupported file type: ${fileType} for asset ${reference}`);
                     return;
                 }
                 break;
         }
-        thunkAPI.dispatch(addAsset({
-            id: id,
-            asset: {
-                reference: reference,
-                id: id,
-                size: file.size,
-                dependents: dependencies ?? [],
-                status: "loaded",
-                source: source ?? "local"
-            }
-        }));
     }
 );
 

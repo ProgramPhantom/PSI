@@ -4,8 +4,8 @@ export interface IAsset {
     size: number;
     status: "loaded" | "missing"
     id: string,
-    source: "builtin" | "local" | "server"
+    source: AssetSource
 }
 
 export type AssetDict = Record<ID, IAsset>;
-export type AssetSource = "builtin" | "local" | "server"
+export type AssetSource = "builtin" | "local" | "server" | "diagram"
