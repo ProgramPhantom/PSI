@@ -6,7 +6,9 @@ import { BLANK_DIAGRAM } from "../../logic/default/blankDiagram";
 import { DEFAULT_DIAGRAM } from "../../logic/default/defaultDiagram";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
-import { useDeleteDiagramMutation, useGetUserDiagramsQuery, useLazyGetDiagramQuery } from "../../redux/api/api";
+import { useDeleteDiagramMutation, useGetUserDiagramsQuery } from "../../redux/api/api";
+import { useAppDispatch } from "../../redux/hooks";
+import { loadDiagram } from "../../redux/thunks/diagramThunks";
 
 export interface IDiagramsDialogProps {
     isOpen: boolean;
@@ -48,8 +50,8 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         skip: !props.isOpen,
     });
 
-    const [getDiagramTrigger] = useLazyGetDiagramQuery();
     const [deleteDiagramTrigger] = useDeleteDiagramMutation();
+    const dispatch = useAppDispatch();
 
     const handleSelect = async (entry: DiagramDTO) => {
         let success: boolean = true;
@@ -57,27 +59,15 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         if (entry.diagram_id === undefined) {
             success = false;
         } else {
-            // Get diagram via RTK Query trigger
-
-            const response = await getDiagramTrigger(entry.diagram_id).unwrap();
-            let diagramString: string | undefined = response.data;
-
-            if (diagramString !== undefined) {
-                try {
-                    // Object must be copied because RTK Query freezes the object.s
-                    let copiedData: IDiagram = (structuredClone(diagramString) as unknown as IDiagram)
-                    ENGINE.handler.constructDiagram(copiedData)
-                    localStorage.setItem("diagramUUID", entry.diagram_id ?? "")
-                } catch (err) {
-                    success = false
-                    throw err
-                }
-            } else {
+            try {
+                // Get diagram via thunk
+                await dispatch(loadDiagram(entry.diagram_id)).unwrap();
+            } catch (err) {
                 success = false
+                console.error(err);
             }
         }
 
-        console.log(success)
         if (success === false) {
             appToaster.show({
                 "message": "Error loading diagram",
@@ -96,8 +86,9 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         } else {
             try {
                 await deleteDiagramTrigger(entry.diagram_id).unwrap();
-                // Because of validatestags, the list will automatically refetch, 
-                // and the matchFulfilled in diagramSlice will automatically update the store.
+                // await dispatch(deleteDiagramServerThunk(entry.diagram_id)).unwrap();
+                // refetch diagram list to update UI
+                // refetchDiagrams();
             } catch (error) {
                 success = false;
             }

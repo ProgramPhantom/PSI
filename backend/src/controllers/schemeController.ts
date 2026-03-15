@@ -142,7 +142,7 @@ export const createScheme = async (
     }
 };
 
-export const loadScheme = async (
+export const getSchemeFile = async (
     req: Request,
     res: Response,
     next: NextFunction,
