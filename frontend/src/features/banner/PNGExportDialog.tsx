@@ -13,7 +13,6 @@ import ENGINE from "../../logic/engine";
 interface IPNGExportDialogProps {
 	close: () => void;
 	isOpen: boolean;
-	savePNG: (width: number, height: number, filename: string) => void;
 }
 
 export function PNGExportDialog(props: IPNGExportDialogProps) {
@@ -22,7 +21,7 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 	const [pngFilename, setPngFilename] = useState("pulse-diagram.png");
 
 	const handleSavePNG = () => {
-		props.savePNG(pngWidth, pngHeight, pngFilename);
+		// props.savePNG(pngWidth, pngHeight, pngFilename);
 		props.close();
 	};
 

@@ -1,0 +1,62 @@
+import React from "react";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import {
+    setLoadDialogOpen,
+    setPNGDialogOpen,
+    setSaveAsDialogOpen,
+    setLoginDialogOpen,
+    setUserDialogOpen,
+    setDiagramsDialogOpen
+} from "../../redux/slices/dialogSlice";
+import { PNGExportDialog } from "../banner/PNGExportDialog";
+import { LoadStateDialog } from "../banner/LoadStateDialog";
+import { LoginDialog } from "../banner/LoginDialog";
+import { UserDialog } from "../banner/UserDrawer";
+import { DiagramsDialog } from "../banner/DiagramsDialog";
+import { SaveAsDialog } from "../banner/SaveAsDialog";
+
+export const GlobalDialogs: React.FC = () => {
+    const dispatch = useAppDispatch();
+    const {
+        isPNGDialogOpen,
+        isLoadDialogOpen,
+        isSaveAsDialogOpen,
+        isLoginDialogOpen,
+        isUserDialogOpen,
+        isDiagramsDialogOpen
+    } = useAppSelector((state) => state.dialog);
+
+    return (
+        <>
+            <PNGExportDialog
+                close={() => dispatch(setPNGDialogOpen(false))}
+                isOpen={isPNGDialogOpen}
+            />
+
+            <LoadStateDialog
+                close={() => dispatch(setLoadDialogOpen(false))}
+                isOpen={isLoadDialogOpen}
+            />
+
+            <LoginDialog
+                isOpen={isLoginDialogOpen}
+                onClose={() => dispatch(setLoginDialogOpen(false))}
+            />
+
+            <UserDialog
+                isOpen={isUserDialogOpen}
+                onClose={() => dispatch(setUserDialogOpen(false))}
+            />
+
+            <DiagramsDialog
+                isOpen={isDiagramsDialogOpen}
+                onClose={() => dispatch(setDiagramsDialogOpen(false))}
+            />
+
+            <SaveAsDialog
+                isOpen={isSaveAsDialogOpen}
+                onClose={() => dispatch(setSaveAsDialogOpen(false))}
+            />
+        </>
+    );
+};

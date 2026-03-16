@@ -32,10 +32,7 @@ class ENGINE {
 		ENGINE._surface = s;
 		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
 
-
 		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, ENGINE.ConstructElement);
-
-		console.log("SURFACE ATTACHED");
 	}
 	static get surface(): Svg {
 		return ENGINE._surface;

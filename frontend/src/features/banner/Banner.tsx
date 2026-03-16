@@ -1,78 +1,25 @@
 import { Button, Icon, Navbar } from "@blueprintjs/core";
-import React, { useState } from "react";
+import React from "react";
 import { Tool } from "../../app/App";
-import { appToaster } from "../../app/Toaster";
 import { defaultLine } from "../../logic/default/index";
 import ENGINE from "../../logic/engine";
-import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
-import { IDiagram } from "../../logic/hasComponents/diagram";
 import { ILineStyle } from "../../logic/line";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
-import { saveDiagram } from "../../redux/thunks/diagramThunks";
 import { AnnotateDropdown } from "./AnnotateDropdown";
-import { DiagramsDialog } from "./DiagramsDialog";
-import { LoadStateDialog } from "./LoadStateDialog";
-import { LoginDialog } from "./LoginDialog";
-import { PNGExportDialog } from "./PNGExportDialog";
-import { SaveAsDialog } from "./SaveAsDialog";
-import { UserDialog } from "./UserDrawer";
+import * as Actions from "../dialog/actions";
 
 export interface IBannerProps {
 	saveSVG: () => void;
 	savePNG: (width: number, height: number, filename: string) => void;
-
 
 	selectedTool: Tool;
 	setTool: (tool: Tool) => void;
 }
 
 export default function Banner(props: IBannerProps) {
-	const [isPNGDialogOpen, setIsPNGDialogOpen] = useState(false);
-	const [isLoadDialogOpen, setIsLoadDialogOpen] = useState(false);
-	const [isSaveAsDialogOpen, setIsSaveAsDialogOpen] = useState(false);
-
-	const { data: user, error, isLoading } = useGetMeQuery();
+	const { data: user } = useGetMeQuery();
 	const dispatch = useAppDispatch();
-
-	const copyState = () => {
-		var stateObject: IDiagram = ENGINE.handler.diagram.state;
-		var stateString = JSON.stringify(stateObject, undefined, 4);
-
-		navigator.clipboard.writeText(stateString);
-
-		appToaster.show({
-			message: "State copied to clipboard",
-			intent: "success"
-		});
-	};
-
-	const downloadState = () => {
-		var stateObject: IDiagram = ENGINE.handler.diagram.state;
-		var stateString = JSON.stringify(stateObject, undefined, 4);
-		const blob = new Blob([stateString], { type: "application/json" });
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = "psi_state.json";
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-
-		appToaster.show({
-			message: "State downloaded",
-			intent: "success"
-		});
-	};
-
-	const exportDiagramFile = () => {
-		saveDiagramFile();
-
-		appToaster.show({
-			message: "Diagram file downloaded",
-			intent: "success"
-		});
-	}
 
 	const selectLineTool = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (props.selectedTool.type === "arrow") {
@@ -87,224 +34,140 @@ export default function Banner(props: IBannerProps) {
 		}
 	};
 
-	const clearState = () => {
-		ENGINE.clearState();
-		appToaster.show({
-			message: "State cleared from localStorage",
-			intent: "success"
-		});
-	};
-
-	const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
-	const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
-	const [isDiagramsDialogOpen, setIsDiagramsDialogOpen] = useState(false);
-
 	return (
-		<>
-			<Navbar>
+		<Navbar>
+			<Navbar.Group>
+				<Icon icon="pulse" size={20} style={{ marginRight: "10px" }}></Icon>
+				<Navbar.Heading>Pulse Planner v0.5.3 (BETA)</Navbar.Heading>
+				<Navbar.Divider />
+				<Button
+					size="small"
+					variant="minimal"
+					icon="folder-open"
+					text="Open"
+					onClick={() => Actions.openLoadDialog(dispatch)}
+				/>
+				<Navbar.Divider />
+				<Button
+					size="small"
+					variant="minimal"
+					icon="download"
+					text="Download"
+					onClick={() => Actions.handleExportDiagramFile()}
+				/>
+				<Navbar.Divider />
+
+				<Navbar.Divider />
+				<Button
+					size="small"
+					variant="minimal"
+					icon="document"
+					text="New"
+					onClick={() => Actions.handleNewDiagram()}
+				/>
+				<Navbar.Divider />
+				<Button
+					size="small"
+					variant="minimal"
+					icon="clean"
+					text="Save As"
+					onClick={() => Actions.openSaveAsDialog(dispatch)}
+				/>
+				<Navbar.Divider />
+				<Button
+					size="small"
+					variant="minimal"
+					icon="floppy-disk"
+					onClick={() => Actions.handleSaveDiagram(dispatch)}
+				/>
+				<Navbar.Divider />
+				<Button
+					size="small"
+					variant="minimal"
+					icon="trash"
+					text="Clear State"
+					onClick={() => Actions.handleClearState()}
+				/>
+
+				<Navbar.Divider />
+				<Button
+					size="small"
+					variant="minimal"
+					icon="undo"
+					text="Undo"
+					disabled={!ENGINE.handler.canUndo}
+					onClick={() => Actions.handleUndo()}
+				/>
+				<Button
+					size="small"
+					variant="minimal"
+					icon="redo"
+					text="Redo"
+					disabled={!ENGINE.handler.canRedo}
+					onClick={() => Actions.handleRedo()}
+				/>
+
+				<Navbar.Divider />
+				<Navbar.Divider />
+				<AnnotateDropdown
+					selectedTool={props.selectedTool}
+					setTool={props.setTool}></AnnotateDropdown>
+
+				<Navbar.Divider />
+				<Navbar.Divider />
 				<Navbar.Group>
-					<Icon icon="pulse" size={20} style={{ marginRight: "10px" }}></Icon>
-					<Navbar.Heading>Pulse Planner v0.5.3 (BETA)</Navbar.Heading>
-					<Navbar.Divider />
 					<Button
 						size="small"
 						variant="minimal"
-						icon="folder-open"
-						text="Open"
-						onClick={() => setIsLoadDialogOpen(true)}
+						icon="cloud-download"
+						text="Save SVG"
+						onClick={Actions.handleSaveSVG}
 					/>
 					<Navbar.Divider />
 					<Button
 						size="small"
 						variant="minimal"
-						icon="download"
-						text="Download"
-						onClick={() => exportDiagramFile()}
+						icon="media"
+						text="Save PNG"
+						onClick={() => Actions.openPNGDialog(dispatch)}
 					/>
-					<Navbar.Divider />
-
-					<Navbar.Divider />
-					<Button
-						size="small"
-						variant="minimal"
-						icon="document"
-						text="New"
-						onClick={() => ENGINE.resetDiagram()}
-					/>
-					<Navbar.Divider />
-					<Button
-						size="small"
-						variant="minimal"
-						icon="clean"
-						text="Save As"
-						onClick={() => setIsSaveAsDialogOpen(true)}
-					/>
-					<Navbar.Divider />
-					<Button
-						size="small"
-						variant="minimal"
-						icon="floppy-disk"
-						onClick={() => dispatch(saveDiagram(false))}
-					/>
-					<Navbar.Divider />
-					<Button
-						size="small"
-						variant="minimal"
-						icon="trash"
-						text="Clear State"
-						onClick={() => clearState()}
-					/>
-
-					<Navbar.Divider />
-					<Button
-						size="small"
-						variant="minimal"
-						icon="undo"
-						text="Undo"
-						disabled={!ENGINE.handler.canUndo}
-						onClick={() => ENGINE.handler.undo()}
-					/>
-					<Button
-						size="small"
-						variant="minimal"
-						icon="redo"
-						text="Redo"
-						disabled={!ENGINE.handler.canRedo}
-						onClick={() => ENGINE.handler.redo()}
-					/>
-
-					<Navbar.Divider />
-					<Navbar.Divider />
-					<AnnotateDropdown
-						selectedTool={props.selectedTool}
-						setTool={props.setTool}></AnnotateDropdown>
-
-					<Navbar.Divider />
-					<Navbar.Divider />
-					<Navbar.Group>
-						<Button
-							size="small"
-							variant="minimal"
-							icon="cloud-download"
-							text="Save SVG"
-							onClick={props.saveSVG}
-						/>
-						<Navbar.Divider />
-						<Button
-							size="small"
-							variant="minimal"
-							icon="media"
-							text="Save PNG"
-							onClick={() => setIsPNGDialogOpen(true)}
-						/>
-					</Navbar.Group>
 				</Navbar.Group>
+			</Navbar.Group>
 
-				<Navbar.Group align={"right"}>
+			<Navbar.Group align={"right"}>
+				<Button
+					variant="minimal"
+					icon="folder-open"
+					text="Diagrams"
+					onClick={() => Actions.openDiagramsDialog(dispatch)}
+					style={{ marginRight: "10px" }}
+				/>
+				{user ? (
 					<Button
-						variant="minimal"
-						icon="folder-open"
-						text="Diagrams"
-						onClick={() => setIsDiagramsDialogOpen(true)}
+						icon="user" intent="primary"
+						text={user.firstname || "User"}
+						onClick={() => Actions.openUserDialog(dispatch)}
 						style={{ marginRight: "10px" }}
 					/>
-					{user ? (
-						<Button
-							icon="user" intent="primary"
-							text={user.firstname || "User"}
-							onClick={() => setIsUserDialogOpen(true)}
-							style={{ marginRight: "10px" }}
-						/>
-					) : (
-						<Button
-							variant="minimal"
-							icon="user"
-							text="Sign in"
-							onClick={() => setIsLoginDialogOpen(true)}
-							style={{ marginRight: "10px" }}
-						/>
-					)}
-
+				) : (
 					<Button
-						size="small"
 						variant="minimal"
-						icon="bug"
-						onClick={debugIssue}
+						icon="user"
+						text="Sign in"
+						onClick={() => Actions.openLoginDialog(dispatch)}
+						style={{ marginRight: "10px" }}
 					/>
+				)}
 
-				</Navbar.Group>
+				<Button
+					size="small"
+					variant="minimal"
+					icon="bug"
+					onClick={Actions.handleDebugIssue}
+				/>
 
-			</Navbar>
+			</Navbar.Group>
 
-			<PNGExportDialog
-				close={() => setIsPNGDialogOpen(false)}
-				isOpen={isPNGDialogOpen}
-				savePNG={props.savePNG}></PNGExportDialog>
-
-			<LoadStateDialog
-				close={() => setIsLoadDialogOpen(false)}
-				isOpen={isLoadDialogOpen}></LoadStateDialog>
-
-			<LoginDialog
-				isOpen={isLoginDialogOpen}
-				onClose={() => setIsLoginDialogOpen(false)}
-			/>
-
-			<UserDialog
-				isOpen={isUserDialogOpen}
-				onClose={() => setIsUserDialogOpen(false)}
-			/>
-
-			<DiagramsDialog
-				isOpen={isDiagramsDialogOpen}
-				onClose={() => setIsDiagramsDialogOpen(false)}
-			/>
-
-			<SaveAsDialog
-				isOpen={isSaveAsDialogOpen}
-				onClose={() => setIsSaveAsDialogOpen(false)}
-			/>
-		</>
+		</Navbar>
 	);
-}
-
-function debugIssue() {
-	var stateObject: IDiagram = ENGINE.handler.diagram.state;
-	var stateString = JSON.stringify(stateObject, undefined, 4);
-	const blob = new Blob([stateString], { type: "application/json" });
-	const url = URL.createObjectURL(blob);
-	const link = document.createElement("a");
-	link.href = url;
-	link.download = "psi_debug_state.json";
-	document.body.appendChild(link);
-	link.click();
-	document.body.removeChild(link);
-
-	const issueBody = `
-**Describe the bug**
-A clear description of what the bug is.
-
-**To Reproduce**
-Steps to reproduce the behavior:
-
-(Preferable)
-Load the attached state file 'psi_debug_state.json'
-
-**Expected behavior**
-A clear description of what you expected to happen.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Desktop (please complete the following information):**
- - OS: [e.g. Windows]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
-`.trim();
-
-	const issueUrl = `https://github.com/ProgramPhantom/PSI/issues/new?body=${encodeURIComponent(issueBody)}`;
-	window.open(issueUrl, "_blank");
 }

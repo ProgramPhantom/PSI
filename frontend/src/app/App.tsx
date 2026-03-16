@@ -20,6 +20,7 @@ import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 import { api } from "../redux/api/api";
 import { openDiagram } from "../redux/thunks/diagramThunks";
 import localforage from "localforage";
+import { GlobalDialogs } from "../features/dialog/GlobalDialogs";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
@@ -341,6 +342,7 @@ function App() {
 			</Drawer>
 
 			<WelcomeSplash></WelcomeSplash>
+			<GlobalDialogs />
 		</>
 	);
 }

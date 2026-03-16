@@ -27,6 +27,7 @@ import { LineTool } from "./LineTool";
 import GridDropField from "../dnd/GridDropField";
 import QuietUploadArea from "../QuietUploadArea";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
+import Toolbar from "../banner/Toolbar";
 
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
@@ -305,6 +306,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						width: "100%",
 						height: "100%",
 						display: "flex",
+						flexDirection: "column",
 						position: "relative"
 					}}
 					onClick={(e) => {
@@ -314,6 +316,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						singleClick(e);
 						deselect();
 					}}>
+					<Toolbar />
+					<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
 					{/* Image name display text box - positioned outside TransformWrapper */}
 				<div
 					style={{
@@ -485,8 +489,8 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					</TransformWrapper>
 
 					<CanvasDragLayer scale={zoom} />
-				</CanvasDropContainer>
-
+						</CanvasDropContainer>
+					</div>
 			</div>
 			</QuietUploadArea>
 
