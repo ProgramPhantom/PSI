@@ -1,7 +1,7 @@
 import { Button, ButtonGroup, Colors, Menu, MenuDivider, MenuItem, Popover, Position } from "@blueprintjs/core";
 import React from "react";
 import { useAppDispatch } from "../../redux/hooks";
-import * as Actions from "../dialog/actions";
+import * as Actions from "../../redux/thunks/actionThunks";
 import { setLoadDialogOpen, setSaveAsDialogOpen } from "../../redux/slices/dialogSlice";
 
 const Toolbar: React.FC = () => {

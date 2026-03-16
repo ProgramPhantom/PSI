@@ -18,7 +18,7 @@ import { initialiseAssets } from "../redux/thunks/assetThunks";
 import { openDiagram } from "../redux/thunks/diagramThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 import { appToaster } from "./Toaster";
-import { WelcomeSplash } from "./WelcomeSplash";
+import { WelcomeSplash } from "../features/dialog/WelcomeSplash";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 

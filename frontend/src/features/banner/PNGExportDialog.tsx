@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import ENGINE from "../../logic/engine";
 import { useAppDispatch } from "../../redux/hooks";
-
+import * as Actions from "../../redux/thunks/actionThunks";
 
 interface IPNGExportDialogProps {
 	close: () => void;
@@ -24,7 +24,7 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 	const dispatch = useAppDispatch();
 
 	const handleSavePNG = () => {
-		// dispatch(Actions.savePNG())
+		dispatch(Actions.SavePNG({ width: pngWidth, height: pngHeight, }));
 		props.close();
 	};
 

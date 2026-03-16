@@ -7,7 +7,7 @@ import { ILineStyle } from "../../logic/line";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { AnnotateDropdown } from "./AnnotateDropdown";
-import * as Actions from "../dialog/actions";
+import * as Actions from "../../redux/thunks/actionThunks";
 import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen } from "../../redux/slices/dialogSlice";
 
 export interface IBannerProps {
