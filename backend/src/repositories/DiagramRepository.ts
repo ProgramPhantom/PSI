@@ -8,17 +8,17 @@ export const DiagramRepository = {
       .where('diagram_id', '=', id)
       .executeTakeFirst();
   },
-  async saveById(id: string, json: JsonObject) {
+  async saveById(id: string) {
     return await db
       .updateTable('diagrams')
-      .set({ data: json })
+      .set({ date_modified: new Date() })
       .where('diagram_id', '=', id)
       .executeTakeFirst();
   },
   async loadById(id: string) {
     return await db
       .selectFrom('diagrams')
-      .select(['data', 'name'])
+      .selectAll()
       .where('diagram_id', '=', id)
       .executeTakeFirst();
   },
@@ -49,7 +49,6 @@ export const DiagramRepository = {
       .columns([
         'diagram_id',
         'name',
-        'data',
         'owner',
         'date_created',
         'date_modified',
@@ -60,7 +59,6 @@ export const DiagramRepository = {
           .select((eb) => [
             eb.val(newId).as('diagram_id'),
             'name',
-            'data',
             eb.val(newOwner).as('owner'),
             'date_created',
             'date_modified',
@@ -84,7 +82,6 @@ export const DiagramRepository = {
         name: name,
         date_created: datetime,
         date_modified: datetime,
-        data: {},
       })
       .returning('diagram_id')
       .executeTakeFirst();

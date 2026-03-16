@@ -1,4 +1,3 @@
-import DOMPurify from "dompurify";
 import {
     Button,
     Dialog,
@@ -55,33 +54,27 @@ const SVGUploadDialog: React.FC<ISVGUploadDialogProps> = ({ isOpen, onClose, dep
     // Handle upload
     const handleUploadSVG = () => {
         if (selectedFile && svgReference.trim()) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const svgString = e.target?.result as string;
-                    const cleanSVG = DOMPurify.sanitize(svgString, { USE_PROFILES: { svg: true } });
-                    const blob = new Blob([cleanSVG], { type: "image/svg+xml" });
-                    dispatch(loadAsset({
-                        file: blob, reference: svgReference.trim(),
-                        dependants: dependencies,
-                        source: "local"
-                    }));
+            try {
+                dispatch(loadAsset({
+                    file: selectedFile,
+                    reference: svgReference.trim(),
+                    dependants: dependencies,
+                    source: "local"
+                }));
 
-                    appToaster.show({
-                        message: "SVG uploaded successfully",
-                        intent: "success"
-                    });
+                appToaster.show({
+                    message: "SVG uploaded successfully",
+                    intent: "success"
+                });
 
-                    handleClose();
-                } catch (error) {
-                    console.error(error);
-                    appToaster.show({
-                        message: "Error uploading SVG file",
-                        intent: "danger"
-                    });
-                }
-            };
-            reader.readAsText(selectedFile);
+                handleClose();
+            } catch (error) {
+                console.error(error);
+                appToaster.show({
+                    message: "Error uploading SVG file",
+                    intent: "danger"
+                });
+            }
         } else {
             appToaster.show({
                 message: "Please select an SVG file and provide a reference name",

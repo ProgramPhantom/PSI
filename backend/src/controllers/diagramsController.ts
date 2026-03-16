@@ -3,6 +3,10 @@ import { DiagramRepository } from '../repositories/DiagramRepository.js';
 import { v7 as uuidv7 } from 'uuid';
 import { z } from 'zod';
 import type { JsonObject } from '../db/db.js';
+import fs from 'fs';
+import path from 'path';
+
+const STORAGE_DIR = path.join(process.cwd(), 'storage', 'diagrams');
 
 // ---------- Zod schemas ---------------
 
@@ -39,6 +43,13 @@ export const deleteDiagram = async (
     }
 
     const deleteResponse = await DiagramRepository.deleteById(resource);
+
+    // Also delete the file if it exists
+    const filePath = path.join(STORAGE_DIR, `${resource}.nmrd`);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
     if (deleteResponse.numDeletedRows > 0) {
       res.status(200).json({ message: `Deleted diagram with Id: ${resource}` });
     } else {
@@ -56,38 +67,45 @@ export const putSaveDiagram = async (
 ) => {
   try {
     if (req.session.authenticated !== true) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      // Removes the temp file
       res.status(401).json({ message: 'Authentication required' });
+      return;
     }
 
     const result = IdSchema.safeParse(req.params.diagramId);
     if (!result.success) {
+      if (req.file) fs.unlinkSync(req.file.path);
       res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
     const resource = result.data;
 
     const ownerData = await DiagramRepository.getOwnerById(resource);
-    //ensure request body is valid JSON to save into postgres jsonb
-    if (!req.body || Array.isArray(req.body) || typeof req.body !== 'object') {
-      res.status(400).json({ message: 'Body must be a JSON object' });
+
+    if (!req.file) {
+      res.status(400).json({ message: 'No file uploaded' });
       return;
     }
 
     if (!ownerData) {
       //diagram does not exist
+      if (req.file) fs.unlinkSync(req.file.path);
       res.status(404).json({ message: 'Diagram not found' });
+      return;
     }
 
     //if you own this diagram
     if (ownerData!.owner == req.session.gsub!) {
       //save directly
       const updateResponse = await DiagramRepository.saveById(
-        resource,
-        req.body as JsonObject,
+        resource
       );
       if (updateResponse.numUpdatedRows > 0) {
+        fs.renameSync(req.file.path, path.join(STORAGE_DIR, `${resource}.nmrd`));
         res.status(200).json({ message: `Saved diagram with Id: ${resource}`, copied: false });
       } else {
+        if (req.file) fs.unlinkSync(req.file.path);
         throw new Error(
           'No rows updated for an Id that was found??? No clue mate.',
         );
@@ -100,13 +118,20 @@ export const putSaveDiagram = async (
       const copyResponse = await DiagramRepository.copyDiagramToOwnerById(resource, newId, req.session.gsub!)
       if (copyResponse) {
         //copy succeeded
-        res.status(200).json({message: "Success: Copied to your own diagrams", savedDiagramId: newId, copied: true})
+        fs.renameSync(req.file.path, path.join(STORAGE_DIR, `${newId}.nmrd`));
+        res.status(200).json({ message: "Success: Copied to your own diagrams", savedDiagramId: newId, copied: true })
       } else {
+        if (req.file) fs.unlinkSync(req.file.path);
         throw new Error("Copy failed for some reason")
       }
     }
 
   } catch (error) {
+    if (req.file) {
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+    }
     next(error);
   }
 };
@@ -118,16 +143,24 @@ export const postCreateDiagram = async (
 ) => {
   try {
     if (req.session.authenticated !== true) {
+      if (req.file) fs.unlinkSync(req.file.path);
       res.status(401).json({ message: 'Authentication required' });
+      return;
     }
     //create a blank diagram belonging to the logged in user
     const id = uuidv7();
     const result = CreateDiagramSchema.safeParse(req.body);
     if (!result.success) {
+      if (req.file) fs.unlinkSync(req.file.path);
       res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
     const { name } = result.data;
+
+    if (!req.file) {
+      res.status(400).json({ message: 'No file uploaded' });
+      return;
+    }
 
     const dbResponse = await DiagramRepository.createDiagram(
       id,
@@ -136,21 +169,28 @@ export const postCreateDiagram = async (
       name,
     );
     if (dbResponse) {
+      fs.renameSync(req.file.path, path.join(STORAGE_DIR, `${dbResponse.diagram_id}.nmrd`));
       res.status(201).json({
         message: 'Success: diagram created',
         id: dbResponse.diagram_id,
       });
     } else {
+      if (req.file) fs.unlinkSync(req.file.path);
       throw new Error(
         'Something went wrong with database, maybe Id already exists??',
       );
     }
   } catch (error) {
+    if (req.file) {
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+    }
     next(error);
   }
 };
 
-export const getLoadDiagram = async (
+export const getDiagramFile = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -163,10 +203,16 @@ export const getLoadDiagram = async (
     }
     const resource = result.data;
     const dbResponse = await DiagramRepository.loadById(resource);
-    if (dbResponse) {
-      res.status(200).json(dbResponse);
+    if (!dbResponse) {
+      res.status(404).json({ message: 'Diagram not found in database' });
+      return;
+    }
+
+    const filePath = path.join(STORAGE_DIR, `${resource}.nmrd`);
+    if (fs.existsSync(filePath)) {
+      res.download(filePath);
     } else {
-      res.status(404).json({ message: 'Diagram not found' });
+      res.status(404).json({ message: 'Diagram file not found on disk' });
     }
   } catch (error) {
     next(error);

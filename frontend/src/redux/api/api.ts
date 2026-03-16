@@ -20,34 +20,9 @@ export const api = createApi({
             providesTags: ['User']
         }),
 
-        getDiagram: builder.query<components['schemas']['diagramDataResponse'], string>({
-            query: (diagramId) => `/diagrams/${diagramId}`,
-        }),
+
         getDateModified: builder.query<{ date_modified?: string }, string>({
             query: (diagramId) => `/diagrams/${diagramId}/modified`,
-        }),
-        loginUser: builder.mutation<components['schemas']['genericResponse'], CredentialResponse>({
-            query: (googleData) => ({
-                url: '/users/login',
-                method: 'POST',
-                body: googleData,
-            }),
-            invalidatesTags: ["User"]
-        }),
-        logoutUser: builder.mutation<components['schemas']['genericResponse'], void>({
-            query: () => ({
-                url: '/users/logout',
-                method: 'POST',
-            }),
-            async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-                try {
-                    await queryFulfilled;
-                    // Nuke cache
-                    dispatch(api.util.resetApiState());
-
-                } catch (err) {
-                }
-            },
         }),
         createDiagram: builder.mutation<components['schemas']['diagramCreateResponse'], string>({
             query: (name) => ({
@@ -74,6 +49,30 @@ export const api = createApi({
         }),
 
 
+        loginUser: builder.mutation<components['schemas']['genericResponse'], CredentialResponse>({
+            query: (googleData) => ({
+                url: '/users/login',
+                method: 'POST',
+                body: googleData,
+            }),
+            invalidatesTags: ["User"]
+        }),
+        logoutUser: builder.mutation<components['schemas']['genericResponse'], void>({
+            query: () => ({
+                url: '/users/logout',
+                method: 'POST',
+            }),
+            async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                    // Nuke cache
+                    dispatch(api.util.resetApiState());
+
+                } catch (err) {
+                }
+            },
+        }),
+
     }),
 });
 
@@ -81,12 +80,8 @@ export const {
     useGetUserDiagramsQuery,
     useGetUserSchemesQuery,
     useGetMeQuery,
-    useLazyGetDiagramQuery,
-    useGetDiagramQuery,
     useGetDateModifiedQuery,
     useLoginUserMutation,
     useLogoutUserMutation,
-    useCreateDiagramMutation,
-    useSaveDiagramMutation,
-    useDeleteDiagramMutation,
+    useDeleteDiagramMutation
 } = api;

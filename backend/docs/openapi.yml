@@ -68,12 +68,8 @@ components:
         select_by:
           type: string
     diagramDataResponse:
-      type: object
-      properties:
-        name:
-          type: string
-        data:
-          type: string
+      type: string
+      format: binary
 
     diagramCreateResponse:
       type: object
@@ -263,7 +259,7 @@ paths:
         '200':
           description: OK - the specified diagram data is returned
           content:
-            application/json:
+            application/octet-stream:
               schema: 
                 $ref: "#/components/schemas/diagramDataResponse"
         '400':
@@ -280,13 +276,16 @@ paths:
             type: string
             format: uuid
       requestBody:
-        description: JSON data to save
+        description: A nmrd diagram file to save.
         required: true
         content:
-          application/json:
-            schema: 
+          multipart/form-data:
+            schema:
               type: object
-              additionalProperties: true
+              properties:
+                file:
+                  type: string
+                  format: binary
       tags: 
         -  Diagrams
       summary: Save the diagram data
@@ -331,14 +330,18 @@ paths:
   /diagrams:    
     post:
       requestBody:
-        description: The name given to the newly created diagram
+        description: The name given to the newly created diagram and the nmrd file
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema: 
+              type: object
               properties:
                 name:
                   type: string
+                file:
+                  type: string
+                  format: binary
       tags: 
         -  Diagrams
       summary: Create a diagram belonging to the logged in user

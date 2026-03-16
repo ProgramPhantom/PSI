@@ -1,8 +1,8 @@
-import { Element, Svg, SVG } from "@svgdotjs/svg.js";
-import JSZip from "jszip";
-import { IScheme, SchemeDict, SchemeMetadata } from "../types/schemes";
+import { Element, Svg } from "@svgdotjs/svg.js";
+import localforage from "localforage";
 import AssetStore from "./assetStore";
 import Collection, { ICollection } from "./collection";
+import { DEFAULT_DIAGRAM } from "./default/defaultDiagram";
 import DiagramHandler, { Result } from "./diagramHandler";
 import Grid, { IGrid, ISubgrid, Subgrid } from "./grid";
 import Channel, { IChannel } from "./hasComponents/channel";
@@ -15,17 +15,14 @@ import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Text, { IText } from "./text";
-import { downloadBlob } from "./util2";
 import Visual, { GridCellElement, IVisual } from "./visual";
-import localforage from "localforage";
 
 
 class ENGINE {
 	static SURFACE_ID: string = "surface"
 	static listeners: (() => void)[] = [];
-	static currentImageName: string = "newPulseImage.svg";
-	static StateName: string = "diagram-state";
-	static STATE: string | null = localStorage.getItem(ENGINE.StateName);
+	static DiagramStoreName: string = "diagram-state";
+	static STATE: string | null = JSON.stringify(DEFAULT_DIAGRAM);
 
 	static assetStore: AssetStore = new AssetStore();
 
@@ -34,10 +31,7 @@ class ENGINE {
 		ENGINE._surface = s;
 		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
 
-
 		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, ENGINE.ConstructElement);
-
-		console.log("SURFACE ATTACHED");
 	}
 	static get surface(): Svg {
 		return ENGINE._surface;
@@ -74,8 +68,10 @@ class ENGINE {
 			l();
 		});
 	}
-	static loadDiagramState() {
+	static loadDiagramState(newState?: IDiagram) {
 		var stateObj: IDiagram | undefined = undefined;
+
+		if (newState !== undefined) { this.STATE = JSON.stringify(newState) };
 		if (this.STATE !== null) {
 			try {
 				stateObj = JSON.parse(this.STATE) as IDiagram;
@@ -97,7 +93,7 @@ class ENGINE {
 	}
 
 	static clearState() {
-		localStorage.removeItem(ENGINE.StateName);
+		localforage.removeItem(ENGINE.DiagramStoreName);
 	}
 
 	static resetDiagram() {
@@ -113,7 +109,7 @@ class ENGINE {
 		let assets: Set<string> = new Set<string>();
 
 		if (SVGElement.isSVGElement(component)) {
-			assets.add(component.asset.ref)
+			assets.add(component.asset.id)
 		} else if (Collection.isCollection(component)) {
 			component.children.forEach((c) => {
 				assets = new Set([...assets, ...ENGINE.getAssetRequirementsFromComponent(c)])

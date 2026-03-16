@@ -3,7 +3,7 @@ import { ISVGElement } from "../../svgElement"
 export const DEFAULT_SALTIREHILO: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 1],
-	"asset": { ref: "saltirehilo", id: "9943a8fed1ffeddebe4b0977a7de1eb5374cb2ab253c10b0d9d1cbfe82265966" },
+	"asset": { ref: "saltirehilo", id: "13b1d3b3cbedc7f5c5b50ca1cc70a6b1af6d3c83706e3b1cdd8ab92227068c71" },
 	"contentWidth": 50,
 	"contentHeight": 20,
 

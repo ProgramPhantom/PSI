@@ -2,6 +2,7 @@ import MissingAssetSVG from "../assets/app/MissingAsset2.svg?raw";
 import { SVG, Element } from "@svgdotjs/svg.js";
 import { sha256 } from "js-sha256";
 import localforage from "localforage";
+import { AssetSource } from "../types/assets";
 
 export type SVGDict = Record<string, { ref: string, object: Element }>;
 
@@ -14,7 +15,7 @@ export default class AssetStore {
     public svgObjects: SVGDict = {};
 
     // Method for adding svg data to a scheme
-    public async addSVGData(file: Blob | File, reference: string, source: "builtin" | "server" | "local") {
+    public async addSVGData(file: Blob | File, reference: string, source: AssetSource) {
         const dataString = await file.text();
         const id = sha256(dataString);
 

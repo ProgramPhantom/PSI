@@ -32,7 +32,7 @@ const schemesTransform = createTransform<SchemesState, SchemesState, RootState>(
 const persistConfig: PersistConfig<RootState> = {
     key: 'psi-schemes',
     storage,
-    whitelist: ['schemes'], // Only persist the schemes slice
+    whitelist: ['schemes', 'diagram'], // Only persist the schemes and diagram slices
     transforms: [schemesTransform]
 };
 

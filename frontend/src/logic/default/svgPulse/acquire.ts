@@ -3,7 +3,7 @@ import { ISVGElement } from "../../svgElement"
 export const DEFAULT_ACQUIRE: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
-	"asset": { ref: "acquire", id: "b4e660e27ee2a7911b59de88462f061a41fd976dcd00009d80994b0e278534b0" },
+	"asset": { ref: "acquire", id: "e711c7de97c3ac9342b0bf25e4ee9b2f9a6f56cf1515e3205e1e39aed1d7964d" },
 	"contentWidth": 150,
 	"contentHeight": 75,
 

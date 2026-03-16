@@ -13,6 +13,7 @@ import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useC
 import { IToolConfig, Tool } from "../../app/App";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
+import { setFileName } from "../../redux/slices/diagramSlice";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes } from "../../logic/point";
 import Visual from "../../logic/visual";
@@ -25,6 +26,9 @@ import { DebugLayerDialog } from "./DebugLayerDialog";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import GridDropField from "../dnd/GridDropField";
+import QuietUploadArea from "../QuietUploadArea";
+import { openDiagram } from "../../redux/thunks/diagramThunks";
+import Toolbar from "../banner/Toolbar";
 
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
@@ -99,7 +103,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [debugSelectionTypes, setDebugSelectionTypes] =
 		useState<Record<AllComponentTypes, boolean>>(DefaultDebugSelection);
 	const [zoom, setZoom] = useState(2);
-	const [fileName, setFileName] = useState(ENGINE.currentImageName);
+	const fileName = useAppSelector((state) => state.diagram.fileName);
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [focusLevel, setFocusLevel] = useState(0);
@@ -259,8 +263,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	};
 
 	const handleFileNameChange = (newFileName: string) => {
-		setFileName(newFileName);
-		ENGINE.currentImageName = newFileName;
+		dispatch(setFileName(newFileName));
 	};
 
 	const handleFileNameBlur = () => {
@@ -269,8 +272,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 			// If it doesn't end with .svg, extract the base name and add .svg
 			const baseName = fileName.split(".")[0]; // Get everything before the first dot
 			const correctedFileName = baseName + ".svg";
-			setFileName(correctedFileName);
-			ENGINE.currentImageName = correctedFileName;
+			dispatch(setFileName(correctedFileName));
 		}
 	};
 
@@ -280,6 +282,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 			setFocusLevel(0);
 		}
 	}, [selectedElementId]);
+
+	const handleDiagramDrop = async (file: File) => {
+		dispatch(openDiagram(file));
+	};
 
 	useEffect(() => {
 		if (diagramSvgRef.current && ENGINE.handler.diagram.svg) {
@@ -293,21 +299,25 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	return (
 		<>
-			<div
-				style={{
-					width: "100%",
-					height: "100%",
-					display: "flex",
-					position: "relative"
-				}}
-				onClick={(e) => {
-					onClick(e);
-				}}
-				onMouseUp={(e) => {
-					singleClick(e);
-					deselect();
-				}}>
-				{/* Image name display text box - positioned outside TransformWrapper */}
+			<QuietUploadArea onDrop={handleDiagramDrop} acceptExtension=".nmrd">
+				<div
+					style={{
+						width: "100%",
+						height: "100%",
+						display: "flex",
+						flexDirection: "column",
+						position: "relative"
+					}}
+					onClick={(e) => {
+						onClick(e);
+					}}
+					onMouseUp={(e) => {
+						singleClick(e);
+						deselect();
+					}}>
+					<Toolbar />
+					<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
+					{/* Image name display text box - positioned outside TransformWrapper */}
 				<div
 					style={{
 						position: "absolute",
@@ -478,9 +488,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					</TransformWrapper>
 
 					<CanvasDragLayer scale={zoom} />
-				</CanvasDropContainer>
-
+						</CanvasDropContainer>
+					</div>
 			</div>
+			</QuietUploadArea>
 
 			<DebugLayerDialog
 				open={debugDialogOpen}

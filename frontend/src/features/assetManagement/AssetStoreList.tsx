@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogBody, DialogFooter, HTMLTable, Icon, NonIdealState, Tooltip } from "@blueprintjs/core";
+import { Button, Dialog, DialogBody, DialogFooter, HTMLTable, Icon, IconName, NonIdealState, Tooltip } from "@blueprintjs/core";
 import { useSelector } from "react-redux";
 import { selectAssets } from "../../redux/slices/assetSlice";
 
@@ -7,9 +7,17 @@ export interface IAssetStoreListProps {
     onClose: () => void;
 }
 
+const ICONS: Record<string, IconName> = {
+    "builtin": "target",
+    "server": "cloud",
+    "local": "geofence",
+    "diagram": "draw"
+}
+
 export function AssetStoreList(props: IAssetStoreListProps) {
     const assets = useSelector(selectAssets);
     const assetList = Object.values(assets);
+
 
     return (
         <Dialog
@@ -40,7 +48,7 @@ export function AssetStoreList(props: IAssetStoreListProps) {
                                         <Tooltip content={asset.source}
                                             placement="bottom"
                                         >
-                                            <Icon icon={asset.source === "builtin" ? "target" : (asset.source === "local" ? "geofence" : "cloud")} size={16} style={{ cursor: "help" }} />
+                                            <Icon icon={ICONS[asset.source]} size={16} style={{ cursor: "help" }} />
                                         </Tooltip>
                                     </td>
                                     <td style={{ paddingTop: 4, paddingBottom: 4, textAlign: "center" }}>

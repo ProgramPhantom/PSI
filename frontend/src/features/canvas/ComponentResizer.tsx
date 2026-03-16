@@ -1,5 +1,5 @@
-import {Button, Text} from "@blueprintjs/core";
-import React, {ReactNode, useCallback, useEffect, useRef, useState} from "react";
+import { Button, Text } from "@blueprintjs/core";
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 interface ComponentResizerProps {
 	children: ReactNode;
@@ -191,7 +191,7 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
 			return {
 				position: "absolute" as const,
 				left: isCollapsed ? "-10px" : "-30px",
-				top: "10px",
+				top: "4px",
 				width: "20px",
 				height: "20px",
 				cursor: "pointer",
@@ -326,7 +326,7 @@ const ComponentResizer: React.FC<ComponentResizerProps> = ({
 				style={getToggleButtonStyle()}
 				onClick={toggleCollapse}
 				title={isCollapsed ? "Expand panel" : "Collapse panel"}>
-				<Button icon={getToggleIcon()} variant="minimal"></Button>
+				<Button icon={getToggleIcon()} size="small" variant="minimal"></Button>
 			</div>
 
 			{/* Resize handle */}

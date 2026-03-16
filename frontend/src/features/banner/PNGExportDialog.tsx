@@ -9,20 +9,22 @@ import {
 } from "@blueprintjs/core";
 import { useState } from "react";
 import ENGINE from "../../logic/engine";
+import { useAppDispatch } from "../../redux/hooks";
+import * as Actions from "../../redux/thunks/actionThunks";
 
 interface IPNGExportDialogProps {
 	close: () => void;
 	isOpen: boolean;
-	savePNG: (width: number, height: number, filename: string) => void;
 }
 
 export function PNGExportDialog(props: IPNGExportDialogProps) {
 	const [pngWidth, setPngWidth] = useState(ENGINE.handler.diagram.width);
 	const [pngHeight, setPngHeight] = useState(ENGINE.handler.diagram.height);
 	const [pngFilename, setPngFilename] = useState("pulse-diagram.png");
+	const dispatch = useAppDispatch();
 
 	const handleSavePNG = () => {
-		props.savePNG(pngWidth, pngHeight, pngFilename);
+		dispatch(Actions.SavePNG({ width: pngWidth, height: pngHeight, }));
 		props.close();
 	};
 
