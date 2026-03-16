@@ -36,7 +36,7 @@ export default function Banner(props: IBannerProps) {
 		<Navbar>
 			<Navbar.Group>
 				<Icon icon="pulse" size={20} style={{ marginRight: "10px" }}></Icon>
-				<Navbar.Heading>Pulse Planner v0.5.3 (BETA)</Navbar.Heading>
+				<Navbar.Heading>Pulse Planner v0.7.5 (BETA)</Navbar.Heading>
 				<Tooltip content="Open (Ctrl+O)" position={Position.BOTTOM}>
 					<Button
 						size="medium"
