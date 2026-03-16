@@ -8,12 +8,12 @@ import {
     setUserDialogOpen,
     setDiagramsDialogOpen
 } from "../../redux/slices/dialogSlice";
-import { PNGExportDialog } from "../banner/PNGExportDialog";
-import { LoadStateDialog } from "../banner/LoadStateDialog";
-import { LoginDialog } from "../banner/LoginDialog";
+import { PNGExportDialog } from "./PNGExportDialog";
+import { LoadStateDialog } from "./LoadStateDialog";
+import { LoginDialog } from "./LoginDialog";
 import { UserDialog } from "../banner/UserDrawer";
-import { DiagramsDialog } from "../banner/DiagramsDialog";
-import { SaveAsDialog } from "../banner/SaveAsDialog";
+import { DiagramsDialog } from "./DiagramsDialog";
+import { SaveAsDialog } from "./SaveAsDialog";
 import { WelcomeDialog } from "./WelcomeDialog";
 
 export const GlobalDialogs: React.FC = () => {

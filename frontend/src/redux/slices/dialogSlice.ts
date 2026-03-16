@@ -7,6 +7,7 @@ export interface DialogState {
     isLoginDialogOpen: boolean;
     isUserDialogOpen: boolean;
     isDiagramsDialogOpen: boolean;
+    isDebugLayerDialogOpen: boolean;
 }
 
 const initialState: DialogState = {
@@ -16,6 +17,7 @@ const initialState: DialogState = {
     isLoginDialogOpen: false,
     isUserDialogOpen: false,
     isDiagramsDialogOpen: false,
+    isDebugLayerDialogOpen: false
 };
 
 export const dialogSlice = createSlice({
@@ -40,6 +42,9 @@ export const dialogSlice = createSlice({
         setDiagramsDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isDiagramsDialogOpen = action.payload;
         },
+        setDebugLayerDialogOpen: (state, action: PayloadAction<boolean>) => {
+            state.isDiagramsDialogOpen = action.payload
+        }
     },
 });
 

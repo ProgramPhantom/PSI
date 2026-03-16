@@ -22,13 +22,13 @@ import CanvasDraggableElement from "../dnd/CanvasDraggableElement";
 import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
 import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
 import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
-import { DebugLayerDialog } from "./DebugLayerDialog";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import GridDropField from "../dnd/GridDropField";
 import QuietUploadArea from "../QuietUploadArea";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
 import Toolbar from "../banner/Toolbar";
+import { DebugLayerDialog } from "../dialog/DebugLayerDialog";
 
 
 const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
@@ -317,180 +317,180 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					}}>
 					<Toolbar />
 					<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
-					{/* Image name display text box - positioned outside TransformWrapper */}
-				<div
-					style={{
-						position: "absolute",
-						top: "5px",
-						left: "10px",
-						zIndex: 100
-					}}>
+						{/* Image name display text box - positioned outside TransformWrapper */}
+						<div
+							style={{
+								position: "absolute",
+								top: "5px",
+								left: "10px",
+								zIndex: 100
+							}}>
 
-				</div>
+						</div>
 
-				<div
-					style={{
-						position: "absolute",
-						bottom: "5px",
-						right: "10px",
-						zIndex: 100
-					}}>
+						<div
+							style={{
+								position: "absolute",
+								bottom: "5px",
+								right: "10px",
+								zIndex: 100
+							}}>
 
-				</div>
+						</div>
 
-				<div
-					style={{
-						position: "absolute",
-						top: "10px",
-						left: "10px",
-						zIndex: 10
-					}}>
-					<Button
-						icon="target"
-						onClick={() => transformComponentRef.current?.centerView()}
-					/>
-				</div>
-
-
-				<CanvasDropContainer scale={zoom}>
-					<TransformWrapper
-						ref={transformComponentRef}
-						initialScale={zoom}
-						onZoomStop={(z) => {
-							setZoom(z.state.scale);
-						}}
-						centerOnInit={true}
-						limitToBounds={false}
-
-						maxScale={5}
-						minScale={0.5}
-						panning={{ excluded: ["nopan"] }}
-						doubleClick={{ disabled: true }}>
+						<div
+							style={{
+								position: "absolute",
+								top: "10px",
+								left: "10px",
+								zIndex: 10
+							}}>
+							<Button
+								icon="target"
+								onClick={() => transformComponentRef.current?.centerView()}
+							/>
+						</div>
 
 
-						<TransformComponent wrapperStyle={{
-							width: "100%", height: "100%", position: "absolute",
-						}}>
-							{/* Large background grid that moves with transform */}
-							<div
-								style={{
-									position: "absolute",
-									width: "10000px",
-									height: "10000px",
-									left: "-5000px",
-									top: "-5000px",
-									backgroundImage:
-										"radial-gradient(circle,rgba(204, 204, 204, 0.12) 0.6px, transparent 1px)",
-									backgroundSize: "5px 5px",
-									backgroundPosition: "0 0",
-									pointerEvents: "none",
-									zIndex: -1
-								}}></div>
-
-
-
-							<div
-								style={{
-									width: "100%",
-									height: "100%",
-									display: "inline-block",
-									position: "relative",
-									/*border: "dashed",
-									borderWidth: "0.2px",
-									borderColor: "#0000003d" */
+						<CanvasDropContainer scale={zoom}>
+							<TransformWrapper
+								ref={transformComponentRef}
+								initialScale={zoom}
+								onZoomStop={(z) => {
+									setZoom(z.state.scale);
 								}}
-								onMouseLeave={() => stopHover()}>
+								centerOnInit={true}
+								limitToBounds={false}
+
+								maxScale={5}
+								minScale={0.5}
+								panning={{ excluded: ["nopan"] }}
+								doubleClick={{ disabled: true }}>
+
+
+								<TransformComponent wrapperStyle={{
+									width: "100%", height: "100%", position: "absolute",
+								}}>
+									{/* Large background grid that moves with transform */}
+									<div
+										style={{
+											position: "absolute",
+											width: "10000px",
+											height: "10000px",
+											left: "-5000px",
+											top: "-5000px",
+											backgroundImage:
+												"radial-gradient(circle,rgba(204, 204, 204, 0.12) 0.6px, transparent 1px)",
+											backgroundSize: "5px 5px",
+											backgroundPosition: "0 0",
+											pointerEvents: "none",
+											zIndex: -1
+										}}></div>
+
+
+
+									<div
+										style={{
+											width: "100%",
+											height: "100%",
+											display: "inline-block",
+											position: "relative",
+											/*border: "dashed",
+											borderWidth: "0.2px",
+											borderColor: "#0000003d" */
+										}}
+										onMouseLeave={() => stopHover()}>
 
 
 
 
-								{/* Transformed Overlay Layer */}
-								<div className="nopan"
-									style={{
-										position: "absolute",
-										top: 0,
-										left: 0,
-										width: "100%",
-										height: "100%",
-										zIndex: 20000,
-										pointerEvents: "none",
-										transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
-											}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0
-											}px)`
-									}}>
-
-									{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
-									{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
-										<div
-											key={interactiveElement.id}
-											className="nopan"
+										{/* Transformed Overlay Layer */}
+										<div className="nopan"
 											style={{
 												position: "absolute",
-												width: interactiveElement.contentWidth,
-												height: interactiveElement.contentHeight,
-												left: interactiveElement.drawCX,
-												top: interactiveElement.drawCY,
-												pointerEvents: "auto"
+												top: 0,
+												left: 0,
+												width: "100%",
+												height: "100%",
+												zIndex: 20000,
+												pointerEvents: "none",
+												transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
+													}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0
+													}px)`
 											}}>
-											<CanvasDraggableElement
-												reselect={reselect}
-												name={interactiveElement.ref}
-												element={interactiveElement}
-												x={interactiveElement.x}
-												y={interactiveElement.y}></CanvasDraggableElement>
+
+											{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
+											{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
+												<div
+													key={interactiveElement.id}
+													className="nopan"
+													style={{
+														position: "absolute",
+														width: interactiveElement.contentWidth,
+														height: interactiveElement.contentHeight,
+														left: interactiveElement.drawCX,
+														top: interactiveElement.drawCY,
+														pointerEvents: "auto"
+													}}>
+													<CanvasDraggableElement
+														reselect={reselect}
+														name={interactiveElement.ref}
+														element={interactiveElement}
+														x={interactiveElement.x}
+														y={interactiveElement.y}></CanvasDraggableElement>
+												</div>
+											)}
+
+
+											{/* Tools */}
+											{props.selectedTool.type === "arrow" ? (
+												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+													<LineTool
+														hoveredElement={hoveredElement}
+														config={props.selectedTool.config}
+														setTool={props.setTool}></LineTool>
+												</div>
+											) : (
+												<></>
+											)}
+
+											{/* Drop field */}
+											<div className="nopan" style={{ pointerEvents: "auto" }}>
+												{ENGINE.handler.sequences[0] &&
+													<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
+												}
+												<SequencesPulseDropField></SequencesPulseDropField>
+											</div>
+
+											{/* Debug layers */}
+											<Debug
+												debugGroupSelection={debugSelectionTypes}
+												debugSelection={debugElements}></Debug>
+
 										</div>
-									)}
 
 
-									{/* Tools */}
-									{props.selectedTool.type === "arrow" ? (
-										<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
-											<LineTool
-												hoveredElement={hoveredElement}
-												config={props.selectedTool.config}
-												setTool={props.setTool}></LineTool>
-										</div>
-									) : (
-										<></>
-									)}
+										{/* Hitbox layer */}
+										{!isDragging ? (
+											<HitboxLayer
+												focusLevel={focusLevel}
+												setHoveredElement={constOnHitboxHover}></HitboxLayer>
+										) : (
+											<></>
+										)}
 
-									{/* Drop field */}
-									<div className="nopan" style={{ pointerEvents: "auto" }}>
-										{ENGINE.handler.sequences[0] &&
-											<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
-										}
-										<SequencesPulseDropField></SequencesPulseDropField>
+										{/* Image */}
+										<div id="drawDiv" ref={diagramSvgRef}></div>
 									</div>
+								</TransformComponent>
 
-									{/* Debug layers */}
-									<Debug
-										debugGroupSelection={debugSelectionTypes}
-										debugSelection={debugElements}></Debug>
+								<SeamlessPanner />
+							</TransformWrapper>
 
-								</div>
-
-
-								{/* Hitbox layer */}
-								{!isDragging ? (
-									<HitboxLayer
-										focusLevel={focusLevel}
-										setHoveredElement={constOnHitboxHover}></HitboxLayer>
-								) : (
-									<></>
-								)}
-
-								{/* Image */}
-								<div id="drawDiv" ref={diagramSvgRef}></div>
-							</div>
-						</TransformComponent>
-
-						<SeamlessPanner />
-					</TransformWrapper>
-
-					<CanvasDragLayer scale={zoom} />
+							<CanvasDragLayer scale={zoom} />
 						</CanvasDropContainer>
 					</div>
-			</div>
+				</div>
 			</QuietUploadArea>
 
 			<DebugLayerDialog
