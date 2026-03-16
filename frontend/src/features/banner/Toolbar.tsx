@@ -23,10 +23,10 @@ const Toolbar: React.FC = () => {
 					position={Position.BOTTOM_LEFT}
 					content={
 						<Menu>
-							<MenuItem icon="document" text="New" onClick={() => dispatch(Actions.handleNewDiagram())} />
-							<MenuItem icon="folder-open" text="Open..." onClick={() => dispatch(setLoadDialogOpen(true))} />
-							<MenuItem icon="blank" text="Save" onClick={() => dispatch(Actions.handleSaveDiagram())} />
-							<MenuItem icon="floppy-disk" text="Save As..." onClick={() => dispatch(setSaveAsDialogOpen(true))} />
+							<MenuItem icon="document" text="New" label="Ctrl+N" onClick={() => dispatch(Actions.handleNewDiagram())} />
+							<MenuItem icon="folder-open" text="Open..." label="Ctrl+O" onClick={() => dispatch(setLoadDialogOpen(true))} />
+							<MenuItem icon="blank" text="Save" label="Ctrl+S" onClick={() => dispatch(Actions.handleSaveDiagram())} />
+							<MenuItem icon="floppy-disk" text="Save As..." label="Ctrl+Shift+S" onClick={() => dispatch(setSaveAsDialogOpen(true))} />
 						</Menu>
 					}>
 					<Button text="File" />
@@ -36,11 +36,11 @@ const Toolbar: React.FC = () => {
 					position={Position.BOTTOM_LEFT}
 					content={
 						<Menu>
-							<MenuItem icon="undo" text="Undo" onClick={() => dispatch(Actions.handleUndo())} />
-							<MenuItem icon="redo" text="Redo" onClick={() => dispatch(Actions.handleRedo())} />
+							<MenuItem icon="undo" text="Undo" label="Ctrl+Z" onClick={() => dispatch(Actions.handleUndo())} />
+							<MenuItem icon="redo" text="Redo" label="Ctrl+Y" onClick={() => dispatch(Actions.handleRedo())} />
 							<MenuDivider />
 
-							<MenuItem icon="duplicate" text="Copy state" onClick={() => dispatch(Actions.handleCopyState())} />
+							<MenuItem icon="duplicate" text="Copy state" label="Ctrl+Shift+C" onClick={() => dispatch(Actions.handleCopyState())} />
 						</Menu>
 					}>
 					<Button text="Edit" />
@@ -50,10 +50,10 @@ const Toolbar: React.FC = () => {
 					position={Position.BOTTOM_LEFT}
 					content={
 						<Menu>
-							<MenuItem icon="cloud-download" text="Export SVG" onClick={() => dispatch(Actions.handleSaveSVG())} />
-							<MenuItem icon="media" text="Export PNG" onClick={() => dispatch(setPNGDialogOpen(true))} />
+							<MenuItem icon="cloud-download" text="Export SVG" label="Alt+Shift+S" onClick={() => dispatch(Actions.handleSaveSVG())} />
+							<MenuItem icon="media" text="Export PNG" label="Ctrl+E" onClick={() => dispatch(setPNGDialogOpen(true))} />
 							<MenuDivider />
-							<MenuItem icon="document-share" text="Export .nmrd" onClick={() => dispatch(Actions.handleExportDiagramFile())} />
+							<MenuItem icon="document-share" text="Export .nmrd" label="Ctrl+Alt+S" onClick={() => dispatch(Actions.handleExportDiagramFile())} />
 						</Menu>
 					}>
 					<Button text="Export" />
@@ -63,7 +63,7 @@ const Toolbar: React.FC = () => {
 					position={Position.BOTTOM_LEFT}
 					content={
 						<Menu>
-							<MenuItem icon="bug" text="Report bug" onClick={() => dispatch(Actions.handleDebugIssue())} />
+							<MenuItem icon="bug" text="Report bug" label="Ctrl+B" onClick={() => dispatch(Actions.handleDebugIssue())} />
 							<MenuDivider />
 							<MenuItem icon="info-sign" text="About" onClick={() => { }} />
 						</Menu>

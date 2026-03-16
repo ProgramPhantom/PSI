@@ -3,7 +3,8 @@ import React, { useMemo } from "react";
 import ENGINE from "../logic/engine";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { setSelectedElementId } from "../redux/slices/applicationSlice";
-import { setDebugLayerDialogOpen } from "../redux/slices/dialogSlice";
+import { setDebugLayerDialogOpen, setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen } from "../redux/slices/dialogSlice";
+import * as Actions from "../redux/thunks/actionThunks";
 
 export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const dispatch = useAppDispatch();
@@ -76,6 +77,87 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                     if (ENGINE.handler.canRedo) {
                         ENGINE.handler.redo();
                     }
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+n",
+                global: true,
+                label: "New",
+                onKeyDown: () => {
+                    dispatch(Actions.handleNewDiagram());
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+o",
+                global: true,
+                label: "Open",
+                onKeyDown: () => {
+                    dispatch(setLoadDialogOpen(true));
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+s",
+                global: true,
+                label: "Save",
+                onKeyDown: () => {
+                    dispatch(Actions.handleSaveDiagram());
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+shift+s",
+                global: true,
+                label: "Save As",
+                onKeyDown: () => {
+                    dispatch(setSaveAsDialogOpen(true));
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+shift+c",
+                global: true,
+                label: "Copy state",
+                onKeyDown: () => {
+                    dispatch(Actions.handleCopyState());
+                },
+                preventDefault: true
+            },
+            {
+                combo: "shift+alt+s",
+                global: true,
+                label: "Export SVG",
+                onKeyDown: () => {
+                    dispatch(Actions.handleSaveSVG());
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+e",
+                global: true,
+                label: "Export PNG",
+                onKeyDown: () => {
+                    dispatch(setPNGDialogOpen(true));
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+alt+s",
+                global: true,
+                label: "Export .nmrd",
+                onKeyDown: () => {
+                    dispatch(Actions.handleExportDiagramFile());
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+b",
+                global: true,
+                label: "Report bug",
+                onKeyDown: () => {
+                    dispatch(Actions.handleDebugIssue());
                 },
                 preventDefault: true
             },
