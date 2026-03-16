@@ -25,8 +25,8 @@ const Toolbar: React.FC = () => {
 						<Menu>
 							<MenuItem icon="document" text="New" onClick={() => dispatch(Actions.handleNewDiagram())} />
 							<MenuItem icon="folder-open" text="Open..." onClick={() => dispatch(setLoadDialogOpen(true))} />
-							<MenuItem icon="floppy-disk" text="Save" onClick={() => dispatch(Actions.handleSaveDiagram())} />
-							<MenuItem icon="clean" text="Save As..." onClick={() => dispatch(setSaveAsDialogOpen(true))} />
+							<MenuItem icon="blank" text="Save" onClick={() => dispatch(Actions.handleSaveDiagram())} />
+							<MenuItem icon="floppy-disk" text="Save As..." onClick={() => dispatch(setSaveAsDialogOpen(true))} />
 							<MenuItem icon="cloud-download" text="Export SVG" onClick={() => dispatch(Actions.handleSaveSVG())} />
 						</Menu>
 					}>
@@ -40,9 +40,8 @@ const Toolbar: React.FC = () => {
 							<MenuItem icon="undo" text="Undo" onClick={() => dispatch(Actions.handleUndo())} />
 							<MenuItem icon="redo" text="Redo" onClick={() => dispatch(Actions.handleRedo())} />
 							<MenuDivider />
-							<MenuItem icon="cut" text="Cut" onClick={() => { }} />
-							<MenuItem icon="duplicate" text="Copy" onClick={() => dispatch(Actions.handleCopyState())} />
-							<MenuItem icon="clipboard" text="Paste" onClick={() => { }} />
+
+							<MenuItem icon="duplicate" text="Copy state" onClick={() => dispatch(Actions.handleCopyState())} />
 						</Menu>
 					}>
 					<Button text="Edit" />
