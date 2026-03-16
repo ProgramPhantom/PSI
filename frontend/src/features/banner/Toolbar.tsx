@@ -41,6 +41,7 @@ const Toolbar: React.FC = () => {
 							<MenuDivider />
 
 							<MenuItem icon="duplicate" text="Copy state" label="Ctrl+Shift+C" onClick={() => dispatch(Actions.handleCopyState())} />
+							<MenuItem icon="trash" text="Clear state" onClick={() => dispatch(Actions.handleClearState())} />
 						</Menu>
 					}>
 					<Button text="Edit" />
