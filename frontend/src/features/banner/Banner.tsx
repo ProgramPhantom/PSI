@@ -5,14 +5,12 @@ import { defaultLine } from "../../logic/default/index";
 import ENGINE from "../../logic/engine";
 import { ILineStyle } from "../../logic/line";
 import { useGetMeQuery } from "../../redux/api/api";
-import { useAppDispatch } from "../../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { AnnotateDropdown } from "./AnnotateDropdown";
 import * as Actions from "../dialog/actions";
+import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen } from "../../redux/slices/dialogSlice";
 
 export interface IBannerProps {
-	saveSVG: () => void;
-	savePNG: (width: number, height: number, filename: string) => void;
-
 	selectedTool: Tool;
 	setTool: (tool: Tool) => void;
 }
@@ -45,7 +43,7 @@ export default function Banner(props: IBannerProps) {
 					variant="minimal"
 					icon="folder-open"
 					text="Open"
-					onClick={() => Actions.openLoadDialog(dispatch)}
+					onClick={() => dispatch(setLoadDialogOpen(true))}
 				/>
 				<Navbar.Divider />
 				<Button
@@ -53,7 +51,7 @@ export default function Banner(props: IBannerProps) {
 					variant="minimal"
 					icon="download"
 					text="Download"
-					onClick={() => Actions.handleExportDiagramFile()}
+					onClick={() => dispatch(Actions.handleExportDiagramFile())}
 				/>
 				<Navbar.Divider />
 
@@ -63,7 +61,7 @@ export default function Banner(props: IBannerProps) {
 					variant="minimal"
 					icon="document"
 					text="New"
-					onClick={() => Actions.handleNewDiagram()}
+					onClick={() => dispatch(Actions.handleNewDiagram())}
 				/>
 				<Navbar.Divider />
 				<Button
@@ -71,14 +69,14 @@ export default function Banner(props: IBannerProps) {
 					variant="minimal"
 					icon="clean"
 					text="Save As"
-					onClick={() => Actions.openSaveAsDialog(dispatch)}
+					onClick={() => dispatch(setSaveAsDialogOpen(true))}
 				/>
 				<Navbar.Divider />
 				<Button
 					size="small"
 					variant="minimal"
 					icon="floppy-disk"
-					onClick={() => Actions.handleSaveDiagram(dispatch)}
+					onClick={() => dispatch(Actions.handleSaveDiagram())}
 				/>
 				<Navbar.Divider />
 				<Button
@@ -86,7 +84,7 @@ export default function Banner(props: IBannerProps) {
 					variant="minimal"
 					icon="trash"
 					text="Clear State"
-					onClick={() => Actions.handleClearState()}
+					onClick={() => dispatch(Actions.handleClearState())}
 				/>
 
 				<Navbar.Divider />
@@ -96,7 +94,7 @@ export default function Banner(props: IBannerProps) {
 					icon="undo"
 					text="Undo"
 					disabled={!ENGINE.handler.canUndo}
-					onClick={() => Actions.handleUndo()}
+					onClick={() => dispatch(Actions.handleUndo())}
 				/>
 				<Button
 					size="small"
@@ -104,7 +102,7 @@ export default function Banner(props: IBannerProps) {
 					icon="redo"
 					text="Redo"
 					disabled={!ENGINE.handler.canRedo}
-					onClick={() => Actions.handleRedo()}
+					onClick={() => dispatch(Actions.handleRedo())}
 				/>
 
 				<Navbar.Divider />
@@ -121,7 +119,7 @@ export default function Banner(props: IBannerProps) {
 						variant="minimal"
 						icon="cloud-download"
 						text="Save SVG"
-						onClick={Actions.handleSaveSVG}
+						onClick={() => dispatch(Actions.handleSaveSVG())}
 					/>
 					<Navbar.Divider />
 					<Button
@@ -129,7 +127,7 @@ export default function Banner(props: IBannerProps) {
 						variant="minimal"
 						icon="media"
 						text="Save PNG"
-						onClick={() => Actions.openPNGDialog(dispatch)}
+						onClick={() => dispatch(setPNGDialogOpen(true))}
 					/>
 				</Navbar.Group>
 			</Navbar.Group>
@@ -139,14 +137,14 @@ export default function Banner(props: IBannerProps) {
 					variant="minimal"
 					icon="folder-open"
 					text="Diagrams"
-					onClick={() => Actions.openDiagramsDialog(dispatch)}
+					onClick={() => dispatch(setDiagramsDialogOpen(true))}
 					style={{ marginRight: "10px" }}
 				/>
 				{user ? (
 					<Button
 						icon="user" intent="primary"
 						text={user.firstname || "User"}
-						onClick={() => Actions.openUserDialog(dispatch)}
+						onClick={() => dispatch(setUserDialogOpen(true))}
 						style={{ marginRight: "10px" }}
 					/>
 				) : (
@@ -154,7 +152,7 @@ export default function Banner(props: IBannerProps) {
 						variant="minimal"
 						icon="user"
 						text="Sign in"
-						onClick={() => Actions.openLoginDialog(dispatch)}
+						onClick={() => dispatch(setLoginDialogOpen(true))}
 						style={{ marginRight: "10px" }}
 					/>
 				)}
@@ -163,7 +161,7 @@ export default function Banner(props: IBannerProps) {
 					size="small"
 					variant="minimal"
 					icon="bug"
-					onClick={Actions.handleDebugIssue}
+					onClick={() => dispatch(Actions.handleDebugIssue())}
 				/>
 
 			</Navbar.Group>

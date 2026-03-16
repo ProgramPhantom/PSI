@@ -21,8 +21,7 @@ import Visual, { GridCellElement, IVisual } from "./visual";
 class ENGINE {
 	static SURFACE_ID: string = "surface"
 	static listeners: (() => void)[] = [];
-	static currentImageName: string = "newPulseImage.svg";
-	static StateName: string = "diagram-state";
+	static DiagramStoreName: string = "diagram-state";
 	static STATE: string | null = JSON.stringify(DEFAULT_DIAGRAM);
 
 	static assetStore: AssetStore = new AssetStore();
@@ -94,7 +93,7 @@ class ENGINE {
 	}
 
 	static clearState() {
-		localforage.removeItem(ENGINE.StateName);
+		localforage.removeItem(ENGINE.DiagramStoreName);
 	}
 
 	static resetDiagram() {

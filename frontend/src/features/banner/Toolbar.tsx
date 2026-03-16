@@ -2,6 +2,7 @@ import { Button, ButtonGroup, Colors, Menu, MenuDivider, MenuItem, Popover, Posi
 import React from "react";
 import { useAppDispatch } from "../../redux/hooks";
 import * as Actions from "../dialog/actions";
+import { setLoadDialogOpen, setSaveAsDialogOpen } from "../../redux/slices/dialogSlice";
 
 const Toolbar: React.FC = () => {
 	const dispatch = useAppDispatch();
@@ -22,10 +23,11 @@ const Toolbar: React.FC = () => {
 					position={Position.BOTTOM_LEFT}
 					content={
 						<Menu>
-							<MenuItem icon="document" text="New" onClick={() => Actions.handleNewDiagram()} />
-							<MenuItem text="Open..." onClick={() => Actions.openLoadDialog(dispatch)} />
-							<MenuItem text="Save" onClick={() => Actions.handleSaveDiagram(dispatch)} />
-							<MenuItem text="Save As..." onClick={() => Actions.openSaveAsDialog(dispatch)} />
+							<MenuItem icon="document" text="New" onClick={() => dispatch(Actions.handleNewDiagram())} />
+							<MenuItem icon="folder-open" text="Open..." onClick={() => dispatch(setLoadDialogOpen(true))} />
+							<MenuItem icon="floppy-disk" text="Save" onClick={() => dispatch(Actions.handleSaveDiagram())} />
+							<MenuItem icon="clean" text="Save As..." onClick={() => dispatch(setSaveAsDialogOpen(true))} />
+							<MenuItem icon="cloud-download" text="Export SVG" onClick={() => dispatch(Actions.handleSaveSVG())} />
 						</Menu>
 					}>
 					<Button text="File" />
@@ -35,12 +37,12 @@ const Toolbar: React.FC = () => {
 					position={Position.BOTTOM_LEFT}
 					content={
 						<Menu>
-							<MenuItem text="Undo" onClick={() => Actions.handleUndo()} />
-							<MenuItem text="Redo" onClick={() => Actions.handleRedo()} />
+							<MenuItem icon="undo" text="Undo" onClick={() => dispatch(Actions.handleUndo())} />
+							<MenuItem icon="redo" text="Redo" onClick={() => dispatch(Actions.handleRedo())} />
 							<MenuDivider />
-							<MenuItem text="Cut" onClick={() => { }} />
-							<MenuItem text="Copy" onClick={() => Actions.handleCopyState()} />
-							<MenuItem text="Paste" onClick={() => { }} />
+							<MenuItem icon="cut" text="Cut" onClick={() => { }} />
+							<MenuItem icon="duplicate" text="Copy" onClick={() => dispatch(Actions.handleCopyState())} />
+							<MenuItem icon="clipboard" text="Paste" onClick={() => { }} />
 						</Menu>
 					}>
 					<Button text="Edit" />
