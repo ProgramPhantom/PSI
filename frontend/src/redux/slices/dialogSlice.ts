@@ -60,6 +60,7 @@ export const {
     setLoginDialogOpen,
     setUserDialogOpen,
     setDiagramsDialogOpen,
+    setDebugLayerDialogOpen,
     setAssetStoreDialogOpen
 } = dialogSlice.actions;
 

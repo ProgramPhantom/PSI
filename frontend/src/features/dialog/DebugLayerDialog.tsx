@@ -1,60 +1,60 @@
 import { Checkbox, Dialog, DialogBody } from "@blueprintjs/core";
-import { AllComponentTypes } from "../../logic/point";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { toggleDebugSelectionType } from "../../redux/slices/applicationSlice";
+import { setDebugLayerDialogOpen } from "../../redux/slices/dialogSlice";
 
 
-interface IDebugLayerDialogProps {
-	debugSelection: Record<AllComponentTypes, boolean>;
-	setDebugSelection: (elementType: AllComponentTypes) => void;
-	open: boolean;
-	setOpen: (val: boolean) => void;
-}
+export function DebugLayerDialog() {
+	const dispatch = useAppDispatch();
+	const open = useAppSelector((state) => state.dialog.isDebugLayerDialogOpen);
+	const debugSelection = useAppSelector((state) => state.application.debugSelectionTypes);
 
-export function DebugLayerDialog(props: IDebugLayerDialogProps) {
 	return (
 		<Dialog
-			style={{width: "400px"}}
-			isOpen={props.open}
+			style={{ width: "400px" }}
+			isOpen={open}
 			onClose={() => {
-				props.setOpen(false);
+				dispatch(setDebugLayerDialogOpen(false));
 			}}
 			title="Debug Layers"
 			canOutsideClickClose={true}
 			canEscapeKeyClose={true}
 			icon="wrench">
 			<DialogBody style={{}}>
-				<div style={{display: "flex", flexDirection: "column"}}>
+				<div style={{ display: "flex", flexDirection: "column" }}>
 					<Checkbox
 						label="Pulses"
 						alignIndicator="end"
-						checked={props.debugSelection["svg"]}
+						checked={debugSelection["svg"]}
 						onChange={() => {
-							props.setDebugSelection("svg");
+							dispatch(toggleDebugSelectionType("svg"));
 						}}></Checkbox>
 					<Checkbox
 						label="Channels"
 						alignIndicator="end"
-						checked={props.debugSelection["channel"]}
+						checked={debugSelection["channel"]}
 						onChange={() => {
-							props.setDebugSelection("channel");
+							dispatch(toggleDebugSelectionType("channel"));
 						}}></Checkbox>
 
 					<Checkbox
 						label="Sequences"
 						alignIndicator="end"
-						checked={props.debugSelection["sequence"]}
+						checked={debugSelection["sequence"]}
 						onChange={() => {
-							props.setDebugSelection("sequence");
+							dispatch(toggleDebugSelectionType("sequence"));
 						}}></Checkbox>
 
 					<Checkbox
 						label="Diagram"
 						alignIndicator="end"
-						checked={props.debugSelection["diagram"]}
+						checked={debugSelection["diagram"]}
 						onChange={() => {
-							props.setDebugSelection("diagram");
+							dispatch(toggleDebugSelectionType("diagram"));
 						}}></Checkbox>
 				</div>
 			</DialogBody>
 		</Dialog>
 	);
 }
+

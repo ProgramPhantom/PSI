@@ -1,15 +1,17 @@
-import React, { StrictMode } from "react";
+import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
-import App from "./App.tsx";
-import { store, persistor } from "../redux/store.ts";
 import { PersistGate } from "redux-persist/integration/react";
+import { persistor, store } from "../redux/store.ts";
+import App from "./App.tsx";
 
 import { HotkeysProvider } from "@blueprintjs/core";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { MathJaxContext } from "better-react-mathjax";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { GoogleOAuthProvider } from "@react-oauth/google";
+
+import { AppShortcuts } from "./AppShortcuts.tsx";
 
 const CLIENT_ID = "243781410745-6en954mmd4gansujs91gsvq545pdedeg.apps.googleusercontent.com"
 
@@ -18,13 +20,15 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 		<DndProvider backend={HTML5Backend} debugMode={true}>
 			<Provider store={store}>
 				<HotkeysProvider>
-					<MathJaxContext>
-						<StrictMode>
-							<PersistGate loading={null} persistor={persistor}>
-								<App />
-							</PersistGate>
-						</StrictMode>
-					</MathJaxContext>
+					<AppShortcuts>
+						<MathJaxContext>
+							<StrictMode>
+								<PersistGate loading={null} persistor={persistor}>
+									<App />
+								</PersistGate>
+							</StrictMode>
+						</MathJaxContext>
+					</AppShortcuts>
 				</HotkeysProvider>
 			</Provider>
 		</DndProvider>

@@ -1,56 +1,30 @@
 import {
-	Button,
-	Colors,
-	EditableText,
-	HotkeyConfig,
-	Label,
-	Text,
-	useHotkeys
+	Button
 } from "@blueprintjs/core";
-import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedElementId } from "../../redux/slices/applicationSlice";
-import { setFileName } from "../../redux/slices/diagramSlice";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes } from "../../logic/point";
 import Visual from "../../logic/visual";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { setSelectedElementId, toggleDebugSelectionType } from "../../redux/slices/applicationSlice";
+import { setFileName } from "../../redux/slices/diagramSlice";
+import { setDebugLayerDialogOpen } from "../../redux/slices/dialogSlice";
+import { openDiagram } from "../../redux/thunks/diagramThunks";
+import Toolbar from "../banner/Toolbar";
 import Debug from "../debug/Debug";
+import { DebugLayerDialog } from "../dialog/DebugLayerDialog";
 import CanvasDraggableElement from "../dnd/CanvasDraggableElement";
 import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
 import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
+import GridDropField from "../dnd/GridDropField";
 import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
+import QuietUploadArea from "../QuietUploadArea";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
-import GridDropField from "../dnd/GridDropField";
-import QuietUploadArea from "../QuietUploadArea";
-import { openDiagram } from "../../redux/thunks/diagramThunks";
-import Toolbar from "../banner/Toolbar";
-import { DebugLayerDialog } from "../dialog/DebugLayerDialog";
 
-
-const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
-	// Types
-	svg: false,
-	text: false,
-	rect: false,
-	space: false,
-	line: false,
-	aligner: false,
-	collection: false,
-	channel: false,
-	"lower-abstract": false,
-	visual: false,
-	sequence: false,
-	label: false,
-	diagram: false,
-	"label-group": false,
-	"sequence-aligner": false,
-	grid: false,
-	subgrid: false
-};
 
 export interface ISelectConfig extends IToolConfig { }
 
@@ -98,10 +72,9 @@ const SeamlessPanner = () => {
 };
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
-	const [debugDialogOpen, setDebugDialogOpen] = useState(false);
+	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
+
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
-	const [debugSelectionTypes, setDebugSelectionTypes] =
-		useState<Record<AllComponentTypes, boolean>>(DefaultDebugSelection);
 	const [zoom, setZoom] = useState(2);
 	const fileName = useAppSelector((state) => state.diagram.fileName);
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
@@ -128,87 +101,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	}, [interactiveElement?.id]);
 
 
-	const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
-		() => [
-			{
-				combo: "ctrl+d",
-				global: true,
-				label: "Open debug dialog",
-				onKeyDown: () => {
-					setDebugDialogOpen(!debugDialogOpen);
-				},
-				preventDefault: true
-			},
-			{
-				combo: "delete",
-				global: true,
-				label: "Delete selected element",
-				onKeyDown: () => {
-					if (selectedElement) {
-						ENGINE.handler.act({
-							type: "remove",
-							input: {
-								child: selectedElement
-							}
-						})
-						deselect();
-					}
-				},
-				preventDefault: true
-			},
-			{
-				combo: "backspace",
-				global: true,
-				label: "Delete selected element",
-				onKeyDown: () => {
-					if (selectedElement) {
-						ENGINE.handler.act({
-							type: "remove",
-							input: {
-								child: selectedElement
-							}
-						})
-						deselect();
-					}
-				},
-				preventDefault: true
-			},
-			{
-				combo: "ctrl+z",
-				global: true,
-				label: "Undo",
-				onKeyDown: () => {
-					if (ENGINE.handler.canUndo) {
-						ENGINE.handler.undo();
-					}
-				},
-				preventDefault: true
-			},
-			{
-				combo: "ctrl+y",
-				global: true,
-				label: "Redo",
-				onKeyDown: () => {
-					if (ENGINE.handler.canRedo) {
-						ENGINE.handler.redo();
-					}
-				},
-				preventDefault: true
-			},
-		],
-		[debugDialogOpen, selectedElementId]
-	);
-	const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
-	const handleSetDebugSelection = (type: AllComponentTypes) => {
-		var newDebugSelection: Record<AllComponentTypes, boolean> = {
-			...debugSelectionTypes
-		};
-		newDebugSelection[type] = !newDebugSelection[type];
-		setDebugSelectionTypes(newDebugSelection);
-	};
-	const handleDialogClose = (val: boolean) => {
-		setDebugDialogOpen(val);
-	};
 	const { isDragging } = useDragLayer((monitor) => ({
 		isDragging: monitor.isDragging()
 	}));
@@ -493,11 +385,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 				</div>
 			</QuietUploadArea>
 
-			<DebugLayerDialog
-				open={debugDialogOpen}
-				setOpen={handleDialogClose}
-				debugSelection={debugSelectionTypes}
-				setDebugSelection={handleSetDebugSelection}></DebugLayerDialog>
+			<DebugLayerDialog />
 		</>
 	);
 };
