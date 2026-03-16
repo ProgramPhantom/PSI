@@ -98,7 +98,6 @@ class ENGINE {
 
 	static resetDiagram() {
 		ENGINE.handler.resetDiagram();
-		localStorage.removeItem("diagramUUID");
 	}
 
 	static getAssetRequirementsFromDiagram(): Set<string> {

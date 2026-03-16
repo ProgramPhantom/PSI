@@ -6,13 +6,25 @@ import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
 import { RootState } from "../rootReducer";
 import { saveDiagram } from "./diagramThunks";
+import { v4 as uuidv4 } from "uuid";
+import { setDiagramUUID } from "../slices/diagramSlice";
+
 
 // --- Logic Handlers ---
 
 export const handleNewDiagram = createAsyncThunk(
     'actions/handleNewDiagram',
-    async () => {
+    async (_, thunkAPI) => {
         ENGINE.resetDiagram();
+        const newUUID = uuidv4()
+
+        thunkAPI.dispatch(setDiagramUUID(newUUID))
+
+        appToaster.show({
+            "message": "New diagram created",
+            "intent": "success",
+            "icon": "clean"
+        })
     }
 );
 
@@ -28,8 +40,17 @@ export const handleExportDiagramFile = createAsyncThunk(
     async (_, { getState }) => {
         const state = getState() as RootState;
         const fileName = state.diagram.fileName;
+        const UUID = state.diagram.diagramUUID
 
-        saveDiagramFile(fileName);
+        if (UUID === undefined) {
+            appToaster.show({
+                "message": "No diagram loaded",
+                "intent": "warning"
+            })
+            return
+        }
+
+        saveDiagramFile(fileName, UUID);
 
         appToaster.show({
             message: `Diagram file downloaded as ${fileName}.nmrd`,

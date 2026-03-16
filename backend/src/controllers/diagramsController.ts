@@ -1,10 +1,8 @@
-import type { Request, Response, NextFunction } from 'express';
-import { DiagramRepository } from '../repositories/DiagramRepository.js';
-import { v7 as uuidv7 } from 'uuid';
-import { z } from 'zod';
-import type { JsonObject } from '../db/db.js';
+import type { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import { z } from 'zod';
+import { DiagramRepository } from '../repositories/DiagramRepository.js';
 
 const STORAGE_DIR = path.join(process.cwd(), 'storage', 'diagrams');
 
@@ -12,6 +10,7 @@ const STORAGE_DIR = path.join(process.cwd(), 'storage', 'diagrams');
 
 const CreateDiagramSchema = z.object({
   name: z.string().min(1),
+  id: z.uuid(),
 });
 const IdSchema = z.uuid();
 
@@ -114,16 +113,18 @@ export const putSaveDiagram = async (
       //else you don't own it
     } else {
       //copy it with a new owner and Id
-      const newId = uuidv7();
-      const copyResponse = await DiagramRepository.copyDiagramToOwnerById(resource, newId, req.session.gsub!)
-      if (copyResponse) {
-        //copy succeeded
-        fs.renameSync(req.file.path, path.join(STORAGE_DIR, `${newId}.nmrd`));
-        res.status(200).json({ message: "Success: Copied to your own diagrams", savedDiagramId: newId, copied: true })
-      } else {
-        if (req.file) fs.unlinkSync(req.file.path);
-        throw new Error("Copy failed for some reason")
-      }
+      // TODO: needs refactoring. We need to insert the new UUID into the file
+      // as well as copying
+      // const newId = uuidv7();
+      // const copyResponse = await DiagramRepository.copyDiagramToOwnerById(resource, newId, req.session.gsub!)
+      // if (copyResponse) {
+      //   //copy succeeded
+      //   fs.renameSync(req.file.path, path.join(STORAGE_DIR, `${newId}.nmrd`));
+      //   res.status(200).json({ message: "Success: Copied to your own diagrams", savedDiagramId: newId, copied: true })
+      // } else {
+      //   if (req.file) fs.unlinkSync(req.file.path);
+      //   throw new Error("Copy failed for some reason")
+      // }
     }
 
   } catch (error) {
@@ -147,15 +148,13 @@ export const postCreateDiagram = async (
       res.status(401).json({ message: 'Authentication required' });
       return;
     }
-    //create a blank diagram belonging to the logged in user
-    const id = uuidv7();
     const result = CreateDiagramSchema.safeParse(req.body);
     if (!result.success) {
       if (req.file) fs.unlinkSync(req.file.path);
       res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
-    const { name } = result.data;
+    const { name, id } = result.data;
 
     if (!req.file) {
       res.status(400).json({ message: 'No file uploaded' });
@@ -171,8 +170,7 @@ export const postCreateDiagram = async (
     if (dbResponse) {
       fs.renameSync(req.file.path, path.join(STORAGE_DIR, `${dbResponse.diagram_id}.nmrd`));
       res.status(201).json({
-        message: 'Success: diagram created',
-        id: dbResponse.diagram_id,
+        message: 'Success: diagram created'
       });
     } else {
       if (req.file) fs.unlinkSync(req.file.path);

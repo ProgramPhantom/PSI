@@ -84,7 +84,6 @@ function App() {
 	});
 
 
-
 	// Set up automatic saving every 2 seconds
 	// useEffect(() => {
 	//   const interval = setInterval(() => {
@@ -98,8 +97,6 @@ function App() {
 	const setTool = (tool: Tool) => {
 		setSelectedTool(tool);
 	};
-
-
 
 
 	const canvas: ReactNode = (
