@@ -1,9 +1,9 @@
-import {Button, Dialog, DialogBody, DialogFooter} from "@blueprintjs/core";
-import {useEffect, useState} from "react";
+import { Button, Dialog, DialogBody, DialogFooter } from "@blueprintjs/core";
+import { useEffect, useState } from "react";
 
-interface IWelcomeSplashProps {}
+interface IWelcomeSplashProps { }
 
-export function WelcomeSplash(props: IWelcomeSplashProps) {
+export function WelcomeDialog(props: IWelcomeSplashProps) {
 	const [isWelcomeOpen, setIsWelcomeOpen] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -33,7 +33,7 @@ export function WelcomeSplash(props: IWelcomeSplashProps) {
 				</p>
 				<p>
 					<strong>Credits:</strong> Developed by Henry Varley with contributions from:
-					Gabriel Vilella Nilsson
+					Conrad Robinson, Gabriel Vilella Nilsson
 				</p>
 			</DialogBody>
 

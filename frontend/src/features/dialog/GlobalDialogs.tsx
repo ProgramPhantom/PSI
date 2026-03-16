@@ -14,6 +14,7 @@ import { LoginDialog } from "../banner/LoginDialog";
 import { UserDialog } from "../banner/UserDrawer";
 import { DiagramsDialog } from "../banner/DiagramsDialog";
 import { SaveAsDialog } from "../banner/SaveAsDialog";
+import { WelcomeDialog } from "./WelcomeDialog";
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -28,6 +29,8 @@ export const GlobalDialogs: React.FC = () => {
 
     return (
         <>
+            <WelcomeDialog></WelcomeDialog>
+
             <PNGExportDialog
                 close={() => dispatch(setPNGDialogOpen(false))}
                 isOpen={isPNGDialogOpen}
