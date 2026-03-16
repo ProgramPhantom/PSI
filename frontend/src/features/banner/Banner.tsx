@@ -156,14 +156,6 @@ export default function Banner(props: IBannerProps) {
 						style={{ marginRight: "10px" }}
 					/>
 				)}
-
-				<Button
-					size="small"
-					variant="minimal"
-					icon="bug"
-					onClick={() => dispatch(Actions.handleDebugIssue())}
-				/>
-
 			</Navbar.Group>
 
 		</Navbar>

@@ -2,7 +2,7 @@ import { Button, ButtonGroup, Colors, Menu, MenuDivider, MenuItem, Popover, Posi
 import React from "react";
 import { useAppDispatch } from "../../redux/hooks";
 import * as Actions from "../../redux/thunks/actionThunks";
-import { setLoadDialogOpen, setSaveAsDialogOpen } from "../../redux/slices/dialogSlice";
+import { setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen } from "../../redux/slices/dialogSlice";
 
 const Toolbar: React.FC = () => {
 	const dispatch = useAppDispatch();
@@ -27,7 +27,6 @@ const Toolbar: React.FC = () => {
 							<MenuItem icon="folder-open" text="Open..." onClick={() => dispatch(setLoadDialogOpen(true))} />
 							<MenuItem icon="blank" text="Save" onClick={() => dispatch(Actions.handleSaveDiagram())} />
 							<MenuItem icon="floppy-disk" text="Save As..." onClick={() => dispatch(setSaveAsDialogOpen(true))} />
-							<MenuItem icon="cloud-download" text="Export SVG" onClick={() => dispatch(Actions.handleSaveSVG())} />
 						</Menu>
 					}>
 					<Button text="File" />
@@ -45,6 +44,31 @@ const Toolbar: React.FC = () => {
 						</Menu>
 					}>
 					<Button text="Edit" />
+				</Popover>
+				<Popover hoverOpenDelay={0} interactionKind="hover"
+					hoverCloseDelay={0} minimal={true}
+					position={Position.BOTTOM_LEFT}
+					content={
+						<Menu>
+							<MenuItem icon="cloud-download" text="Export SVG" onClick={() => dispatch(Actions.handleSaveSVG())} />
+							<MenuItem icon="media" text="Export PNG" onClick={() => dispatch(setPNGDialogOpen(true))} />
+							<MenuDivider />
+							<MenuItem icon="document-share" text="Export .nmrd" onClick={() => dispatch(Actions.handleExportDiagramFile())} />
+						</Menu>
+					}>
+					<Button text="Export" />
+				</Popover>
+				<Popover hoverOpenDelay={0} interactionKind="hover"
+					hoverCloseDelay={0} minimal={true}
+					position={Position.BOTTOM_LEFT}
+					content={
+						<Menu>
+							<MenuItem icon="bug" text="Report bug" onClick={() => dispatch(Actions.handleDebugIssue())} />
+							<MenuDivider />
+							<MenuItem icon="info-sign" text="About" onClick={() => { }} />
+						</Menu>
+					}>
+					<Button text="Help" />
 				</Popover>
 			</ButtonGroup>
 		</div>

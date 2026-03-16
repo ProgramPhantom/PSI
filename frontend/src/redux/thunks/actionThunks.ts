@@ -25,10 +25,14 @@ export const handleSaveDiagram = createAsyncThunk(
 
 export const handleExportDiagramFile = createAsyncThunk(
     'actions/handleExportDiagramFile',
-    async () => {
-        saveDiagramFile();
+    async (_, { getState }) => {
+        const state = getState() as RootState;
+        const fileName = state.diagram.fileName;
+
+        saveDiagramFile(fileName);
+
         appToaster.show({
-            message: "Diagram file downloaded",
+            message: `Diagram file downloaded as ${fileName}.nmrd`,
             intent: "success"
         });
     }

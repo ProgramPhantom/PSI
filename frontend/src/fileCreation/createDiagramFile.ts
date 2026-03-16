@@ -33,9 +33,11 @@ export async function createDiagramFile(): Promise<JSZip> {
     return zip
 }
 
-export async function saveDiagramFile() {
+export async function saveDiagramFile(fileName: string = "diagram") {
     const file = await createDiagramFile()
     const blob = await file.generateAsync({ type: "blob" });
 
-    downloadBlob(blob, "diagram.nmrd");
+    // Ensure the extension is correct
+    const finalFileName = fileName.endsWith(".nmrd") ? fileName : `${fileName}.nmrd`;
+    downloadBlob(blob, finalFileName);
 }
