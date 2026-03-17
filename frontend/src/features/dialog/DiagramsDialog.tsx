@@ -1,6 +1,6 @@
-import { Button, Dialog, DialogBody, DialogFooter, HTMLTable, Icon, Menu, MenuItem, NonIdealState, Popover, Spinner } from "@blueprintjs/core";
+import { Button, Classes, Dialog, DialogBody, DialogFooter, HTMLTable, NonIdealState, Spinner, Section, SectionCard, SpinnerSize } from "@blueprintjs/core";
 import { More } from "@blueprintjs/icons";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { appToaster } from "../../app/Toaster";
 import { BLANK_DIAGRAM } from "../../logic/default/blankDiagram";
 import { DEFAULT_DIAGRAM } from "../../logic/default/defaultDiagram";
@@ -53,15 +53,24 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
     const [deleteDiagramTrigger] = useDeleteDiagramMutation();
     const dispatch = useAppDispatch();
 
-    const handleSelect = async (entry: DiagramDTO) => {
+    const [selectedDiagram, setSelectedDiagram] = useState<DiagramDTO | null>(null);
+
+    useEffect(() => {
+        if (!props.isOpen) {
+            setSelectedDiagram(null);
+        }
+    }, [props.isOpen]);
+
+    const handleOpen = async () => {
+        if (!selectedDiagram) return;
         let success: boolean = true;
 
-        if (entry.diagram_id === undefined) {
+        if (selectedDiagram.diagram_id === undefined) {
             success = false;
         } else {
             try {
                 // Get diagram via thunk
-                await dispatch(loadDiagram(entry.diagram_id)).unwrap();
+                await dispatch(loadDiagram(selectedDiagram.diagram_id)).unwrap();
             } catch (err) {
                 success = false
                 console.error(err);
@@ -78,17 +87,16 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         props.onClose();
     };
 
-    const handleDelete = async (entry: DiagramDTO) => {
+    const handleDelete = async () => {
+        if (!selectedDiagram) return;
         let success: boolean = true;
 
-        if (entry.diagram_id === undefined) {
+        if (selectedDiagram.diagram_id === undefined) {
             success = false;
         } else {
             try {
-                await deleteDiagramTrigger(entry.diagram_id).unwrap();
-                // await dispatch(deleteDiagramServerThunk(entry.diagram_id)).unwrap();
-                // refetch diagram list to update UI
-                // refetchDiagrams();
+                await deleteDiagramTrigger(selectedDiagram.diagram_id).unwrap();
+                setSelectedDiagram(null);
             } catch (error) {
                 success = false;
             }
@@ -108,67 +116,112 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         }
     }, [props.isOpen, refetchDiagrams])
 
+    const renderCloudTable = () => {
+        if (isLoading) {
+            return (
+                <div style={{ padding: "16px" }}>
+                    <NonIdealState description="Loading diagrams" icon={<Spinner size={SpinnerSize.STANDARD} />} />
+                </div>
+            );
+        }
+        if (!data?.diagrams || data.diagrams.length === 0) {
+            return (
+            <div style={{ padding: "16px" }}>
+                <NonIdealState description="No cloud diagrams found" icon={<More />} />
+            </div>)
+        }
+        return (
+            <HTMLTable bordered striped interactive style={{ width: "100%", margin: 0 }}>
+                <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date Modified</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.diagrams.map((entry, i) => {
+                        const isSelected = selectedDiagram?.diagram_id === entry.diagram_id;
+                        return (
+                            <tr
+                                key={entry.diagram_id || i}
+                                onClick={() => setSelectedDiagram(entry)}
+                                className={isSelected ? Classes.INTENT_PRIMARY : undefined}
+                                style={{ cursor: "pointer" }}
+                            >
+                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name || "Untitled"}</td>
+                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>today</td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </HTMLTable>
+        );
+    };
+
     return (
         <Dialog
             isOpen={props.isOpen}
             onClose={props.onClose}
             title="Open a diagram"
-            style={{ width: "700px", height: "600px" }}
+            style={{ width: "900px", height: "800px" }}
         >
-            <DialogBody style={{ padding: "8px", overflowY: "auto" }}>
-                {!isLoading && <HTMLTable bordered striped interactive style={{ width: "100%" }}>
-                    <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
-                        <tr>
-                            <th>Name</th>
-                            <th>Date Modified</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data?.diagrams?.map((entry, i) => (
-                            <tr
-                                key={`${entry.diagram_id + Math.random().toString()}`}
-                                onClick={() => handleSelect(entry)}
-                                style={{ cursor: "pointer" }}
-                            >
-                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name}</td>
-                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>today</td>
-                                <td onClick={(c) => {
-                                    c.preventDefault()
-                                    c.stopPropagation()
-                                }}
-                                    style={{ paddingTop: 4, paddingBottom: 4, width: "16px" }}>
-                                    <Popover
-                                        minimal={true}
-                                        interactionKind="click"
-                                        placement="bottom-start"
-                                        content={
-                                            <Menu>
-                                                <MenuItem icon="trash" onClick={() => handleDelete(entry)}
-                                                    intent="danger" text="Delete" />
-                                            </Menu>
-                                        }
-                                        renderTarget={({ isOpen, ...targetProps }) => (
-                                            <Icon {...targetProps} size={16}
-                                                icon="more" />
-                                        )}
-                                    />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </HTMLTable>}
+            <DialogBody style={{ padding: 0, display: "flex", overflow: "hidden" }}>
+                {/* Left Area (Tables) */}
+                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", padding: "16px", gap: "24px" }}>
+                    <Section icon="cloud"
+                        title="Cloud Diagrams" 
+                        collapsible={false} 
+                        style={{ flexShrink: 0 }}
+                    >
+                        <SectionCard style={{ padding: 0, overflow: "hidden" }}>
+                            {renderCloudTable()}
+                        </SectionCard>
+                    </Section>
 
-                <div>
-                    {data?.diagrams?.length == 0 &&
-                        <NonIdealState description="No diagrams saved" icon={<More></More>}></NonIdealState>}
+                    <Section icon="target"
+                        title="Local diagrams"
+                        collapsible={true}
+                        style={{ marginTop: "auto" }}
+                    >
+                        <SectionCard style={{ padding: 0 }}>
+                            <div style={{ padding: "16px" }}>
+                                <NonIdealState 
+                                    description="No local diagrams saved" 
+                                    icon="offline" 
+                                />
+                            </div>
+                        </SectionCard>
+                    </Section>
+                </div>
 
-                    {data?.diagrams?.length != 0 && isLoading && <>
-                        <div style={{
-                        }}>
-                            <NonIdealState description="Loading diagrams" icon={<Spinner></Spinner>}></NonIdealState>
+                {/* Right Area (Side Panel) */}
+                <div style={{ 
+                    width: "250px", 
+                    borderLeft: "1px solid var(--pt-divider-black)", 
+                    padding: "16px", 
+                    display: "flex", 
+                    flexDirection: "column",
+                    background: "var(--pt-app-background-color)"
+                }}>
+                    {selectedDiagram ? (
+                        <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                            <div>
+                                <h4 className="bp5-heading">{selectedDiagram.name || "Untitled"}</h4>
+                                <div className="bp5-text-muted bp5-text-small" style={{ marginBottom: "16px" }}>
+                                    ID: {selectedDiagram.diagram_id}
+                                </div>
+                            </div>
+                            
+                            <div style={{ flex: 1 }}></div>
+
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                <Button intent="primary" fill text="Open" onClick={handleOpen} />
+                                <Button intent="danger" fill text="Delete" onClick={handleDelete} />
+                            </div>
                         </div>
-                    </>}
+                    ) : (
+                        <NonIdealState description="Select a diagram" icon="hand-up" />
+                    )}
                 </div>
             </DialogBody>
             <DialogFooter
