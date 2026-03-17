@@ -91,7 +91,7 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
             if (asNew) {
                 // Save As
                 const formData = new FormData();
-                formData.append("name", stateObject.ref);
+                formData.append("name", state.diagram.fileName);
                 formData.append("id", currentUUID);
                 formData.append("file", zipFile);
 
@@ -112,7 +112,7 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
                 } catch (error) {
                     // Fallback to Create/Save As if PUT fails
                     const fallbackFormData = new FormData();
-                    fallbackFormData.append("name", stateObject.ref);
+                    fallbackFormData.append("name", state.diagram.fileName);
                     fallbackFormData.append("file", zipFile);
 
                     await thunkAPI.dispatch(createDiagramServerThunk({ formData: fallbackFormData })).unwrap();
@@ -132,7 +132,13 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
 export const saveDiagram = createAsyncThunk<void, boolean>(
     'application/saveDiagram',
     async (saveAs, thunkAPI) => {
-        const stateObject: IDiagram = ENGINE.handler.diagram.state;
+        const diagramStateObject: IDiagram = ENGINE.handler.diagram.state;
+
+        if (saveAs) {
+            const newUUID = uuidv7();
+            thunkAPI.dispatch(setDiagramUUID(newUUID));
+        }
+
         const state = thunkAPI.getState() as RootState;
         let currentUUID = state.diagram.diagramUUID;
 
@@ -144,6 +150,8 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
             return
         }
 
+
+
         try {
             const file = await createDiagramFile(currentUUID);
             const blob = await file.generateAsync({ type: "blob" });
@@ -152,7 +160,7 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
             console.error("Failed to save local diagram file:", error);
         }
 
-        await thunkAPI.dispatch(uploadDiagram({ stateObject, asNew: saveAs }));
+        await thunkAPI.dispatch(uploadDiagram({ stateObject: diagramStateObject, asNew: saveAs }));
     },
 
 );

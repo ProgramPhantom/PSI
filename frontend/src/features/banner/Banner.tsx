@@ -5,10 +5,9 @@ import { defaultLine } from "../../logic/default/index";
 import ENGINE from "../../logic/engine";
 import { ILineStyle } from "../../logic/line";
 import { useGetMeQuery } from "../../redux/api/api";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { AnnotateDropdown } from "./AnnotateDropdown";
-import * as Actions from "../../redux/thunks/actionThunks";
+import { useAppDispatch } from "../../redux/hooks";
 import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen } from "../../redux/slices/dialogSlice";
+import * as Actions from "../../redux/thunks/actionThunks";
 
 export interface IBannerProps {
 	selectedTool: Tool;
