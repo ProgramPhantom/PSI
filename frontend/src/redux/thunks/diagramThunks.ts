@@ -155,7 +155,8 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
         try {
             const file = await createDiagramFile(currentUUID);
             const blob = await file.generateAsync({ type: "blob" });
-            await localforage.setItem(ENGINE.DiagramStoreName, blob);
+
+            await localforage.setItem(`diagram-${currentUUID}`, blob);
         } catch (error) {
             console.error("Failed to save local diagram file:", error);
         }

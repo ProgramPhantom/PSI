@@ -13,7 +13,7 @@ import ElementsDraw from "../features/elementDraw/ElementsDraw";
 import Form from "../features/Form";
 import ENGINE from "../logic/engine";
 import { api } from "../redux/api/api";
-import { useAppDispatch } from "../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { initialiseAssets } from "../redux/thunks/assetThunks";
 import { openDiagram } from "../redux/thunks/diagramThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
@@ -29,6 +29,7 @@ export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDr
 
 function App() {
 	const dispatch = useAppDispatch();
+	const diagramUUID = useAppSelector(state => state.diagram.diagramUUID);
 
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
@@ -55,7 +56,7 @@ function App() {
 			if (isMounted) {
 				// 4. Open local diagram file
 				try {
-					const blob = await localforage.getItem<Blob>(ENGINE.DiagramStoreName);
+					const blob = diagramUUID ? await localforage.getItem<Blob>(`diagram-${diagramUUID}`) : null;
 					if (blob) {
 						const file = new File([blob], "local-diagram.nmrd");
 						await dispatch(openDiagram(file)).unwrap();
