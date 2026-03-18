@@ -8,7 +8,7 @@ import { loadAsset } from "./assetThunks";
 import JSZip from "jszip";
 import localforage from "localforage";
 import { createDiagramFile } from "../../fileCreation/createDiagramFile";
-import { setDiagramUUID, setFileName } from "../slices/diagramSlice";
+import { setDiagramUUID, setFileName, addRecentDiagram } from "../slices/diagramSlice";
 import { v7 as uuidv7 } from "uuid";
 
 
@@ -150,6 +150,13 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
             return
         }
 
+        if (saveAs) {
+            thunkAPI.dispatch(addRecentDiagram({
+                name: state.diagram.fileName,
+                diagramUUID: currentUUID,
+                opened: new Date().toISOString()
+            }));
+        }
 
 
         try {
@@ -230,6 +237,14 @@ export const openDiagram = createAsyncThunk<void, File>(
                     const manifestData = JSON.parse(manifestString);
                     if (manifestData.UUID) {
                         thunkAPI.dispatch(setDiagramUUID(manifestData.UUID));
+
+                        const diagramName = manifestData.name || file.name.replace(".nmrd", "") || "unnamed";
+                        thunkAPI.dispatch(setFileName(diagramName));
+                        thunkAPI.dispatch(addRecentDiagram({
+                            name: diagramName,
+                            diagramUUID: manifestData.UUID,
+                            opened: new Date().toISOString()
+                        }));
                     } else {
                         console.error(`Diagram does not contain ID`)
                     }
@@ -244,6 +259,8 @@ export const openDiagram = createAsyncThunk<void, File>(
                 message: "Diagram loaded successfully",
                 intent: "success"
             });
+            
+            await thunkAPI.dispatch(saveDiagram(false));
         } catch (error) {
             console.error("Failed to load diagram:", error);
             appToaster.show({

@@ -10,7 +10,7 @@ import {
     setAssetStoreDialogOpen
 } from "../../redux/slices/dialogSlice";
 import { PNGExportDialog } from "./PNGExportDialog";
-import { LoadStateDialog } from "./LoadStateDialog";
+import { LoadDiagramFileDialog } from "./LoadDiagramFileDialog";
 import { LoginDialog } from "./LoginDialog";
 import { UserDialog } from "../banner/UserDrawer";
 import { DiagramsDialog } from "./DiagramsDialog";
@@ -39,7 +39,7 @@ export const GlobalDialogs: React.FC = () => {
                 isOpen={isPNGDialogOpen}
             />
 
-            <LoadStateDialog
+            <LoadDiagramFileDialog
                 close={() => dispatch(setLoadDialogOpen(false))}
                 isOpen={isLoadDialogOpen}
             />
