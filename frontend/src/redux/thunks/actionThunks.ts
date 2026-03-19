@@ -8,9 +8,19 @@ import { RootState } from "../rootReducer";
 import { saveDiagram } from "./diagramThunks";
 import { v4 as uuidv4 } from "uuid";
 import { setDiagramSource, setDiagramUUID } from "../slices/diagramSlice";
+import localforage from "localforage";
 
 
 // --- Logic Handlers ---
+
+export const resetApp = createAsyncThunk(
+    'actions/resetApp',
+    async () => {
+        localStorage.clear();
+        await localforage.clear();
+        window.location.reload();
+    }
+);
 
 export const handleNewDiagram = createAsyncThunk(
     'actions/handleNewDiagram',
