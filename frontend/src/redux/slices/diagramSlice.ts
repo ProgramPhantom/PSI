@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from "uuid";
+import { DiagramSource } from '../../types/diagram';
 
 
 export interface RecentDiagram {
@@ -13,6 +14,7 @@ export interface DiagramInfoState {
     diagramUUID: string | undefined;
     saveState: 'saved' | 'unsaved' | 'saving';
     recentDiagrams: RecentDiagram[];
+    diagramSource: DiagramSource;
 }
 
 const initialState: DiagramInfoState = {
@@ -20,6 +22,7 @@ const initialState: DiagramInfoState = {
     diagramUUID: undefined,
     saveState: 'saved',
     recentDiagrams: [],
+    diagramSource: "local"
 };
 
 export const diagramSlice = createSlice({
@@ -44,9 +47,12 @@ export const diagramSlice = createSlice({
         removeRecentDiagram: (state, action: PayloadAction<string>) => {
             state.recentDiagrams = state.recentDiagrams.filter(d => d.diagramUUID !== action.payload);
         },
+        setDiagramSource: (state, action: PayloadAction<DiagramSource>) => {
+            state.diagramSource = action.payload
+        }
     },
 });
 
-export const { setFileName, setDiagramUUID, setSaveState, addRecentDiagram, removeRecentDiagram } = diagramSlice.actions;
+export const { setFileName, setDiagramUUID, setSaveState, addRecentDiagram, removeRecentDiagram, setDiagramSource } = diagramSlice.actions;
 
 export default diagramSlice.reducer;

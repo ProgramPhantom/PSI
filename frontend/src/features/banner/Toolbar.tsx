@@ -7,7 +7,7 @@ import { setFileName } from "../../redux/slices/diagramSlice";
 
 const Toolbar: React.FC = () => {
 	const dispatch = useAppDispatch();
-	const { fileName, diagramUUID, saveState } = useAppSelector((state) => state.diagram);
+	const { fileName, diagramUUID, saveState, diagramSource } = useAppSelector((state) => state.diagram);
 
 	return (
 		<div
@@ -21,7 +21,7 @@ const Toolbar: React.FC = () => {
 			}}>
 			<div style={{ flex: 1, display: "flex", alignItems: "center" }}>
 				<ButtonGroup variant="outlined" size="small">
-					<Popover hoverOpenDelay={0} interactionKind="hover" minimal={true}
+					<Popover hoverOpenDelay={0} interactionKind="click" minimal={true}
 						hoverCloseDelay={0}
 						position={Position.BOTTOM_LEFT}
 						content={
@@ -34,7 +34,7 @@ const Toolbar: React.FC = () => {
 						}>
 						<Button text="File" />
 					</Popover>
-					<Popover hoverOpenDelay={0} interactionKind="hover"
+					<Popover hoverOpenDelay={0} interactionKind="click"
 						hoverCloseDelay={0} minimal={true}
 						position={Position.BOTTOM_LEFT}
 						content={
@@ -49,7 +49,7 @@ const Toolbar: React.FC = () => {
 						}>
 						<Button text="Edit" />
 					</Popover>
-					<Popover hoverOpenDelay={0} interactionKind="hover"
+					<Popover hoverOpenDelay={0} interactionKind="click"
 						hoverCloseDelay={0} minimal={true}
 						position={Position.BOTTOM_LEFT}
 						content={
@@ -62,14 +62,14 @@ const Toolbar: React.FC = () => {
 						}>
 						<Button text="Export" />
 					</Popover>
-					<Popover hoverOpenDelay={0} interactionKind="hover"
+					<Popover hoverOpenDelay={0} interactionKind="click"
 						hoverCloseDelay={0} minimal={true}
 						position={Position.BOTTOM_LEFT}
 						content={
 							<Menu>
 								<MenuItem icon="bug" text="Report bug" label="Ctrl+B" onClick={() => dispatch(Actions.handleDebugIssue())} />
 								<MenuDivider />
-								<MenuItem icon="info-sign" text="About" onClick={() => { }} />
+								<MenuItem icon="info-sign" text="About" active={false} disabled={true} onClick={() => { }} />
 							</Menu>
 						}>
 						<Button text="Help" />
@@ -99,6 +99,9 @@ const Toolbar: React.FC = () => {
 					{saveState !== 'saved' && <span style={{ marginLeft: "2px" }}>*</span>}
 				</div>
 
+				<Tooltip content={diagramSource === "server" ? "Saved on server" : "Saved locally"} position={Position.BOTTOM}>
+					<Icon icon={diagramSource === "server" ? "cloud" : "floppy-disk"} size={14} style={{ marginLeft: "6px", marginBottom: "2px", color: Colors.GRAY3 }} />
+				</Tooltip>
 				<Tooltip content={diagramUUID || "No UUID"} position={Position.BOTTOM}>
 					<Icon icon="info-sign" size={12} style={{ marginLeft: "6px", marginBottom: "2px", cursor: "help", color: Colors.GRAY3 }} />
 				</Tooltip>

@@ -1,8 +1,9 @@
 import JSZip from "jszip";
 import { downloadBlob } from "../logic/util2";
 import ENGINE from "../logic/engine";
+import { DiagramSource, IDiagramMetadata } from "../types/diagram";
 
-export async function createDiagramFile(diagramUUID: string): Promise<JSZip> {
+export async function createDiagramFile(metadata: IDiagramMetadata): Promise<JSZip> {
     const zip = new JSZip();
 
     zip.file("diagram.json", JSON.stringify(ENGINE.diagramState, null, 2));
@@ -25,10 +26,12 @@ export async function createDiagramFile(diagramUUID: string): Promise<JSZip> {
         assetsFolder.file(`${id}.json`, JSON.stringify({ ref: refObj.ref }));
     }
 
-    const manifest: any = {
+    const manifest: IDiagramMetadata = {
         format: "nmr-pulse-diagram",
         version: 1,
-        UUID: diagramUUID
+        UUID: metadata.UUID,
+        source: metadata.source,
+        diagramName: metadata.diagramName
     };
 
     zip.file("manifest.json", JSON.stringify(manifest));
@@ -36,8 +39,8 @@ export async function createDiagramFile(diagramUUID: string): Promise<JSZip> {
     return zip
 }
 
-export async function saveDiagramFile(fileName: string = "diagram", diagramUUID: string) {
-    const file = await createDiagramFile(diagramUUID)
+export async function saveDiagramFile(fileName: string = "diagram", metadata: IDiagramMetadata) {
+    const file = await createDiagramFile(metadata)
     const blob = await file.generateAsync({ type: "blob" });
 
     // Ensure the extension is correct

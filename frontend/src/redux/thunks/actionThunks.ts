@@ -7,7 +7,7 @@ import { IDiagram } from "../../logic/hasComponents/diagram";
 import { RootState } from "../rootReducer";
 import { saveDiagram } from "./diagramThunks";
 import { v4 as uuidv4 } from "uuid";
-import { setDiagramUUID } from "../slices/diagramSlice";
+import { setDiagramSource, setDiagramUUID } from "../slices/diagramSlice";
 
 
 // --- Logic Handlers ---
@@ -19,6 +19,7 @@ export const handleNewDiagram = createAsyncThunk(
         const newUUID = uuidv4()
 
         thunkAPI.dispatch(setDiagramUUID(newUUID))
+        thunkAPI.dispatch(setDiagramSource("local"))
 
         appToaster.show({
             "message": "New diagram created",
@@ -50,7 +51,11 @@ export const handleExportDiagramFile = createAsyncThunk(
             return
         }
 
-        saveDiagramFile(fileName, UUID);
+        saveDiagramFile(fileName, {
+            UUID: UUID,
+            source: "local",
+            diagramName: fileName
+        });
 
         appToaster.show({
             message: `Diagram file downloaded as ${fileName}.nmrd`,
