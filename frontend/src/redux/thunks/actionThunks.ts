@@ -31,7 +31,7 @@ export const handleNewDiagram = createAsyncThunk(
 export const handleSaveDiagram = createAsyncThunk(
     'actions/handleSaveDiagram',
     async (_, { dispatch }) => {
-        dispatch(saveDiagram(false) as any);
+        dispatch(saveDiagram(false));
     }
 );
 

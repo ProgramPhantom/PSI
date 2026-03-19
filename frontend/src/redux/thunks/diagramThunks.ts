@@ -168,7 +168,6 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
 
         await thunkAPI.dispatch(uploadDiagram({ stateObject: diagramStateObject, asNew: saveAs }));
     },
-
 );
 
 export const openDiagram = createAsyncThunk<void, File>(

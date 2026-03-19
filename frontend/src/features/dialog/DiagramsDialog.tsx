@@ -15,7 +15,6 @@ export interface IDiagramsDialogProps {
     onClose: () => void;
 }
 
-type DeepWriteable<T> = { -readonly [P in keyof T]: DeepWriteable<T[P]> };
 
 /** Metadata for a diagram entry in the list. */
 interface IDiagramEntry {
@@ -126,12 +125,12 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         }
         if (!data?.diagrams || data.diagrams.length === 0) {
             return (
-            <div style={{ padding: "16px" }}>
-                <NonIdealState description="No cloud diagrams found" icon={<More />} />
-            </div>)
+                <div style={{ padding: "16px" }}>
+                    <NonIdealState description="No cloud diagrams found" icon={<More />} />
+                </div>)
         }
         return (
-            <HTMLTable bordered striped interactive style={{ width: "100%", margin: 0 }}>
+            <HTMLTable bordered striped interactive style={{ width: "100%", margin: 0, }}>
                 <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
                     <tr>
                         <th>Name</th>
@@ -163,43 +162,28 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
             isOpen={props.isOpen}
             onClose={props.onClose}
             title="Open a diagram"
-            style={{ width: "900px", height: "800px" }}
+            style={{ width: "900px", height: "80vh" }}
         >
             <DialogBody style={{ padding: 0, display: "flex", overflow: "hidden" }}>
                 {/* Left Area (Tables) */}
                 <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", padding: "16px", gap: "24px" }}>
                     <Section icon="cloud"
-                        title="Cloud Diagrams" 
-                        collapsible={false} 
-                        style={{ flexShrink: 0 }}
+                        title="Cloud Diagrams"
+                        collapsible={false}
+                        style={{ flexShrink: 0, height: "100%" }}
                     >
-                        <SectionCard style={{ padding: 0, overflow: "hidden" }}>
+                        <SectionCard style={{ padding: 0, overflow: "auto", height: "100%" }}>
                             {renderCloudTable()}
-                        </SectionCard>
-                    </Section>
-
-                    <Section icon="target"
-                        title="Local diagrams"
-                        collapsible={true}
-                        style={{ marginTop: "auto" }}
-                    >
-                        <SectionCard style={{ padding: 0 }}>
-                            <div style={{ padding: "16px" }}>
-                                <NonIdealState 
-                                    description="No local diagrams saved" 
-                                    icon="offline" 
-                                />
-                            </div>
                         </SectionCard>
                     </Section>
                 </div>
 
                 {/* Right Area (Side Panel) */}
-                <div style={{ 
-                    width: "250px", 
-                    borderLeft: "1px solid var(--pt-divider-black)", 
-                    padding: "16px", 
-                    display: "flex", 
+                <div style={{
+                    width: "250px",
+                    borderLeft: "1px solid var(--pt-divider-black)",
+                    padding: "16px",
+                    display: "flex",
                     flexDirection: "column",
                     background: "var(--pt-app-background-color)"
                 }}>
@@ -211,7 +195,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                                     ID: {selectedDiagram.diagram_id}
                                 </div>
                             </div>
-                            
+
                             <div style={{ flex: 1 }}></div>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
