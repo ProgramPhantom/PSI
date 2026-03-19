@@ -253,11 +253,15 @@ export const openDiagram = createAsyncThunk<void, File>(
                         const diagramName = manifestData.diagramName || file.name.replace(".nmrd", "") || "unnamed";
 
                         thunkAPI.dispatch(setFileName(diagramName));
-                        thunkAPI.dispatch(addRecentDiagram({
-                            name: diagramName,
-                            diagramUUID: manifestData.UUID,
-                            opened: new Date().toISOString()
-                        }));
+
+                        if (manifestData.source === "local") {
+                            thunkAPI.dispatch(addRecentDiagram({
+                                name: diagramName,
+                                diagramUUID: manifestData.UUID,
+                                opened: new Date().toISOString()
+                            }));
+                        }
+
                     } else {
                         console.error(`Diagram does not contain ID`)
                     }
