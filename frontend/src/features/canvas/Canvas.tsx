@@ -6,12 +6,10 @@ import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
 import ENGINE from "../../logic/engine";
-import { AllComponentTypes } from "../../logic/point";
 import Visual from "../../logic/visual";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedElementId, toggleDebugSelectionType } from "../../redux/slices/applicationSlice";
-import { setFileName } from "../../redux/slices/diagramSlice";
-import { setDebugLayerDialogOpen } from "../../redux/slices/dialogSlice";
+import { setSelectedElementId } from "../../redux/slices/applicationSlice";
+import { setSaveState } from "../../redux/slices/diagramSlice";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
 import Toolbar from "../banner/Toolbar";
 import Debug from "../debug/Debug";
@@ -72,41 +70,27 @@ const SeamlessPanner = () => {
 };
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
-	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
+	const dispatch = useAppDispatch();
 
-	const [debugElements, setDebugElements] = useState<Visual[]>([]);
-	const [zoom, setZoom] = useState(2);
-	const fileName = useAppSelector((state) => state.diagram.fileName);
-	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
+	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
+	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
+
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [focusLevel, setFocusLevel] = useState(0);
+	const [debugElements, setDebugElements] = useState<Visual[]>([]);
+	const [zoom, setZoom] = useState(2);
 
+
+	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 
-	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
-	const dispatch = useAppDispatch();
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
-
-
-	const interactiveElement: Visual | undefined = selectedElement || (props.selectedTool.type === "select" ? hoveredElement : undefined);
-
-	useEffect(() => {
-		if (interactiveElement) {
-			interactiveElement.svg?.hide();
-		}
-
-		return () => {
-			interactiveElement?.svg?.show();
-		};
-	}, [interactiveElement?.id]);
-
-
 	const { isDragging } = useDragLayer((monitor) => ({
 		isDragging: monitor.isDragging()
 	}));
 
+	const interactiveElement: Visual | undefined = selectedElement || (props.selectedTool.type === "select" ? hoveredElement : undefined);
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
-
 
 	const deselect = () => {
 		selectedElement?.svg?.show();
@@ -150,23 +134,24 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		}
 	};
 
+	const handleDiagramDrop = async (file: File) => {
+		dispatch(openDiagram(file));
+	};
+
 	const constOnHitboxHover = (element?: Visual) => {
 		setHoveredElement(element);
 	};
 
-	const handleFileNameChange = (newFileName: string) => {
-		dispatch(setFileName(newFileName));
-	};
-
-	const handleFileNameBlur = () => {
-		// Check if filename ends with .svg when editing is finished
-		if (!fileName.toLowerCase().endsWith(".svg")) {
-			// If it doesn't end with .svg, extract the base name and add .svg
-			const baseName = fileName.split(".")[0]; // Get everything before the first dot
-			const correctedFileName = baseName + ".svg";
-			dispatch(setFileName(correctedFileName));
+	useEffect(() => {
+		if (interactiveElement) {
+			interactiveElement.svg?.hide();
 		}
-	};
+
+		return () => {
+			interactiveElement?.svg?.show();
+		};
+	}, [interactiveElement?.id]);
+
 
 	// Reset focus level when lose focus
 	useEffect(() => {
@@ -175,19 +160,15 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		}
 	}, [selectedElementId]);
 
-	const handleDiagramDrop = async (file: File) => {
-		dispatch(openDiagram(file));
-	};
 
 	useEffect(() => {
 		if (diagramSvgRef.current && ENGINE.handler.diagram.svg) {
 			diagramSvgRef.current.replaceChildren();
 			diagramSvgRef.current.appendChild(ENGINE.surface.node);
 		}
-	}, [store]);
 
-	var diagramWidth: number = ENGINE.handler.diagram.width;
-	var diagramHeight: number = ENGINE.handler.diagram.height;
+		dispatch(setSaveState("unsaved"))
+	}, [store]);
 
 	return (
 		<>

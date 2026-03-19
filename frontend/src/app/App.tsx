@@ -19,6 +19,7 @@ import { openDiagram } from "../redux/thunks/diagramThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 import { appToaster } from "./Toaster";
 import { WelcomeDialog } from "../features/dialog/WelcomeDialog";
+import { setSaveState } from "../redux/slices/diagramSlice";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
@@ -31,7 +32,7 @@ function App() {
 	const dispatch = useAppDispatch();
 	const diagramUUID = useAppSelector(state => state.diagram.diagramUUID);
 
-	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+	// useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	const [isInitializing, setIsInitializing] = useState(true);
 
@@ -60,6 +61,7 @@ function App() {
 					if (blob) {
 						const file = new File([blob], "local-diagram.nmrd");
 						await dispatch(openDiagram(file)).unwrap();
+						dispatch(setSaveState("saved"))
 					} else {
 						ENGINE.loadDiagramState();
 					}
