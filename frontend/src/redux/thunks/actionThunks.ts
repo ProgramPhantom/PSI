@@ -64,7 +64,8 @@ export const handleExportDiagramFile = createAsyncThunk(
         saveDiagramFile(fileName, {
             UUID: UUID,
             source: "local",
-            diagramName: fileName
+            diagramName: fileName,
+            dateCreated: new Date().toISOString()
         });
 
         appToaster.show({

@@ -22,7 +22,9 @@ create table if not exists diagrams
     date_modified timestamptz not null,
     owner         varchar   not null
         constraint diagrams_users_gsub_fk
-            references users
+            references users,
+    institution   varchar,
+    original_author varchar
 );
 
 alter table diagrams

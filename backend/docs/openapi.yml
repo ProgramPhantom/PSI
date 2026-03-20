@@ -30,6 +30,13 @@ components:
                 format: uuid
               name:
                 type: string
+              dateCreated:
+                type: string
+                format: date-time
+              institution:
+                type: string
+              originalAuthor:
+                type: string
     schemesListResponse:
       type: object
       properties:
@@ -286,6 +293,8 @@ paths:
                 file:
                   type: string
                   format: binary
+                data:
+                  type: string
       tags: 
         -  Diagrams
       summary: Save the diagram data
@@ -342,6 +351,8 @@ paths:
                 file:
                   type: string
                   format: binary
+                data:
+                  type: string
       tags: 
         -  Diagrams
       summary: Create a diagram belonging to the logged in user

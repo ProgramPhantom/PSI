@@ -8,10 +8,14 @@ export const DiagramRepository = {
       .where('diagram_id', '=', id)
       .executeTakeFirst();
   },
-  async saveById(id: string) {
+  async saveById(id: string, institution?: string, originalAuthor?: string) {
     return await db
       .updateTable('diagrams')
-      .set({ date_modified: new Date() })
+      .set({ 
+        date_modified: new Date(),
+        institution: institution,
+        original_author: originalAuthor
+      })
       .where('diagram_id', '=', id)
       .executeTakeFirst();
   },
@@ -35,7 +39,13 @@ export const DiagramRepository = {
   async getDiagramsByOwner(ownerId: string) {
     return await db
       .selectFrom('diagrams')
-      .select(['name', 'diagram_id'])
+      .select([
+        'name',
+        'diagram_id',
+        'date_created as dateCreated',
+        'institution',
+        'original_author as originalAuthor'
+      ])
       .where('owner', '=', ownerId)
       .execute();
   },
@@ -73,6 +83,8 @@ export const DiagramRepository = {
     datetime: Date,
     owner: string,
     name: string,
+    institution?: string,
+    originalAuthor?: string
   ) {
     return await db
       .insertInto('diagrams')
@@ -82,6 +94,8 @@ export const DiagramRepository = {
         name: name,
         date_created: datetime,
         date_modified: datetime,
+        institution: institution,
+        original_author: originalAuthor
       })
       .returning('diagram_id')
       .executeTakeFirst();

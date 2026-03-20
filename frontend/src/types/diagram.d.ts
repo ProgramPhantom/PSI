@@ -6,4 +6,7 @@ export interface IDiagramMetadata {
     UUID: string;
     source: DiagramSource;
     diagramName: string;
+    institution?: string;
+    originalAuthor?: string;
+    dateCreated: string;
 }

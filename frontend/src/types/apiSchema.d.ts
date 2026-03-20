@@ -207,7 +207,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["diagramDataResponse"];
+                        "application/octet-stream": components["schemas"]["diagramDataResponse"];
                     };
                 };
                 /** @description Malformed diagram Id */
@@ -240,11 +240,13 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            /** @description JSON data to save */
+            /** @description A nmrd diagram file to save. */
             requestBody: {
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
+                    "multipart/form-data": {
+                        /** Format: binary */
+                        file?: string;
+                        data?: string;
                     };
                 };
             };
@@ -363,11 +365,14 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            /** @description The name given to the newly created diagram */
+            /** @description The name given to the newly created diagram and the nmrd file */
             requestBody: {
                 content: {
-                    "application/json": {
+                    "multipart/form-data": {
                         name?: string;
+                        /** Format: binary */
+                        file?: string;
+                        data?: string;
                     };
                 };
             };
@@ -666,6 +671,10 @@ export interface components {
                 /** Format: uuid */
                 diagram_id?: string;
                 name?: string;
+                /** Format: date-time */
+                dateCreated?: string;
+                institution?: string;
+                originalAuthor?: string;
             }[];
         };
         schemesListResponse: {
@@ -687,10 +696,8 @@ export interface components {
             clientId?: string;
             select_by?: string;
         };
-        diagramDataResponse: {
-            name?: string;
-            data?: string;
-        };
+        /** Format: binary */
+        diagramDataResponse: string;
         diagramCreateResponse: {
             message?: string;
             /**

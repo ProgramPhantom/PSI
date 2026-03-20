@@ -31,7 +31,10 @@ export async function createDiagramFile(metadata: IDiagramMetadata): Promise<JSZ
         version: 1,
         UUID: metadata.UUID,
         source: metadata.source,
-        diagramName: metadata.diagramName
+        diagramName: metadata.diagramName,
+        institution: metadata.institution,
+        originalAuthor: metadata.originalAuthor,
+        dateCreated: metadata.dateCreated
     };
 
     zip.file("manifest.json", JSON.stringify(manifest));

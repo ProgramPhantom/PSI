@@ -84,17 +84,21 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
                 return
             }
 
-            const file = await createDiagramFile({
+            const metadataToUpload: IDiagramMetadata = {
                 UUID: currentUUID,
                 source: "server",
-                diagramName: state.diagram.fileName
-            });
+                diagramName: state.diagram.fileName,
+                institution: undefined,
+                originalAuthor: isLoggedIn ? `${userState.data.firstname} ${userState.data.surname}`.trim() : undefined,
+                dateCreated: new Date().toISOString()
+            };
+
+            const file = await createDiagramFile(metadataToUpload);
             const blob = await file.generateAsync({ type: "blob" });
             const zipFile = new File([blob], `diagram.nmrd`, { type: "application/zip" });
 
             const formData = new FormData();
-            formData.append("name", state.diagram.fileName);
-            formData.append("id", currentUUID);
+            formData.append("data", JSON.stringify(metadataToUpload));
             formData.append("file", zipFile);
 
 
@@ -170,7 +174,10 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
                 const file = await createDiagramFile({
                     "UUID": currentUUID,
                     "source": "local",
-                    diagramName: state.diagram.fileName
+                    diagramName: state.diagram.fileName,
+                    institution: undefined,
+                    originalAuthor: undefined,
+                    dateCreated: new Date().toISOString()
                 });
                 const blob = await file.generateAsync({ type: "blob" });
 

@@ -148,7 +148,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                                 style={{ cursor: "pointer" }}
                             >
                                 <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name || "Untitled"}</td>
-                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>today</td>
+                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name}</td>
                             </tr>
                         );
                     })}
@@ -166,7 +166,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         >
             <DialogBody style={{ padding: 0, display: "flex", overflow: "hidden" }}>
                 {/* Left Area (Tables) */}
-                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", padding: "16px", gap: "24px" }}>
+                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", padding: "16px 1px 16px 16px", gap: "24px" }}>
                     <Section icon="cloud"
                         title="Cloud Diagrams"
                         collapsible={false}

@@ -8,9 +8,26 @@ const STORAGE_DIR = path.join(process.cwd(), 'storage', 'diagrams');
 
 // ---------- Zod schemas ---------------
 
-const CreateDiagramSchema = z.object({
-  name: z.string().min(1),
-  id: z.uuid(),
+const DiagramMetadataSchema = z.object({
+  format: z.string().optional(),
+  version: z.number().optional(),
+  UUID: z.string().uuid(),
+  source: z.enum(['server', 'local']),
+  diagramName: z.string(),
+  institution: z.string().optional(),
+  originalAuthor: z.string().optional(),
+  dateCreated: z.string()
+});
+
+const DiagramFormSchema = z.object({
+  data: z.string().transform((str, ctx) => {
+    try {
+      return DiagramMetadataSchema.parse(JSON.parse(str));
+    } catch (e) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid JSON or schema validation failed" });
+      return z.NEVER;
+    }
+  })
 });
 const IdSchema = z.uuid();
 
@@ -72,13 +89,14 @@ export const putSaveDiagram = async (
       return;
     }
 
-    const result = IdSchema.safeParse(req.params.diagramId);
-    if (!result.success) {
+    const bodyResult = DiagramFormSchema.safeParse(req.body);
+    if (!bodyResult.success) {
       if (req.file) fs.unlinkSync(req.file.path);
-      res.status(400).json({ message: z.treeifyError(result.error) });
+      res.status(400).json({ message: z.treeifyError(bodyResult.error) });
       return;
     }
-    const resource = result.data;
+    const metadata = bodyResult.data.data;
+    const resource = metadata.UUID;
 
     const ownerData = await DiagramRepository.getOwnerById(resource);
 
@@ -98,7 +116,9 @@ export const putSaveDiagram = async (
     if (ownerData!.owner == req.session.gsub!) {
       //save directly
       const updateResponse = await DiagramRepository.saveById(
-        resource
+        resource,
+        metadata.institution,
+        metadata.originalAuthor
       );
       if (updateResponse.numUpdatedRows > 0) {
         fs.renameSync(req.file.path, path.join(STORAGE_DIR, `${resource}.nmrd`));
@@ -148,13 +168,14 @@ export const postCreateDiagram = async (
       res.status(401).json({ message: 'Authentication required' });
       return;
     }
-    const result = CreateDiagramSchema.safeParse(req.body);
+    const result = DiagramFormSchema.safeParse(req.body);
+
     if (!result.success) {
       if (req.file) fs.unlinkSync(req.file.path);
       res.status(400).json({ message: z.treeifyError(result.error) });
       return;
     }
-    const { name, id } = result.data;
+    const metadata = result.data.data;
 
     if (!req.file) {
       res.status(400).json({ message: 'No file uploaded' });
@@ -162,10 +183,12 @@ export const postCreateDiagram = async (
     }
 
     const dbResponse = await DiagramRepository.createDiagram(
-      id,
-      new Date(),
+      metadata.UUID,
+      new Date(metadata.dateCreated),
       req.session.gsub!,
-      name,
+      metadata.diagramName,
+      metadata.institution,
+      metadata.originalAuthor
     );
     if (dbResponse) {
       fs.renameSync(req.file.path, path.join(STORAGE_DIR, `${dbResponse.diagram_id}.nmrd`));

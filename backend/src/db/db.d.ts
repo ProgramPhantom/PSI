@@ -27,6 +27,8 @@ export interface Diagrams {
   diagram_id: string;
   name: string;
   owner: string;
+  institution: string | null;
+  original_author: string | null;
 }
 
 export interface Schemes {
