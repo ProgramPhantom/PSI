@@ -100,12 +100,14 @@ const Toolbar: React.FC = () => {
 					{saveState !== 'saved' && <span style={{ marginLeft: "2px" }}>*</span>}
 				</div>
 
-				<Tooltip content={diagramSource === "server" ? "Saved on server" : "Saved locally"} position={Position.BOTTOM}>
-					<Icon icon={diagramSource === "server" ? "cloud" : "floppy-disk"} size={14} style={{ marginLeft: "6px", marginBottom: "2px", color: Colors.GRAY3 }} />
-				</Tooltip>
-				<Tooltip content={diagramUUID || "No UUID"} position={Position.BOTTOM}>
-					<Icon icon="info-sign" size={12} style={{ marginLeft: "6px", marginBottom: "2px", cursor: "help", color: Colors.GRAY3 }} />
-				</Tooltip>
+				{diagramUUID && <>
+					<Tooltip content={diagramSource === "server" ? "Saved on server" : "Saved locally"} position={Position.BOTTOM}>
+						<Icon icon={diagramSource === "server" ? "cloud" : "floppy-disk"} size={14} style={{ marginLeft: "6px", marginBottom: "2px", color: Colors.GRAY3 }} />
+					</Tooltip>
+					<Tooltip content={diagramUUID || "No UUID"} position={Position.BOTTOM}>
+						<Icon icon="info-sign" size={12} style={{ marginLeft: "6px", marginBottom: "2px", cursor: "help", color: Colors.GRAY3 }} />
+					</Tooltip>
+				</>}
 			</div>
 
 			<div style={{ flex: 1 }} />

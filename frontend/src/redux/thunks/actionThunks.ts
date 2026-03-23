@@ -5,7 +5,7 @@ import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
 import { RootState } from "../rootReducer";
-import { saveDiagram } from "./diagramThunks";
+import { newDiagram, saveDiagram } from "./diagramThunks";
 import { v4 as uuidv4 } from "uuid";
 import { setDiagramSource, setDiagramUUID } from "../slices/diagramSlice";
 import localforage from "localforage";
@@ -25,17 +25,7 @@ export const resetApp = createAsyncThunk(
 export const handleNewDiagram = createAsyncThunk(
     'actions/handleNewDiagram',
     async (_, thunkAPI) => {
-        ENGINE.resetDiagram();
-        const newUUID = uuidv4()
-
-        thunkAPI.dispatch(setDiagramUUID(newUUID))
-        thunkAPI.dispatch(setDiagramSource("local"))
-
-        appToaster.show({
-            "message": "New diagram created",
-            "intent": "success",
-            "icon": "clean"
-        })
+        thunkAPI.dispatch(newDiagram())
     }
 );
 

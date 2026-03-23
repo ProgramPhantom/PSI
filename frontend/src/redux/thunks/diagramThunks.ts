@@ -55,10 +55,9 @@ export const putSaveDiagramServerThunk = createAsyncThunk<{ copied: boolean, mes
 export const newDiagram = createAsyncThunk<void, void>(
     'application/newDiagram',
     async (_, thunkAPI) => {
-        const emptyState = ENGINE.handler.emptyDiagram().state;
-        ENGINE.loadDiagramState(emptyState);
+        ENGINE.resetDiagram();
         const newUUID = uuidv7();
-        thunkAPI.dispatch(setDiagramUUID(newUUID));
+        thunkAPI.dispatch(setDiagramUUID(undefined));
         thunkAPI.dispatch(setFileName("new-diagram"));
         appToaster.show({ message: "New diagram created", intent: "success" });
     }
