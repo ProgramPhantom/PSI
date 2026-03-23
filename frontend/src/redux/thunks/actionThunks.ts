@@ -1,14 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { saveAs } from "file-saver";
+import localforage from "localforage";
 import { appToaster } from "../../app/Toaster";
 import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
 import { RootState } from "../rootReducer";
+import { setNewDiagramAlertOpen } from "../slices/dialogSlice";
 import { newDiagram, saveDiagram } from "./diagramThunks";
-import { v4 as uuidv4 } from "uuid";
-import { setDiagramSource, setDiagramUUID } from "../slices/diagramSlice";
-import localforage from "localforage";
 
 
 // --- Logic Handlers ---
@@ -24,8 +23,13 @@ export const resetApp = createAsyncThunk(
 
 export const handleNewDiagram = createAsyncThunk(
     'actions/handleNewDiagram',
-    async (_, thunkAPI) => {
-        thunkAPI.dispatch(newDiagram())
+    async (_, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        if (state.diagram.saveState === 'unsaved') {
+            dispatch(setNewDiagramAlertOpen(true));
+        } else {
+            dispatch(newDiagram());
+        }
     }
 );
 

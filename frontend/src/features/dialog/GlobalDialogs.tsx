@@ -17,6 +17,7 @@ import { DiagramsDialog } from "./DiagramsDialog";
 import { AssetStoreDialog } from "./AssetStoreDialog";
 import { SaveAsDialog } from "./SaveAsDialog";
 import { WelcomeDialog } from "./WelcomeDialog";
+import { UnsavedDiagramAlert } from "./UnsavedDiagramAlert";
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -68,6 +69,8 @@ export const GlobalDialogs: React.FC = () => {
                 isOpen={isSaveAsDialogOpen}
                 onClose={() => dispatch(setSaveAsDialogOpen(false))}
             />
+
+            <UnsavedDiagramAlert />
         </>
     );
 };
