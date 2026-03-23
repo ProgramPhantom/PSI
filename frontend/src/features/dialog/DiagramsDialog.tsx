@@ -194,6 +194,21 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                                 <div className="bp5-text-muted bp5-text-small" style={{ marginBottom: "16px" }}>
                                     ID: {selectedDiagram.UUID}
                                 </div>
+                                <div className="bp5-text-muted bp5-text-small" style={{ marginBottom: "16px" }}>
+                                    Author: {selectedDiagram.originalAuthor ?? "unspecified"}
+                                </div>
+                                <div className="bp5-text-muted bp5-text-small" style={{ marginBottom: "16px" }}>
+                                    Institution: {selectedDiagram.institution ?? "unspecified"}
+                                </div>
+                                <div className="bp5-text-muted bp5-text-small" style={{ marginBottom: "16px" }}>
+                                    Date Created: {selectedDiagram.dateCreated}
+                                </div>
+                                <div className="bp5-text-muted bp5-text-small" style={{ marginBottom: "16px" }}>
+                                    Format version: {selectedDiagram.version ?? "unspecified"}
+                                </div>
+                                <div className="bp5-text-muted bp5-text-small" style={{ marginBottom: "16px" }}>
+                                    File version: {selectedDiagram.version ?? "unspecified"}
+                                </div>
                             </div>
 
                             <div style={{ flex: 1 }}></div>
