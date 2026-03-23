@@ -7,7 +7,17 @@ import { setFileName } from "../../redux/slices/diagramSlice";
 
 const Toolbar: React.FC = () => {
 	const dispatch = useAppDispatch();
-	const { fileName, diagramUUID, saveState, diagramSource } = useAppSelector((state) => state.diagram);
+	const { fileName, diagramUUID, saveState, diagramSource, loadStatus } = useAppSelector((state) => state.diagram);
+
+	const getLoadStatusIcon = () => {
+		switch (loadStatus) {
+			case "unloaded": return <Icon icon="circle" />;
+			case "fetchServer": return <Icon icon="cloud-download" />;
+			case "opening": return <Icon icon="folder-open" />;
+			case "open": return <Icon icon="tick-circle" intent="success" />;
+			default: return <Icon icon="circle" />;
+		}
+	};
 
 	return (
 		<div
@@ -110,7 +120,11 @@ const Toolbar: React.FC = () => {
 				</>}
 			</div>
 
-			<div style={{ flex: 1 }} />
+			<div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center", paddingRight: "32px" }}>
+				<Tooltip content={`Load Status: ${loadStatus}`} position={"bottom-right"}>
+					{getLoadStatusIcon()}
+				</Tooltip>
+			</div>
 		</div>
 	);
 };

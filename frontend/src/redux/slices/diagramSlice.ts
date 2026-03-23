@@ -9,12 +9,15 @@ export interface RecentDiagram {
     opened: string;
 }
 
+export type LoadStatus = "unloaded" | "fetchServer" | "opening" | "open";
+
 export interface DiagramInfoState {
     fileName: string;
     diagramUUID: string | undefined;
     saveState: 'saved' | 'unsaved' | 'saving';
     recentDiagrams: RecentDiagram[];
     diagramSource: DiagramSource;
+    loadStatus: LoadStatus;
 }
 
 const initialState: DiagramInfoState = {
@@ -22,7 +25,8 @@ const initialState: DiagramInfoState = {
     diagramUUID: undefined,
     saveState: 'saved',
     recentDiagrams: [],
-    diagramSource: "local"
+    diagramSource: "local",
+    loadStatus: "unloaded"
 };
 
 export const diagramSlice = createSlice({
@@ -51,6 +55,24 @@ export const diagramSlice = createSlice({
             state.diagramSource = action.payload
         }
     },
+    extraReducers: (builder) => {
+        builder
+            .addCase('application/loadDiagram/pending', (state) => {
+                state.loadStatus = "fetchServer";
+            })
+            .addCase('application/loadDiagram/rejected', (state) => {
+                state.loadStatus = "unloaded";
+            })
+            .addCase('application/openDiagram/pending', (state) => {
+                state.loadStatus = "opening";
+            })
+            .addCase('application/openDiagram/fulfilled', (state) => {
+                state.loadStatus = "open";
+            })
+            .addCase('application/openDiagram/rejected', (state) => {
+                state.loadStatus = "unloaded";
+            });
+    }
 });
 
 export const { setFileName, setDiagramUUID, setSaveState, addRecentDiagram, removeRecentDiagram, setDiagramSource } = diagramSlice.actions;
