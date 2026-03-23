@@ -15,11 +15,11 @@ import ENGINE from "../logic/engine";
 import { api } from "../redux/api/api";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { initialiseAssets } from "../redux/thunks/assetThunks";
-import { openDiagram } from "../redux/thunks/diagramThunks";
+import { loadDiagram, openDiagram } from "../redux/thunks/diagramThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 import { appToaster } from "./Toaster";
 import { WelcomeDialog } from "../features/dialog/WelcomeDialog";
-import { setSaveState } from "../redux/slices/diagramSlice";
+import { setDiagramSource, setSaveState } from "../redux/slices/diagramSlice";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
@@ -31,6 +31,7 @@ export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDr
 function App() {
 	const dispatch = useAppDispatch();
 	const diagramUUID = useAppSelector(state => state.diagram.diagramUUID);
+	const diagramSource = useAppSelector(state => state.diagram.diagramSource)
 
 	// useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
@@ -56,18 +57,27 @@ function App() {
 
 			if (isMounted) {
 				// 4. Open local diagram file
-				try {
-					const blob = diagramUUID ? await localforage.getItem<Blob>(`diagram-${diagramUUID}`) : null;
-					if (blob) {
-						const file = new File([blob], "local-diagram.nmrd");
-						await dispatch(openDiagram(file)).unwrap();
-						dispatch(setSaveState("saved"))
-					} else {
+				if (diagramSource === "local") {
+					try {
+						const blob = diagramUUID ? await localforage.getItem<Blob>(`diagram-${diagramUUID}`) : null;
+						if (blob) {
+							const file = new File([blob], "local-diagram.nmrd");
+							await dispatch(openDiagram(file)).unwrap();
+							dispatch(setSaveState("saved"))
+						} else {
+							ENGINE.loadDiagramState();
+						}
+					} catch (e) {
+						console.warn("Failed to load local diagram", e);
 						ENGINE.loadDiagramState();
 					}
-				} catch (e) {
-					console.warn("Failed to load local diagram", e);
-					ENGINE.loadDiagramState();
+				} else if (diagramSource === "server") {
+					if (diagramUUID !== undefined) {
+						dispatch(loadDiagram(diagramUUID))
+					} else {
+						console.warn(`No UUID for diagram server load`)
+						ENGINE.loadDiagramState()
+					}
 				}
 
 				setIsInitializing(false);

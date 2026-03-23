@@ -11,7 +11,7 @@ export const DiagramRepository = {
   async saveById(id: string, institution?: string, originalAuthor?: string) {
     return await db
       .updateTable('diagrams')
-      .set({ 
+      .set({
         date_modified: new Date(),
         institution: institution,
         original_author: originalAuthor
@@ -40,8 +40,8 @@ export const DiagramRepository = {
     return await db
       .selectFrom('diagrams')
       .select([
-        'name',
-        'diagram_id',
+        'name as diagramName',
+        'diagram_id as UUID',
         'date_created as dateCreated',
         'institution',
         'original_author as originalAuthor'

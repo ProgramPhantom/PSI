@@ -669,8 +669,8 @@ export interface components {
         diagramsListResponse: {
             diagrams?: {
                 /** Format: uuid */
-                diagram_id?: string;
-                name?: string;
+                UUID?: string;
+                diagramName?: string;
                 /** Format: date-time */
                 dateCreated?: string;
                 institution?: string;

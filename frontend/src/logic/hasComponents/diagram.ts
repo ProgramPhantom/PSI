@@ -20,7 +20,11 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 
 	// ------------ Top level accessor helpers ------------
 	get sequences(): Sequence[] {
-		return this.sequenceAligner.children;
+		try {
+			return this.sequenceAligner.children
+		} catch {
+			return []
+		}
 	}
 	get sequenceDict(): Record<ID, Sequence> {
 		return Object.fromEntries(this.sequenceAligner.children.map((item) => [item.id, item]));

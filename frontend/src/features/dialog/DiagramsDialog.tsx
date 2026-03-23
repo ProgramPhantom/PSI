@@ -9,6 +9,7 @@ import { IDiagram } from "../../logic/hasComponents/diagram";
 import { useDeleteDiagramMutation, useGetUserDiagramsQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
 import { loadDiagram } from "../../redux/thunks/diagramThunks";
+import { IDiagramMetadata } from "../../types/diagram";
 
 export interface IDiagramsDialogProps {
     isOpen: boolean;
@@ -39,10 +40,7 @@ const DUMMY_DIAGRAMS: IDiagramEntry[] = [
     blank
 ];
 
-interface DiagramDTO {
-    name?: string | undefined,
-    diagram_id?: string | undefined
-}
+
 
 export function DiagramsDialog(props: IDiagramsDialogProps) {
     const { data, refetch: refetchDiagrams, isLoading } = useGetUserDiagramsQuery(undefined, {
@@ -52,7 +50,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
     const [deleteDiagramTrigger] = useDeleteDiagramMutation();
     const dispatch = useAppDispatch();
 
-    const [selectedDiagram, setSelectedDiagram] = useState<DiagramDTO | null>(null);
+    const [selectedDiagram, setSelectedDiagram] = useState<IDiagramMetadata | null>(null);
 
     useEffect(() => {
         if (!props.isOpen) {
@@ -64,12 +62,12 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         if (!selectedDiagram) return;
         let success: boolean = true;
 
-        if (selectedDiagram.diagram_id === undefined) {
+        if (selectedDiagram.UUID === undefined) {
             success = false;
         } else {
             try {
                 // Get diagram via thunk
-                await dispatch(loadDiagram(selectedDiagram.diagram_id)).unwrap();
+                await dispatch(loadDiagram(selectedDiagram.UUID)).unwrap();
             } catch (err) {
                 success = false
                 console.error(err);
@@ -90,11 +88,11 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         if (!selectedDiagram) return;
         let success: boolean = true;
 
-        if (selectedDiagram.diagram_id === undefined) {
+        if (selectedDiagram.UUID === undefined) {
             success = false;
         } else {
             try {
-                await deleteDiagramTrigger(selectedDiagram.diagram_id).unwrap();
+                await deleteDiagramTrigger(selectedDiagram.UUID).unwrap();
                 setSelectedDiagram(null);
             } catch (error) {
                 success = false;
@@ -134,21 +132,23 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                 <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
                     <tr>
                         <th>Name</th>
-                        <th>Date Modified</th>
+                        <th>Date Created</th>
+                        <th>Author</th>
                     </tr>
                 </thead>
                 <tbody>
                     {data.diagrams.map((entry, i) => {
-                        const isSelected = selectedDiagram?.diagram_id === entry.diagram_id;
+                        const isSelected = selectedDiagram?.UUID === entry.UUID;
                         return (
                             <tr
-                                key={entry.diagram_id || i}
-                                onClick={() => setSelectedDiagram(entry)}
+                                key={entry.UUID || i}
+                                onClick={() => setSelectedDiagram(entry as IDiagramMetadata)}
                                 className={isSelected ? Classes.INTENT_PRIMARY : undefined}
                                 style={{ cursor: "pointer" }}
                             >
-                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name || "Untitled"}</td>
-                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name}</td>
+                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.diagramName || "Untitled"}</td>
+                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.dateCreated}</td>
+                                <td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.originalAuthor}</td>
                             </tr>
                         );
                     })}
@@ -190,9 +190,9 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
                     {selectedDiagram ? (
                         <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                             <div>
-                                <h4 className="bp5-heading">{selectedDiagram.name || "Untitled"}</h4>
+                                <h4 className="bp5-heading">{selectedDiagram.diagramName || "Untitled"}</h4>
                                 <div className="bp5-text-muted bp5-text-small" style={{ marginBottom: "16px" }}>
-                                    ID: {selectedDiagram.diagram_id}
+                                    ID: {selectedDiagram.UUID}
                                 </div>
                             </div>
 

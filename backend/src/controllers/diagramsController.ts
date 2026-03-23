@@ -11,7 +11,7 @@ const STORAGE_DIR = path.join(process.cwd(), 'storage', 'diagrams');
 const DiagramMetadataSchema = z.object({
   format: z.string().optional(),
   version: z.number().optional(),
-  UUID: z.string().uuid(),
+  UUID: z.uuid(),
   source: z.enum(['server', 'local']),
   diagramName: z.string(),
   institution: z.string().optional(),
