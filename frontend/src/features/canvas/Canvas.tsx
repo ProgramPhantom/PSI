@@ -1,5 +1,5 @@
 import {
-	Button
+	Button, EditableText
 } from "@blueprintjs/core";
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
@@ -79,6 +79,14 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [focusLevel, setFocusLevel] = useState(0);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [zoom, setZoom] = useState(2);
+	const [zoomString, setZoomString] = useState("2");
+	const [isZoomEditing, setIsZoomEditing] = useState(false);
+
+	useEffect(() => {
+		if (!isZoomEditing) {
+			setZoomString(String(Math.round(zoom * 100) / 100));
+		}
+	}, [zoom, isZoomEditing]);
 
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
@@ -216,12 +224,64 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 								position: "absolute",
 								top: "10px",
 								left: "10px",
-								zIndex: 10
+								zIndex: 10,
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "center",
+								gap: "6px"
 							}}>
-							<Button
+							<Button size="small" variant="outlined"
 								icon="target"
 								onClick={() => transformComponentRef.current?.centerView()}
 							/>
+							<div
+								style={{
+									display: "flex",
+									alignItems: "center",
+									background: "white",
+									padding: "1px 4px",
+									borderRadius: "3px",
+									border: "1px solid rgba(16, 22, 26, 0.2)",
+									boxShadow: "0 1px 1px rgba(16, 22, 26, 0.1)",
+									fontSize: "11px",
+									fontWeight: "bold",
+									color: "#182026",
+									cursor: "text"
+								}}>
+								<EditableText
+									value={zoomString}
+									onChange={(val) => setZoomString(val)}
+									onConfirm={(val) => {
+										setIsZoomEditing(false);
+										let newZoom = parseFloat(val);
+										if (!isNaN(newZoom) && newZoom > 0) {
+											newZoom = Math.min(Math.max(newZoom, 0.5), 5);
+											setZoom(newZoom);
+											setZoomString(String(Math.round(newZoom * 100) / 100));
+											
+											const ctx = transformComponentRef.current;
+											if (ctx) {
+												const { positionX, positionY, scale: oldScale } = ctx.instance.transformState;
+												const rect = ctx.instance.wrapperComponent?.getBoundingClientRect();
+												let nx = positionX;
+												let ny = positionY;
+												if (rect) {
+													const cx = rect.width / 2;
+													const cy = rect.height / 2;
+													nx = cx - (cx - positionX) * (newZoom / oldScale);
+													ny = cy - (cy - positionY) * (newZoom / oldScale);
+												}
+												ctx.setTransform(nx, ny, newZoom, 0);
+											}
+										} else {
+											setZoomString(String(Math.round(zoom * 100) / 100));
+										}
+									}}
+									onEdit={() => setIsZoomEditing(true)}
+									selectAllOnFocus={true}
+								/>
+								<span style={{ marginLeft: "1px", color: "#5c7080", pointerEvents: "none" }}>x</span>
+							</div>
 						</div>
 
 
@@ -229,6 +289,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 							<TransformWrapper
 								ref={transformComponentRef}
 								initialScale={zoom}
+								onZoom={(z) => {
+									setZoom(z.state.scale);
+								}}
 								onZoomStop={(z) => {
 									setZoom(z.state.scale);
 								}}
