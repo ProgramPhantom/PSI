@@ -1,34 +1,100 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { saveAs } from "file-saver";
+import localforage from "localforage";
 import { appToaster } from "../../app/Toaster";
 import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
 import { RootState } from "../rootReducer";
-import { saveDiagram } from "./diagramThunks";
+import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
+import { api } from "../api/api";
+import { newDiagram, saveDiagram } from "./diagramThunks";
+import { selectCurrentFileName } from "../selectors/diagramSelectors";
+
 
 // --- Logic Handlers ---
 
+export const resetApp = createAsyncThunk(
+    'actions/resetApp',
+    async () => {
+        localStorage.clear();
+        await localforage.clear();
+        window.location.reload();
+    }
+);
+
 export const handleNewDiagram = createAsyncThunk(
     'actions/handleNewDiagram',
-    async () => {
-        ENGINE.resetDiagram();
+    async (_, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        if (state.diagram.saveState === 'unsaved') {
+            dispatch(setNewDiagramAlertOpen(true));
+        } else {
+            dispatch(newDiagram());
+        }
     }
 );
 
 export const handleSaveDiagram = createAsyncThunk(
     'actions/handleSaveDiagram',
     async (_, { dispatch }) => {
-        dispatch(saveDiagram(false) as any);
+        dispatch(saveDiagram({}));
     }
+);
+
+export const logout = createAsyncThunk<void, boolean | void>(
+    'actions/logout',
+
+    async (force, { dispatch, getState }) => {
+        const state = getState() as RootState;
+
+        if (state.diagram.saveState === 'unsaved' && !force) {
+            dispatch(setUnsavedDiagramLogoutAlertOpen(true));
+            return;
+        }
+
+        try {
+            await dispatch(api.endpoints.logoutUser.initiate()).unwrap();
+            dispatch(newDiagram());
+            appToaster.show({
+                message: "Logged out",
+                intent: "success"
+            });
+        } catch (error) {
+            appToaster.show({
+                message: "Failed to logout",
+                intent: "danger"
+            });
+            console.error(error);
+        }
+    },
+    
 );
 
 export const handleExportDiagramFile = createAsyncThunk(
     'actions/handleExportDiagramFile',
-    async () => {
-        saveDiagramFile();
+    async (_, { getState }) => {
+        const state = getState() as RootState;
+        const fileName = selectCurrentFileName(state);
+        const UUID = state.diagram.diagramUUID
+
+        if (UUID === undefined) {
+            appToaster.show({
+                "message": "No diagram loaded",
+                "intent": "warning"
+            })
+            return
+        }
+
+        saveDiagramFile(fileName, {
+            UUID: UUID,
+            source: "local",
+            diagramName: fileName,
+            dateCreated: new Date().toISOString()
+        });
+
         appToaster.show({
-            message: "Diagram file downloaded",
+            message: `Diagram file downloaded as ${fileName}.nmrd`,
             intent: "success"
         });
     }
@@ -101,7 +167,7 @@ export const handleSaveSVG = createAsyncThunk(
     async (_, { getState }) => {
         try {
             const state = getState() as RootState;
-            const fileNameFromRedux = state.diagram.fileName;
+            const fileNameFromRedux = selectCurrentFileName(state);
 
             const surface = ENGINE.surface;
             const svgClone = surface.clone(true, false);
@@ -181,7 +247,7 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
             const height = dimensions.height;
 
             const state = getState() as RootState;
-            const fileName = state.diagram.fileName;
+            const fileName = selectCurrentFileName(state);
 
             // Get the current SVG surface from the ENGINE
             const surface = ENGINE.surface;

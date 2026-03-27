@@ -1,6 +1,7 @@
 import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup, Card, Elevation, H4, Label, Drawer } from "@blueprintjs/core";
-import { useGetMeQuery, useLogoutUserMutation } from "../../redux/api/api";
-import { appToaster } from "../../app/Toaster";
+import { useGetMeQuery } from "../../redux/api/api";
+import { useAppDispatch } from "../../redux/hooks";
+import { logout } from "../../redux/thunks/actionThunks";
 
 export interface IUserDialogProps {
     isOpen: boolean;
@@ -8,24 +9,12 @@ export interface IUserDialogProps {
 }
 
 export function UserDialog(props: IUserDialogProps) {
+    const dispatch = useAppDispatch();
     const { data: user, isLoading, isError } = useGetMeQuery();
-    const [logoutUser] = useLogoutUserMutation();
 
-    const handleLogout = async () => {
-        try {
-            await logoutUser().unwrap();
-            props.onClose();
-            appToaster.show({
-                "message": "Logged out",
-                "intent": "success"
-            })
-        } catch (error) {
-            appToaster.show({
-                "message": "Failed to logout",
-                "intent": "danger"
-            })
-            console.log(error)
-        }
+    const handleLogout = () => {
+        dispatch(logout());
+        props.onClose();
     };
 
     return (

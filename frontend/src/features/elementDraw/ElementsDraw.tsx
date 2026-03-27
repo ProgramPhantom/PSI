@@ -31,7 +31,7 @@ import NewElementDialog from "./NewElementDialog";
 
 import { isPulse } from "../../logic/spacial";
 import { deleteScheme, downloadSchemeFile, importSchemeFile, uploadSchemeServer } from "../../redux/thunks/schemeThunks";
-import { AssetStoreList } from "../assetManagement/AssetStoreList";
+import { setAssetStoreDialogOpen } from "../../redux/slices/dialogSlice";
 import QuietUploadArea from "../QuietUploadArea";
 
 
@@ -49,7 +49,6 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const [isNewSchemeDialogOpen, setIsNewSchemeDialogOpen] = useState(false);
 	const [isDeleteSchemeDialogOpen, setIsDeleteSchemeDialogOpen] = useState(false);
 	const [schemeAssetsToDelete, setSchemeAssetsToDelete] = useState<string[]>([]);
-	const [isAssetStoreOpen, setIsAssetStoreOpen] = useState(false);
 
 	const schemes = useAppSelector(selectSchemes);
 	const appAssets = useAppSelector(selectAssets);
@@ -217,7 +216,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 							<Button
 								icon="database"
 								variant="minimal"
-								onClick={() => setIsAssetStoreOpen(true)}
+								onClick={() => dispatch(setAssetStoreDialogOpen(true))}
 							/>
 						</div>
 
@@ -498,11 +497,6 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 				<AddSchemeDialog
 					isOpen={isNewSchemeDialogOpen}
 					onClose={handleNewSchemeDialogClose}
-				/>
-
-				<AssetStoreList
-					isOpen={isAssetStoreOpen}
-					onClose={() => setIsAssetStoreOpen(false)}
 				/>
 
 				{/* Delete Scheme Confirmation Dialog */}

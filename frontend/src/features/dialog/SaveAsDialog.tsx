@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup } from "@blueprintjs/core";
 import { useEffect, useState } from "react";
-import ENGINE from "../../logic/engine";
-import { useAppDispatch } from "../../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
 import { saveDiagram } from "../../redux/thunks/diagramThunks";
 
 export interface ISaveAsDialogProps {
@@ -10,18 +10,18 @@ export interface ISaveAsDialogProps {
 }
 
 export function SaveAsDialog(props: ISaveAsDialogProps) {
-    const [ref, setRef] = useState(ENGINE.handler.diagram.ref);
+    const fileName = useAppSelector(selectCurrentFileName);
+    const [name, setName] = useState(fileName);
     const dispatch = useAppDispatch()
 
     useEffect(() => {
         if (props.isOpen) {
-            setRef(ENGINE.handler.diagram.ref);
+            setName(fileName);
         }
-    }, [props.isOpen]);
+    }, [props.isOpen, fileName]);
 
     const handleSave = () => {
-        ENGINE.handler.diagram.ref = ref;
-        dispatch(saveDiagram(true))
+        dispatch(saveDiagram({fileName: name}))
         props.onClose();
     };
 
@@ -34,14 +34,14 @@ export function SaveAsDialog(props: ISaveAsDialogProps) {
         >
             <DialogBody>
                 <FormGroup
-                    label="Diagram Reference"
-                    labelFor="diagram-ref"
-                    helperText="Enter a name for this diagram reference"
+                    label="Diagram Name"
+                    labelFor="diagram-name"
+                    helperText="Enter a name for this diagram"
                 >
                     <InputGroup
-                        id="diagram-ref"
-                        value={ref}
-                        onChange={(e) => setRef(e.target.value)}
+                        id="diagram-name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. My Diagram"
                     />
                 </FormGroup>

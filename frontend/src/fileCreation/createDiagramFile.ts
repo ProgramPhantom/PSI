@@ -1,8 +1,9 @@
 import JSZip from "jszip";
 import { downloadBlob } from "../logic/util2";
 import ENGINE from "../logic/engine";
+import { DiagramSource, IDiagramMetadata } from "../types/diagram";
 
-export async function createDiagramFile(): Promise<JSZip> {
+export async function createDiagramFile(metadata: IDiagramMetadata): Promise<JSZip> {
     const zip = new JSZip();
 
     zip.file("diagram.json", JSON.stringify(ENGINE.diagramState, null, 2));
@@ -25,17 +26,28 @@ export async function createDiagramFile(): Promise<JSZip> {
         assetsFolder.file(`${id}.json`, JSON.stringify({ ref: refObj.ref }));
     }
 
-    zip.file("manifest.json", JSON.stringify({
+    const manifest: IDiagramMetadata = {
         format: "nmr-pulse-diagram",
-        version: 1
-    }));
+        version: 1,
+        UUID: metadata.UUID,
+        source: metadata.source,
+        diagramName: metadata.diagramName,
+        institution: metadata.institution,
+        originalAuthor: metadata.originalAuthor,
+        dateCreated: metadata.dateCreated
+    };
+
+    zip.file("manifest.json", JSON.stringify(manifest));
 
     return zip
 }
 
-export async function saveDiagramFile() {
-    const file = await createDiagramFile()
+export async function saveDiagramFile(fileName: string = "diagram", metadata: IDiagramMetadata) {
+    const file = await createDiagramFile(metadata)
     const blob = await file.generateAsync({ type: "blob" });
 
-    downloadBlob(blob, "diagram.nmrd");
+    // Ensure the extension is correct
+    const finalFileName = fileName.endsWith(".nmrd") ? fileName : `${fileName}.nmrd`;
+
+    downloadBlob(blob, finalFileName);
 }

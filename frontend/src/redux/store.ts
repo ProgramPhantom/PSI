@@ -3,6 +3,7 @@ import { persistStore, persistReducer, createTransform, PersistConfig } from 're
 import storage from 'redux-persist/lib/storage';
 import { api } from './api/api';
 import { schemeListenerMiddleware } from './middleware/schemeListener';
+import { diagramListenerMiddleware } from './middleware/diagramListener';
 import { rootReducer, RootState } from './rootReducer';
 import { SchemeDict } from '../types/schemes';
 import { DEFAULT_SCHEME_SET } from '../logic/default/schemeSet';
@@ -45,6 +46,7 @@ export const store = configureStore({
         getDefaultMiddleware({
             serializableCheck: false,
         })
+            .prepend(diagramListenerMiddleware.middleware)
             .prepend(schemeListenerMiddleware.middleware)
             .concat(api.middleware),
     devTools: true

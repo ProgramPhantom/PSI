@@ -1,56 +1,28 @@
 import {
-	Button,
-	Colors,
-	EditableText,
-	HotkeyConfig,
-	Label,
-	Text,
-	useHotkeys
+	Button
 } from "@blueprintjs/core";
-import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
+import ENGINE from "../../logic/engine";
+import Visual from "../../logic/visual";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
-import { setFileName } from "../../redux/slices/diagramSlice";
-import ENGINE from "../../logic/engine";
-import { AllComponentTypes } from "../../logic/point";
-import Visual from "../../logic/visual";
+import { setSaveState } from "../../redux/slices/diagramSlice";
+import { openDiagram } from "../../redux/thunks/diagramThunks";
+import Toolbar from "../banner/Toolbar";
 import Debug from "../debug/Debug";
+import { DebugLayerDialog } from "../dialog/DebugLayerDialog";
 import CanvasDraggableElement from "../dnd/CanvasDraggableElement";
 import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
 import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
+import GridDropField from "../dnd/GridDropField";
 import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
-import { DebugLayerDialog } from "./DebugLayerDialog";
+import QuietUploadArea from "../QuietUploadArea";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
-import GridDropField from "../dnd/GridDropField";
-import QuietUploadArea from "../QuietUploadArea";
-import { openDiagram } from "../../redux/thunks/diagramThunks";
-import Toolbar from "../banner/Toolbar";
 
-
-const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
-	// Types
-	svg: false,
-	text: false,
-	rect: false,
-	space: false,
-	line: false,
-	aligner: false,
-	collection: false,
-	channel: false,
-	"lower-abstract": false,
-	visual: false,
-	sequence: false,
-	label: false,
-	diagram: false,
-	"label-group": false,
-	"sequence-aligner": false,
-	grid: false,
-	subgrid: false
-};
 
 export interface ISelectConfig extends IToolConfig { }
 
@@ -98,123 +70,27 @@ const SeamlessPanner = () => {
 };
 
 const Canvas: React.FC<ICanvasProps> = (props) => {
-	const [debugDialogOpen, setDebugDialogOpen] = useState(false);
-	const [debugElements, setDebugElements] = useState<Visual[]>([]);
-	const [debugSelectionTypes, setDebugSelectionTypes] =
-		useState<Record<AllComponentTypes, boolean>>(DefaultDebugSelection);
-	const [zoom, setZoom] = useState(2);
-	const fileName = useAppSelector((state) => state.diagram.fileName);
-	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
+	const dispatch = useAppDispatch();
+
+	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
+	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
+
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [focusLevel, setFocusLevel] = useState(0);
+	const [debugElements, setDebugElements] = useState<Visual[]>([]);
+	const [zoom, setZoom] = useState(2);
 
+
+	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 
-	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
-	const dispatch = useAppDispatch();
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
-
-
-	const interactiveElement: Visual | undefined = selectedElement || (props.selectedTool.type === "select" ? hoveredElement : undefined);
-
-	useEffect(() => {
-		if (interactiveElement) {
-			interactiveElement.svg?.hide();
-		}
-
-		return () => {
-			interactiveElement?.svg?.show();
-		};
-	}, [interactiveElement?.id]);
-
-
-	const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
-		() => [
-			{
-				combo: "ctrl+d",
-				global: true,
-				label: "Open debug dialog",
-				onKeyDown: () => {
-					setDebugDialogOpen(!debugDialogOpen);
-				},
-				preventDefault: true
-			},
-			{
-				combo: "delete",
-				global: true,
-				label: "Delete selected element",
-				onKeyDown: () => {
-					if (selectedElement) {
-						ENGINE.handler.act({
-							type: "remove",
-							input: {
-								child: selectedElement
-							}
-						})
-						deselect();
-					}
-				},
-				preventDefault: true
-			},
-			{
-				combo: "backspace",
-				global: true,
-				label: "Delete selected element",
-				onKeyDown: () => {
-					if (selectedElement) {
-						ENGINE.handler.act({
-							type: "remove",
-							input: {
-								child: selectedElement
-							}
-						})
-						deselect();
-					}
-				},
-				preventDefault: true
-			},
-			{
-				combo: "ctrl+z",
-				global: true,
-				label: "Undo",
-				onKeyDown: () => {
-					if (ENGINE.handler.canUndo) {
-						ENGINE.handler.undo();
-					}
-				},
-				preventDefault: true
-			},
-			{
-				combo: "ctrl+y",
-				global: true,
-				label: "Redo",
-				onKeyDown: () => {
-					if (ENGINE.handler.canRedo) {
-						ENGINE.handler.redo();
-					}
-				},
-				preventDefault: true
-			},
-		],
-		[debugDialogOpen, selectedElementId]
-	);
-	const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
-	const handleSetDebugSelection = (type: AllComponentTypes) => {
-		var newDebugSelection: Record<AllComponentTypes, boolean> = {
-			...debugSelectionTypes
-		};
-		newDebugSelection[type] = !newDebugSelection[type];
-		setDebugSelectionTypes(newDebugSelection);
-	};
-	const handleDialogClose = (val: boolean) => {
-		setDebugDialogOpen(val);
-	};
 	const { isDragging } = useDragLayer((monitor) => ({
 		isDragging: monitor.isDragging()
 	}));
 
+	const interactiveElement: Visual | undefined = selectedElement || (props.selectedTool.type === "select" ? hoveredElement : undefined);
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
-
 
 	const deselect = () => {
 		selectedElement?.svg?.show();
@@ -258,23 +134,24 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		}
 	};
 
+	const handleDiagramDrop = async (file: File) => {
+		dispatch(openDiagram(file));
+	};
+
 	const constOnHitboxHover = (element?: Visual) => {
 		setHoveredElement(element);
 	};
 
-	const handleFileNameChange = (newFileName: string) => {
-		dispatch(setFileName(newFileName));
-	};
-
-	const handleFileNameBlur = () => {
-		// Check if filename ends with .svg when editing is finished
-		if (!fileName.toLowerCase().endsWith(".svg")) {
-			// If it doesn't end with .svg, extract the base name and add .svg
-			const baseName = fileName.split(".")[0]; // Get everything before the first dot
-			const correctedFileName = baseName + ".svg";
-			dispatch(setFileName(correctedFileName));
+	useEffect(() => {
+		if (interactiveElement) {
+			interactiveElement.svg?.hide();
 		}
-	};
+
+		return () => {
+			interactiveElement?.svg?.show();
+		};
+	}, [interactiveElement?.id]);
+
 
 	// Reset focus level when lose focus
 	useEffect(() => {
@@ -283,19 +160,15 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		}
 	}, [selectedElementId]);
 
-	const handleDiagramDrop = async (file: File) => {
-		dispatch(openDiagram(file));
-	};
 
 	useEffect(() => {
 		if (diagramSvgRef.current && ENGINE.handler.diagram.svg) {
 			diagramSvgRef.current.replaceChildren();
 			diagramSvgRef.current.appendChild(ENGINE.surface.node);
 		}
-	}, [store]);
 
-	var diagramWidth: number = ENGINE.handler.diagram.width;
-	var diagramHeight: number = ENGINE.handler.diagram.height;
+		dispatch(setSaveState("unsaved"))
+	}, [store]);
 
 	return (
 		<>
@@ -317,187 +190,183 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					}}>
 					<Toolbar />
 					<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
-					{/* Image name display text box - positioned outside TransformWrapper */}
-				<div
-					style={{
-						position: "absolute",
-						top: "5px",
-						left: "10px",
-						zIndex: 100
-					}}>
+						{/* Image name display text box - positioned outside TransformWrapper */}
+						<div
+							style={{
+								position: "absolute",
+								top: "5px",
+								left: "10px",
+								zIndex: 100
+							}}>
 
-				</div>
+						</div>
 
-				<div
-					style={{
-						position: "absolute",
-						bottom: "5px",
-						right: "10px",
-						zIndex: 100
-					}}>
+						<div
+							style={{
+								position: "absolute",
+								bottom: "5px",
+								right: "10px",
+								zIndex: 100
+							}}>
 
-				</div>
+						</div>
 
-				<div
-					style={{
-						position: "absolute",
-						top: "10px",
-						left: "10px",
-						zIndex: 10
-					}}>
-					<Button
-						icon="target"
-						onClick={() => transformComponentRef.current?.centerView()}
-					/>
-				</div>
-
-
-				<CanvasDropContainer scale={zoom}>
-					<TransformWrapper
-						ref={transformComponentRef}
-						initialScale={zoom}
-						onZoomStop={(z) => {
-							setZoom(z.state.scale);
-						}}
-						centerOnInit={true}
-						limitToBounds={false}
-
-						maxScale={5}
-						minScale={0.5}
-						panning={{ excluded: ["nopan"] }}
-						doubleClick={{ disabled: true }}>
+						<div
+							style={{
+								position: "absolute",
+								top: "10px",
+								left: "10px",
+								zIndex: 10
+							}}>
+							<Button
+								icon="target"
+								onClick={() => transformComponentRef.current?.centerView()}
+							/>
+						</div>
 
 
-						<TransformComponent wrapperStyle={{
-							width: "100%", height: "100%", position: "absolute",
-						}}>
-							{/* Large background grid that moves with transform */}
-							<div
-								style={{
-									position: "absolute",
-									width: "10000px",
-									height: "10000px",
-									left: "-5000px",
-									top: "-5000px",
-									backgroundImage:
-										"radial-gradient(circle,rgba(204, 204, 204, 0.12) 0.6px, transparent 1px)",
-									backgroundSize: "5px 5px",
-									backgroundPosition: "0 0",
-									pointerEvents: "none",
-									zIndex: -1
-								}}></div>
-
-
-
-							<div
-								style={{
-									width: "100%",
-									height: "100%",
-									display: "inline-block",
-									position: "relative",
-									/*border: "dashed",
-									borderWidth: "0.2px",
-									borderColor: "#0000003d" */
+						<CanvasDropContainer scale={zoom}>
+							<TransformWrapper
+								ref={transformComponentRef}
+								initialScale={zoom}
+								onZoomStop={(z) => {
+									setZoom(z.state.scale);
 								}}
-								onMouseLeave={() => stopHover()}>
+								centerOnInit={true}
+								limitToBounds={false}
+
+								maxScale={5}
+								minScale={0.5}
+								panning={{ excluded: ["nopan"] }}
+								doubleClick={{ disabled: true }}>
+
+
+								<TransformComponent wrapperStyle={{
+									width: "100%", height: "100%", position: "absolute",
+								}}>
+									{/* Large background grid that moves with transform */}
+									<div
+										style={{
+											position: "absolute",
+											width: "10000px",
+											height: "10000px",
+											left: "-5000px",
+											top: "-5000px",
+											backgroundImage:
+												"radial-gradient(circle,rgba(204, 204, 204, 0.12) 0.6px, transparent 1px)",
+											backgroundSize: "5px 5px",
+											backgroundPosition: "0 0",
+											pointerEvents: "none",
+											zIndex: -1
+										}}></div>
+
+
+
+									<div
+										style={{
+											width: "100%",
+											height: "100%",
+											display: "inline-block",
+											position: "relative",
+											/*border: "dashed",
+											borderWidth: "0.2px",
+											borderColor: "#0000003d" */
+										}}
+										onMouseLeave={() => stopHover()}>
 
 
 
 
-								{/* Transformed Overlay Layer */}
-								<div className="nopan"
-									style={{
-										position: "absolute",
-										top: 0,
-										left: 0,
-										width: "100%",
-										height: "100%",
-										zIndex: 20000,
-										pointerEvents: "none",
-										transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
-											}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0
-											}px)`
-									}}>
-
-									{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
-									{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
-										<div
-											key={interactiveElement.id}
-											className="nopan"
+										{/* Transformed Overlay Layer */}
+										<div className="nopan"
 											style={{
 												position: "absolute",
-												width: interactiveElement.contentWidth,
-												height: interactiveElement.contentHeight,
-												left: interactiveElement.drawCX,
-												top: interactiveElement.drawCY,
-												pointerEvents: "auto"
+												top: 0,
+												left: 0,
+												width: "100%",
+												height: "100%",
+												zIndex: 20000,
+												pointerEvents: "none",
+												transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
+													}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0
+													}px)`
 											}}>
-											<CanvasDraggableElement
-												reselect={reselect}
-												name={interactiveElement.ref}
-												element={interactiveElement}
-												x={interactiveElement.x}
-												y={interactiveElement.y}></CanvasDraggableElement>
+
+											{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
+											{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
+												<div
+													key={interactiveElement.id}
+													className="nopan"
+													style={{
+														position: "absolute",
+														width: interactiveElement.contentWidth,
+														height: interactiveElement.contentHeight,
+														left: interactiveElement.drawCX,
+														top: interactiveElement.drawCY,
+														pointerEvents: "auto"
+													}}>
+													<CanvasDraggableElement
+														reselect={reselect}
+														name={interactiveElement.ref}
+														element={interactiveElement}
+														x={interactiveElement.x}
+														y={interactiveElement.y}></CanvasDraggableElement>
+												</div>
+											)}
+
+
+											{/* Tools */}
+											{props.selectedTool.type === "arrow" ? (
+												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+													<LineTool
+														hoveredElement={hoveredElement}
+														config={props.selectedTool.config}
+														setTool={props.setTool}></LineTool>
+												</div>
+											) : (
+												<></>
+											)}
+
+											{/* Drop field */}
+											<div className="nopan" style={{ pointerEvents: "auto" }}>
+												{ENGINE.handler.sequences[0] &&
+													<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
+												}
+												<SequencesPulseDropField></SequencesPulseDropField>
+											</div>
+
+											{/* Debug layers */}
+											<Debug
+												debugGroupSelection={debugSelectionTypes}
+												debugSelection={debugElements}></Debug>
+
 										</div>
-									)}
 
 
-									{/* Tools */}
-									{props.selectedTool.type === "arrow" ? (
-										<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
-											<LineTool
-												hoveredElement={hoveredElement}
-												config={props.selectedTool.config}
-												setTool={props.setTool}></LineTool>
-										</div>
-									) : (
-										<></>
-									)}
+										{/* Hitbox layer */}
+										{!isDragging ? (
+											<HitboxLayer
+												focusLevel={focusLevel}
+												setHoveredElement={constOnHitboxHover}></HitboxLayer>
+										) : (
+											<></>
+										)}
 
-									{/* Drop field */}
-									<div className="nopan" style={{ pointerEvents: "auto" }}>
-										{ENGINE.handler.sequences[0] &&
-											<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
-										}
-										<SequencesPulseDropField></SequencesPulseDropField>
+										{/* Image */}
+										<div id="drawDiv" ref={diagramSvgRef}></div>
 									</div>
+								</TransformComponent>
 
-									{/* Debug layers */}
-									<Debug
-										debugGroupSelection={debugSelectionTypes}
-										debugSelection={debugElements}></Debug>
+								<SeamlessPanner />
+							</TransformWrapper>
 
-								</div>
-
-
-								{/* Hitbox layer */}
-								{!isDragging ? (
-									<HitboxLayer
-										focusLevel={focusLevel}
-										setHoveredElement={constOnHitboxHover}></HitboxLayer>
-								) : (
-									<></>
-								)}
-
-								{/* Image */}
-								<div id="drawDiv" ref={diagramSvgRef}></div>
-							</div>
-						</TransformComponent>
-
-						<SeamlessPanner />
-					</TransformWrapper>
-
-					<CanvasDragLayer scale={zoom} />
+							<CanvasDragLayer scale={zoom} />
 						</CanvasDropContainer>
 					</div>
-			</div>
+				</div>
 			</QuietUploadArea>
 
-			<DebugLayerDialog
-				open={debugDialogOpen}
-				setOpen={handleDialogClose}
-				debugSelection={debugSelectionTypes}
-				setDebugSelection={handleSetDebugSelection}></DebugLayerDialog>
+			<DebugLayerDialog />
 		</>
 	);
 };

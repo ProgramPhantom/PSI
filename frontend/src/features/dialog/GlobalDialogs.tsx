@@ -6,14 +6,19 @@ import {
     setSaveAsDialogOpen,
     setLoginDialogOpen,
     setUserDialogOpen,
-    setDiagramsDialogOpen
+    setDiagramsDialogOpen,
+    setAssetStoreDialogOpen
 } from "../../redux/slices/dialogSlice";
-import { PNGExportDialog } from "../banner/PNGExportDialog";
-import { LoadStateDialog } from "../banner/LoadStateDialog";
-import { LoginDialog } from "../banner/LoginDialog";
+import { PNGExportDialog } from "./PNGExportDialog";
+import { LoadDiagramFileDialog } from "./LoadDiagramFileDialog";
+import { LoginDialog } from "./LoginDialog";
 import { UserDialog } from "../banner/UserDrawer";
-import { DiagramsDialog } from "../banner/DiagramsDialog";
-import { SaveAsDialog } from "../banner/SaveAsDialog";
+import { DiagramsDialog } from "./DiagramsDialog";
+import { AssetStoreDialog } from "./AssetStoreDialog";
+import { SaveAsDialog } from "./SaveAsDialog";
+import { WelcomeDialog } from "./WelcomeDialog";
+import { UnsavedDiagramAlert } from "./UnsavedDiagramAlert";
+import { UnsavedDiagramLogoutAlert } from "./UnsavedDiagramLogoutAlert";
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -23,17 +28,20 @@ export const GlobalDialogs: React.FC = () => {
         isSaveAsDialogOpen,
         isLoginDialogOpen,
         isUserDialogOpen,
-        isDiagramsDialogOpen
+        isDiagramsDialogOpen,
+        isAssetStoreDialogOpen
     } = useAppSelector((state) => state.dialog);
 
     return (
         <>
+            <WelcomeDialog></WelcomeDialog>
+
             <PNGExportDialog
                 close={() => dispatch(setPNGDialogOpen(false))}
                 isOpen={isPNGDialogOpen}
             />
 
-            <LoadStateDialog
+            <LoadDiagramFileDialog
                 close={() => dispatch(setLoadDialogOpen(false))}
                 isOpen={isLoadDialogOpen}
             />
@@ -53,10 +61,18 @@ export const GlobalDialogs: React.FC = () => {
                 onClose={() => dispatch(setDiagramsDialogOpen(false))}
             />
 
+            <AssetStoreDialog
+                isOpen={isAssetStoreDialogOpen}
+                onClose={() => dispatch(setAssetStoreDialogOpen(false))}
+            />
+
             <SaveAsDialog
                 isOpen={isSaveAsDialogOpen}
                 onClose={() => dispatch(setSaveAsDialogOpen(false))}
             />
+
+            <UnsavedDiagramAlert />
+            <UnsavedDiagramLogoutAlert />
         </>
     );
 };

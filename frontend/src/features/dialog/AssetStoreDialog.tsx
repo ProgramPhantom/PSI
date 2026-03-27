@@ -2,7 +2,7 @@ import { Button, Dialog, DialogBody, DialogFooter, HTMLTable, Icon, IconName, No
 import { useSelector } from "react-redux";
 import { selectAssets } from "../../redux/slices/assetSlice";
 
-export interface IAssetStoreListProps {
+export interface IAssetStoreDialogProps {
     isOpen: boolean;
     onClose: () => void;
 }
@@ -14,7 +14,7 @@ const ICONS: Record<string, IconName> = {
     "diagram": "draw"
 }
 
-export function AssetStoreList(props: IAssetStoreListProps) {
+export function AssetStoreDialog(props: IAssetStoreDialogProps) {
     const assets = useSelector(selectAssets);
     const assetList = Object.values(assets);
 
