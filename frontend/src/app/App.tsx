@@ -19,7 +19,7 @@ import { loadDiagram, openDiagram } from "../redux/thunks/diagramThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 import { appToaster } from "./Toaster";
 import { WelcomeDialog } from "../features/dialog/WelcomeDialog";
-import { setDiagramSource, setSaveState } from "../redux/slices/diagramSlice";
+import { setDiagramLoadStatus, setDiagramSource, setSaveState } from "../redux/slices/diagramSlice";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
@@ -66,6 +66,7 @@ function App() {
 							dispatch(setSaveState("saved"))
 						} else {
 							ENGINE.loadDiagramState();
+							dispatch(setDiagramLoadStatus("open"))
 						}
 					} catch (e) {
 						console.warn("Failed to load local diagram", e);

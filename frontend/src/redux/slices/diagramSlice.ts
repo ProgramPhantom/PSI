@@ -53,6 +53,9 @@ export const diagramSlice = createSlice({
         },
         setDiagramSource: (state, action: PayloadAction<DiagramSource>) => {
             state.diagramSource = action.payload
+        },
+        setDiagramLoadStatus: (state, action: PayloadAction<LoadStatus>) => {
+            state.loadStatus = action.payload
         }
     },
     extraReducers: (builder) => {
@@ -75,6 +78,13 @@ export const diagramSlice = createSlice({
     }
 });
 
-export const { setFileName, setDiagramUUID, setSaveState, addRecentDiagram, removeRecentDiagram, setDiagramSource } = diagramSlice.actions;
+export const { 
+    setFileName, 
+    setDiagramUUID, 
+    setSaveState, 
+    addRecentDiagram, 
+    removeRecentDiagram, 
+    setDiagramSource,
+    setDiagramLoadStatus } = diagramSlice.actions;
 
 export default diagramSlice.reducer;
