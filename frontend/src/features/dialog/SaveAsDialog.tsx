@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup } from "@blueprintjs/core";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setFileName } from "../../redux/slices/diagramSlice";
+import { selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
 import { saveDiagram } from "../../redux/thunks/diagramThunks";
 
 export interface ISaveAsDialogProps {
@@ -10,7 +10,7 @@ export interface ISaveAsDialogProps {
 }
 
 export function SaveAsDialog(props: ISaveAsDialogProps) {
-    const fileName = useAppSelector((state) => state.diagram.fileName);
+    const fileName = useAppSelector(selectCurrentFileName);
     const [name, setName] = useState(fileName);
     const dispatch = useAppDispatch()
 
@@ -21,8 +21,7 @@ export function SaveAsDialog(props: ISaveAsDialogProps) {
     }, [props.isOpen, fileName]);
 
     const handleSave = () => {
-        dispatch(setFileName(name));
-        dispatch(saveDiagram(true))
+        dispatch(saveDiagram({fileName: name}))
         props.onClose();
     };
 

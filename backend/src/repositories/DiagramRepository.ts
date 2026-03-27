@@ -8,10 +8,11 @@ export const DiagramRepository = {
       .where('diagram_id', '=', id)
       .executeTakeFirst();
   },
-  async saveById(id: string, institution?: string, originalAuthor?: string) {
+  async saveById(id: string, name?: string, institution?: string, originalAuthor?: string) {
     return await db
       .updateTable('diagrams')
       .set({
+        name: name,
         date_modified: new Date(),
         institution: institution,
         original_author: originalAuthor

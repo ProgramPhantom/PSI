@@ -1,6 +1,7 @@
 import { createListenerMiddleware } from '@reduxjs/toolkit';
 import localforage from 'localforage';
 import { addRecentDiagram, removeRecentDiagram } from '../slices/diagramSlice';
+import { recentDiagramsSelectors } from '../selectors/diagramSelectors';
 import { RootState } from '../rootReducer';
 
 export const diagramListenerMiddleware = createListenerMiddleware();
@@ -9,7 +10,7 @@ diagramListenerMiddleware.startListening({
     actionCreator: addRecentDiagram,
     effect: async (action, listenerApi) => {
         const state = listenerApi.getState() as RootState;
-        const recentDiagrams = state.diagram.recentDiagrams;
+        const recentDiagrams = recentDiagramsSelectors.selectAll(state);
         
         // Define the maximum number of recent diagrams
         const RECENT_DIAGRAMS_LIMIT = 10;

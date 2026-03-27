@@ -4,10 +4,13 @@ import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import * as Actions from "../../redux/thunks/actionThunks";
 import { setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen } from "../../redux/slices/dialogSlice";
 import { setFileName } from "../../redux/slices/diagramSlice";
+import { selectCurrentDiagramSource, selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
 
 const Toolbar: React.FC = () => {
 	const dispatch = useAppDispatch();
-	const { fileName, diagramUUID, saveState, diagramSource, loadStatus } = useAppSelector((state) => state.diagram);
+	const { diagramUUID, saveState, loadStatus } = useAppSelector((state) => state.diagram);
+	const fileName = useAppSelector(selectCurrentFileName);
+	const diagramSource = useAppSelector(selectCurrentDiagramSource);
 
 	const getLoadStatusIcon = () => {
 		switch (loadStatus) {
@@ -110,10 +113,13 @@ const Toolbar: React.FC = () => {
 					{saveState !== 'saved' && <span style={{ marginLeft: "2px" }}>*</span>}
 				</div>
 
-				{diagramUUID && <>
+				{saveState === "saved" && 
 					<Tooltip content={diagramSource === "server" ? "Saved on server" : "Saved locally"} position={Position.BOTTOM}>
 						<Icon icon={diagramSource === "server" ? "cloud" : "floppy-disk"} size={14} style={{ marginLeft: "6px", marginBottom: "2px", color: Colors.GRAY3 }} />
 					</Tooltip>
+				}
+
+				{diagramUUID && <>
 					<Tooltip content={diagramUUID || "No UUID"} position={Position.BOTTOM}>
 						<Icon icon="info-sign" size={12} style={{ marginLeft: "6px", marginBottom: "2px", cursor: "help", color: Colors.GRAY3 }} />
 					</Tooltip>

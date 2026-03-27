@@ -9,6 +9,7 @@ import { RootState } from "../rootReducer";
 import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
+import { selectCurrentFileName } from "../selectors/diagramSelectors";
 
 
 // --- Logic Handlers ---
@@ -37,7 +38,7 @@ export const handleNewDiagram = createAsyncThunk(
 export const handleSaveDiagram = createAsyncThunk(
     'actions/handleSaveDiagram',
     async (_, { dispatch }) => {
-        dispatch(saveDiagram(false));
+        dispatch(saveDiagram({}));
     }
 );
 
@@ -74,7 +75,7 @@ export const handleExportDiagramFile = createAsyncThunk(
     'actions/handleExportDiagramFile',
     async (_, { getState }) => {
         const state = getState() as RootState;
-        const fileName = state.diagram.fileName;
+        const fileName = selectCurrentFileName(state);
         const UUID = state.diagram.diagramUUID
 
         if (UUID === undefined) {
@@ -166,7 +167,7 @@ export const handleSaveSVG = createAsyncThunk(
     async (_, { getState }) => {
         try {
             const state = getState() as RootState;
-            const fileNameFromRedux = state.diagram.fileName;
+            const fileNameFromRedux = selectCurrentFileName(state);
 
             const surface = ENGINE.surface;
             const svgClone = surface.clone(true, false);
@@ -246,7 +247,7 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
             const height = dimensions.height;
 
             const state = getState() as RootState;
-            const fileName = state.diagram.fileName;
+            const fileName = selectCurrentFileName(state);
 
             // Get the current SVG surface from the ENGINE
             const surface = ENGINE.surface;

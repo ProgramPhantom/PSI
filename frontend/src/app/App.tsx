@@ -1,8 +1,7 @@
 import { Drawer, Position, Spinner } from "@blueprintjs/core";
 import { SVG } from "@svgdotjs/svg.js";
-import { saveAs } from "file-saver";
 import localforage from "localforage";
-import { ReactNode, useEffect, useState, useSyncExternalStore } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Banner from "../features/banner/Banner";
 import Console from "../features/banner/Console";
 import Canvas from "../features/canvas/Canvas";
@@ -14,12 +13,11 @@ import Form from "../features/Form";
 import ENGINE from "../logic/engine";
 import { api } from "../redux/api/api";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { setSaveState } from "../redux/slices/diagramSlice";
+import { selectCurrentDiagramSource } from "../redux/selectors/diagramSelectors";
 import { initialiseAssets } from "../redux/thunks/assetThunks";
-import { loadDiagram, openDiagram } from "../redux/thunks/diagramThunks";
+import { loadDiagram, newDiagram, openDiagram } from "../redux/thunks/diagramThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
-import { appToaster } from "./Toaster";
-import { WelcomeDialog } from "../features/dialog/WelcomeDialog";
-import { setDiagramLoadStatus, setDiagramSource, setSaveState } from "../redux/slices/diagramSlice";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
@@ -31,7 +29,7 @@ export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDr
 function App() {
 	const dispatch = useAppDispatch();
 	const diagramUUID = useAppSelector(state => state.diagram.diagramUUID);
-	const diagramSource = useAppSelector(state => state.diagram.diagramSource)
+	const diagramSource = useAppSelector(selectCurrentDiagramSource)
 
 	// useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
@@ -65,19 +63,18 @@ function App() {
 							await dispatch(openDiagram(file)).unwrap();
 							dispatch(setSaveState("saved"))
 						} else {
-							ENGINE.loadDiagramState();
-							dispatch(setDiagramLoadStatus("open"))
+							await dispatch(newDiagram())
 						}
 					} catch (e) {
 						console.warn("Failed to load local diagram", e);
-						ENGINE.loadDiagramState();
+						await dispatch(newDiagram())
 					}
 				} else if (diagramSource === "server") {
 					if (diagramUUID !== undefined) {
 						dispatch(loadDiagram(diagramUUID))
 					} else {
 						console.warn(`No UUID for diagram server load`)
-						ENGINE.loadDiagramState()
+						await dispatch(newDiagram())
 					}
 				}
 

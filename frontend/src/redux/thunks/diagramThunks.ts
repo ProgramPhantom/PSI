@@ -1,16 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { IDiagram } from "../../logic/hasComponents/diagram";
-import ENGINE from "../../logic/engine";
-import { api } from "../api/api";
-import { appToaster } from "../../app/Toaster";
-import { RootState } from "../rootReducer";
-import { loadAsset } from "./assetThunks";
 import JSZip from "jszip";
 import localforage from "localforage";
-import { createDiagramFile } from "../../fileCreation/createDiagramFile";
-import { setDiagramUUID, setFileName, addRecentDiagram, setSaveState, setDiagramSource } from "../slices/diagramSlice";
 import { v7 as uuidv7 } from "uuid";
+import { appToaster } from "../../app/Toaster";
+import { createDiagramFile } from "../../fileCreation/createDiagramFile";
+import ENGINE from "../../logic/engine";
+import { IDiagram } from "../../logic/hasComponents/diagram";
 import { IDiagramMetadata } from "../../types/diagram";
+import { api } from "../api/api";
+import { RootState } from "../rootReducer";
+import { selectCurrentDiagramSource, selectCurrentFileName } from "../selectors/diagramSelectors";
+import { addRecentDiagram, setDiagramLoadStatus, setDiagramSource, setDiagramUUID, setFileName, setSaveState } from "../slices/diagramSlice";
+import { loadAsset } from "./assetThunks";
 
 
 // -------------- Pure thunks ------------------
@@ -60,12 +61,17 @@ export const newDiagram = createAsyncThunk<void, void>(
         const isLoggedIn = userState?.isSuccess && userState?.data;
 
         ENGINE.resetDiagram();
-        thunkAPI.dispatch(setDiagramUUID(undefined));
-        thunkAPI.dispatch(setFileName("new-diagram"));
+        const currentUUID = uuidv7();
+        thunkAPI.dispatch(setDiagramUUID(currentUUID));
+        thunkAPI.dispatch(addRecentDiagram({
+            name: "new-diagram",
+            diagramUUID: currentUUID,
+            diagramSource: isLoggedIn ? "server" : "local",
+            opened: new Date().toISOString()
+        }));
+        
 
-        if (!isLoggedIn) {
-            thunkAPI.dispatch(setDiagramSource("local"))
-        }
+        thunkAPI.dispatch(saveDiagram({}))
 
         appToaster.show({ message: "New diagram created", intent: "success" });
 
@@ -95,7 +101,7 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
             const metadataToUpload: IDiagramMetadata = {
                 UUID: currentUUID,
                 source: "server",
-                diagramName: state.diagram.fileName,
+                diagramName: selectCurrentFileName(state),
                 institution: undefined,
                 originalAuthor: isLoggedIn ? `${userState.data.firstname} ${userState.data.surname}`.trim() : undefined,
                 dateCreated: new Date().toISOString()
@@ -139,9 +145,9 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
     }
 );
 
-export const saveDiagram = createAsyncThunk<void, boolean>(
+export const saveDiagram = createAsyncThunk<void, {fileName?: string}>(
     'application/saveDiagram',
-    async (saveAs, thunkAPI) => {
+    async ({fileName}, thunkAPI) => {
         const diagramStateObject: IDiagram = ENGINE.handler.diagram.state;
         const state = thunkAPI.getState() as RootState;
         const userState = api.endpoints.getMe.select()(state);
@@ -149,14 +155,15 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
 
         let currentUUID: string | undefined = state.diagram.diagramUUID;
 
-
-        if (saveAs || currentUUID === undefined) {
+        const saveAs = fileName !== undefined ? true : false
+        if (fileName !== undefined) {
             currentUUID = uuidv7();
             thunkAPI.dispatch(setDiagramUUID(currentUUID));
 
             thunkAPI.dispatch(addRecentDiagram({
-                name: state.diagram.fileName,
+                name: fileName,
                 diagramUUID: currentUUID,
+                diagramSource: selectCurrentDiagramSource(state),
                 opened: new Date().toISOString()
             }));
         }
@@ -169,10 +176,15 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
             return
         }
 
-        const source = state.diagram.diagramSource;
+        const source = selectCurrentDiagramSource(state);
 
         if (source === "server" || isLoggedIn) {
-            thunkAPI.dispatch(setDiagramSource("server"))
+            if (source === "local") {
+                // Changing from local to server diagram
+                await localforage.removeItem(`diagram-${currentUUID}`);
+                thunkAPI.dispatch(setDiagramSource("server"))
+            }
+
             await thunkAPI.dispatch(uploadDiagram({ stateObject: diagramStateObject, asNew: saveAs }));
             thunkAPI.dispatch(setSaveState("saved"))
 
@@ -182,7 +194,7 @@ export const saveDiagram = createAsyncThunk<void, boolean>(
                 const file = await createDiagramFile({
                     "UUID": currentUUID,
                     "source": "local",
-                    diagramName: state.diagram.fileName,
+                    diagramName: selectCurrentFileName(state),
                     institution: undefined,
                     originalAuthor: undefined,
                     dateCreated: new Date().toISOString()
@@ -269,13 +281,14 @@ export const openDiagram = createAsyncThunk<void, File>(
 
                         thunkAPI.dispatch(setFileName(diagramName));
 
-                        if (manifestData.source === "local") {
-                            thunkAPI.dispatch(addRecentDiagram({
-                                name: diagramName,
-                                diagramUUID: manifestData.UUID,
-                                opened: new Date().toISOString()
-                            }));
-                        }
+                        
+                        thunkAPI.dispatch(addRecentDiagram({
+                            name: diagramName,
+                            diagramUUID: manifestData.UUID,
+                            diagramSource: manifestData.source ?? "local",
+                            opened: new Date().toISOString()
+                        }));
+                        
 
                     } else {
                         console.error(`Diagram does not contain ID`)
@@ -286,6 +299,8 @@ export const openDiagram = createAsyncThunk<void, File>(
             }
 
             ENGINE.loadDiagramState(stateData);
+            
+            thunkAPI.dispatch(saveDiagram({}))
 
             appToaster.show({
                 message: "Diagram loaded successfully",

@@ -6,6 +6,7 @@ import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
 import { RecentDiagram } from "../../redux/slices/diagramSlice";
+import { selectLocalRecentDiagrams } from "../../redux/selectors/diagramSelectors";
 
 export interface ILoadStateDialogProps {
 	close: () => void;
@@ -16,7 +17,7 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const dispatch = useAppDispatch();
-	const recentDiagrams = useAppSelector(state => state.diagram.recentDiagrams);
+	const recentDiagrams = useAppSelector(selectLocalRecentDiagrams);
 
 	const handleOpenRecent = async (uuid: string, name: string) => {
 		try {
@@ -86,8 +87,8 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 						}}
 					/>
 					<div style={{ marginTop: "24px" }}>
-						<Section icon="history" 
-							title="Recent Diagrams"
+						<Section icon="download" 
+							title="Local Diagrams"
 							collapsible={false}
 						>
 							<SectionCard style={{ padding: 0 }}>

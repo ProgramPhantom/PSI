@@ -117,6 +117,7 @@ export const putSaveDiagram = async (
       //save directly
       const updateResponse = await DiagramRepository.saveById(
         resource,
+        metadata.diagramName,
         metadata.institution,
         metadata.originalAuthor
       );
