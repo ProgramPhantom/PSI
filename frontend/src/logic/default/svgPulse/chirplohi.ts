@@ -4,8 +4,8 @@ export const DEFAULT_CHIRPLOHI: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 1],
 	"asset": { ref: "chirplohi", id: "bc4ae1e90488313835e11aaa61e8abd4a5b49a4db29cc12c788bada544019d4d" },
-	"contentWidth": 50,
-	"contentHeight": 20,
+	"contentWidth": 100,
+	"contentHeight": 40,
 
 	"pulseData": {
 		"alignment": { "x": "centre", "y": "far" },
