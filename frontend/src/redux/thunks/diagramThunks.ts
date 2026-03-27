@@ -55,11 +55,20 @@ export const putSaveDiagramServerThunk = createAsyncThunk<{ copied: boolean, mes
 export const newDiagram = createAsyncThunk<void, void>(
     'application/newDiagram',
     async (_, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+        const userState = api.endpoints.getMe.select()(state);
+        const isLoggedIn = userState?.isSuccess && userState?.data;
+
         ENGINE.resetDiagram();
-        const newUUID = uuidv7();
         thunkAPI.dispatch(setDiagramUUID(undefined));
         thunkAPI.dispatch(setFileName("new-diagram"));
+
+        if (!isLoggedIn) {
+            thunkAPI.dispatch(setDiagramSource("local"))
+        }
+
         appToaster.show({ message: "New diagram created", intent: "success" });
+
     }
 );
 

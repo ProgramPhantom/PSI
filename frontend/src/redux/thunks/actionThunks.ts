@@ -6,7 +6,8 @@ import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
 import { RootState } from "../rootReducer";
-import { setNewDiagramAlertOpen } from "../slices/dialogSlice";
+import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
+import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
 
 
@@ -38,6 +39,35 @@ export const handleSaveDiagram = createAsyncThunk(
     async (_, { dispatch }) => {
         dispatch(saveDiagram(false));
     }
+);
+
+export const logout = createAsyncThunk<void, boolean | void>(
+    'actions/logout',
+
+    async (force, { dispatch, getState }) => {
+        const state = getState() as RootState;
+
+        if (state.diagram.saveState === 'unsaved' && !force) {
+            dispatch(setUnsavedDiagramLogoutAlertOpen(true));
+            return;
+        }
+
+        try {
+            await dispatch(api.endpoints.logoutUser.initiate()).unwrap();
+            dispatch(newDiagram());
+            appToaster.show({
+                message: "Logged out",
+                intent: "success"
+            });
+        } catch (error) {
+            appToaster.show({
+                message: "Failed to logout",
+                intent: "danger"
+            });
+            console.error(error);
+        }
+    },
+    
 );
 
 export const handleExportDiagramFile = createAsyncThunk(

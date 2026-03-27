@@ -10,6 +10,7 @@ export interface DialogState {
     isDebugLayerDialogOpen: boolean;
     isAssetStoreDialogOpen: boolean;
     isNewDiagramAlertOpen: boolean;
+    isUnsavedDiagramLogoutAlertOpen: boolean;
 }
 
 const initialState: DialogState = {
@@ -21,7 +22,8 @@ const initialState: DialogState = {
     isDiagramsDialogOpen: false,
     isDebugLayerDialogOpen: false,
     isAssetStoreDialogOpen: false,
-    isNewDiagramAlertOpen: false
+    isNewDiagramAlertOpen: false,
+    isUnsavedDiagramLogoutAlertOpen: false
 };
 
 export const dialogSlice = createSlice({
@@ -54,6 +56,9 @@ export const dialogSlice = createSlice({
         },
         setNewDiagramAlertOpen: (state, action: PayloadAction<boolean>) => {
             state.isNewDiagramAlertOpen = action.payload;
+        },
+        setUnsavedDiagramLogoutAlertOpen: (state, action: PayloadAction<boolean>) => {
+            state.isUnsavedDiagramLogoutAlertOpen = action.payload;
         }
     },
 });
@@ -67,7 +72,8 @@ export const {
     setDiagramsDialogOpen,
     setDebugLayerDialogOpen,
     setAssetStoreDialogOpen,
-    setNewDiagramAlertOpen
+    setNewDiagramAlertOpen,
+    setUnsavedDiagramLogoutAlertOpen
 } = dialogSlice.actions;
 
 export default dialogSlice.reducer;

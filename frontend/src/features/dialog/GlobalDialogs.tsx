@@ -18,6 +18,7 @@ import { AssetStoreDialog } from "./AssetStoreDialog";
 import { SaveAsDialog } from "./SaveAsDialog";
 import { WelcomeDialog } from "./WelcomeDialog";
 import { UnsavedDiagramAlert } from "./UnsavedDiagramAlert";
+import { UnsavedDiagramLogoutAlert } from "./UnsavedDiagramLogoutAlert";
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -71,6 +72,7 @@ export const GlobalDialogs: React.FC = () => {
             />
 
             <UnsavedDiagramAlert />
+            <UnsavedDiagramLogoutAlert />
         </>
     );
 };
