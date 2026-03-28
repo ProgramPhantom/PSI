@@ -3,7 +3,7 @@ import { ISVGElement } from "../../svgElement"
 export const DEFAULT_CHIRPHILO: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 1],
-	"asset": { ref: "chirphilo", id: "d192b41aba3e0bd8c239cd51d74489becc1eb15a70d66dc4e371c6f426dd6ae1" },
+	"asset": { ref: "chirphilo", id: "2daabd970764281a6336f6ca9ce21e60814522cda1bdd7b540178d7f0416a16b" },
 	"contentWidth": 100,
 	"contentHeight": 40,
 

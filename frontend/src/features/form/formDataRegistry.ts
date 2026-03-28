@@ -2,7 +2,7 @@
 import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
 import { DEFAULT_180H } from "../../logic/default/simplePulse/180pulse";
-import { DEFAULT_180S } from "../../logic/default/svgPulse/180";
+import { DEFAULT_180S } from "../../logic/default/svgPulse/180Soft";
 import { ILabel } from "../../logic/hasComponents/label";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
