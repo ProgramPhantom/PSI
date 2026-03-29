@@ -1,7 +1,7 @@
 import * as Acquire from "./acquire";
 import * as HalfSine from "./halfsine";
 import * as AmpSeries from "./amp";
-import * as P180 from "./180";
+import * as P180 from "./180Soft";
 import * as Trapezium from "./trapezium";
 import * as TallTrapezium from "./talltrapezium";
 

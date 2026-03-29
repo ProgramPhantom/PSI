@@ -1,5 +1,5 @@
 import {
-	Button
+	Button, EditableText
 } from "@blueprintjs/core";
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
@@ -79,6 +79,14 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [focusLevel, setFocusLevel] = useState(0);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [zoom, setZoom] = useState(2);
+	const [zoomString, setZoomString] = useState("2");
+	const [isZoomEditing, setIsZoomEditing] = useState(false);
+
+	useEffect(() => {
+		if (!isZoomEditing) {
+			setZoomString(String(Math.round(zoom * 100) / 100));
+		}
+	}, [zoom, isZoomEditing]);
 
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
@@ -142,6 +150,33 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		setHoveredElement(element);
 	};
 
+	const onConfirmZoomEntry = (val: string) => {
+		setIsZoomEditing(false);
+		let newZoom = parseFloat(val);
+		if (!isNaN(newZoom) && newZoom > 0) {
+			newZoom = Math.min(Math.max(newZoom, 0.5), 5);
+			setZoom(newZoom);
+			setZoomString(String(Math.round(newZoom * 100) / 100));
+
+			const ctx = transformComponentRef.current;
+			if (ctx) {
+				const { positionX, positionY, scale: oldScale } = ctx.instance.transformState;
+				const rect = ctx.instance.wrapperComponent?.getBoundingClientRect();
+				let nx = positionX;
+				let ny = positionY;
+				if (rect) {
+					const cx = rect.width / 2;
+					const cy = rect.height / 2;
+					nx = cx - (cx - positionX) * (newZoom / oldScale);
+					ny = cy - (cy - positionY) * (newZoom / oldScale);
+				}
+				ctx.setTransform(nx, ny, newZoom, 0);
+			}
+		} else {
+			setZoomString(String(Math.round(zoom * 100) / 100));
+		}
+	}
+
 	useEffect(() => {
 		if (interactiveElement) {
 			interactiveElement.svg?.hide();
@@ -190,38 +225,45 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					}}>
 					<Toolbar />
 					<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
-						{/* Image name display text box - positioned outside TransformWrapper */}
 						<div
 							style={{
 								position: "absolute",
-								top: "5px",
-								left: "10px",
-								zIndex: 100
+								top: "6px",
+								left: "6px",
+								zIndex: 10,
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "normal",
+								gap: "6px"
 							}}>
-
-						</div>
-
-						<div
-							style={{
-								position: "absolute",
-								bottom: "5px",
-								right: "10px",
-								zIndex: 100
-							}}>
-
-						</div>
-
-						<div
-							style={{
-								position: "absolute",
-								top: "10px",
-								left: "10px",
-								zIndex: 10
-							}}>
-							<Button
+							<Button size="small" variant="outlined" style={{ width: "16px" }}
 								icon="target"
 								onClick={() => transformComponentRef.current?.centerView()}
 							/>
+							<div
+								style={{
+									display: "flex",
+									alignItems: "center",
+									background: "white",
+									padding: "1px 4px",
+
+									boxShadow: "0 1px 1px rgba(16, 22, 26, 0.1)",
+									fontSize: "10px",
+									fontWeight: "bold",
+									color: "#182026",
+									cursor: "text",
+									width: "32px"
+								}}>
+								<EditableText minWidth={16}
+									value={zoomString}
+									onChange={(val) => setZoomString(val)}
+									onConfirm={onConfirmZoomEntry}
+									onEdit={() => setIsZoomEditing(true)}
+									selectAllOnFocus={true}
+								/>
+								<span style={{ marginLeft: "1px", color: "#5c7080", pointerEvents: "none" }}>x</span>
+							</div>
+
 						</div>
 
 
@@ -229,6 +271,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 							<TransformWrapper
 								ref={transformComponentRef}
 								initialScale={zoom}
+								onZoom={(z) => {
+									setZoom(z.state.scale);
+								}}
 								onZoomStop={(z) => {
 									setZoom(z.state.scale);
 								}}
@@ -261,7 +306,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 										}}></div>
 
 
-
 									<div
 										style={{
 											width: "100%",
@@ -273,9 +317,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											borderColor: "#0000003d" */
 										}}
 										onMouseLeave={() => stopHover()}>
-
-
-
 
 										{/* Transformed Overlay Layer */}
 										<div className="nopan"

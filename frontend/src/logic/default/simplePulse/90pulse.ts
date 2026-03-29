@@ -3,8 +3,8 @@ import { IRectElement } from "../../rectElement"
 export const DEFAULT_90H: IRectElement = {
 	"padding": [0, 4, 0, 4],
 	"offset": [0, 0],
-	"contentWidth": 7,
-	"contentHeight": 50,
+	"contentWidth": 14,
+	"contentHeight": 100,
 
 	"pulseData": {
 		"alignment": { "x": "centre", "y": "far" },

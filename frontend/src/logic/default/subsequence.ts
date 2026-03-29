@@ -23,25 +23,28 @@ export const DEFAULT_SUBSEQUENCE: ISubgrid = {
 	"type": "subgrid",
 
 	"children": [
-		{...DEFAULT_ACQUIRE, placementMode: {
-			"type": "grid",
-			"config": {
-				"coords": {row: 0, col: 0}
-			}},
+		{
+			...DEFAULT_ACQUIRE, placementMode: {
+				"type": "grid",
+				"config": {
+					"coords": { row: 0, col: 0 }
+				}
+			},
 			pulseData: {
 				orientation: "both"
-			}	
+			}
 		},
 
-		{...DEFAULT_ACQUIRE, placementMode: {
-			"type": "grid",
-			"config": {
-				"coords": {row: 3, col: 0}
+		{
+			...DEFAULT_ACQUIRE, placementMode: {
+				"type": "grid",
+				"config": {
+					"coords": { row: 3, col: 0 }
+				},
 			},
+			pulseData: {
+				orientation: "both"
+			}
 		},
-		pulseData: {
-			orientation: "both"
-		}	
-	},
 	]
 }

@@ -2,10 +2,10 @@ import { ISVGElement } from "../../svgElement"
 
 export const DEFAULT_SALTIRELOHI: ISVGElement = {
 	"padding": [0, 0, 0, 0],
-	"offset": [0, 1],
-	"asset": { ref: "saltirelohi", id: "344dc16701118e967268e6a287deed1f1b023ee22c62e78c261935a66e99f08e" },
-	"contentWidth": 50,
-	"contentHeight": 20,
+	"offset": [0, 2],
+	"asset": { ref: "saltirelohi", id: "6563b6a12f3a0332e2c652e76ba74be6c771a64e283b624f657714d06f201c82" },
+	"contentWidth": 100,
+	"contentHeight": 40,
 
 	"pulseData": {
 		"alignment": { "x": "centre", "y": "far" },

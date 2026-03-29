@@ -4,7 +4,7 @@ import { DEFAULT_LINE } from "./line";
 import { DEFAULT_180H } from "./simplePulse/180pulse";
 import { DEFAULT_90H } from "./simplePulse/90pulse";
 import { DEFAULT_SUBSEQUENCE } from "./subsequence";
-import { DEFAULT_180S } from "./svgPulse/180";
+import { DEFAULT_180S } from "./svgPulse/180Soft";
 import { DEFAULT_ACQUIRE } from "./svgPulse/acquire";
 import { DEFAULT_AMP } from "./svgPulse/amp";
 import { DEFAULT_CHIRPHILO } from "./svgPulse/chirphilo";
