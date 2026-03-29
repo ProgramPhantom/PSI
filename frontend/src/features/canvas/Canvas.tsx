@@ -326,7 +326,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 												left: 0,
 												width: "100%",
 												height: "100%",
-												zIndex: 20000,
+												zIndex: 10001,
 												pointerEvents: "none",
 												transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
 													}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0

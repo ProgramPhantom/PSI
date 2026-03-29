@@ -191,7 +191,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
       </Rnd> */}
 				<div key={dragElementType}
 					style={{
-						zIndex: 15000,
+						zIndex: 20,
 						opacity: isDragging ? 0 : 1,
 						position: "relative"
 					}}>
@@ -219,6 +219,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								left: 0,
 								overflow: "visible"
 							}}>
+
 							{props.element.padding.some((v) => v > 0) ? (
 								<rect
 									x={-props.element.padding[3]} // Left padding
@@ -235,6 +236,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							) : (
 								<></>
 							)}
+
 							<svg ref={visualRef}></svg>
 							<rect
 								style={{

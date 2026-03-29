@@ -99,21 +99,54 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		return walkUp(initialElement);
 	};
 
-	const mouseOver = (over: React.MouseEvent<SVGSVGElement, globalThis.MouseEvent>) => {
-		var rawTargetId: string | undefined = (over.target as HTMLElement).id;
+	// We store these in refs because the window mousemove listener is initialized once (empty dependency array).
+	// Using refs allows the listener to always access the latest version of these functions
+	// without needing to re-bind the event listener every time props (like focusLevel) change.
+	const getMouseElementFromIDRef = useRef(getMouseElementFromID);
+	getMouseElementFromIDRef.current = getMouseElementFromID;
 
+	const setHoveredElementRef = useRef(props.setHoveredElement);
+	setHoveredElementRef.current = props.setHoveredElement;
 
-		if (rawTargetId === undefined) {
-			props.setHoveredElement(undefined);
+	useEffect(() => {
+		/** 
+		 * "X-Ray" Hover Detection:
+		 * Standard mousemove events are blocked by elements with higher z-index (like DraggableElements).
+		 * document.elementsFromPoint returns an array of ALL elements under the cursor, 
+		 * allowing us to see "through" the draggable layer to find hitboxes underneath.
+		 */
+		const handleGlobalMouseMove = (e: MouseEvent) => {
+			if (!hitboxSvgRef.current) return;
+			const elements = document.elementsFromPoint(e.clientX, e.clientY);
 
-			return;
-		}
+			let rawTargetId: string | undefined = undefined;
+			for (let i = 0; i < elements.length; i++) {
+				const el = elements[i];
+				// Ignore the layer container itself
+				if (el === hitboxSvgRef.current) continue;
+				// Check if the element is a child of our hitbox SVG and has an ID
+				if (el.id && hitboxSvgRef.current.contains(el)) {
+					rawTargetId = el.id;
+					break;
+				}
+			}
 
-		var parsedId: string = rawTargetId.split("-")[0];
-		var element: Visual | undefined = getMouseElementFromID(parsedId);
+			if (rawTargetId === undefined) {
+				setHoveredElementRef.current(undefined);
+				return;
+			}
 
-		props.setHoveredElement(element);
-	};
+			let parsedId: string = rawTargetId.split("-")[0];
+			let element: Visual | undefined = getMouseElementFromIDRef.current(parsedId);
+			setHoveredElementRef.current(element);
+		};
+
+		window.addEventListener("mousemove", handleGlobalMouseMove);
+		return () => {
+			window.removeEventListener("mousemove", handleGlobalMouseMove);
+		};
+	}, []);
+
 
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	useEffect(() => {
@@ -124,6 +157,8 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			hitboxSvgRef.current.appendChild(hitboxSVG.node);
 		}
 	}, [store]);
+
+
 	return (
 		<>
 			<svg id="hitbox-layer"
@@ -139,9 +174,6 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 					height: ENGINE.handler.diagram.height,
 					marginBottom: "auto",
 					marginTop: "auto"
-				}}
-				onMouseMove={(o) => {
-					mouseOver(o);
 				}}
 			/>
 		</>
