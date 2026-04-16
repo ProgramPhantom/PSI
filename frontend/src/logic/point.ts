@@ -81,8 +81,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	public type: AllComponentTypes;
 
 	constructor(params: IPoint) {
-		this._x = params.x ?? 0;
-		this._y = params.y ?? 0;
+		this._x = Math.round(params.x ?? 0);
+		this._y = Math.round(params.y ?? 0);
 
 		this.ref = params.ref;
 		this.role = params.role;
@@ -104,10 +104,10 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		return this._y;
 	}
 	public set x(val: number) {
-		this._x = val;
+		this._x = Math.round(val)
 	}
 	public set y(val: number) {
-		this._y = val;
+		this._y = Math.round(val);
 	}
 
 	move({ dx, dy }: Shift) {

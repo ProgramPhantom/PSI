@@ -82,13 +82,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [zoomString, setZoomString] = useState("2");
 	const [isZoomEditing, setIsZoomEditing] = useState(false);
 
-	useEffect(() => {
-		if (!isZoomEditing) {
-			setZoomString(String(Math.round(zoom * 100) / 100));
-		}
-	}, [zoom, isZoomEditing]);
-
-
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 
@@ -178,6 +171,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	}
 
 	useEffect(() => {
+		if (!isZoomEditing) {
+			setZoomString(String(Math.round(zoom * 100) / 100));
+		}
+	}, [zoom, isZoomEditing]);
+
+	useEffect(() => {
 		if (interactiveElement) {
 			interactiveElement.svg?.hide();
 		}
@@ -187,7 +186,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		};
 	}, [interactiveElement?.id]);
 
-
 	// Reset focus level when lose focus
 	useEffect(() => {
 		if (selectedElementId === undefined) {
@@ -195,7 +193,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		}
 	}, [selectedElementId]);
 
-
+	// Refresh canvas
 	useEffect(() => {
 		if (diagramSvgRef.current && ENGINE.handler.diagram.svg) {
 			diagramSvgRef.current.replaceChildren();
@@ -335,24 +333,15 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 											{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
 											{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
-												<div
-													key={interactiveElement.id}
-													className="nopan"
-													style={{
-														position: "absolute",
-														width: interactiveElement.contentWidth,
-														height: interactiveElement.contentHeight,
-														left: interactiveElement.drawCX,
-														top: interactiveElement.drawCY,
-														pointerEvents: "auto"
-													}}>
-													<CanvasDraggableElement
-														reselect={reselect}
-														name={interactiveElement.ref}
-														element={interactiveElement}
-														x={interactiveElement.x}
-														y={interactiveElement.y}></CanvasDraggableElement>
-												</div>
+
+												<CanvasDraggableElement
+													reselect={reselect}
+													name={interactiveElement.ref}
+													element={interactiveElement}
+													visualState={interactiveElement.id === selectedElement?.id ? "selected" : "hovered"}
+													x={interactiveElement.x}
+													y={interactiveElement.y}></CanvasDraggableElement>
+
 											)}
 
 
