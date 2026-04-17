@@ -83,6 +83,7 @@ export default class LabelGroup
 
 		this.ref = coreChild.ref + "-labelGroup";
 
+		coreChild.placementControl = "auto";
 		this._coreChild = coreChild;
 		this.setCoreChild(coreChild);
 
@@ -107,7 +108,7 @@ export default class LabelGroup
 
 
 	addLabel(label: GridCellElement<Label>, position: Position) {
-
+		label.placementControl = "auto"
 		label.placementMode = {
 			type: "grid",
 			config: {

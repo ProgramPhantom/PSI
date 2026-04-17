@@ -120,8 +120,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	}
 
 	public computePositions(root: { x: number; y: number; }): void {
-		this.x = root.x;
-		this.y = root.y;
+		super.computePositions(root);
 
 		this.children.forEach((c) => {
 			c.computePositions({ x: this.cx, y: this.cy })

@@ -118,8 +118,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	}
 
 	public computePositions(root: { x: number, y: number }): void {
-		this.x = root.x;
-		this.y = root.y;
+		super.computePositions(root);
 
 		var xCount = 0;
 		var yCount = 0;
