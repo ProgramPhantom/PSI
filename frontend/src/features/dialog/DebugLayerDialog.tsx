@@ -52,6 +52,14 @@ export function DebugLayerDialog() {
 						onChange={() => {
 							dispatch(toggleDebugSelectionType("diagram"));
 						}}></Checkbox>
+
+					<Checkbox
+						label="Sequence Aligner"
+						alignIndicator="end"
+						checked={debugSelection["sequence-aligner"]}
+						onChange={() => {
+							dispatch(toggleDebugSelectionType("sequence-aligner"));
+						}}></Checkbox>
 				</div>
 			</DialogBody>
 		</Dialog>

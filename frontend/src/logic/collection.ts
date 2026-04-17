@@ -128,14 +128,8 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 		if (this.placementMode.type === "free") {
 			let topLeft: { x: number, y: number } = this.getTopLeft();
-
-			if (topLeft.x < this.x) {
-				this.cx = topLeft.x;
-			}
-
-			if (topLeft.y < this.y) {
-				this.cy = topLeft.y;
-			}
+			this.cx = topLeft.x;
+			this.cy = topLeft.y;
 		}
 	}
 

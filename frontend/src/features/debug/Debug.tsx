@@ -46,6 +46,9 @@ const Debug: React.FC<IDebug> = (props) => {
 								element={ENGINE.handler.diagram}
 								contentColour={Colors.CERULEAN1}></PaddedBoxDebug>
 						);
+					case "sequence-aligner":
+						return <PaddedBoxDebug element={ENGINE.handler.diagram.sequenceAligner}
+							contentColour={Colors.SEPIA3}></PaddedBoxDebug>
 				}
 			})}
 		</>
