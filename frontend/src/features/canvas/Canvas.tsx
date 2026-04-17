@@ -76,18 +76,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
 
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
-	const [focusLevel, setFocusLevel] = useState(0);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [zoom, setZoom] = useState(2);
 	const [zoomString, setZoomString] = useState("2");
 	const [isZoomEditing, setIsZoomEditing] = useState(false);
-
-	useEffect(() => {
-		if (!isZoomEditing) {
-			setZoomString(String(Math.round(zoom * 100) / 100));
-		}
-	}, [zoom, isZoomEditing]);
-
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
@@ -97,12 +89,19 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		isDragging: monitor.isDragging()
 	}));
 
-	const interactiveElement: Visual | undefined = selectedElement || (props.selectedTool.type === "select" ? hoveredElement : undefined);
+	const interactiveElements: Visual[] = [];
+	if (selectedElement) {
+		interactiveElements.push(selectedElement);
+	}
+	if (props.selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
+		interactiveElements.push(hoveredElement);
+	}
+	
+	const interactiveElementIds = interactiveElements.map(e => e.id).join(",");
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	const deselect = () => {
 		selectedElement?.svg?.show();
-		setFocusLevel(0);
 		dispatch(setSelectedElementId(undefined));
 	};
 
@@ -112,7 +111,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const selectVisual = (e: Visual) => {
 		dispatch(setSelectedElementId(e.id));
-		setFocusLevel(focusLevel + 1);
 		e.svg?.hide();
 	};
 
@@ -178,24 +176,20 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	}
 
 	useEffect(() => {
-		if (interactiveElement) {
-			interactiveElement.svg?.hide();
+		if (!isZoomEditing) {
+			setZoomString(String(Math.round(zoom * 100) / 100));
 		}
+	}, [zoom, isZoomEditing]);
+
+	useEffect(() => {
+		interactiveElements.forEach(el => el.svg?.hide());
 
 		return () => {
-			interactiveElement?.svg?.show();
+			interactiveElements.forEach(el => el.svg?.show());
 		};
-	}, [interactiveElement?.id]);
+	}, [interactiveElementIds]);
 
-
-	// Reset focus level when lose focus
-	useEffect(() => {
-		if (selectedElementId === undefined) {
-			setFocusLevel(0);
-		}
-	}, [selectedElementId]);
-
-
+	// Refresh canvas
 	useEffect(() => {
 		if (diagramSvgRef.current && ENGINE.handler.diagram.svg) {
 			diagramSvgRef.current.replaceChildren();
@@ -326,7 +320,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 												left: 0,
 												width: "100%",
 												height: "100%",
-												zIndex: 20000,
+												zIndex: 10001,
 												pointerEvents: "none",
 												transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
 													}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0
@@ -334,26 +328,16 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											}}>
 
 											{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
-											{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
-												<div
-													key={interactiveElement.id}
-													className="nopan"
-													style={{
-														position: "absolute",
-														width: interactiveElement.contentWidth,
-														height: interactiveElement.contentHeight,
-														left: interactiveElement.drawCX,
-														top: interactiveElement.drawCY,
-														pointerEvents: "auto"
-													}}>
-													<CanvasDraggableElement
-														reselect={reselect}
-														name={interactiveElement.ref}
-														element={interactiveElement}
-														x={interactiveElement.x}
-														y={interactiveElement.y}></CanvasDraggableElement>
-												</div>
-											)}
+											{interactiveElements.map((el) => (
+												<CanvasDraggableElement
+													key={el.id}
+													reselect={reselect}
+													name={el.ref}
+													element={el}
+													visualState={el.id === selectedElement?.id ? "selected" : "hovered"}
+													x={el.x}
+													y={el.y}></CanvasDraggableElement>
+											))}
 
 
 											{/* Tools */}
@@ -387,7 +371,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 										{/* Hitbox layer */}
 										{!isDragging ? (
 											<HitboxLayer
-												focusLevel={focusLevel}
+												selectedElementId={selectedElementId}
 												setHoveredElement={constOnHitboxHover}></HitboxLayer>
 										) : (
 											<></>

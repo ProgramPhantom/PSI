@@ -1,6 +1,6 @@
 import { Colors } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
-import React, { CSSProperties, memo, useEffect, useRef } from "react";
+import React, { CSSProperties, memo, useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { HandleStyles } from "react-rnd";
@@ -55,7 +55,8 @@ interface IDraggableElementProps {
 	x: number;
 	y: number;
 
-	reselect: (e: Visual) => void
+	reselect: (e: Visual) => void;
+	visualState: "hovered" | "selected";
 }
 
 export interface CanvasDraggableElementPayload {
@@ -170,6 +171,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		);
 
 		var visualRef = useRef<SVGSVGElement | null>(null);
+		const [visualState, setVisualState] = useState<SVGElement | null>(null);
 		var visual = props.element.getInternalRepresentation()!.show();
 
 		// Removed the default preview?
@@ -179,8 +181,12 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 		useEffect(() => {
 			if (visualRef.current) {
+				visualRef.current.replaceChildren()
 				visualRef.current.appendChild(visual.node);
 			}
+
+
+
 		}, [props.element]);
 
 		return (
@@ -190,10 +196,16 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
     		<svg ref={visualRef}></svg>
       </Rnd> */}
 				<div key={dragElementType}
+					className="nopan"
 					style={{
-						zIndex: 15000,
+						zIndex: 20,
 						opacity: isDragging ? 0 : 1,
-						position: "relative"
+						position: "absolute",
+						left: props.element.drawX,
+						top: props.element.drawY,
+						width: props.element.width,
+						height: props.element.height,
+						pointerEvents: "auto"
 					}}>
 					<div
 						ref={drag}
@@ -206,49 +218,62 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							};
 						}}
 						style={{
-							height: props.element.contentHeight,
-							width: props.element.contentWidth
+							height: "100%",
+							width: "100%",
+							opacity: 0,
+							cursor: "move"
 						}}>
-						{/* Border */}
-						<svg
-							style={{
-								width: "100%",
-								height: "100%",
-								position: "absolute",
-								top: 0,
-								left: 0,
-								overflow: "visible"
-							}}>
-							{props.element.padding.some((v) => v > 0) ? (
-								<rect
-									x={-props.element.padding[3]} // Left padding
-									y={-props.element.padding[0]} // Top padding
-									width={props.element.width}
-									height={props.element.height}
-									style={{
-										stroke: isDragging ? `none` : `${Colors.GRAY3}`,
-										strokeWidth: "1px",
-										fill: `${Colors.GRAY5}`,
-										fillOpacity: "10%",
-										strokeDasharray: "2 2"
-									}}></rect>
-							) : (
-								<></>
-							)}
-							<svg ref={visualRef}></svg>
-							<rect
-								style={{
-									stroke: isDragging ? `none` : `${Colors.BLUE3}`,
-									width: "100%",
-									height: "100%",
-									strokeWidth: "1px",
-									fill: `${Colors.BLUE5}`,
-									fillOpacity: "10%",
-									strokeDasharray: "1 1"
-								}}></rect>
-						</svg>
 					</div>
 				</div>
+
+				<svg
+					style={{
+						position: "absolute",
+						top: 0,
+						left: 0,
+						width: "100%",
+						height: "100%",
+						pointerEvents: "none",
+						zIndex: 2000,
+						overflow: "visible",
+						opacity: isDragging ? 0 : 1
+					}}>
+
+					{props.element.padding.some((v) => v > 0) ? (
+						<rect
+							x={props.element.drawX}
+							y={props.element.drawY}
+							width={props.element.width}
+							height={props.element.height}
+							style={{
+								stroke: isDragging ? `none` : `${Colors.GRAY3}`,
+								strokeWidth: "1px",
+								fill: `${Colors.GRAY5}`,
+								fillOpacity: "10%",
+								strokeDasharray: "2 2"
+							}}></rect>
+					) : (
+						<></>
+					)}
+
+					<svg ref={visualRef}
+						x={props.element.drawCX}
+						y={props.element.drawCY}
+						width="100%" height="100%" style={{ overflow: "visible" }}></svg>
+
+					<rect
+						x={props.element.drawCX}
+						y={props.element.drawCY}
+						width={props.element.contentWidth}
+						height={props.element.contentHeight}
+						style={{
+							stroke: isDragging ? `none` : `${Colors.BLUE3}`,
+							strokeWidth: "1px",
+							fill: props.visualState === "selected" ? `${Colors.BLUE5}` : "transparent",
+							fillOpacity: props.visualState === "selected" ? "10%" : "0",
+							strokeDasharray: props.visualState === "selected" ? "none" : "2 2"
+						}}></rect>
+				</svg>
 			</>
 		);
 	}
