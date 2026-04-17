@@ -90,7 +90,15 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		isDragging: monitor.isDragging()
 	}));
 
-	const interactiveElement: Visual | undefined = selectedElement || (props.selectedTool.type === "select" ? hoveredElement : undefined);
+	const interactiveElements: Visual[] = [];
+	if (selectedElement) {
+		interactiveElements.push(selectedElement);
+	}
+	if (props.selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
+		interactiveElements.push(hoveredElement);
+	}
+	
+	const interactiveElementIds = interactiveElements.map(e => e.id).join(",");
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	const deselect = () => {
@@ -177,14 +185,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	}, [zoom, isZoomEditing]);
 
 	useEffect(() => {
-		if (interactiveElement) {
-			interactiveElement.svg?.hide();
-		}
+		interactiveElements.forEach(el => el.svg?.hide());
 
 		return () => {
-			interactiveElement?.svg?.show();
+			interactiveElements.forEach(el => el.svg?.show());
 		};
-	}, [interactiveElement?.id]);
+	}, [interactiveElementIds]);
 
 	// Reset focus level when lose focus
 	useEffect(() => {
@@ -332,17 +338,16 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											}}>
 
 											{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
-											{interactiveElement !== undefined && (interactiveElement.id === selectedElement?.id || interactiveElement.id === hoveredElement?.id) && (
-
+											{interactiveElements.map((el) => (
 												<CanvasDraggableElement
+													key={el.id}
 													reselect={reselect}
-													name={interactiveElement.ref}
-													element={interactiveElement}
-													visualState={interactiveElement.id === selectedElement?.id ? "selected" : "hovered"}
-													x={interactiveElement.x}
-													y={interactiveElement.y}></CanvasDraggableElement>
-
-											)}
+													name={el.ref}
+													element={el}
+													visualState={el.id === selectedElement?.id ? "selected" : "hovered"}
+													x={el.x}
+													y={el.y}></CanvasDraggableElement>
+											))}
 
 
 											{/* Tools */}
