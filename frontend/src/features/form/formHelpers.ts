@@ -229,6 +229,8 @@ export function formDataAssembler(
 			// Demote LabelGroup -> plain element (unwrap core child)
 			if (childData && context.originalTarget) {
 				childData.placementMode = context.originalTarget.placementMode;
+				childData.placementControl = context.originalTarget.placementControl;
+				childData.parentId = context.originalTarget.parentId;
 				return childData;
 			}
 			return masterData;
