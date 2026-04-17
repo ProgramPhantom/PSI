@@ -7,7 +7,7 @@ import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
-import { LabelGroupComboForm, SubmitButtonRef } from "./LabelGroupComboForm";
+import { LabelGroupComboForm, SubmitButtonRef } from "./ElementForm";
 
 type FormEffect = "submit" | "delete" | "modify";
 

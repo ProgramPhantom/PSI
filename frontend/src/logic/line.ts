@@ -1,6 +1,7 @@
 import { Defs, Element, Marker, Path, Rect, SVG } from "@svgdotjs/svg.js";
 import LineLike, { ILineLike } from "./lineLike";
 import { UserComponentType } from "./point";
+import { Svg } from "@svgdotjs/svg.js";
 
 
 export type HeadStyle = "default"
@@ -63,7 +64,9 @@ export default class Line extends LineLike implements ILine {
 	}
 
 	public getInternalRepresentation(): Element | undefined {
-		if (this.svg === undefined) { return }
+		if (this.svg === undefined) {
+			this.svg = new Svg();  // TODO: fix this
+		}
 		var internal: Element = this.svg.clone(true, true);
 
 		return internal;

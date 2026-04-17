@@ -28,7 +28,6 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 			},
 			components: {
 				"6032ad89-7b6f-4f61-8406-4aea64f59339": DEFAULT_CHANNEL,
-				"e645a7ef-69d4-415a-93fc-b9ff5b726388": DEFAULT_LINE,
 				"e9530b12-6b62-48e0-89de-60b61c7b87d8": DEFAULT_TEXT,
 				"260710ef-5d40-4ada-bde2-044b17ab271a": DEFAULT_180S,
 				"74d4af8c-e981-4f12-afa0-62a6ddff9d5b": DEFAULT_ACQUIRE,

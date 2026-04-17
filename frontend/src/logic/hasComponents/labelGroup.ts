@@ -1,4 +1,4 @@
-import Collection from "../collection";
+import Collection, { AddDispatchData, Components, StructuredChildEntry } from "../collection";
 import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
 import { isPulse } from "../spacial";
@@ -8,9 +8,7 @@ import Label, { ILabel } from "./label";
 
 
 export interface ILabelGroup extends IGrid {
-	labels: Partial<Record<Position, ILabel>>;
-	coreChild: IVisual;
-	coreChildType: UserComponentType;
+
 }
 
 export default class LabelGroup
@@ -21,95 +19,80 @@ export default class LabelGroup
 	static ElementType: UserComponentType = "label-group";
 	get state(): ILabelGroup {
 		return {
-			labels: this.labelsState,
-			coreChild: this.coreChild.state,
-			coreChildType: this.coreChildType,
 			...super.state,
 		};
 	}
 
-	get labels(): Partial<Record<Position, GridCellElement<Label>>> {
-		let record: Partial<Record<Position, GridCellElement<Label>>> = {};
-
-		let top: GridCellElement<Label> | undefined = this.getCell({ row: 0, col: 1 })?.elements?.[0] as GridCellElement<Label>;
-		let bottom: GridCellElement<Label> | undefined = this.getCell({ row: 2, col: 1 })?.elements?.[0] as GridCellElement<Label>;
-		let left: GridCellElement<Label> | undefined = this.getCell({ row: 1, col: 0 })?.elements?.[0] as GridCellElement<Label>;
-		let right: GridCellElement<Label> | undefined = this.getCell({ row: 1, col: 2 })?.elements?.[0] as GridCellElement<Label>;
-
-		record["top"] = top;
-		record["bottom"] = bottom;
-		record["left"] = left;
-		record["right"] = right;
-
-		return record
-	}
-	get labelsState(): Partial<Record<Position, ILabel>> {
-		let record: Partial<Record<Position, ILabel>> = {};
-
-		let top: Label | undefined = this.getCell({ row: 0, col: 1 })?.elements?.[0] as Label;
-		let bottom: Label | undefined = this.getCell({ row: 2, col: 1 })?.elements?.[0] as Label;
-		let left: Label | undefined = this.getCell({ row: 1, col: 0 })?.elements?.[0] as Label;
-		let right: Label | undefined = this.getCell({ row: 1, col: 2 })?.elements?.[0] as Label;
-
-		if (top) { record["top"] = top.state }
-		if (bottom) { record["bottom"] = bottom.state }
-		if (left) { record["left"] = left.state }
-		if (right) { record["right"] = right.state }
-
-		return record
+	get coreChild(): GridCellElement<Visual> | undefined {
+		let coreChild: GridCellElement<Visual> | undefined = this.roles["coreChild"].object as GridCellElement<Visual> | undefined;
+		return coreChild
 	}
 
-	private _coreChild: GridCellElement;
-	get coreChild(): GridCellElement {
-		return this._coreChild;
+	get labelTop(): GridCellElement<Visual> | undefined {
+		let labelTop: GridCellElement<Visual> | undefined = this.roles["labelTop"].object as GridCellElement<Visual> | undefined;
+		return labelTop
+	}
+	get labelRight(): GridCellElement<Visual> | undefined {
+		let labelRight: GridCellElement<Visual> | undefined = this.roles["labelRight"].object as GridCellElement<Visual> | undefined;
+		return labelRight
+	}
+	get labelBottom(): GridCellElement<Visual> | undefined {
+		let labelBottom: GridCellElement<Visual> | undefined = this.roles["labelBottom"].object as GridCellElement<Visual> | undefined;
+		return labelBottom
+	}
+	get labelLeft(): GridCellElement<Visual> | undefined {
+		let labelLeft: GridCellElement<Visual> | undefined = this.roles["labelLeft"].object as GridCellElement<Visual> | undefined;
+		return labelLeft
 	}
 
-	coreChildType: UserComponentType;
+
+	roles: Components = {
+		"coreChild": {
+			object: undefined,
+			initialiser: this.setCoreChild.bind(this)
+		},
+		"labelTop": {
+			object: undefined,
+			initialiser: this.addLabelTop.bind(this)
+		},
+		"labelRight": {
+			object: undefined,
+			initialiser: this.addLabelRight.bind(this)
+		},
+		"labelBottom": {
+			object: undefined,
+			initialiser: this.addLabelBottom.bind(this)
+		},
+		"labelLeft": {
+			object: undefined,
+			initialiser: this.addLabelLeft.bind(this)
+		}
+	}
+
 
 
 	constructor(
 		params: ILabelGroup,
-		coreChild: GridCellElement,
 	) {
 		super(params);
 		this.setMatrixBottomRight({ row: 2, col: 2 })
-
-		this.coreChildType = params.coreChildType;
-
-		var coreChild: GridCellElement = coreChild;
-
-
-		this.placementMode = params.placementMode ?? { type: "free" };
-
-		this.ref = coreChild.ref + "-labelGroup";
-
-		coreChild.placementControl = "auto";
-		this._coreChild = coreChild;
-		this.setCoreChild(coreChild);
-
-		Object.entries(params.labels)?.forEach(([position, label]) => {
-			var newLabel = new Label(label) as GridCellElement<Label>;
-
-			this.addLabel(newLabel, position as Position);
-		});
 	}
 
-	private setCoreChild(child: GridCellElement) {
-		this._coreChild = child;
-		this._coreChild.placementMode = {
+	private setCoreChild({ child, index }: AddDispatchData<Visual>) {
+		child.placementMode = {
 			type: "grid",
 			config: {
 				coords: { row: 1, col: 1 }
 			}
 		}
+		child.placementControl = "auto"
 
-		this.add({ child });
+		this.ref = child.ref + "-labelGroup";
 	}
 
-
-	addLabel(label: GridCellElement<Label>, position: Position) {
-		label.placementControl = "auto"
-		label.placementMode = {
+	addLabelTop({ child, index }: AddDispatchData<Visual>) {
+		child.placementControl = "auto"
+		child.placementMode = {
 			type: "grid",
 			config: {
 				contribution: {
@@ -119,41 +102,75 @@ export default class LabelGroup
 			}
 		}
 
+		child.placementMode.config.alignment = { x: "centre", y: "far" }
+		child.placementMode.config.coords = { row: 0, col: 1 }
+		child.sizeMode = { x: "grow", y: "fit" }
 
-		switch (position) {
-			case "top":
-				label.placementMode.config.alignment = { x: "centre", y: "far" }
-				label.placementMode.config.coords = { row: 0, col: 1 }
-				label.sizeMode = { x: "grow", y: "fit" }
-				label.mainAxis = "y";
-				this.add({ child: label });
-				break;
-			case "right":
-				label.placementMode.config.alignment = { x: "here", y: "centre" }
-				label.placementMode.config.coords = { row: 1, col: 2 }
-				label.sizeMode = { x: "fit", y: "grow" }
-				label.mainAxis = "x";
-				this.add({ child: label });
-				break;
-			case "bottom":
-				label.placementMode.config.alignment = { x: "centre", y: "here" }
-				label.placementMode.config.coords = { row: 2, col: 1 }
-				label.sizeMode = { x: "grow", y: "fit" }
-				label.mainAxis = "y";
-				this.add({ child: label });
-				break;
-			case "left":
-				label.placementMode.config.alignment = { x: "far", y: "centre" }
-				label.placementMode.config.coords = { row: 1, col: 0 }
-				label.sizeMode = { x: "fit", y: "grow" }
-				label.mainAxis = "x";
-				this.add({ child: label });
-				break;
-			case "centre":
-				throw new Error("Not implemented");
-				break;
-			default:
-				throw new Error(`Unknown label bind location ${position}`);
+		if (child instanceof Label) {
+			child.mainAxis = "y";
+		}
+	}
+
+	addLabelRight({ child, index }: AddDispatchData<Visual>) {
+		child.placementControl = "auto"
+		child.placementMode = {
+			type: "grid",
+			config: {
+				contribution: {
+					x: true,
+					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+				}
+			}
+		}
+
+		child.placementMode.config.alignment = { x: "here", y: "centre" }
+		child.placementMode.config.coords = { row: 1, col: 2 }
+		child.sizeMode = { x: "fit", y: "grow" }
+
+		if (child instanceof Label) {
+			child.mainAxis = "x";
+		}
+	}
+
+	addLabelBottom({ child, index }: AddDispatchData<Visual>) {
+		child.placementControl = "auto"
+		child.placementMode = {
+			type: "grid",
+			config: {
+				contribution: {
+					x: true,
+					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+				}
+			}
+		}
+
+		child.placementMode.config.alignment = { x: "centre", y: "here" }
+		child.placementMode.config.coords = { row: 2, col: 1 }
+		child.sizeMode = { x: "grow", y: "fit" }
+
+		if (child instanceof Label) {
+			child.mainAxis = "y";
+		}
+	}
+
+	addLabelLeft({ child, index }: AddDispatchData<Visual>) {
+		child.placementControl = "auto"
+		child.placementMode = {
+			type: "grid",
+			config: {
+				contribution: {
+					x: true,
+					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+				}
+			}
+		}
+
+		child.placementMode.config.alignment = { x: "far", y: "centre" }
+		child.placementMode.config.coords = { row: 1, col: 0 }
+		child.sizeMode = { x: "fit", y: "grow" }
+
+		if (child instanceof Label) {
+			child.mainAxis = "x";
 		}
 	}
 }

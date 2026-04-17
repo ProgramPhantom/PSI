@@ -1,5 +1,5 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
-import { ID } from "./point";
+import { AllComponentTypes, ID } from "./point";
 import { ContainerSizeMethod, Dimensions, Size } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 

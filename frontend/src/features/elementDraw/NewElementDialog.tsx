@@ -8,7 +8,7 @@ import { UserComponentType } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
 import { ISVGElement } from "../../logic/svgElement";
 import { IVisual } from "../../logic/visual";
-import { LabelGroupComboForm, SubmitButtonRef } from "../form/LabelGroupComboForm";
+import { LabelGroupComboForm, SubmitButtonRef } from "../form/ElementForm";
 import { useDispatch } from "react-redux";
 import { addComponent } from "../../redux/slices/schemesSlice";
 

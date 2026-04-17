@@ -18,7 +18,7 @@ interface IFocusRules {
 }
 
 export const FocusRules: IFocusRules = {
-	alwaysSelectable: ["channel", "svg", "rect"],
+	alwaysSelectable: ["channel", "svg", "rect", "label-group"],
 	notSelectableIfChildOf: {
 		"svg": ["label-group"],
 		"rect": ["label-group"]
@@ -58,8 +58,8 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		let curr: Visual | undefined = initialElement;
 
 		while (curr) {
-			path.unshift(curr); // Start of array is topmost under root, end is initialElement
-			if (curr.parentId === undefined || curr.parentId === ENGINE.handler.diagram.id) {
+			path.unshift(curr); // Start of array is topmost under root, end is initialElement  // emergency escape
+			if (curr.parentId === undefined || curr.parentId === ENGINE.handler.diagram.id || curr.parentId === curr.id) {
 				break;
 			}
 			curr = ENGINE.handler.identifyElement(curr.parentId);

@@ -122,7 +122,7 @@ export default class Channel extends Subgrid implements IChannel {
 		})
 
 		this.setChildSize(this.bar, {
-			noCols: this.numColumns-1,
+			noCols: this.numColumns - 1,
 			noRows: 1
 		})
 	}
