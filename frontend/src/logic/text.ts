@@ -2,6 +2,7 @@ import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
 import TeXToSVG from "tex-to-svg";
 import { cascadeID } from "./util2";
 import Visual, { Display, IVisual } from "./visual";
+import { UserComponentType } from "./point";
 
 export const EXTOPX = 38.314;
 export const SCALER = 5;
@@ -21,6 +22,7 @@ export interface ITextStyle {
 export type Position = "top" | "right" | "bottom" | "left" | "centre";
 
 export default class Text extends Visual implements IText {
+	static ElementType: UserComponentType = "text";
 	get state(): IText {
 		return {
 			style: this.style,

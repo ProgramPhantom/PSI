@@ -76,7 +76,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
 
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
-	const [focusLevel, setFocusLevel] = useState(0);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [zoom, setZoom] = useState(2);
 	const [zoomString, setZoomString] = useState("2");
@@ -103,7 +102,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const deselect = () => {
 		selectedElement?.svg?.show();
-		setFocusLevel(0);
 		dispatch(setSelectedElementId(undefined));
 	};
 
@@ -113,7 +111,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const selectVisual = (e: Visual) => {
 		dispatch(setSelectedElementId(e.id));
-		setFocusLevel(focusLevel + 1);
 		e.svg?.hide();
 	};
 
@@ -191,13 +188,6 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 			interactiveElements.forEach(el => el.svg?.show());
 		};
 	}, [interactiveElementIds]);
-
-	// Reset focus level when lose focus
-	useEffect(() => {
-		if (selectedElementId === undefined) {
-			setFocusLevel(0);
-		}
-	}, [selectedElementId]);
 
 	// Refresh canvas
 	useEffect(() => {
@@ -381,7 +371,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 										{/* Hitbox layer */}
 										{!isDragging ? (
 											<HitboxLayer
-												focusLevel={focusLevel}
+												selectedElementId={selectedElementId}
 												setHoveredElement={constOnHitboxHover}></HitboxLayer>
 										) : (
 											<></>

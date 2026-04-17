@@ -1,36 +1,27 @@
 import { Element, G, Rect, Svg, SVG } from "@svgdotjs/svg.js";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
-import { AllComponentTypes, ID } from "../../logic/point";
+import { AllComponentTypes, ID, UserComponentType } from "../../logic/point";
 import Visual from "../../logic/visual";
 
 interface IHitboxLayerProps {
-	focusLevel: number;
+	selectedElementId: string | undefined;
 
 	setHoveredElement: (element?: Visual) => void;
 }
 
 const BASE_LAYER = 10000;
 
-type HoverBehaviour = "terminate" | "carry" | "conditional";
-// Terminate: return this object immediately
-// Carry: always pass to parent
-// Conditional: Check parent and only return itself IF above is carry. If above is terminal, pass up.
-const FocusLevels: Record<number, Record<HoverBehaviour, AllComponentTypes[]>> = {
-	0: {
-		terminate: ["channel", "grid", "subgrid", "sequence", "diagram"],
-		carry: ["text", "lower-abstract"],
-		conditional: ["rect", "svg", "label", "diagram", "label-group", "subgrid"]
-	},
-	1: {
-		terminate: ["label-group", "label-group", "text", "channel", "svg", "rect"],
-		carry: ["diagram"],
-		conditional: []
-	},
-	2: {
-		terminate: ["diagram", "label-group"],
-		carry: ["diagram"],
-		conditional: ["svg", "rect"]
+interface IFocusRules {
+	alwaysSelectable: AllComponentTypes[];
+	notSelectableIfChildOf: Partial<Record<AllComponentTypes, AllComponentTypes[]>>;
+}
+
+export const FocusRules: IFocusRules = {
+	alwaysSelectable: ["channel", "svg", "rect"],
+	notSelectableIfChildOf: {
+		"svg": ["label-group"],
+		"rect": ["label-group"]
 	}
 };
 
@@ -62,41 +53,65 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			return undefined;
 		}
 
-		var terminators: AllComponentTypes[] = FocusLevels[props.focusLevel].terminate;
-		var carry: AllComponentTypes[] = FocusLevels[props.focusLevel].carry;
-		var conditional: AllComponentTypes[] = FocusLevels[props.focusLevel].conditional;
+		// 1. Build the path of elements from initialElement up to the root diagram
+		let path: Visual[] = [];
+		let curr: Visual | undefined = initialElement;
 
-		function walkUp(currElement: Visual): Visual | undefined {
-			if (currElement.parentId !== undefined) {
-				var elementUp: Visual | undefined = ENGINE.handler.identifyElement(
-					currElement.parentId
-				);
-			} else {
-				return currElement;
+		while (curr) {
+			path.unshift(curr); // Start of array is topmost under root, end is initialElement
+			if (curr.parentId === undefined || curr.parentId === ENGINE.handler.diagram.id) {
+				break;
 			}
-
-			if (elementUp === undefined) {
-				return currElement;
-			}
-
-			var currElementType: AllComponentTypes = (currElement.constructor as typeof Visual)
-				.ElementType;
-			var elementUpType: AllComponentTypes = (elementUp.constructor as typeof Visual)
-				.ElementType;
-
-			if (terminators.includes(currElementType)) {
-				return currElement;
-			}
-			if (conditional.includes(currElementType) && terminators.includes(elementUpType)) {
-				return currElement;
-			}
-
-			elementUp = walkUp(elementUp);
-
-			return elementUp;
+			curr = ENGINE.handler.identifyElement(curr.parentId);
 		}
 
-		return walkUp(initialElement);
+		// 2. Bottom-up fine tuning for always selectable elements
+		let bottomUpCurr: Visual | undefined = initialElement;
+		while (bottomUpCurr) {
+			const type: UserComponentType = (bottomUpCurr.constructor as typeof Visual).ElementType;
+			const exceptions: AllComponentTypes[] = FocusRules.notSelectableIfChildOf[type] || [];
+
+			if (FocusRules.alwaysSelectable.includes(type)) {
+				let excluded = false;
+				let ancestor: Visual | undefined = ENGINE.handler.identifyElement(bottomUpCurr.parentId ?? "");
+
+				while (ancestor !== undefined) {
+					const ancestorType: UserComponentType = (ancestor.constructor as typeof Visual).ElementType;
+
+					if (exceptions.includes(ancestorType)) {
+						excluded = true;
+						break;
+					}
+
+					if (ancestor.parentId === undefined || ancestor.parentId === ENGINE.handler.diagram.id) break;
+					ancestor = ENGINE.handler.identifyElement(ancestor.parentId);
+				}
+
+				if (!excluded) {
+					return bottomUpCurr; // Skip hierarchy, immediately interactable
+				}
+			}
+			if (bottomUpCurr.parentId === undefined || bottomUpCurr.parentId === ENGINE.handler.diagram.id) break;
+			bottomUpCurr = ENGINE.handler.identifyElement(bottomUpCurr.parentId);
+		}
+
+		// 3. Group Depth Selection Logic
+		// The path is structured Top-Down: [TopLevelGroup, SubGroup, ..., ClickedElement]
+		// Find the deeply-selected element in this path.
+		let selectedIndex: number = path.findIndex(el => el.id === props.selectedElementId);
+
+		if (selectedIndex === -1) {
+			// Nothing in this family is currently selected, thus select the highest level element
+			return path[0];
+		} else {
+			// A parent is selected! Expand interactivity depth by 1, revealing its immediate child
+			if (selectedIndex + 1 < path.length) {
+				return path[selectedIndex + 1];
+			} else {
+				// We've reached the absolute leaf of the path. Stay selected on the leaf.
+				return path[selectedIndex];
+			}
+		}
 	};
 
 	// We store these in refs because the window mousemove listener is initialized once (empty dependency array).
