@@ -221,14 +221,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	public add(
 		{ child, index }: AddDispatchData<T>
 	) {
-		let INDEX: number = index ?? this.children.length;
-
-		this.children.splice(INDEX, 0, child)
-
-		if (child.placementMode.type === "aligner") {
-			child.placementMode.config.index = INDEX;
-		}
-		child.parentId = this.id;
+		super.add({child, index})
 	}
 
 	public removeAt(index: number): boolean {
