@@ -7,6 +7,8 @@ import { Dimensions } from "../spacial";
 import { AlignerElement } from "../visual";
 
 
+import { AddDispatchData, Components } from "../collection";
+
 export type LabelTextPosition = "top" | "bottom" | "inline";
 
 export interface ILabelConfig {
@@ -14,25 +16,36 @@ export interface ILabelConfig {
 }
 
 export interface ILabel extends IAligner {
-	text?: IText;
-	line?: ILine;
-
 	labelConfig: ILabelConfig;
 }
 
 export default class Label extends Aligner implements ILabel {
 	get state(): ILabel {
 		return {
-			line: this.line?.state,
-			text: this.text?.state,
 			labelConfig: this.labelConfig,
 			...super.state
 		};
 	}
 	static ElementType: UserComponentType = "label";
 
-	line?: AlignerElement<Line>;
-	text?: AlignerElement<Text>;
+	get text(): AlignerElement<Text> | undefined {
+		return this.roles["text"]?.object as AlignerElement<Text> | undefined;
+	}
+
+	get line(): AlignerElement<Line> | undefined {
+		return this.roles["line"]?.object as AlignerElement<Line> | undefined;
+	}
+
+	roles: Components<AlignerElement> = {
+		"text": {
+			object: undefined,
+			initialiser: this.initialiseText.bind(this)
+		},
+		"line": {
+			object: undefined,
+			initialiser: this.initialiseLine.bind(this)
+		}
+	}
 
 	labelConfig: ILabelConfig;
 
@@ -53,59 +66,44 @@ export default class Label extends Aligner implements ILabel {
 	constructor(params: ILabel) {
 		super(params);
 		this.labelConfig = params.labelConfig;
+		this.mainAxis = params.mainAxis ?? "y";
+	}
 
-		if (params.text) {
-			// Create text
-			var text: AlignerElement<Text> = new Text(params.text) as AlignerElement<Text>;
-			text.placementMode = {
-				type: "aligner",
-				config: {
-					alignment: "centre"
-				}
+	private initialiseText({ child }: AddDispatchData<AlignerElement>) {
+		child.placementMode = {
+			type: "aligner",
+			config: {
+				alignment: "centre"
 			}
+		}
+	}
 
-			this.text = text;
-			this.add({child: text});
+	private initialiseLine({ child }: AddDispatchData<AlignerElement>) {
+		child.placementMode = {
+			type: "aligner",
+			config: {
+				alignment: "centre"
+			}
 		}
 
-		if (params.line) {
-			// Create line
-			let line: AlignerElement<Line> = new Line(params.line) as AlignerElement<Line>;
-			line.placementMode = {
-				type: "aligner",
-				config: {
-					alignment: "centre"
-				}
-			}
-			this.line = line;
+		child.sizeMode = {
+			x: this.crossAxis === "x" ? "grow" : "fixed",
+			y: this.crossAxis === "y" ? "grow" : "fixed"
 		}
 
-		this.mainAxis = "y";
-
-		if (this.line !== undefined) {
-			// Make line span side:
-			this.line.sizeMode = {
-				x: this.crossAxis === "x" ? "grow" : "fixed",
-				y: this.crossAxis === "y" ? "grow" : "fixed"
+		if (this.labelConfig?.textPosition === "inline") {
+			child.placementMode = {
+				type: "aligner",
+				config: {
+					alignment: "centre",
+					contribution: { mainAxis: false, crossAxis: true }
+				}
 			}
-
-			switch (this.labelConfig.textPosition) {
-				case "top":
-					this.add({child: this.line})
-					break;
-				case "inline":
-					this.line.placementMode = {
-						type: "aligner",
-						config: {
-							alignment: "centre",
-							contribution: { mainAxis: false, crossAxis: true }
-						}
-					}
-					this.add({child: this.line})
-					break;
-				case "bottom":
-					this.add({child: this.line, index: 0});
-
+		} else if (this.labelConfig?.textPosition === "bottom") {
+			let currentLineIndex = this.childIndex(child);
+			if (currentLineIndex !== undefined && currentLineIndex !== 0) {
+				this.children.splice(currentLineIndex, 1);
+				this.children.unshift(child);
 			}
 		}
 	}
