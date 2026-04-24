@@ -1,4 +1,5 @@
 
+import { Element } from "@svgdotjs/svg.js";
 import Aligner, { IAligner } from "../aligner";
 import { AddDispatchData, Components, StructuredChildren } from "../collection";
 import { DEFAULT_SEQUENCE } from "../default/sequence";

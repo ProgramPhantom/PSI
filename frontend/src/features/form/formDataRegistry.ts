@@ -1,8 +1,11 @@
 
+import { DEFAULT_BAR } from "../../logic/default/bar";
 import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
+import { DEFAULT_LABEL } from "../../logic/default/label";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
 import { DEFAULT_180H } from "../../logic/default/simplePulse/180pulse";
 import { DEFAULT_180S } from "../../logic/default/svgPulse/180Soft";
+import { DEFAULT_TEXT } from "../../logic/default/text";
 import { ILabel } from "../../logic/hasComponents/label";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
@@ -21,6 +24,8 @@ import VisualForm from "./VisualForm";
 export interface RoleSchema {
 	displayName: string;
 	elementType: AllComponentTypes;
+	mandatory?: boolean;
+	defaultValues?: Partial<IVisual>;
 }
 
 export interface FormBundle<T extends IVisual = IVisual> {
@@ -84,8 +89,13 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		defaults: defaultChannel,
 		allowLabels: false,
 		roles: {
-			"label": { displayName: "Label", elementType: "text" },
-			"bar": { displayName: "Bar", elementType: "rect" }
+			"label": { displayName: "Label", elementType: "text", 
+				mandatory: true, 
+				defaultValues: DEFAULT_TEXT  },
+			"bar": { displayName: "Bar", elementType: "rect",
+				mandatory: true,
+				defaultValues: DEFAULT_BAR
+			 }
 		}
 	},
 	"diagram": {

@@ -40,6 +40,8 @@ export interface EditableRole {
 	displayName: string;
 	elementType: AllComponentTypes;
 	currentState?: IVisual;
+	mandatory?: boolean;
+	defaultValues?: any;
 }
 
 
@@ -63,7 +65,9 @@ export function resolveFormDataFromTarget(
 		return Object.entries(lgSchema).map(([roleName, schema]) => ({
 			roleName,
 			displayName: schema.displayName,
-			elementType: schema.elementType
+			elementType: schema.elementType,
+			mandatory: schema.mandatory,
+			defaultValues: schema.defaultValues
 		}));
 	};
 
@@ -76,7 +80,9 @@ export function resolveFormDataFromTarget(
 			const rolesArray = Object.entries(formBundle.roles).map(([roleName, schema]) => ({
 				roleName,
 				displayName: schema.displayName,
-				elementType: schema.elementType
+				elementType: schema.elementType,
+				mandatory: schema.mandatory,
+				defaultValues: schema.defaultValues
 			}));
 
 			if (objectType === "label-group") {
@@ -155,6 +161,8 @@ export function resolveFormDataFromTarget(
 				displayName: roleSchema.displayName,
 				elementType,
 				currentState: roleEntry.object ? structuredClone(roleEntry.object.state) : undefined,
+				mandatory: roleSchema.mandatory,
+				defaultValues: roleSchema.defaultValues
 			};
 
 			if (objectType === "label-group") {

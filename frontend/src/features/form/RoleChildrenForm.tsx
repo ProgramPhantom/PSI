@@ -34,9 +34,14 @@ function RoleChildrenForm({ editableRoles }: RoleChildrenFormProps) {
 		const bundle = FORM_DEFAULTS[role.elementType];
 		if (!bundle) return;
 
+		let defaultVal = structuredClone(bundle.defaults);
+		if (role.defaultValues) {
+			defaultVal = { ...defaultVal, ...role.defaultValues };
+		}
+
 		parentFormControls.setValue(
 			`roles.${roleName}`,
-			structuredClone(bundle.defaults),
+			defaultVal,
 			{ shouldDirty: true }
 		);
 	};
@@ -45,6 +50,26 @@ function RoleChildrenForm({ editableRoles }: RoleChildrenFormProps) {
 		parentFormControls.setValue(`roles.${roleName}`, undefined as any, { shouldDirty: true });
 		parentFormControls.unregister(`roles.${roleName}`);
 	};
+
+	// Auto-add mandatory roles on mount if they don't exist
+	React.useEffect(() => {
+		editableRoles.forEach(role => {
+			const currentVal = parentFormControls.getValues(`roles.${role.roleName}`);
+			if (role.mandatory && currentVal === undefined) {
+				const bundle = FORM_DEFAULTS[role.elementType];
+				if (bundle) {
+					let defaultVal = structuredClone(bundle.defaults);
+					if (role.defaultValues) {
+						defaultVal = { ...defaultVal, ...role.defaultValues };
+					}
+					parentFormControls.setValue(
+						`roles.${role.roleName}`,
+						defaultVal
+					);
+				}
+			}
+		});
+	}, [editableRoles, parentFormControls]);
 
 	return (
 		<>
@@ -70,24 +95,26 @@ function RoleChildrenForm({ editableRoles }: RoleChildrenFormProps) {
 							title={role.displayName}
 							compact={true}
 							icon={
-								hasChild ? (
-									<Button
-										icon="trash"
-										intent="danger"
-										variant="minimal"
-										onClick={(e) => {
-											e.stopPropagation();
-											removeRole(role.roleName);
-										}}></Button>
-								) : (
-									<Button
-										icon="add"
-										intent="success"
-										variant="minimal"
-										onClick={(e) => {
-											e.stopPropagation();
-											addRole(role.roleName, role);
-										}}></Button>
+								role.mandatory ? undefined : (
+									hasChild ? (
+										<Button
+											icon="trash"
+											intent="danger"
+											variant="minimal"
+											onClick={(e) => {
+												e.stopPropagation();
+												removeRole(role.roleName);
+											}}></Button>
+									) : (
+										<Button
+											icon="add"
+											intent="success"
+											variant="minimal"
+											onClick={(e) => {
+												e.stopPropagation();
+												addRole(role.roleName, role);
+											}}></Button>
+									)
 								)
 							}>
 							{hasChild && SubForm && (
