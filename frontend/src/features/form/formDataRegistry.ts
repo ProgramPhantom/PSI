@@ -1,5 +1,6 @@
 
 import { DEFAULT_BAR } from "../../logic/default/bar";
+import { DEFAULT_CHANNEL_TEXT } from "../../logic/default/defaultChannelLabel";
 import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
 import { DEFAULT_LABEL } from "../../logic/default/label";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
@@ -91,7 +92,7 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		roles: {
 			"label": { displayName: "Label", elementType: "text", 
 				mandatory: true, 
-				defaultValues: DEFAULT_TEXT  },
+				defaultValues: DEFAULT_CHANNEL_TEXT  },
 			"bar": { displayName: "Bar", elementType: "rect",
 				mandatory: true,
 				defaultValues: DEFAULT_BAR

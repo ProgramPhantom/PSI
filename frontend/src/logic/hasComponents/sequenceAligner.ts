@@ -1,10 +1,8 @@
 
-import { Element } from "@svgdotjs/svg.js";
 import Aligner, { IAligner } from "../aligner";
-import { AddDispatchData, Components, StructuredChildren } from "../collection";
-import { DEFAULT_SEQUENCE } from "../default/sequence";
+import { AddDispatchData } from "../collection";
 import { UserComponentType } from "../point";
-import Visual, { AlignerElement, PulseElement } from "../visual";
+import { AlignerElement } from "../visual";
 import Sequence, { ISequence } from "./sequence";
 
 export interface ISequenceAligner extends IAligner<ISequence> {

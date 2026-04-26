@@ -1,5 +1,5 @@
 import { Button, Section } from "@blueprintjs/core";
-import React from "react";
+import React, { useEffect } from "react";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 import { IVisual } from "../../logic/visual";
 import { FORM_DEFAULTS } from "./formDataRegistry";
@@ -52,7 +52,7 @@ function RoleChildrenForm({ editableRoles }: RoleChildrenFormProps) {
 	};
 
 	// Auto-add mandatory roles on mount if they don't exist
-	React.useEffect(() => {
+	useEffect(() => {
 		editableRoles.forEach(role => {
 			const currentVal = parentFormControls.getValues(`roles.${role.roleName}`);
 			if (role.mandatory && currentVal === undefined) {

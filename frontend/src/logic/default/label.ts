@@ -4,7 +4,7 @@ import { DEFAULT_LINE } from "./line";
 
 export const DEFAULT_LABEL: ILabel = {
 	"offset": [0, 0],
-	"padding": [0, 0, 0, 0],
+	"padding": [0, 0, 2, 0],
 	"sizeMode": { x: "fit", y: "fit" },
 	"mainAxis": "x",
 
@@ -12,14 +12,14 @@ export const DEFAULT_LABEL: ILabel = {
 	"ref": "label",
 
 	"labelConfig": {
-		"textPosition": "bottom"
+		"textPosition": "top"
 	},
 	"children": [
 		{
 			"contentWidth": 10,
 			"contentHeight": 10,
 
-			"text": "\\textrm{H}",
+			"text": "t_0",
 			"padding": [0, 0, 2, 0],
 			"offset": [0, 0],
 

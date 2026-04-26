@@ -76,6 +76,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
 
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
+	const [rawHoveredElement, setRawHoveredElement] = useState<Visual | undefined>(undefined);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [zoom, setZoom] = useState(2);
 	const [zoomString, setZoomString] = useState("2");
@@ -107,6 +108,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const stopHover = () => {
 		setHoveredElement(undefined);
+		setRawHoveredElement(undefined);
 	};
 
 	const selectVisual = (e: Visual) => {
@@ -144,8 +146,35 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		dispatch(openDiagram(file));
 	};
 
-	const constOnHitboxHover = (element?: Visual) => {
+	const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		e.stopPropagation();
+		if (rawHoveredElement) {
+			let path: Visual[] = [];
+			let curr: Visual | undefined = rawHoveredElement;
+			while (curr) {
+				path.unshift(curr);
+				if (curr.parentId === undefined || curr.parentId === ENGINE.handler.diagram.id || curr.parentId === curr.id) {
+					break;
+				}
+				curr = ENGINE.handler.identifyElement(curr.parentId);
+			}
+
+			let currentSelectedId = selectedElementId ?? hoveredElement?.id;
+			let selectedIndex = path.findIndex(el => el.id === currentSelectedId);
+			
+			if (selectedIndex !== -1) {
+				if (selectedIndex + 1 < path.length) {
+					selectVisual(path[selectedIndex + 1]);
+				}
+			} else if (path.length > 1) {
+				selectVisual(path[1]);
+			}
+		}
+	};
+
+	const constOnHitboxHover = (element?: Visual, rawElement?: Visual) => {
 		setHoveredElement(element);
+		setRawHoveredElement(rawElement);
 	};
 
 	const onConfirmZoomEntry = (val: string) => {
@@ -212,6 +241,9 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 					}}
 					onClick={(e) => {
 						onClick(e);
+					}}
+					onDoubleClick={(e) => {
+						handleDoubleClick(e);
 					}}
 					onMouseUp={(e) => {
 						singleClick(e);

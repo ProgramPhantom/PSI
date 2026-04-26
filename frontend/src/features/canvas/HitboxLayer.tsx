@@ -7,7 +7,7 @@ import Visual from "../../logic/visual";
 interface IHitboxLayerProps {
 	selectedElementId: string | undefined;
 
-	setHoveredElement: (element?: Visual) => void;
+	setHoveredElement: (element?: Visual, rawElement?: Visual) => void;
 }
 
 const BASE_LAYER = 10000;
@@ -65,6 +65,8 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			curr = ENGINE.handler.identifyElement(curr.parentId);
 		}
 
+		let selectedIndex: number = path.findIndex(el => el.id === props.selectedElementId);
+
 		// 2. Bottom-up fine tuning for always selectable elements
 		let bottomUpCurr: Visual | undefined = initialElement;
 		while (bottomUpCurr) {
@@ -79,8 +81,13 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 					const ancestorType: UserComponentType = (ancestor.constructor as typeof Visual).ElementType;
 
 					if (exceptions.includes(ancestorType)) {
-						excluded = true;
-						break;
+						let bottomUpCurrIndex: number = path.findIndex(el => el.id === bottomUpCurr?.id);
+						if (selectedIndex !== -1 && bottomUpCurrIndex !== -1 && selectedIndex >= bottomUpCurrIndex) {
+							// Ignore exception because we've drilled down to or past this element
+						} else {
+							excluded = true;
+							break;
+						}
 					}
 
 					if (ancestor.parentId === undefined || ancestor.parentId === ENGINE.handler.diagram.id) break;
@@ -88,7 +95,12 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 				}
 
 				if (!excluded) {
-					return bottomUpCurr; // Skip hierarchy, immediately interactable
+					let bottomUpCurrIndex = path.findIndex(el => el.id === bottomUpCurr?.id);
+					if (selectedIndex !== -1 && bottomUpCurrIndex !== -1 && selectedIndex > bottomUpCurrIndex) {
+						// Do not intercept because we've already drilled down past this element
+					} else {
+						return bottomUpCurr; // Skip hierarchy, immediately interactable
+					}
 				}
 			}
 			if (bottomUpCurr.parentId === undefined || bottomUpCurr.parentId === ENGINE.handler.diagram.id) break;
@@ -98,19 +110,14 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		// 3. Group Depth Selection Logic
 		// The path is structured Top-Down: [TopLevelGroup, SubGroup, ..., ClickedElement]
 		// Find the deeply-selected element in this path.
-		let selectedIndex: number = path.findIndex(el => el.id === props.selectedElementId);
 
 		if (selectedIndex === -1) {
 			// Nothing in this family is currently selected, thus select the highest level element
 			return path[0];
 		} else {
-			// A parent is selected! Expand interactivity depth by 1, revealing its immediate child
-			if (selectedIndex + 1 < path.length) {
-				return path[selectedIndex + 1];
-			} else {
-				// We've reached the absolute leaf of the path. Stay selected on the leaf.
-				return path[selectedIndex];
-			}
+			// A parent is selected! Stay selected on it for hover purposes.
+			// Drill down is handled by double-click in Canvas.tsx.
+			return path[selectedIndex];
 		}
 	};
 
@@ -152,8 +159,9 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			}
 
 			let parsedId: string = rawTargetId.split("-")[0];
+			let rawElement: Visual | undefined = ENGINE.handler.identifyElement(parsedId);
 			let element: Visual | undefined = getMouseElementFromIDRef.current(parsedId);
-			setHoveredElementRef.current(element);
+			setHoveredElementRef.current(element, rawElement);
 		};
 
 		window.addEventListener("mousemove", handleGlobalMouseMove);
