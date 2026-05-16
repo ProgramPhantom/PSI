@@ -11,25 +11,34 @@ export interface IElementDragPreviewProps {
 export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(function ElementDragPreview(
 	props: IElementDragPreviewProps
 ) {
-	if (props.element === undefined) return 
-	var visual = props.element.getInternalRepresentation()!;
-	const visualRef = useRef<HTMLDivElement | null>(null);
+	if (props.element === undefined) return null;
+	var visual = props.element.getInternalRepresentation()!.show();
+	const visualRef = useRef<SVGSVGElement | null>(null);
 
 	useEffect(() => {
 		if (visualRef.current) {
+			visualRef.current.replaceChildren();
 			visualRef.current.appendChild(visual.node);
 		}
 	}, [props.element]);
 
 	return (
-		<div style={{display: "inline-block", zIndex: 15000}} ref={visualRef}>
+		<div style={{
+			display: "inline-block", 
+			zIndex: 15000,
+			position: "relative",
+			width: props.element.contentWidth,
+			height: props.element.contentHeight
+		}}>
+			<svg ref={visualRef} style={{ overflow: "visible", position: "absolute", top: 0, left: 0 }}></svg>
 			<svg
 				style={{
 					width: props.element.contentWidth,
 					height: props.element.contentHeight,
 					position: "absolute",
 					top: 0,
-					left: 0
+					left: 0,
+					pointerEvents: "none"
 				}}>
 				<rect
 					style={{

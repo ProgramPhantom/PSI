@@ -11,6 +11,19 @@ export function cascadeID(el: Element, id: string) {
 	});
 }
 
+export function showSVGRecursively(el: Element) {
+	el.show();
+
+	const showNode = (node: ChildNode) => {
+		if (node instanceof SVGElement || node instanceof HTMLElement) {
+			node.style.display = "";
+			node.childNodes.forEach(showNode);
+		}
+	};
+
+	el.node.childNodes.forEach(showNode);
+}
+
 export function getByPath(obj: any, path: string | undefined) {
 	if (path === undefined) {
 		return obj;

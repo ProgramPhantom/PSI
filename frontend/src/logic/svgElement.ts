@@ -1,6 +1,6 @@
 import { Element, G, SVG, Svg } from "@svgdotjs/svg.js";
 import { UserComponentType } from "./point";
-import { cascadeID } from "./util2";
+import { cascadeID, showSVGRecursively } from "./util2";
 import Visual, { IDraw, IVisual } from "./visual";
 
 
@@ -74,6 +74,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		var internalSVG = this.svg?.clone(true, true);
 		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
 
+		internalSVG.show()
 		return internalSVG;
 	}
 

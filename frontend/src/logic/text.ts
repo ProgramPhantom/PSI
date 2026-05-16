@@ -1,6 +1,6 @@
 import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
 import TeXToSVG from "tex-to-svg";
-import { cascadeID } from "./util2";
+import { cascadeID, showSVGRecursively } from "./util2";
 import Visual, { Display, IVisual } from "./visual";
 import { UserComponentType } from "./point";
 
@@ -168,6 +168,7 @@ export default class Text extends Visual implements IText {
 
 		var internalSVG = this.svg?.clone(true, true);
 		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
+		internalSVG.show()
 
 		return internalSVG;
 	}

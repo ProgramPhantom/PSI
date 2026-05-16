@@ -2,6 +2,7 @@ import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import { AllComponentTypes, ID } from "./point";
 import { ContainerSizeMethod, Dimensions, Size } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
+import { showSVGRecursively } from "./util2";
 
 // Add
 export type AddDispatchData<C extends Visual = Visual> = { child: C, index?: number }
@@ -197,11 +198,15 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			this.draw(temporaryCanvas);
 		}
 
-		this.svg?.show();
 		var internalSVG = this.svg?.clone(true, true);
 		internalSVG
 			?.attr({ style: "display: block;" })
 			.attr({ transform: `translate(${deltaX}, ${deltaY})` });
+
+
+		if (internalSVG) {
+			showSVGRecursively(internalSVG);
+		}
 
 		return internalSVG;
 	}
