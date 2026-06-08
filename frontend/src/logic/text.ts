@@ -78,14 +78,17 @@ export default class Text extends Visual implements IText {
 					var childTransform: string = c.attr("transform") as string;
 
 					if (childId !== undefined && childId[0] == "#") {
-						var pathToReplace: SVGElement = pathDict[childId.slice(1)];
+						var pathDef = pathDict[childId.slice(1)];
+						if (pathDef !== undefined) {
+							var pathToReplace: SVGElement = pathDef.clone(true, true) as SVGElement;
 
-						// Apply transform to path
-						if (childTransform !== undefined) {
-							pathToReplace.attr({ transform: childTransform });
+							// Apply transform to path
+							if (childTransform !== undefined) {
+								pathToReplace.attr({ transform: childTransform });
+							}
+
+							c.replace(pathToReplace);
 						}
-
-						c.replace(pathToReplace);
 					}
 				}
 			});
