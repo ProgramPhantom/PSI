@@ -14,7 +14,7 @@ export type LabelGroupLabels = {
 
 interface ILabelMapProps extends FormRequirements { }
 
-const POSITIONS: Position[] = ["top", "bottom", "left", "right"];
+const POSITIONS: Position[] = ["top", "bottom", "left", "right", "centre"];
 
 function LabelListForm(props: ILabelMapProps) {
 	const parentFormControls = useFormContext<LabelGroupLabels>();

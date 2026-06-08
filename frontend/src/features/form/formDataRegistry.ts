@@ -71,7 +71,8 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 			"labelTop": { displayName: "Top", elementType: "label" },
 			"labelBottom": { displayName: "Bottom", elementType: "label" },
 			"labelRight": { displayName: "Right", elementType: "label" },
-			"labelLeft": { displayName: "Left", elementType: "label" }
+			"labelLeft": { displayName: "Left", elementType: "label" },
+			"labelCentre": { displayName: "Centre", elementType: "label" }
 		}
 	},
 	// "line": {

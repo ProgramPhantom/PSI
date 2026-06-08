@@ -165,32 +165,40 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		// Resize cells:
 		// Main axis:
 		let remainingMainAxisChange: number = change[this.mainAxis];
-		while (remainingMainAxisChange > 0) {
+		const epsilon = 1e-5;
+
+		if (this.children.length === 0) {
+			remainingMainAxisChange = 0;
+		}
+
+		while (remainingMainAxisChange > epsilon) {
 			let smallestLength: number = this.children[0].getSizeByDimension(this.mainAxis);
 			let secondSmallestLength: number = Infinity;
-			let widthToAdd: number = remainingMainAxisChange;
 
 			this.children.forEach((child) => {
 				let childLength: number = child.getSizeByDimension(this.mainAxis);
-				if (childLength < smallestLength) {
-					secondSmallestLength = smallestLength
+				if (childLength < smallestLength - epsilon) {  // New smallest length found
+					secondSmallestLength = smallestLength;
 					smallestLength = childLength;
+				} else if (childLength > smallestLength + epsilon) {
+					secondSmallestLength = Math.min(secondSmallestLength, childLength);
 				}
-				if (childLength > smallestLength) {
-					secondSmallestLength = Math.min(secondSmallestLength, childLength)
-					widthToAdd = secondSmallestLength - smallestLength
-				}
-			})
+			});
 
-			widthToAdd = Math.min(widthToAdd, remainingMainAxisChange / this.noChildren);
+			let sizeToAdd: number = secondSmallestLength === Infinity 
+				? remainingMainAxisChange 
+				: (secondSmallestLength - smallestLength);
 
-			this.children.forEach((child) => {
-				let childLength: number = child.getSizeByDimension(this.mainAxis);
-				if (childLength === smallestLength) { /// The smallest element
-					child.setSizeByDimension(widthToAdd, this.mainAxis);
-					remainingMainAxisChange -= widthToAdd;
-				}
-			})
+			let smallestChildren = this.children.filter(child => 
+				Math.abs(child.getSizeByDimension(this.mainAxis) - smallestLength) <= epsilon
+			);
+
+			sizeToAdd = Math.min(sizeToAdd, remainingMainAxisChange / smallestChildren.length);
+
+			smallestChildren.forEach((child) => {
+				child.setSizeByDimension(sizeToAdd, this.mainAxis);
+				remainingMainAxisChange -= sizeToAdd;
+			});
 		}
 		if (remainingMainAxisChange < 0) {
 			console.warn(`Aligner ${this.ref} is over spilling container on main axis`)

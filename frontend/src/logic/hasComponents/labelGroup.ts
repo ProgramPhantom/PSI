@@ -44,6 +44,10 @@ export default class LabelGroup
 		let labelLeft: GridCellElement<Visual> | undefined = this.roles["labelLeft"].object as GridCellElement<Visual> | undefined;
 		return labelLeft
 	}
+	get labelCentre(): GridCellElement<Visual> | undefined {
+		let labelCentre: GridCellElement<Visual> | undefined = this.roles["labelCentre"].object as GridCellElement<Visual> | undefined;
+		return labelCentre
+	}
 
 
 	roles: Components = {
@@ -66,6 +70,10 @@ export default class LabelGroup
 		"labelLeft": {
 			object: undefined,
 			initialiser: this.addLabelLeft.bind(this)
+		},
+		"labelCentre": {
+			object: undefined,
+			initialiser: this.addLabelCentre.bind(this)
 		}
 	}
 
@@ -171,6 +179,27 @@ export default class LabelGroup
 
 		if (child instanceof Label) {
 			child.mainAxis = "x";
+		}
+	}
+
+	addLabelCentre({ child, index }: AddDispatchData<Visual>) {
+		child.placementControl = "auto"
+		child.placementMode = {
+			type: "grid",
+			config: {
+				contribution: {
+					x: true,
+					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+				}
+			}
+		}
+
+		child.placementMode.config.alignment = { x: "centre", y: "centre" }
+		child.placementMode.config.coords = { row: 1, col: 1 }
+		child.sizeMode = { x: "grow", y: "fixed" }
+
+		if (child instanceof Label) {
+			child.mainAxis = "y";
 		}
 	}
 }
