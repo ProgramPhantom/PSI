@@ -72,6 +72,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		right: 0
 	}
 
+	// Should the rows and columns clip after removing an extrenuous element
+	protected squeeze: boolean = true;
+
 	protected gridMatrix: GridCell<C>[][] = [];
 
 	public gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
@@ -841,7 +844,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.removeMatrix(child, deleteIfEmpty)
 		}
 
-		this.squeezeMatrix();
+		if (this.squeeze) {
+			this.squeezeMatrix();
+		}
 	}
 
 	private removeMatrix(child: GridElement<C>, deleteIfEmpty?: { row: boolean, col: boolean }) {

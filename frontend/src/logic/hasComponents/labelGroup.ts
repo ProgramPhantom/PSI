@@ -84,6 +84,7 @@ export default class LabelGroup
 	) {
 		super(params);
 		this.setMatrixBottomRight({ row: 2, col: 2 })
+		this.squeeze = false;
 	}
 
 	private setCoreChild({ child, index }: AddDispatchData<Visual>) {
