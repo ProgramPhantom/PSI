@@ -196,7 +196,7 @@ export default class LabelGroup
 
 		child.placementMode.config.alignment = { x: "centre", y: "centre" }
 		child.placementMode.config.coords = { row: 1, col: 1 }
-		child.sizeMode = { x: "grow", y: "fixed" }
+		// child.sizeMode = { x: "grow", y: "fixed" }
 
 		if (child instanceof Label) {
 			child.mainAxis = "y";

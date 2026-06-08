@@ -16,6 +16,7 @@ import { DEFAULT_TALLTRAPEZIUM } from "./svgPulse/talltrapezium";
 import { DEFAULT_TRAPEZIUM } from "./svgPulse/trapezium";
 import { DEFAULT_TEXT } from "./text";
 import { SchemeDict } from "../../types/schemes";
+import { DISPSI2 } from "./DIPSI2";
 
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
@@ -42,6 +43,8 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"09584fb0-d0dc-482a-bf9d-609a204035a0": DEFAULT_90H,
 				"73ea4ef5-bcca-47e0-bb4c-70488cf7b66e": DEFAULT_180H,
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7759": DEFAULT_SUBSEQUENCE,
+
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DISPSI2
 			}
 		}
 	}

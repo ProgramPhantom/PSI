@@ -57,8 +57,6 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 	let dragElementType = DragElementTypes.ATOMIC_PREFAB;
 	if (props.element instanceof Subgrid) {
 		dragElementType = DragElementTypes.SUBGRID
-	} else if (props.element instanceof Collection) {
-		dragElementType = DragElementTypes.OTHER
 	}
 
 	const [{ isDragging }, drag, preview] = useDrag(() => ({

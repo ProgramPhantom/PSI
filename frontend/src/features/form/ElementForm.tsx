@@ -137,28 +137,6 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 											<FormProvider {...masterFormControls}>
 												<MasterForm target={props.target}></MasterForm>
 											</FormProvider>
-
-											{coreChild ? (
-												<>
-													<FormDivider title="Primary Child"></FormDivider>
-													<Section icon="cube-edit"
-														style={{ borderRadius: 0 }}
-														collapseProps={{ defaultIsOpen: false }}
-														compact={true}
-														title={"Child"}
-														collapsible={true}>
-														<div style={{ padding: "8px" }}>
-															<FormProvider {...childFormControls}>
-																<coreChild.Form
-																	target={coreChild.target}
-																	prefix={"coreChild"}></coreChild.Form>
-															</FormProvider>
-														</div>
-													</Section>
-												</>
-											) : (
-												<></>
-											)}
 										</>
 									}></Tab>
 
