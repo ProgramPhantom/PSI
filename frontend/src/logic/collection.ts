@@ -30,6 +30,24 @@ export interface ICollection<C extends IVisual = IVisual> extends IVisual {
 	sizeMode?: Record<Dimensions, ContainerSizeMethod>
 }
 
+
+export function ClearIDs(collection: IVisual): void {
+	collection.id = undefined;
+
+	if (!Collection.isICollection(collection)) {
+		return
+	}
+
+	collection.children.forEach((c) => {
+		if (Collection.isICollection(c)) {
+			ClearIDs(c);
+		} else {
+			c.id = undefined
+		}
+	});
+}
+
+
 export type Components<C extends Visual = Visual> =
 	Record<string, {
 		object: C | undefined,
@@ -51,6 +69,9 @@ export type StructuredChildEntry<C extends Visual = Visual> = {
 export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C>, ICanAdd<C>, ICanRemove<C> {
 	static isCollection(v: IVisual): v is Collection {
 		return (v as any).children !== undefined;
+	}
+	static isICollection(v: IVisual): v is ICollection {
+		return (v as any).children !== undefined
 	}
 
 	get state(): ICollection {
