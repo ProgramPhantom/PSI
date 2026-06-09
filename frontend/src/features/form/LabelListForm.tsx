@@ -133,7 +133,7 @@ function LabelListForm(props: ILabelMapProps) {
 						title={roles[posToRole(activePos)]?.type}
 						subtitle={`Location: ${activePos.charAt(0).toUpperCase() + activePos.slice(1)}`}
 						style={{ borderRadius: "0px", padding: "0px", marginTop: "12px", flexGrow: 1, display: "flex", flexDirection: "column" }}
-						compact={true}
+						compact={true} collapsible={true} collapseProps={{ "transitionDuration": 5 }}
 						icon={
 							<Button
 								icon="trash"

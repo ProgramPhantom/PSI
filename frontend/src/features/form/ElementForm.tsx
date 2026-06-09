@@ -15,6 +15,7 @@ import {
 	resolveFormDataFromTarget,
 } from "./formHelpers";
 import LabelListForm from "./LabelListForm";
+import "./ElementForm.css";
 
 
 export interface ElementFormProps {
@@ -115,34 +116,6 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 
 		return (
 			<>
-				<style>{`
-					#form-fields .bp5-tabs { display: flex; flex-direction: column; height: 100%; }
-					#form-fields .bp5-tab-list { flex-shrink: 0; }
-					#form-fields .bp5-tab-panel { flex: 1 1 0; display: flex; flex-direction: column;  }
-					
-					/* Custom scrollbars - shifted into the parent's padding to prevent content squeeze */
-					.bp5-tab-panel {
-						overflow-y: scroll;
-						overflow-x: hidden;
-						scrollbar-gutter: stable;
-						margin-top: 16px;
-						padding-top: 4px
-					}
-					.bp5-tab-panel::-webkit-scrollbar {
-						width: 4px;
-						background: transparent;
-					}
-					.bp5-tab-panel::-webkit-scrollbar-track {
-						background: transparent;
-					}
-					.bp5-tab-panel::-webkit-scrollbar-thumb {
-						background: rgba(130, 130, 130, 0.2);
-						border-radius: 3px;
-					}
-					.bp5-tab-panel::-webkit-scrollbar-thumb:hover {
-						background: rgba(130, 130, 130, 0.6);
-					}
-				`}</style>
 				<form
 					onSubmit={onSubmit}
 					style={{
@@ -157,7 +130,7 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 						className="custom-scrollbar"
 						id="form-fields">
 						<div style={{ overflow: "", margin: "0px", padding: 1, flex: "1 1 0", display: "flex", flexDirection: "column" }}>
-							<Tabs defaultSelectedTabId={"properties"} renderActiveTabPanelOnly={true}>
+							<Tabs className="element-form-tabs" defaultSelectedTabId={"properties"} renderActiveTabPanelOnly={true}>
 								<Tab
 									style={{ userSelect: "none", overflowX: "visible", }}
 									id={"properties"}
@@ -174,7 +147,7 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 									<Tab
 										style={{ userSelect: "none" }}
 										id={"labels"}
-										title={"Labels"}
+										title={"Annotation"}
 										panel={
 											<div style={{ flex: "1 1 0", display: "flex", flexDirection: "column" }}>
 												<FormProvider {...roleFormControls}>
