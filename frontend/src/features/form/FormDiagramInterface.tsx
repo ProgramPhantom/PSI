@@ -74,8 +74,9 @@ export function FormDiagramInterface() {
 				<div style={{ width: "100%" }}>
 					<div
 						style={{
+							minHeight: "40px",
 							width: "100%",
-							padding: "16px 8px 16px 8px",
+							padding: "6px 8px 8px 8px",
 							display: "flex",
 							flexDirection: "row",
 							alignItems: "center"
@@ -97,10 +98,10 @@ export function FormDiagramInterface() {
 						) : (
 							<>
 								<EntityTitle
-									title={`Modify '${target.ref}'`}
+									title={`Modify`}
 									icon={
 										<Icon
-											icon="add-child"
+											icon="edit"
 											onClick={() => {
 												setIsDialogOpen(true);
 											}}
@@ -114,20 +115,20 @@ export function FormDiagramInterface() {
 							<>
 								<Button
 									style={{
-										height: "30px",
+										height: "100%",
 										alignSelf: "center",
 										marginLeft: "auto"
-									}}
+									}} size="small"
 									icon="export"
 									variant="minimal"
 									onClick={() => { }/* ENGINE.saveComponentFile(target.state) */}
 									title="Export component"></Button>
 								<Button
 									style={{
-										height: "30px",
+										height: "100%",
 										alignSelf: "center",
 										marginLeft: "8px"
-									}}
+									}} size="small"
 									icon="trash"
 									intent="danger"
 									onClick={() => {
@@ -145,7 +146,7 @@ export function FormDiagramInterface() {
 						)}
 					</div>
 
-					<Divider style={{ margin: "0 0 16px 0" }}></Divider>
+					<Divider style={{ margin: "0" }}></Divider>
 				</div>
 			</div>
 
