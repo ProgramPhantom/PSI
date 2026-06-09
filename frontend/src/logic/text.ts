@@ -1,6 +1,6 @@
 import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
 import TeXToSVG from "tex-to-svg";
-import { cascadeID } from "./util2";
+import { cascadeID, showSVGRecursively } from "./util2";
 import Visual, { Display, IVisual } from "./visual";
 import { UserComponentType } from "./point";
 
@@ -78,14 +78,17 @@ export default class Text extends Visual implements IText {
 					var childTransform: string = c.attr("transform") as string;
 
 					if (childId !== undefined && childId[0] == "#") {
-						var pathToReplace: SVGElement = pathDict[childId.slice(1)];
+						var pathDef = pathDict[childId.slice(1)];
+						if (pathDef !== undefined) {
+							var pathToReplace: SVGElement = pathDef.clone(true, true) as SVGElement;
 
-						// Apply transform to path
-						if (childTransform !== undefined) {
-							pathToReplace.attr({ transform: childTransform });
+							// Apply transform to path
+							if (childTransform !== undefined) {
+								pathToReplace.attr({ transform: childTransform });
+							}
+
+							c.replace(pathToReplace);
 						}
-
-						c.replace(pathToReplace);
 					}
 				}
 			});
@@ -168,6 +171,7 @@ export default class Text extends Visual implements IText {
 
 		var internalSVG = this.svg?.clone(true, true);
 		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
+		internalSVG.show()
 
 		return internalSVG;
 	}

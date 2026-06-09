@@ -16,6 +16,7 @@ import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
 import Text, { IText } from "./text";
 import Visual, { GridCellElement, IVisual } from "./visual";
+import Line, { ILine } from "./line";
 
 
 class ENGINE {
@@ -148,15 +149,7 @@ class ENGINE {
 				element = new RectElement(parameters as IRectElement);
 				break;
 			case "label-group":
-				// Wipe the id of the core child (otherwise label group and core child would have same id)
-				(parameters as ILabelGroup).coreChild.id = undefined;
-				let coreChild: Visual | undefined = ENGINE.ConstructElement((parameters as ILabelGroup).coreChild, (parameters as ILabelGroup).coreChildType);
-
-				if (coreChild === undefined) {
-					break;
-				}
-
-				element = new LabelGroup(parameters as ILabelGroup, coreChild as GridCellElement);
+				element = new LabelGroup(parameters as ILabelGroup);
 				break;
 			case "label":
 				element = new Label(parameters as ILabel);
@@ -184,6 +177,9 @@ class ENGINE {
 				break;
 			case "diagram":
 				element = new Diagram(parameters as IDiagram);
+				break;
+			case "line":
+				element = new Line(parameters as ILine)
 				break;
 
 			default:

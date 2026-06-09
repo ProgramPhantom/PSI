@@ -1,4 +1,4 @@
-import { Colors } from "@blueprintjs/core";
+import { Colors, Icon, Tooltip } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
 import React, { CSSProperties, memo, useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
@@ -82,6 +82,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		const [{ isDragging }, drag, preview] = useDrag(
 			() => ({
 				type: dragElementType,
+				canDrag: () => props.element.placementControl !== "auto",
 				item: () => ({
 					element: props.element,
 					offset: offsetRef.current
@@ -208,7 +209,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						pointerEvents: "auto"
 					}}>
 					<div
-						ref={drag}
+						ref={props.element.placementControl === "auto" ? undefined : drag}
 						onMouseDown={(e) => {
 							props.reselect(props.element);
 							const rect = e.currentTarget.getBoundingClientRect();
@@ -221,9 +222,23 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							height: "100%",
 							width: "100%",
 							opacity: 0,
-							cursor: "move"
+							cursor: props.element.placementControl === "auto" ? "default" : "move"
 						}}>
 					</div>
+
+					{props.element.placementControl === "auto" && (
+						<div style={{
+							position: "absolute",
+							top: -3,
+							left: -8,
+							display: "flex",
+							lineHeight: 0
+						}}>
+							<Tooltip content="Element automatically positioned" placement="top">
+								<Icon icon="lock" color="grey" size={6} />
+							</Tooltip>
+						</div>
+					)}
 				</div>
 
 				<svg
@@ -261,13 +276,15 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						y={props.element.drawCY}
 						width="100%" height="100%" style={{ overflow: "visible" }}></svg>
 
+
+
 					<rect
 						x={props.element.drawCX}
 						y={props.element.drawCY}
 						width={props.element.contentWidth}
 						height={props.element.contentHeight}
 						style={{
-							stroke: isDragging ? `none` : `${Colors.BLUE3}`,
+							stroke: isDragging ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
 							strokeWidth: "1px",
 							fill: props.visualState === "selected" ? `${Colors.BLUE5}` : "transparent",
 							fillOpacity: props.visualState === "selected" ? "10%" : "0",

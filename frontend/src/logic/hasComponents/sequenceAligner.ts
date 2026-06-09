@@ -1,8 +1,8 @@
 
 import Aligner, { IAligner } from "../aligner";
-import { DEFAULT_SEQUENCE } from "../default/sequence";
+import { AddDispatchData } from "../collection";
 import { UserComponentType } from "../point";
-import Visual, { AlignerElement, PulseElement } from "../visual";
+import { AlignerElement } from "../visual";
 import Sequence, { ISequence } from "./sequence";
 
 export interface ISequenceAligner extends IAligner<ISequence> {
@@ -25,6 +25,17 @@ export default class SequenceAligner extends Aligner<AlignerElement<Sequence>> i
 
 	constructor(params: ISequenceAligner) {
 		super(params);
+		this.placementMode = { type: "free" }
+	}
 
+	public override add({ child, index }: AddDispatchData<AlignerElement<Sequence>>) {
+		child.placementMode = {
+			"type": "aligner",
+			config: {
+				...child.placementMode.config
+			}
+		}
+
+		super.add({ child, index })
 	}
 }

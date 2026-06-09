@@ -1,7 +1,8 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
-import { ID } from "./point";
+import { AllComponentTypes, ID } from "./point";
 import { ContainerSizeMethod, Dimensions, Size } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
+import { showSVGRecursively } from "./util2";
 
 // Add
 export type AddDispatchData<C extends Visual = Visual> = { child: C, index?: number }
@@ -29,6 +30,24 @@ export interface ICollection<C extends IVisual = IVisual> extends IVisual {
 	sizeMode?: Record<Dimensions, ContainerSizeMethod>
 }
 
+
+export function ClearIDs(collection: IVisual): void {
+	collection.id = undefined;
+
+	if (!Collection.isICollection(collection)) {
+		return
+	}
+
+	collection.children.forEach((c) => {
+		if (Collection.isICollection(c)) {
+			ClearIDs(c);
+		} else {
+			c.id = undefined
+		}
+	});
+}
+
+
 export type Components<C extends Visual = Visual> =
 	Record<string, {
 		object: C | undefined,
@@ -50,6 +69,9 @@ export type StructuredChildEntry<C extends Visual = Visual> = {
 export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C>, ICanAdd<C>, ICanRemove<C> {
 	static isCollection(v: IVisual): v is Collection {
 		return (v as any).children !== undefined;
+	}
+	static isICollection(v: IVisual): v is ICollection {
+		return (v as any).children !== undefined
 	}
 
 	get state(): ICollection {
@@ -120,8 +142,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	}
 
 	public computePositions(root: { x: number; y: number; }): void {
-		this.x = root.x;
-		this.y = root.y;
+		super.computePositions(root);
 
 		this.children.forEach((c) => {
 			c.computePositions({ x: this.cx, y: this.cy })
@@ -129,14 +150,8 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 		if (this.placementMode.type === "free") {
 			let topLeft: { x: number, y: number } = this.getTopLeft();
-
-			if (topLeft.x < this.x) {
-				this.cx = topLeft.x;
-			}
-
-			if (topLeft.y < this.y) {
-				this.cy = topLeft.y;
-			}
+			this.cx = topLeft.x;
+			this.cy = topLeft.y;
 		}
 	}
 
@@ -204,11 +219,15 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			this.draw(temporaryCanvas);
 		}
 
-		this.svg?.show();
 		var internalSVG = this.svg?.clone(true, true);
 		internalSVG
 			?.attr({ style: "display: block;" })
 			.attr({ transform: `translate(${deltaX}, ${deltaY})` });
+
+
+		if (internalSVG) {
+			showSVGRecursively(internalSVG);
+		}
 
 		return internalSVG;
 	}

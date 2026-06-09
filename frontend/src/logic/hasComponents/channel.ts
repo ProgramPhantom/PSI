@@ -1,3 +1,4 @@
+import { Element } from "@svgdotjs/svg.js";
 import { AddDispatchData, Components, RemoveDispatchData } from "../collection";
 import Grid, { Elements, Ghost, GridCell, IGrid, ISubgrid, Subgrid } from "../grid";
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
@@ -81,6 +82,10 @@ export default class Channel extends Subgrid implements IChannel {
 		return super.computeSize();
 	}
 
+	public override draw(surface: Element) {
+		super.draw(surface)
+	}
+
 	private initialiseChannel() {
 		this.insertEmptyRow();
 		this.insertEmptyRow();
@@ -122,7 +127,7 @@ export default class Channel extends Subgrid implements IChannel {
 		})
 
 		this.setChildSize(this.bar, {
-			noCols: this.numColumns-1,
+			noCols: this.numColumns - 1,
 			noRows: 1
 		})
 	}

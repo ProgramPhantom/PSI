@@ -1,8 +1,12 @@
 
+import { DEFAULT_BAR } from "../../logic/default/bar";
+import { DEFAULT_CHANNEL_TEXT } from "../../logic/default/defaultChannelLabel";
 import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
+import { DEFAULT_LABEL } from "../../logic/default/label";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
 import { DEFAULT_180H } from "../../logic/default/simplePulse/180pulse";
 import { DEFAULT_180S } from "../../logic/default/svgPulse/180Soft";
+import { DEFAULT_TEXT } from "../../logic/default/text";
 import { ILabel } from "../../logic/hasComponents/label";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
@@ -18,10 +22,19 @@ import TextForm from "./TextForm";
 import VisualForm from "./VisualForm";
 
 
+export interface RoleSchema {
+	displayName: string;
+	elementType: AllComponentTypes;
+	mandatory?: boolean;
+	defaultValues?: Partial<IVisual>;
+}
+
 export interface FormBundle<T extends IVisual = IVisual> {
 	form: React.FC;
 	defaults: T;
 	allowLabels: boolean;
+	/** When role children are added, wrap this element in this container type */
+	roles?: Record<string, RoleSchema>;
 }
 
 export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
@@ -33,7 +46,7 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	"svg": {
 		form: SVGElementForm,
 		defaults: DEFAULT_180S,
-		allowLabels: true
+		allowLabels: true,
 	},
 	"text": {
 		form: TextForm,
@@ -43,17 +56,24 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	"space": {
 		form: VisualForm,
 		defaults: defaultSpace as ISpace,
-		allowLabels: true
+		allowLabels: true,
 	},
 	"rect": {
 		form: RectElementForm,
 		defaults: defaultRectElement as IRectElement,
-		allowLabels: true
+		allowLabels: true,
 	},
 	"label-group": {
 		form: GridForm,
 		defaults: defaultVisual,
-		allowLabels: false
+		allowLabels: false,
+		roles: {
+			"labelTop": { displayName: "Top", elementType: "label" },
+			"labelBottom": { displayName: "Bottom", elementType: "label" },
+			"labelRight": { displayName: "Right", elementType: "label" },
+			"labelLeft": { displayName: "Left", elementType: "label" },
+			"labelCentre": { displayName: "Centre", elementType: "label" }
+		}
 	},
 	// "line": {
 	// 	form: LineFo
@@ -69,7 +89,16 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	"channel": {
 		form: ChannelForm,
 		defaults: defaultChannel,
-		allowLabels: false
+		allowLabels: false,
+		roles: {
+			"label": { displayName: "Label", elementType: "text", 
+				mandatory: true, 
+				defaultValues: DEFAULT_CHANNEL_TEXT  },
+			"bar": { displayName: "Bar", elementType: "rect",
+				mandatory: true,
+				defaultValues: DEFAULT_BAR
+			 }
+		}
 	},
 	"diagram": {
 		form: VisualForm,

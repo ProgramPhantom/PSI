@@ -5,14 +5,14 @@ import React, { CSSProperties, useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { appToaster } from "../../app/Toaster";
+import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
-import Visual, { IVisual } from "../../logic/visual";
-import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { Subgrid } from "../../logic/grid";
-import Collection from "../../logic/collection";
+import Visual, { IVisual } from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { InternalSchemeId } from "../../redux/slices/schemesSlice";
 import { deleteComponentThunk } from "../../redux/thunks/schemeThunks";
+import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 
 
 const style: CSSProperties = {
@@ -57,8 +57,6 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 	let dragElementType = DragElementTypes.ATOMIC_PREFAB;
 	if (props.element instanceof Subgrid) {
 		dragElementType = DragElementTypes.SUBGRID
-	} else if (props.element instanceof Collection) {
-		dragElementType = DragElementTypes.OTHER
 	}
 
 	const [{ isDragging }, drag, preview] = useDrag(() => ({
@@ -73,7 +71,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 
 			var singletonState: IVisual = structuredClone(props.element.state);
 
-			singletonState.id = undefined;  // Required
+			ClearIDs(singletonState)  // Required
 
 			switch (dropResult.type) {
 				case "canvas":

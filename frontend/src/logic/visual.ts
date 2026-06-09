@@ -5,6 +5,7 @@ import { IAlignerConfig, IGridConfig, IPulseConfig, isPulse, Size } from "./spac
 import { Rect } from "@svgdotjs/svg.js";
 import { SVG } from "@svgdotjs/svg.js";
 import { Svg } from "@svgdotjs/svg.js";
+import { showSVGRecursively } from "./util2";
 
 
 export type Offset = [number, number];
@@ -153,8 +154,11 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	// Construct and SVG with children positioned relative to (0, 0)
 	getInternalRepresentation(): Element | undefined {
 		if (this.svg === undefined) { return undefined }
+
 		var cloned: Element = this.svg.clone(true, true);
 		cloned.move(0, 0);
+
+		cloned.show()
 
 		return cloned;
 	}
