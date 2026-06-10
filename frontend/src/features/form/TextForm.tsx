@@ -1,4 +1,4 @@
-import { ControlGroup, FormGroup, InputGroup, Section, Slider } from "@blueprintjs/core";
+import { ControlGroup, FormGroup, InputGroup, NumericInput, Section } from "@blueprintjs/core";
 import { Controller, useFormContext } from "react-hook-form";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
@@ -16,47 +16,41 @@ function TextForm(props: ITextFormProps) {
 
 	return (
 		<>
-			<div style={{ width: "100%" }}>
-				<ControlGroup vertical={true}>
-					{/* Text */}
-					<FormGroup
-						className={styles.simpleGroup}
-						fill={false}
-						inline={false}
-						label="Text (LaTeX)"
-						labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}text`}
-							render={({ field }) => (
-								<div style={{ display: "flex", flexDirection: "row" }}>
-									<InputGroup
-										{...field}
-										id="text"
-										className={fieldStyles.compactInputGroup}
-										placeholder="_1\textrm{H}"
-										size="small"
-									/>
-									<div style={{ marginLeft: "16px", display: "flex", alignItems: "center" }}>
-										<MathJax>{`\\(${field.value || ""}\\)`}</MathJax>
-									</div>
+			<ControlGroup vertical={true} className={styles.formGroupContainer}>
+				{/* Text */}
+				<FormGroup
+					className={styles.simpleGroup}
+					fill={false}
+					inline={false}
+					label="Text (LaTeX)"
+					labelFor="text-input">
+					<Controller
+						control={formControls.control}
+						name={`${fullPrefix}text`}
+						render={({ field }) => (
+							<div style={{ display: "flex", flexDirection: "row" }}>
+								<InputGroup
+									{...field}
+									id="text"
+									className={fieldStyles.compactInputGroup}
+									placeholder="_1\textrm{H}"
+									size="small"
+								/>
+								<div style={{ marginLeft: "16px", display: "flex", alignItems: "center" }}>
+									<MathJax>{`\\(${field.value || ""}\\)`}</MathJax>
 								</div>
-							)}></Controller>
-					</FormGroup>
+							</div>
+						)}></Controller>
+				</FormGroup>
 
-					{/* Visual form */}
-					<VisualForm
-						widthDisplay={false}
-						heightDisplay={false}
-						prefix={props.prefix}></VisualForm>
-
-					{/* Style */}
-					<Section icon="style"
-						className={sectionStyles.minimalSection}
-						collapseProps={{ defaultIsOpen: false }}
-						compact={true}
-						title={"Style"}
-						collapsible={true}>
+				{/* Style */}
+				<Section
+					className={sectionStyles.minimalSection}
+					collapseProps={{ defaultIsOpen: false }}
+					compact={true}
+					title={"Style"}
+					collapsible={true}>
+					<ControlGroup vertical={true} className={styles.formGroupContainer}>
 						<FormGroup
 							className={styles.simpleGroup}
 							label="Font Size"
@@ -65,10 +59,19 @@ function TextForm(props: ITextFormProps) {
 								control={formControls.control}
 								name={`${fullPrefix}.style.fontSize`}
 								render={({ field }) => (
-									<Slider {...field} max={60} min={0} labelStepSize={10}></Slider>
+									<NumericInput
+										{...field}
+										className={fieldStyles.compactNumericInput}
+										onValueChange={field.onChange}
+										min={0}
+										max={120}
+										size="small"
+										fill={true}
+									/>
 								)}></Controller>
 						</FormGroup>
 
+						{ /* Colour */}
 						<FormGroup
 							className={styles.simpleGroup}
 							label="Colour"
@@ -77,10 +80,11 @@ function TextForm(props: ITextFormProps) {
 								control={formControls.control}
 								name={`${fullPrefix}.style.colour`}
 								render={({ field }) => (
-									<input type={"color"} {...field}></input>
+									<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
 								)}></Controller>
 						</FormGroup>
 
+						{ /* Background colour */}
 						<FormGroup
 							className={styles.simpleGroup}
 							label="Background"
@@ -89,12 +93,18 @@ function TextForm(props: ITextFormProps) {
 								control={formControls.control}
 								name={`${fullPrefix}.style.background`}
 								render={({ field: { onChange, onBlur, value, ref } }) => (
-									<input type={"color"}></input>
+									<input type={"color"} className={fieldStyles.compactColorInput} onChange={onChange} onBlur={onBlur} value={value} ref={ref}></input>
 								)}></Controller>
 						</FormGroup>
-					</Section>
-				</ControlGroup>
-			</div>
+					</ControlGroup>
+				</Section>
+			</ControlGroup>
+
+			{/* Visual form */}
+			<VisualForm
+				widthDisplay={false}
+				heightDisplay={false}
+				prefix={props.prefix}></VisualForm>
 		</>
 	);
 }

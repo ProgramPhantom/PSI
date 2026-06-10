@@ -108,7 +108,7 @@ function LabelListForm(props: ILabelMapProps) {
 					<Section
 						title={roles[posToRole(activePos)]?.type}
 						subtitle={`Location: ${activePos.charAt(0).toUpperCase() + activePos.slice(1)}`}
-						className={`${sectionStyles.minimalSection} ${styles.activeSection}`}
+						className={sectionStyles.minimalSection}
 						compact={true}
 						icon="edit"
 						rightElement={

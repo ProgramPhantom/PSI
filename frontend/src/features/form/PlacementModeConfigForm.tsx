@@ -33,7 +33,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
     let details: React.ReactNode;
     let coreRow: React.ReactNode = (
         <>
-            <Card style={{ padding: 0, display: "flex", flexDirection: "row" }}>
+            <Card style={{ marginTop: "8px", padding: 0, display: "flex", flexDirection: "row" }}>
                 <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
                     Type: {type}
                 </div>

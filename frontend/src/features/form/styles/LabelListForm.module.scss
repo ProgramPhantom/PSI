@@ -12,7 +12,7 @@
 	gap: 8px;
 	justify-content: center;
 	align-items: center;
-	margin: 12px 0 16px 0;
+	margin: 16px 0 16px 0;
 	position: relative;
 }
 
@@ -33,15 +33,19 @@
 	&.top {
 		grid-area: 1 / 2;
 	}
+
 	&.left {
 		grid-area: 2 / 1;
 	}
+
 	&.centre {
 		grid-area: 2 / 2;
 	}
+
 	&.right {
 		grid-area: 2 / 3;
 	}
+
 	&.bottom {
 		grid-area: 3 / 2;
 	}
