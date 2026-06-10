@@ -69,8 +69,8 @@ export function FormDiagramInterface() {
 	}
 
 	return (
-		<>
-			<div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+		<div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+			<div style={{ display: "flex", flexDirection: "row", width: "100%", flexShrink: 0 }}>
 				<div style={{ width: "100%" }}>
 					<div
 						style={{
@@ -152,7 +152,8 @@ export function FormDiagramInterface() {
 
 			<div
 				style={{
-					height: "100%",
+					flex: "1 1 0",
+					minHeight: 0,
 					display: "flex",
 					flexDirection: "column",
 					overflow: "hidden",
@@ -177,8 +178,7 @@ export function FormDiagramInterface() {
 						alignSelf: "center",
 						margin: "4px 2px 18px 2px",
 						padding: "0px 4px 0px 4px",
-						height: "30px",
-						marginTop: "auto",
+						flexShrink: 0,
 						display: "flex",
 						flexDirection: "column"
 					}}>
@@ -234,6 +234,6 @@ export function FormDiagramInterface() {
 					</div>
 				</DialogBody>
 			</Dialog>
-		</>
+		</div>
 	);
 }

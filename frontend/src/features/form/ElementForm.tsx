@@ -1,21 +1,18 @@
-import { Section, Tab, Tabs } from "@blueprintjs/core";
+import { Tab, Tabs } from "@blueprintjs/core";
 import React, { useEffect, useImperativeHandle, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import Visual, { IVisual } from "../../logic/visual";
-import { UserComponentType } from "../../logic/point";
-import { FormRequirements } from "./FormBase";
 import Collection from "../../logic/collection";
-import FormDivider from "./FormDivider";
+import { UserComponentType } from "../../logic/point";
+import Visual, { IVisual } from "../../logic/visual";
 import { CollectionChildrenList } from "./CollectionChildrenList";
-import RoleChildrenForm, { RoleChildrenFormData } from "./RoleChildrenForm";
 import {
-	EditableRole,
 	ResolvedFormTargets,
 	formDataAssembler,
-	resolveFormDataFromTarget,
+	resolveFormDataFromTarget
 } from "./formHelpers";
 import LabelListForm from "./LabelListForm";
-import "./ElementForm.css";
+import RoleChildrenForm, { RoleChildrenFormData } from "./RoleChildrenForm";
+import styles from "./styles/ElementForm.module.scss"
 
 
 export interface ElementFormProps {
@@ -123,14 +120,15 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 						flexDirection: "column",
 						overflow: "hidden",
 						padding: "4px 0px 4px 4px",
-						height: "100%"
+						flex: "1 1 0",
+						minHeight: 0
 					}}>
 					<div
-						style={{ flex: "1 1 0", display: "flex", flexDirection: "column" }}
+						style={{ flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}
 						className="custom-scrollbar"
 						id="form-fields">
-						<div style={{ overflow: "", margin: "0px", padding: 1, flex: "1 1 0", display: "flex", flexDirection: "column" }}>
-							<Tabs className="element-form-tabs" defaultSelectedTabId={"properties"} renderActiveTabPanelOnly={true}>
+						<div style={{ overflow: "hidden", margin: "0px", padding: 1, flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}>
+							<Tabs className={styles.elementFormTabs} defaultSelectedTabId={"properties"} renderActiveTabPanelOnly={true}>
 								<Tab
 									style={{ userSelect: "none", overflowX: "visible", }}
 									id={"properties"}

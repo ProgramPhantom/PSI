@@ -23,16 +23,15 @@ import { AllComponentTypes, ID } from "../../logic/point";
 import Visual from "../../logic/visual";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import styles from "./styles/ElementsDraw.module.scss";
 import { InternalSchemeId, selectAssociatedAssetsBySchemeId, selectSchemeLocations, selectSchemes } from "../../redux/slices/schemesSlice";
 import { selectAssets } from "../../redux/slices/assetSlice";
-import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import AddSchemeDialog from "./AddSchemeDialog";
 import NewElementDialog from "./NewElementDialog";
-
-import { isPulse } from "../../logic/spacial";
 import { deleteScheme, downloadSchemeFile, importSchemeFile, uploadSchemeServer } from "../../redux/thunks/schemeThunks";
 import { setAssetStoreDialogOpen } from "../../redux/slices/dialogSlice";
 import QuietUploadArea from "../QuietUploadArea";
+import SchemeTabPanel from "./SchemeTabPanel";
 
 
 interface IElementDrawProps { }
@@ -95,16 +94,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 		return newSingletons;
 	}, [schemes]);
 
-	const [filter, setFilter] = useState<string>("All");
 
-	const filterElement = (element: Visual, filter: string) => {
-		if (filter === "All") return true;
-		if (filter === "Channels") return element.type === "channel";
-		if (filter === "Sequences") return element.type === "sequence";
-		if (filter === "Pulses") return isPulse(element);
-		if (filter === "Annotation") return element.type === "label" || element.type === "text";
-		return true;
-	};
 
 	const handleElementDoubleClick = (element: Visual) => {
 		setSelectedElement(element);
@@ -188,26 +178,8 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 						boxShadow: "none",
 						height: "100%"
 					}}>
-					<SectionCard
-						style={{
-							padding: "0px",
-							height: "100%",
-							overflow: "hidden",
-							display: "flex",
-							flexDirection: "column"
-						}}>
-						<div
-							style={{
-								position: "sticky",
-								top: "0px",
-								backgroundColor: "white",
-								zIndex: 10,
-								padding: "8px 16px 4px 16px",
-								userSelect: "none",
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "center"
-							}}>
+					<SectionCard className={styles.elementDrawSection}>
+						<div className={styles.elementDrawSectionHeader}>
 							<EntityTitle
 								title={"Elements"}
 								subtitle={"Drag and drop these elements onto the canvas"}
@@ -231,15 +203,16 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 								display: "flex",
 								flexDirection: "column"
 							}}>
-							<style>{`.bp5-tabs { height: 100% }`}</style>
+
 
 							<Tabs
+								className={styles.elementDrawTabs}
 								onChange={(id) => setSelectedSchemeId(id as string)}
 								vertical={true}
 								defaultSelectedTabId={"default"}
 								fill={true}
-								selectedTabId={selectedSchemeId}>
-								<style>{`.bp5-tab-panel { width: 100%; height: 100% !important; max-width: 100% !important; box-sizing: border-box; display: block; }`}</style>
+								selectedTabId={selectedSchemeId}
+								renderActiveTabPanelOnly={true}>
 
 								{Object.entries(schemes).map(([schemeId, scheme]) => {
 									var schemeSingletons: Record<string, Visual> | undefined = singletons[schemeId];
@@ -278,190 +251,49 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 											tagContent={numElements}
 											id={schemeId}
 											panel={
-												<div
-													style={{
-														width: "100%",
-														display: "flex",
-														flexDirection: "row",
-														height: "100%"
-													}}>
-													<Divider style={{}}></Divider>
-													<div
-														style={{
-															width: "100%",
-															height: "100%",
-															overflow: "hidden",
-															display: "flex",
-															flexDirection: "column"
-														}}>
-														{/* Filter Tabs */}
-														<div style={{ padding: "8px 16px 8px 4px", flexShrink: 0 }}>
-															<Tabs
-																id="filter-tabs"
-																onChange={(newFilter) =>
-																	setFilter(newFilter as string)
-																}
-																selectedTabId={filter}
-																renderActiveTabPanelOnly={false}>
-																<Tab id="All" title="All" />
-																<Tab id="Sequences" title="Sequences" />
-																<Tab id="Channels" title="Channels" />
-																<Tab id="Pulses" title="Pulses" />
-																<Tab id="Annotation" title="Annotation" />
-															</Tabs>
-														</div>
-
-														<div
-															style={{
-																width: "100%",
-																display: "grid",
-																overflow: "auto",
-																gridTemplateColumns:
-																	"repeat(auto-fill, minmax(120px, 1fr))",
-																gridAutoRows: "120px",
-																gap: "12px",
-																padding: "4px 16px 16px 4px"
-															}}>
-															{/* Plus button for adding new elements */}
-															{schemeName !== InternalSchemeId ? (
-																<div
-																	style={{
-																		width: "120px",
-																		height: "120px",
-																		padding: "12px 8px",
-																		border: "1px solid #d3d8de",
-																		borderRadius: "4px",
-																		backgroundColor: "white",
-																		display: "flex",
-																		flexDirection: "column",
-																		alignItems: "center",
-																		justifyContent: "center",
-																		cursor: "pointer",
-																		boxShadow:
-																			"0 1px 3px rgba(0, 0, 0, 0.1)",
-																		transition: "all 0.2s ease",
-																		userSelect: "none"
-																	}}
-																	onMouseEnter={(e) => {
-																		e.currentTarget.style.boxShadow =
-																			"0 2px 6px rgba(0, 0, 0, 0.15)";
-																		e.currentTarget.style.transform =
-																			"translateY(-1px)";
-																	}}
-																	onMouseLeave={(e) => {
-																		e.currentTarget.style.boxShadow =
-																			"0 1px 3px rgba(0, 0, 0, 0.1)";
-																		e.currentTarget.style.transform =
-																			"translateY(0)";
-																	}}
-																	onClick={() =>
-																		setIsNewElementDialogOpen(true)
-																	}
-																	title="Add new template element">
-																	<div
-																		style={{
-																			fontSize: "32px",
-																			color: "#5c7080",
-																			marginBottom: "8px"
-																		}}>
-																		+
-																	</div>
-																	<span
-																		style={{
-																			fontSize: "12px",
-																			color: "#5c7080",
-																			fontWeight: "600",
-																			textAlign: "center",
-																			lineHeight: "1.4"
-																		}}>
-																		Add New
-																	</span>
-																</div>
-															) : (
-																<></>
-															)}
-
-															{Object.entries(schemeSingletons).filter(([id, com]) => filterElement(com, filter)).map(
-																([template_id, visual]) => {
-																	return (
-																		<TemplateDraggableElement
-																			key={template_id}
-																			element={visual}
-																			onDoubleClick={
-																				handleElementDoubleClick
-																			}
-																			schemeId={schemeId}
-																			templateId={template_id}
-																		/>
-																	);
-																}
-															)}
-														</div>
-													</div>
-												</div>
+												<SchemeTabPanel
+													schemeId={schemeId}
+													schemeName={schemeName}
+													schemeSingletons={schemeSingletons}
+													setIsNewElementDialogOpen={setIsNewElementDialogOpen}
+													handleElementDoubleClick={handleElementDoubleClick}
+												/>
 											}></Tab>
 									);
 								})}
 							</Tabs>
 
 							{/* Add New Scheme Button */}
-							<div
-								style={{
-									position: "absolute",
-									bottom: "16px",
-									left: "20px",
-									zIndex: 10,
-									width: "60px"
-								}}>
+							<div className={styles.bottomActionAdd}>
 								<Button
 									icon="plus"
 									variant="outlined"
 									intent="primary"
 									onClick={() => setIsNewSchemeDialogOpen(true)}
-									style={{
-										boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-									}}
+									style={{ boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)" }}
 								/>
 							</div>
 
 							{/* Delete Scheme button */}
-							<div
-								style={{
-									position: "absolute",
-									bottom: "16px",
-									left: "60px",
-									zIndex: 10,
-									width: "60px"
-								}}>
+							<div className={styles.bottomActionDelete}>
 								<Button
 									icon="trash"
 									variant="outlined"
 									intent="danger"
 									onClick={handleDeleteSchemeClick}
 									disabled={selectedSchemeId === InternalSchemeId}
-									style={{
-										boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-									}}
+									style={{ boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)" }}
 								/>
 							</div>
 
 							{/* Download Scheme button */}
-							<div
-								style={{
-									position: "absolute",
-									bottom: "16px",
-									left: "100px",
-									zIndex: 10,
-									width: "60px"
-								}}>
+							<div className={styles.bottomActionDownload}>
 								<Button
 									icon="download"
 									variant="outlined"
 									intent="success"
 									onClick={() => dispatch(downloadSchemeFile(selectedSchemeId))}
-									style={{
-										boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-									}}
+									style={{ boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)" }}
 								/>
 							</div>
 						</div>

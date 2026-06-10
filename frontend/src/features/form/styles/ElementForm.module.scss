@@ -1,21 +1,21 @@
-.element-form-tabs {
+.elementFormTabs {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
 }
 
-.element-form-tabs > .bp5-tab-list {
+.elementFormTabs>.bp5-tab-list {
 	flex-shrink: 0;
 }
 
-.element-form-tabs > .bp5-tab-panel {
+.elementFormTabs>.bp5-tab-panel {
 	flex: 1 1 0;
 	display: flex;
 	flex-direction: column;
 }
 
 /* Custom scrollbars - shifted into the parent's padding to prevent content squeeze */
-.element-form-tabs > .bp5-tab-panel {
+.elementFormTabs>.bp5-tab-panel {
 	overflow-y: scroll;
 	overflow-x: hidden;
 	scrollbar-gutter: stable;
@@ -23,20 +23,24 @@
 	padding-top: 4px;
 }
 
-.element-form-tabs > .bp5-tab-panel::-webkit-scrollbar {
+.elementFormTabs>.bp5-tab-panel::-webkit-scrollbar {
 	width: 4px;
 	background: transparent;
 }
 
-.element-form-tabs > .bp5-tab-panel::-webkit-scrollbar-track {
+.elementFormTabs>.bp5-tab-panel::-webkit-scrollbar-track {
 	background: transparent;
 }
 
-.element-form-tabs > .bp5-tab-panel::-webkit-scrollbar-thumb {
+.elementFormTabs>.bp5-tab-panel::-webkit-scrollbar-thumb {
 	background: rgba(130, 130, 130, 0.2);
 	border-radius: 3px;
 }
 
-.element-form-tabs > .bp5-tab-panel::-webkit-scrollbar-thumb:hover {
+.elementFormTabs>.bp5-tab-panel::-webkit-scrollbar-thumb:hover {
 	background: rgba(130, 130, 130, 0.6);
+}
+
+:export {
+	elementFormTabs: elementFormTabs
 }

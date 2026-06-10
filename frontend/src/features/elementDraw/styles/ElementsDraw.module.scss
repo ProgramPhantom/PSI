@@ -1,0 +1,67 @@
+/* ── Outer scheme Tabs ── */
+.elementDrawTabs {
+	height: 100%;
+}
+
+.elementDrawTabs> :global(.bp5-tab-panel) {
+	width: 100%;
+	height: 100% !important;
+	max-width: 100% !important;
+	box-sizing: border-box;
+	display: block;
+}
+
+.elementDrawTabs> :global(.bp5-tab-list) {
+	padding-bottom: 48px;
+}
+
+/* ── Section card (flex column container) ── */
+.elementDrawSection {
+	padding: 0px !important;
+	height: 100%;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+/* ── Sticky header bar ── */
+.elementDrawSectionHeader {
+	position: sticky;
+	top: 0px;
+	background-color: white;
+	z-index: 10;
+	padding: 8px 8px 4px 16px;
+	user-select: none;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+
+
+/* ── Bottom action buttons (add / delete / download scheme) ── */
+.bottomAction {
+	position: absolute;
+	bottom: 16px;
+	z-index: 10;
+	width: 60px;
+}
+
+.bottomActionAdd {
+	composes: bottomAction;
+	left: 20px;
+}
+
+.bottomActionDelete {
+	composes: bottomAction;
+	left: 60px;
+}
+
+.bottomActionDownload {
+	composes: bottomAction;
+	left: 100px;
+}
+
+:export {
+	elementDrawTabs: elementDrawTabs;
+}

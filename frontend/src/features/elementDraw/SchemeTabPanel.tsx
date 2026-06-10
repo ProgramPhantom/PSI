@@ -1,0 +1,93 @@
+import { Divider, Tab, Tabs } from "@blueprintjs/core";
+import React, { useState } from "react";
+import { isPulse } from "../../logic/spacial";
+import Visual from "../../logic/visual";
+import { InternalSchemeId } from "../../redux/slices/schemesSlice";
+import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
+import styles from "./styles/SchemeTabPanel.module.scss";
+
+interface SchemeTabPanelProps {
+	schemeId: string;
+	schemeName: string;
+	schemeSingletons: Record<string, Visual>;
+	setIsNewElementDialogOpen: (open: boolean) => void;
+	handleElementDoubleClick: (element: Visual) => void;
+}
+
+const filterElement = (element: Visual, filter: string) => {
+	if (filter === "All") return true;
+	if (filter === "Channels") return element.type === "channel";
+	if (filter === "Sequences") return element.type === "sequence";
+	if (filter === "Pulses") return isPulse(element);
+	if (filter === "Annotation") return element.type === "label" || element.type === "text";
+	return true;
+};
+
+export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
+	schemeId,
+	schemeName,
+	schemeSingletons,
+	setIsNewElementDialogOpen,
+	handleElementDoubleClick,
+}) => {
+	const [filter, setFilter] = useState<string>("All");
+
+	return (
+		<div className={styles.tabPanelRow}>
+			<Divider />
+			<div className={styles.tabPanelColumn}>
+				{/* Filter Tabs */}
+				<div className={styles.filterTabsWrapper}>
+					<Tabs
+						id="filter-tabs"
+						onChange={(newFilter) => setFilter(newFilter as string)}
+						selectedTabId={filter}
+						renderActiveTabPanelOnly={false}
+					>
+						<Tab id="All" title="All" />
+						<Tab id="Sequences" title="Sequences" />
+						<Tab id="Channels" title="Channels" />
+						<Tab id="Pulses" title="Pulses" />
+						<Tab id="Annotation" title="Annotation" />
+					</Tabs>
+				</div>
+
+				<div className={styles.elementGrid}>
+					{/* Plus button for adding new elements */}
+					{schemeName !== InternalSchemeId ? (
+						<div
+							className={styles.addNewCard}
+							onClick={() => setIsNewElementDialogOpen(true)}
+							title="Add new template element"
+						>
+							<div style={{ fontSize: "32px", color: "#5c7080", marginBottom: "8px" }}>
+								+
+							</div>
+							<span style={{ fontSize: "12px", color: "#5c7080", fontWeight: "600", textAlign: "center", lineHeight: "1.4" }}>
+								Add New
+							</span>
+						</div>
+					) : (
+						<></>
+					)}
+
+					{Object.entries(schemeSingletons)
+						.filter(([id, com]) => filterElement(com, filter))
+						.map(([template_id, visual]) => {
+							return (
+								<TemplateDraggableElement
+									key={template_id}
+									element={visual}
+									onDoubleClick={handleElementDoubleClick}
+									schemeId={schemeId}
+									templateId={template_id}
+								/>
+							);
+						})}
+				</div>
+			</div>
+		</div>
+	);
+};
+
+export default SchemeTabPanel;
