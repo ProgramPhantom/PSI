@@ -1,5 +1,5 @@
-import {defineConfig} from "vite";
-import {nodePolyfills} from "vite-plugin-node-polyfills";
+import { defineConfig } from "vite";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 import react from "@vitejs/plugin-react";
 import CircularDependencyPlugin from "vite-plugin-circular-dependency";
 
@@ -54,5 +54,12 @@ export default defineConfig({
 	],
 	build: {
 		sourcemap: true
+	},
+	css: {
+		preprocessorOptions: {
+			scss: {
+				api: 'modern-compiler' // or "modern"
+			}
+		}
 	}
 });

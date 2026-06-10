@@ -196,7 +196,7 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 						<div
 							style={{
-								padding: "8px 16px",
+								padding: "8px 0px 8px 8px",
 								width: "100%",
 								flex: "1 1 0",
 								minHeight: 0,

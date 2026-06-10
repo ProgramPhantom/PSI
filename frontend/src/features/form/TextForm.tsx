@@ -4,6 +4,8 @@ import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import { MathJax } from "better-react-mathjax";
 import sectionStyles from "./styles/FormSection.module.scss";
+import styles from "./styles/FormGroup.module.scss";
+import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ITextFormProps extends FormRequirements { }
 
@@ -18,7 +20,7 @@ function TextForm(props: ITextFormProps) {
 				<ControlGroup vertical={true}>
 					{/* Text */}
 					<FormGroup
-						style={{ padding: "8px 0px" }}
+						className={styles.simpleGroup}
 						fill={false}
 						inline={false}
 						label="Text (LaTeX)"
@@ -31,6 +33,7 @@ function TextForm(props: ITextFormProps) {
 									<InputGroup
 										{...field}
 										id="text"
+										className={fieldStyles.compactInputGroup}
 										placeholder="_1\textrm{H}"
 										size="small"
 									/>
@@ -55,8 +58,7 @@ function TextForm(props: ITextFormProps) {
 						title={"Style"}
 						collapsible={true}>
 						<FormGroup
-							style={{ padding: "4px 8px", margin: 0 }}
-							inline={true}
+							className={styles.simpleGroup}
 							label="Font Size"
 							labelFor="text-input">
 							<Controller
@@ -68,8 +70,7 @@ function TextForm(props: ITextFormProps) {
 						</FormGroup>
 
 						<FormGroup
-							style={{ padding: "4px 8px", margin: 0 }}
-							inline={true}
+							className={styles.simpleGroup}
 							label="Colour"
 							labelFor="text-input">
 							<Controller
@@ -81,8 +82,7 @@ function TextForm(props: ITextFormProps) {
 						</FormGroup>
 
 						<FormGroup
-							style={{ padding: "4px 8px", margin: 0 }}
-							inline={true}
+							className={styles.simpleGroup}
 							label="Background"
 							labelFor="text-input">
 							<Controller

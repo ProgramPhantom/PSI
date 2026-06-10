@@ -16,6 +16,8 @@ import { FormGroup, HTMLSelect } from "@blueprintjs/core";
 import { Controller } from "react-hook-form";
 
 import Collection from "../../logic/collection";
+import styles from "./styles/FormGroup.module.scss";
+import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ChannelFormProps extends FormRequirements {
 }
@@ -34,14 +36,11 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 
 	return (
 		<>
-			<ControlGroup vertical={true}>
-
-				<FormDivider title="Channel" topMargin={0} />
-
+			<ControlGroup vertical={true} className={styles.formGroupContainer}>
 				<FormGroup
+					className={styles.simpleGroup}
 					label="Sequence"
 					labelFor="sequence-select"
-					style={{ marginBottom: "10px", }}
 				>
 					<Controller defaultValue={ENGINE.handler.diagram.sequences[0]?.id}
 						control={formControls.control}
@@ -49,6 +48,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 						render={({ field }) => (
 							<HTMLSelect
 								{...field}
+								className={fieldStyles.compactHTMLSelect}
 								id="sequence-select"
 								fill={true}
 								options={[
@@ -61,9 +61,9 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 						)}
 					/>
 				</FormGroup>
-
-				<VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
 			</ControlGroup>
+
+			<VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
 		</>
 	);
 };

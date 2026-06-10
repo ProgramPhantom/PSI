@@ -23,7 +23,7 @@ const Form: React.FC<IFormProps> = (props) => {
 		<>
 			<Card
 				style={{
-					padding: "4px 4px",
+					padding: "0",
 					height: "100%",
 					overflow: "hidden",
 					display: "flex",

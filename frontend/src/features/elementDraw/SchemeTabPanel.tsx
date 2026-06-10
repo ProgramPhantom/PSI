@@ -52,7 +52,7 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 					</Tabs>
 				</div>
 
-				<div className={styles.elementGrid}>
+				<div className={`${styles.elementGrid} custom-scrollbar`}>
 					{/* Plus button for adding new elements */}
 					{schemeName !== InternalSchemeId ? (
 						<div

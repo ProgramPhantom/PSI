@@ -10,6 +10,8 @@ import VisualForm from "./VisualForm";
 import FormDivider from "./FormDivider";
 import { DEFAULT_LABEL } from "../../logic/default/label";
 import sectionStyles from "./styles/FormSection.module.scss";
+import styles from "./styles/FormGroup.module.scss";
+import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ILabelArrayFormProps extends FormRequirements { }
 
@@ -82,7 +84,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 
 
 				{/* Text position */}
-				<FormGroup style={{ padding: "4px 0px", }}
+				<FormGroup className={styles.simpleGroup}
 					fill={false}
 					inline={true}
 					label="Text Position"
@@ -91,7 +93,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 						control={formControls.control}
 						name={`${fullPrefix}labelConfig.textPosition`}
 						render={({ field }) => (
-							<HTMLSelect {...field} iconName="caret-down">
+							<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
 								<option value={"top"}>Top</option>
 								<option value={"inline"}>Inline</option>
 								<option value={"bottom"}>Bottom</option>

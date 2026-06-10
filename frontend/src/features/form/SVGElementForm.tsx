@@ -12,6 +12,8 @@ import ENGINE from "../../logic/engine";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import SVGUploadDialog from "./SVGUploadDialog";
+import styles from "./styles/FormGroup.module.scss";
+import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ISVGElementFormProps extends FormRequirements { }
 
@@ -60,10 +62,11 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 								</Callout>
 
 							)}
-							<FormGroup fill={false} inline={true} label="SVG" labelFor="svgDataRef-select">
+							<FormGroup className={styles.simpleGroup} fill={false} inline={true} label="SVG" labelFor="svgDataRef-select">
 								<ControlGroup>
 									<HTMLSelect
 										{...fieldProps}
+										className={fieldStyles.compactHTMLSelect}
 										id="svgDataRef-select"
 										fill={true}
 										value={(currentId as string) || ""}

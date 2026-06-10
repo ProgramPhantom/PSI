@@ -1,4 +1,6 @@
 import {
+    Card,
+    ControlGroup,
     FormGroup,
     HTMLSelect,
     NumericInput,
@@ -6,6 +8,8 @@ import {
 } from "@blueprintjs/core";
 import React from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
+import styles from "./styles/FormGroup.module.scss";
+import fieldStyles from "./styles/FormFields.module.scss";
 
 export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPrefix }) => {
     const { control } = useFormContext();
@@ -29,14 +33,14 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
     let details: React.ReactNode;
     let coreRow: React.ReactNode = (
         <>
-            <div style={{ display: "flex", flexDirection: "row", margin: "4px 0px" }}>
+            <Card style={{ padding: 0, display: "flex", flexDirection: "row" }}>
                 <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
                     Type: {type}
                 </div>
                 <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
                     Control: {placementControl}
                 </div>
-            </div>
+            </Card>
         </>
     );
 
@@ -44,22 +48,25 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
     if (pulseData) {
         details = (
             <>
-                {/* Read-only fields */}
-                <div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span>Index: {pulseData?.index ?? "-"}</span>
-                        <span>ChannelID: {pulseData?.channelID ?? "-"}</span>
-                        <span>SequenceID: {pulseData?.sequenceID ?? "-"}</span>
-                    </div>
-                </div>
 
-                <FormGroup style={{ padding: "4px 8px" }} inline label="Orientation">
+                {/* Read-only fields */}
+                <Card style={{
+                    padding: "4px 8px",
+                    fontSize: "0.8em", opacity: 0.7,
+                    display: "flex", justifyContent: "space-between"
+                }}>
+                    <span>Index: {pulseData?.index ?? "-"}</span>
+                    <span>ChannelID: {pulseData?.channelID ?? "-"}</span>
+                    <span>SequenceID: {pulseData?.sequenceID ?? "-"}</span>
+                </Card >
+
+                <FormGroup className={styles.simpleGroup} label="Orientation">
                     <Controller
                         control={control}
                         name={`${fullPrefix}pulseData.orientation`}
                         defaultValue="top"
                         render={({ field }) => (
-                            <HTMLSelect {...field} iconName="caret-down" fill>
+                            <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
                                 <option value="top">Top</option>
                                 <option value="bottom">Bottom</option>
                                 <option value="both">Both</option>
@@ -68,52 +75,58 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                     />
                 </FormGroup>
 
-                <FormGroup style={{ padding: "4px 8px" }} inline label="Align X">
-                    <Controller
-                        control={control}
-                        name={`${fullPrefix}pulseData.alignment.x`}
-                        defaultValue="here"
-                        render={({ field }) => (
-                            <HTMLSelect {...field} iconName="caret-down" fill>
-                                <option value="here">Left</option>
-                                <option value="centre">Centre</option>
-                                <option value="far">Right</option>
-                            </HTMLSelect>
-                        )}
-                    />
-                </FormGroup>
-                <FormGroup style={{ padding: "4px 8px" }} inline label="Align Y">
-                    <Controller
-                        control={control}
-                        name={`${fullPrefix}pulseData.alignment.y`}
-                        defaultValue="here"
-                        render={({ field }) => (
-                            <HTMLSelect {...field} iconName="caret-down" fill>
-                                <option value="here">Top</option>
-                                <option value="centre">Centre</option>
-                                <option value="far">Bottom</option>
-                            </HTMLSelect>
-                        )}
-                    />
+                <FormGroup className={styles.doubleGroup} label="Align">
+                    <div className={styles.doubleFields}>
+                        <div className={styles.inlineField}>
+                            <span className={styles.fieldLabel}>X</span>
+                            <Controller
+                                control={control}
+                                name={`${fullPrefix}pulseData.alignment.x`}
+                                defaultValue="here"
+                                render={({ field }) => (
+                                    <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
+                                        <option value="here">Left</option>
+                                        <option value="centre">Centre</option>
+                                        <option value="far">Right</option>
+                                    </HTMLSelect>
+                                )}
+                            />
+                        </div>
+                        <div className={styles.inlineField}>
+                            <span className={styles.fieldLabel}>Y</span>
+                            <Controller
+                                control={control}
+                                name={`${fullPrefix}pulseData.alignment.y`}
+                                defaultValue="here"
+                                render={({ field }) => (
+                                    <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
+                                        <option value="here">Top</option>
+                                        <option value="centre">Centre</option>
+                                        <option value="far">Bottom</option>
+                                    </HTMLSelect>
+                                )}
+                            />
+                        </div>
+                    </div>
                 </FormGroup>
 
-                <FormGroup style={{ padding: "4px 8px" }} inline label="No. Sections">
+                <FormGroup className={styles.simpleGroup} label="No. Sections">
                     <Controller
                         control={control}
                         name={`${fullPrefix}pulseData.noSections`}
                         defaultValue={1}
                         render={({ field }) => (
-                            <NumericInput {...field} onValueChange={field.onChange} min={1} max={10} size="small" fill />
+                            <NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={1} max={10} size="small" fill />
                         )}
                     />
                 </FormGroup>
 
-                <FormGroup style={{ padding: "4px 8px" }} inline label="Clip Channel Bar">
+                <FormGroup className={styles.simpleGroup} inline label="Clip Channel Bar">
                     <Controller
                         control={control}
                         name={`${fullPrefix}pulseData.clipBar`}
                         render={({ field }) => (
-                            <Switch {...field} onChange={field.onChange} checked={field.value} />
+                            <Switch {...field} onChange={field.onChange} checked={field.value} className={fieldStyles.compactSwitch} />
                         )}
                     />
                 </FormGroup>
@@ -122,79 +135,85 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
     } else if (type === "grid") {
         details = (
             <>
-                <div style={{ display: "flex", gap: "10px", padding: "0 8px" }}>
-                    <FormGroup style={{ flex: 1 }} label="Row">
+                <div className={styles.inlineContainer}>
+                    <FormGroup className={styles.simpleGroup} label="Row">
                         <Controller
                             control={control}
                             name={`${fullPrefix}placementMode.gridConfig.coords.row`}
                             defaultValue={0}
                             render={({ field }) => (
-                                <NumericInput {...field} onValueChange={field.onChange} min={0} size="small" fill />
+                                <NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={0} size="small" fill />
                             )}
                         />
                     </FormGroup>
-                    <FormGroup style={{ flex: 1 }} label="Col">
+                    <FormGroup className={styles.simpleGroup} label="Col">
                         <Controller
                             control={control}
                             name={`${fullPrefix}placementMode.gridConfig.coords.col`}
                             defaultValue={0}
                             render={({ field }) => (
-                                <NumericInput {...field} onValueChange={field.onChange} min={0} size="small" fill />
+                                <NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={0} size="small" fill />
                             )}
                         />
                     </FormGroup>
                 </div>
 
-                <div style={{ display: "flex", gap: "10px", padding: "0 8px" }}>
-                    <FormGroup style={{ flex: 1 }} label="Row Span">
+                <div className={styles.inlineContainer}>
+                    <FormGroup className={styles.simpleGroup} label="Row Span">
                         <Controller
                             control={control}
                             name={`${fullPrefix}placementMode.gridConfig.gridSize.noRows`}
                             defaultValue={1}
                             render={({ field }) => (
-                                <NumericInput {...field} onValueChange={field.onChange} min={1} size="small" fill />
+                                <NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={1} size="small" fill />
                             )}
                         />
                     </FormGroup>
-                    <FormGroup style={{ flex: 1 }} label="Col Span">
+                    <FormGroup className={styles.simpleGroup} label="Col Span">
                         <Controller
                             control={control}
                             name={`${fullPrefix}placementMode.gridConfig.gridSize.noCols`}
                             defaultValue={1}
                             render={({ field }) => (
-                                <NumericInput {...field} onValueChange={field.onChange} min={1} size="small" fill />
+                                <NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={1} size="small" fill />
                             )}
                         />
                     </FormGroup>
                 </div>
 
-                <FormGroup style={{ padding: "4px 8px" }} inline label="Align X">
-                    <Controller
-                        control={control}
-                        name={`${fullPrefix}placementMode.gridConfig.alignment.x`}
-                        defaultValue="here"
-                        render={({ field }) => (
-                            <HTMLSelect {...field} iconName="caret-down" fill>
-                                <option value="here">Here</option>
-                                <option value="centre">Centre</option>
-                                <option value="far">Far</option>
-                            </HTMLSelect>
-                        )}
-                    />
-                </FormGroup>
-                <FormGroup style={{ padding: "4px 8px" }} inline label="Align Y">
-                    <Controller
-                        control={control}
-                        name={`${fullPrefix}placementMode.gridConfig.alignment.y`}
-                        defaultValue="here"
-                        render={({ field }) => (
-                            <HTMLSelect {...field} iconName="caret-down" fill>
-                                <option value="here">Here</option>
-                                <option value="centre">Centre</option>
-                                <option value="far">Far</option>
-                            </HTMLSelect>
-                        )}
-                    />
+                <FormGroup className={styles.doubleGroup} label="Align">
+                    <div className={styles.doubleFields}>
+                        <div className={styles.inlineField}>
+                            <span className={styles.fieldLabel}>X</span>
+                            <Controller
+                                control={control}
+                                name={`${fullPrefix}placementMode.gridConfig.alignment.x`}
+                                defaultValue="here"
+                                render={({ field }) => (
+                                    <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
+                                        <option value="here">Here</option>
+                                        <option value="centre">Centre</option>
+                                        <option value="far">Far</option>
+                                    </HTMLSelect>
+                                )}
+                            />
+                        </div>
+                        <div className={styles.inlineField}>
+                            <span className={styles.fieldLabel}>Y</span>
+                            <Controller
+                                control={control}
+                                name={`${fullPrefix}placementMode.gridConfig.alignment.y`}
+                                defaultValue="here"
+                                render={({ field }) => (
+                                    <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
+                                        <option value="here">Here</option>
+                                        <option value="centre">Centre</option>
+                                        <option value="far">Far</option>
+                                    </HTMLSelect>
+                                )}
+                            />
+                        </div>
+                    </div>
                 </FormGroup>
 
                 <div style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: "5px" }}>
@@ -224,13 +243,13 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                     Index: {placementMode?.alignerConfig?.index ?? "N/A"}
                 </div>
 
-                <FormGroup style={{ padding: "4px 8px" }} inline label="Alignment">
+                <FormGroup className={styles.simpleGroup} label="Alignment">
                     <Controller
                         control={control}
                         name={`${fullPrefix}placementMode.alignerConfig.alignment`}
                         defaultValue="here"
                         render={({ field }) => (
-                            <HTMLSelect {...field} iconName="caret-down" fill>
+                            <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
                                 <option value="here">Here</option>
                                 <option value="centre">Centre</option>
                                 <option value="far">Far</option>
@@ -263,8 +282,10 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 
     return (
         <>
-            {coreRow}
-            {placementControl === "auto" ? null : details}
+            <ControlGroup vertical={true} className={styles.formGroupContainer}>
+                {coreRow}
+                {placementControl === "auto" ? null : details}
+            </ControlGroup>
         </>
     );
 };

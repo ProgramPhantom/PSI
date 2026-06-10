@@ -119,7 +119,7 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 						display: "flex",
 						flexDirection: "column",
 						overflow: "hidden",
-						padding: "4px 0px 4px 4px",
+						padding: "0",
 						flex: "1 1 0",
 						minHeight: 0
 					}}>
@@ -127,18 +127,19 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 						style={{ flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}
 						className="custom-scrollbar"
 						id="form-fields">
-						<div style={{ margin: "0px", padding: 1, flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}>
-							<Tabs className={styles.elementFormTabs} defaultSelectedTabId={"properties"} renderActiveTabPanelOnly={true}>
+						<div style={{ margin: "0px", flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}>
+							<Tabs className={styles.elementFormTabs}
+								defaultSelectedTabId={"properties"}
+								renderActiveTabPanelOnly={true}
+								animate={false}>
 								<Tab
 									style={{ userSelect: "none", overflowX: "visible", }}
 									id={"properties"}
 									title={"Properties"}
 									panel={
-										<div style={{ padding: "0px 4px" }}>
-											<FormProvider {...masterFormControls}>
-												<MasterForm target={props.target}></MasterForm>
-											</FormProvider>
-										</div>
+										<FormProvider {...masterFormControls}>
+											<MasterForm target={props.target}></MasterForm>
+										</FormProvider>
 									}></Tab>
 
 								{showLabelsTab ? (
