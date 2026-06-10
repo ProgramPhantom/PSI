@@ -1,0 +1,67 @@
+.container {
+	display: flex;
+	height: 100%;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+.gridContainer {
+	display: grid;
+	grid-template-columns: 4px 80% 4px;
+	grid-template-rows: 4px 64px 4px;
+	gap: 8px;
+	justify-content: center;
+	align-items: center;
+	margin: 12px 0 16px 0;
+	position: relative;
+}
+
+.svgBackground {
+	grid-area: 2 / 2;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.gridItem {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1;
+
+	&.top {
+		grid-area: 1 / 2;
+	}
+	&.left {
+		grid-area: 2 / 1;
+	}
+	&.centre {
+		grid-area: 2 / 2;
+	}
+	&.right {
+		grid-area: 2 / 3;
+	}
+	&.bottom {
+		grid-area: 3 / 2;
+	}
+}
+
+.activeSection {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.scrollContainer {
+	flex-grow: 1;
+	overflow-y: auto;
+}
+
+.emptyStateContainer {
+	flex-grow: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: 12px;
+}
