@@ -7,7 +7,7 @@ import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
-import { LabelGroupComboForm, SubmitButtonRef } from "./ElementForm";
+import { ElementForm, SubmitButtonRef } from "./ElementForm";
 
 type FormEffect = "submit" | "delete" | "modify";
 
@@ -159,7 +159,7 @@ export function FormDiagramInterface() {
 					overflow: "hidden",
 					padding: "0px"
 				}}>
-				<LabelGroupComboForm
+				<ElementForm
 					key={target ? target.id : "defaults"}
 					ref={submitRef}
 					objectType={targetType as UserComponentType}
@@ -169,14 +169,14 @@ export function FormDiagramInterface() {
 							? dispatchFormEffect(val, "modify")
 							: dispatchFormEffect(val, "submit");
 						changeTarget(undefined);
-					}}></LabelGroupComboForm>
+					}}></ElementForm>
 
 				<div
 					id="submit-area"
 					style={{
 						width: "100%",
 						alignSelf: "center",
-						margin: "4px 2px 18px 2px",
+						margin: "4px 2px 4px 2px",
 						padding: "0px 4px 0px 4px",
 						flexShrink: 0,
 						display: "flex",

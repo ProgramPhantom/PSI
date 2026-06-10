@@ -8,7 +8,7 @@ import { UserComponentType } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
 import { ISVGElement } from "../../logic/svgElement";
 import { IVisual } from "../../logic/visual";
-import { LabelGroupComboForm, SubmitButtonRef } from "../form/ElementForm";
+import { ElementForm, SubmitButtonRef } from "../form/ElementForm";
 import { useDispatch } from "react-redux";
 import { addComponent } from "../../redux/slices/schemesSlice";
 
@@ -50,30 +50,30 @@ export default function NewElementDialog(props: INewElementDialog) {
 							id="rect"
 							title="Rect"
 							panel={
-								<LabelGroupComboForm
+								<ElementForm
 									ref={submitRef}
 									objectType="rect"
-									callback={addNewTemplate}></LabelGroupComboForm>
+									callback={addNewTemplate}></ElementForm>
 							}
 						/>
 						<Tab
 							id="svg"
 							title="SVG"
 							panel={
-								<LabelGroupComboForm
+								<ElementForm
 									ref={submitRef}
 									objectType="svg"
-									callback={addNewTemplate}></LabelGroupComboForm>
+									callback={addNewTemplate}></ElementForm>
 							}
 						/>
 						<Tab
 							id="label"
 							title="Label"
 							panel={
-								<LabelGroupComboForm
+								<ElementForm
 									ref={submitRef}
 									objectType="label"
-									callback={addNewTemplate}></LabelGroupComboForm>
+									callback={addNewTemplate}></ElementForm>
 							}
 						/>
 					</Tabs>

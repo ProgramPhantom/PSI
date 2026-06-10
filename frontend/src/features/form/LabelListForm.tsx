@@ -10,6 +10,7 @@ import ArrowForm from "./ArrowForm";
 import { FormRequirements } from "./FormBase";
 import { Position } from "../../logic/text";
 import { RoleChildrenFormData } from "./RoleChildrenForm";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 interface ILabelMapProps extends FormRequirements { }
 
@@ -132,9 +133,11 @@ function LabelListForm(props: ILabelMapProps) {
 					<Section
 						title={roles[posToRole(activePos)]?.type}
 						subtitle={`Location: ${activePos.charAt(0).toUpperCase() + activePos.slice(1)}`}
-						style={{ borderRadius: "0px", padding: "0px", marginTop: "12px", flexGrow: 1, display: "flex", flexDirection: "column" }}
-						compact={true} collapsible={true} collapseProps={{ "transitionDuration": 5 }}
-						icon={
+						className={sectionStyles.minimalSection}
+						style={{ padding: "0px", marginTop: "12px", flexGrow: 1, display: "flex", flexDirection: "column" }}
+						compact={true}
+						icon="edit"
+						rightElement={
 							<Button
 								icon="trash"
 								intent="danger"
@@ -146,7 +149,7 @@ function LabelListForm(props: ILabelMapProps) {
 							/>
 						}
 					>
-						<div style={{ padding: "8px", flexGrow: 1, overflowY: "auto" }}>
+						<div style={{ padding: "0px 4px", flexGrow: 1, overflowY: "auto" }}>
 							{roles[posToRole(activePos)]?.type === "text" && <TextForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "line" && <ArrowForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "label" && <LabelForm prefix={`roles.${posToRole(activePos)}`} />}

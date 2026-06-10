@@ -4,6 +4,7 @@ import { ILine } from "../../logic/line";
 import { getByPath } from "../../logic/util2";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 interface IArrowFormProps extends FormRequirements { }
 
@@ -74,6 +75,7 @@ function ArrowForm(props: IArrowFormProps) {
 
 				{/* Style */}
 				<Section icon="style"
+					className={sectionStyles.minimalSection}
 					collapseProps={{ defaultIsOpen: false }}
 					compact={true}
 					title={"Style"}

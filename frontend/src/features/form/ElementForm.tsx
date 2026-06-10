@@ -127,7 +127,7 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 						style={{ flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}
 						className="custom-scrollbar"
 						id="form-fields">
-						<div style={{ overflow: "hidden", margin: "0px", padding: 1, flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}>
+						<div style={{ margin: "0px", padding: 1, flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}>
 							<Tabs className={styles.elementFormTabs} defaultSelectedTabId={"properties"} renderActiveTabPanelOnly={true}>
 								<Tab
 									style={{ userSelect: "none", overflowX: "visible", }}
@@ -195,5 +195,4 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 	}
 );
 
-// Backward compatibility alias
-export const LabelGroupComboForm = ElementForm;
+

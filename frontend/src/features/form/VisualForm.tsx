@@ -15,6 +15,7 @@ import Collection from "../../logic/collection";
 import { FormRequirements } from "./FormBase";
 import { PlacementModeConfig } from "./PlacementModeConfigForm";
 import InformationLabel from "./help/InformationLabel";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 interface IVisualFormProps extends FormRequirements {
 	widthDisplay?: boolean;
@@ -196,7 +197,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 			{/* Config */}
 			{/* Placement Config */}
 			<Section icon="area-of-interest"
-				style={{ borderRadius: 0 }}
+				className={sectionStyles.minimalSection}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				title={(<InformationLabel text="Placement" helpType="placementMode" />)}
@@ -209,7 +210,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 
 			{/* Padding */}
 			<Section icon="horizontal-inbetween"
-				style={{ borderRadius: 0, }}
+				className={sectionStyles.minimalSection}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				title={"Padding"}
@@ -311,7 +312,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 
 			{/* Offset */}
 			<Section icon="arrows-horizontal"
-				style={{ borderRadius: 0, padding: 0 }}
+				className={sectionStyles.minimalSection}
+				style={{ padding: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				title={

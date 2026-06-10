@@ -4,41 +4,37 @@
 	height: 100%;
 }
 
-.elementFormTabs>.bp5-tab-list {
+.elementFormTabs > :global(.bp5-tab-list) {
 	flex-shrink: 0;
 }
 
-.elementFormTabs>.bp5-tab-panel {
+.elementFormTabs > :global(.bp5-tab-panel) {
 	flex: 1 1 0;
 	display: flex;
 	flex-direction: column;
-}
-
-/* Custom scrollbars - shifted into the parent's padding to prevent content squeeze */
-.elementFormTabs>.bp5-tab-panel {
-	overflow-y: scroll;
+	overflow-y: auto;
 	overflow-x: hidden;
 	scrollbar-gutter: stable;
 	margin-top: 16px;
 	padding-top: 4px;
-}
 
-.elementFormTabs>.bp5-tab-panel::-webkit-scrollbar {
-	width: 4px;
-	background: transparent;
-}
+	&::-webkit-scrollbar {
+		width: 4px;
+		background: transparent;
+	}
 
-.elementFormTabs>.bp5-tab-panel::-webkit-scrollbar-track {
-	background: transparent;
-}
+	&::-webkit-scrollbar-track {
+		background: transparent;
+	}
 
-.elementFormTabs>.bp5-tab-panel::-webkit-scrollbar-thumb {
-	background: rgba(130, 130, 130, 0.2);
-	border-radius: 3px;
-}
+	&::-webkit-scrollbar-thumb {
+		background: rgba(130, 130, 130, 0.2);
+		border-radius: 3px;
 
-.elementFormTabs>.bp5-tab-panel::-webkit-scrollbar-thumb:hover {
-	background: rgba(130, 130, 130, 0.6);
+		&:hover {
+			background: rgba(130, 130, 130, 0.6);
+		}
+	}
 }
 
 :export {

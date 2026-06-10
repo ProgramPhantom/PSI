@@ -3,6 +3,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import { MathJax } from "better-react-mathjax";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 interface ITextFormProps extends FormRequirements { }
 
@@ -48,6 +49,7 @@ function TextForm(props: ITextFormProps) {
 
 					{/* Style */}
 					<Section icon="style"
+						className={sectionStyles.minimalSection}
 						collapseProps={{ defaultIsOpen: false }}
 						compact={true}
 						title={"Style"}

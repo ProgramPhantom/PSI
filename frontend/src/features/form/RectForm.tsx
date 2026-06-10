@@ -4,6 +4,7 @@ import { IRectElement } from "../../logic/rectElement";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import { ControlGroup, FormGroup, InputGroup, NumericInput, Section } from "@blueprintjs/core";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 interface IRectFormProps extends FormRequirements { }
 
@@ -20,6 +21,7 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 
 					{/* Style stuff */}
 					<Section icon="style"
+						className={sectionStyles.minimalSection}
 						collapseProps={{ defaultIsOpen: false }}
 						compact={true}
 						title={"Style"}

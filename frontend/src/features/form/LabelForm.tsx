@@ -9,6 +9,7 @@ import { ILine } from "../../logic/line";
 import VisualForm from "./VisualForm";
 import FormDivider from "./FormDivider";
 import { DEFAULT_LABEL } from "../../logic/default/label";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 interface ILabelArrayFormProps extends FormRequirements { }
 
@@ -102,6 +103,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 			<FormDivider title="Text" topMargin={0}></FormDivider>
 			{/* Text form */}
 			<Section icon="text-highlight"
+				className={sectionStyles.minimalSection}
 				style={{ padding: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
@@ -124,6 +126,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 			<FormDivider title="Arrow"></FormDivider>
 			{/* Arrow form */}
 			<Section icon="arrow-top-left"
+				className={sectionStyles.minimalSection}
 				style={{ padding: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}

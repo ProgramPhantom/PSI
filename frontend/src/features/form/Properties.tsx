@@ -1,5 +1,6 @@
 import { Card, Divider, EditableText, Section, SectionCard, Text } from "@blueprintjs/core";
 import Visual from "../../logic/visual";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 interface IProperties {
 	target: Visual;
@@ -8,6 +9,7 @@ interface IProperties {
 function Properties(props: IProperties) {
 	return (
 		<Section
+			className={sectionStyles.minimalSection}
 			style={{
 				display: "flex",
 				flexDirection: "column",
