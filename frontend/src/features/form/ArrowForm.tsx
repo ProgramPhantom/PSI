@@ -18,7 +18,84 @@ function ArrowForm(props: IArrowFormProps) {
 
 	return (
 		<>
-			<ControlGroup vertical={true} style={{ padding: "8px" }}>
+			<ControlGroup vertical={true} className={styles.formGroupContainer}>
+				{/* Style */}
+				<Section
+					className={sectionStyles.minimalSection}
+					collapseProps={{ defaultIsOpen: false }}
+					compact={true}
+					title={"Style"}
+					collapsible={true}>
+					<ControlGroup vertical={true} className={styles.formGroupContainer}>
+						<FormGroup fill={true}
+							className={styles.simpleGroup}
+							label="Stroke thickness"
+							labelFor="text-input">
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}style.thickness`}
+								render={({ field }) => (
+									<NumericInput
+										{...field} size="small"
+										className={fieldStyles.compactNumericInput}
+										onValueChange={field.onChange}
+										min={0}></NumericInput>
+								)}></Controller>
+						</FormGroup>
+
+						<FormGroup
+							className={styles.simpleGroup}
+							label="Stroke"
+							labelFor="text-input">
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}style.stroke`}
+								render={({ field }) => (
+									<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
+								)}></Controller>
+						</FormGroup>
+
+						<FormGroup
+							className={styles.doubleGroup}
+							label="Dashing"
+							labelFor="text-input">
+							<div className={styles.doubleFields}>
+								<div className={styles.inlineField}>
+									<span className={styles.fieldLabel}>Dash</span>
+									<Controller
+										control={formControls.control}
+										name={`${fullPrefix}style.dashing.0`}
+										render={({ field }) => (
+											<NumericInput fill={true}
+												{...field}
+												className={fieldStyles.compactNumericInput}
+												min={-100}
+												max={100}
+												onValueChange={field.onChange}
+												size="small"
+											></NumericInput>
+										)}></Controller>
+								</div>
+								<div className={styles.inlineField}>
+									<span className={styles.fieldLabel}>Gap</span>
+									<Controller
+										control={formControls.control}
+										name={`${fullPrefix}style.dashing.1`}
+										render={({ field }) => (
+											<NumericInput fill={true}
+												{...field}
+												className={fieldStyles.compactNumericInput}
+												min={-100}
+												max={100}
+												onValueChange={field.onChange}
+												size="small"></NumericInput>
+										)}></Controller>
+								</div>
+							</div>
+						</FormGroup>
+					</ControlGroup>
+				</Section>
+
 				{/* Arrowhead style */}
 				<FormGroup
 					className={styles.simpleGroup}
@@ -76,87 +153,14 @@ function ArrowForm(props: IArrowFormProps) {
 					</div>
 				</FormGroup>
 
-				{/* Visual form */}
-				<VisualForm
-					widthDisplay={false}
-					heightDisplay={false}
-					prefix={props.prefix}></VisualForm>
 
-				{/* Style */}
-				<Section icon="style"
-					className={sectionStyles.minimalSection}
-					collapseProps={{ defaultIsOpen: false }}
-					compact={true}
-					title={"Style"}
-					collapsible={true}>
-					<FormGroup
-						className={styles.simpleGroup}
-						label="Stroke thickness"
-						labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}style.thickness`}
-							render={({ field }) => (
-								<NumericInput
-									{...field} size="small"
-									className={fieldStyles.compactNumericInput}
-									onValueChange={field.onChange}
-									min={0}></NumericInput>
-							)}></Controller>
-					</FormGroup>
-
-					<FormGroup
-						className={styles.simpleGroup}
-						label="Stroke"
-						labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}style.stroke`}
-							render={({ field }) => (
-								<input type={"color"} {...field}></input>
-							)}></Controller>
-					</FormGroup>
-
-					<FormGroup
-						className={styles.doubleGroup}
-						label="Dashing"
-						labelFor="text-input">
-						<div className={styles.doubleFields}>
-							<div className={styles.inlineField}>
-								<span className={styles.fieldLabel}>Dash</span>
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}style.dashing.0`}
-									render={({ field }) => (
-										<NumericInput fill={true}
-											{...field}
-											className={fieldStyles.compactNumericInput}
-											min={-100}
-											max={100}
-											onValueChange={field.onChange}
-											size="small"
-										></NumericInput>
-								)}></Controller>
-							</div>
-							<div className={styles.inlineField}>
-								<span className={styles.fieldLabel}>Gap</span>
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}style.dashing.1`}
-									render={({ field }) => (
-										<NumericInput fill={true}
-											{...field}
-											className={fieldStyles.compactNumericInput}
-											min={-100}
-											max={100}
-											onValueChange={field.onChange}
-											size="small"></NumericInput>
-									)}></Controller>
-							</div>
-						</div>
-					</FormGroup>
-				</Section>
 			</ControlGroup>
+
+			{/* Visual form */}
+			<VisualForm
+				widthDisplay={false}
+				heightDisplay={false}
+				prefix={props.prefix}></VisualForm>
 		</>
 	);
 }

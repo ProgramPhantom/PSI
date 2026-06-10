@@ -117,9 +117,8 @@ function LabelForm(props: ILabelArrayFormProps) {
 			</Section>
 
 			{/* Arrow form */}
-			<Section icon="arrow-top-left"
+			<Section
 				className={sectionStyles.minimalSection}
-				style={{ padding: 0 }}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				collapsible={true}
@@ -133,9 +132,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 							toggleLine();
 						}}></Button>
 				}>
-				<SectionCard style={{ padding: "0px" }}>
-					{linePrefix && <ArrowForm prefix={linePrefix}></ArrowForm>}
-				</SectionCard>
+				{linePrefix && <ArrowForm prefix={linePrefix}></ArrowForm>}
 			</Section>
 		</>
 	);
