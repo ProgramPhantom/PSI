@@ -72,8 +72,6 @@ function LabelForm(props: ILabelArrayFormProps) {
 
 	return (
 		<>
-			<VisualForm target={props.target} prefix={fullPrefix} widthDisplay={true} heightDisplay={true}></VisualForm>
-
 			<ControlGroup className={styles.formGroupContainer} vertical={true}>
 				{/* Text position */}
 				<FormGroup className={styles.simpleGroup}
@@ -94,6 +92,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 				</FormGroup>
 			</ControlGroup>
 
+			<VisualForm target={props.target} prefix={fullPrefix} widthDisplay={true} heightDisplay={true}></VisualForm>
 
 			{/* Text form */}
 			<Section

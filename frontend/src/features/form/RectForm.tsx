@@ -16,55 +16,50 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 
 	return (
 		<>
-			<div style={{ width: "100%" }}>
-				<ControlGroup vertical={true}>
+			<VisualForm target={props.target} widthDisplay={true} heightDisplay={true} prefix={props.prefix}></VisualForm>
 
-					<VisualForm target={props.target} widthDisplay={true} heightDisplay={true} prefix={props.prefix}></VisualForm>
+			{/* Style stuff */}
+			<Section
+				className={sectionStyles.minimalSection}
+				collapseProps={{ defaultIsOpen: false }}
+				compact={true}
+				title={"Style"}
+				collapsible={true}>
 
-					{/* Style stuff */}
-					<Section icon="style"
-						className={sectionStyles.minimalSection}
-						collapseProps={{ defaultIsOpen: false }}
-						compact={true}
-						title={"Style"}
-						collapsible={true}>
+				<ControlGroup vertical={true} className={styles.formGroupContainer}>
+					<FormGroup className={styles.simpleGroup} label="Fill" labelFor="text-input">
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}style.fill` as any}
+							render={({ field }) => (
+								<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
+							)}></Controller>
+					</FormGroup>
 
-						<div style={{ padding: "8px" }}>
-							<FormGroup className={styles.simpleGroup} label="Fill" labelFor="text-input">
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}style.fill` as any}
-									render={({ field }) => (
-										<input type={"color"} {...field}></input>
-									)}></Controller>
-							</FormGroup>
+					<FormGroup className={styles.simpleGroup} label="Stroke" labelFor="text-input">
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}style.stroke` as any}
+							render={({ field }) => (
+								<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
+							)}></Controller>
+					</FormGroup>
 
-							<FormGroup className={styles.simpleGroup} label="Stroke" labelFor="text-input">
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}style.stroke` as any}
-									render={({ field }) => (
-										<input type={"color"} {...field}></input>
-									)}></Controller>
-							</FormGroup>
-
-							<FormGroup className={styles.simpleGroup} label="Stroke Width" labelFor="text-input">
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}style.strokeWidth` as any}
-									render={({ field }) => (
-										<NumericInput
-											{...field}
-											className={fieldStyles.compactNumericInput}
-											onValueChange={field.onChange}
-											min={1}
-											size={"small"}></NumericInput>
-									)}></Controller>
-							</FormGroup>
-						</div>
-					</Section>
+					<FormGroup className={styles.simpleGroup} label="Stroke Width" labelFor="text-input">
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}style.strokeWidth` as any}
+							render={({ field }) => (
+								<NumericInput
+									{...field}
+									className={fieldStyles.compactNumericInput}
+									onValueChange={field.onChange}
+									min={1}
+									size={"small"}></NumericInput>
+							)}></Controller>
+					</FormGroup>
 				</ControlGroup>
-			</div>
+			</Section>
 		</>
 	);
 };
