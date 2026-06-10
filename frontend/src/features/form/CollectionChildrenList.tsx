@@ -1,4 +1,4 @@
-import { Button } from "@blueprintjs/core";
+import { Button, ControlGroup } from "@blueprintjs/core";
 import React from "react";
 import Collection from "../../logic/collection";
 import FormDivider from "./FormDivider";
@@ -6,6 +6,7 @@ import { ID, AllComponentTypes } from "../../logic/point";
 import { IconName } from "@blueprintjs/core";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
+import styles from "./styles/FormGroup.module.scss"
 
 interface CollectionChildrenListProps {
     target: Collection;
@@ -58,7 +59,7 @@ export const CollectionChildrenList: React.FC<CollectionChildrenListProps> = ({ 
     const remainingChildren = target.children.filter(child => !displayedIds.has(child.id));
 
     return (
-        <div style={{ padding: "0px", display: "flex", flexDirection: "column", gap: "5px" }}>
+        <ControlGroup vertical={true} className={styles.formGroupContainer}>
             <FormDivider title={"Components"} topMargin={0} />
             {roleElements}
 
@@ -77,6 +78,8 @@ export const CollectionChildrenList: React.FC<CollectionChildrenListProps> = ({ 
                     ))}
                 </>
             )}
-        </div>
+        </ControlGroup>
+
+
     );
 };

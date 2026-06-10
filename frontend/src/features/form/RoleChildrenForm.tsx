@@ -91,7 +91,6 @@ function RoleChildrenForm({ editableRoles }: RoleChildrenFormProps) {
 					return (
 						<Section
 							className={sectionStyles.minimalSection}
-							style={{ padding: "0px" }}
 							key={role.roleName}
 							collapsible={hasChild}
 							title={role.displayName}
@@ -120,9 +119,7 @@ function RoleChildrenForm({ editableRoles }: RoleChildrenFormProps) {
 								)
 							}>
 							{hasChild && SubForm && (
-								<div style={{ padding: "8px" }}>
-									<SubForm prefix={`roles.${role.roleName}`}></SubForm>
-								</div>
+								<SubForm prefix={`roles.${role.roleName}`}></SubForm>
 							)}
 						</Section>
 					);
