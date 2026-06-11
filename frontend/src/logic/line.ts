@@ -38,6 +38,7 @@ export default class Line extends LineLike implements ILine {
 	}
 
 	lineStyle: ILineStyle;
+	private markerDefs?: Defs;
 
 	constructor(params: ILine) {
 		super(params);
@@ -82,10 +83,11 @@ export default class Line extends LineLike implements ILine {
 	private createMarkerDefs(): Defs {
 		var defaultWidth = 3;
 		var defaultPath = new Path().attr({
-			d: `M 0 0 L ${Line.MARKER_LENGTHS.default} ${defaultWidth / 2} L 0 ${defaultWidth} z`
+			d: `M 0 0 L ${Line.MARKER_LENGTHS.default} ${defaultWidth / 2} L 0 ${defaultWidth} z`,
+			fill: this.lineStyle.stroke
 		});
 		var defaultMarker = new Marker()
-			.id("default")
+			.id(`default-${this.id}`)
 			.attr({
 				refX: "0",
 				refY: defaultWidth / 2,
@@ -97,10 +99,11 @@ export default class Line extends LineLike implements ILine {
 
 		var thinWidth = 2;
 		var thinPath = new Path().attr({
-			d: `M 0 0 L ${Line.MARKER_LENGTHS.thin} ${thinWidth / 2} L 0 ${thinWidth} z`
+			d: `M 0 0 L ${Line.MARKER_LENGTHS.thin} ${thinWidth / 2} L 0 ${thinWidth} z`,
+			fill: this.lineStyle.stroke
 		});
 		var thinMarker = new Marker()
-			.id("thin")
+			.id(`thin-${this.id}`)
 			.attr({
 				refX: "0",
 				refY: thinWidth / 2,
@@ -119,8 +122,11 @@ export default class Line extends LineLike implements ILine {
 			if (this.svg) {
 				this.svg.remove();
 			}
+			if (this.markerDefs) {
+				this.markerDefs.remove();
+			}
 
-			var markerDefs = this.createMarkerDefs();
+			this.markerDefs = this.createMarkerDefs();
 
 			var startMarkerLength = Line.MARKER_LENGTHS[this.lineStyle.headStyle[0]];
 			var endMarkerLength = Line.MARKER_LENGTHS[this.lineStyle.headStyle[1]];
@@ -157,8 +163,8 @@ export default class Line extends LineLike implements ILine {
 					stroke: `${this.lineStyle.stroke}`,
 					strokeLinecap: "butt",
 					d: pathData,
-					"marker-start": startStyle !== "none" ? `url(#${startStyle})` : "",
-					"marker-end": endStyle !== "none" ? `url(#${endStyle})` : "",
+					"marker-start": startStyle !== "none" ? `url(#${startStyle}-${this.id})` : "",
+					"marker-end": endStyle !== "none" ? `url(#${endStyle}-${this.id})` : "",
 					"stroke-dasharray": `${this.lineStyle.dashing[0]} ${this.lineStyle.dashing[1]}`,
 					"stroke-width": `${this.thickness}`
 				});
@@ -167,7 +173,14 @@ export default class Line extends LineLike implements ILine {
 
 
 			surface.add(this.svg);
-			surface.add(markerDefs);
+			surface.add(this.markerDefs);
+		}
+	}
+
+	public override erase(): void {
+		super.erase();
+		if (this.markerDefs) {
+			this.markerDefs.remove();
 		}
 	}
 }
