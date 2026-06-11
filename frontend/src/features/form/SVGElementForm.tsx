@@ -2,9 +2,7 @@ import {
 	Button,
 	Callout,
 	ControlGroup,
-	FormGroup,
-	HTMLSelect,
-	Intent
+	HTMLSelect
 } from "@blueprintjs/core";
 import React, { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
@@ -12,7 +10,8 @@ import ENGINE from "../../logic/engine";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import SVGUploadDialog from "./SVGUploadDialog";
-import styles from "./styles/FormGroup.module.scss";
+import { SimpleField } from "./fields/SimpleField";
+import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ISVGElementFormProps extends FormRequirements { }
@@ -64,7 +63,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 
 								)}
 								<div className={styles.inlineContainer}>
-									<FormGroup className={styles.simpleGroup} fill={false} inline={true} label="SVG" labelFor="svgDataRef-select">
+									<SimpleField fill={false} inline={true} label="SVG" labelFor="svgDataRef-select">
 
 										<HTMLSelect
 											{...fieldProps}
@@ -85,7 +84,7 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 										/>
 
 
-									</FormGroup >
+									</SimpleField >
 									<Button size="small"
 										icon="plus"
 										onClick={() => setIsUploadDialogOpen(true)}

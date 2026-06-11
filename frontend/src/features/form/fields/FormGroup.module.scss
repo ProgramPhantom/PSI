@@ -1,5 +1,4 @@
 $field-gap: 8px;
-$field-left-pad: 8px;
 
 .simpleGroup {
     margin: $field-gap 0 0 0;
@@ -28,19 +27,6 @@ $field-left-pad: 8px;
         :global(.bp5-form-content) {
             margin-top: 0 !important;
         }
-    }
-}
-
-.inlineContainer {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    width: 100%;
-
-    > :global(.bp5-form-group),
-    >div {
-        flex: 1;
-        margin: 0;
     }
 }
 
@@ -128,15 +114,5 @@ $field-left-pad: 8px;
                 margin: 0;
             }
         }
-    }
-}
-
-.formGroupContainer {
-    width: 100%;
-    padding-left: $field-left-pad;
-    padding-right: $field-left-pad;
-
-    > :last-child {
-        margin-bottom: 8px !important;
     }
 }

@@ -3,9 +3,10 @@ import { Controller, useFormContext } from "react-hook-form";
 import { IRectElement } from "../../logic/rectElement";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
-import { ControlGroup, FormGroup, InputGroup, NumericInput, Section } from "@blueprintjs/core";
+import { ControlGroup, NumericInput, Section } from "@blueprintjs/core";
+import { SimpleField } from "./fields/SimpleField";
 import sectionStyles from "./styles/FormSection.module.scss";
-import styles from "./styles/FormGroup.module.scss";
+import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
 
 interface IRectFormProps extends FormRequirements { }
@@ -27,25 +28,25 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 				collapsible={true}>
 
 				<ControlGroup vertical={true} className={styles.formGroupContainer}>
-					<FormGroup className={styles.simpleGroup} label="Fill" labelFor="text-input">
+					<SimpleField label="Fill" labelFor="text-input">
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}style.fill` as any}
 							render={({ field }) => (
 								<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
 							)}></Controller>
-					</FormGroup>
+					</SimpleField>
 
-					<FormGroup className={styles.simpleGroup} label="Stroke" labelFor="text-input">
+					<SimpleField label="Stroke" labelFor="text-input">
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}style.stroke` as any}
 							render={({ field }) => (
 								<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
 							)}></Controller>
-					</FormGroup>
+					</SimpleField>
 
-					<FormGroup className={styles.simpleGroup} label="Stroke Width" labelFor="text-input">
+					<SimpleField label="Stroke Width" labelFor="text-input">
 						<Controller
 							control={formControls.control}
 							name={`${fullPrefix}style.strokeWidth` as any}
@@ -57,7 +58,7 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 									min={1}
 									size={"small"}></NumericInput>
 							)}></Controller>
-					</FormGroup>
+					</SimpleField>
 				</ControlGroup>
 			</Section>
 		</>

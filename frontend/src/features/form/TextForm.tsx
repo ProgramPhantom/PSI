@@ -1,10 +1,11 @@
-import { ControlGroup, FormGroup, InputGroup, NumericInput, Section } from "@blueprintjs/core";
+import { ControlGroup, InputGroup, NumericInput, Section } from "@blueprintjs/core";
 import { Controller, useFormContext } from "react-hook-form";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import { MathJax } from "better-react-mathjax";
+import { SimpleField } from "./fields/SimpleField";
 import sectionStyles from "./styles/FormSection.module.scss";
-import styles from "./styles/FormGroup.module.scss";
+import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ITextFormProps extends FormRequirements { }
@@ -18,8 +19,7 @@ function TextForm(props: ITextFormProps) {
 		<>
 			<ControlGroup vertical={true} className={styles.formGroupContainer}>
 				{/* Text */}
-				<FormGroup
-					className={styles.simpleGroup}
+				<SimpleField
 					fill={false}
 					inline={false}
 					label="Text (LaTeX)"
@@ -41,7 +41,7 @@ function TextForm(props: ITextFormProps) {
 								</div>
 							</div>
 						)}></Controller>
-				</FormGroup>
+				</SimpleField>
 
 				{/* Style */}
 				<Section
@@ -51,8 +51,7 @@ function TextForm(props: ITextFormProps) {
 					title={"Style"}
 					collapsible={true}>
 					<ControlGroup vertical={true} className={styles.formGroupContainer}>
-						<FormGroup
-							className={styles.simpleGroup}
+						<SimpleField
 							label="Font Size"
 							labelFor="text-input">
 							<Controller
@@ -69,11 +68,10 @@ function TextForm(props: ITextFormProps) {
 										fill={true}
 									/>
 								)}></Controller>
-						</FormGroup>
+						</SimpleField>
 
 						{ /* Colour */}
-						<FormGroup
-							className={styles.simpleGroup}
+						<SimpleField
 							label="Colour"
 							labelFor="text-input">
 							<Controller
@@ -82,11 +80,10 @@ function TextForm(props: ITextFormProps) {
 								render={({ field }) => (
 									<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
 								)}></Controller>
-						</FormGroup>
+						</SimpleField>
 
 						{ /* Background colour */}
-						<FormGroup
-							className={styles.simpleGroup}
+						<SimpleField
 							label="Background"
 							labelFor="text-input">
 							<Controller
@@ -95,7 +92,7 @@ function TextForm(props: ITextFormProps) {
 								render={({ field: { onChange, onBlur, value, ref } }) => (
 									<input type={"color"} className={fieldStyles.compactColorInput} onChange={onChange} onBlur={onBlur} value={value} ref={ref}></input>
 								)}></Controller>
-						</FormGroup>
+						</SimpleField>
 					</ControlGroup>
 				</Section>
 			</ControlGroup>

@@ -1,0 +1,24 @@
+$field-left-pad: 8px;
+
+.formGroupContainer {
+    width: 100%;
+    padding-left: $field-left-pad;
+    padding-right: $field-left-pad;
+
+    > :last-child {
+        margin-bottom: 8px !important;
+    }
+}
+
+.inlineContainer {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    width: 100%;
+
+    > :global(.bp5-form-group),
+    >div {
+        flex: 1;
+        margin: 0;
+    }
+}

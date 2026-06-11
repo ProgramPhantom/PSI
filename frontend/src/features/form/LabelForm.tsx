@@ -1,4 +1,4 @@
-import { Button, ControlGroup, FormGroup, HTMLSelect, Section, SectionCard } from "@blueprintjs/core";
+import { Button, ControlGroup, HTMLSelect, Section } from "@blueprintjs/core";
 import { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import ArrowForm from "./ArrowForm";
@@ -7,11 +7,11 @@ import { FormRequirements } from "./FormBase";
 import { IText } from "../../logic/text";
 import { ILine } from "../../logic/line";
 import VisualForm from "./VisualForm";
-import FormDivider from "./FormDivider";
 import { DEFAULT_LABEL } from "../../logic/default/label";
-import sectionStyles from "./styles/FormSection.module.scss";
-import styles from "./styles/FormGroup.module.scss";
+import { SimpleField } from "./fields/SimpleField";
+import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 interface ILabelArrayFormProps extends FormRequirements { }
 
@@ -74,7 +74,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 		<>
 			<ControlGroup className={styles.formGroupContainer} vertical={true}>
 				{/* Text position */}
-				<FormGroup className={styles.simpleGroup}
+				<SimpleField
 					fill={false}
 					inline={true}
 					label="Text Position"
@@ -89,7 +89,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 								<option value={"bottom"}>Bottom</option>
 							</HTMLSelect>
 						)}></Controller>
-				</FormGroup>
+				</SimpleField>
 			</ControlGroup>
 
 			<VisualForm target={props.target} prefix={fullPrefix} widthDisplay={true} heightDisplay={true}></VisualForm>
