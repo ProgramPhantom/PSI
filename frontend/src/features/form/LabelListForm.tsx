@@ -132,7 +132,7 @@ function LabelListForm(props: ILabelMapProps) {
 							/>
 						}
 					>
-						<div className={styles.scrollContainer}>
+						<div className={styles.scrollContainer} key={activePos}>
 							{roles[posToRole(activePos)]?.type === "text" && <TextForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "line" && <ArrowForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "label" && <LabelForm prefix={`roles.${posToRole(activePos)}`} />}
