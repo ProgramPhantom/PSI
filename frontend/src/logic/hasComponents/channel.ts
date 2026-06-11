@@ -107,9 +107,9 @@ export default class Channel extends Subgrid implements IChannel {
 	}
 
 	public override add({ child }: AddDispatchData<GridCellElement>) {
-		this.sizeBar()
-
 		super.add({ child });
+
+		this.sizeBar()
 	}
 
 	public remove({ child }: RemoveDispatchData<GridCellElement>) {
