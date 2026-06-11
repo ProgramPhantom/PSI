@@ -97,7 +97,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	if (props.selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
 		interactiveElements.push(hoveredElement);
 	}
-	
+
 	const interactiveElementIds = interactiveElements.map(e => e.id).join(",");
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
@@ -161,7 +161,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 			let currentSelectedId = selectedElementId ?? hoveredElement?.id;
 			let selectedIndex = path.findIndex(el => el.id === currentSelectedId);
-			
+
 			if (selectedIndex !== -1) {
 				if (selectedIndex + 1 < path.length) {
 					selectVisual(path[selectedIndex + 1]);
