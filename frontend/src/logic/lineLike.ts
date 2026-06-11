@@ -20,6 +20,7 @@ export default abstract class LineLike extends Visual {
 	get state(): ILineLike {
 		return {
 			adjustment: this.adjustment,
+			thickness: this.thickness,
 			...super.state
 		};
 	}

@@ -31,7 +31,7 @@ function ArrowForm(props: IArrowFormProps) {
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
-								name={`${fullPrefix}style.thickness`}
+								name={`${fullPrefix}thickness`}
 								render={({ field }) => (
 									<NumericInput
 										{...field} size="small"
@@ -47,7 +47,7 @@ function ArrowForm(props: IArrowFormProps) {
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
-								name={`${fullPrefix}style.stroke`}
+								name={`${fullPrefix}lineStyle.stroke`}
 								render={({ field }) => (
 									<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
 								)}></Controller>
@@ -62,7 +62,7 @@ function ArrowForm(props: IArrowFormProps) {
 									<span className={styles.fieldLabel}>Dash</span>
 									<Controller
 										control={formControls.control}
-										name={`${fullPrefix}style.dashing.0`}
+										name={`${fullPrefix}lineStyle.dashing.0`}
 										render={({ field }) => (
 											<NumericInput fill={true}
 												{...field}
@@ -78,7 +78,7 @@ function ArrowForm(props: IArrowFormProps) {
 									<span className={styles.fieldLabel}>Gap</span>
 									<Controller
 										control={formControls.control}
-										name={`${fullPrefix}style.dashing.1`}
+										name={`${fullPrefix}lineStyle.dashing.1`}
 										render={({ field }) => (
 											<NumericInput fill={true}
 												{...field}
@@ -103,10 +103,11 @@ function ArrowForm(props: IArrowFormProps) {
 					labelFor="text-input">
 					<Controller
 						control={formControls.control}
-						name={`${fullPrefix}arrowStyle.headStyle`}
+						name={`${fullPrefix}lineStyle.headStyle.1`}
 						render={({ field }) => (
 							<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
 								<option value={"default"}>Default</option>
+								<option value={"none"}>None</option>
 							</HTMLSelect>
 						)}></Controller>
 				</FormGroup>
