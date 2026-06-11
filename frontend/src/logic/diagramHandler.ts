@@ -406,10 +406,14 @@ export default class DiagramHandler implements IDraw {
 	}
 
 	protected modify({ child, target }: ModifyInput): ActionResult<"modify"> {
-		// Ensure the new child configuration inherits the target's identity, parent, and role.
+		// Ensure the new child configuration inherits the target's identity, parent, and role if not explicitly provided.
 		child.id = target.id;
-		child.parentId = target.parentId;
-		child.role = target.role;
+		if (child.parentId === undefined) {
+			child.parentId = target.parentId;
+		}
+		if (child.role === undefined) {
+			child.role = target.role;
+		}
 
 		let childInstance: Visual;
 		if (!(child instanceof Visual)) {
@@ -423,8 +427,12 @@ export default class DiagramHandler implements IDraw {
 		} else {
 			childInstance = child;
 			childInstance.id = target.id;
-			childInstance.parentId = target.parentId;
-			childInstance.role = target.role;
+			if (childInstance.parentId === undefined) {
+				childInstance.parentId = target.parentId;
+			}
+			if (childInstance.role === undefined) {
+				childInstance.role = target.role;
+			}
 		}
 
 		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
