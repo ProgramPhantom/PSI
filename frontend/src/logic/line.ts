@@ -5,7 +5,7 @@ import { Svg } from "@svgdotjs/svg.js";
 import { showSVGRecursively } from "./util2";
 
 
-export type HeadStyle = "default"
+export type HeadStyle = "default" | "thin" | "none"
 
 export interface ILineStyle {
 	headStyle: [HeadStyle, HeadStyle];
@@ -21,6 +21,11 @@ export interface ILine extends ILineLike {
 
 export default class Line extends LineLike implements ILine {
 	static ElementType: UserComponentType = "line";
+	private static readonly MARKER_LENGTHS: Record<HeadStyle, number> = {
+		default: 3,
+		thin: 4,
+		none: 0
+	};
 
 	static arbitraryAdjustment: number = 1;
 	get state(): ILine {
@@ -38,8 +43,6 @@ export default class Line extends LineLike implements ILine {
 		super(params);
 
 		this.lineStyle = params.lineStyle;
-
-
 	}
 
 	public getHitbox(): Rect {
@@ -71,9 +74,43 @@ export default class Line extends LineLike implements ILine {
 
 		var internal: Element = this.svg.clone(true, true);
 
-		internal.show()
+		showSVGRecursively(internal);
 
 		return internal;
+	}
+
+	private createMarkerDefs(): Defs {
+		var defaultWidth = 3;
+		var defaultPath = new Path().attr({
+			d: `M 0 0 L ${Line.MARKER_LENGTHS.default} ${defaultWidth / 2} L 0 ${defaultWidth} z`
+		});
+		var defaultMarker = new Marker()
+			.id("default")
+			.attr({
+				refX: "0",
+				refY: defaultWidth / 2,
+				markerWidth: Line.MARKER_LENGTHS.default,
+				markerHeight: Line.MARKER_LENGTHS.default,
+				orient: "auto-start-reverse"
+			})
+			.add(defaultPath);
+
+		var thinWidth = 2;
+		var thinPath = new Path().attr({
+			d: `M 0 0 L ${Line.MARKER_LENGTHS.thin} ${thinWidth / 2} L 0 ${thinWidth} z`
+		});
+		var thinMarker = new Marker()
+			.id("thin")
+			.attr({
+				refX: "0",
+				refY: thinWidth / 2,
+				markerWidth: Line.MARKER_LENGTHS.thin,
+				markerHeight: Line.MARKER_LENGTHS.thin,
+				orient: "auto-start-reverse"
+			})
+			.add(thinPath);
+
+		return new Defs().add(defaultMarker).add(thinMarker);
 	}
 
 	public override draw(surface: Element): void {
@@ -83,27 +120,34 @@ export default class Line extends LineLike implements ILine {
 				this.svg.remove();
 			}
 
-			var markerLength = 3;
-			var markerWidth = 3;
-			var markerPath = new Path().attr({
-				d: `M 0 0 L ${markerLength} ${markerWidth / 2} L 0 ${markerWidth} z`
-			});
-			var marker = new Marker()
-				.id("head")
-				.attr({
-					refX: "0",
-					refY: markerWidth / 2,
-					markerWidth: markerLength,
-					markerHeight: markerLength,
-					orient: "auto-start-reverse"
-				})
-				.add(markerPath);
-			var markerDefs = new Defs().add(marker);
+			var markerDefs = this.createMarkerDefs();
 
-			var dy = Math.sin(this.angle!) * markerLength;
-			var dx = Math.cos(this.angle!) * markerLength;
+			var startMarkerLength = Line.MARKER_LENGTHS[this.lineStyle.headStyle[0]];
+			var endMarkerLength = Line.MARKER_LENGTHS[this.lineStyle.headStyle[1]];
 
-			var pathData: string = `M${this.startX + dx}, ${this.startY + dy}, ${this.endX - dx} ${this.endY - dy}`;
+			var startAdj = this.adjustment && this.adjustment[0] !== undefined ? this.adjustment[0] : 0;
+			var endAdj = this.adjustment && this.adjustment[1] !== undefined ? this.adjustment[1] : 0;
+
+			var angle = this.angle!;
+			var cos = Math.cos(angle);
+			var sin = Math.sin(angle);
+
+			// Calculate final points:
+			// Default/Thin line start/end is adjusted by their respective marker length to leave room for markers.
+			// Positive adjustment extends the line (moves start/end outwards).
+			// Negative adjustment shrinks/pulls back the line.
+			var startOffset = startMarkerLength - startAdj;
+			var endOffset = endMarkerLength - endAdj;
+
+			var adjustedStartX = this.startX + cos * startOffset;
+			var adjustedStartY = this.startY + sin * startOffset;
+			var adjustedEndX = this.endX - cos * endOffset;
+			var adjustedEndY = this.endY - sin * endOffset;
+
+			var pathData: string = `M${adjustedStartX}, ${adjustedStartY}, ${adjustedEndX} ${adjustedEndY}`;
+
+			var startStyle = this.lineStyle.headStyle[0];
+			var endStyle = this.lineStyle.headStyle[1];
 
 			var newArrow = SVG()
 				.path()
@@ -113,8 +157,8 @@ export default class Line extends LineLike implements ILine {
 					stroke: `${this.lineStyle.stroke}`,
 					strokeLinecap: "butt",
 					d: pathData,
-					"marker-start": this.lineStyle.headStyle[0] === "default" ? "url(#head)" : "",
-					"marker-end": this.lineStyle.headStyle[1] === "default" ? "url(#head)" : "",
+					"marker-start": startStyle !== "none" ? `url(#${startStyle})` : "",
+					"marker-end": endStyle !== "none" ? `url(#${endStyle})` : "",
 					"stroke-dasharray": `${this.lineStyle.dashing[0]} ${this.lineStyle.dashing[1]}`,
 					"stroke-width": `${this.thickness}`
 				});

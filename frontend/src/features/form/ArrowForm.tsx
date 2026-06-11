@@ -37,7 +37,7 @@ function ArrowForm(props: IArrowFormProps) {
 										{...field} size="small"
 										className={fieldStyles.compactNumericInput}
 										onValueChange={field.onChange}
-										min={0}></NumericInput>
+										min={1}></NumericInput>
 								)}></Controller>
 						</FormGroup>
 
@@ -96,20 +96,37 @@ function ArrowForm(props: IArrowFormProps) {
 
 				{/* Arrowhead style */}
 				<FormGroup
-					className={styles.simpleGroup}
-					fill={false}
-					inline={true}
-					label="Arrowhead style"
+					className={styles.doubleGroup}
+					label="Arrowheads"
 					labelFor="text-input">
-					<Controller
-						control={formControls.control}
-						name={`${fullPrefix}lineStyle.headStyle.1`}
-						render={({ field }) => (
-							<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
-								<option value={"default"}>Default</option>
-								<option value={"none"}>None</option>
-							</HTMLSelect>
-						)}></Controller>
+					<div className={styles.doubleFields}>
+						<div className={styles.inlineField}>
+							<span className={styles.fieldLabel}>Start</span>
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}lineStyle.headStyle.0`}
+								render={({ field }) => (
+									<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
+										<option value={"default"}>Default</option>
+										<option value={"thin"}>Thin</option>
+										<option value={"none"}>None</option>
+									</HTMLSelect>
+								)}></Controller>
+						</div>
+						<div className={styles.inlineField}>
+							<span className={styles.fieldLabel}>End</span>
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}lineStyle.headStyle.1`}
+								render={({ field }) => (
+									<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
+										<option value={"default"}>Default</option>
+										<option value={"thin"}>Thin</option>
+										<option value={"none"}>None</option>
+									</HTMLSelect>
+								)}></Controller>
+						</div>
+					</div>
 				</FormGroup>
 
 				{/* Adjustment */}

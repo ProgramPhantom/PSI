@@ -56,9 +56,6 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	}
 
 	public computeSize(): Size {
-		if (this.ref === "label") {
-			console.log()
-		}
 		this.children.forEach((c) => c.computeSize());
 
 		this.cells = Array.from({ length: this.noChildren }, () => new Spacial());
@@ -185,11 +182,11 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 				}
 			});
 
-			let sizeToAdd: number = secondSmallestLength === Infinity 
-				? remainingMainAxisChange 
+			let sizeToAdd: number = secondSmallestLength === Infinity
+				? remainingMainAxisChange
 				: (secondSmallestLength - smallestLength);
 
-			let smallestChildren = this.children.filter(child => 
+			let smallestChildren = this.children.filter(child =>
 				Math.abs(child.getSizeByDimension(this.mainAxis) - smallestLength) <= epsilon
 			);
 
@@ -229,7 +226,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	public add(
 		{ child, index }: AddDispatchData<T>
 	) {
-		super.add({child, index})
+		super.add({ child, index })
 	}
 
 	public removeAt(index: number): boolean {
