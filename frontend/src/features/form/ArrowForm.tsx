@@ -14,8 +14,6 @@ function ArrowForm(props: IArrowFormProps) {
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
 	const formControls = useFormContext();
 
-	var values: Partial<ILine> | undefined = getByPath(formControls.getValues(), props.prefix);
-
 	return (
 		<>
 			<ControlGroup vertical={true} className={styles.formGroupContainer}>

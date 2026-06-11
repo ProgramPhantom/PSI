@@ -22,11 +22,20 @@ const posToRole = (pos: Position) => `label${pos.charAt(0).toUpperCase() + pos.s
 function LabelListForm(props: ILabelMapProps) {
 	const parentFormControls = useFormContext<RoleChildrenFormData>();
 
-	// Watch the roles object to trigger re-renders
-	const roles = useWatch({
-		control: parentFormControls.control,
-		name: "roles"
-	});
+	// Watch only the type of each annotation position to prevent unnecessary re-renders when internal details change
+	const labelTopType = useWatch({ control: parentFormControls.control, name: "roles.labelTop.type" });
+	const labelBottomType = useWatch({ control: parentFormControls.control, name: "roles.labelBottom.type" });
+	const labelLeftType = useWatch({ control: parentFormControls.control, name: "roles.labelLeft.type" });
+	const labelRightType = useWatch({ control: parentFormControls.control, name: "roles.labelRight.type" });
+	const labelCentreType = useWatch({ control: parentFormControls.control, name: "roles.labelCentre.type" });
+
+	const roles: Record<string, { type: string } | null | undefined> = {
+		labelTop: labelTopType ? { type: labelTopType } : undefined,
+		labelBottom: labelBottomType ? { type: labelBottomType } : undefined,
+		labelLeft: labelLeftType ? { type: labelLeftType } : undefined,
+		labelRight: labelRightType ? { type: labelRightType } : undefined,
+		labelCentre: labelCentreType ? { type: labelCentreType } : undefined,
+	};
 
 	const [activePos, setActivePos] = useState<Position | null>(null);
 
