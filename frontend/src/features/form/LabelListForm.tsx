@@ -10,6 +10,8 @@ import ArrowForm from "./ArrowForm";
 import { FormRequirements } from "./FormBase";
 import { Position } from "../../logic/text";
 import { RoleChildrenFormData } from "./RoleChildrenForm";
+import sectionStyles from "./styles/FormSection.module.scss";
+import styles from "./styles/LabelListForm.module.scss";
 
 interface ILabelMapProps extends FormRequirements { }
 
@@ -88,41 +90,15 @@ function LabelListForm(props: ILabelMapProps) {
 		}
 	};
 
-	const gridStyle: React.CSSProperties = {
-		display: "grid",
-		gridTemplateColumns: "4px 80% 4px",
-		gridTemplateRows: "4px 64px 4px",
-		gap: "8px",
-		justifyContent: "center",
-		alignItems: "center",
-		margin: "12px 0",
-		position: "relative"
-	};
-
-	const posToGridArea: Record<Position, string> = {
-		top: "1 / 2",
-		left: "2 / 1",
-		centre: "2 / 2",
-		right: "2 / 3",
-		bottom: "3 / 2"
-	};
-
 	return (
 		<>
-			<div
-				style={{
-					marginTop: "4px",
-					display: "flex", height: "100%",
-					flexDirection: "column",
-					alignItems: "stretch"
-				}}>
-
-				<div style={gridStyle}>
-					<svg style={{ gridArea: "2 / 2", width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }}>
+			<div className={styles.container}>
+				<div className={styles.gridContainer}>
+					<svg className={styles.svgBackground}>
 						<rect width="100%" height="100%" rx="4" fill="rgba(125, 125, 125, 0.1)" stroke="currentColor" strokeWidth="2" opacity={0.5} strokeDasharray="4 4" />
 					</svg>
 					{POSITIONS.map(pos => (
-						<div key={pos} style={{ gridArea: posToGridArea[pos], display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1 }}>
+						<div key={pos} className={`${styles.gridItem} ${styles[pos]}`}>
 							{renderGridPosition(pos)}
 						</div>
 					))}
@@ -132,9 +108,10 @@ function LabelListForm(props: ILabelMapProps) {
 					<Section
 						title={roles[posToRole(activePos)]?.type}
 						subtitle={`Location: ${activePos.charAt(0).toUpperCase() + activePos.slice(1)}`}
-						style={{ borderRadius: "0px", padding: "0px", marginTop: "12px", flexGrow: 1, display: "flex", flexDirection: "column" }}
-						compact={true} collapsible={true} collapseProps={{ "transitionDuration": 5 }}
-						icon={
+						className={sectionStyles.minimalSection}
+						compact={true}
+						icon="edit"
+						rightElement={
 							<Button
 								icon="trash"
 								intent="danger"
@@ -146,14 +123,14 @@ function LabelListForm(props: ILabelMapProps) {
 							/>
 						}
 					>
-						<div style={{ padding: "8px", flexGrow: 1, overflowY: "auto" }}>
+						<div className={styles.scrollContainer}>
 							{roles[posToRole(activePos)]?.type === "text" && <TextForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "line" && <ArrowForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "label" && <LabelForm prefix={`roles.${posToRole(activePos)}`} />}
 						</div>
 					</Section>
 				) : (
-					<div style={{ flexGrow: 1, display: "flex", alignItems: "center", justifyContent: "center", marginTop: "12px" }}>
+					<div className={styles.emptyStateContainer}>
 						<NonIdealState iconSize={NonIdealStateIconSize.SMALL}
 							icon="select"
 
@@ -168,3 +145,4 @@ function LabelListForm(props: ILabelMapProps) {
 }
 
 export default LabelListForm;
+

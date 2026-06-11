@@ -4,6 +4,9 @@ import { ILine } from "../../logic/line";
 import { getByPath } from "../../logic/util2";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
+import sectionStyles from "./styles/FormSection.module.scss";
+import styles from "./styles/FormGroup.module.scss";
+import fieldStyles from "./styles/FormFields.module.scss";
 
 interface IArrowFormProps extends FormRequirements { }
 
@@ -15,10 +18,87 @@ function ArrowForm(props: IArrowFormProps) {
 
 	return (
 		<>
-			<ControlGroup vertical={true} style={{ padding: "8px" }}>
+			<ControlGroup vertical={true} className={styles.formGroupContainer}>
+				{/* Style */}
+				<Section
+					className={sectionStyles.minimalSection}
+					collapseProps={{ defaultIsOpen: false }}
+					compact={true}
+					title={"Style"}
+					collapsible={true}>
+					<ControlGroup vertical={true} className={styles.formGroupContainer}>
+						<FormGroup fill={true}
+							className={styles.simpleGroup}
+							label="Stroke thickness"
+							labelFor="text-input">
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}style.thickness`}
+								render={({ field }) => (
+									<NumericInput
+										{...field} size="small"
+										className={fieldStyles.compactNumericInput}
+										onValueChange={field.onChange}
+										min={0}></NumericInput>
+								)}></Controller>
+						</FormGroup>
+
+						<FormGroup
+							className={styles.simpleGroup}
+							label="Stroke"
+							labelFor="text-input">
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}style.stroke`}
+								render={({ field }) => (
+									<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
+								)}></Controller>
+						</FormGroup>
+
+						<FormGroup
+							className={styles.doubleGroup}
+							label="Dashing"
+							labelFor="text-input">
+							<div className={styles.doubleFields}>
+								<div className={styles.inlineField}>
+									<span className={styles.fieldLabel}>Dash</span>
+									<Controller
+										control={formControls.control}
+										name={`${fullPrefix}style.dashing.0`}
+										render={({ field }) => (
+											<NumericInput fill={true}
+												{...field}
+												className={fieldStyles.compactNumericInput}
+												min={-100}
+												max={100}
+												onValueChange={field.onChange}
+												size="small"
+											></NumericInput>
+										)}></Controller>
+								</div>
+								<div className={styles.inlineField}>
+									<span className={styles.fieldLabel}>Gap</span>
+									<Controller
+										control={formControls.control}
+										name={`${fullPrefix}style.dashing.1`}
+										render={({ field }) => (
+											<NumericInput fill={true}
+												{...field}
+												className={fieldStyles.compactNumericInput}
+												min={-100}
+												max={100}
+												onValueChange={field.onChange}
+												size="small"></NumericInput>
+										)}></Controller>
+								</div>
+							</div>
+						</FormGroup>
+					</ControlGroup>
+				</Section>
+
 				{/* Arrowhead style */}
 				<FormGroup
-					style={{ padding: "4px 0px", margin: 0 }}
+					className={styles.simpleGroup}
 					fill={false}
 					inline={true}
 					label="Arrowhead style"
@@ -27,7 +107,7 @@ function ArrowForm(props: IArrowFormProps) {
 						control={formControls.control}
 						name={`${fullPrefix}arrowStyle.headStyle`}
 						render={({ field }) => (
-							<HTMLSelect {...field} iconName="caret-down">
+							<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
 								<option value={"default"}>Default</option>
 							</HTMLSelect>
 						)}></Controller>
@@ -35,111 +115,52 @@ function ArrowForm(props: IArrowFormProps) {
 
 				{/* Adjustment */}
 				<FormGroup
-					style={{ padding: "8px 0px 16px 0", margin: 0 }}
-					inline={false}
+					className={styles.doubleGroup}
 					label="Adjustment"
 					labelFor="text-input">
-					<div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}adjustment.0`}
-							render={({ field }) => (
-								<NumericInput fill={true}
-									{...field}
-									min={-2000}
-									max={2000}
-									onValueChange={field.onChange}
-									size="small" style={{width: "50rm"}}
-								></NumericInput>
-							)}></Controller>
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}adjustment.1`}
-							render={({ field }) => (
-								<NumericInput fill={true}
-									{...field}
-									min={-2000}
-									max={2000}
-									onValueChange={field.onChange}
-									size="small"></NumericInput>
-							)}></Controller>
+					<div className={styles.doubleFields}>
+						<div className={styles.inlineField}>
+							<span className={styles.fieldLabel}>Start</span>
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}adjustment.0`}
+								render={({ field }) => (
+									<NumericInput fill={true}
+										{...field}
+										className={fieldStyles.compactNumericInput}
+										min={-2000}
+										max={2000}
+										onValueChange={field.onChange}
+										size="small"
+									></NumericInput>
+								)}></Controller>
+						</div>
+						<div className={styles.inlineField}>
+							<span className={styles.fieldLabel}>End</span>
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}adjustment.1`}
+								render={({ field }) => (
+									<NumericInput fill={true}
+										{...field}
+										className={fieldStyles.compactNumericInput}
+										min={-2000}
+										max={2000}
+										onValueChange={field.onChange}
+										size="small"></NumericInput>
+								)}></Controller>
+						</div>
 					</div>
 				</FormGroup>
 
-				{/* Visual form */}
-				<VisualForm
-					widthDisplay={false}
-					heightDisplay={false}
-					prefix={props.prefix}></VisualForm>
 
-				{/* Style */}
-				<Section icon="style"
-					collapseProps={{ defaultIsOpen: false }}
-					compact={true}
-					title={"Style"}
-					collapsible={true}>
-					<FormGroup
-						style={{ padding: "4px 8px", margin: 0 }}
-						inline={true}
-						label="Stroke thickness"
-						labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}style.thickness`}
-							render={({ field }) => (
-								<NumericInput
-									{...field} size="small"
-									onValueChange={field.onChange}
-									min={0}></NumericInput>
-							)}></Controller>
-					</FormGroup>
-
-					<FormGroup
-						style={{ padding: "4px 8px", margin: 0 }}
-						inline={true}
-						label="Stroke"
-						labelFor="text-input">
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}style.stroke`}
-							render={({ field }) => (
-								<input type={"color"} {...field}></input>
-							)}></Controller>
-					</FormGroup>
-
-					<FormGroup
-						style={{ padding: "4px 8px", margin: 0 }}
-						inline={false}
-						label="Dashing"
-						labelFor="text-input">
-						<div style={{ display: "flex", flexDirection: "column", width: "100%"  }}>
-							<Controller
-								control={formControls.control}
-								name={`${fullPrefix}style.dashing.0`}
-								render={({ field }) => (
-									<NumericInput fill={true}
-										{...field}
-										min={-100}
-										max={100}
-										onValueChange={field.onChange}
-										size="small" style={{width: "50rm"}}
-									></NumericInput>
-							)}></Controller>
-							<Controller
-								control={formControls.control}
-								name={`${fullPrefix}style.dashing.1`}
-								render={({ field }) => (
-									<NumericInput fill={true}
-										{...field}
-										min={-100}
-										max={100}
-										onValueChange={field.onChange}
-										size="small"></NumericInput>
-							)}></Controller>
-						</div>
-					</FormGroup>
-				</Section>
 			</ControlGroup>
+
+			{/* Visual form */}
+			<VisualForm
+				widthDisplay={false}
+				heightDisplay={false}
+				prefix={props.prefix}></VisualForm>
 		</>
 	);
 }

@@ -11,6 +11,8 @@ import { appToaster } from "../../app/Toaster";
 import { useAppDispatch } from "../../redux/hooks";
 import { loadAsset } from "../../redux/thunks/assetThunks";
 import UploadArea from "../UploadArea";
+import styles from "./styles/FormGroup.module.scss";
+import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ISVGUploadDialogProps {
     isOpen: boolean;
@@ -91,6 +93,7 @@ const SVGUploadDialog: React.FC<ISVGUploadDialogProps> = ({ isOpen, onClose, dep
             icon="upload">
             <DialogBody>
                 <FormGroup
+                    className={styles.simpleGroup}
                     label="Reference Name"
                     labelFor="reference-input"
                     intent={svgReference.trim() === "" ? "danger" : "none"}
@@ -98,6 +101,7 @@ const SVGUploadDialog: React.FC<ISVGUploadDialogProps> = ({ isOpen, onClose, dep
                     <InputGroup
                         id="reference-input"
                         value={svgReference}
+                        className={fieldStyles.compactInputGroup}
                         intent={svgReference.trim() === "" ? "danger" : "none"}
                         onChange={(e) => setSvgReference(e.target.value)}
                         placeholder="Enter reference name..."

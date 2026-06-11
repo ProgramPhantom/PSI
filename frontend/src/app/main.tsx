@@ -10,6 +10,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { MathJaxContext } from "better-react-mathjax";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import "../styles/scrollbar.scss";
 
 import { AppShortcuts } from "./AppShortcuts.tsx";
 

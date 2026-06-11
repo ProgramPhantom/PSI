@@ -1,0 +1,125 @@
+.compactNumericInput {
+    :global(.bp5-input) {
+        font-size: 0.8em !important;
+        height: 22px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+        padding-left: 6px !important;
+    }
+
+    :global(.bp5-button-group.bp5-vertical) {
+        min-width: 18px !important;
+
+        :global(.bp5-button) {
+            min-height: 11px !important;
+            height: 11px !important;
+            padding: 0 !important;
+
+            :global(.bp5-icon) {
+                margin: 0 !important;
+
+                svg {
+                    width: 10px !important;
+                    height: 10px !important;
+                }
+            }
+        }
+    }
+}
+
+.compactInputGroup {
+    :global(.bp5-input) {
+        font-size: 0.8em !important;
+        height: 22px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+        padding-left: 6px !important;
+    }
+}
+
+.compactHTMLSelect {
+    height: 22px !important;
+
+    select {
+        font-size: 0.8em !important;
+        height: 22px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+        padding-left: 6px !important;
+        padding-right: 20px !important;
+    }
+
+    :global(.bp5-icon) {
+        right: 4px !important;
+        // Adjust icon position for smaller height
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        margin: 0 !important;
+    }
+}
+
+.compactSwitch {
+    margin: 0 !important;
+    min-height: 22px !important;
+    height: 22px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+.compactSlider {
+    height: 22px !important;
+    margin: 0 8px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+
+    :global(.bp5-slider-track) {
+        height: 4px !important;
+        top: 9px !important;
+    }
+
+    :global(.bp5-slider-handle) {
+        width: 12px !important;
+        height: 12px !important;
+        min-height: 12px !important;
+        top: 5px !important;
+    }
+
+    :global(.bp5-slider-label) {
+        font-size: 0.75em !important;
+        top: 14px !important;
+    }
+}
+
+.compactColorInput {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: 1px solid rgba(125, 125, 125, 0.3);
+    border-radius: 4px;
+    height: 22px;
+    width: 100%;
+    padding: 0;
+    cursor: pointer;
+    box-sizing: border-box;
+
+    &::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+
+    &::-webkit-color-swatch {
+        border: none;
+        border-radius: 3px;
+    }
+
+    &::-moz-color-swatch {
+        border: none;
+        border-radius: 3px;
+    }
+
+    &:focus {
+        outline: none;
+        border-color: #106ba3;
+    }
+}

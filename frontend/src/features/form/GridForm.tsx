@@ -7,7 +7,7 @@ import VisualForm from "./VisualForm";
 
 
 
-interface IGridFormProps extends FormRequirements {}
+interface IGridFormProps extends FormRequirements { }
 
 
 
@@ -17,11 +17,6 @@ export const GridForm: React.FC<IGridFormProps> = (props) => {
 	var formSate = formControls.getValues();
 	return (
 		<>
-			{/* SVG Specific fields */}
-			<FormGroup fill={false} inline={true} label="Dimensions" labelFor="text-input">
-				<Label>rows: {formSate.numRows ?? 0}, columns: {formSate.numColumns ?? 0}</Label>
-			</FormGroup>
-
 			<VisualForm target={props.target} heightDisplay={true} widthDisplay={true}></VisualForm>
 		</>
 	);

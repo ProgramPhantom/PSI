@@ -5,6 +5,7 @@ import { IVisual } from "../../logic/visual";
 import { FORM_DEFAULTS } from "./formDataRegistry";
 import { FormRequirements } from "./FormBase";
 import { EditableRole } from "./formHelpers";
+import sectionStyles from "./styles/FormSection.module.scss";
 
 
 export type RoleChildrenFormData = {
@@ -89,7 +90,7 @@ function RoleChildrenForm({ editableRoles }: RoleChildrenFormProps) {
 
 					return (
 						<Section
-							style={{ borderRadius: "0px", padding: "0px" }}
+							className={sectionStyles.minimalSection}
 							key={role.roleName}
 							collapsible={hasChild}
 							title={role.displayName}
@@ -118,9 +119,7 @@ function RoleChildrenForm({ editableRoles }: RoleChildrenFormProps) {
 								)
 							}>
 							{hasChild && SubForm && (
-								<div style={{ padding: "8px" }}>
-									<SubForm prefix={`roles.${role.roleName}`}></SubForm>
-								</div>
+								<SubForm prefix={`roles.${role.roleName}`}></SubForm>
 							)}
 						</Section>
 					);

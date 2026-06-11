@@ -1,0 +1,57 @@
+/* ── Tab panel content: row with divider + column ── */
+.tabPanelRow {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	height: 100%;
+}
+
+.tabPanelColumn {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+/* ── Filter tabs wrapper ── */
+.filterTabsWrapper {
+	padding: 4px 16px 8px 4px;
+	flex-shrink: 0;
+
+}
+
+/* ── Element grid ── */
+.elementGrid {
+	width: 100%;
+	display: grid;
+	overflow: auto;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	grid-auto-rows: 120px;
+	gap: 12px;
+	padding: 4px 16px 16px 4px;
+
+}
+
+/* ── "Add New" card ── */
+.addNewCard {
+	width: 120px;
+	height: 120px;
+	padding: 12px 8px;
+	border: 1px solid #d3d8de;
+	border-radius: 4px;
+	background-color: white;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	transition: all 0.2s ease;
+	user-select: none;
+
+	&:hover {
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+		transform: translateY(-1px);
+	}
+}

@@ -7,7 +7,7 @@ import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
-import { LabelGroupComboForm, SubmitButtonRef } from "./ElementForm";
+import { ElementForm, SubmitButtonRef } from "./ElementForm";
 
 type FormEffect = "submit" | "delete" | "modify";
 
@@ -69,8 +69,8 @@ export function FormDiagramInterface() {
 	}
 
 	return (
-		<>
-			<div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+		<div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+			<div style={{ display: "flex", flexDirection: "row", width: "100%", flexShrink: 0 }}>
 				<div style={{ width: "100%" }}>
 					<div
 						style={{
@@ -152,13 +152,14 @@ export function FormDiagramInterface() {
 
 			<div
 				style={{
-					height: "100%",
+					flex: "1 1 0",
+					minHeight: 0,
 					display: "flex",
 					flexDirection: "column",
 					overflow: "hidden",
 					padding: "0px"
 				}}>
-				<LabelGroupComboForm
+				<ElementForm
 					key={target ? target.id : "defaults"}
 					ref={submitRef}
 					objectType={targetType as UserComponentType}
@@ -168,17 +169,16 @@ export function FormDiagramInterface() {
 							? dispatchFormEffect(val, "modify")
 							: dispatchFormEffect(val, "submit");
 						changeTarget(undefined);
-					}}></LabelGroupComboForm>
+					}}></ElementForm>
 
 				<div
 					id="submit-area"
 					style={{
 						width: "100%",
 						alignSelf: "center",
-						margin: "4px 2px 18px 2px",
+						margin: "4px 2px 4px 2px",
 						padding: "0px 4px 0px 4px",
-						height: "30px",
-						marginTop: "auto",
+						flexShrink: 0,
 						display: "flex",
 						flexDirection: "column"
 					}}>
@@ -234,6 +234,6 @@ export function FormDiagramInterface() {
 					</div>
 				</DialogBody>
 			</Dialog>
-		</>
+		</div>
 	);
 }

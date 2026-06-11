@@ -9,6 +9,9 @@ import { ILine } from "../../logic/line";
 import VisualForm from "./VisualForm";
 import FormDivider from "./FormDivider";
 import { DEFAULT_LABEL } from "../../logic/default/label";
+import sectionStyles from "./styles/FormSection.module.scss";
+import styles from "./styles/FormGroup.module.scss";
+import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ILabelArrayFormProps extends FormRequirements { }
 
@@ -17,7 +20,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 	const formControls = useFormContext();
 	let vals = props.prefix ? formControls.getValues(props.prefix) : formControls.getValues();
 	let children = vals?.children || [];
-	
+
 	let textIndex = children.findIndex((c: any) => c.role === "text");
 	let lineIndex = children.findIndex((c: any) => c.role === "line");
 
@@ -69,19 +72,9 @@ function LabelForm(props: ILabelArrayFormProps) {
 
 	return (
 		<>
-			<div style={{ marginTop: "8px" }}>
-				<VisualForm target={props.target} prefix={fullPrefix} widthDisplay={true} heightDisplay={true}></VisualForm>
-			</div>
-
-
-			<ControlGroup
-				vertical={true}
-				style={{ padding: "4px 0px", marginBottom: "0px" }}
-			>
-
-
+			<ControlGroup className={styles.formGroupContainer} vertical={true}>
 				{/* Text position */}
-				<FormGroup style={{ padding: "4px 0px", }}
+				<FormGroup className={styles.simpleGroup}
 					fill={false}
 					inline={true}
 					label="Text Position"
@@ -90,7 +83,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 						control={formControls.control}
 						name={`${fullPrefix}labelConfig.textPosition`}
 						render={({ field }) => (
-							<HTMLSelect {...field} iconName="caret-down">
+							<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
 								<option value={"top"}>Top</option>
 								<option value={"inline"}>Inline</option>
 								<option value={"bottom"}>Bottom</option>
@@ -99,10 +92,11 @@ function LabelForm(props: ILabelArrayFormProps) {
 				</FormGroup>
 			</ControlGroup>
 
-			<FormDivider title="Text" topMargin={0}></FormDivider>
+			<VisualForm target={props.target} prefix={fullPrefix} widthDisplay={true} heightDisplay={true}></VisualForm>
+
 			{/* Text form */}
-			<Section icon="text-highlight"
-				style={{ padding: 0 }}
+			<Section
+				className={sectionStyles.minimalSection}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				collapsible={true}
@@ -116,15 +110,14 @@ function LabelForm(props: ILabelArrayFormProps) {
 							toggleText();
 						}}></Button>
 				}>
-				<SectionCard style={{ padding: "8px" }}>
-					{textPrefix && <TextForm prefix={textPrefix}></TextForm>}
-				</SectionCard>
+
+				{textPrefix && <TextForm prefix={textPrefix}></TextForm>}
+
 			</Section>
 
-			<FormDivider title="Arrow"></FormDivider>
 			{/* Arrow form */}
-			<Section icon="arrow-top-left"
-				style={{ padding: 0 }}
+			<Section
+				className={sectionStyles.minimalSection}
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				collapsible={true}
@@ -138,9 +131,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 							toggleLine();
 						}}></Button>
 				}>
-				<SectionCard style={{ padding: "0px" }}>
-					{linePrefix && <ArrowForm prefix={linePrefix}></ArrowForm>}
-				</SectionCard>
+				{linePrefix && <ArrowForm prefix={linePrefix}></ArrowForm>}
 			</Section>
 		</>
 	);
