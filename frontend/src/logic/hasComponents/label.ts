@@ -141,8 +141,8 @@ export default class Label extends Aligner implements ILabel {
 			) {
 				var maskID: string = this.id + "-MASK";
 				var visibleArea = new Rect()
-					.move(this.cx - SPILL_PADDING, this.cy - SPILL_PADDING)
-					.size(this.contentWidth + 2 * SPILL_PADDING, this.contentHeight + 2 * SPILL_PADDING)
+					.move(-50000, -50000)
+					.size(100000, 100000)
 					.fill("white");
 				var blockedArea = new Rect()
 					.move(
@@ -159,7 +159,14 @@ export default class Label extends Aligner implements ILabel {
 					.add(visibleArea)
 					.add(blockedArea)
 					.id(maskID)
-					.attr({ "mask-type": "luminance", maskUnits: "userSpaceOnUse" });
+					.attr({
+						"mask-type": "luminance",
+						maskUnits: "userSpaceOnUse",
+						x: "-50000",
+						y: "-50000",
+						width: "100000",
+						height: "100000"
+					});
 
 				// VERY IMPORTANT: use "useSpaceOnUse" to follow the user coordinates not some random bs coord system
 
