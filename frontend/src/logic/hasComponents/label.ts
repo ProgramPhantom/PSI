@@ -73,8 +73,15 @@ export default class Label extends Aligner implements ILabel {
 		child.placementMode = {
 			type: "aligner",
 			config: {
-				alignment: "centre"
+				alignment: { crossAxis: "centre" }
 			}
+		}
+		child.padding = [0, 0, 0, 0];
+
+		if (this.labelConfig?.textPosition === "bottom") {
+			this.setChildIndex(child, 1);
+		} else {
+			this.setChildIndex(child, 0);
 		}
 	}
 
@@ -82,7 +89,7 @@ export default class Label extends Aligner implements ILabel {
 		child.placementMode = {
 			type: "aligner",
 			config: {
-				alignment: "centre"
+				alignment: { crossAxis: "centre", mainAxis: "centre" }
 			}
 		}
 
@@ -95,16 +102,15 @@ export default class Label extends Aligner implements ILabel {
 			child.placementMode = {
 				type: "aligner",
 				config: {
-					alignment: "centre",
+					alignment: { crossAxis: "centre", mainAxis: "centre" },
 					contribution: { mainAxis: false, crossAxis: true }
 				}
 			}
+			this.setChildIndex(child, 1);
 		} else if (this.labelConfig?.textPosition === "bottom") {
-			let currentLineIndex = this.childIndex(child);
-			if (currentLineIndex !== undefined && currentLineIndex !== 0) {
-				this.children.splice(currentLineIndex, 1);
-				this.children.unshift(child);
-			}
+			this.setChildIndex(child, 0);
+		} else {
+			this.setChildIndex(child, 1);
 		}
 	}
 

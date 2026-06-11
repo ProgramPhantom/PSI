@@ -1,6 +1,6 @@
 import { Element } from "@svgdotjs/svg.js";
 import { ID } from "./point";
-import Spacial, { Dimensions, Size } from "./spacial";
+import Spacial, { Dimensions, SiteNames, Size } from "./spacial";
 import Visual, { AlignerElement, doesDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
@@ -25,8 +25,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		};
 	}
 
-
-	get noChildren() {
+	get numChildren() {
 		return this.children.length;
 	}
 
@@ -55,10 +54,12 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		this.cells = [];
 	}
 
+	// ---------------- Compute Methods ----------------
+	//#region 
 	public computeSize(): Size {
 		this.children.forEach((c) => c.computeSize());
 
-		this.cells = Array.from({ length: this.noChildren }, () => new Spacial());
+		this.cells = Array.from({ length: this.numChildren }, () => new Spacial());
 
 		// Compute intrinsic length of main axis:
 		// This is the sum of main axis lengths:
@@ -125,15 +126,42 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			this.children.forEach((child, child_index) => {
 				let targetCell = this.cells[child_index];
 
-				child.x = this.cx + xCount
+				let contribution: boolean = true;
+				if (child.placementMode.type === "aligner") {
+					if (child.placementMode.config.contribution?.mainAxis === false) {
+						contribution = false;
+					}
+					if (child.sizeMode[this.mainAxis] === "grow") {
+						contribution = false;
+					}
+				}
 
-				targetCell.x = child.x;
-				targetCell.y = this.cy;
+				let alignmentCell = targetCell;
+				if (!contribution && child_index > 0) {
+					alignmentCell = this.cells[child_index - 1];
+					child.x = alignmentCell.x;
+					targetCell.x = child.x;
+					targetCell.y = this.cy;
+				} else {
+					child.x = this.cx + xCount;
+					targetCell.x = child.x;
+					targetCell.y = this.cy;
+				}
 
-				xCount += child.width;
+				xCount += targetCell.getSizeByDimension(this.mainAxis);
 
-				// TODO: allow for other alignments
-				this.internalImmediateBind(child, "y", "centre");
+				let crossAlign: SiteNames = "centre";
+				let mainAlign: SiteNames | undefined = undefined;
+
+				if (child.placementMode.config.alignment !== undefined) {
+					crossAlign = child.placementMode.config.alignment.crossAxis ?? "centre";
+					mainAlign = child.placementMode.config.alignment.mainAxis;
+				}
+
+				alignmentCell.internalImmediateBind(child, "y", crossAlign);
+				if (mainAlign !== undefined) {
+					alignmentCell.internalImmediateBind(child, "x", mainAlign);
+				}
 
 				child.computePositions({ x: child.x, y: child.y });
 			})
@@ -141,14 +169,42 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			this.children.forEach((child, child_index) => {
 				let targetCell = this.cells[child_index];
 
-				child.y = this.cy + yCount;
+				let contribution: boolean = true;
+				if (child.placementMode.type === "aligner") {
+					if (child.placementMode.config.contribution?.mainAxis === false) {
+						contribution = false;
+					}
+					if (child.sizeMode[this.mainAxis] === "grow") {
+						contribution = false;
+					}
+				}
 
-				targetCell.y = child.y;
-				targetCell.x = this.cx;
+				let alignmentCell = targetCell;
+				if (!contribution && child_index > 0) {
+					alignmentCell = this.cells[child_index - 1];
+					child.y = alignmentCell.y;
+					targetCell.y = child.y;
+					targetCell.x = this.cx;
+				} else {
+					child.y = this.cy + yCount;
+					targetCell.y = child.y;
+					targetCell.x = this.cx;
+				}
 
-				yCount += child.height;
+				yCount += targetCell.getSizeByDimension(this.mainAxis);
 
-				this.internalImmediateBind(child, "x", "centre");
+				let crossAlign: SiteNames = "centre";
+				let mainAlign: SiteNames | undefined = undefined;
+
+				if (child.placementMode.config.alignment !== undefined) {
+					crossAlign = child.placementMode.config.alignment.crossAxis ?? "centre";
+					mainAlign = child.placementMode.config.alignment.mainAxis;
+				}
+
+				alignmentCell.internalImmediateBind(child, "x", crossAlign);
+				if (mainAlign !== undefined) {
+					alignmentCell.internalImmediateBind(child, "y", mainAlign);
+				}
 
 				child.computePositions({ x: child.x, y: child.y });
 			})
@@ -222,7 +278,11 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 
 		return change;
 	}
+	//#endregion
+	// -------------------------------------------------
 
+	// -------------- Add/Remove Methods ---------------
+	//#region 
 	public add(
 		{ child, index }: AddDispatchData<T>
 	) {
@@ -230,7 +290,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	}
 
 	public removeAt(index: number): boolean {
-		if (index < 0 || index >= this.noChildren) {
+		if (index < 0 || index >= this.numChildren) {
 			console.warn(`Trying to remove child at index out of range in ${this.ref}`);
 			return false
 		}
@@ -248,10 +308,23 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 
 		return this.removeAt(INDEX);
 	}
+	//#endregion
+	// -------------------------------------------------
 
 
+	// ---------------- Helpers ---------------------
+	//#region 
 	public childIndex(target: T): number | undefined {
 		return this.locateChildById(target.id);
+	}
+
+	public setChildIndex(child: T, newIndex: number) {
+		const currentIndex = this.childIndex(child);
+		if (currentIndex !== undefined) {
+			this.children.splice(currentIndex, 1);
+			const targetIndex = Math.max(0, Math.min(newIndex, this.children.length));
+			this.children.splice(targetIndex, 0, child);
+		}
 	}
 
 	protected locateChildById(id: ID): number | undefined {
@@ -265,4 +338,6 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 
 		return childIndex;
 	}
+	//#endregion
+	// -------------------------------------------------
 }

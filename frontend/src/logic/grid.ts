@@ -654,8 +654,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.addSubgrid(sg);
 		})
 	}
-
-
 	//#endregion
 	// -------------------------------------------------
 

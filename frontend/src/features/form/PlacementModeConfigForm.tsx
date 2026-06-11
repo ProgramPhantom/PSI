@@ -243,19 +243,39 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
                     Index: {placementMode?.alignerConfig?.index ?? "N/A"}
                 </div>
 
-                <FormGroup className={styles.simpleGroup} label="Alignment">
-                    <Controller
-                        control={control}
-                        name={`${fullPrefix}placementMode.alignerConfig.alignment`}
-                        defaultValue="here"
-                        render={({ field }) => (
-                            <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
-                                <option value="here">Here</option>
-                                <option value="centre">Centre</option>
-                                <option value="far">Far</option>
-                            </HTMLSelect>
-                        )}
-                    />
+                <FormGroup className={styles.doubleGroup} label="Align">
+                    <div className={styles.doubleFields}>
+                        <div className={styles.inlineField}>
+                            <span className={styles.fieldLabel}>Main</span>
+                            <Controller
+                                control={control}
+                                name={`${fullPrefix}placementMode.alignerConfig.alignment.mainAxis`}
+                                defaultValue="centre"
+                                render={({ field }) => (
+                                    <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
+                                        <option value="here">Here</option>
+                                        <option value="centre">Centre</option>
+                                        <option value="far">Far</option>
+                                    </HTMLSelect>
+                                )}
+                            />
+                        </div>
+                        <div className={styles.inlineField}>
+                            <span className={styles.fieldLabel}>Cross</span>
+                            <Controller
+                                control={control}
+                                name={`${fullPrefix}placementMode.alignerConfig.alignment.crossAxis`}
+                                defaultValue="centre"
+                                render={({ field }) => (
+                                    <HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
+                                        <option value="here">Here</option>
+                                        <option value="centre">Centre</option>
+                                        <option value="far">Far</option>
+                                    </HTMLSelect>
+                                )}
+                            />
+                        </div>
+                    </div>
                 </FormGroup>
 
                 <div style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: "5px" }}>
