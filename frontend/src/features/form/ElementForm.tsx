@@ -1,5 +1,5 @@
 import { Tab, Tabs } from "@blueprintjs/core";
-import React, { useEffect, useImperativeHandle, useState } from "react";
+import React, { useImperativeHandle, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import Collection from "../../logic/collection";
 import { UserComponentType } from "../../logic/point";
@@ -30,14 +30,12 @@ export type SubmitButtonRef = {
 
 export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 	(props, ref) => {
-		const [resolved, setResolved] = useState<ResolvedFormTargets | null>(null);
-
-		useEffect(() => {
+		const resolved = useMemo(() => {
 			try {
-				const result = resolveFormDataFromTarget(props.target, props.objectType);
-				setResolved(result);
+				return resolveFormDataFromTarget(props.target, props.objectType);
 			} catch (e) {
 				console.error("Failed to resolve form targets:", e);
+				return null;
 			}
 		}, [props.target, props.objectType]);
 

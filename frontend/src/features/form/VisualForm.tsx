@@ -28,9 +28,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	var fullPrefix = props.prefix !== undefined && props.prefix !== "" ? `${props.prefix}.` : "";
 	const formControls = useFormContext();
 
-	const [widthActive, setWidthActive] = useState(true);
-	const [heightActive, setHeightActive] = useState(true);
-
 	var errors: Partial<FieldErrors<IVisual>> | undefined = getByPath(
 		formControls.formState.errors,
 		props.prefix
@@ -46,19 +43,17 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 		name: `${fullPrefix}sizeMode.y`
 	});
 
-	useEffect(() => {
-		const currentX = watchedSizeModeX ?? props.target?.sizeMode.x ?? "fixed";
-		const currentY = watchedSizeModeY ?? props.target?.sizeMode.y ?? "fixed";
-
-		setWidthActive(currentX === "fixed" ? true : false);
-		setHeightActive(currentY === "fixed" ? true : false);
-	}, [props.target, watchedSizeModeX, watchedSizeModeY]);
-
-
 	let theseVals: IVisual | undefined = getByPath(
 		formControls.getValues(),
 		fullPrefix
 	);
+
+	const currentX = watchedSizeModeX ?? theseVals?.sizeMode?.x ?? props.target?.sizeMode.x ?? "fixed";
+	const currentY = watchedSizeModeY ?? theseVals?.sizeMode?.y ?? props.target?.sizeMode.y ?? "fixed";
+
+	const widthActive = currentX === "fixed";
+	const heightActive = currentY === "fixed";
+
 	const isCollection = theseVals && Collection.isCollection(theseVals);
 	const sizeOptions = isCollection ? ["fit", "grow"] : ["fixed", "fit", "grow"];
 
