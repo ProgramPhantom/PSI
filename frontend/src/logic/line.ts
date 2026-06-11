@@ -67,14 +67,8 @@ export default class Line extends LineLike implements ILine {
 
 		var hitboxHeight: number = Math.max(this.thickness, maxMarkerWidth) + LineLike.HitboxPadding;
 		hitbox.size(this.length, hitboxHeight);
-		hitbox.rotate((this.angle / Math.PI) * 180, this.x, this.y + hitboxHeight / 2);
-
-		var crossShift: [number, number] = this.moveRelative(
-			[this.x, this.y],
-			"cross",
-			-hitboxHeight / 2
-		);
-		hitbox.move(crossShift[0], crossShift[1]);
+		hitbox.move(this.startX, this.startY - hitboxHeight / 2);
+		hitbox.rotate((this.angle / Math.PI) * 180, this.startX, this.startY);
 
 		// hitbox.move(this.x, this.y)
 		hitbox.fill(`transparent`).opacity(0.3);
@@ -85,7 +79,7 @@ export default class Line extends LineLike implements ILine {
 		if (!this.lineStyle || !this.lineStyle.headStyle) {
 			return super.computeBoundingBox();
 		}
-		let rect: Size = {width: 0, height: 0};
+		let rect: Size = { width: 0, height: 0 };
 
 		var startStyle = this.lineStyle.headStyle[0];
 		var endStyle = this.lineStyle.headStyle[1];
@@ -106,10 +100,16 @@ export default class Line extends LineLike implements ILine {
 	public getInternalRepresentation(): Element | undefined {
 		if (this.svg === undefined) {
 			this.svg = new Svg();  // TODO: fix this
+			this.dirty = true;
+			this.computeSelf();
+			let temporaryCanvas: Element = SVG();
+			this.draw(temporaryCanvas);
 		}
-
+		if (this.svg === undefined) {
+			return undefined;
+		}
 		var internal: Element = this.svg.clone(true, true);
-
+		internal.attr({ transform: `translate(${-this.drawCX}, ${-this.drawCY})` });
 		showSVGRecursively(internal);
 
 		return internal;

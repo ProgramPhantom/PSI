@@ -24,7 +24,7 @@ export default abstract class LineLike extends Visual {
 			...super.state
 		};
 	}
-	static HitboxPadding: number = 2;
+	static HitboxPadding: number = 0;
 
 	adjustment: [number, number];
 	thickness: number;
@@ -79,7 +79,7 @@ export default abstract class LineLike extends Visual {
 	}
 
 	public computeBoundingBox(): Size {
-		let rect: Size = {width: 0, height: 0};
+		let rect: Size = { width: 0, height: 0 };
 
 		let h: number = this.thickness + LineLike.HitboxPadding;
 		let l: number = Math.max(this.length, this.thickness + LineLike.HitboxPadding);
@@ -190,7 +190,7 @@ export default abstract class LineLike extends Visual {
 			this.startX = this.endX + v;
 		}
 
-		
+
 	}
 
 	public override get contentHeight(): number {
@@ -210,7 +210,7 @@ export default abstract class LineLike extends Visual {
 		} else {
 			this.startY = this.endY + v;
 		}
-		
+
 	}
 
 
