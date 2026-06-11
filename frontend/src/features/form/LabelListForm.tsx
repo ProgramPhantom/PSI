@@ -3,7 +3,7 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { defaultLabel, defaultText, defaultLine } from "../../logic/default/index";
 import { IText } from "../../logic/text";
 import { ILine } from "../../logic/line";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LabelForm from "./LabelForm";
 import TextForm from "./TextForm";
 import ArrowForm from "./ArrowForm";
@@ -38,6 +38,11 @@ function LabelListForm(props: ILabelMapProps) {
 	};
 
 	const [activePos, setActivePos] = useState<Position | null>(null);
+
+	// Reset activePos when target changes
+	useEffect(() => {
+		setActivePos(null);
+	}, [props.target]);
 
 	const addLabel = (pos: Position, type: "label" | "text" | "line") => {
 		let defaultValue;
