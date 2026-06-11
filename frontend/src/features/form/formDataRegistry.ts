@@ -1,7 +1,7 @@
 
 import { DEFAULT_BAR } from "../../logic/default/bar";
 import { DEFAULT_CHANNEL_TEXT } from "../../logic/default/defaultChannelLabel";
-import { defaultChannel, defaultDiagram, defaultLabel, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
+import { defaultChannel, defaultDiagram, defaultLabel, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
 import { DEFAULT_LABEL } from "../../logic/default/label";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
 import { DEFAULT_180H } from "../../logic/default/simplePulse/180pulse";
@@ -13,6 +13,7 @@ import { IRectElement } from "../../logic/rectElement";
 import { ISpace } from "../../logic/space";
 import { IText } from "../../logic/text";
 import { IVisual } from "../../logic/visual";
+import ArrowForm from "./ArrowForm";
 import ChannelForm from "./ChannelForm";
 import { GridForm } from "./GridForm";
 import LabelForm from "./LabelForm";
@@ -75,9 +76,11 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 			"labelCentre": { displayName: "Centre", elementType: "label" }
 		}
 	},
-	// "line": {
-	// 	form: LineFo
-	// }
+	"line": {
+		form: ArrowForm,
+		defaults: defaultLine,
+		allowLabels: false
+	},
 	"label": {
 		form: LabelForm,
 		defaults: defaultLabel as ILabel,
@@ -91,13 +94,16 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		defaults: defaultChannel,
 		allowLabels: false,
 		roles: {
-			"label": { displayName: "Label", elementType: "text", 
-				mandatory: true, 
-				defaultValues: DEFAULT_CHANNEL_TEXT  },
-			"bar": { displayName: "Bar", elementType: "rect",
+			"label": {
+				displayName: "Label", elementType: "text",
+				mandatory: true,
+				defaultValues: DEFAULT_CHANNEL_TEXT
+			},
+			"bar": {
+				displayName: "Bar", elementType: "rect",
 				mandatory: true,
 				defaultValues: DEFAULT_BAR
-			 }
+			}
 		}
 	},
 	"diagram": {

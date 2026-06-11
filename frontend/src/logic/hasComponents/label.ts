@@ -3,7 +3,7 @@ import Aligner, { IAligner } from "../aligner";
 import Line, { ILine } from "../line";
 import { UserComponentType } from "../point";
 import Text, { IText, Position } from "../text";
-import { Dimensions } from "../spacial";
+import { Dimensions, Size } from "../spacial";
 import { AlignerElement } from "../visual";
 
 
@@ -67,6 +67,10 @@ export default class Label extends Aligner implements ILabel {
 		super(params);
 		this.labelConfig = params.labelConfig;
 		this.mainAxis = params.mainAxis ?? "y";
+	}
+
+	public override computeSize(): Size {
+		return super.computeSize();
 	}
 
 	private initialiseText({ child }: AddDispatchData<AlignerElement>) {

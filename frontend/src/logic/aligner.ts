@@ -295,7 +295,8 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			return false
 		}
 
-		this.children.slice(index, 1);
+		let child = this.children[index];
+		super.remove({ child });
 		return true
 	}
 
@@ -306,7 +307,8 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			return false
 		}
 
-		return this.removeAt(INDEX);
+		super.remove({ child });
+		return true;
 	}
 	//#endregion
 	// -------------------------------------------------

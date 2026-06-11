@@ -406,6 +406,11 @@ export default class DiagramHandler implements IDraw {
 	}
 
 	protected modify({ child, target }: ModifyInput): ActionResult<"modify"> {
+		// Ensure the new child configuration inherits the target's identity, parent, and role.
+		child.id = target.id;
+		child.parentId = target.parentId;
+		child.role = target.role;
+
 		let childInstance: Visual;
 		if (!(child instanceof Visual)) {
 			let constructedChildResult: Result<Visual> = this.createVisual(child, child.type);
@@ -417,6 +422,9 @@ export default class DiagramHandler implements IDraw {
 			childInstance = constructedChildResult.value;
 		} else {
 			childInstance = child;
+			childInstance.id = target.id;
+			childInstance.parentId = target.parentId;
+			childInstance.role = target.role;
 		}
 
 		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
@@ -429,8 +437,6 @@ export default class DiagramHandler implements IDraw {
 			return { ok: false, error: `Child ${target.ref} does not exist on parent ${parent.ref}` }
 		}
 
-		let targetId: ID = target.id;
-
 		// Delete element
 		let deleteResult: Result<Visual> = this.editDiagram({
 			"type": "remove",
@@ -439,11 +445,10 @@ export default class DiagramHandler implements IDraw {
 		})
 		if (deleteResult.ok === false) { return deleteResult }
 
-		child.id = targetId;
 		let addResult: Result<Visual> = this.editDiagram({
 			"type": "add",
 			"data": { child: childInstance, index: targetIndex },
-			"parentId": child.parentId ?? ""
+			"parentId": childInstance.parentId ?? ""
 		})
 
 		if (addResult.ok === false) { return addResult }
