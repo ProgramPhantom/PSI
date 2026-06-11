@@ -3,6 +3,7 @@ import LineLike, { ILineLike } from "./lineLike";
 import { UserComponentType } from "./point";
 import { Svg } from "@svgdotjs/svg.js";
 import { showSVGRecursively } from "./util2";
+import { Size } from "./spacial";
 
 
 export type HeadStyle = "default" | "thin" | "none"
@@ -24,6 +25,12 @@ export default class Line extends LineLike implements ILine {
 	private static readonly MARKER_LENGTHS: Record<HeadStyle, number> = {
 		default: 3,
 		thin: 4,
+		none: 0
+	};
+
+	private static readonly MARKER_WIDTHS: Record<HeadStyle, number> = {
+		default: 3,
+		thin: 2,
 		none: 0
 	};
 
@@ -52,20 +59,48 @@ export default class Line extends LineLike implements ILine {
 			.id(this.id + "-hitbox")
 			.attr({ "data-editor": "hitbox", key: this.ref });
 
-		var hitboxHeight: number = this.thickness + LineLike.HitboxPadding;
+		var startStyle = this.lineStyle?.headStyle?.[0] ?? "none";
+		var endStyle = this.lineStyle?.headStyle?.[1] ?? "none";
+		var startWidth = Line.MARKER_WIDTHS[startStyle] * this.thickness;
+		var endWidth = Line.MARKER_WIDTHS[endStyle] * this.thickness;
+		var maxMarkerWidth = Math.max(startWidth, endWidth);
+
+		var hitboxHeight: number = Math.max(this.thickness, maxMarkerWidth) + LineLike.HitboxPadding;
 		hitbox.size(this.length, hitboxHeight);
 		hitbox.rotate((this.angle / Math.PI) * 180, this.x, this.y + hitboxHeight / 2);
 
 		var crossShift: [number, number] = this.moveRelative(
 			[this.x, this.y],
 			"cross",
-			-(this.thickness + LineLike.HitboxPadding) / 2
+			-hitboxHeight / 2
 		);
 		hitbox.move(crossShift[0], crossShift[1]);
 
 		// hitbox.move(this.x, this.y)
 		hitbox.fill(`transparent`).opacity(0.3);
 		return hitbox;
+	}
+
+	public override computeBoundingBox(): Size {
+		if (!this.lineStyle || !this.lineStyle.headStyle) {
+			return super.computeBoundingBox();
+		}
+		let rect: Size = {width: 0, height: 0};
+
+		var startStyle = this.lineStyle.headStyle[0];
+		var endStyle = this.lineStyle.headStyle[1];
+		var startWidth = Line.MARKER_WIDTHS[startStyle] * this.thickness;
+		var endWidth = Line.MARKER_WIDTHS[endStyle] * this.thickness;
+		var maxMarkerWidth = Math.max(startWidth, endWidth);
+
+		let h: number = Math.max(this.thickness, maxMarkerWidth) + LineLike.HitboxPadding;
+		let l: number = Math.max(this.length, h);
+		let theta: number = this.angle;
+
+		rect.width = l * Math.abs(Math.cos(theta)) + h * Math.abs(Math.sin(theta));
+		rect.height = l * Math.abs(Math.sin(theta)) + h * Math.abs(Math.cos(theta));
+
+		return rect;
 	}
 
 	public getInternalRepresentation(): Element | undefined {
@@ -142,8 +177,8 @@ export default class Line extends LineLike implements ILine {
 			// Default/Thin line start/end is adjusted by their respective marker length to leave room for markers.
 			// Positive adjustment extends the line (moves start/end outwards).
 			// Negative adjustment shrinks/pulls back the line.
-			var startOffset = startMarkerLength - startAdj;
-			var endOffset = endMarkerLength - endAdj;
+			var startOffset = this.thickness * startMarkerLength - startAdj;
+			var endOffset = this.thickness * endMarkerLength - endAdj;
 
 			var adjustedStartX = this.startX + cos * startOffset;
 			var adjustedStartY = this.startY + sin * startOffset;
