@@ -1,5 +1,5 @@
 import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon, Tooltip } from "@blueprintjs/core";
-import { useRef, useState, useSyncExternalStore, useDeferredValue } from "react";
+import { useRef, useState, useSyncExternalStore, useDeferredValue, useCallback } from "react";
 import { ObjectInspector } from "react-inspector";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
@@ -18,9 +18,9 @@ export function FormDiagramInterface() {
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	const target = ENGINE.handler.identifyElement(deferredSelectedElementId ?? "");
 
-	const changeTarget = (val: Visual | undefined) => {
+	const changeTarget = useCallback((val: Visual | undefined) => {
 		dispatch(setSelectedElementId(val?.id));
-	};
+	}, [dispatch]);
 
 	var targetType: AllComponentTypes = target
 		? (target.constructor as typeof Visual).ElementType
@@ -30,7 +30,7 @@ export function FormDiagramInterface() {
 	var [submissionValid, setSubmissionValid] = useState<boolean>(true);
 
 	// Submit function
-	const dispatchFormEffect = (
+	const dispatchFormEffect = useCallback((
 		values: IVisual,
 		effect: FormEffect
 	) => {
@@ -68,9 +68,9 @@ export function FormDiagramInterface() {
 				})
 				break;
 		}
-	}
+	}, [target]);
 
-	const handleFormSubmit = (val: IVisual) => {
+	const handleFormSubmit = useCallback((val: IVisual) => {
 		if (target) {
 			const targetId = target.id;
 			dispatchFormEffect(val, "modify");
@@ -83,7 +83,7 @@ export function FormDiagramInterface() {
 			const newTarget = ENGINE.handler.identifyElement(newId);
 			changeTarget(newTarget);
 		}
-	};
+	}, [target, dispatchFormEffect, changeTarget]);
 
 	return (
 		<div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>

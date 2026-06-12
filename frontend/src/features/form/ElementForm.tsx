@@ -28,7 +28,7 @@ export type SubmitButtonRef = {
 };
 
 
-export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
+export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementFormProps>(
 	(props, ref) => {
 		const resolved = useMemo(() => {
 			try {
@@ -192,6 +192,6 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 			</>
 		);
 	}
-);
+));
 
 
