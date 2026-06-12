@@ -527,6 +527,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var xCount: number = 0;
 		var yCount: number = 0;
 
+		// Adjusts for the "fake" padding that subgrids can have (using the extra mechanic)
+		var startX = this instanceof Subgrid ? this.x : this.cx;
+		var startY = this instanceof Subgrid ? this.y : this.cy;
 
 		for (var row = 0; row < this.numRows; row++) {
 			xCount = 0;
@@ -538,8 +541,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				this.cells[row][col] = new Spacial({
 					contentWidth: colWidth,
 					contentHeight: rowHeight,
-					x: this.x + xCount,
-					y: this.y + yCount,
+					x: startX + xCount,
+					y: startY + yCount,
 					ref: "grid-cell",
 					type: "lower-abstract"
 				})

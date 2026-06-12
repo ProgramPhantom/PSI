@@ -170,7 +170,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				collapseProps={{
 					defaultIsOpen: false,
 					transitionDuration: 0,
-					keepChildrenMounted: true
 				}}
 				compact={true}
 				title={(<InformationLabel text="Placement" helpType="placementMode" />)}
@@ -184,7 +183,10 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 			{/* Padding */}
 			<Section
 				className={sectionStyles.minimalSection}
-				collapseProps={{ defaultIsOpen: false, keepChildrenMounted: true, transitionDuration: 0 }}
+				collapseProps={{
+					defaultIsOpen: false,
+					transitionDuration: 0
+				}}
 				compact={true}
 				title={"Padding"}
 				collapsible={true}>
@@ -287,7 +289,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				collapseProps={{
 					defaultIsOpen: false,
 					transitionDuration: 0,
-					keepChildrenMounted: true
 				}}
 				compact={true}
 				title={

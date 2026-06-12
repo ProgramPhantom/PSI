@@ -132,11 +132,6 @@ export default class Channel extends Subgrid implements IChannel {
 		})
 	}
 
-	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {
-		this.appendToCellAtCoord({ ghosts: [top] }, { row: 0, col: col });
-		this.appendToCellAtCoord({ ghosts: [bottom] }, { row: 2, col: col });
-	}
-
 	public getSpacesToNextPulse(orientation: Orientation, index: number): number {
 		let rowIndex: 0 | 1 | 2 = Channel.OrientationToRow(orientation);
 		let row: GridCell[] | undefined = this.getRow(rowIndex);
