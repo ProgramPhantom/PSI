@@ -26,6 +26,7 @@ import QuietUploadArea from "../QuietUploadArea";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import { ChannelAddToolbar } from "./ChannelAddToolbar";
+import { CanvasTextInput } from "./CanvasTextInput";
 
 
 export interface ISelectConfig extends IToolConfig { }
@@ -89,6 +90,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const [zoomString, setZoomString] = useState("2");
 	const [isZoomEditing, setIsZoomEditing] = useState(false);
 	const [showDiagramBoundary, setShowDiagramBoundary] = useState(false);
+	const [textInputPending, setTextInputPending] = useState<{ x: number; y: number } | null>(null);
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
@@ -166,32 +168,8 @@ const Canvas: React.FC<ICanvasProps> = () => {
 					cursor: "text",
 					onClick: (e: React.MouseEvent<HTMLDivElement>, coords: { x: number; y: number }) => {
 						e.stopPropagation();
-
-						const newText = structuredClone(defaultText);
-						ClearIDs(newText);
-						newText.id = Math.random().toString(16).slice(2);
-						newText.x = coords.x;
-						newText.y = coords.y;
-						newText.parentId = ENGINE.handler.diagram.id;
-						newText.placementMode = {
-							type: "free"
-						};
-
-						console.log(`[TextTool] BEFORE act: diagram.x=${ENGINE.handler.diagram.x}, diagram.y=${ENGINE.handler.diagram.y}`);
-						console.log(`[TextTool] newText coords: x=${newText.x}, y=${newText.y}`);
-
-						ENGINE.handler.act({
-							type: "add",
-							input: {
-								child: newText
-							}
-						});
-
-						console.log(`[TextTool] AFTER act: diagram.x=${ENGINE.handler.diagram.x}, diagram.y=${ENGINE.handler.diagram.y}`);
-
-						// Automatically select the newly created element and switch back to select tool
-						dispatch(setSelectedElementId(newText.id));
-						dispatch(setSelectedTool({ type: "select", config: {} }));
+						if (textInputPending) return;
+						setTextInputPending({ x: coords.x, y: coords.y });
 					}
 				};
 			case "box":
@@ -520,6 +498,41 @@ const Canvas: React.FC<ICanvasProps> = () => {
 												</div>
 											) : (
 												<></>
+											)}
+
+											{textInputPending && (
+												<CanvasTextInput
+													x={textInputPending.x}
+													y={textInputPending.y}
+													fontSize={defaultText.style?.fontSize}
+													onConfirm={(text) => {
+														const newText = structuredClone(defaultText);
+														ClearIDs(newText);
+														newText.id = Math.random().toString(16).slice(2);
+														newText.x = textInputPending.x;
+														newText.y = textInputPending.y;
+														newText.text = text;
+														newText.parentId = ENGINE.handler.diagram.id;
+														newText.placementMode = {
+															type: "free"
+														};
+
+														ENGINE.handler.act({
+															type: "add",
+															input: {
+																child: newText
+															}
+														});
+
+														dispatch(setSelectedElementId(newText.id));
+														dispatch(setSelectedTool({ type: "select", config: {} }));
+														setTextInputPending(null);
+													}}
+													onCancel={() => {
+														setTextInputPending(null);
+														dispatch(setSelectedTool({ type: "select", config: {} }));
+													}}
+												/>
 											)}
 
 											{/* Drop field */}
