@@ -107,9 +107,9 @@ export default class Channel extends Subgrid implements IChannel {
 	}
 
 	public override add({ child }: AddDispatchData<GridCellElement>) {
-		this.sizeBar()
-
 		super.add({ child });
+
+		this.sizeBar()
 	}
 
 	public remove({ child }: RemoveDispatchData<GridCellElement>) {
@@ -130,11 +130,6 @@ export default class Channel extends Subgrid implements IChannel {
 			noCols: this.numColumns - 1,
 			noRows: 1
 		})
-	}
-
-	public addCentralElementGhosts(col: number, top: Ghost, bottom: Ghost) {
-		this.appendToCellAtCoord({ ghosts: [top] }, { row: 0, col: col });
-		this.appendToCellAtCoord({ ghosts: [bottom] }, { row: 2, col: col });
 	}
 
 	public getSpacesToNextPulse(orientation: Orientation, index: number): number {

@@ -3,7 +3,7 @@ import Aligner, { IAligner } from "../aligner";
 import Line, { ILine } from "../line";
 import { UserComponentType } from "../point";
 import Text, { IText, Position } from "../text";
-import { Dimensions } from "../spacial";
+import { Dimensions, Size } from "../spacial";
 import { AlignerElement } from "../visual";
 
 
@@ -69,12 +69,23 @@ export default class Label extends Aligner implements ILabel {
 		this.mainAxis = params.mainAxis ?? "y";
 	}
 
+	public override computeSize(): Size {
+		return super.computeSize();
+	}
+
 	private initialiseText({ child }: AddDispatchData<AlignerElement>) {
 		child.placementMode = {
 			type: "aligner",
 			config: {
-				alignment: "centre"
+				alignment: { crossAxis: "centre" }
 			}
+		}
+		child.padding = [0, 0, 0, 0];
+
+		if (this.labelConfig?.textPosition === "bottom") {
+			this.setChildIndex(child, 1);
+		} else {
+			this.setChildIndex(child, 0);
 		}
 	}
 
@@ -82,7 +93,7 @@ export default class Label extends Aligner implements ILabel {
 		child.placementMode = {
 			type: "aligner",
 			config: {
-				alignment: "centre"
+				alignment: { crossAxis: "centre", mainAxis: "centre" }
 			}
 		}
 
@@ -95,16 +106,15 @@ export default class Label extends Aligner implements ILabel {
 			child.placementMode = {
 				type: "aligner",
 				config: {
-					alignment: "centre",
+					alignment: { crossAxis: "centre", mainAxis: "centre" },
 					contribution: { mainAxis: false, crossAxis: true }
 				}
 			}
+			this.setChildIndex(child, 1);
 		} else if (this.labelConfig?.textPosition === "bottom") {
-			let currentLineIndex = this.childIndex(child);
-			if (currentLineIndex !== undefined && currentLineIndex !== 0) {
-				this.children.splice(currentLineIndex, 1);
-				this.children.unshift(child);
-			}
+			this.setChildIndex(child, 0);
+		} else {
+			this.setChildIndex(child, 1);
 		}
 	}
 
@@ -135,8 +145,8 @@ export default class Label extends Aligner implements ILabel {
 			) {
 				var maskID: string = this.id + "-MASK";
 				var visibleArea = new Rect()
-					.move(this.cx - SPILL_PADDING, this.cy - SPILL_PADDING)
-					.size(this.contentWidth + 2 * SPILL_PADDING, this.contentHeight + 2 * SPILL_PADDING)
+					.move(-50000, -50000)
+					.size(100000, 100000)
 					.fill("white");
 				var blockedArea = new Rect()
 					.move(
@@ -153,7 +163,14 @@ export default class Label extends Aligner implements ILabel {
 					.add(visibleArea)
 					.add(blockedArea)
 					.id(maskID)
-					.attr({ "mask-type": "luminance", maskUnits: "userSpaceOnUse" });
+					.attr({
+						"mask-type": "luminance",
+						maskUnits: "userSpaceOnUse",
+						x: "-50000",
+						y: "-50000",
+						width: "100000",
+						height: "100000"
+					});
 
 				// VERY IMPORTANT: use "useSpaceOnUse" to follow the user coordinates not some random bs coord system
 

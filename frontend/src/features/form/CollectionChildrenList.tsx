@@ -6,7 +6,7 @@ import { ID, AllComponentTypes } from "../../logic/point";
 import { IconName } from "@blueprintjs/core";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
-import styles from "./styles/FormGroup.module.scss"
+import styles from "./styles/FormContainers.module.scss";
 
 interface CollectionChildrenListProps {
     target: Collection;

@@ -3,7 +3,6 @@ import {
     Dialog,
     DialogBody,
     DialogFooter,
-    FormGroup,
     InputGroup
 } from "@blueprintjs/core";
 import React, { useRef, useState } from "react";
@@ -11,7 +10,7 @@ import { appToaster } from "../../app/Toaster";
 import { useAppDispatch } from "../../redux/hooks";
 import { loadAsset } from "../../redux/thunks/assetThunks";
 import UploadArea from "../UploadArea";
-import styles from "./styles/FormGroup.module.scss";
+import { SimpleField } from "./fields/SimpleField";
 import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ISVGUploadDialogProps {
@@ -92,8 +91,7 @@ const SVGUploadDialog: React.FC<ISVGUploadDialogProps> = ({ isOpen, onClose, dep
             title="Upload SVG File"
             icon="upload">
             <DialogBody>
-                <FormGroup
-                    className={styles.simpleGroup}
+                <SimpleField
                     label="Reference Name"
                     labelFor="reference-input"
                     intent={svgReference.trim() === "" ? "danger" : "none"}
@@ -106,7 +104,7 @@ const SVGUploadDialog: React.FC<ISVGUploadDialogProps> = ({ isOpen, onClose, dep
                         onChange={(e) => setSvgReference(e.target.value)}
                         placeholder="Enter reference name..."
                     />
-                </FormGroup>
+                </SimpleField>
 
                 <UploadArea
                     selectedFile={selectedFile}

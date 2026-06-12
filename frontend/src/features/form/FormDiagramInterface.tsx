@@ -1,5 +1,5 @@
 import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon, Tooltip } from "@blueprintjs/core";
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore, useDeferredValue, useCallback } from "react";
 import { ObjectInspector } from "react-inspector";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
@@ -14,11 +14,13 @@ type FormEffect = "submit" | "delete" | "modify";
 export function FormDiagramInterface() {
 	const dispatch = useAppDispatch();
 	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
-	const target = ENGINE.handler.identifyElement(selectedElementId ?? "");
+	const deferredSelectedElementId = useDeferredValue(selectedElementId);
+	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+	const target = ENGINE.handler.identifyElement(deferredSelectedElementId ?? "");
 
-	const changeTarget = (val: Visual | undefined) => {
+	const changeTarget = useCallback((val: Visual | undefined) => {
 		dispatch(setSelectedElementId(val?.id));
-	};
+	}, [dispatch]);
 
 	var targetType: AllComponentTypes = target
 		? (target.constructor as typeof Visual).ElementType
@@ -28,7 +30,7 @@ export function FormDiagramInterface() {
 	var [submissionValid, setSubmissionValid] = useState<boolean>(true);
 
 	// Submit function
-	const dispatchFormEffect = (
+	const dispatchFormEffect = useCallback((
 		values: IVisual,
 		effect: FormEffect
 	) => {
@@ -66,7 +68,22 @@ export function FormDiagramInterface() {
 				})
 				break;
 		}
-	}
+	}, [target]);
+
+	const handleFormSubmit = useCallback((val: IVisual) => {
+		if (target) {
+			const targetId = target.id;
+			dispatchFormEffect(val, "modify");
+			const newTarget = ENGINE.handler.identifyElement(targetId);
+			changeTarget(newTarget);
+		} else {
+			const newId = val.id || Math.random().toString(16).slice(2);
+			val.id = newId;
+			dispatchFormEffect(val, "submit");
+			const newTarget = ENGINE.handler.identifyElement(newId);
+			changeTarget(newTarget);
+		}
+	}, [target, dispatchFormEffect, changeTarget]);
 
 	return (
 		<div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
@@ -160,16 +177,11 @@ export function FormDiagramInterface() {
 					padding: "0px"
 				}}>
 				<ElementForm
-					key={target ? target.id : "defaults"}
+					key={targetType}
 					ref={submitRef}
 					objectType={targetType as UserComponentType}
 					target={target}
-					callback={(val: IVisual) => {
-						target
-							? dispatchFormEffect(val, "modify")
-							: dispatchFormEffect(val, "submit");
-						changeTarget(undefined);
-					}}></ElementForm>
+					callback={handleFormSubmit}></ElementForm>
 
 				<div
 					id="submit-area"

@@ -12,7 +12,7 @@ export const DEFAULT_CHANNEL: IChannel = {
 		DEFAULT_BAR,
 
 	],
-
+	"placementControl": "auto",
 	"sizeMode": { "x": "fit", "y": "fit" },
 	"placementMode": {
 		"type": "subgrid",

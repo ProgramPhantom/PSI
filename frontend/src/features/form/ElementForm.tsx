@@ -28,7 +28,7 @@ export type SubmitButtonRef = {
 };
 
 
-export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
+export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementFormProps>(
 	(props, ref) => {
 		const resolved = useMemo(() => {
 			try {
@@ -148,7 +148,7 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 										panel={
 											<div style={{ flex: "1 1 0", display: "flex", flexDirection: "column" }}>
 												<FormProvider {...roleFormControls}>
-													<LabelListForm></LabelListForm>
+													<LabelListForm target={props.target}></LabelListForm>
 												</FormProvider>
 											</div>
 										}></Tab>
@@ -192,6 +192,6 @@ export const ElementForm = React.forwardRef<SubmitButtonRef, ElementFormProps>(
 			</>
 		);
 	}
-);
+));
 
 

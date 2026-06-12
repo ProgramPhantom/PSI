@@ -48,7 +48,7 @@ export interface ISubgridConfig {
 
 export interface IAlignerConfig {
 	index?: number,
-	alignment?: SiteNames,
+	alignment?: { mainAxis?: SiteNames, crossAxis?: SiteNames },
 	contribution?: { mainAxis: boolean, crossAxis: boolean }
 }
 

@@ -27,17 +27,17 @@ export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(function El
 			display: "inline-block", 
 			zIndex: 15000,
 			position: "relative",
-			width: props.element.contentWidth,
-			height: props.element.contentHeight
+			width: props.element.width,
+			height: props.element.height
 		}}>
-			<svg ref={visualRef} style={{ overflow: "visible", position: "absolute", top: 0, left: 0 }}></svg>
+			<svg ref={visualRef} style={{ overflow: "visible", position: "absolute", top: props.element.padding[0], left: props.element.padding[3] }}></svg>
 			<svg
 				style={{
 					width: props.element.contentWidth,
 					height: props.element.contentHeight,
 					position: "absolute",
-					top: 0,
-					left: 0,
+					top: props.element.padding[0],
+					left: props.element.padding[3],
 					pointerEvents: "none"
 				}}>
 				<rect

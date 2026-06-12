@@ -3,7 +3,7 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { defaultLabel, defaultText, defaultLine } from "../../logic/default/index";
 import { IText } from "../../logic/text";
 import { ILine } from "../../logic/line";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LabelForm from "./LabelForm";
 import TextForm from "./TextForm";
 import ArrowForm from "./ArrowForm";
@@ -22,13 +22,27 @@ const posToRole = (pos: Position) => `label${pos.charAt(0).toUpperCase() + pos.s
 function LabelListForm(props: ILabelMapProps) {
 	const parentFormControls = useFormContext<RoleChildrenFormData>();
 
-	// Watch the roles object to trigger re-renders
-	const roles = useWatch({
-		control: parentFormControls.control,
-		name: "roles"
-	});
+	// Watch only the type of each annotation position to prevent unnecessary re-renders when internal details change
+	const labelTopType = useWatch({ control: parentFormControls.control, name: "roles.labelTop.type" });
+	const labelBottomType = useWatch({ control: parentFormControls.control, name: "roles.labelBottom.type" });
+	const labelLeftType = useWatch({ control: parentFormControls.control, name: "roles.labelLeft.type" });
+	const labelRightType = useWatch({ control: parentFormControls.control, name: "roles.labelRight.type" });
+	const labelCentreType = useWatch({ control: parentFormControls.control, name: "roles.labelCentre.type" });
+
+	const roles: Record<string, { type: string } | null | undefined> = {
+		labelTop: labelTopType ? { type: labelTopType } : undefined,
+		labelBottom: labelBottomType ? { type: labelBottomType } : undefined,
+		labelLeft: labelLeftType ? { type: labelLeftType } : undefined,
+		labelRight: labelRightType ? { type: labelRightType } : undefined,
+		labelCentre: labelCentreType ? { type: labelCentreType } : undefined,
+	};
 
 	const [activePos, setActivePos] = useState<Position | null>(null);
+
+	// Reset activePos when target changes
+	useEffect(() => {
+		setActivePos(null);
+	}, [props.target]);
 
 	const addLabel = (pos: Position, type: "label" | "text" | "line") => {
 		let defaultValue;
@@ -123,7 +137,7 @@ function LabelListForm(props: ILabelMapProps) {
 							/>
 						}
 					>
-						<div className={styles.scrollContainer}>
+						<div className={styles.scrollContainer} key={activePos}>
 							{roles[posToRole(activePos)]?.type === "text" && <TextForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "line" && <ArrowForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "label" && <LabelForm prefix={`roles.${posToRole(activePos)}`} />}

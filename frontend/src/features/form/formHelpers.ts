@@ -75,15 +75,31 @@ export function resolveFormDataFromTarget(
 	if (target === undefined) {
 		let creatingLabelRoles: EditableRole[] = [];
 		let creatingComponentRoles: EditableRole[] = [];
+		let roleDefaults: Record<string, IVisual> = {};
 
 		if (formBundle.roles) {
-			const rolesArray = Object.entries(formBundle.roles).map(([roleName, schema]) => ({
-				roleName,
-				displayName: schema.displayName,
-				elementType: schema.elementType,
-				mandatory: schema.mandatory,
-				defaultValues: schema.defaultValues
-			}));
+			const rolesArray = Object.entries(formBundle.roles).map(([roleName, schema]) => {
+				const role: EditableRole = {
+					roleName,
+					displayName: schema.displayName,
+					elementType: schema.elementType,
+					mandatory: schema.mandatory,
+					defaultValues: schema.defaultValues
+				};
+
+				if (schema.mandatory) {
+					const childBundle = FORM_DEFAULTS[schema.elementType];
+					if (childBundle) {
+						let defaultVal = structuredClone(childBundle.defaults);
+						if (schema.defaultValues) {
+							defaultVal = { ...defaultVal, ...schema.defaultValues };
+						}
+						roleDefaults[roleName] = defaultVal;
+					}
+				}
+
+				return role;
+			});
 
 			if (objectType === "label-group") {
 				creatingLabelRoles = rolesArray;
@@ -102,7 +118,7 @@ export function resolveFormDataFromTarget(
 				defaults: structuredClone(formBundle.defaults),
 				elementType: objectType,
 			},
-			roleDefaults: {},
+			roleDefaults,
 			allowLabels: formBundle.allowLabels,
 			isLabelGroup: false,
 			isCollection: false,

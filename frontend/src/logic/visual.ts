@@ -77,7 +77,12 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 			// Find (or create) the mask
 			var mask = surface.root().findOne("#" + BAR_MASK_ID) as Mask;
 			if (!mask) {
-				mask = surface.root().mask().id(BAR_MASK_ID);
+				mask = surface.root().mask().id(BAR_MASK_ID).attr({
+					x: "-50000",
+					y: "-50000",
+					width: "100000",
+					height: "100000"
+				});
 				// Add a white rectangle to the mask to allow everything ELSE to show
 				// This white rect must be large enough to cover the whole canvas
 				// We can try adding a very large rect? Or wait for channel to init it?

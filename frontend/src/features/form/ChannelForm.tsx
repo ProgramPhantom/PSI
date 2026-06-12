@@ -1,22 +1,15 @@
 import {
 	ControlGroup,
-	Divider,
-	Section,
+	HTMLSelect
 } from "@blueprintjs/core";
 import React, { useEffect } from "react";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import { IChannel } from "../../logic/hasComponents/channel";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
-import TextForm from "./TextForm";
-import RectForm from "./RectForm";
-import FormDivider from "./FormDivider";
 import ENGINE from "../../logic/engine";
-import { FormGroup, HTMLSelect } from "@blueprintjs/core";
-import { Controller } from "react-hook-form";
-
-import Collection from "../../logic/collection";
-import styles from "./styles/FormGroup.module.scss";
+import { SimpleField } from "./fields/SimpleField";
+import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
 
 interface ChannelFormProps extends FormRequirements {
@@ -37,8 +30,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 	return (
 		<>
 			<ControlGroup vertical={true} className={styles.formGroupContainer}>
-				<FormGroup
-					className={styles.simpleGroup}
+				<SimpleField
 					label="Sequence"
 					labelFor="sequence-select"
 				>
@@ -60,7 +52,7 @@ const ChannelForm: React.FC<ChannelFormProps> = (props) => {
 							/>
 						)}
 					/>
-				</FormGroup>
+				</SimpleField>
 			</ControlGroup>
 
 			<VisualForm target={props.target} widthDisplay={true} heightDisplay={true}></VisualForm>
