@@ -504,34 +504,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 												<CanvasTextInput
 													x={textInputPending.x}
 													y={textInputPending.y}
-													fontSize={defaultText.style?.fontSize}
-													onConfirm={(text) => {
-														const newText = structuredClone(defaultText);
-														ClearIDs(newText);
-														newText.id = Math.random().toString(16).slice(2);
-														newText.x = textInputPending.x;
-														newText.y = textInputPending.y;
-														newText.text = text;
-														newText.parentId = ENGINE.handler.diagram.id;
-														newText.placementMode = {
-															type: "free"
-														};
-
-														ENGINE.handler.act({
-															type: "add",
-															input: {
-																child: newText
-															}
-														});
-
-														dispatch(setSelectedElementId(newText.id));
-														dispatch(setSelectedTool({ type: "select", config: {} }));
-														setTextInputPending(null);
-													}}
-													onCancel={() => {
-														setTextInputPending(null);
-														dispatch(setSelectedTool({ type: "select", config: {} }));
-													}}
+													onClose={() => setTextInputPending(null)}
 												/>
 											)}
 

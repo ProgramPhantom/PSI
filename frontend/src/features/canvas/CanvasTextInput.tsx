@@ -1,60 +1,73 @@
 import React, { useEffect, useRef } from "react";
+import { InputGroup } from "@blueprintjs/core";
+import ENGINE from "../../logic/engine";
+import { defaultText } from "../../logic/default/index";
+import { ClearIDs } from "../../logic/collection";
+import { useAppDispatch } from "../../redux/hooks";
+import { setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
 
 interface CanvasTextInputProps {
 	x: number;
 	y: number;
-	onConfirm: (text: string) => void;
-	onCancel: () => void;
+	onClose: () => void;
 	initialValue?: string;
-	fontSize?: number;
 }
 
 export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 	x,
 	y,
-	onConfirm,
-	onCancel,
-	initialValue = "",
-	fontSize = 24
+	onClose,
+	initialValue = ""
 }) => {
-	const ref = useRef<HTMLDivElement>(null);
+	const dispatch = useAppDispatch();
+	const inputRef = useRef<HTMLInputElement>(null);
 	const committed = useRef(false);
 
 	useEffect(() => {
-		if (ref.current) {
-			ref.current.focus();
-			// Move cursor to the end of the text if there's initial value
-			if (initialValue) {
-				const range = document.createRange();
-				const sel = window.getSelection();
-				range.selectNodeContents(ref.current);
-				range.collapse(false);
-				if (sel) {
-					sel.removeAllRanges();
-					sel.addRange(range);
-				}
-			}
+		if (inputRef.current) {
+			inputRef.current.focus();
 		}
-	}, [initialValue]);
+	}, []);
 
 	const handleConfirm = () => {
 		if (committed.current) return;
 		committed.current = true;
-		const text = ref.current?.textContent?.trim() ?? "";
+		const text = inputRef.current?.value.trim() ?? "";
 		if (text) {
-			onConfirm(text);
+			const newText = structuredClone(defaultText);
+			ClearIDs(newText);
+			newText.id = Math.random().toString(16).slice(2);
+			newText.x = x;
+			newText.y = y;
+			newText.text = text;
+			newText.parentId = ENGINE.handler.diagram.id;
+			newText.placementMode = {
+				type: "free"
+			};
+
+			ENGINE.handler.act({
+				type: "add",
+				input: {
+					child: newText
+				}
+			});
+
+			dispatch(setSelectedElementId(newText.id));
+			dispatch(setSelectedTool({ type: "select", config: {} }));
 		} else {
-			onCancel();
+			dispatch(setSelectedTool({ type: "select", config: {} }));
 		}
+		onClose();
 	};
 
 	const handleCancel = () => {
 		if (committed.current) return;
 		committed.current = true;
-		onCancel();
+		dispatch(setSelectedTool({ type: "select", config: {} }));
+		onClose();
 	};
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
 			e.preventDefault();
 			e.stopPropagation();
@@ -75,35 +88,23 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 				top: y,
 				zIndex: 10002,
 				pointerEvents: "auto",
-				transform: "translate(-2px, -6px)" // Slightly offset to account for border and padding alignment
+				transform: "translate(-2px, -6px)"
 			}}
 		>
-			<div
-				ref={ref}
-				contentEditable
-				suppressContentEditableWarning
+			<InputGroup
+				inputRef={inputRef}
+				autoFocus
+				placeholder="Type text..."
+				defaultValue={initialValue}
 				onBlur={handleConfirm}
 				onKeyDown={handleKeyDown}
 				onClick={(e) => e.stopPropagation()}
 				onMouseDown={(e) => e.stopPropagation()}
+				size="small"
 				style={{
-					fontSize: `${fontSize}px`,
-					fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-					border: "1.5px solid #106ba3",
-					borderRadius: "3px",
-					padding: "4px 8px",
-					outline: "none",
-					boxShadow: "0 0 0 1px #106ba3, 0 2px 8px rgba(16, 22, 26, 0.2)",
-					background: "white",
-					color: "#182026",
-					minWidth: "120px",
-					display: "inline-block",
-					whiteSpace: "nowrap",
-					caretColor: "#106ba3"
+					width: "120px"
 				}}
-			>
-				{initialValue}
-			</div>
+			/>
 		</div>
 	);
 };
