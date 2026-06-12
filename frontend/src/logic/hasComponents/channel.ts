@@ -190,7 +190,7 @@ export default class Channel extends Subgrid implements IChannel {
 	private initialiseLabel({ child, index }: AddDispatchData) {
 		child.placementMode = {
 			type: "grid", config: {
-				alignment: { x: "centre", y: "centre" },
+				alignment: { x: "far", y: "centre" },
 				coords: { row: 1, col: 0 },
 				contribution: { x: true, y: false }
 			}

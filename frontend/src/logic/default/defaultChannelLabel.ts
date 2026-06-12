@@ -10,7 +10,7 @@ export const DEFAULT_CHANNEL_TEXT: IText = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 75,
+		"fontSize": 45,
 		"colour": "black",
 		"background": null,
 		"display": "block"

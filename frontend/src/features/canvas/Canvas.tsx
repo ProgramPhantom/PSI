@@ -22,6 +22,7 @@ import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import QuietUploadArea from "../QuietUploadArea";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
+import { ChannelAddToolbar } from "./ChannelAddToolbar";
 
 
 export interface ISelectConfig extends IToolConfig { }
@@ -262,7 +263,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 								alignItems: "normal",
 								gap: "6px"
 							}}>
-							<Button size="small" variant="outlined" style={{ width: "16px" }}
+								<Button size="small" variant="outlined" style={{ width: "16px" }}
 								icon="target"
 								onClick={() => transformComponentRef.current?.centerView()}
 							/>
@@ -289,7 +290,16 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 								/>
 								<span style={{ marginLeft: "1px", color: "#5c7080", pointerEvents: "none" }}>x</span>
 							</div>
+						</div>
 
+						<div
+							style={{
+								position: "absolute",
+								top: "6px",
+								right: "6px",
+								zIndex: 10,
+							}}>
+							<ChannelAddToolbar />
 						</div>
 
 
