@@ -1,35 +1,15 @@
 import { Button, Icon, Navbar, Position, Tooltip } from "@blueprintjs/core";
 import React from "react";
-import { Tool } from "../../app/App";
-import { defaultLine } from "../../logic/default/index";
 import ENGINE from "../../logic/engine";
-import { ILineStyle } from "../../logic/line";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
 import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 
-export interface IBannerProps {
-	selectedTool: Tool;
-	setTool: (tool: Tool) => void;
-}
-
-export default function Banner(props: IBannerProps) {
+export default function Banner() {
 	const { data: user } = useGetMeQuery();
 	const dispatch = useAppDispatch();
 
-	const selectLineTool = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-		if (props.selectedTool.type === "arrow") {
-			props.setTool({ type: "select", config: {} });
-			e.preventDefault();
-			e.stopPropagation();
-		} else {
-			props.setTool({
-				type: "arrow",
-				config: { lineStyle: defaultLine.lineStyle as ILineStyle, mode: "bind" }
-			});
-		}
-	};
 
 	return (
 		<Navbar>
@@ -101,13 +81,6 @@ export default function Banner(props: IBannerProps) {
 					/>
 				</Tooltip>
 				<Navbar.Divider />
-
-				{/* 
-				<AnnotateDropdown
-					selectedTool={props.selectedTool}
-					setTool={props.setTool}>
-				</AnnotateDropdown>
-				*/}
 
 
 				<Navbar.Group>

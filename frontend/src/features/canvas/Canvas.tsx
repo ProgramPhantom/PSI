@@ -1,14 +1,17 @@
 import {
 	Button, Colors, EditableText
 } from "@blueprintjs/core";
-import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig, Tool } from "../../app/App";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedElementId } from "../../redux/slices/applicationSlice";
+import { setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
+import { defaultText } from "../../logic/default/index";
+import { ClearIDs } from "../../logic/collection";
+import { CanvasToolToolbar } from "./CanvasToolToolbar";
 import { setSaveState } from "../../redux/slices/diagramSlice";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
 import Toolbar from "../banner/Toolbar";
@@ -28,8 +31,6 @@ import { ChannelAddToolbar } from "./ChannelAddToolbar";
 export interface ISelectConfig extends IToolConfig { }
 
 interface ICanvasProps {
-	selectedTool: Tool;
-	setTool: (tool: Tool) => void;
 }
 
 const SeamlessPanner = () => {
@@ -60,7 +61,11 @@ const SeamlessPanner = () => {
 		}
 
 		if (transformed) {
-			setTransform(newX, newY, scale, 0);
+			// const inst = instance as any;
+			// inst.animation = null;
+			// inst.animate = false;
+			// inst.velocity = null;
+			setTransform(newX, newY, scale, 1);
 		}
 
 		prevDiagramX.current = currentX;
@@ -70,11 +75,12 @@ const SeamlessPanner = () => {
 	return null;
 };
 
-const Canvas: React.FC<ICanvasProps> = (props) => {
+const Canvas: React.FC<ICanvasProps> = () => {
 	const dispatch = useAppDispatch();
 
 	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
 	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
+	const selectedTool = useAppSelector((state) => state.application.selectedTool);
 
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [rawHoveredElement, setRawHoveredElement] = useState<Visual | undefined>(undefined);
@@ -86,6 +92,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
+	const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
 	const { isDragging } = useDragLayer((monitor) => ({
@@ -96,7 +103,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	if (selectedElement) {
 		interactiveElements.push(selectedElement);
 	}
-	if (props.selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
+	if (selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
 		interactiveElements.push(hoveredElement);
 	}
 
@@ -123,26 +130,110 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		selectVisual(e);
 	}
 
-	const onClick = (click: React.MouseEvent<HTMLDivElement>) => {
-		var element: Visual | undefined = hoveredElement;
-
-		if (element === undefined) {
-			deselect();
-		} else {
-			selectVisual(element);
+	const getCoordinates = (e: React.MouseEvent<HTMLDivElement>): { x: number; y: number } => {
+		const drawDiv = document.getElementById("diagram-root") as HTMLElement;
+		if (!drawDiv) {
+			return { x: e.clientX, y: e.clientY };
 		}
+		const drawDivRect = drawDiv.getBoundingClientRect();
+		const relativeX = (e.clientX - drawDivRect.left) / zoom;
+		const relativeY = (e.clientY - drawDivRect.top) / zoom;
+		return { x: relativeX, y: relativeY };
 	};
 
-	const singleClick = (click: React.MouseEvent<HTMLDivElement>) => {
-		switch (props.selectedTool.type) {
-			case "select":
-				if (selectedElement && hoveredElement !== selectedElement) {
-					deselect();
-				}
-				break;
+	const didDrag = (e: React.MouseEvent): boolean => {
+		if (dragStartRef.current) {
+			const dx = e.clientX - dragStartRef.current.x;
+			const dy = e.clientY - dragStartRef.current.y;
+			const distance = Math.sqrt(dx * dx + dy * dy);
+			dragStartRef.current = null;
+			if (distance > 5) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	const getToolBehavior = (toolType: string): {
+		cursor: string;
+		onClick?: (e: React.MouseEvent<HTMLDivElement>, coords: { x: number; y: number }) => void;
+		onDoubleClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+		onMouseUp?: (e: React.MouseEvent<HTMLDivElement>, coords: { x: number; y: number }) => void;
+	} => {
+		switch (toolType) {
+			case "text":
+				return {
+					cursor: "text",
+					onClick: (e: React.MouseEvent<HTMLDivElement>, coords: { x: number; y: number }) => {
+						e.stopPropagation();
+
+						const newText = structuredClone(defaultText);
+						ClearIDs(newText);
+						newText.id = Math.random().toString(16).slice(2);
+						newText.x = coords.x;
+						newText.y = coords.y;
+						newText.parentId = ENGINE.handler.diagram.id;
+						newText.placementMode = {
+							type: "free"
+						};
+
+						console.log(`[TextTool] BEFORE act: diagram.x=${ENGINE.handler.diagram.x}, diagram.y=${ENGINE.handler.diagram.y}`);
+						console.log(`[TextTool] newText coords: x=${newText.x}, y=${newText.y}`);
+
+						ENGINE.handler.act({
+							type: "add",
+							input: {
+								child: newText
+							}
+						});
+
+						console.log(`[TextTool] AFTER act: diagram.x=${ENGINE.handler.diagram.x}, diagram.y=${ENGINE.handler.diagram.y}`);
+
+						// Automatically select the newly created element and switch back to select tool
+						dispatch(setSelectedElementId(newText.id));
+						dispatch(setSelectedTool({ type: "select", config: {} }));
+					}
+				};
+			case "box":
+				return {
+					cursor: "crosshair",
+					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+						e.stopPropagation();
+					}
+				};
 			case "arrow":
+				return {
+					cursor: "crosshair",
+					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+						e.stopPropagation();
+					}
+				};
+			case "select":
+			default:
+				return {
+					cursor: "default",
+					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+						const element: Visual | undefined = hoveredElement;
+						if (element === undefined) {
+							deselect();
+						} else {
+							selectVisual(element);
+						}
+					},
+					onDoubleClick: (e: React.MouseEvent<HTMLDivElement>) => {
+						handleDoubleClick(e);
+					},
+					onMouseUp: (e: React.MouseEvent<HTMLDivElement>) => {
+						if (selectedElement && hoveredElement !== selectedElement) {
+							deselect();
+						}
+						deselect();
+					}
+				};
 		}
 	};
+
+	const activeToolBehavior = getToolBehavior(selectedTool.type);
 
 	const handleDiagramDrop = async (file: File) => {
 		dispatch(openDiagram(file));
@@ -239,17 +330,31 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						height: "100%",
 						display: "flex",
 						flexDirection: "column",
-						position: "relative"
+						position: "relative",
+						cursor: activeToolBehavior.cursor
+					}}
+					onMouseDown={(e) => {
+						dragStartRef.current = { x: e.clientX, y: e.clientY };
 					}}
 					onClick={(e) => {
-						onClick(e);
+						if (didDrag(e)) {
+							return;
+						}
+						const coords = getCoordinates(e);
+						if (activeToolBehavior.onClick) {
+							activeToolBehavior.onClick(e, coords);
+						}
 					}}
 					onDoubleClick={(e) => {
-						handleDoubleClick(e);
+						if (activeToolBehavior.onDoubleClick) {
+							activeToolBehavior.onDoubleClick(e);
+						}
 					}}
 					onMouseUp={(e) => {
-						singleClick(e);
-						deselect();
+						const coords = getCoordinates(e);
+						if (activeToolBehavior.onMouseUp) {
+							activeToolBehavior.onMouseUp(e, coords);
+						}
 					}}>
 					<Toolbar />
 					<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
@@ -313,6 +418,17 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 							<ChannelAddToolbar />
 						</div>
 
+						<div
+							style={{
+								position: "absolute",
+								bottom: "8px",
+								left: "50%",
+								transform: "translateX(-50%)",
+								zIndex: 10,
+							}}>
+							<CanvasToolToolbar />
+						</div>
+
 
 						<CanvasDropContainer scale={zoom}>
 							<TransformWrapper
@@ -333,9 +449,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 								doubleClick={{ disabled: true }}>
 
 
-								<TransformComponent wrapperStyle={{
-									width: "100%", height: "100%", position: "absolute",
-								}}>
+								<TransformComponent
+									wrapperStyle={{
+										width: "100%", height: "100%", position: "absolute",
+									}}>
 									{/* Large background grid that moves with transform */}
 									<div
 										style={{
@@ -394,12 +511,12 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 
 
 											{/* Tools */}
-											{props.selectedTool.type === "arrow" ? (
+											{selectedTool.type === "arrow" ? (
 												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
 													<LineTool
 														hoveredElement={hoveredElement}
-														config={props.selectedTool.config}
-														setTool={props.setTool}></LineTool>
+														config={selectedTool.config}
+														setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
 												</div>
 											) : (
 												<></>

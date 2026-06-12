@@ -22,9 +22,11 @@ import { syncUserSchemes } from "../redux/thunks/schemeThunks";
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
 
+import { CanvasTool } from "../redux/slices/applicationSlice";
+
 export interface IToolConfig { }
 
-export type Tool = { type: "select"; config: {} } | { type: "arrow"; config: IDrawArrowConfig };
+export type Tool = CanvasTool;
 
 function App() {
 	const dispatch = useAppDispatch();
@@ -89,10 +91,7 @@ function App() {
 
 	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 
-	const [selectedTool, setSelectedTool] = useState<Tool>({
-		type: "select",
-		config: {}
-	});
+	const selectedTool = useAppSelector((state) => state.application.selectedTool);
 
 
 	// Set up automatic saving every 2 seconds
@@ -105,15 +104,9 @@ function App() {
 	//   return () => clearInterval(interval);
 	// }, []);
 
-	const setTool = (tool: Tool) => {
-		setSelectedTool(tool);
-	};
-
 
 	const canvas: ReactNode = (
-		<Canvas
-			selectedTool={selectedTool}
-			setTool={setSelectedTool}></Canvas>
+		<Canvas />
 	);
 
 
@@ -136,9 +129,7 @@ function App() {
 					flexDirection: "column"
 				}}>
 				<div style={{ width: "100%" }}>
-					<Banner
-						selectedTool={selectedTool}
-						setTool={setTool}></Banner>
+					<Banner />
 				</div>
 
 				<div style={{ display: "flex", height: "100%", width: "100%" }}>
@@ -153,7 +144,7 @@ function App() {
 							style={{
 								height: "100%",
 								position: "relative",
-								cursor: selectedTool.type === "select" ? "default" : "crosshair"
+								cursor: selectedTool.type === "select" ? "default" : selectedTool.type === "text" ? "text" : "crosshair"
 							}}>
 							{canvas}
 						</div>
