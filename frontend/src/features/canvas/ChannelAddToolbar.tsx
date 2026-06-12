@@ -39,7 +39,12 @@ export const ChannelAddToolbar: React.FC = React.memo(() => {
     };
 
     return (
-        <ButtonGroup>
+        <div 
+            onClick={(e) => e.stopPropagation()} 
+            onMouseUp={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+        >
+            <ButtonGroup>
             <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_13C)}>
                 <MathJax>{`\\(^{13}\\textrm{C}\\)`}</MathJax>
             </Button>
@@ -65,5 +70,6 @@ export const ChannelAddToolbar: React.FC = React.memo(() => {
                 <Button size="small" style={{ width: "36px" }}>...</Button>
             </Popover>
         </ButtonGroup>
+        </div>
     );
 });

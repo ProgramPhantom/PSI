@@ -1,5 +1,5 @@
 import {
-	Button, EditableText
+	Button, Colors, EditableText
 } from "@blueprintjs/core";
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
@@ -82,6 +82,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [zoom, setZoom] = useState(2);
 	const [zoomString, setZoomString] = useState("2");
 	const [isZoomEditing, setIsZoomEditing] = useState(false);
+	const [showDiagramBoundary, setShowDiagramBoundary] = useState(false);
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
@@ -263,10 +264,20 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 								alignItems: "normal",
 								gap: "6px"
 							}}>
-								<Button size="small" variant="outlined" style={{ width: "16px" }}
+							<Button size="small" variant="outlined" style={{ width: "16px" }}
 								icon="target"
 								onClick={() => transformComponentRef.current?.centerView()}
 							/>
+							<Button
+								size="small"
+								variant="outlined"
+								active={showDiagramBoundary}
+								style={{ width: "16px" }}
+								onClick={() => setShowDiagramBoundary(!showDiagramBoundary)}
+								title="Toggle Diagram Boundary"
+								icon="selection-box"
+							>
+							</Button>
 							<div
 								style={{
 									display: "flex",
@@ -406,6 +417,45 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											<Debug
 												debugGroupSelection={debugSelectionTypes}
 												debugSelection={debugElements}></Debug>
+
+											{/* Diagram boundary SVG overlay */}
+											{showDiagramBoundary && (
+												<svg
+													style={{
+														position: "absolute",
+														left: ENGINE.handler.diagram.x,
+														top: ENGINE.handler.diagram.y,
+														width: ENGINE.handler.diagram.width,
+														height: ENGINE.handler.diagram.height,
+														pointerEvents: "none",
+														zIndex: 10000
+													}}>
+													{/* Content boundary */}
+													<rect
+														x={ENGINE.handler.diagram.cx - ENGINE.handler.diagram.x}
+														y={ENGINE.handler.diagram.cy - ENGINE.handler.diagram.y}
+														width={ENGINE.handler.diagram.contentWidth !== undefined ? ENGINE.handler.diagram.contentWidth : 0}
+														height={ENGINE.handler.diagram.contentHeight !== undefined ? ENGINE.handler.diagram.contentHeight : 0}
+														fill="none"
+														stroke={Colors.BLUE5}
+														strokeOpacity={0.7}
+														strokeWidth="1"
+														strokeDasharray="1,1"
+													/>
+													{/* Padded boundary */}
+													<rect
+														x={0}
+														y={0}
+														width={ENGINE.handler.diagram.width}
+														height={ENGINE.handler.diagram.height}
+														fill="none"
+														stroke={Colors.GRAY3}
+														strokeOpacity={0.7}
+														strokeWidth="1.5"
+														strokeDasharray="3,4"
+													/>
+												</svg>
+											)}
 
 										</div>
 
