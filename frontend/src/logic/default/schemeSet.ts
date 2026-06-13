@@ -14,7 +14,7 @@ import { DEFAULT_SALTIREHILO } from "./svgPulse/saltirehilo";
 import { DEFAULT_SALTIRELOHI } from "./svgPulse/saltirelohi";
 import { DEFAULT_TALLTRAPEZIUM } from "./svgPulse/talltrapezium";
 import { DEFAULT_TRAPEZIUM } from "./svgPulse/trapezium";
-import { DEFAULT_TEXT } from "./text";
+import { DEFAULT_TEXT } from "./latex";
 import { SchemeDict } from "../../types/schemes";
 import { DISPSI2 } from "./DIPSI2";
 

@@ -39,37 +39,37 @@ export const ChannelAddToolbar: React.FC = React.memo(() => {
     };
 
     return (
-        <div 
-            onClick={(e) => e.stopPropagation()} 
+        <div
+            onClick={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
         >
-            <ButtonGroup>
-            <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_13C)}>
-                <MathJax>{`\\(^{13}\\textrm{C}\\)`}</MathJax>
-            </Button>
-            <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_1H)}>
-                <MathJax>{`\\(^{1}\\textrm{H}\\)`}</MathJax>
-            </Button>
-            <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_19F)}>
-                <MathJax>{`\\(^{19}\\textrm{F}\\)`}</MathJax>
-            </Button>
-            <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_Gz)}>
-                <MathJax>{`\\(\\textrm{G}_z\\)`}</MathJax>
-            </Button>
-            <Popover minimal position={"bottom-right"} content={
-                <Menu size="small" style={{ minWidth: "0px", width: "fit-content" }}>
-                    <MenuItem onClick={() => addChannel(CHANNEL_15N)} text={<MathJax>{`\\(^{15}\\textrm{N}\\)`}</MathJax>} />
-                    <MenuItem onClick={() => addChannel(CHANNEL_2H)} text={<MathJax>{`\\(^{2}\\textrm{H}\\)`}</MathJax>} />
-                    <MenuItem onClick={() => addChannel(CHANNEL_31P)} text={<MathJax>{`\\(^{31}\\textrm{P}\\)`}</MathJax>} />
-                    <MenuItem onClick={() => addChannel(CHANNEL_29Si)} text={<MathJax>{`\\(^{29}\\textrm{Si}\\)`}</MathJax>} />
-                    <MenuItem onClick={() => addChannel(CHANNEL_11B)} text={<MathJax>{`\\(^{11}\\textrm{B}\\)`}</MathJax>} />
-                    <MenuItem onClick={() => addChannel(CHANNEL_27Al)} text={<MathJax>{`\\(^{27}\\textrm{Al}\\)`}</MathJax>} />
-                </Menu>
-            }>
-                <Button size="small" style={{ width: "36px" }}>...</Button>
-            </Popover>
-        </ButtonGroup>
+            <ButtonGroup variant="outlined">
+                <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_13C)}>
+                    <MathJax>{`\\(^{13}\\textrm{C}\\)`}</MathJax>
+                </Button>
+                <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_1H)}>
+                    <MathJax>{`\\(^{1}\\textrm{H}\\)`}</MathJax>
+                </Button>
+                <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_19F)}>
+                    <MathJax>{`\\(^{19}\\textrm{F}\\)`}</MathJax>
+                </Button>
+                <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_Gz)}>
+                    <MathJax>{`\\(\\textrm{G}_z\\)`}</MathJax>
+                </Button>
+                <Popover minimal position={"bottom-right"} content={
+                    <Menu size="small" style={{ minWidth: "0px", width: "fit-content" }}>
+                        <MenuItem onClick={() => addChannel(CHANNEL_15N)} text={<MathJax>{`\\(^{15}\\textrm{N}\\)`}</MathJax>} />
+                        <MenuItem onClick={() => addChannel(CHANNEL_2H)} text={<MathJax>{`\\(^{2}\\textrm{H}\\)`}</MathJax>} />
+                        <MenuItem onClick={() => addChannel(CHANNEL_31P)} text={<MathJax>{`\\(^{31}\\textrm{P}\\)`}</MathJax>} />
+                        <MenuItem onClick={() => addChannel(CHANNEL_29Si)} text={<MathJax>{`\\(^{29}\\textrm{Si}\\)`}</MathJax>} />
+                        <MenuItem onClick={() => addChannel(CHANNEL_11B)} text={<MathJax>{`\\(^{11}\\textrm{B}\\)`}</MathJax>} />
+                        <MenuItem onClick={() => addChannel(CHANNEL_27Al)} text={<MathJax>{`\\(^{27}\\textrm{Al}\\)`}</MathJax>} />
+                    </Menu>
+                }>
+                    <Button variant="outlined" size="small" style={{ width: "36px" }}>...</Button>
+                </Popover>
+            </ButtonGroup>
         </div>
     );
 });

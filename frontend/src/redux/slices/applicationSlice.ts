@@ -13,6 +13,7 @@ export const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
     // Types
     svg: false,
     text: false,
+    latex: false,
     rect: false,
     space: false,
     line: false,

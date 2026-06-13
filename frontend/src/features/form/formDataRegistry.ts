@@ -6,12 +6,13 @@ import { DEFAULT_LABEL } from "../../logic/default/label";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
 import { DEFAULT_180H } from "../../logic/default/simplePulse/180pulse";
 import { DEFAULT_180S } from "../../logic/default/svgPulse/180Soft";
-import { DEFAULT_TEXT } from "../../logic/default/text";
+import { DEFAULT_TEXT } from "../../logic/default/latex";
 import { ILabel } from "../../logic/hasComponents/label";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
 import { ISpace } from "../../logic/space";
 import { IText } from "../../logic/text";
+import { ILaTeX } from "../../logic/latex";
 import { IVisual } from "../../logic/visual";
 import ArrowForm from "./ArrowForm";
 import ChannelForm from "./ChannelForm";
@@ -51,7 +52,12 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	},
 	"text": {
 		form: TextForm,
-		defaults: defaultText as IText,
+		defaults: defaultText as any,
+		allowLabels: false
+	},
+	"latex": {
+		form: TextForm,
+		defaults: defaultText as any,
 		allowLabels: false
 	},
 	"space": {
@@ -95,7 +101,7 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		allowLabels: false,
 		roles: {
 			"label": {
-				displayName: "Label", elementType: "text",
+				displayName: "Label", elementType: "latex",
 				mandatory: true,
 				defaultValues: DEFAULT_CHANNEL_TEXT
 			},

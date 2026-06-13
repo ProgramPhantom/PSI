@@ -4,7 +4,7 @@ import Grid, { Elements, Ghost, GridCell, IGrid, ISubgrid, Subgrid } from "../gr
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
 import RectElement from "../rectElement";
 import { Dimensions, IGridConfig, IPulseConfig, isPulse, ISubgridConfig, Orientation, SiteNames, Size } from "../spacial";
-import Text from "../text";
+import { LaTeX } from "../latex";
 import Visual, { GridCellElement } from "../visual";
 
 
@@ -51,8 +51,8 @@ export default class Channel extends Subgrid implements IChannel {
 		return this.children.filter((v) => isPulse(v))
 	}
 
-	get label(): GridCellElement<Text> | undefined {
-		let label: GridCellElement<Text> | undefined = this.roles["label"].object as GridCellElement<Text> | undefined;
+	get label(): GridCellElement<LaTeX> | undefined {
+		let label: GridCellElement<LaTeX> | undefined = this.roles["label"].object as GridCellElement<LaTeX> | undefined;
 		return label
 	}
 	get bar(): GridCellElement<RectElement> | undefined {

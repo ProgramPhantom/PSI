@@ -1,6 +1,6 @@
 import { ILabelGroup } from "../hasComponents/labelGroup"
 import { IRectElement } from "../rectElement"
-import { IText } from "../text"
+import { ILaTeX } from "../latex"
 import { DEFAULT_LABEL } from "./label"
 
 export const DISPSI2: ILabelGroup = {
@@ -49,10 +49,10 @@ export const DISPSI2: ILabelGroup = {
                 "display": "block"
             },
             "ref": "label-text",
-            "type": "text",
+            "type": "latex",
 
             "role": "labelCentre"
-        } as IText
+        } as ILaTeX
     ],
 
     "ref": "DIPSI2",

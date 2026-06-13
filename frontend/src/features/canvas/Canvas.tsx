@@ -1,17 +1,14 @@
 import {
 	Button, Colors, EditableText
 } from "@blueprintjs/core";
-import React, { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
-import { IToolConfig, Tool } from "../../app/App";
+import { IToolConfig } from "../../app/App";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
-import { defaultText } from "../../logic/default/index";
-import { ClearIDs } from "../../logic/collection";
-import { CanvasToolToolbar } from "./CanvasToolToolbar";
 import { setSaveState } from "../../redux/slices/diagramSlice";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
 import Toolbar from "../banner/Toolbar";
@@ -23,10 +20,11 @@ import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
 import GridDropField from "../dnd/GridDropField";
 import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import QuietUploadArea from "../QuietUploadArea";
+import { CanvasTextInput } from "./CanvasTextInput";
+import { CanvasToolToolbar } from "./CanvasToolToolbar";
+import { ChannelAddToolbar } from "./ChannelAddToolbar";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
-import { ChannelAddToolbar } from "./ChannelAddToolbar";
-import { CanvasTextInput } from "./CanvasTextInput";
 
 
 export interface ISelectConfig extends IToolConfig { }

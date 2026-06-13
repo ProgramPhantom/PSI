@@ -2,7 +2,7 @@ import { IChannel } from "../../hasComponents/channel";
 import { DEFAULT_BAR } from "../bar";
 import { DEFAULT_CHANNEL_TEXT } from "../defaultChannelLabel";
 import { DEFAULT_CHANNEL } from "../channel";
-import { IText } from "../../text";
+import { ILaTeX } from "../../latex";
 
 export const CHANNEL_1H: IChannel = {
 	...DEFAULT_CHANNEL,
@@ -11,7 +11,7 @@ export const CHANNEL_1H: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{1}\\textrm{H}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -23,7 +23,7 @@ export const CHANNEL_19F: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{19}\\textrm{F}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -35,7 +35,7 @@ export const CHANNEL_Gz: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "\\textrm{G}_\\textrm{z}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -47,7 +47,7 @@ export const CHANNEL_13C: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{13}\\textrm{C}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -59,7 +59,7 @@ export const CHANNEL_15N: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{15}\\textrm{N}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -71,7 +71,7 @@ export const CHANNEL_2H: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{2}\\textrm{H}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -83,7 +83,7 @@ export const CHANNEL_31P: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{31}\\textrm{P}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -95,7 +95,7 @@ export const CHANNEL_29Si: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{29}\\textrm{Si}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -107,7 +107,7 @@ export const CHANNEL_11B: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{11}\\textrm{B}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };
@@ -119,7 +119,7 @@ export const CHANNEL_27Al: IChannel = {
 		{
 			...DEFAULT_CHANNEL_TEXT,
 			text: "^{27}\\textrm{Al}"
-		} as IText,
+		} as ILaTeX,
 		DEFAULT_BAR
 	]
 };

@@ -1,5 +1,5 @@
 import { ILabel } from "../hasComponents/label";
-import { IText } from "../text";
+import { ILaTeX } from "../latex";
 import { DEFAULT_LINE } from "./line";
 
 export const DEFAULT_LABEL: ILabel = {
@@ -30,9 +30,9 @@ export const DEFAULT_LABEL: ILabel = {
 				"display": "block"
 			},
 			"ref": "label-text",
-			"type": "text",
+			"type": "latex",
 			"role": "text"
-		} as IText,
+		} as ILaTeX,
 		{
 			...DEFAULT_LINE,
 			"role": "line"

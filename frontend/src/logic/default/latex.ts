@@ -1,6 +1,6 @@
-import { IText } from "../text"
+import { ILaTeX } from "../latex"
 
-export const DEFAULT_TEXT: IText = {
+export const DEFAULT_TEXT: ILaTeX = {
 	"ref": "default-text",
 	"contentWidth": 10,
 	"contentHeight": 10,
@@ -16,5 +16,5 @@ export const DEFAULT_TEXT: IText = {
 	},
 
 	"sizeMode": { x: "fit", y: "fit" },
-	"type": "text"
+	"type": "latex"
 }

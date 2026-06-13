@@ -14,7 +14,8 @@ import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAlign
 import { AllComponentTypes, ID } from "./point";
 import RectElement, { IRectElement } from "./rectElement";
 import SVGElement, { ISVGElement } from "./svgElement";
-import Text, { IText } from "./text";
+import { LaTeX, ILaTeX } from "./latex";
+import { Text, IText } from "./text";
 import Visual, { GridCellElement, IVisual } from "./visual";
 import Line, { ILine } from "./line";
 
@@ -172,8 +173,9 @@ class ENGINE {
 			case "channel":
 				element = new Channel(parameters as IChannel);
 				break;
+			case "latex":
 			case "text":
-				element = new Text(parameters as IText);
+				element = new LaTeX(parameters as ILaTeX);
 				break;
 			case "diagram":
 				element = new Diagram(parameters as IDiagram);
