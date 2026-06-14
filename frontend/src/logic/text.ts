@@ -9,6 +9,7 @@ export interface IText extends ITextBase {
 
 export class Text extends TextBase implements IText {
 	static ElementType: UserComponentType = "text";
+	static descentPadding: number = 0.2;
 	fontFamily: string;
 	ascent: number = 0;
 	descent: number = 0;
@@ -54,7 +55,7 @@ export class Text extends TextBase implements IText {
 		const metrics = ctx.measureText(this.text);
 
 		const ascent = metrics.actualBoundingBoxAscent !== undefined ? metrics.actualBoundingBoxAscent : (this.style.fontSize * 0.85);
-		const descent = metrics.actualBoundingBoxDescent !== undefined ? metrics.actualBoundingBoxDescent : (this.style.fontSize * 0.15);
+		const descent = (metrics.actualBoundingBoxDescent !== undefined ? metrics.actualBoundingBoxDescent : (this.style.fontSize * 0.15)) + Text.descentPadding;
 		const width = metrics.width || 1;
 		const height = ascent + descent || this.style.fontSize || 12;
 
