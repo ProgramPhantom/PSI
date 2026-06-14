@@ -5,6 +5,7 @@ import ENGINE from "../../logic/engine";
 import { CHANNEL_13C, CHANNEL_19F, CHANNEL_1H, CHANNEL_Gz, CHANNEL_15N, CHANNEL_2H, CHANNEL_31P, CHANNEL_29Si, CHANNEL_11B, CHANNEL_27Al } from "../../logic/default/channels";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
+import styles from "./styles/toolbars.module.scss";
 
 export const ChannelAddToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
@@ -43,7 +44,7 @@ export const ChannelAddToolbar: React.FC = React.memo(() => {
             onClick={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="frosted-toolbar"
+            className={styles["frosted-toolbar"]}
         >
             <ButtonGroup>
                 <Button variant="minimal" size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_13C)}>

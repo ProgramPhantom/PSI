@@ -17,7 +17,8 @@
 
 
         // Custom compact sizing for vertical buttons to fit well
-        .bp5-button {
+        // Custom compact sizing for vertical buttons to fit well
+        :global(.bp5-button) {
             width: 24px;
             height: 24px;
             padding: 0;
@@ -50,7 +51,7 @@
     }
 
     // Adjust EditableText alignment inside zoom-indicator
-    .bp5-editable-text {
+    :global(.bp5-editable-text) {
         vertical-align: middle;
         text-align: center;
     }

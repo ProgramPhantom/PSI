@@ -25,6 +25,7 @@ import { CanvasToolToolbar } from "./CanvasToolToolbar";
 import { ChannelAddToolbar } from "./ChannelAddToolbar";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
+import styles from "./styles/toolbars.module.scss"
 
 
 export interface ISelectConfig extends IToolConfig { }
@@ -343,7 +344,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								zIndex: 10,
 							}}>
 							<div
-								className="frosted-toolbar vertical"
+								className={`${styles["frosted-toolbar"]} ${styles.vertical}`}
 								onClick={(e) => e.stopPropagation()}
 								onMouseUp={(e) => e.stopPropagation()}
 								onMouseDown={(e) => e.stopPropagation()}
@@ -360,7 +361,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 									title="Toggle Diagram Boundary"
 									icon="selection-box"
 								/>
-								<div className="zoom-indicator">
+								<div className={styles["zoom-indicator"]}>
 									<EditableText minWidth={18}
 										value={zoomString}
 
@@ -369,7 +370,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 										onEdit={() => setIsZoomEditing(true)}
 										selectAllOnFocus={true}
 									/>
-									<span className="zoom-suffix">x</span>
+									<span className={styles["zoom-suffix"]}>x</span>
 								</div>
 							</div>
 						</div>

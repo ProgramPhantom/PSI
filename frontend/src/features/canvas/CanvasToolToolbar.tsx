@@ -3,6 +3,7 @@ import React from "react";
 import { defaultLine } from "../../logic/default/index";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { setSelectedTool, CanvasToolType } from "../../redux/slices/applicationSlice";
+import styles from "./styles/toolbars.module.scss";
 
 export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
@@ -75,7 +76,7 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
             onClick={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="frosted-toolbar"
+            className={styles["frosted-toolbar"]}
         >
             <Tooltip hoverOpenDelay={2000} content="Select Tool" position={Position.TOP}>
                 <Button
