@@ -24,7 +24,7 @@ export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(function El
 
 	return (
 		<div style={{
-			display: "inline-block", 
+			display: "block",
 			zIndex: 15000,
 			position: "relative",
 			width: props.element.width,
