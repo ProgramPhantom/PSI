@@ -10,6 +10,8 @@ export interface IText extends ITextBase {
 export class Text extends TextBase implements IText {
 	static ElementType: UserComponentType = "text";
 	fontFamily: string;
+	ascent: number = 0;
+	descent: number = 0;
 
 	get state(): IText {
 		return {
@@ -35,50 +37,52 @@ export class Text extends TextBase implements IText {
 
 	resolveDimensions(): { width: number; height: number } {
 		if (typeof document === "undefined") {
+			this.ascent = this.style.fontSize;
+			this.descent = 0;
 			return { width: 10, height: this.style.fontSize };
 		}
 
-		const svgNamespace = "http://www.w3.org/2000/svg";
-		const tempSvg = document.createElementNS(svgNamespace, "svg");
-		tempSvg.style.position = "absolute";
-		tempSvg.style.visibility = "hidden";
-		tempSvg.style.pointerEvents = "none";
-		tempSvg.style.left = "-9999px";
-		tempSvg.style.top = "-9999px";
+		const canvas = document.createElement("canvas");
+		const ctx = canvas.getContext("2d");
+		if (!ctx) {
+			this.ascent = this.style.fontSize;
+			this.descent = 0;
+			return { width: 10, height: this.style.fontSize };
+		}
 
-		const tempText = document.createElementNS(svgNamespace, "text");
-		tempText.setAttribute("font-family", this.fontFamily);
-		tempText.setAttribute("font-size", `${this.style.fontSize}px`);
-		tempText.textContent = this.text;
+		ctx.font = `${this.style.fontSize}px ${this.fontFamily}`;
+		const metrics = ctx.measureText(this.text);
 
-		tempSvg.appendChild(tempText);
-		document.body.appendChild(tempSvg);
-		const bbox = tempText.getBBox();
-		document.body.removeChild(tempSvg);
+		const ascent = metrics.actualBoundingBoxAscent !== undefined ? metrics.actualBoundingBoxAscent : (this.style.fontSize * 0.85);
+		const descent = metrics.actualBoundingBoxDescent !== undefined ? metrics.actualBoundingBoxDescent : (this.style.fontSize * 0.15);
+		const width = metrics.width || 1;
+		const height = ascent + descent || this.style.fontSize || 12;
+
+		this.ascent = ascent;
+		this.descent = descent;
 
 		return {
-			width: bbox.width || 1,
-			height: bbox.height || this.style.fontSize || 12
+			width,
+			height
 		};
 	}
 
 	constructSVG(): void {
 		const svgNamespace = "http://www.w3.org/2000/svg";
 		const crudeSvg = SVG(document.createElementNS(svgNamespace, "svg")) as SVGElement;
-		
+
 		const textElement = SVG(document.createElementNS(svgNamespace, "text")) as SVGElement;
 		textElement.attr({
 			"font-family": this.fontFamily,
 			"font-size": `${this.style.fontSize}px`,
 			"fill": this.style.colour,
-			"dominant-baseline": "hanging",
 			"x": 0,
-			"y": 0
+			"y": this.ascent
 		});
 		textElement.node.textContent = this.text;
 
 		const group = SVG(document.createElementNS(svgNamespace, "g")) as SVGElement;
-		
+
 		if (this.style.background) {
 			const bgRect = SVG(document.createElementNS(svgNamespace, "rect")) as SVGElement;
 			bgRect.attr({
@@ -88,15 +92,15 @@ export class Text extends TextBase implements IText {
 			});
 			group.add(bgRect);
 		}
-		
+
 		group.add(textElement);
 		crudeSvg.add(group);
 
 		this.svg = crudeSvg;
-		this.svg.attr({ 
+		this.svg.attr({
 			width: this.contentWidth,
 			height: this.contentHeight,
-			preserveAspectRatio: "xMinYMin" 
+			preserveAspectRatio: "xMinYMin"
 		});
 
 		cascadeID(this.svg, this.id);
