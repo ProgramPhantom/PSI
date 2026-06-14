@@ -15,10 +15,12 @@ import ArrowForm from "./ArrowForm";
 import ChannelForm from "./ChannelForm";
 import { GridForm } from "./GridForm";
 import LabelForm from "./LabelForm";
+import LaTeXForm from "./LaTeXForm";
 import RectElementForm from "./RectForm";
 import SVGElementForm from "./SVGElementForm";
 import TextForm from "./TextForm";
 import VisualForm from "./VisualForm";
+
 
 
 export interface RoleSchema {
@@ -53,7 +55,7 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		allowLabels: false
 	},
 	"latex": {
-		form: TextForm,
+		form: LaTeXForm,
 		defaults: defaultLaTeX as ILaTeX,
 		allowLabels: false
 	},

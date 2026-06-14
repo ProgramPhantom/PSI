@@ -2,7 +2,7 @@ import { Button, ControlGroup, HTMLSelect, Section } from "@blueprintjs/core";
 import { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import ArrowForm from "./ArrowForm";
-import TextForm from "./TextForm";
+import LaTeXForm from "./LaTeXForm";
 import { FormRequirements } from "./FormBase";
 import { ILaTeX } from "../../logic/latex";
 import { ILine } from "../../logic/line";
@@ -111,7 +111,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 						}}></Button>
 				}>
 
-				{textPrefix && <TextForm prefix={textPrefix}></TextForm>}
+				{textPrefix && <LaTeXForm prefix={textPrefix}></LaTeXForm>}
 
 			</Section>
 
