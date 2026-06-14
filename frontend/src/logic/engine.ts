@@ -174,8 +174,10 @@ class ENGINE {
 				element = new Channel(parameters as IChannel);
 				break;
 			case "latex":
-			case "text":
 				element = new LaTeX(parameters as ILaTeX);
+				break;
+			case "text":
+				element = new Text(parameters as IText);
 				break;
 			case "diagram":
 				element = new Diagram(parameters as IDiagram);

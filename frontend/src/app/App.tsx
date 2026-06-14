@@ -144,7 +144,7 @@ function App() {
 							style={{
 								height: "100%",
 								position: "relative",
-								cursor: selectedTool.type === "select" ? "default" : selectedTool.type === "text" ? "text" : "crosshair"
+								cursor: selectedTool.type === "select" ? "default" : (selectedTool.type === "text" || selectedTool.type === "latex") ? "text" : "crosshair"
 							}}>
 							{canvas}
 						</div>

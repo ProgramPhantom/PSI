@@ -161,6 +161,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		onMouseUp?: (e: React.MouseEvent<HTMLDivElement>, coords: { x: number; y: number }) => void;
 	} => {
 		switch (toolType) {
+			case "latex":
 			case "text":
 				return {
 					cursor: "text",

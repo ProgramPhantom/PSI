@@ -1,18 +1,15 @@
 
 import { DEFAULT_BAR } from "../../logic/default/bar";
 import { DEFAULT_CHANNEL_TEXT } from "../../logic/default/defaultChannelLabel";
-import { defaultChannel, defaultDiagram, defaultLabel, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
-import { DEFAULT_LABEL } from "../../logic/default/label";
+import { defaultChannel, defaultDiagram, defaultLabel, defaultLaTeX, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
-import { DEFAULT_180H } from "../../logic/default/simplePulse/180pulse";
 import { DEFAULT_180S } from "../../logic/default/svgPulse/180Soft";
-import { DEFAULT_TEXT } from "../../logic/default/latex";
 import { ILabel } from "../../logic/hasComponents/label";
+import { ILaTeX } from "../../logic/latex";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
 import { ISpace } from "../../logic/space";
 import { IText } from "../../logic/text";
-import { ILaTeX } from "../../logic/latex";
 import { IVisual } from "../../logic/visual";
 import ArrowForm from "./ArrowForm";
 import ChannelForm from "./ChannelForm";
@@ -52,12 +49,12 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	},
 	"text": {
 		form: TextForm,
-		defaults: defaultText as any,
+		defaults: defaultText as IText,
 		allowLabels: false
 	},
 	"latex": {
 		form: TextForm,
-		defaults: defaultText as any,
+		defaults: defaultLaTeX as ILaTeX,
 		allowLabels: false
 	},
 	"space": {

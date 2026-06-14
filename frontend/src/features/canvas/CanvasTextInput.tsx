@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { InputGroup } from "@blueprintjs/core";
 import ENGINE from "../../logic/engine";
-import { defaultText } from "../../logic/default/index";
+import { defaultText, defaultLaTeX } from "../../logic/default/index";
 import { ClearIDs } from "../../logic/collection";
-import { useAppDispatch } from "../../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
 
 interface CanvasTextInputProps {
@@ -20,6 +20,7 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 	initialValue = ""
 }) => {
 	const dispatch = useAppDispatch();
+	const selectedTool = useAppSelector((state) => state.application.selectedTool);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const committed = useRef(false);
 
@@ -34,7 +35,15 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 		committed.current = true;
 		const text = inputRef.current?.value.trim() ?? "";
 		if (text) {
-			const newText = structuredClone(defaultText);
+			let newText;
+			if (selectedTool.type === "text") {
+				newText = structuredClone(defaultText);
+				newText.type = "text";
+				newText.fontFamily = selectedTool.config?.fontFamily ?? "sans-serif";
+			} else {
+				newText = structuredClone(defaultLaTeX);
+				newText.type = "latex";
+			}
 			ClearIDs(newText);
 			newText.id = Math.random().toString(16).slice(2);
 			newText.x = x;

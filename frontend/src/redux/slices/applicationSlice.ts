@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { AllComponentTypes } from '../../logic/point';
 
-export type CanvasToolType = 'select' | 'text' | 'box' | 'arrow';
+export type CanvasToolType = 'select' | 'text' | 'latex' | 'box' | 'arrow';
 
 export interface CanvasTool {
     type: CanvasToolType;

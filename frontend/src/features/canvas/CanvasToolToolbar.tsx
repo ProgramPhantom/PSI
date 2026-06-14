@@ -2,17 +2,22 @@ import { Button, ButtonGroup, Position, Tooltip } from "@blueprintjs/core";
 import React from "react";
 import { defaultLine } from "../../logic/default/index";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedTool } from "../../redux/slices/applicationSlice";
+import { setSelectedTool, CanvasToolType } from "../../redux/slices/applicationSlice";
 
 export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
 
-    const selectTool = (toolType: 'select' | 'text' | 'box' | 'arrow') => {
+    const selectTool = (toolType: CanvasToolType) => {
         if (toolType === 'arrow') {
             dispatch(setSelectedTool({
                 type: 'arrow',
                 config: { lineStyle: defaultLine.lineStyle, mode: 'bind' }
+            }));
+        } else if (toolType === 'text') {
+            dispatch(setSelectedTool({
+                type: 'text',
+                config: { fontFamily: 'sans-serif' }
             }));
         } else {
             dispatch(setSelectedTool({
@@ -55,6 +60,15 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                         active={selectedTool.type === 'text'}
                         intent={selectedTool.type === 'text' ? 'primary' : 'none'}
                         onClick={() => selectTool('text')}
+                        variant="minimal"
+                    />
+                </Tooltip>
+                <Tooltip hoverOpenDelay={2000} content="LaTeX Tool" position={Position.TOP}>
+                    <Button
+                        icon="function"
+                        active={selectedTool.type === 'latex'}
+                        intent={selectedTool.type === 'latex' ? 'primary' : 'none'}
+                        onClick={() => selectTool('latex')}
                         variant="minimal"
                     />
                 </Tooltip>
