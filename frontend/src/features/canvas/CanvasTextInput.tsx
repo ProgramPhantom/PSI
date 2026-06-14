@@ -40,6 +40,9 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 				newText = structuredClone(defaultText);
 				newText.type = "text";
 				newText.fontFamily = selectedTool.config?.fontFamily ?? "sans-serif";
+				if (selectedTool.config?.fontSize) {
+					newText.style.fontSize = selectedTool.config.fontSize;
+				}
 			} else {
 				newText = structuredClone(defaultLaTeX);
 				newText.type = "latex";
