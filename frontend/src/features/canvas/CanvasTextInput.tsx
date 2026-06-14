@@ -46,6 +46,9 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 			} else {
 				newText = structuredClone(defaultLaTeX);
 				newText.type = "latex";
+				if (selectedTool.config?.fontSize) {
+					newText.style.fontSize = selectedTool.config.fontSize;
+				}
 			}
 			ClearIDs(newText);
 			newText.id = Math.random().toString(16).slice(2);

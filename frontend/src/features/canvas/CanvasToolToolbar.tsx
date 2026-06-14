@@ -8,6 +8,7 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
     const textToolConfig = React.useRef({ fontFamily: 'sans-serif', fontSize: 20 });
+    const latexToolConfig = React.useRef({ fontSize: 35 });
 
     const selectedFont = selectedTool.type === 'text'
         ? (selectedTool.config?.fontFamily ?? 'sans-serif')
@@ -16,6 +17,10 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
     const selectedFontSize = selectedTool.type === 'text'
         ? (selectedTool.config?.fontSize ?? 20)
         : textToolConfig.current.fontSize;
+
+    const selectedLaTeXFontSize = selectedTool.type === 'latex'
+        ? (selectedTool.config?.fontSize ?? 35)
+        : latexToolConfig.current.fontSize;
 
     const handleFontSelect = (fontFamily: string) => {
         textToolConfig.current = { ...textToolConfig.current, fontFamily };
@@ -33,6 +38,14 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
         }));
     };
 
+    const handleLaTeXFontSizeSelect = (fontSize: number) => {
+        latexToolConfig.current = { fontSize };
+        dispatch(setSelectedTool({
+            type: 'latex',
+            config: { fontSize }
+        }));
+    };
+
     const selectTool = (toolType: CanvasToolType) => {
         if (toolType === 'arrow') {
             dispatch(setSelectedTool({
@@ -43,6 +56,11 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
             dispatch(setSelectedTool({
                 type: 'text',
                 config: textToolConfig.current
+            }));
+        } else if (toolType === 'latex') {
+            dispatch(setSelectedTool({
+                type: 'latex',
+                config: latexToolConfig.current
             }));
         } else {
             dispatch(setSelectedTool({
@@ -181,15 +199,64 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                 </Popover>
             </ButtonGroup>
 
-            <Tooltip hoverOpenDelay={2000} content="LaTeX Tool" position={Position.TOP}>
-                <Button
-                    icon="function"
-                    active={selectedTool.type === 'latex'}
-                    intent={selectedTool.type === 'latex' ? 'primary' : 'none'}
-                    onClick={() => selectTool('latex')}
-                    variant="minimal"
-                />
-            </Tooltip>
+            <ButtonGroup>
+                <Tooltip hoverOpenDelay={2000} content="LaTeX Tool" position={Position.TOP}>
+                    <Button
+                        icon="function"
+                        active={selectedTool.type === 'latex'}
+                        intent={selectedTool.type === 'latex' ? 'primary' : 'none'}
+                        onClick={() => selectTool('latex')}
+                        variant="minimal"
+                    />
+                </Tooltip>
+                <Popover
+                    content={
+                        <Menu style={{ minWidth: 110 }}>
+                            <MenuDivider title="Font Size" />
+                            <MenuItem
+                                text="XS (15)"
+                                active={selectedLaTeXFontSize === 15}
+                                onClick={() => handleLaTeXFontSizeSelect(15)}
+                            />
+                            <MenuItem
+                                text="S (25)"
+                                active={selectedLaTeXFontSize === 25}
+                                onClick={() => handleLaTeXFontSizeSelect(25)}
+                            />
+                            <MenuItem
+                                text="M (35)"
+                                active={selectedLaTeXFontSize === 35}
+                                onClick={() => handleLaTeXFontSizeSelect(35)}
+                            />
+                            <MenuItem
+                                text="L (45)"
+                                active={selectedLaTeXFontSize === 45}
+                                onClick={() => handleLaTeXFontSizeSelect(45)}
+                            />
+                            <MenuItem
+                                text="XL (55)"
+                                active={selectedLaTeXFontSize === 55}
+                                onClick={() => handleLaTeXFontSizeSelect(55)}
+                            />
+                            <MenuItem
+                                text="XXL (70)"
+                                active={selectedLaTeXFontSize === 70}
+                                onClick={() => handleLaTeXFontSizeSelect(70)}
+                            />
+                        </Menu>
+                    }
+                    position="top"
+                    minimal={true}
+                >
+                    <Button
+                        icon="caret-up"
+                        active={selectedTool.type === 'latex'}
+                        intent={selectedTool.type === 'latex' ? 'primary' : 'none'}
+                        variant="minimal"
+                        style={{ minWidth: "16px", padding: 0 }}
+                    />
+                </Popover>
+            </ButtonGroup>
 
             <Tooltip hoverOpenDelay={2000} content="Box Tool" position={Position.TOP}>
                 <Button
