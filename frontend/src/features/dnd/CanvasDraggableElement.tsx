@@ -199,7 +199,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 				<div key={dragElementType}
 					className="nopan"
 					style={{
-						zIndex: 20,
+						zIndex: 30000,
 						opacity: isDragging ? 0 : 1,
 						position: "absolute",
 						left: props.element.drawX,
