@@ -341,47 +341,36 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								top: "6px",
 								left: "6px",
 								zIndex: 10,
-								display: "flex",
-								flexDirection: "column",
-								alignItems: "normal",
-								gap: "6px"
 							}}>
-							<Button size="small" variant="outlined" style={{ width: "16px" }}
-								icon="target"
-								onClick={() => transformComponentRef.current?.centerView()}
-							/>
-							<Button
-								size="small"
-								variant="outlined"
-								active={showDiagramBoundary}
-								style={{ width: "16px" }}
-								onClick={() => setShowDiagramBoundary(!showDiagramBoundary)}
-								title="Toggle Diagram Boundary"
-								icon="selection-box"
-							>
-							</Button>
 							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									background: "white",
-									padding: "1px 4px",
-
-									boxShadow: "0 1px 1px rgba(16, 22, 26, 0.1)",
-									fontSize: "10px",
-									fontWeight: "bold",
-									color: "#182026",
-									cursor: "text",
-									width: "32px"
-								}}>
-								<EditableText minWidth={16}
-									value={zoomString}
-									onChange={(val) => setZoomString(val)}
-									onConfirm={onConfirmZoomEntry}
-									onEdit={() => setIsZoomEditing(true)}
-									selectAllOnFocus={true}
+								className="frosted-toolbar vertical"
+								onClick={(e) => e.stopPropagation()}
+								onMouseUp={(e) => e.stopPropagation()}
+								onMouseDown={(e) => e.stopPropagation()}
+							>
+								<Button size="small" variant="minimal"
+									icon="target"
+									onClick={() => transformComponentRef.current?.centerView()}
 								/>
-								<span style={{ marginLeft: "1px", color: "#5c7080", pointerEvents: "none" }}>x</span>
+								<Button
+									size="small"
+									variant="minimal"
+									active={showDiagramBoundary}
+									onClick={() => setShowDiagramBoundary(!showDiagramBoundary)}
+									title="Toggle Diagram Boundary"
+									icon="selection-box"
+								/>
+								<div className="zoom-indicator">
+									<EditableText minWidth={18}
+										value={zoomString}
+
+										onChange={(val) => setZoomString(val)}
+										onConfirm={onConfirmZoomEntry}
+										onEdit={() => setIsZoomEditing(true)}
+										selectAllOnFocus={true}
+									/>
+									<span className="zoom-suffix">x</span>
+								</div>
 							</div>
 						</div>
 

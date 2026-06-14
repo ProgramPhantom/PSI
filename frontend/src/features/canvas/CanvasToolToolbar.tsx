@@ -75,18 +75,7 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
             onClick={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            style={{
-                background: "rgba(255, 255, 255, 0.85)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                padding: "4px",
-                borderRadius: "6px",
-                boxShadow: "0 6px 20px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05)",
-                border: "1px solid rgba(200, 200, 200, 0.3)",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px"
-            }}
+            className="frosted-toolbar"
         >
             <Tooltip hoverOpenDelay={2000} content="Select Tool" position={Position.TOP}>
                 <Button

@@ -43,18 +43,19 @@ export const ChannelAddToolbar: React.FC = React.memo(() => {
             onClick={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
+            className="frosted-toolbar"
         >
-            <ButtonGroup variant="outlined">
-                <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_13C)}>
+            <ButtonGroup>
+                <Button variant="minimal" size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_13C)}>
                     <MathJax>{`\\(^{13}\\textrm{C}\\)`}</MathJax>
                 </Button>
-                <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_1H)}>
+                <Button variant="minimal" size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_1H)}>
                     <MathJax>{`\\(^{1}\\textrm{H}\\)`}</MathJax>
                 </Button>
-                <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_19F)}>
+                <Button variant="minimal" size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_19F)}>
                     <MathJax>{`\\(^{19}\\textrm{F}\\)`}</MathJax>
                 </Button>
-                <Button size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_Gz)}>
+                <Button variant="minimal" size="small" style={{ width: "36px" }} onClick={() => addChannel(CHANNEL_Gz)}>
                     <MathJax>{`\\(\\textrm{G}_z\\)`}</MathJax>
                 </Button>
                 <Popover minimal position={"bottom-right"} content={
@@ -67,7 +68,7 @@ export const ChannelAddToolbar: React.FC = React.memo(() => {
                         <MenuItem onClick={() => addChannel(CHANNEL_27Al)} text={<MathJax>{`\\(^{27}\\textrm{Al}\\)`}</MathJax>} />
                     </Menu>
                 }>
-                    <Button variant="outlined" size="small" style={{ width: "36px" }}>...</Button>
+                    <Button variant="minimal" size="small" style={{ width: "36px" }}>...</Button>
                 </Popover>
             </ButtonGroup>
         </div>
