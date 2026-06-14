@@ -11,6 +11,7 @@ import { MathJaxContext } from "better-react-mathjax";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import "../styles/scrollbar.scss";
+import "../styles/blueprint-overrides.scss";
 
 import { AppShortcuts } from "./AppShortcuts.tsx";
 

@@ -249,7 +249,7 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
             </ButtonGroup>
 
             <Tooltip hoverOpenDelay={2000} content="Box Tool" position={Position.TOP}>
-                <Button
+                <Button disabled
                     icon="square"
                     active={selectedTool.type === 'box'}
                     intent={selectedTool.type === 'box' ? 'primary' : 'none'}
@@ -259,7 +259,7 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
             </Tooltip>
 
             <Tooltip hoverOpenDelay={2000} content="Arrow Tool" position={Position.TOP}>
-                <Button
+                <Button disabled
                     icon="arrow-top-right"
                     active={selectedTool.type === 'arrow'}
                     intent={selectedTool.type === 'arrow' ? 'primary' : 'none'}
