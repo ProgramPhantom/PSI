@@ -387,13 +387,7 @@ export default class DiagramHandler implements IDraw {
 			parentId: child.parentId ?? ""
 		})
 
-
-		if (child.svg) {
-			child.svg.remove();
-		}
-		if (child.maskBlock) {
-			child.maskBlock.remove();
-		}
+		child.erase();
 
 		if (editResult.ok === false) {
 			return editResult
@@ -452,6 +446,8 @@ export default class DiagramHandler implements IDraw {
 			"parentId": target.parentId ?? ""
 		})
 		if (deleteResult.ok === false) { return deleteResult }
+
+		target.erase();
 
 		let addResult: Result<Visual> = this.editDiagram({
 			"type": "add",
