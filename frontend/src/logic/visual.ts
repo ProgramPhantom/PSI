@@ -112,6 +112,10 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 
 	erase(): void {
 		this.svg?.remove();
+		if (this.maskBlock) {
+			this.maskBlock.remove();
+			this.maskBlock = undefined;
+		}
 	}
 
 	public computeSize(): Size {

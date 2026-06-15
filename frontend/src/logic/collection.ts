@@ -256,6 +256,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 				c.erase();
 			}
 		});
+		super.erase();
 	}
 	//#endregion
 	// --------------------------------------------------
