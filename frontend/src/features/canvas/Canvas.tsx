@@ -227,7 +227,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	};
 
 	const handleDoubleClickElement = (element: Visual) => {
-		if (element.type === "text") {
+		if (element.type === "text" || element.type === "latex") {
 			setEditingElementId(element.id);
 			setTextInputPending({
 				x: element.drawCX,
