@@ -18,6 +18,7 @@ import { DEFAULT_LATEX } from "./latex";
 import { DEFAULT_TEXT } from "./text";
 import { SchemeDict } from "../../types/schemes";
 import { DISPSI2 } from "./DIPSI2";
+import { DEFAULT_SIMPLE_LABEL_GROUP } from "./simpleLabelGroup";
 
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
@@ -46,7 +47,8 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"73ea4ef5-bcca-47e0-bb4c-70488cf7b66e": DEFAULT_180H,
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7759": DEFAULT_SUBSEQUENCE,
 
-				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DISPSI2
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DISPSI2,
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7754": DEFAULT_SIMPLE_LABEL_GROUP
 			}
 		}
 	}

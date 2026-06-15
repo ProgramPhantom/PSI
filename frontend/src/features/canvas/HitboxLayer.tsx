@@ -18,10 +18,10 @@ interface IFocusRules {
 }
 
 export const FocusRules: IFocusRules = {
-	alwaysSelectable: ["channel", "svg", "rect", "label-group"],
+	alwaysSelectable: ["channel", "svg", "rect", "label-group", "simple-label-group"],
 	notSelectableIfChildOf: {
-		"svg": ["label-group"],
-		"rect": ["label-group"]
+		"svg": ["label-group", "simple-label-group"],
+		"rect": ["label-group", "simple-label-group"]
 	}
 };
 

@@ -65,6 +65,7 @@ const PulseDebug: React.FC<IPulseDebug> = (props) => {
 			debugElement = <PaddedBoxDebug element={props.element} />;
 			break;
 		case "label-group":
+		case "simple-label-group":
 			debugElement = <GridDebug element={props.element as Grid} />;
 			break;
 		default:
