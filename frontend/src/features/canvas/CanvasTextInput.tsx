@@ -11,13 +11,17 @@ interface CanvasTextInputProps {
 	y: number;
 	onClose: () => void;
 	initialValue?: string;
+	onConfirm?: (value: string) => void;
+	onCancel?: () => void;
 }
 
 export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 	x,
 	y,
 	onClose,
-	initialValue = ""
+	initialValue = "",
+	onConfirm,
+	onCancel
 }) => {
 	const dispatch = useAppDispatch();
 	const selectedTool = useAppSelector((state) => state.application.selectedTool);
@@ -35,42 +39,50 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 		committed.current = true;
 		const text = inputRef.current?.value.trim() ?? "";
 		if (text) {
-			let newText;
-			if (selectedTool.type === "text") {
-				newText = structuredClone(defaultText);
-				newText.type = "text";
-				newText.fontFamily = selectedTool.config?.fontFamily ?? "sans-serif";
-				if (selectedTool.config?.fontSize) {
-					newText.style.fontSize = selectedTool.config.fontSize;
-				}
+			if (onConfirm) {
+				onConfirm(text);
 			} else {
-				newText = structuredClone(defaultLaTeX);
-				newText.type = "latex";
-				if (selectedTool.config?.fontSize) {
-					newText.style.fontSize = selectedTool.config.fontSize;
+				let newText;
+				if (selectedTool.type === "text") {
+					newText = structuredClone(defaultText);
+					newText.type = "text";
+					newText.fontFamily = selectedTool.config?.fontFamily ?? "sans-serif";
+					if (selectedTool.config?.fontSize) {
+						newText.style.fontSize = selectedTool.config.fontSize;
+					}
+				} else {
+					newText = structuredClone(defaultLaTeX);
+					newText.type = "latex";
+					if (selectedTool.config?.fontSize) {
+						newText.style.fontSize = selectedTool.config.fontSize;
+					}
 				}
+				ClearIDs(newText);
+				newText.id = Math.random().toString(16).slice(2);
+				newText.x = x;
+				newText.y = y;
+				newText.text = text;
+				newText.parentId = ENGINE.handler.diagram.id;
+				newText.placementMode = {
+					type: "free"
+				};
+
+				ENGINE.handler.act({
+					type: "add",
+					input: {
+						child: newText
+					}
+				});
+
+				dispatch(setSelectedElementId(newText.id));
+				dispatch(setSelectedTool({ type: "select", config: {} }));
 			}
-			ClearIDs(newText);
-			newText.id = Math.random().toString(16).slice(2);
-			newText.x = x;
-			newText.y = y;
-			newText.text = text;
-			newText.parentId = ENGINE.handler.diagram.id;
-			newText.placementMode = {
-				type: "free"
-			};
-
-			ENGINE.handler.act({
-				type: "add",
-				input: {
-					child: newText
-				}
-			});
-
-			dispatch(setSelectedElementId(newText.id));
-			dispatch(setSelectedTool({ type: "select", config: {} }));
 		} else {
-			dispatch(setSelectedTool({ type: "select", config: {} }));
+			if (onCancel) {
+				onCancel();
+			} else {
+				dispatch(setSelectedTool({ type: "select", config: {} }));
+			}
 		}
 		onClose();
 	};
@@ -78,7 +90,11 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 	const handleCancel = () => {
 		if (committed.current) return;
 		committed.current = true;
-		dispatch(setSelectedTool({ type: "select", config: {} }));
+		if (onCancel) {
+			onCancel();
+		} else {
+			dispatch(setSelectedTool({ type: "select", config: {} }));
+		}
 		onClose();
 	};
 
@@ -93,6 +109,7 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 			handleCancel();
 		}
 	};
+
 
 	return (
 		<div

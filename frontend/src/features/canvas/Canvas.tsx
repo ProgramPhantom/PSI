@@ -89,7 +89,14 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const [zoomString, setZoomString] = useState("2");
 	const [isZoomEditing, setIsZoomEditing] = useState(false);
 	const [showDiagramBoundary, setShowDiagramBoundary] = useState(false);
-	const [textInputPending, setTextInputPending] = useState<{ x: number; y: number } | null>(null);
+	const [textInputPending, setTextInputPending] = useState<{
+		x: number;
+		y: number;
+		initialValue?: string;
+		onConfirm?: (value: string) => void;
+		onCancel?: () => void;
+	} | null>(null);
+	const [editingElementId, setEditingElementId] = useState<string | null>(null);
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
@@ -202,6 +209,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						handleDoubleClick(e);
 					},
 					onMouseUp: (e: React.MouseEvent<HTMLDivElement>) => {
+						if (editingElementId) {
+							return;
+						}
 						if (selectedElement && hoveredElement !== selectedElement) {
 							deselect();
 						}
@@ -210,16 +220,46 @@ const Canvas: React.FC<ICanvasProps> = () => {
 				};
 		}
 	};
-
 	const activeToolBehavior = getToolBehavior(selectedTool.type);
 
 	const handleDiagramDrop = async (file: File) => {
 		dispatch(openDiagram(file));
 	};
 
+	const handleDoubleClickElement = (element: Visual) => {
+		if (element.type === "text") {
+			setEditingElementId(element.id);
+			setTextInputPending({
+				x: element.drawCX,
+				y: element.drawCY,
+				initialValue: (element as any).text || "",
+				onConfirm: (value: string) => {
+					const modifiedState = {
+						...element.state,
+						text: value
+					};
+					ENGINE.handler.act({
+						type: "modify",
+						input: {
+							child: modifiedState,
+							target: element
+						}
+					});
+					setEditingElementId(null);
+				},
+				onCancel: () => {
+					setEditingElementId(null);
+				}
+			});
+			return true;
+		}
+		return false;
+	};
+
 	const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
 		if (rawHoveredElement) {
+			// Drill down logic
 			let path: Visual[] = [];
 			let curr: Visual | undefined = rawHoveredElement;
 			while (curr) {
@@ -233,12 +273,22 @@ const Canvas: React.FC<ICanvasProps> = () => {
 			let currentSelectedId = selectedElementId ?? hoveredElement?.id;
 			let selectedIndex = path.findIndex(el => el.id === currentSelectedId);
 
+			let didDrillDown = false;
 			if (selectedIndex !== -1) {
 				if (selectedIndex + 1 < path.length) {
 					selectVisual(path[selectedIndex + 1]);
+					didDrillDown = true;
 				}
 			} else if (path.length > 1) {
 				selectVisual(path[1]);
+				didDrillDown = true;
+			}
+
+			// If we did not drill down, edit the element (if it is a text element)
+			if (!didDrillDown) {
+				if (handleDoubleClickElement(rawHoveredElement)) {
+					return;
+				}
 			}
 		}
 	};
@@ -274,6 +324,21 @@ const Canvas: React.FC<ICanvasProps> = () => {
 			setZoomString(String(Math.round(zoom * 100) / 100));
 		}
 	}
+
+	useEffect(() => {
+		if (editingElementId) {
+			const el = ENGINE.handler.identifyElement(editingElementId);
+			if (el) {
+				el.svg?.hide();
+			}
+			return () => {
+				const el = ENGINE.handler.identifyElement(editingElementId);
+				if (el) {
+					el.svg?.show();
+				}
+			};
+		}
+	}, [editingElementId]);
 
 	useEffect(() => {
 		if (!isZoomEditing) {
@@ -317,6 +382,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 					onClick={(e) => {
 						if (didDrag(e)) {
 							return;
+						}
+						if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) {
+							document.activeElement.blur();
 						}
 						const coords = getCoordinates(e);
 						if (activeToolBehavior.onClick) {
@@ -473,7 +541,8 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													element={el}
 													visualState={el.id === selectedElement?.id ? "selected" : "hovered"}
 													x={el.x}
-													y={el.y}></CanvasDraggableElement>
+													y={el.y}
+													isHidden={el.id === editingElementId}></CanvasDraggableElement>
 											))}
 
 
@@ -493,6 +562,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 												<CanvasTextInput
 													x={textInputPending.x}
 													y={textInputPending.y}
+													initialValue={textInputPending.initialValue}
+													onConfirm={textInputPending.onConfirm}
+													onCancel={textInputPending.onCancel}
 													onClose={() => setTextInputPending(null)}
 												/>
 											)}
