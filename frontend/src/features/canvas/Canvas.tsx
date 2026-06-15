@@ -1,14 +1,14 @@
 import {
-	Button, EditableText
+	Button, Colors, EditableText
 } from "@blueprintjs/core";
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
-import { IToolConfig, Tool } from "../../app/App";
+import { IToolConfig } from "../../app/App";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedElementId } from "../../redux/slices/applicationSlice";
+import { setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
 import { setSaveState } from "../../redux/slices/diagramSlice";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
 import Toolbar from "../banner/Toolbar";
@@ -20,15 +20,17 @@ import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
 import GridDropField from "../dnd/GridDropField";
 import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import QuietUploadArea from "../QuietUploadArea";
+import { CanvasTextInput } from "./CanvasTextInput";
+import { CanvasToolToolbar } from "./CanvasToolToolbar";
+import { ChannelAddToolbar } from "./ChannelAddToolbar";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
+import styles from "./styles/toolbars.module.scss"
 
 
 export interface ISelectConfig extends IToolConfig { }
 
 interface ICanvasProps {
-	selectedTool: Tool;
-	setTool: (tool: Tool) => void;
 }
 
 const SeamlessPanner = () => {
@@ -59,7 +61,11 @@ const SeamlessPanner = () => {
 		}
 
 		if (transformed) {
-			setTransform(newX, newY, scale, 0);
+			// const inst = instance as any;
+			// inst.animation = null;
+			// inst.animate = false;
+			// inst.velocity = null;
+			setTransform(newX, newY, scale, 1);
 		}
 
 		prevDiagramX.current = currentX;
@@ -69,11 +75,12 @@ const SeamlessPanner = () => {
 	return null;
 };
 
-const Canvas: React.FC<ICanvasProps> = (props) => {
+const Canvas: React.FC<ICanvasProps> = () => {
 	const dispatch = useAppDispatch();
 
 	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
 	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
+	const selectedTool = useAppSelector((state) => state.application.selectedTool);
 
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [rawHoveredElement, setRawHoveredElement] = useState<Visual | undefined>(undefined);
@@ -81,9 +88,19 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	const [zoom, setZoom] = useState(2);
 	const [zoomString, setZoomString] = useState("2");
 	const [isZoomEditing, setIsZoomEditing] = useState(false);
+	const [showDiagramBoundary, setShowDiagramBoundary] = useState(false);
+	const [textInputPending, setTextInputPending] = useState<{
+		x: number;
+		y: number;
+		initialValue?: string;
+		onConfirm?: (value: string) => void;
+		onCancel?: () => void;
+	} | null>(null);
+	const [editingElementId, setEditingElementId] = useState<string | null>(null);
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
+	const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
 	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
 	const { isDragging } = useDragLayer((monitor) => ({
@@ -94,7 +111,7 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	if (selectedElement) {
 		interactiveElements.push(selectedElement);
 	}
-	if (props.selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
+	if (selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
 		interactiveElements.push(hoveredElement);
 	}
 
@@ -121,34 +138,128 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 		selectVisual(e);
 	}
 
-	const onClick = (click: React.MouseEvent<HTMLDivElement>) => {
-		var element: Visual | undefined = hoveredElement;
-
-		if (element === undefined) {
-			deselect();
-		} else {
-			selectVisual(element);
+	const getCoordinates = (e: React.MouseEvent<HTMLDivElement>): { x: number; y: number } => {
+		const drawDiv = document.getElementById("diagram-root") as HTMLElement;
+		if (!drawDiv) {
+			return { x: e.clientX, y: e.clientY };
 		}
+		const drawDivRect = drawDiv.getBoundingClientRect();
+		const relativeX = (e.clientX - drawDivRect.left) / zoom;
+		const relativeY = (e.clientY - drawDivRect.top) / zoom;
+		return { x: relativeX, y: relativeY };
 	};
 
-	const singleClick = (click: React.MouseEvent<HTMLDivElement>) => {
-		switch (props.selectedTool.type) {
-			case "select":
-				if (selectedElement && hoveredElement !== selectedElement) {
-					deselect();
-				}
-				break;
+	const didDrag = (e: React.MouseEvent): boolean => {
+		if (dragStartRef.current) {
+			const dx = e.clientX - dragStartRef.current.x;
+			const dy = e.clientY - dragStartRef.current.y;
+			const distance = Math.sqrt(dx * dx + dy * dy);
+			dragStartRef.current = null;
+			if (distance > 5) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	const getToolBehavior = (toolType: string): {
+		cursor: string;
+		onClick?: (e: React.MouseEvent<HTMLDivElement>, coords: { x: number; y: number }) => void;
+		onDoubleClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+		onMouseUp?: (e: React.MouseEvent<HTMLDivElement>, coords: { x: number; y: number }) => void;
+	} => {
+		switch (toolType) {
+			case "latex":
+			case "text":
+				return {
+					cursor: "text",
+					onClick: (e: React.MouseEvent<HTMLDivElement>, coords: { x: number; y: number }) => {
+						e.stopPropagation();
+						if (textInputPending) return;
+						setTextInputPending({ x: coords.x, y: coords.y });
+					}
+				};
+			case "box":
+				return {
+					cursor: "crosshair",
+					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+						e.stopPropagation();
+					}
+				};
 			case "arrow":
+				return {
+					cursor: "crosshair",
+					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+						e.stopPropagation();
+					}
+				};
+			case "select":
+			default:
+				return {
+					cursor: "default",
+					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+						const element: Visual | undefined = hoveredElement;
+						if (element === undefined) {
+							deselect();
+						} else {
+							selectVisual(element);
+						}
+					},
+					onDoubleClick: (e: React.MouseEvent<HTMLDivElement>) => {
+						handleDoubleClick(e);
+					},
+					onMouseUp: (e: React.MouseEvent<HTMLDivElement>) => {
+						if (editingElementId) {
+							return;
+						}
+						if (selectedElement && hoveredElement !== selectedElement) {
+							deselect();
+						}
+						deselect();
+					}
+				};
 		}
 	};
+	const activeToolBehavior = getToolBehavior(selectedTool.type);
 
 	const handleDiagramDrop = async (file: File) => {
 		dispatch(openDiagram(file));
 	};
 
+	const handleDoubleClickElement = (element: Visual) => {
+		if (element.type === "text" || element.type === "latex") {
+			setEditingElementId(element.id);
+			setTextInputPending({
+				x: element.drawCX,
+				y: element.drawCY,
+				initialValue: (element as any).text || "",
+				onConfirm: (value: string) => {
+					const modifiedState = {
+						...element.state,
+						text: value
+					};
+					ENGINE.handler.act({
+						type: "modify",
+						input: {
+							child: modifiedState,
+							target: element
+						}
+					});
+					setEditingElementId(null);
+				},
+				onCancel: () => {
+					setEditingElementId(null);
+				}
+			});
+			return true;
+		}
+		return false;
+	};
+
 	const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
 		if (rawHoveredElement) {
+			// Drill down logic
 			let path: Visual[] = [];
 			let curr: Visual | undefined = rawHoveredElement;
 			while (curr) {
@@ -162,12 +273,22 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 			let currentSelectedId = selectedElementId ?? hoveredElement?.id;
 			let selectedIndex = path.findIndex(el => el.id === currentSelectedId);
 
+			let didDrillDown = false;
 			if (selectedIndex !== -1) {
 				if (selectedIndex + 1 < path.length) {
 					selectVisual(path[selectedIndex + 1]);
+					didDrillDown = true;
 				}
 			} else if (path.length > 1) {
 				selectVisual(path[1]);
+				didDrillDown = true;
+			}
+
+			// If we did not drill down, edit the element (if it is a text element)
+			if (!didDrillDown) {
+				if (handleDoubleClickElement(rawHoveredElement)) {
+					return;
+				}
 			}
 		}
 	};
@@ -205,6 +326,21 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 	}
 
 	useEffect(() => {
+		if (editingElementId) {
+			const el = ENGINE.handler.identifyElement(editingElementId);
+			if (el) {
+				el.svg?.hide();
+			}
+			return () => {
+				const el = ENGINE.handler.identifyElement(editingElementId);
+				if (el) {
+					el.svg?.show();
+				}
+			};
+		}
+	}, [editingElementId]);
+
+	useEffect(() => {
 		if (!isZoomEditing) {
 			setZoomString(String(Math.round(zoom * 100) / 100));
 		}
@@ -237,17 +373,34 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 						height: "100%",
 						display: "flex",
 						flexDirection: "column",
-						position: "relative"
+						position: "relative",
+						cursor: activeToolBehavior.cursor
+					}}
+					onMouseDown={(e) => {
+						dragStartRef.current = { x: e.clientX, y: e.clientY };
 					}}
 					onClick={(e) => {
-						onClick(e);
+						if (didDrag(e)) {
+							return;
+						}
+						if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) {
+							document.activeElement.blur();
+						}
+						const coords = getCoordinates(e);
+						if (activeToolBehavior.onClick) {
+							activeToolBehavior.onClick(e, coords);
+						}
 					}}
 					onDoubleClick={(e) => {
-						handleDoubleClick(e);
+						if (activeToolBehavior.onDoubleClick) {
+							activeToolBehavior.onDoubleClick(e);
+						}
 					}}
 					onMouseUp={(e) => {
-						singleClick(e);
-						deselect();
+						const coords = getCoordinates(e);
+						if (activeToolBehavior.onMouseUp) {
+							activeToolBehavior.onMouseUp(e, coords);
+						}
 					}}>
 					<Toolbar />
 					<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
@@ -257,39 +410,58 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 								top: "6px",
 								left: "6px",
 								zIndex: 10,
-								display: "flex",
-								flexDirection: "column",
-								alignItems: "normal",
-								gap: "6px"
 							}}>
-							<Button size="small" variant="outlined" style={{ width: "16px" }}
-								icon="target"
-								onClick={() => transformComponentRef.current?.centerView()}
-							/>
 							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									background: "white",
-									padding: "1px 4px",
-
-									boxShadow: "0 1px 1px rgba(16, 22, 26, 0.1)",
-									fontSize: "10px",
-									fontWeight: "bold",
-									color: "#182026",
-									cursor: "text",
-									width: "32px"
-								}}>
-								<EditableText minWidth={16}
-									value={zoomString}
-									onChange={(val) => setZoomString(val)}
-									onConfirm={onConfirmZoomEntry}
-									onEdit={() => setIsZoomEditing(true)}
-									selectAllOnFocus={true}
+								className={`${styles["frosted-toolbar"]} ${styles.vertical}`}
+								onClick={(e) => e.stopPropagation()}
+								onMouseUp={(e) => e.stopPropagation()}
+								onMouseDown={(e) => e.stopPropagation()}
+							>
+								<Button size="small" variant="minimal"
+									icon="target"
+									onClick={() => transformComponentRef.current?.centerView()}
 								/>
-								<span style={{ marginLeft: "1px", color: "#5c7080", pointerEvents: "none" }}>x</span>
-							</div>
+								<Button
+									size="small"
+									variant="minimal"
+									active={showDiagramBoundary}
+									onClick={() => setShowDiagramBoundary(!showDiagramBoundary)}
+									title="Toggle Diagram Boundary"
+									icon="selection-box"
+								/>
+								<div className={styles["zoom-indicator"]}>
+									<EditableText minWidth={18}
+										value={zoomString}
 
+										onChange={(val) => setZoomString(val)}
+										onConfirm={onConfirmZoomEntry}
+										onEdit={() => setIsZoomEditing(true)}
+										selectAllOnFocus={true}
+									/>
+									<span className={styles["zoom-suffix"]}>x</span>
+								</div>
+							</div>
+						</div>
+
+						<div
+							style={{
+								position: "absolute",
+								top: "6px",
+								right: "6px",
+								zIndex: 10,
+							}}>
+							<ChannelAddToolbar />
+						</div>
+
+						<div
+							style={{
+								position: "absolute",
+								bottom: "8px",
+								left: "50%",
+								transform: "translateX(-50%)",
+								zIndex: 10,
+							}}>
+							<CanvasToolToolbar />
 						</div>
 
 
@@ -312,9 +484,10 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 								doubleClick={{ disabled: true }}>
 
 
-								<TransformComponent wrapperStyle={{
-									width: "100%", height: "100%", position: "absolute",
-								}}>
+								<TransformComponent
+									wrapperStyle={{
+										width: "100%", height: "100%", position: "absolute",
+									}}>
 									{/* Large background grid that moves with transform */}
 									<div
 										style={{
@@ -368,20 +541,32 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 													element={el}
 													visualState={el.id === selectedElement?.id ? "selected" : "hovered"}
 													x={el.x}
-													y={el.y}></CanvasDraggableElement>
+													y={el.y}
+													isHidden={el.id === editingElementId}></CanvasDraggableElement>
 											))}
 
 
 											{/* Tools */}
-											{props.selectedTool.type === "arrow" ? (
+											{selectedTool.type === "arrow" ? (
 												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
 													<LineTool
 														hoveredElement={hoveredElement}
-														config={props.selectedTool.config}
-														setTool={props.setTool}></LineTool>
+														config={selectedTool.config}
+														setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
 												</div>
 											) : (
 												<></>
+											)}
+
+											{textInputPending && (
+												<CanvasTextInput
+													x={textInputPending.x}
+													y={textInputPending.y}
+													initialValue={textInputPending.initialValue}
+													onConfirm={textInputPending.onConfirm}
+													onCancel={textInputPending.onCancel}
+													onClose={() => setTextInputPending(null)}
+												/>
 											)}
 
 											{/* Drop field */}
@@ -396,6 +581,45 @@ const Canvas: React.FC<ICanvasProps> = (props) => {
 											<Debug
 												debugGroupSelection={debugSelectionTypes}
 												debugSelection={debugElements}></Debug>
+
+											{/* Diagram boundary SVG overlay */}
+											{showDiagramBoundary && (
+												<svg
+													style={{
+														position: "absolute",
+														left: ENGINE.handler.diagram.x,
+														top: ENGINE.handler.diagram.y,
+														width: ENGINE.handler.diagram.width,
+														height: ENGINE.handler.diagram.height,
+														pointerEvents: "none",
+														zIndex: 10000
+													}}>
+													{/* Content boundary */}
+													<rect
+														x={ENGINE.handler.diagram.cx - ENGINE.handler.diagram.x}
+														y={ENGINE.handler.diagram.cy - ENGINE.handler.diagram.y}
+														width={ENGINE.handler.diagram.contentWidth !== undefined ? ENGINE.handler.diagram.contentWidth : 0}
+														height={ENGINE.handler.diagram.contentHeight !== undefined ? ENGINE.handler.diagram.contentHeight : 0}
+														fill="none"
+														stroke={Colors.BLUE5}
+														strokeOpacity={0.7}
+														strokeWidth="1"
+														strokeDasharray="1,1"
+													/>
+													{/* Padded boundary */}
+													<rect
+														x={0}
+														y={0}
+														width={ENGINE.handler.diagram.width}
+														height={ENGINE.handler.diagram.height}
+														fill="none"
+														stroke={Colors.GRAY3}
+														strokeOpacity={0.7}
+														strokeWidth="1.5"
+														strokeDasharray="3,4"
+													/>
+												</svg>
+											)}
 
 										</div>
 

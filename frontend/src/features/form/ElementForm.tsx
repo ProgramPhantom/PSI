@@ -121,6 +121,8 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 						flex: "1 1 0",
 						minHeight: 0
 					}}>
+					{/* Genius AI solution */}
+					<button type="submit" style={{ display: "none" }} />
 					<div
 						style={{ flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}
 						className="custom-scrollbar"

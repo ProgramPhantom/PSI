@@ -57,6 +57,7 @@ interface IDraggableElementProps {
 
 	reselect: (e: Visual) => void;
 	visualState: "hovered" | "selected";
+	isHidden?: boolean;
 }
 
 export interface CanvasDraggableElementPayload {
@@ -168,7 +169,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					handlerId: monitor.getHandlerId()
 				})
 			}),
-			[props.x, props.y, props.name]
+			[props.x, props.y, props.name, props.element]
 		);
 
 		var visualRef = useRef<SVGSVGElement | null>(null);
@@ -199,14 +200,14 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 				<div key={dragElementType}
 					className="nopan"
 					style={{
-						zIndex: 20,
-						opacity: isDragging ? 0 : 1,
+						zIndex: 30000,
+						opacity: (isDragging || props.isHidden) ? 0 : 1,
 						position: "absolute",
 						left: props.element.drawX,
 						top: props.element.drawY,
 						width: props.element.width,
 						height: props.element.height,
-						pointerEvents: "auto"
+						pointerEvents: props.isHidden ? "none" : "auto"
 					}}>
 					<div
 						ref={props.element.placementControl === "auto" ? undefined : drag}
@@ -251,7 +252,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						pointerEvents: "none",
 						zIndex: 2000,
 						overflow: "visible",
-						opacity: isDragging ? 0 : 1
+						opacity: (isDragging || props.isHidden) ? 0 : 1
 					}}>
 
 					{props.element.padding.some((v) => v > 0) ? (

@@ -14,6 +14,7 @@ import { DEFAULT_SALTIREHILO } from "./svgPulse/saltirehilo";
 import { DEFAULT_SALTIRELOHI } from "./svgPulse/saltirelohi";
 import { DEFAULT_TALLTRAPEZIUM } from "./svgPulse/talltrapezium";
 import { DEFAULT_TRAPEZIUM } from "./svgPulse/trapezium";
+import { DEFAULT_LATEX } from "./latex";
 import { DEFAULT_TEXT } from "./text";
 import { SchemeDict } from "../../types/schemes";
 import { DISPSI2 } from "./DIPSI2";
@@ -29,7 +30,8 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 			},
 			components: {
 				"6032ad89-7b6f-4f61-8406-4aea64f59339": DEFAULT_CHANNEL,
-				"e9530b12-6b62-48e0-89de-60b61c7b87d8": DEFAULT_TEXT,
+				"e9530b12-6b62-48e0-89de-60b61c7b87d8": DEFAULT_LATEX,
+				"f1a91a92-6d27-46ef-bc96-107077a5ef01": DEFAULT_TEXT,
 				"260710ef-5d40-4ada-bde2-044b17ab271a": DEFAULT_180S,
 				"74d4af8c-e981-4f12-afa0-62a6ddff9d5b": DEFAULT_ACQUIRE,
 				"0ac27981-b1e4-4d11-9b95-633ea14d24fe": DEFAULT_AMP,

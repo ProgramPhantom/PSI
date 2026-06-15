@@ -1,17 +1,15 @@
-import { Button, Section, Popover, Menu, MenuItem, IconName, NonIdealState, NonIdealStateIconSize, Tooltip } from "@blueprintjs/core";
+import { Button, IconName, Menu, MenuItem, NonIdealState, NonIdealStateIconSize, Popover, Section, Tooltip } from "@blueprintjs/core";
+import { useEffect, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
-import { defaultLabel, defaultText, defaultLine } from "../../logic/default/index";
-import { IText } from "../../logic/text";
-import { ILine } from "../../logic/line";
-import React, { useState, useEffect } from "react";
-import LabelForm from "./LabelForm";
-import TextForm from "./TextForm";
+import { defaultLabel, defaultLine, defaultText } from "../../logic/default/index";
+import { Position } from "../../logic/textBase";
 import ArrowForm from "./ArrowForm";
 import { FormRequirements } from "./FormBase";
-import { Position } from "../../logic/text";
+import LabelForm from "./LabelForm";
 import { RoleChildrenFormData } from "./RoleChildrenForm";
 import sectionStyles from "./styles/FormSection.module.scss";
 import styles from "./styles/LabelListForm.module.scss";
+import TextForm from "./TextForm";
 
 interface ILabelMapProps extends FormRequirements { }
 

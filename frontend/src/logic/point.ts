@@ -12,6 +12,7 @@ export type UserComponentType =
 	| "label-group"
 	| "label"
 	| "text"
+	| "latex"
 	| "line"
 	| "channel"
 	| "sequence-aligner"

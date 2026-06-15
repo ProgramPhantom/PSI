@@ -1,179 +1,111 @@
 import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
-import TeXToSVG from "tex-to-svg";
-import { cascadeID, showSVGRecursively } from "./util2";
-import Visual, { Display, IVisual } from "./visual";
+import { cascadeID } from "./util2";
 import { UserComponentType } from "./point";
+import { TextBase, ITextBase } from "./textBase";
 
-export const EXTOPX = 38.314;
-export const SCALER = 5;
-
-export interface IText extends IVisual {
-	text: string;
-	style: ITextStyle;
+export interface IText extends ITextBase {
+	fontFamily?: string;
 }
 
-export interface ITextStyle {
-	fontSize: number;
-	colour: string;
-	background: string | null;
-	display: Display;
-}
-
-export type Position = "top" | "right" | "bottom" | "left" | "centre";
-
-export default class Text extends Visual implements IText {
+export class Text extends TextBase implements IText {
 	static ElementType: UserComponentType = "text";
+	static descentPadding: number = 0.2;
+	fontFamily: string;
+	ascent: number = 0;
+	descent: number = 0;
+
 	get state(): IText {
 		return {
-			style: this.style,
-			text: this.text,
-
-			...super.state
+			...super.state,
+			fontFamily: this.fontFamily,
+			type: "text"
 		};
 	}
 
-	intrinsicSize: { width: number; height: number };
-	wHRatio: number;
-
-	text: string;
-	style: ITextStyle;
-
 	constructor(params: IText) {
 		super(params);
-
-		this.text = params.text;
-		this.style = params.style;
+		this.type = "text";
+		this.fontFamily = params.fontFamily ?? "sans-serif";
 
 		this.intrinsicSize = this.resolveDimensions();
 		this.wHRatio = this.intrinsicSize.width / this.intrinsicSize.height;
 
-		this.contentHeight = ((this.intrinsicSize.height / SCALER) * this.style.fontSize) / EXTOPX;
-		this.contentWidth = ((this.intrinsicSize.width / SCALER) * this.style.fontSize) / EXTOPX;
+		this.contentWidth = this.intrinsicSize.width;
+		this.contentHeight = this.intrinsicSize.height;
 
 		this.constructSVG();
 	}
 
-	constructSVG(): void {
-		// Produce tex
-		const SVGEquation = TeXToSVG(`${this.text}`); // APPARENTLY this.text is ending up as an int (json parse???)
-
-		var crudeSvg: SVGElement = SVG(SVGEquation);
-
-		var paths: SVGElement[] = crudeSvg.children()[0].children();
-		var pathDict: { [id: string]: SVGElement } = {};
-		paths.forEach((p) => {
-			pathDict[p.id()] = p;
-		});
-
-		var structureGroup: SVGElement = crudeSvg.children()[1];
-
-		function replace(svg: SVGElement) {
-			var children: SVGElement[] = svg.children();
-
-			children.forEach((c) => {
-				if (c.children().length > 0) {
-					replace(c);
-				} else {
-					var childId: string = c.attr("xlink:href") as string;
-					var childTransform: string = c.attr("transform") as string;
-
-					if (childId !== undefined && childId[0] == "#") {
-						var pathDef = pathDict[childId.slice(1)];
-						if (pathDef !== undefined) {
-							var pathToReplace: SVGElement = pathDef.clone(true, true) as SVGElement;
-
-							// Apply transform to path
-							if (childTransform !== undefined) {
-								pathToReplace.attr({ transform: childTransform });
-							}
-
-							c.replace(pathToReplace);
-						}
-					}
-				}
-			});
+	resolveDimensions(): { width: number; height: number } {
+		if (typeof document === "undefined") {
+			this.ascent = this.style.fontSize;
+			this.descent = 0;
+			return { width: 10, height: this.style.fontSize };
 		}
 
-		replace(structureGroup);
+		const canvas = document.createElement("canvas");
+		const ctx = canvas.getContext("2d");
+		if (!ctx) {
+			this.ascent = this.style.fontSize;
+			this.descent = 0;
+			return { width: 10, height: this.style.fontSize };
+		}
 
-		crudeSvg.children().forEach((c) => {
-			c.remove();
+		ctx.font = `${this.style.fontSize}px ${this.fontFamily}`;
+		const metrics = ctx.measureText(this.text);
+
+		const ascent = metrics.actualBoundingBoxAscent !== undefined ? metrics.actualBoundingBoxAscent : (this.style.fontSize * 0.85);
+		const descent = (metrics.actualBoundingBoxDescent !== undefined ? metrics.actualBoundingBoxDescent : (this.style.fontSize * 0.15)) + Text.descentPadding;
+		const width = metrics.width || 1;
+		const height = ascent + descent || this.style.fontSize || 12;
+
+		this.ascent = ascent;
+		this.descent = descent;
+
+		return {
+			width,
+			height
+		};
+	}
+
+	constructSVG(): void {
+		const svgNamespace = "http://www.w3.org/2000/svg";
+		const crudeSvg = SVG(document.createElementNS(svgNamespace, "svg")) as SVGElement;
+
+		const textElement = SVG(document.createElementNS(svgNamespace, "text")) as SVGElement;
+		textElement.attr({
+			"font-family": this.fontFamily,
+			"font-size": `${this.style.fontSize}px`,
+			"fill": this.style.colour,
+			"x": 0,
+			"y": this.ascent
 		});
-		crudeSvg.add(structureGroup);
+		textElement.node.textContent = this.text;
 
-		this.svg = crudeSvg;
-
-		this.svg.attr({ height: null, preserveAspectRatio: "xMinYMin" });
-		this.svg.width(this.contentWidth!);
-		this.svg.attr({ style: `color:${this.style.colour}` });
-
-		var group = this.svg.children()[1];
+		const group = SVG(document.createElementNS(svgNamespace, "g")) as SVGElement;
 
 		if (this.style.background) {
-			group.add(
-				SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`),
-				0
-			);
+			const bgRect = SVG(document.createElementNS(svgNamespace, "rect")) as SVGElement;
+			bgRect.attr({
+				width: this.contentWidth,
+				height: this.contentHeight,
+				fill: this.style.background
+			});
+			group.add(bgRect);
 		}
+
+		group.add(textElement);
+		crudeSvg.add(group);
+
+		this.svg = crudeSvg;
+		this.svg.attr({
+			width: this.contentWidth,
+			height: this.contentHeight,
+			preserveAspectRatio: "xMinYMin"
+		});
 
 		cascadeID(this.svg, this.id);
 	}
-
-	// TODO: investigate this
-	// Sets this.width and this.height
-	// Currently needs to add and remove the svg to find these dimensions, not ideal
-	resolveDimensions(): { width: number; height: number } {
-		var SVGEquation: string = TeXToSVG(`${this.text}`);
-
-		var SVGobj: SVGElement = SVG(SVGEquation);
-
-		SVGobj.id("svgTempID");
-		SVGobj.attr({ preserveAspectRatio: "xMinYMin" });
-
-		var exWidthString: string = <string>SVGobj.width();
-		var exHeightString: string = <string>SVGobj.height();
-
-		exWidthString = Array.from(exWidthString)
-			.splice(0, exWidthString.length - 2)
-			.join("");
-		exHeightString = Array.from(exHeightString)
-			.splice(0, exHeightString.length - 2)
-			.join("");
-
-		var exWidth: number = Number(exWidthString);
-		var exHeight: number = Number(exHeightString);
-
-		SVGobj.remove();
-
-		return { width: exWidth * EXTOPX, height: exHeight * EXTOPX };
-	}
-
-	draw(surface: Element) {
-		if (this.dirty) {
-			if (this.svg) {
-				this.svg.remove();
-			}
-
-			this.svg?.move(this.cx, this.cy);
-
-			if (this.svg) {
-				surface.add(this.svg);
-			}
-		}
-
-		super.draw(surface);
-	}
-
-	override getInternalRepresentation(): Element | undefined {
-		if (this.svg === undefined) {
-			return undefined
-		}
-
-		var internalSVG = this.svg?.clone(true, true);
-		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
-		internalSVG.show()
-
-		return internalSVG;
-	}
 }
 
+export default Text;

@@ -1,13 +1,11 @@
 
 import { DEFAULT_BAR } from "../../logic/default/bar";
 import { DEFAULT_CHANNEL_TEXT } from "../../logic/default/defaultChannelLabel";
-import { defaultChannel, defaultDiagram, defaultLabel, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
-import { DEFAULT_LABEL } from "../../logic/default/label";
+import { defaultChannel, defaultDiagram, defaultLabel, defaultLaTeX, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
-import { DEFAULT_180H } from "../../logic/default/simplePulse/180pulse";
 import { DEFAULT_180S } from "../../logic/default/svgPulse/180Soft";
-import { DEFAULT_TEXT } from "../../logic/default/text";
 import { ILabel } from "../../logic/hasComponents/label";
+import { ILaTeX } from "../../logic/latex";
 import { AllComponentTypes } from "../../logic/point";
 import { IRectElement } from "../../logic/rectElement";
 import { ISpace } from "../../logic/space";
@@ -17,10 +15,12 @@ import ArrowForm from "./ArrowForm";
 import ChannelForm from "./ChannelForm";
 import { GridForm } from "./GridForm";
 import LabelForm from "./LabelForm";
+import LaTeXForm from "./LaTeXForm";
 import RectElementForm from "./RectForm";
 import SVGElementForm from "./SVGElementForm";
 import TextForm from "./TextForm";
 import VisualForm from "./VisualForm";
+
 
 
 export interface RoleSchema {
@@ -52,6 +52,11 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	"text": {
 		form: TextForm,
 		defaults: defaultText as IText,
+		allowLabels: false
+	},
+	"latex": {
+		form: LaTeXForm,
+		defaults: defaultLaTeX as ILaTeX,
 		allowLabels: false
 	},
 	"space": {
@@ -95,7 +100,7 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		allowLabels: false,
 		roles: {
 			"label": {
-				displayName: "Label", elementType: "text",
+				displayName: "Label", elementType: "latex",
 				mandatory: true,
 				defaultValues: DEFAULT_CHANNEL_TEXT
 			},

@@ -2,7 +2,8 @@ import { G, Mask, Rect, Svg } from "@svgdotjs/svg.js";
 import Aligner, { IAligner } from "../aligner";
 import Line, { ILine } from "../line";
 import { UserComponentType } from "../point";
-import Text, { IText, Position } from "../text";
+import { LaTeX, ILaTeX } from "../latex";
+import { Position } from "../textBase";
 import { Dimensions, Size } from "../spacial";
 import { AlignerElement } from "../visual";
 
@@ -28,8 +29,8 @@ export default class Label extends Aligner implements ILabel {
 	}
 	static ElementType: UserComponentType = "label";
 
-	get text(): AlignerElement<Text> | undefined {
-		return this.roles["text"]?.object as AlignerElement<Text> | undefined;
+	get text(): AlignerElement<LaTeX> | undefined {
+		return this.roles["text"]?.object as AlignerElement<LaTeX> | undefined;
 	}
 
 	get line(): AlignerElement<Line> | undefined {

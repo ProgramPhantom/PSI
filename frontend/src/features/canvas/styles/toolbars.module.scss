@@ -1,0 +1,58 @@
+.frosted-toolbar {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 4px;
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(200, 200, 200, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &.vertical {
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+
+
+        // Custom compact sizing for vertical buttons to fit well
+        // Custom compact sizing for vertical buttons to fit well
+        :global(.bp5-button) {
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+}
+
+.zoom-indicator {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 2px 4px;
+    box-shadow: inset 0 1px 1px rgba(16, 22, 26, 0.1);
+    font-size: 10px;
+    font-weight: bold;
+    color: #182026;
+    cursor: text;
+    width: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(200, 200, 200, 0.3);
+    justify-content: center;
+
+    .zoom-suffix {
+        margin-left: 1px;
+        color: #5c7080;
+        pointer-events: none;
+    }
+
+    // Adjust EditableText alignment inside zoom-indicator
+    :global(.bp5-editable-text) {
+        vertical-align: middle;
+        text-align: center;
+    }
+}

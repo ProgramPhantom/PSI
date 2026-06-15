@@ -2,9 +2,9 @@ import { Button, ControlGroup, HTMLSelect, Section } from "@blueprintjs/core";
 import { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import ArrowForm from "./ArrowForm";
-import TextForm from "./TextForm";
+import LaTeXForm from "./LaTeXForm";
 import { FormRequirements } from "./FormBase";
-import { IText } from "../../logic/text";
+import { ILaTeX } from "../../logic/latex";
 import { ILine } from "../../logic/line";
 import VisualForm from "./VisualForm";
 import { DEFAULT_LABEL } from "../../logic/default/label";
@@ -37,7 +37,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 		setLineOn(lineIndex !== -1);
 	}, [props.target, lineIndex]);
 
-	const [textBackup, setTextBackup] = useState<IText | undefined>(undefined);
+	const [textBackup, setTextBackup] = useState<ILaTeX | undefined>(undefined);
 	const [lineBackup, setLineBackup] = useState<ILine | undefined>(undefined);
 
 	const toggleText = () => {
@@ -49,7 +49,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 			setTextOn(false);
 		} else {
 			let defaultText = DEFAULT_LABEL.children.find((c: any) => c.role === "text");
-			let toAdd = textBackup ?? (defaultText ? { ...defaultText } : { type: "text", role: "text" });
+			let toAdd = textBackup ?? (defaultText ? { ...defaultText } : { type: "latex", role: "text" });
 			formControls.setValue(`${fullPrefix}children`, [...currentChildren, toAdd]);
 			setTextOn(true);
 		}
@@ -111,7 +111,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 						}}></Button>
 				}>
 
-				{textPrefix && <TextForm prefix={textPrefix}></TextForm>}
+				{textPrefix && <LaTeXForm prefix={textPrefix}></LaTeXForm>}
 
 			</Section>
 

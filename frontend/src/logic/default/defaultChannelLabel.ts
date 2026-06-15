@@ -1,6 +1,6 @@
-import { IText } from "../text"
+import { ILaTeX } from "../latex"
 
-export const DEFAULT_CHANNEL_TEXT: IText = {
+export const DEFAULT_CHANNEL_TEXT: ILaTeX = {
 	"ref": "channel-label",
 	"contentWidth": 10,
 	"contentHeight": 10,
@@ -10,13 +10,13 @@ export const DEFAULT_CHANNEL_TEXT: IText = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 75,
+		"fontSize": 45,
 		"colour": "black",
 		"background": null,
 		"display": "block"
 	},
 
 	"sizeMode": { x: "fit", y: "fit" },
-	"type": "text",
+	"type": "latex",
 	"role": "label"
 }

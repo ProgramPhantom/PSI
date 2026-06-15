@@ -1,15 +1,16 @@
-import { ControlGroup, HTMLSelect, InputGroup, NumericInput, Section } from "@blueprintjs/core";
+import { ControlGroup, InputGroup, NumericInput, Section } from "@blueprintjs/core";
 import { Controller, useFormContext } from "react-hook-form";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
+import { MathJax } from "better-react-mathjax";
 import { SimpleField } from "./fields/SimpleField";
 import sectionStyles from "./styles/FormSection.module.scss";
 import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
 
-interface ITextFormProps extends FormRequirements { }
+interface ILaTeXFormProps extends FormRequirements { }
 
-function TextForm(props: ITextFormProps) {
+function LaTeXForm(props: ILaTeXFormProps) {
 	var fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
 
 	const formControls = useFormContext();
@@ -21,19 +22,24 @@ function TextForm(props: ITextFormProps) {
 				<SimpleField
 					fill={false}
 					inline={false}
-					label="Text"
+					label="Text (LaTeX)"
 					labelFor="text-input">
 					<Controller
 						control={formControls.control}
 						name={`${fullPrefix}text`}
 						render={({ field }) => (
-							<InputGroup
-								{...field}
-								id="text"
-								className={fieldStyles.compactInputGroup}
-								placeholder="Text"
-								size="small"
-							/>
+							<div style={{ display: "flex", flexDirection: "row" }}>
+								<InputGroup
+									{...field}
+									id="text"
+									className={fieldStyles.compactInputGroup}
+									placeholder="_1\textrm{H}"
+									size="small"
+								/>
+								<div style={{ marginLeft: "16px", display: "flex", alignItems: "center" }}>
+									<MathJax>{`\\(${field.value || ""}\\)`}</MathJax>
+								</div>
+							</div>
 						)}></Controller>
 				</SimpleField>
 
@@ -45,32 +51,6 @@ function TextForm(props: ITextFormProps) {
 					title={"Style"}
 					collapsible={true}>
 					<ControlGroup vertical={true} className={styles.formGroupContainer}>
-						<SimpleField
-							label="Font Family"
-							labelFor="font-family-select">
-							<Controller
-								control={formControls.control}
-								name={`${fullPrefix}fontFamily`}
-								render={({ field }) => (
-									<HTMLSelect
-										{...field}
-										value={field.value || "sans-serif"}
-										id="font-family-select"
-										className={fieldStyles.compactHTMLSelect}
-										iconName="caret-down"
-										fill={true}
-										options={[
-											{ label: "Sans Serif", value: "sans-serif" },
-											{ label: "Serif", value: "serif" },
-											{ label: "Monospace", value: "monospace" },
-											{ label: "Georgia", value: "Georgia, serif" },
-											{ label: "Arial", value: "Arial, sans-serif" },
-											{ label: "Times New Roman", value: "Times New Roman, serif" }
-										]}
-									/>
-								)}></Controller>
-						</SimpleField>
-
 						<SimpleField
 							label="Font Size"
 							labelFor="text-input">
@@ -126,5 +106,4 @@ function TextForm(props: ITextFormProps) {
 	);
 }
 
-export default TextForm;
-
+export default LaTeXForm;

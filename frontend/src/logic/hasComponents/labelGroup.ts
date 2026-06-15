@@ -2,7 +2,7 @@ import Collection, { AddDispatchData, Components, StructuredChildEntry } from ".
 import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
 import { isPulse } from "../spacial";
-import { Position } from "../text";
+import { Position } from "../textBase";
 import Visual, { GridCellElement, IVisual } from "../visual";
 import Label, { ILabel } from "./label";
 
