@@ -1,11 +1,8 @@
-import { Element, Mask } from "@svgdotjs/svg.js";
+import { Element, Mask, Rect, SVG } from "@svgdotjs/svg.js";
+import RBush from "rbush";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { BAR_MASK_ID, ID, UserComponentType } from "./point";
-import { IAlignerConfig, IGridConfig, IPulseConfig, isPulse, Size } from "./spacial";
-import { Rect } from "@svgdotjs/svg.js";
-import { SVG } from "@svgdotjs/svg.js";
-import { Svg } from "@svgdotjs/svg.js";
-import { showSVGRecursively } from "./util2";
+import { Bounds, IAlignerConfig, IGridConfig, IPulseConfig, isPulse, RBushItem, Size } from "./spacial";
 
 
 export type Offset = [number, number];
@@ -65,6 +62,8 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 
 		this.offset = params.offset;
 	}
+
+
 
 	draw(surface: Element): void {
 		// Add mask
@@ -170,6 +169,36 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		cloned.show()
 
 		return cloned;
+	}
+
+
+	public override addBounds(rTree: RBush<RBushItem>) {
+		const bounds = this.getDrawBounds();
+		rTree.insert({
+			minX: bounds.left,
+			minY: bounds.top,
+			maxX: bounds.right,
+			maxY: bounds.bottom,
+			id: this.id
+		});
+	}
+
+	public getDrawBounds(): Bounds {
+		return {
+			top: this.drawY,
+			bottom: this.drawY + this.height,
+			left: this.drawX,
+			right: this.drawX + this.width
+		};
+	}
+
+
+	public get drawWidth(): number {
+		return this.width;
+	}
+
+	public get drawHeight(): number {
+		return this.height;
 	}
 
 	public get drawCX(): number {

@@ -1,8 +1,9 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import { AllComponentTypes, ID } from "./point";
-import { ContainerSizeMethod, Dimensions, Size } from "./spacial";
+import { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 import { showSVGRecursively } from "./util2";
+import RBush from "rbush";
 
 // Add
 export type AddDispatchData<C extends Visual = Visual> = { child: C, index?: number }
@@ -92,6 +93,8 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		return elements;
 	}
 
+
+
 	protected _children: C[] = [];
 	get children(): C[] {
 		return this._children;
@@ -107,6 +110,8 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	) {
 		super(params);
 	}
+
+
 
 
 	// ---------------- Compute -------------------------
@@ -257,6 +262,35 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			}
 		});
 		super.erase();
+	}
+
+	public override getDrawBounds(): Bounds {
+		const bounds = super.getDrawBounds();
+		this.children.forEach((c) => {
+			const cb = c.getDrawBounds();
+			bounds.top = Math.min(bounds.top, cb.top);
+			bounds.bottom = Math.max(bounds.bottom, cb.bottom);
+			bounds.left = Math.min(bounds.left, cb.left);
+			bounds.right = Math.max(bounds.right, cb.right);
+		});
+		return bounds;
+	}
+
+	public override get drawWidth(): number {
+		const bounds = this.getDrawBounds();
+		return bounds.right - bounds.left;
+	}
+
+	public override get drawHeight(): number {
+		const bounds = this.getDrawBounds();
+		return bounds.bottom - bounds.top;
+	}
+
+	public override addBounds(rTree: RBush<RBushItem>) {
+		super.addBounds(rTree);
+		this.children.forEach((c) => {
+			c.addBounds(rTree);
+		});
 	}
 	//#endregion
 	// --------------------------------------------------

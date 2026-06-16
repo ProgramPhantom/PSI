@@ -1,6 +1,6 @@
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
 import { ID } from "./point";
-import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
+import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size, Bounds } from "./spacial";
 import Visual, { GridCellElement, IDraw, IVisual } from "./visual";
 
 export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
@@ -44,6 +44,23 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			numColumns: this.numColumns,
 			...super.state
 		};
+	}
+
+	public override getDrawBounds(): Bounds {
+		return {
+			top: this.drawY - this.spill.top,
+			bottom: this.drawY + this.height + this.spill.bottom,
+			left: this.drawX - this.spill.left,
+			right: this.drawX + this.width + this.spill.right
+		};
+	}
+
+	public override get drawWidth(): number {
+		return this.width + this.spill.left + this.spill.right;
+	}
+
+	public override get drawHeight(): number {
+		return this.height + this.spill.top + this.spill.bottom;
 	}
 
 	get cellChildren(): C[] {

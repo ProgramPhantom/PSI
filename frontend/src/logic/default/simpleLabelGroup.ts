@@ -1,4 +1,4 @@
-import { ISimpleLabelGroup } from "../hasComponents/SimpleLabelGroup";
+import { ISimpleLabelGroup } from "../hasComponents/simpleLabelGroup";
 import { IRectElement } from "../rectElement";
 import { ILabel } from "../hasComponents/label";
 import { ILaTeX } from "../latex";

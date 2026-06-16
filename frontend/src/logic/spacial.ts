@@ -1,5 +1,14 @@
 import { Rect, SVG } from "@svgdotjs/svg.js";
 import Point, { ID, IPoint } from "./point";
+import RBush from "rbush";
+
+export interface RBushItem {
+	minX: number;
+	minY: number;
+	maxX: number;
+	maxY: number;
+	id: string;
+}
 
 
 export interface Bounds {
@@ -224,6 +233,16 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			this.setGridConfigUsingPulseData(params.pulseData);
 		}
 
+	}
+
+	public addBounds(rTree: RBush<RBushItem>) {
+		rTree.insert({
+			minX: this.x,
+			minY: this.y,
+			maxX: this.x + this.width,
+			maxY: this.y + this.height,
+			id: this.id
+		});
 	}
 
 	public computeSize(): Size {

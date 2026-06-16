@@ -9,6 +9,8 @@ import Diagram, { IDiagram } from "./hasComponents/diagram.ts";
 import Sequence from "./hasComponents/sequence.ts";
 import { AllComponentTypes, ID } from "./point.ts";
 import Visual, { IDraw, IVisual } from "./visual.ts";
+import RBush from "rbush";
+import { RBushItem } from "./spacial.ts";
 
 
 /**
@@ -96,6 +98,8 @@ interface ICompletedAction<T extends ActionNames> extends IDispatchAction<T> {
 type AnyCompletedAction = { [K in keyof Actions]: ICompletedAction<K> }[keyof Actions];
 
 
+
+
 export default class DiagramHandler implements IDraw {
 	static MAX_UNDO_DEPTH = 25;
 
@@ -103,6 +107,8 @@ export default class DiagramHandler implements IDraw {
 
 	surface?: Svg;
 	EngineConstructor: (data: IVisual, type: AllComponentTypes) => Visual | undefined
+
+	public visualRTree: RBush<RBushItem> = new RBush<RBushItem>();
 
 	get id(): string {
 		let id: string = sha256(JSON.stringify(this.diagram.state))
@@ -193,6 +199,25 @@ export default class DiagramHandler implements IDraw {
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);
 		this.diagram.computePositions({ x: 0, y: 0 });
+		this.computeBoundaryTree()
+	}
+
+	computeBoundaryTree() {
+		this.visualRTree.clear();
+		this.diagram.addBounds(this.visualRTree);
+
+		const diagramItem = this.visualRTree.all().find(item => item.id === this.diagram.id);
+		if (diagramItem) {
+			this.diagram.x = diagramItem.minX;
+			this.diagram.y = diagramItem.minY;
+			this.diagram.width = diagramItem.maxX - diagramItem.minX;
+			this.diagram.height = diagramItem.maxY - diagramItem.minY;
+		} else {
+			this.diagram.x = 0;
+			this.diagram.y = 0;
+			this.diagram.width = 0;
+			this.diagram.height = 0;
+		}
 	}
 
 	// ---------- Element identification ----------
@@ -229,6 +254,8 @@ export default class DiagramHandler implements IDraw {
 
 		this.diagram = newDiagram;
 		this.diagram.svg?.show();
+
+		this.computeDiagram();
 
 		return { ok: true, value: newDiagram };
 	}

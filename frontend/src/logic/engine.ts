@@ -9,7 +9,7 @@ import Channel, { IChannel } from "./hasComponents/channel";
 import Diagram, { IDiagram } from "./hasComponents/diagram";
 import Label, { ILabel } from "./hasComponents/label";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
-import SimpleLabelGroup, { ISimpleLabelGroup } from "./hasComponents/SimpleLabelGroup";
+import SimpleLabelGroup, { ISimpleLabelGroup } from "./hasComponents/simpleLabelGroup"
 import Sequence, { ISequence } from "./hasComponents/sequence";
 import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
 import { AllComponentTypes, ID } from "./point";

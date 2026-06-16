@@ -1,4 +1,4 @@
-import Collection, { AddDispatchData, Components } from "../collection";
+import { AddDispatchData, Components } from "../collection";
 import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
 import { isPulse } from "../spacial";
