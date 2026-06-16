@@ -1,6 +1,7 @@
+import RBush from "rbush";
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
 import { ID } from "./point";
-import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size, Bounds } from "./spacial";
+import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { GridCellElement, IDraw, IVisual } from "./visual";
 
 export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
@@ -46,21 +47,26 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		};
 	}
 
-	public override getDrawBounds(): Bounds {
-		return {
-			top: this.drawY - this.spill.top,
-			bottom: this.drawY + this.height + this.spill.bottom,
-			left: this.drawX - this.spill.left,
-			right: this.drawX + this.width + this.spill.right
-		};
-	}
-
 	public override get drawWidth(): number {
 		return this.width + this.spill.left + this.spill.right;
 	}
 
 	public override get drawHeight(): number {
 		return this.height + this.spill.top + this.spill.bottom;
+	}
+
+	public get drawCX(): number {
+		return this.cx + this.offset[0] - this.spill.left;
+	}
+	public get drawCY(): number {
+		return this.cy + this.offset[1] - this.spill.top;
+	}
+
+	public get drawX(): number {
+		return this.x + this.offset[0] - this.spill.left;
+	}
+	public get drawY(): number {
+		return this.y + this.offset[1] - this.spill.top;
 	}
 
 	get cellChildren(): C[] {
@@ -227,7 +233,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						case "far":
 							// Apply spill to left row
 							leftSpill = element.width - targetColWidth;
-							maxLeftSpill = Math.max(rightSpill, maxRightSpill);
+							maxLeftSpill = Math.max(leftSpill, maxLeftSpill);
 							break;
 					}
 				} else if (this.isSubgridChild(element)) {
@@ -377,7 +383,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						case "far":
 							// Apply spill to row above
 							aboveSpill = element.height - targetRowHight;
-							maxAboveSpill = Math.max(belowSpill, maxBelowSpill);
+							maxAboveSpill = Math.max(aboveSpill, maxAboveSpill);
 							break;
 					}
 				} else if (this.isSubgridChild(element)) {

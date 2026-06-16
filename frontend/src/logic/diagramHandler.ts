@@ -204,20 +204,7 @@ export default class DiagramHandler implements IDraw {
 
 	computeBoundaryTree() {
 		this.visualRTree.clear();
-		this.diagram.addBounds(this.visualRTree);
-
-		const diagramItem = this.visualRTree.all().find(item => item.id === this.diagram.id);
-		if (diagramItem) {
-			this.diagram.x = diagramItem.minX;
-			this.diagram.y = diagramItem.minY;
-			this.diagram.width = diagramItem.maxX - diagramItem.minX;
-			this.diagram.height = diagramItem.maxY - diagramItem.minY;
-		} else {
-			this.diagram.x = 0;
-			this.diagram.y = 0;
-			this.diagram.width = 0;
-			this.diagram.height = 0;
-		}
+		this.diagram.addDrawBounds(this.visualRTree);
 	}
 
 	// ---------- Element identification ----------

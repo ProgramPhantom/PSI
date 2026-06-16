@@ -235,15 +235,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 	}
 
-	public addBounds(rTree: RBush<RBushItem>) {
-		rTree.insert({
-			minX: this.x,
-			minY: this.y,
-			maxX: this.x + this.width,
-			maxY: this.y + this.height,
-			id: this.id
-		});
-	}
 
 	public computeSize(): Size {
 		// this.width = this.contentHeight;

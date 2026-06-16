@@ -1,5 +1,6 @@
 import Collection, { ICollection, Components } from "../collection";
 import { ID, UserComponentType } from "../point";
+import { Size } from "../spacial";
 import Visual, { IVisual, PulseElement } from "../visual";
 import Channel from "./channel";
 import Sequence from "./sequence";
@@ -75,5 +76,33 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 
 	constructor(params: IDiagram) {
 		super(params);
+	}
+
+	public override computeSize(): Size {
+		var size: Size = { width: 0, height: 0 }
+
+		var top = Infinity;
+		var left = Infinity;
+		var bottom = -Infinity;
+		var right = -Infinity;
+
+		this.children.forEach((c) => {
+			c.computeSize();
+
+			const cb = c.drawBound;
+			top = cb.top < top ? cb.top : top;
+			bottom = cb.bottom > bottom ? cb.bottom : bottom;
+
+			left = cb.left < left ? cb.left : left;
+			right = cb.right > right ? cb.right : right;
+		});
+
+		size.width = right - left;
+		size.height = bottom - top;
+
+		this.contentWidth = size.width;
+		this.contentHeight = size.height;
+
+		return { width: this.width, height: this.height }
 	}
 }

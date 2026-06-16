@@ -111,9 +111,6 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		super(params);
 	}
 
-
-
-
 	// ---------------- Compute -------------------------
 	//#region 
 	public computeSize(): Size {
@@ -264,32 +261,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		super.erase();
 	}
 
-	public override getDrawBounds(): Bounds {
-		const bounds = super.getDrawBounds();
+	public override addDrawBounds(rTree: RBush<RBushItem>) {
+		super.addDrawBounds(rTree);
 		this.children.forEach((c) => {
-			const cb = c.getDrawBounds();
-			bounds.top = Math.min(bounds.top, cb.top);
-			bounds.bottom = Math.max(bounds.bottom, cb.bottom);
-			bounds.left = Math.min(bounds.left, cb.left);
-			bounds.right = Math.max(bounds.right, cb.right);
-		});
-		return bounds;
-	}
-
-	public override get drawWidth(): number {
-		const bounds = this.getDrawBounds();
-		return bounds.right - bounds.left;
-	}
-
-	public override get drawHeight(): number {
-		const bounds = this.getDrawBounds();
-		return bounds.bottom - bounds.top;
-	}
-
-	public override addBounds(rTree: RBush<RBushItem>) {
-		super.addBounds(rTree);
-		this.children.forEach((c) => {
-			c.addBounds(rTree);
+			c.addDrawBounds(rTree);
 		});
 	}
 	//#endregion

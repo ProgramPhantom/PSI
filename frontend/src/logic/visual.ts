@@ -160,7 +160,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	}
 
 	// Construct and SVG with children positioned relative to (0, 0)
-	getInternalRepresentation(): Element | undefined {
+	public getInternalRepresentation(): Element | undefined {
 		if (this.svg === undefined) { return undefined }
 
 		var cloned: Element = this.svg.clone(true, true);
@@ -171,9 +171,8 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return cloned;
 	}
 
-
-	public override addBounds(rTree: RBush<RBushItem>) {
-		const bounds = this.getDrawBounds();
+	public addDrawBounds(rTree: RBush<RBushItem>) {
+		const bounds = this.drawBound;
 		rTree.insert({
 			minX: bounds.left,
 			minY: bounds.top,
@@ -183,15 +182,14 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		});
 	}
 
-	public getDrawBounds(): Bounds {
+	get drawBound(): Bounds {
 		return {
 			top: this.drawY,
-			bottom: this.drawY + this.height,
+			bottom: this.drawY + this.drawHeight,
 			left: this.drawX,
-			right: this.drawX + this.width
+			right: this.drawX + this.drawWidth
 		};
 	}
-
 
 	public get drawWidth(): number {
 		return this.width;
