@@ -1,6 +1,6 @@
 import { Components, ICollection } from "../../logic/collection";
 import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
-import SimpleLabelGroup from "../../logic/hasComponents/simpleLabelGroup";
+import SimpleLabelGroup from "../../logic/hasComponents/SimpleLabelGroup";
 import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";

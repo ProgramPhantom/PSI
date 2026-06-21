@@ -48,7 +48,6 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7759": DEFAULT_SUBSEQUENCE,
 
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DISPSI2,
-				"dcfed31a-e1bd-4012-8777-2cec4e6b7754": DEFAULT_SIMPLE_LABEL_GROUP
 			}
 		}
 	}

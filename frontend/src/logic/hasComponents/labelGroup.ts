@@ -1,4 +1,4 @@
-import Collection, { AddDispatchData, Components, StructuredChildEntry } from "../collection";
+import Collection, { AddDispatchData, Components, StructuredChildEntry, ClearIDs } from "../collection";
 import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
 import { isPulse } from "../spacial";
@@ -15,6 +15,42 @@ export default class LabelGroup
 	extends Grid {
 	static isLabelGroup(val: Visual): val is LabelGroup {
 		return (val as LabelGroup)?.coreChild !== undefined;
+	}
+	static applyAnnotation(targetState: IVisual, annotationState: IVisual): ILabelGroup {
+		const isTargetLabelGroup = targetState.type === "label-group" || targetState.type === "simple-label-group";
+
+		if (!isTargetLabelGroup) {
+			const pulseState = structuredClone(targetState);
+			ClearIDs(pulseState);
+			pulseState.role = "coreChild";
+			pulseState.padding = [0, 0, 0, 0];
+			pulseState.offset = [0, 0];
+
+			const labelGroupState: ILabelGroup = {
+				type: "label-group",
+				ref: targetState.ref + "-labelGroup",
+				parentId: targetState.parentId,
+				pulseData: { ...pulseState.pulseData },
+				placementMode: structuredClone(pulseState.placementMode),
+				sizeMode: { x: "fit", y: "fit" },
+				padding: targetState.padding ?? [0, 0, 0, 0],
+				offset: targetState.offset ?? [0, 0],
+				contentWidth: targetState.contentWidth ?? 0,
+				contentHeight: targetState.contentHeight ?? 0,
+				children: [
+					pulseState,
+					annotationState
+				]
+			};
+			return labelGroupState;
+		} else {
+			const updatedLabelGroupState = structuredClone(targetState) as ILabelGroup;
+			if (!updatedLabelGroupState.children) {
+				updatedLabelGroupState.children = [];
+			}
+			updatedLabelGroupState.children.push(annotationState);
+			return updatedLabelGroupState;
+		}
 	}
 	static ElementType: UserComponentType = "label-group";
 	get state(): ILabelGroup {
