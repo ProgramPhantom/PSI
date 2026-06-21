@@ -16,6 +16,9 @@ const isTextOrLabel = (element: any): boolean => {
 	return type === "latex" || type === "text" || type === "label";
 };
 
+// Inset in pixels to reduce the hover target area size relative to the pulse size, avoiding accidental triggering.
+const HOVER_INSET = 4;
+
 export default function LabelGroupDropField({ pulse }: ILabelGroupDropFieldProps) {
 	const [{ canDrop, isOver }, parentDropRef] = useDrop(() => ({
 		accept: [DragElementTypes.ATOMIC_PREFAB, DragElementTypes.FREE],
@@ -52,8 +55,9 @@ export default function LabelGroupDropField({ pulse }: ILabelGroupDropFieldProps
 		return false;
 	};
 
-	const W = pulse.width;
-	const H = pulse.height;
+	const inset = Math.min(HOVER_INSET, pulse.width * 0.15, pulse.height * 0.15);
+	const W = pulse.width - 2 * inset;
+	const H = pulse.height - 2 * inset;
 	const T = Math.min(8, H * 0.25, W * 0.25); // Thickness of side zones
 	const CS = Math.min(16, Math.min(W, H) * 0.4); // Center size
 
@@ -90,8 +94,8 @@ export default function LabelGroupDropField({ pulse }: ILabelGroupDropFieldProps
 
 	const fieldStyle: React.CSSProperties = {
 		position: "absolute",
-		left: pulse.drawX,
-		top: pulse.drawY,
+		left: pulse.drawX + inset,
+		top: pulse.drawY + inset,
 		width: W,
 		height: H,
 		pointerEvents: "auto",

@@ -137,19 +137,41 @@ export default class LabelGroup
 
 	addLabelTop({ child, index }: AddDispatchData<Visual>) {
 		child.placementControl = "auto"
+		let contributionX = true;
+		let contributionY = true;
+		let minPadding = 2;
+
+		if (isPulse(this)) {
+			if (this.pulseData.orientation === "bottom") {
+				contributionX = false;
+				contributionY = false;
+				minPadding = 4;
+			} else if (this.pulseData.orientation === "both") {
+				contributionX = true;
+				contributionY = false;
+			}
+		}
+
 		child.placementMode = {
 			type: "grid",
 			config: {
 				contribution: {
-					x: true,
-					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+					x: contributionX,
+					y: contributionY
 				}
 			}
 		}
 
 		child.placementMode.config.alignment = { x: "centre", y: "far" }
 		child.placementMode.config.coords = { row: 0, col: 1 }
-		child.sizeMode = { x: "grow", y: "fit" }
+
+		if (child.type === "label") {
+			child.sizeMode = { x: "grow", y: "fit" }
+		} else {
+			child.sizeMode = { x: "fit", y: "fit" }
+		}
+
+		child.padding[2] = Math.max(child.padding[2], minPadding);
 
 		if (child instanceof Label) {
 			child.mainAxis = "y";
@@ -170,7 +192,14 @@ export default class LabelGroup
 
 		child.placementMode.config.alignment = { x: "here", y: "centre" }
 		child.placementMode.config.coords = { row: 1, col: 2 }
-		child.sizeMode = { x: "fit", y: "grow" }
+
+		if (child.type === "label") {
+			child.sizeMode = { x: "fit", y: "grow" }
+		} else {
+			child.sizeMode = { x: "fit", y: "fit" }
+		}
+
+		child.padding[3] = Math.max(child.padding[3], 2);
 
 		if (child instanceof Label) {
 			child.mainAxis = "x";
@@ -179,19 +208,41 @@ export default class LabelGroup
 
 	addLabelBottom({ child, index }: AddDispatchData<Visual>) {
 		child.placementControl = "auto"
+		let contributionX = true;
+		let contributionY = true;
+		let minPadding = 2;
+
+		if (isPulse(this)) {
+			if (this.pulseData.orientation === "top") {
+				contributionX = false;
+				contributionY = false;
+				minPadding = 4;
+			} else if (this.pulseData.orientation === "both") {
+				contributionX = true;
+				contributionY = false;
+			}
+		}
+
 		child.placementMode = {
 			type: "grid",
 			config: {
 				contribution: {
-					x: true,
-					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+					x: contributionX,
+					y: contributionY
 				}
 			}
 		}
 
 		child.placementMode.config.alignment = { x: "centre", y: "here" }
 		child.placementMode.config.coords = { row: 2, col: 1 }
-		child.sizeMode = { x: "grow", y: "fit" }
+
+		if (child.type === "label") {
+			child.sizeMode = { x: "grow", y: "fit" }
+		} else {
+			child.sizeMode = { x: "fit", y: "fit" }
+		}
+
+		child.padding[0] = Math.max(child.padding[0], minPadding);
 
 		if (child instanceof Label) {
 			child.mainAxis = "y";
@@ -212,7 +263,14 @@ export default class LabelGroup
 
 		child.placementMode.config.alignment = { x: "far", y: "centre" }
 		child.placementMode.config.coords = { row: 1, col: 0 }
-		child.sizeMode = { x: "fit", y: "grow" }
+
+		if (child.type === "label") {
+			child.sizeMode = { x: "fit", y: "grow" }
+		} else {
+			child.sizeMode = { x: "fit", y: "fit" }
+		}
+
+		child.padding[1] = Math.max(child.padding[1], 2);
 
 		if (child instanceof Label) {
 			child.mainAxis = "x";

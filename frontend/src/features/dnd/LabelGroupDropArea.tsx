@@ -53,11 +53,9 @@ export default function LabelGroupDropArea({ areaSpec }: ILabelGroupDropAreaProp
 
 	const style: React.CSSProperties = {
 		position: "absolute",
-		backgroundColor: isActive ? "rgba(0, 120, 212, 0.4)" : "rgba(0, 120, 212, 0.08)",
-		border: isActive ? `2px solid ${Colors.BLUE3}` : `1px dashed ${Colors.BLUE5}`,
-		boxShadow: isActive ? `0 0 8px ${Colors.BLUE4}` : "none",
-		transition: "all 0.15s ease-in-out",
-		borderRadius: "3px",
+		backgroundColor: isActive ? `${Colors.BLUE5}` : "rgba(0, 120, 212, 0.08)",
+		border: isActive ? `2px solid ${Colors.BLUE3}` : `1px solid ${Colors.BLUE5}`,
+		transition: "all 0.05s ease-in-out",
 		cursor: "copy",
 		pointerEvents: "auto",
 		zIndex: isActive ? 30000 : 25000,
