@@ -458,8 +458,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 							style={{
 								position: "absolute",
 								bottom: "8px",
-								left: "50%",
-								transform: "translateX(-50%)",
+								right: "8px",
 								zIndex: 10,
 							}}>
 							<CanvasToolToolbar />
