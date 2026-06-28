@@ -33,8 +33,8 @@ export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(function El
 			<svg ref={visualRef} style={{ overflow: "visible", position: "absolute", top: props.element.padding[0], left: props.element.padding[3] }}></svg>
 			<svg
 				style={{
-					width: props.element.contentWidth,
-					height: props.element.contentHeight,
+					width: props.element.drawWidth,
+					height: props.element.drawHeight,
 					position: "absolute",
 					top: props.element.padding[0],
 					left: props.element.padding[3],

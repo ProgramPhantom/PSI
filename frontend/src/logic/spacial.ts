@@ -191,6 +191,10 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this._placementMode = value;
 	}
 
+	public get isFree(): boolean {
+		return this._placementMode.type === "free";
+	}
+
 	public placementControl: PlacementControl;
 	public sizeMode: SizeConfiguration;
 

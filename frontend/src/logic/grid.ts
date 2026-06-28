@@ -1,3 +1,4 @@
+import { Element } from "@svgdotjs/svg.js";
 import RBush from "rbush";
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
 import { ID } from "./point";
@@ -56,22 +57,51 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	public get drawCX(): number {
-		const offset = this.placementMode?.type === "free" ? 0 : this.offset[0];
+		const offset = this.isFree ? 0 : this.offset[0];
 		return this.cx + offset - this.spill.left;
 	}
 	public get drawCY(): number {
-		const offset = this.placementMode?.type === "free" ? 0 : this.offset[1];
+		const offset = this.isFree ? 0 : this.offset[1];
 		return this.cy + offset - this.spill.top;
 	}
 
 	public get drawX(): number {
-		const offset = this.placementMode?.type === "free" ? 0 : this.offset[0];
+		const offset = this.isFree ? 0 : this.offset[0];
 		return this.x + offset - this.spill.left;
 	}
 	public get drawY(): number {
-		const offset = this.placementMode?.type === "free" ? 0 : this.offset[1];
+		const offset = this.isFree ? 0 : this.offset[1];
 		return this.y + offset - this.spill.top;
 	}
+
+	public override get x(): number {
+		if (this.isFree) {
+			return this._x + this.spill.left;
+		}
+		return super.x;
+	}
+	public override set x(val: number) {
+		if (this.isFree) {
+			this._x = val - this.spill.left;
+		} else {
+			super.x = val;
+		}
+	}
+
+	public override get y(): number {
+		if (this.isFree) {
+			return this._y + this.spill.top;
+		}
+		return super.y;
+	}
+	public override set y(val: number) {
+		if (this.isFree) {
+			this._y = val - this.spill.top;
+		} else {
+			super.y = val;
+		}
+	}
+	
 
 	get cellChildren(): C[] {
 		return this.children.filter(c => this.isCellChild(c));
@@ -113,6 +143,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.cells = [];
 
 		this.min = { width: params.minWidth ?? 0, height: params.minHeight ?? 0 };
+
+
 	}
 
 
@@ -459,6 +491,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	public computePositions(root: { x: number, y: number }): void {
 		super.computePositions(root);
 
+
+
 		// Find dimension and positions of the cells.
 		this.computeCells();
 
@@ -689,7 +723,15 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	// ---------------- Draw Methods ----------------
 	//#region 
-
+	public override getInternalRepresentation(): Element | undefined {
+		const internalSVG = super.getInternalRepresentation();
+		if (internalSVG) {
+			const deltaX = -(this.cx - this.spill.left);
+			const deltaY = -(this.cy - this.spill.top);
+			internalSVG.attr({ transform: `translate(${deltaX}, ${deltaY})` });
+		}
+		return internalSVG;
+	}
 	//#endregion
 	// -------------------------------------------------
 
