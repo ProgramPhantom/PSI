@@ -56,17 +56,21 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	public get drawCX(): number {
-		return this.cx + this.offset[0] - this.spill.left;
+		const offset = this.placementMode?.type === "free" ? 0 : this.offset[0];
+		return this.cx + offset - this.spill.left;
 	}
 	public get drawCY(): number {
-		return this.cy + this.offset[1] - this.spill.top;
+		const offset = this.placementMode?.type === "free" ? 0 : this.offset[1];
+		return this.cy + offset - this.spill.top;
 	}
 
 	public get drawX(): number {
-		return this.x + this.offset[0] - this.spill.left;
+		const offset = this.placementMode?.type === "free" ? 0 : this.offset[0];
+		return this.x + offset - this.spill.left;
 	}
 	public get drawY(): number {
-		return this.y + this.offset[1] - this.spill.top;
+		const offset = this.placementMode?.type === "free" ? 0 : this.offset[1];
+		return this.y + offset - this.spill.top;
 	}
 
 	get cellChildren(): C[] {
