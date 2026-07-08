@@ -127,7 +127,11 @@ export default class LabelGroup
 		child.placementMode = {
 			type: "grid",
 			config: {
-				coords: { row: 1, col: 1 }
+				coords: { row: 1, col: 1 },
+				alignment: {
+					"x": "centre",
+					"y": "far"
+				}
 			}
 		}
 		child.placementControl = "auto"
