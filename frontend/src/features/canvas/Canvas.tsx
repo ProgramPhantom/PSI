@@ -19,6 +19,7 @@ import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
 import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
 import GridDropField from "../dnd/GridDropField";
 import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
+import LabelGroupDropFields from "../dnd/LabelGroupDropFields";
 import QuietUploadArea from "../QuietUploadArea";
 import { CanvasTextInput } from "./CanvasTextInput";
 import { CanvasToolToolbar } from "./CanvasToolToolbar";
@@ -457,8 +458,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 							style={{
 								position: "absolute",
 								bottom: "8px",
-								left: "50%",
-								transform: "translateX(-50%)",
+								right: "8px",
 								zIndex: 10,
 							}}>
 							<CanvasToolToolbar />
@@ -575,6 +575,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
 												}
 												<SequencesPulseDropField></SequencesPulseDropField>
+												<LabelGroupDropFields></LabelGroupDropFields>
 											</div>
 
 											{/* Debug layers */}

@@ -1,11 +1,12 @@
 import { Button, IconName, Menu, MenuItem, NonIdealState, NonIdealStateIconSize, Popover, Section, Tooltip } from "@blueprintjs/core";
 import { useEffect, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
-import { defaultLabel, defaultLine, defaultText } from "../../logic/default/index";
+import { defaultLabel, defaultLine, defaultText, defaultLaTeX } from "../../logic/default/index";
 import { Position } from "../../logic/textBase";
 import ArrowForm from "./ArrowForm";
 import { FormRequirements } from "./FormBase";
 import LabelForm from "./LabelForm";
+import LaTeXForm from "./LaTeXForm";
 import { RoleChildrenFormData } from "./RoleChildrenForm";
 import sectionStyles from "./styles/FormSection.module.scss";
 import styles from "./styles/LabelListForm.module.scss";
@@ -42,10 +43,11 @@ function LabelListForm(props: ILabelMapProps) {
 		setActivePos(null);
 	}, [props.target]);
 
-	const addLabel = (pos: Position, type: "label" | "text" | "line") => {
+	const addLabel = (pos: Position, type: "label" | "text" | "line" | "latex") => {
 		let defaultValue;
 		if (type === "text") defaultValue = structuredClone(defaultText);
 		else if (type === "line") defaultValue = structuredClone(defaultLine);
+		else if (type === "latex") defaultValue = structuredClone(defaultLaTeX);
 		else defaultValue = structuredClone(defaultLabel);
 
 		parentFormControls.setValue(`roles.${posToRole(pos)}`, defaultValue, { shouldDirty: true });
@@ -69,6 +71,7 @@ function LabelListForm(props: ILabelMapProps) {
 			let iconName: IconName = "tag";
 			if (labelObj.type === "text") iconName = "font";
 			else if (labelObj.type === "line") iconName = "minus";
+			else if (labelObj.type === "latex") iconName = "function";
 
 			return (
 				<Tooltip content={`Edit ${pos} annotation`} placement="top">
@@ -89,6 +92,7 @@ function LabelListForm(props: ILabelMapProps) {
 					<MenuItem icon="font" text="Add Text" onClick={() => addLabel(pos, "text")} />
 					<MenuItem icon="minus" text="Add Line" onClick={() => addLabel(pos, "line")} />
 					<MenuItem icon="tag" text="Add Label" onClick={() => addLabel(pos, "label")} />
+					<MenuItem icon="function" text="Add LaTeX" onClick={() => addLabel(pos, "latex")} />
 				</Menu>
 			);
 
@@ -139,6 +143,7 @@ function LabelListForm(props: ILabelMapProps) {
 							{roles[posToRole(activePos)]?.type === "text" && <TextForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "line" && <ArrowForm prefix={`roles.${posToRole(activePos)}`} />}
 							{roles[posToRole(activePos)]?.type === "label" && <LabelForm prefix={`roles.${posToRole(activePos)}`} />}
+							{roles[posToRole(activePos)]?.type === "latex" && <LaTeXForm prefix={`roles.${posToRole(activePos)}`} />}
 						</div>
 					</Section>
 				) : (

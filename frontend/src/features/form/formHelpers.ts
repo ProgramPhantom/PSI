@@ -1,5 +1,6 @@
 import { Components, ICollection } from "../../logic/collection";
 import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
+import SimpleLabelGroup from "../../logic/hasComponents/SimpleLabelGroup";
 import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";
@@ -139,7 +140,7 @@ export function resolveFormDataFromTarget(
 	let labelRoles: EditableRole[] = [];
 	let componentRoles: EditableRole[] = [];
 
-	if (LabelGroup.isLabelGroup(target)) {
+	if (LabelGroup.isLabelGroup(target) || SimpleLabelGroup.isSimpleLabelGroup(target)) {
 		isLabelGroup = true;
 
 		// Resolve core child
@@ -324,12 +325,12 @@ function buildLabelGroup(
 		children.push(child);
 	}
 
-	const result: ILabelGroup = {
+	const result: ICollection = {
 		...masterData,
 		children,
 		sizeMode: { x: "fit", y: "fit" },
-		type: "label-group",
-	};
+		type: masterData.type === "simple-label-group" ? "simple-label-group" : "label-group",
+	}
 
 	return result;
 }

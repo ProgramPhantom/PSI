@@ -10,6 +10,8 @@ import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { ActionResult } from "../../logic/diagramHandler";
 import { appToaster } from "../../app/Toaster";
+import { ClearIDs } from "../../logic/collection";
+import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
 
 
 const style: CSSProperties = {
@@ -107,7 +109,6 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							newState.x = dropResult.data.x - (offsetX / scale);
 							newState.y = dropResult.data.y - (offsetY / scale);
 
-
 							newState.parentId = ENGINE.handler.diagram.id;
 							newState.placementMode = {
 								type: "free",
@@ -162,6 +163,39 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							newState.parentId = dropResult.data.id;
 
 							break;
+						case "labelGroup":
+							const pulseElement = ENGINE.handler.identifyElement(dropResult.data.pulseId);
+							if (pulseElement) {
+								const textElementState = structuredClone(props.element.state);
+								ClearIDs(textElementState);
+								textElementState.role = dropResult.data.role;
+
+								let targetElement: Visual = pulseElement;
+								const parentElement = pulseElement.parentId ? ENGINE.handler.identifyElement(pulseElement.parentId) : undefined;
+								if (parentElement && LabelGroup.isLabelGroup(parentElement)) {
+									targetElement = parentElement;
+								}
+
+								const labelGroupState = LabelGroup.applyAnnotation(targetElement.state, textElementState);
+
+								// 1. Remove the text element from the diagram
+								ENGINE.handler.act({
+									type: "remove",
+									input: {
+										child: props.element
+									}
+								});
+
+								// 2. Modify the target (pulse or label group)
+								ENGINE.handler.act({
+									type: "modify",
+									input: {
+										target: targetElement,
+										child: labelGroupState
+									}
+								});
+							}
+							break;
 					}
 				},
 				collect: (monitor) => ({
@@ -205,8 +239,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						position: "absolute",
 						left: props.element.drawX,
 						top: props.element.drawY,
-						width: props.element.width,
-						height: props.element.height,
+						width: props.element.drawWidth,
+						height: props.element.drawHeight,
 						pointerEvents: props.isHidden ? "none" : "auto"
 					}}>
 					<div
@@ -259,8 +293,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						<rect
 							x={props.element.drawX}
 							y={props.element.drawY}
-							width={props.element.width}
-							height={props.element.height}
+							width={props.element.drawWidth}
+							height={props.element.drawHeight}
 							style={{
 								stroke: isDragging ? `none` : `${Colors.GRAY3}`,
 								strokeWidth: "1px",
@@ -282,8 +316,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					<rect
 						x={props.element.drawCX}
 						y={props.element.drawCY}
-						width={props.element.contentWidth}
-						height={props.element.contentHeight}
+						width={props.element.drawContentWidth}
+						height={props.element.drawContentHeight}
 						style={{
 							stroke: isDragging ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
 							strokeWidth: "1px",

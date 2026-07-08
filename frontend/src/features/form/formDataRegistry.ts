@@ -81,6 +81,15 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 			"labelCentre": { displayName: "Centre", elementType: "label" }
 		}
 	},
+	"simple-label-group": {
+		form: GridForm,
+		defaults: defaultVisual,
+		allowLabels: false,
+		roles: {
+			"labelTop": { displayName: "Top", elementType: "label" },
+			"labelBottom": { displayName: "Bottom", elementType: "label" }
+		}
+	},
 	"line": {
 		form: ArrowForm,
 		defaults: defaultLine,

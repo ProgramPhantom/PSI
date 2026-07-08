@@ -9,6 +9,7 @@ import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import { Subgrid } from "../../logic/grid";
 import Visual, { IVisual } from "../../logic/visual";
+import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
 import { useAppDispatch } from "../../redux/hooks";
 import { InternalSchemeId } from "../../redux/slices/schemesSlice";
 import { deleteComponentThunk } from "../../redux/thunks/schemeThunks";
@@ -136,6 +137,30 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 							child: singletonState
 						}
 					})
+					break;
+				case "labelGroup":
+					const pulseElement = ENGINE.handler.identifyElement(dropResult.data.pulseId);
+					if (pulseElement) {
+						const textElementState = structuredClone(props.element.state);
+						ClearIDs(textElementState);
+						textElementState.role = dropResult.data.role;
+
+						let targetElement: Visual = pulseElement;
+						const parentElement = pulseElement.parentId ? ENGINE.handler.identifyElement(pulseElement.parentId) : undefined;
+						if (parentElement && LabelGroup.isLabelGroup(parentElement)) {
+							targetElement = parentElement;
+						}
+
+						const labelGroupState = LabelGroup.applyAnnotation(targetElement.state, textElementState);
+
+						ENGINE.handler.act({
+							type: "modify",
+							input: {
+								target: targetElement,
+								child: labelGroupState
+							}
+						});
+					}
 					break;
 			}
 		},

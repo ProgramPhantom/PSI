@@ -1,8 +1,9 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import { AllComponentTypes, ID } from "./point";
-import { ContainerSizeMethod, Dimensions, Size } from "./spacial";
+import { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 import { showSVGRecursively } from "./util2";
+import RBush from "rbush";
 
 // Add
 export type AddDispatchData<C extends Visual = Visual> = { child: C, index?: number }
@@ -92,6 +93,8 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		return elements;
 	}
 
+
+
 	protected _children: C[] = [];
 	get children(): C[] {
 		return this._children;
@@ -107,7 +110,6 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	) {
 		super(params);
 	}
-
 
 	// ---------------- Compute -------------------------
 	//#region 
@@ -178,9 +180,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			this.svg.remove();
 		}
 
+		const offset = this.placementMode?.type === "free" ? [0, 0] : this.offset;
 		var group = new G().id(this.id).attr({ title: this.ref });
 		group.attr({
-			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
+			transform: `translate(${offset[0]}, ${offset[1]})`
 		});
 
 		this.svg = group;
@@ -257,6 +260,13 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			}
 		});
 		super.erase();
+	}
+
+	public override addDrawBounds(rTree: RBush<RBushItem>) {
+		super.addDrawBounds(rTree);
+		this.children.forEach((c) => {
+			c.addDrawBounds(rTree);
+		});
 	}
 	//#endregion
 	// --------------------------------------------------

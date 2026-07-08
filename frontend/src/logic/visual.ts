@@ -1,11 +1,8 @@
-import { Element, Mask } from "@svgdotjs/svg.js";
+import { Element, Mask, Rect, SVG } from "@svgdotjs/svg.js";
+import RBush from "rbush";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { BAR_MASK_ID, ID, UserComponentType } from "./point";
-import { IAlignerConfig, IGridConfig, IPulseConfig, isPulse, Size } from "./spacial";
-import { Rect } from "@svgdotjs/svg.js";
-import { SVG } from "@svgdotjs/svg.js";
-import { Svg } from "@svgdotjs/svg.js";
-import { showSVGRecursively } from "./util2";
+import { Bounds, IAlignerConfig, IGridConfig, IPulseConfig, isPulse, RBushItem, Size } from "./spacial";
 
 
 export type Offset = [number, number];
@@ -65,6 +62,8 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 
 		this.offset = params.offset;
 	}
+
+
 
 	draw(surface: Element): void {
 		// Add mask
@@ -161,7 +160,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	}
 
 	// Construct and SVG with children positioned relative to (0, 0)
-	getInternalRepresentation(): Element | undefined {
+	public getInternalRepresentation(): Element | undefined {
 		if (this.svg === undefined) { return undefined }
 
 		var cloned: Element = this.svg.clone(true, true);
@@ -172,18 +171,54 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return cloned;
 	}
 
+	public addDrawBounds(rTree: RBush<RBushItem>) {
+		const bounds = this.drawBound;
+		rTree.insert({
+			minX: bounds.left,
+			minY: bounds.top,
+			maxX: bounds.right,
+			maxY: bounds.bottom,
+			id: this.id
+		});
+	}
+
+	get drawBound(): Bounds {
+		return {
+			top: this.drawY,
+			bottom: this.drawY + this.drawHeight,
+			left: this.drawX,
+			right: this.drawX + this.drawWidth
+		};
+	}
+
+	public get drawWidth(): number {
+		return this.width;
+	}
+
+	public get drawHeight(): number {
+		return this.height;
+	}
+
+	public get drawContentWidth(): number {
+		return this.contentWidth;
+	}
+
+	public get drawContentHeight(): number {
+		return this.contentHeight;
+	}
+
 	public get drawCX(): number {
-		return this.cx + this.offset[0];
+		return this.cx + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
 	}
 	public get drawCY(): number {
-		return this.cy + this.offset[1];
+		return this.cy + (this.placementMode?.type === "free" ? 0 : this.offset[1]);
 	}
 
 	public get drawX(): number {
-		return this.x + this.offset[0];
+		return this.x + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
 	}
 	public get drawY(): number {
-		return this.y + this.offset[1];
+		return this.y + (this.placementMode?.type === "free" ? 0 : this.offset[1]);
 	}
 
 	public getHitbox(): Rect {

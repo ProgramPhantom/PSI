@@ -24,6 +24,9 @@ const Toolbar: React.FC = () => {
 
 	return (
 		<div
+			onClick={(e) => e.stopPropagation()}
+			onMouseUp={(e) => e.stopPropagation()}
+			onMouseDown={(e) => e.stopPropagation()}
 			style={{
 				width: "100%",
 				borderBottom: `1px solid ${Colors.LIGHT_GRAY1}`,

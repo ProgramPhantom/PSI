@@ -1,5 +1,14 @@
 import { Rect, SVG } from "@svgdotjs/svg.js";
 import Point, { ID, IPoint } from "./point";
+import RBush from "rbush";
+
+export interface RBushItem {
+	minX: number;
+	minY: number;
+	maxX: number;
+	maxY: number;
+	id: string;
+}
 
 
 export interface Bounds {
@@ -182,6 +191,10 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this._placementMode = value;
 	}
 
+	public get isFree(): boolean {
+		return this._placementMode.type === "free";
+	}
+
 	public placementControl: PlacementControl;
 	public sizeMode: SizeConfiguration;
 
@@ -225,6 +238,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 
 	}
+
 
 	public computeSize(): Size {
 		// this.width = this.contentHeight;

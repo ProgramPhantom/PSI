@@ -1,6 +1,8 @@
+import { Element } from "@svgdotjs/svg.js";
+import RBush from "rbush";
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
 import { ID } from "./point";
-import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size } from "./spacial";
+import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { GridCellElement, IDraw, IVisual } from "./visual";
 
 export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
@@ -46,6 +48,69 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		};
 	}
 
+	public override get drawWidth(): number {
+		return this.width + this.spill.left + this.spill.right;
+	}
+
+	public override get drawHeight(): number {
+		return this.height + this.spill.top + this.spill.bottom;
+	}
+
+	public override get drawContentWidth(): number {
+		return this.contentWidth + this.spill.left + this.spill.right;
+	}
+
+	public override get drawContentHeight(): number {
+		return this.contentHeight + this.spill.top + this.spill.bottom;
+	}
+
+	public get drawCX(): number {
+		const offset = this.isFree ? 0 : this.offset[0];
+		return this.cx + offset - this.spill.left;
+	}
+	public get drawCY(): number {
+		const offset = this.isFree ? 0 : this.offset[1];
+		return this.cy + offset - this.spill.top;
+	}
+
+	public get drawX(): number {
+		const offset = this.isFree ? 0 : this.offset[0];
+		return this.x + offset - this.spill.left;
+	}
+	public get drawY(): number {
+		const offset = this.isFree ? 0 : this.offset[1];
+		return this.y + offset - this.spill.top;
+	}
+
+	public override get x(): number {
+		if (this.isFree) {
+			return this._x + this.spill.left;
+		}
+		return super.x;
+	}
+	public override set x(val: number) {
+		if (this.isFree) {
+			this._x = val - this.spill.left;
+		} else {
+			super.x = val;
+		}
+	}
+
+	public override get y(): number {
+		if (this.isFree) {
+			return this._y + this.spill.top;
+		}
+		return super.y;
+	}
+	public override set y(val: number) {
+		if (this.isFree) {
+			this._y = val - this.spill.top;
+		} else {
+			super.y = val;
+		}
+	}
+
+
 	get cellChildren(): C[] {
 		return this.children.filter(c => this.isCellChild(c));
 	}
@@ -86,6 +151,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.cells = [];
 
 		this.min = { width: params.minWidth ?? 0, height: params.minHeight ?? 0 };
+
+
 	}
 
 
@@ -210,7 +277,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						case "far":
 							// Apply spill to left row
 							leftSpill = element.width - targetColWidth;
-							maxLeftSpill = Math.max(rightSpill, maxRightSpill);
+							maxLeftSpill = Math.max(leftSpill, maxLeftSpill);
 							break;
 					}
 				} else if (this.isSubgridChild(element)) {
@@ -360,7 +427,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						case "far":
 							// Apply spill to row above
 							aboveSpill = element.height - targetRowHight;
-							maxAboveSpill = Math.max(belowSpill, maxBelowSpill);
+							maxAboveSpill = Math.max(aboveSpill, maxAboveSpill);
 							break;
 					}
 				} else if (this.isSubgridChild(element)) {
@@ -431,6 +498,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	public computePositions(root: { x: number, y: number }): void {
 		super.computePositions(root);
+
+
 
 		// Find dimension and positions of the cells.
 		this.computeCells();
@@ -662,7 +731,15 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	// ---------------- Draw Methods ----------------
 	//#region 
-
+	public override getInternalRepresentation(): Element | undefined {
+		const internalSVG = super.getInternalRepresentation();
+		if (internalSVG) {
+			const deltaX = -(this.cx - this.spill.left);
+			const deltaY = -(this.cy - this.spill.top);
+			internalSVG.attr({ transform: `translate(${deltaX}, ${deltaY})` });
+		}
+		return internalSVG;
+	}
 	//#endregion
 	// -------------------------------------------------
 

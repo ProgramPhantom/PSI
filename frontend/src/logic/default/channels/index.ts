@@ -123,3 +123,16 @@ export const CHANNEL_27Al: IChannel = {
 		DEFAULT_BAR
 	]
 };
+
+export const CHANNEL_RF: IChannel = {
+	...DEFAULT_CHANNEL,
+	ref: "RF-channel",
+	children: [
+		{
+			...DEFAULT_CHANNEL_TEXT,
+			text: "\\textrm{RF}"
+		} as ILaTeX,
+		DEFAULT_BAR
+	]
+};
+

@@ -2,6 +2,7 @@ import type { FC, ReactNode } from "react";
 import { useDrop } from "react-dnd";
 import { PulseDropResultType } from "./PulseInsertArea";
 import { GridDropResultType } from "./GridInsertArea";
+import { LabelGroupDropResultType } from "./LabelGroupDropArea";
 
 
 export interface IDirectCanvasDropResult {
@@ -11,7 +12,7 @@ export interface IDirectCanvasDropResult {
 type CanvasDropResultType = {type: "canvas", data: IDirectCanvasDropResult}
 
 
-export type AllDropResultTypes = CanvasDropResultType | PulseDropResultType | GridDropResultType
+export type AllDropResultTypes = CanvasDropResultType | PulseDropResultType | GridDropResultType | LabelGroupDropResultType
 
 export const DragElementTypes = {
 	ATOMIC_PREFAB: "prefab",

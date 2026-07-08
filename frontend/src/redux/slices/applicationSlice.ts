@@ -26,6 +26,7 @@ export const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
     label: false,
     diagram: false,
     "label-group": false,
+    "simple-label-group": false,
     "sequence-aligner": false,
     grid: false,
     subgrid: false

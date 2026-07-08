@@ -17,6 +17,7 @@ const ChildIcons: Partial<Record<AllComponentTypes, IconName>> = {
     "rect": "square",
     "space": "maximize",
     "label-group": "tag",
+    "simple-label-group": "tag",
     "label": "tag",
     "text": "font",
     "line": "slash",

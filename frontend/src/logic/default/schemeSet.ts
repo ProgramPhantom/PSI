@@ -18,6 +18,8 @@ import { DEFAULT_LATEX } from "./latex";
 import { DEFAULT_TEXT } from "./text";
 import { SchemeDict } from "../../types/schemes";
 import { DISPSI2 } from "./DIPSI2";
+import { DEFAULT_SIMPLE_LABEL_GROUP } from "./simpleLabelGroup";
+import { DEFAULT_LABEL } from "./label";
 
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
@@ -29,8 +31,8 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				format: "psi-scheme-format"
 			},
 			components: {
-				"6032ad89-7b6f-4f61-8406-4aea64f59339": DEFAULT_CHANNEL,
 				"e9530b12-6b62-48e0-89de-60b61c7b87d8": DEFAULT_LATEX,
+				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e7f": DEFAULT_LABEL,
 				"f1a91a92-6d27-46ef-bc96-107077a5ef01": DEFAULT_TEXT,
 				"260710ef-5d40-4ada-bde2-044b17ab271a": DEFAULT_180S,
 				"74d4af8c-e981-4f12-afa0-62a6ddff9d5b": DEFAULT_ACQUIRE,
@@ -46,7 +48,7 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"73ea4ef5-bcca-47e0-bb4c-70488cf7b66e": DEFAULT_180H,
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7759": DEFAULT_SUBSEQUENCE,
 
-				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DISPSI2
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DISPSI2,
 			}
 		}
 	}

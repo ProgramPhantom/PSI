@@ -10,6 +10,7 @@ export type AllComponentTypes = UserComponentType | AbstractComponentTypes;
 export type UserComponentType =
 	| DrawComponent
 	| "label-group"
+	| "simple-label-group"
 	| "label"
 	| "text"
 	| "latex"
