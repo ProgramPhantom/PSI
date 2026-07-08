@@ -199,6 +199,14 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return this.height;
 	}
 
+	public get drawContentWidth(): number {
+		return this.contentWidth;
+	}
+
+	public get drawContentHeight(): number {
+		return this.contentHeight;
+	}
+
 	public get drawCX(): number {
 		return this.cx + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
 	}

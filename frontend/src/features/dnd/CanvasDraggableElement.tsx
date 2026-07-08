@@ -293,8 +293,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						<rect
 							x={props.element.drawX}
 							y={props.element.drawY}
-							width={props.element.width}
-							height={props.element.height}
+							width={props.element.drawWidth}
+							height={props.element.drawHeight}
 							style={{
 								stroke: isDragging ? `none` : `${Colors.GRAY3}`,
 								strokeWidth: "1px",
@@ -316,8 +316,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					<rect
 						x={props.element.drawCX}
 						y={props.element.drawCY}
-						width={props.element.drawWidth}
-						height={props.element.drawHeight}
+						width={props.element.drawContentWidth}
+						height={props.element.drawContentHeight}
 						style={{
 							stroke: isDragging ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
 							strokeWidth: "1px",

@@ -56,6 +56,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return this.height + this.spill.top + this.spill.bottom;
 	}
 
+	public override get drawContentWidth(): number {
+		return this.contentWidth + this.spill.left + this.spill.right;
+	}
+
+	public override get drawContentHeight(): number {
+		return this.contentHeight + this.spill.top + this.spill.bottom;
+	}
+
 	public get drawCX(): number {
 		const offset = this.isFree ? 0 : this.offset[0];
 		return this.cx + offset - this.spill.left;
@@ -101,7 +109,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			super.y = val;
 		}
 	}
-	
+
 
 	get cellChildren(): C[] {
 		return this.children.filter(c => this.isCellChild(c));
