@@ -109,7 +109,6 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							newState.x = dropResult.data.x - (offsetX / scale);
 							newState.y = dropResult.data.y - (offsetY / scale);
 
-
 							newState.parentId = ENGINE.handler.diagram.id;
 							newState.placementMode = {
 								type: "free",
@@ -240,8 +239,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						position: "absolute",
 						left: props.element.drawX,
 						top: props.element.drawY,
-						width: props.element.width,
-						height: props.element.height,
+						width: props.element.drawWidth,
+						height: props.element.drawHeight,
 						pointerEvents: props.isHidden ? "none" : "auto"
 					}}>
 					<div
@@ -317,8 +316,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					<rect
 						x={props.element.drawCX}
 						y={props.element.drawCY}
-						width={props.element.contentWidth}
-						height={props.element.contentHeight}
+						width={props.element.drawWidth}
+						height={props.element.drawHeight}
 						style={{
 							stroke: isDragging ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
 							strokeWidth: "1px",

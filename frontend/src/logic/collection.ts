@@ -180,9 +180,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			this.svg.remove();
 		}
 
+		const offset = this.placementMode?.type === "free" ? [0, 0] : this.offset;
 		var group = new G().id(this.id).attr({ title: this.ref });
 		group.attr({
-			transform: `translate(${this.offset[0]}, ${this.offset[1]})`
+			transform: `translate(${offset[0]}, ${offset[1]})`
 		});
 
 		this.svg = group;
