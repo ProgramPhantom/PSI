@@ -681,7 +681,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 				noSections: this.placementMode.config.gridSize?.noCols ?? 1,
 				index: this.placementMode.config.coords?.col ?? 0,
-				orientation: this._pulseData?.orientation,
+				orientation: orientation,
 				alignment: {
 					x: this.placementMode.config.alignment?.x ?? "centre",
 					y: this.placementMode.config.alignment?.y ?? "far"
@@ -695,27 +695,31 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			return
 		}
 
-		let row: 0 | 1 | 2 = 0
-		switch (pulseData.orientation) {
-			case "top":
-				row = 0;
-				break;
-			case "both":
-				row = 1;
-				break;
-			case "bottom":
-				row = 2;
-				break;
+		let row = 0;
+		if (pulseData.orientation !== undefined) {
+			switch (pulseData.orientation) {
+				case "top":
+					row = 0;
+					break;
+				case "both":
+					row = 1;
+					break;
+				case "bottom":
+					row = 2;
+					break;
+			}
+		} else if (this.placementMode.config.coords !== undefined) {
+			row = this.placementMode.config.coords.row;
 		}
 
-		let coords: { row: number, col: number } = { row: row, col: 0 };
+		let col = 0;
 		if (pulseData.index !== undefined) {
-			coords.col = pulseData.index
+			col = pulseData.index;
+		} else if (this.placementMode.config.coords !== undefined) {
+			col = this.placementMode.config.coords.col;
 		}
-		if (this.placementMode.config.coords !== undefined) {
-			coords.col = this.placementMode.config.coords.col;
-			coords.row = this.placementMode.config.coords.row;
-		}
+
+		let coords: { row: number, col: number } = { row: row, col: col };
 
 		let alignment: Record<Dimensions, SiteNames> = {
 			x: "centre", y: pulseData.orientation === "bottom" ? "here" : "far"
