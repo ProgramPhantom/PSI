@@ -26,7 +26,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 					<AppShortcuts>
 						<MathJaxContext
 							src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
-							config={{ svg: { fontCache: "global" } }}
+							config={{ svg: { fontCache: "local" } }}
 						>
 							<StrictMode>
 								<PersistGate loading={null} persistor={persistor}>
