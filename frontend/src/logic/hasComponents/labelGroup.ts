@@ -37,6 +37,8 @@ export default class LabelGroup
 				offset: targetState.offset ?? [0, 0],
 				contentWidth: targetState.contentWidth ?? 0,
 				contentHeight: targetState.contentHeight ?? 0,
+				x: targetState.x,
+				y: targetState.y,
 				children: [
 					pulseState,
 					annotationState
