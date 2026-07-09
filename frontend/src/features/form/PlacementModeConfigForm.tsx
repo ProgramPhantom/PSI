@@ -76,39 +76,20 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					/>
 				</SimpleField>
 
-				<DoubleField
-					label="Align"
-					leftLabel="X"
-					leftField={
-						<Controller
-							control={control}
-							name={`${fullPrefix}pulseData.alignment.x`}
-							defaultValue="here"
-							render={({ field }) => (
-								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
-									<option value="here">Left</option>
-									<option value="centre">Centre</option>
-									<option value="far">Right</option>
-								</HTMLSelect>
-							)}
-						/>
-					}
-					rightLabel="Y"
-					rightField={
-						<Controller
-							control={control}
-							name={`${fullPrefix}pulseData.alignment.y`}
-							defaultValue="here"
-							render={({ field }) => (
-								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
-									<option value="here">Top</option>
-									<option value="centre">Centre</option>
-									<option value="far">Bottom</option>
-								</HTMLSelect>
-							)}
-						/>
-					}
-				/>
+				<SimpleField label="Align X">
+					<Controller
+						control={control}
+						name={`${fullPrefix}pulseData.alignment.x`}
+						defaultValue="here"
+						render={({ field }) => (
+							<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
+								<option value="here">Left</option>
+								<option value="centre">Centre</option>
+								<option value="far">Right</option>
+							</HTMLSelect>
+						)}
+					/>
+				</SimpleField>
 
 				<SimpleField label="No. Sections">
 					<Controller

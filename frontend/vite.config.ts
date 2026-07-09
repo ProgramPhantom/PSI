@@ -53,7 +53,19 @@ export default defineConfig({
 		})
 	],
 	build: {
-		sourcemap: true
+		sourcemap: true,
+		rollupOptions: {
+			output: {
+				manualChunks(id) {
+					if (id.includes("node_modules")) {
+						if (id.includes("@blueprintjs")) {
+							return "blueprintjs";
+						}
+						return "vendor";
+					}
+				}
+			}
+		}
 	},
 	css: {
 		preprocessorOptions: {

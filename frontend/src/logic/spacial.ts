@@ -721,11 +721,41 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 		let coords: { row: number, col: number } = { row: row, col: col };
 
-		let alignment: Record<Dimensions, SiteNames> = {
-			x: "centre", y: pulseData.orientation === "bottom" ? "here" : "far"
+		let yAlign: SiteNames = "far";
+		let effectiveOrientation = pulseData.orientation;
+		if (effectiveOrientation === undefined) {
+			switch (row) {
+				case 0:
+					effectiveOrientation = "top";
+					break;
+				case 1:
+					effectiveOrientation = "both";
+					break;
+				case 2:
+					effectiveOrientation = "bottom";
+					break;
+			}
 		}
+
+		if (effectiveOrientation === "bottom") {
+			yAlign = "here";
+		} else if (effectiveOrientation === "both") {
+			yAlign = "centre";
+		}
+
+		let alignment: Record<Dimensions, SiteNames> = {
+			x: pulseData.alignment?.x ?? "centre",
+			y: yAlign
+		}
+
+		let contribution = this.placementMode.config.contribution;
 		if (pulseData.orientation === "both") {
-			alignment = { x: "centre", y: "centre" }
+			contribution = { x: true, y: false }
+		} else if (contribution !== undefined) {
+			contribution = {
+				x: contribution.x,
+				y: true
+			}
 		}
 
 		this.placementMode.config = {
@@ -733,7 +763,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			"coords": coords,
 			"gridSize": { noRows: 1, noCols: pulseData?.noSections ?? 1 },
 
-			"contribution": pulseData.orientation === "both" ? { x: true, y: false } : this.placementMode.config.contribution,
+			"contribution": contribution,
 		}
 
 	}

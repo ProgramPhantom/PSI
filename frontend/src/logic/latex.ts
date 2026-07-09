@@ -1,6 +1,28 @@
 import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
-import TeXToSVG from "tex-to-svg";
 import { cascadeID } from "./util2";
+
+const MISSING_ASSET: Record<string, string> = import.meta.glob("../assets/app/MissingAsset2.svg", {
+	query: "?raw",
+	import: "default",
+	eager: true
+});
+const MISSING_ASSET_SVG_DATA: string = MISSING_ASSET["../assets/app/MissingAsset2.svg"];
+
+function TeXToSVG(tex: string): string {
+	const mathjax = (window as any).MathJax;
+	if (mathjax && typeof mathjax.tex2svg === "function") {
+		try {
+			const container = mathjax.tex2svg(tex);
+			const svg = container.querySelector("svg");
+			if (svg) {
+				return new XMLSerializer().serializeToString(svg);
+			}
+		} catch (e) {
+			console.error("MathJax conversion error:", e);
+		}
+	}
+	return MISSING_ASSET_SVG_DATA;
+}
 import { UserComponentType } from "./point";
 import { TextBase, ITextBase, EXTOPX, SCALER } from "./textBase";
 
@@ -37,22 +59,24 @@ export class LaTeX extends TextBase implements ILaTeX {
 		SVGobj.id("svgTempID");
 		SVGobj.attr({ preserveAspectRatio: "xMinYMin" });
 
-		var exWidthString: string = <string>SVGobj.width();
-		var exHeightString: string = <string>SVGobj.height();
+		var exWidthString: string = <string>SVGobj.width() || "50";
+		var exHeightString: string = <string>SVGobj.height() || "50";
 
-		exWidthString = Array.from(exWidthString)
-			.splice(0, exWidthString.length - 2)
-			.join("");
-		exHeightString = Array.from(exHeightString)
-			.splice(0, exHeightString.length - 2)
-			.join("");
-
-		var exWidth: number = Number(exWidthString);
-		var exHeight: number = Number(exHeightString);
+		var exWidth: number = parseFloat(exWidthString);
+		var exHeight: number = parseFloat(exHeightString);
 
 		SVGobj.remove();
 
-		return { width: exWidth * EXTOPX, height: exHeight * EXTOPX };
+		// If it's a MathJax SVG (has "ex" unit suffix)
+		if (exWidthString.endsWith("ex")) {
+			return { width: exWidth * EXTOPX, height: exHeight * EXTOPX };
+		}
+		
+		// If it's the fallback placeholder SVG (does not have "ex" unit)
+		// Scale it down to a height of 2ex so it matches normal text size
+		const targetHeight = 2.0 * EXTOPX;
+		const aspectRatio = exWidth / exHeight;
+		return { width: targetHeight * aspectRatio, height: targetHeight };
 	}
 
 	constructSVG(): void {
@@ -60,6 +84,24 @@ export class LaTeX extends TextBase implements ILaTeX {
 		const SVGEquation = TeXToSVG(`${this.text}`);
 
 		var crudeSvg: SVGElement = SVG(SVGEquation);
+
+		// If it's the fallback SVG (e.g. MissingAsset2.svg) or doesn't have the standard MathJax defs/g structure, use it as-is
+		const firstChildNode = crudeSvg.children()[0]?.node;
+		if (crudeSvg.children().length < 2 || !firstChildNode || firstChildNode.nodeName.toLowerCase() !== "defs") {
+			this.svg = crudeSvg;
+			this.svg.attr({ height: null, preserveAspectRatio: "xMinYMin" });
+			this.svg.width(this.contentWidth!);
+			this.svg.attr({ style: `color:${this.style.colour}` });
+			
+			if (this.style.background) {
+				this.svg.add(
+					SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`),
+					0
+				);
+			}
+			cascadeID(this.svg, this.id);
+			return;
+		}
 
 		var paths: SVGElement[] = crudeSvg.children()[0].children();
 		var pathDict: { [id: string]: SVGElement } = {};
