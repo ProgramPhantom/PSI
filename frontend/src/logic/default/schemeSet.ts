@@ -46,7 +46,6 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"5ccb5f37-7bd9-48e3-a076-a6a425131ad4": DEFAULT_TRAPEZIUM,
 				"09584fb0-d0dc-482a-bf9d-609a204035a0": DEFAULT_90H,
 				"73ea4ef5-bcca-47e0-bb4c-70488cf7b66e": DEFAULT_180H,
-				"dcfed31a-e1bd-4012-8777-2cec4e6b7759": DEFAULT_SUBSEQUENCE,
 
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DISPSI2,
 			}
