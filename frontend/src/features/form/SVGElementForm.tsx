@@ -2,7 +2,8 @@ import {
 	Button,
 	Callout,
 	ControlGroup,
-	HTMLSelect
+	HTMLSelect,
+	Switch
 } from "@blueprintjs/core";
 import React, { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
@@ -95,6 +96,21 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 						);
 					}}
 				/>
+				<SimpleField inline={true} label="Flipped">
+					<Controller
+						control={formControls.control}
+						name={`${fullPrefix}flipped`}
+						render={({ field }) => (
+							<Switch
+								{...field}
+								id="svg-flipped-switch"
+								onChange={(e) => field.onChange(e.target.checked)}
+								checked={field.value}
+								className={fieldStyles.compactSwitch}
+							/>
+						)}
+					/>
+				</SimpleField>
 			</ControlGroup >
 
 			<VisualForm target={props.target} heightDisplay={true} widthDisplay={true}></VisualForm>

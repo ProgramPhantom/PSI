@@ -83,27 +83,17 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 			this.svg = SVG(MISSING_ASSET_SVG_DATA);
 		}
 
-
-
 		// Clear old svg
 		if (this.svg) {
 			this.svg.remove();
 		}
 
-		// Flip svg depending on orientation.
-		// if (
-		// 	(!this.flipped && this.mountConfig?.orientation === "bottom")
-		// 	|| (this.flipped && this.mountConfig?.orientation === "top")
-		// ) {
-		// 	this.flipped = !this.flipped;
-		// 	this.verticalFlip();
-		// }
-		// 
-		// if (this.flipped) {
-		// 	this.offset = [this.offset[0], -Math.abs(this.offset[1])];
-		// } else {
-		// 	this.offset = [this.offset[0], Math.abs(this.offset[1])];
-		// }
+		// Apply flip based on this.flipped
+		if (this.flipped) {
+			this.elementGroup.transform({ flip: "y", origin: "center" });
+		} else {
+			this.elementGroup.transform({});
+		}
 
 		// Position, size and draw svg.
 		this.svg.move(this.drawCX, this.drawCY);
@@ -116,18 +106,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		super.draw(surface);
 	}
 
-	public override setVerticalFlip(flipped: boolean) {
-		if (this.flipped === flipped) {
-			return
-		}
-		// https://stackoverflow.com/questions/65514861/transform-is-not-applied-on-embedded-svgs-chrome
 
-		//this.elementGroup.transform({a: 1, b: 0, c: 0, d: -1, e: 0, f: 0})
-		this.elementGroup.transform({ flip: "y", origin: "center" }, true);
-
-		this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
-		this.flipped = flipped
-	}
 
 	public static isSVGElement(obj: any): obj is SVGElement {
 		return (obj as SVGElement).asset !== undefined;

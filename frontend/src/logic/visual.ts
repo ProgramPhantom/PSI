@@ -11,6 +11,7 @@ export type Display = "none" | "block";
 
 export interface IVisual extends IPaddedBox {
 	offset: [number, number];
+	flipped?: boolean;
 }
 
 export interface IDraw {
@@ -35,6 +36,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	get state(): IVisual {
 		return {
 			offset: this.offset,
+			flipped: this.flipped,
 			...super.state
 		};
 	}
@@ -61,6 +63,12 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		super(params);
 
 		this.offset = params.offset;
+		this.flipped = params.flipped ?? (isPulse(this) && this.pulseData?.orientation === "bottom");
+
+		if (this.flipped) {
+			this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
+			this.offset = [this.offset[0], -Math.abs(this.offset[1])];
+		}
 	}
 
 
@@ -125,14 +133,6 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	public computePositions(root: { x: number, y: number }) {
 		super.computePositions(root);
 
-		if (isPulse(this)) {
-			if (this.pulseData.orientation === "bottom") {
-				this.setVerticalFlip(true);
-			} else {
-				this.setVerticalFlip(false)
-			}
-		}
-
 		return
 	}
 
@@ -142,22 +142,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		this.computePositions({ x: 0, y: 0 });
 	}
 
-	protected setVerticalFlip(flipped: boolean) {
-		if (this.flipped === flipped) {
-			return
-		}
 
-		// TODO: this is slightly problematic
-		this.offset = [this.offset[0], -Math.abs(this.offset[1])]; // Strange entanglement error was happening here
-
-		this.svg?.children().forEach((c) => {
-			c.transform({ flip: "y" });
-		});
-
-		this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
-
-		this.flipped = flipped;
-	}
 
 	// Construct and SVG with children positioned relative to (0, 0)
 	public getInternalRepresentation(): Element | undefined {
