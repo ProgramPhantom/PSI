@@ -1,0 +1,39 @@
+.dialogBody {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 0;
+	min-height: 0;
+	overflow: hidden;
+	padding: 8px 8px !important;
+	margin: 0 !important;
+}
+
+.dialogTabs {
+	height: 100%;
+	padding: 0;
+	margin: 0;
+
+	// Tab header list on the left
+	> :global(.bp5-tab-list) {
+		padding: 2px 0;
+		border-right: 1px solid rgba(17, 20, 24, 0.15);
+		margin-right: 0px;
+		gap: 0px;
+	}
+
+	// Individual tab buttons
+	:global(.bp5-tab) {
+		padding: 0px 0px;
+		font-size: 13px;
+	}
+}
+
+.dialogTabPanel {
+	height: 100% !important;
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 0;
+	min-height: 0;
+	padding: 0 0px 0 4px !important;
+	margin: 0 !important;
+}

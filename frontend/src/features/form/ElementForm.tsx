@@ -148,7 +148,7 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 										id={"labels"}
 										title={"Annotation"}
 										panel={
-											<div style={{ flex: "1 1 0", display: "flex", flexDirection: "column" }}>
+											<div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
 												<FormProvider {...roleFormControls}>
 													<LabelListForm target={props.target}></LabelListForm>
 												</FormProvider>

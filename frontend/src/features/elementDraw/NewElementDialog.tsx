@@ -1,16 +1,11 @@
 import { Button, Dialog, DialogBody, DialogFooter, Tab, Tabs } from "@blueprintjs/core";
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import ENGINE from "../../logic/engine";
-import { ILabel } from "../../logic/hasComponents/label";
-import { ILabelGroup } from "../../logic/hasComponents/labelGroup";
-import { UserComponentType } from "../../logic/point";
-import { IRectElement } from "../../logic/rectElement";
-import { ISVGElement } from "../../logic/svgElement";
-import { IVisual } from "../../logic/visual";
-import { ElementForm, SubmitButtonRef } from "../form/ElementForm";
 import { useDispatch } from "react-redux";
+import { UserComponentType } from "../../logic/point";
+import { IVisual } from "../../logic/visual";
 import { addComponent } from "../../redux/slices/schemesSlice";
+import { ElementForm, SubmitButtonRef } from "../form/ElementForm";
+import styles from "./styles/NewElementDialog.module.scss";
 
 
 interface INewElementDialog {
@@ -20,7 +15,7 @@ interface INewElementDialog {
 }
 
 export default function NewElementDialog(props: INewElementDialog) {
-	const [tabId, setTabId] = useState<UserComponentType>("svg");
+	const [tabId, setTabId] = useState<UserComponentType>("rect");
 	const submitRef = useRef<SubmitButtonRef>(null);
 	const dispatch = useDispatch()
 
@@ -33,22 +28,25 @@ export default function NewElementDialog(props: INewElementDialog) {
 		<>
 			{/* New Element Dialog */}
 			<Dialog
-				style={{ width: "600px", height: "60vh" }}
+				style={{ width: "800px", height: "75vh" }}
 				isOpen={props.isOpen}
 				onClose={props.close}
 				title="Add New Template Element"
 				canOutsideClickClose={true}
 				canEscapeKeyClose={true}>
-				<DialogBody>
+				<DialogBody className={styles.dialogBody}>
 					<Tabs vertical={true}
 						id="newElementTabs"
+						className={styles.dialogTabs}
 						defaultSelectedTabId="rect"
 						selectedTabId={tabId}
 						renderActiveTabPanelOnly={true}
+						fill={true}
 						onChange={(id) => setTabId(id as UserComponentType)}>
 						<Tab
 							id="rect"
 							title="Rect"
+							panelClassName={styles.dialogTabPanel}
 							panel={
 								<ElementForm
 									ref={submitRef}
@@ -59,6 +57,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 						<Tab
 							id="svg"
 							title="SVG"
+							panelClassName={styles.dialogTabPanel}
 							panel={
 								<ElementForm
 									ref={submitRef}
@@ -66,16 +65,17 @@ export default function NewElementDialog(props: INewElementDialog) {
 									callback={addNewTemplate}></ElementForm>
 							}
 						/>
-						<Tab
+						{/* <Tab
 							id="label"
 							title="Label"
+							panelClassName={styles.dialogTabPanel}
 							panel={
 								<ElementForm
 									ref={submitRef}
 									objectType="label"
 									callback={addNewTemplate}></ElementForm>
 							}
-						/>
+						/> */}
 					</Tabs>
 				</DialogBody>
 
