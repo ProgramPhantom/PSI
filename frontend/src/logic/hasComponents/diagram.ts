@@ -78,6 +78,23 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 		super(params);
 	}
 
+	public override getTopLeft(): { x: number, y: number } {
+		if (this.children.length === 0) {
+			return { x: 0, y: 0 };
+		}
+
+		let top: number = Infinity;
+		let left: number = Infinity;
+
+		this.children.forEach((c) => {
+			const cb = c.drawBound;
+			top = cb.top < top ? cb.top : top;
+			left = cb.left < left ? cb.left : left;
+		});
+
+		return { x: left, y: top };
+	}
+
 	public override computeSize(): Size {
 		var size: Size = { width: 0, height: 0 }
 
