@@ -24,7 +24,6 @@ export default class LabelGroup
 			ClearIDs(pulseState);
 			pulseState.role = "coreChild";
 			pulseState.padding = [0, 0, 0, 0];
-			pulseState.offset = [0, 0];
 
 			const labelGroupState: ILabelGroup = {
 				type: "label-group",
@@ -34,7 +33,7 @@ export default class LabelGroup
 				placementMode: structuredClone(pulseState.placementMode),
 				sizeMode: { x: "fit", y: "fit" },
 				padding: targetState.padding ?? [0, 0, 0, 0],
-				offset: targetState.offset ?? [0, 0],
+				offset: [0, 0],
 				contentWidth: targetState.contentWidth ?? 0,
 				contentHeight: targetState.contentHeight ?? 0,
 				x: targetState.x,

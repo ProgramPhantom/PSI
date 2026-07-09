@@ -63,7 +63,10 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	const widthActive = currentX === "fixed";
 	const heightActive = currentY === "fixed";
 
-	const isCollection = theseVals && Collection.isCollection(theseVals);
+	const isCollection = !!(
+		(theseVals && Collection.isCollection(theseVals)) ||
+		(props.target && Collection.isICollection(props.target))
+	);
 	const placementModeType = watchedPlacementModeType ?? theseVals?.placementMode?.type ?? props.target?.placementMode?.type ?? "free";
 	const placementControl = watchedPlacementControl ?? theseVals?.placementControl ?? props.target?.placementControl ?? "user";
 	let sizeOptions = isCollection ? ["fit", "grow"] : ["fixed", "fit", "grow"];
@@ -283,81 +286,83 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 			</Section>
 
 			{/* Offset */}
-			<Section
-				className={sectionStyles.minimalSection}
-				style={{ padding: 0 }}
-				collapseProps={{
-					defaultIsOpen: false,
-					transitionDuration: 0,
-				}}
-				compact={true}
-				title={
-					"Offset"
-				}
-				collapsible={true}>
-				<ControlGroup vertical={true} className={styles.formGroupContainer}>
-					<DoubleField
-						intent={(errors?.offset?.[0] || errors?.offset?.[1]) ? "danger" : "none"}
-						helperText={(errors?.offset?.[0]?.message || errors?.offset?.[1]?.message)?.toString()}
-						leftLabel="X"
-						leftField={
-							<Controller
-								control={formControls.control}
-								name={`${fullPrefix}offset.0`}
-								render={({ field }) => (
-									<NumericInput
-										{...field}
-										id="offset0"
-										className={fieldStyles.compactNumericInput}
-										onBlur={field.onChange}
-										onValueChange={field.onChange}
-										size="small"
-										fill
-										intent={errors?.offset?.[0] ? "danger" : "none"}
-										allowNumericCharactersOnly={true}
-									/>
-								)}
-								rules={{
-									required: "Offset is required",
-									min: {
-										value: -2000,
-										message: "Offset must be greater than -2000"
-									},
-									max: { value: 2000, message: "Offset cannot exceed 2000" }
-								}}
-							/>
-						}
-						rightLabel="Y"
-						rightField={
-							<Controller
-								control={formControls.control}
-								name={`${fullPrefix}offset.1`}
-								render={({ field }) => (
-									<NumericInput
-										{...field}
-										id="offset1"
-										className={fieldStyles.compactNumericInput}
-										onBlur={field.onChange}
-										onValueChange={field.onChange}
-										size="small"
-										fill
-										intent={errors?.offset?.[1] ? "danger" : "none"}
-										allowNumericCharactersOnly={true}
-									/>
-								)}
-								rules={{
-									required: "Offset is required",
-									min: {
-										value: -2000,
-										message: "Offset must be greater than -2000"
-									},
-									max: { value: 2000, message: "Offset cannot exceed 2000" }
-								}}
-							/>
-						}
-					/>
-				</ControlGroup>
-			</Section>
+			{!isCollection && (
+				<Section
+					className={sectionStyles.minimalSection}
+					style={{ padding: 0 }}
+					collapseProps={{
+						defaultIsOpen: false,
+						transitionDuration: 0,
+					}}
+					compact={true}
+					title={
+						"Offset"
+					}
+					collapsible={true}>
+					<ControlGroup vertical={true} className={styles.formGroupContainer}>
+						<DoubleField
+							intent={(errors?.offset?.[0] || errors?.offset?.[1]) ? "danger" : "none"}
+							helperText={(errors?.offset?.[0]?.message || errors?.offset?.[1]?.message)?.toString()}
+							leftLabel="X"
+							leftField={
+								<Controller
+									control={formControls.control}
+									name={`${fullPrefix}offset.0`}
+									render={({ field }) => (
+										<NumericInput
+											{...field}
+											id="offset0"
+											className={fieldStyles.compactNumericInput}
+											onBlur={field.onChange}
+											onValueChange={field.onChange}
+											size="small"
+											fill
+											intent={errors?.offset?.[0] ? "danger" : "none"}
+											allowNumericCharactersOnly={true}
+										/>
+									)}
+									rules={{
+										required: "Offset is required",
+										min: {
+											value: -2000,
+											message: "Offset must be greater than -2000"
+										},
+										max: { value: 2000, message: "Offset cannot exceed 2000" }
+									}}
+								/>
+							}
+							rightLabel="Y"
+							rightField={
+								<Controller
+									control={formControls.control}
+									name={`${fullPrefix}offset.1`}
+									render={({ field }) => (
+										<NumericInput
+											{...field}
+											id="offset1"
+											className={fieldStyles.compactNumericInput}
+											onBlur={field.onChange}
+											onValueChange={field.onChange}
+											size="small"
+											fill
+											intent={errors?.offset?.[1] ? "danger" : "none"}
+											allowNumericCharactersOnly={true}
+										/>
+									)}
+									rules={{
+										required: "Offset is required",
+										min: {
+											value: -2000,
+											message: "Offset must be greater than -2000"
+										},
+										max: { value: 2000, message: "Offset cannot exceed 2000" }
+									}}
+								/>
+							}
+						/>
+					</ControlGroup>
+				</Section>
+			)}
 
 			{/* Advanced */}
 			<Section

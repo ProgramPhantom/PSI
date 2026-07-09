@@ -109,6 +109,13 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		params: ICollection,
 	) {
 		super(params);
+		// Forces offset to be 0, 0 for collections
+		Object.defineProperty(this, "offset", {
+			get: () => [0, 0],
+			set: () => { },
+			configurable: true,
+			enumerable: true
+		});
 	}
 
 	// ---------------- Compute -------------------------
