@@ -17,7 +17,38 @@ import { loadAsset } from "./assetThunks";
 // -------------- Pure thunks ------------------
 export const getDiagramThunk = createAsyncThunk<File, string>(
     'diagrams/getDiagram',
-    async (diagramId) => {
+    async (diagramId, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+
+        let foundDiagram: any = null;
+        if (state.schemes?.schemes) {
+            for (const schemeInfo of Object.values(state.schemes.schemes)) {
+                const comp = schemeInfo.scheme?.components?.[diagramId];
+                if (comp && comp.type === "diagram") {
+                    foundDiagram = comp;
+                    break;
+                }
+            }
+        }
+
+        if (foundDiagram) {
+            const zip = new JSZip();
+            zip.file("diagram.json", JSON.stringify(foundDiagram, null, 2));
+
+            const manifest = {
+                format: "nmr-pulse-diagram",
+                version: 1,
+                UUID: diagramId,
+                source: "local",
+                diagramName: foundDiagram.ref || "unnamed",
+                dateCreated: new Date().toISOString()
+            };
+            zip.file("manifest.json", JSON.stringify(manifest));
+
+            const blob = await zip.generateAsync({ type: "blob" });
+            return new File([blob], `${foundDiagram.ref || "diagram"}.nmrd`, { type: "application/zip" }) as unknown as File;
+        }
+
         const response = await fetch(`/api/diagrams/${diagramId}`, { credentials: 'include', cache: "reload" });
         if (!response.ok) throw new Error('Failed to fetch diagram');
         return response.blob() as unknown as File;

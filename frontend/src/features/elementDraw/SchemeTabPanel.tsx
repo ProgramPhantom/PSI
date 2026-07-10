@@ -4,6 +4,8 @@ import { isPulse } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { InternalSchemeId } from "../../redux/slices/schemesSlice";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
+import DiagramElementList from "./DiagramElementList";
+import Diagram from "../../logic/hasComponents/diagram";
 import styles from "./styles/SchemeTabPanel.module.scss";
 
 interface SchemeTabPanelProps {
@@ -15,7 +17,8 @@ interface SchemeTabPanelProps {
 }
 
 const filterElement = (element: Visual, filter: string) => {
-	if (filter === "All") return true;
+	if (filter === "All") return element.type !== "diagram";
+	if (filter === "diagrams") return element.type === "diagram";
 	if (filter === "Hard") {
 		return isPulse(element) && element.pulseData?.pulseType?.category === "shape" && element.pulseData.pulseType.type === "Hard";
 	}
@@ -63,45 +66,55 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 						<Tab id="Adiabatic" title="Adiabatic" />
 						<Tab id="PFGs" title="PFGs" />
 						<Tab id="Annotation" title="Annotation" />
+						<Tab id="diagrams" title="Diagrams" style={{ marginLeft: "auto" }} />
 					</Tabs>
 				</div>
 
-				<div className={`${styles.elementGrid} custom-scrollbar`}>
-					{/* Plus button for adding new elements */}
-					{schemeName !== InternalSchemeId ? (
-						<div
-							className={styles.addNewCard}
-							onClick={() => setIsNewElementDialogOpen(true)}
-							title="Add new template element"
-						>
-							<div style={{ fontSize: "32px", color: "#5c7080", marginBottom: "8px" }}>
-								+
+				{filter === "diagrams" ? (
+					<DiagramElementList
+						diagramElements={Object.entries(schemeSingletons)
+							.filter(([id, com]) => filterElement(com, filter))
+							.map(([id, com]) => com as Diagram)}
+					/>
+				) : (
+					<div className={`${styles.elementGrid} custom-scrollbar`}>
+						{/* Plus button for adding new elements */}
+						{schemeName !== InternalSchemeId ? (
+							<div
+								className={styles.addNewCard}
+								onClick={() => setIsNewElementDialogOpen(true)}
+								title="Add new template element"
+							>
+								<div style={{ fontSize: "32px", color: "#5c7080", marginBottom: "8px" }}>
+									+
+								</div>
+								<span style={{ fontSize: "12px", color: "#5c7080", fontWeight: "600", textAlign: "center", lineHeight: "1.4" }}>
+									Add New
+								</span>
 							</div>
-							<span style={{ fontSize: "12px", color: "#5c7080", fontWeight: "600", textAlign: "center", lineHeight: "1.4" }}>
-								Add New
-							</span>
-						</div>
-					) : (
-						<></>
-					)}
+						) : (
+							<></>
+						)}
 
-					{Object.entries(schemeSingletons)
-						.filter(([id, com]) => filterElement(com, filter))
-						.map(([template_id, visual]) => {
-							return (
-								<TemplateDraggableElement
-									key={template_id}
-									element={visual}
-									onDoubleClick={handleElementDoubleClick}
-									schemeId={schemeId}
-									templateId={template_id}
-								/>
-							);
-						})}
-				</div>
+						{Object.entries(schemeSingletons)
+							.filter(([id, com]) => filterElement(com, filter))
+							.map(([template_id, visual]) => {
+								return (
+									<TemplateDraggableElement
+										key={template_id}
+										element={visual}
+										onDoubleClick={handleElementDoubleClick}
+										schemeId={schemeId}
+										templateId={template_id}
+									/>
+								);
+							})}
+					</div>
+				)}
 			</div>
 		</div>
 	);
 };
 
 export default SchemeTabPanel;
+
