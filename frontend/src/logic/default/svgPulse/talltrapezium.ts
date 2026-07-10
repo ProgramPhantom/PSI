@@ -13,6 +13,10 @@ export const DEFAULT_TALLTRAPEZIUM: ISVGElement = {
 		"noSections": 1,
 	},
 
+	"pulseData": {
+		"pulseType": { "category": "PFG" }
+	},
+
 	"ref": "talltrapezium",
 	"style": {},
 	"type": "svg"

@@ -13,6 +13,10 @@ export const DEFAULT_AMP: ISVGElement = {
 		"noSections": 1,
 	},
 
+	"pulseData": {
+		"pulseType": { "category": "shape", "type": "Soft (shaped)" }
+	},
+
 	"ref": "amp",
 	"style": {},
 	"type": "svg"

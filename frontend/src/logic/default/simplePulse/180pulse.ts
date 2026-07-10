@@ -13,6 +13,10 @@ export const DEFAULT_180H: IRectElement = {
 		"noSections": 1,
 	},
 
+	"pulseData": {
+		"pulseType": { "category": "shape", "type": "Hard" }
+	},
+
 	"style": {
 		"fill": "#000000",
 		"stroke": "black",

@@ -13,6 +13,10 @@ export const DEFAULT_SALTIREHILO: ISVGElement = {
 		"noSections": 1,
 	},
 
+	"pulseData": {
+		"pulseType": { "category": "shape", "type": "Adiabatic" }
+	},
+
 	"ref": "saltirehilo",
 	"style": {},
 	"type": "svg"

@@ -13,6 +13,10 @@ export const DEFAULT_CHIRPLOHI: ISVGElement = {
 		"noSections": 1,
 	},
 
+	"pulseData": {
+		"pulseType": { "category": "shape", "type": "Adiabatic" }
+	},
+
 	"ref": "chirplohi",
 	"style": {},
 	"type": "svg"

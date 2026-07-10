@@ -13,6 +13,10 @@ export const DEFAULT_180S: ISVGElement = {
 		"noSections": 1,
 	},
 
+	"pulseData": {
+		"pulseType": { "category": "shape", "type": "Soft (shaped)" }
+	},
+
 	"ref": "180-Soft",
 	"style": {},
 	"type": "svg"

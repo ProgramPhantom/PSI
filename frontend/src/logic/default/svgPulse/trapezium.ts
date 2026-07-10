@@ -13,6 +13,10 @@ export const DEFAULT_TRAPEZIUM: ISVGElement = {
 		"noSections": 1,
 	},
 
+	"pulseData": {
+		"pulseType": { "category": "PFG" }
+	},
+
 	"ref": "trapezium",
 	"style": {},
 	"type": "svg"

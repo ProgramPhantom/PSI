@@ -13,6 +13,10 @@ export const DEFAULT_HALFSINE: ISVGElement = {
 		"noSections": 1,
 	},
 
+	"pulseData": {
+		"pulseType": { "category": "PFG" }
+	},
+
 	"ref": "halfsine",
 	"style": {},
 	"type": "svg"

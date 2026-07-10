@@ -15,6 +15,10 @@ export const DISPSI2: ILabelGroup = {
         "noSections": 1,
     },
 
+    "pulseData": {
+        "pulseType": { "category": "shape", "type": "Composite" }
+    },
+
 
     "children": [
         {
