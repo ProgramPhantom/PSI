@@ -13,12 +13,19 @@ interface IHitboxLayerProps {
 const BASE_LAYER = 10000;
 
 interface IFocusRules {
-	alwaysSelectable: AllComponentTypes[];
+	alwaysSelectable: (AllComponentTypes | ((element: Visual) => boolean))[];
 	notSelectableIfChildOf: Partial<Record<AllComponentTypes, AllComponentTypes[]>>;
 }
 
 export const FocusRules: IFocusRules = {
-	alwaysSelectable: ["channel", "svg", "rect", "label-group", "simple-label-group"],
+	alwaysSelectable: [
+		"channel",
+		"svg",
+
+		"label-group",
+		"simple-label-group",
+		(element: Visual) => element.pulseData !== undefined && element.placementMode?.type === "grid"
+	],
 	notSelectableIfChildOf: {
 		"svg": ["label-group", "simple-label-group"],
 		"rect": ["label-group", "simple-label-group"]
@@ -73,7 +80,14 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			const type: UserComponentType = (bottomUpCurr.constructor as typeof Visual).ElementType;
 			const exceptions: AllComponentTypes[] = FocusRules.notSelectableIfChildOf[type] || [];
 
-			if (FocusRules.alwaysSelectable.includes(type)) {
+			const isAlwaysSelectable = FocusRules.alwaysSelectable.some((rule) => {
+				if (typeof rule === "function") {
+					return rule(bottomUpCurr!);
+				}
+				return rule === type;
+			});
+
+			if (isAlwaysSelectable) {
 				let excluded = false;
 				let ancestor: Visual | undefined = ENGINE.handler.identifyElement(bottomUpCurr.parentId ?? "");
 
