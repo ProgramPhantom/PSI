@@ -4,14 +4,12 @@ import React, { CSSProperties, memo, useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { HandleStyles } from "react-rnd";
+import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
+import LabelGroup from "../../logic/hasComponents/labelGroup";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
-import { ActionResult } from "../../logic/diagramHandler";
-import { appToaster } from "../../app/Toaster";
-import { ClearIDs } from "../../logic/collection";
-import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
 
 
 const style: CSSProperties = {

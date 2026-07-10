@@ -27,11 +27,11 @@ interface IPulseDataAreaResult {
 	orientation: Orientation;
 	insert: boolean;
 }
-export type PulseDropResultType = {type: "pulse", data: IPulseDataAreaResult}
+export type PulseDropResultType = { type: "pulse", data: IPulseDataAreaResult }
 
 
-function PulseInsertArea(props: {areaSpec: IPulseArea; key: string}) {
-	const [{canDrop, isOver}, drop] = useDrop(() => ({
+function PulseInsertArea(props: { areaSpec: IPulseArea; key: string }) {
+	const [{ canDrop, isOver }, drop] = useDrop(() => ({
 		accept: [DragElementTypes.PULSE, DragElementTypes.ATOMIC_PREFAB, DragElementTypes.FREE],
 		drop: () =>
 			({
@@ -46,7 +46,7 @@ function PulseInsertArea(props: {areaSpec: IPulseArea; key: string}) {
 			}) as PulseDropResultType,
 		collect: (monitor) => ({
 			isOver: monitor.isOver(),
-			isOverCurrent: monitor.isOver({shallow: false}),
+			isOverCurrent: monitor.isOver({ shallow: false }),
 			canDrop: monitor.canDrop()
 		})
 	}));
@@ -77,7 +77,7 @@ function PulseInsertArea(props: {areaSpec: IPulseArea; key: string}) {
 	return (
 		<div
 			ref={drop}
-			style={{...style, backgroundColor, pointerEvents: "auto",}}
+			style={{ ...style, backgroundColor, pointerEvents: "auto", }}
 			data-testid={props.areaSpec.channelID + props.areaSpec.index}
 			key={props.key}></div>
 	);
