@@ -1,7 +1,7 @@
 import { Button } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
 import { Element } from "@svgdotjs/svg.js";
-import React, { CSSProperties, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { appToaster } from "../../app/Toaster";
@@ -9,31 +9,14 @@ import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import { Subgrid } from "../../logic/grid";
 import Visual, { IVisual } from "../../logic/visual";
-import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
+import LabelGroup from "../../logic/hasComponents/labelGroup";
 import { useAppDispatch } from "../../redux/hooks";
 import { InternalSchemeId } from "../../redux/slices/schemesSlice";
 import { deleteComponentThunk } from "../../redux/thunks/schemeThunks";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 
 
-const style: CSSProperties = {
-	border: "1px solid #d3d8de",
-	backgroundColor: "white",
-	padding: "12px 8px",
-	marginRight: "0.5rem",
-	marginBottom: "0.5rem",
-	cursor: "move",
-	float: "left",
-	width: "100px",
-	height: "60px",
-	borderRadius: "4px",
-	boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-	transition: "all 0.2s ease",
-	display: "flex",
-	flexDirection: "column",
-	alignItems: "center",
-	justifyContent: "center"
-};
+
 
 
 
@@ -70,7 +53,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				return;
 			}
 
-			var singletonState: IVisual = structuredClone(props.element.state);
+			const singletonState: IVisual = structuredClone(props.element.state);
 
 			ClearIDs(singletonState)  // Required
 
@@ -93,7 +76,10 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					break;
 				case "pulse": {
 					const orientation = singletonState.pulseLayoutConfig?.orientation !== "both" ? dropResult.data.orientation : "both";
-					const yAlign = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";
+					let yAlign: "here" | "centre" | "far" = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";
+					if (singletonState.type === "label" || singletonState.type === "text" || singletonState.type === "latex") {
+						yAlign = "centre";
+					}
 					singletonState.pulseLayoutConfig = {
 						channelID: dropResult.data.channelID,
 						sequenceID: dropResult.data.sequenceID,
@@ -116,7 +102,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 						config: {}
 					}
 
-					singletonState.flipped = singletonState.pulseLayoutConfig.orientation === "bottom" ? true : false
+					singletonState.flipped = singletonState.pulseLayoutConfig?.orientation === "bottom" ? true : false
 
 					if (dropResult.data.insert === true) {
 						ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
@@ -146,7 +132,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 						}
 					})
 					break;
-				case "labelGroup":
+				case "labelGroup": {
 					const pulseElement = ENGINE.handler.identifyElement(dropResult.data.pulseId);
 					if (pulseElement) {
 						const textElementState = structuredClone(props.element.state);
@@ -170,6 +156,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 						});
 					}
 					break;
+				}
 			}
 		},
 		collect: (monitor) => ({
@@ -182,7 +169,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 
 	// Get visual
 	const element = useRef<Element>(props.element.getInternalRepresentation()!)
-	var visualRef = useRef<SVGSVGElement | null>(null);
+	const visualRef = useRef<SVGSVGElement | null>(null);
 
 	useEffect(() => {
 		if (visualRef.current) {
@@ -195,7 +182,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 
 	useEffect(() => {
 		preview(getEmptyImage(), { captureDraggingState: true });
-	}, []);
+	}, [preview]);
 
 	const handleDoubleClick = () => {
 		if (props.onDoubleClick) {

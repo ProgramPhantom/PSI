@@ -31,7 +31,7 @@ const filterElement = (element: Visual, filter: string) => {
 	if (filter === "PFGs") {
 		return isPulse(element) && element.pulseData?.pulseType?.category === "PFG";
 	}
-	if (filter === "Annotation") return element.type === "label" || element.type === "text";
+	if (filter === "Annotation") return element.type === "label" || element.type === "text" || element.type === "latex";
 	return true;
 };
 

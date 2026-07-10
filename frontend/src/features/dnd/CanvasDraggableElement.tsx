@@ -1,9 +1,8 @@
 import { Colors, Icon, Tooltip } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
-import React, { CSSProperties, memo, useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
-import { HandleStyles } from "react-rnd";
 import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import LabelGroup from "../../logic/hasComponents/labelGroup";
@@ -12,42 +11,7 @@ import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 
 
-const style: CSSProperties = {
-	border: "1px dashed gray",
-	backgroundColor: "white",
-	padding: "0.5rem 1rem",
-	marginRight: "1.5rem",
-	marginBottom: "1.5rem",
-	cursor: "move",
-	float: "left",
-	width: "100px",
-	height: "30px"
-};
 
-const handleStyle: React.CSSProperties = {
-	width: "2px",
-	height: "2px",
-	borderRadius: "50%",
-	borderColor: "#a7acb0",
-	borderWidth: "1px",
-	borderStyle: "solid",
-	backgroundColor: "white",
-
-	display: "inline-block",
-	transform: "translate(-50%, -50%)",
-	transformOrigin: "top left"
-};
-
-const hStyle: HandleStyles = {
-	topLeft: { ...handleStyle, left: 0, top: 0 },
-	top: { ...handleStyle, left: "50%", top: 0 },
-	topRight: { ...handleStyle, left: "100%", top: 0 },
-	left: { ...handleStyle, left: 0, top: "50%" },
-	right: { ...handleStyle, left: "100%", top: "50%" },
-	bottomLeft: { ...handleStyle, left: 0, top: "100%" },
-	bottom: { ...handleStyle, left: "50%", top: "100%" },
-	bottomRight: { ...handleStyle, left: "100%", top: "100%" }
-};
 
 interface IDraggableElementProps {
 	name: string;
@@ -94,10 +58,10 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						return;
 					}
 
-					let newState: IVisual = { ...item.element.state }
+					const newState: IVisual = { ...item.element.state }
 
 					switch (dropResult.type) {
-						case "canvas":
+						case "canvas": {
 							const scale = ENGINE.surface.node.getScreenCTM()?.a ?? 1;
 
 							const offsetX = item.offset?.x ?? 0;
@@ -120,9 +84,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								}
 							})
 							break;
+						}
 						case "pulse": {
 							const orientation = newState.pulseLayoutConfig?.orientation !== "both" ? dropResult.data.orientation : "both";
-							const yAlign = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";
+							let yAlign: "here" | "centre" | "far" = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";
+							if (newState.type === "label" || newState.type === "text" || newState.type === "latex") {
+								yAlign = "centre";
+							}
 							newState.pulseLayoutConfig = {
 								channelID: dropResult.data.channelID,
 								sequenceID: dropResult.data.sequenceID,
@@ -144,7 +112,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								config: {}
 							}
 
-							newState.flipped = newState.pulseLayoutConfig.orientation === "bottom" ? true : false
+							newState.flipped = newState.pulseLayoutConfig?.orientation === "bottom" ? true : false
 
 							if (dropResult.data.insert === true) {
 								ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
@@ -169,7 +137,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							newState.parentId = dropResult.data.id;
 
 							break;
-						case "labelGroup":
+						case "labelGroup": {
 							const pulseElement = ENGINE.handler.identifyElement(dropResult.data.pulseId);
 							if (pulseElement) {
 								const textElementState = structuredClone(props.element.state);
@@ -202,6 +170,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								});
 							}
 							break;
+						}
 					}
 				},
 				collect: (monitor) => ({
@@ -212,14 +181,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 			[props.x, props.y, props.name, props.element]
 		);
 
-		var visualRef = useRef<SVGSVGElement | null>(null);
-		const [visualState, setVisualState] = useState<SVGElement | null>(null);
-		var visual = props.element.getInternalRepresentation()!.show();
+		const visualRef = useRef<SVGSVGElement | null>(null);
+		const visual = props.element.getInternalRepresentation()!.show();
 
 		// Removed the default preview?
 		useEffect(() => {
 			preview(getEmptyImage(), { captureDraggingState: true });
-		}, []);
+		}, [preview]);
 
 		useEffect(() => {
 			if (visualRef.current) {
@@ -229,14 +197,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 
 
-		}, [props.element]);
+		}, [props.element, visual.node]);
 
 		return (
 			<>
-				{
-    		/* <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
-    		<svg ref={visualRef}></svg>
-      </Rnd> */}
+				{/* <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
+				<svg ref={visualRef}></svg>
+				</Rnd> */}
 				<div key={dragElementType}
 					className="nopan"
 					style={{

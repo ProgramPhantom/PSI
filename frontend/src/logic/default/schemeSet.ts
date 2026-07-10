@@ -27,6 +27,19 @@ import { MLEV } from "./composite/MLEV";
 import { SPIN_LOCK } from "./composite/SPIN_LOCK";
 import { WALTZ } from "./composite/WALTZ";
 
+import { DEFAULT_ANNOTATION_DELTA } from "./annotation/delta";
+import { DEFAULT_ANNOTATION_DELTA_CAP } from "./annotation/Delta_cap";
+import { DEFAULT_ANNOTATION_TAU } from "./annotation/tau";
+import { DEFAULT_ANNOTATION_T1 } from "./annotation/t1";
+import { DEFAULT_ANNOTATION_T1_HALF } from "./annotation/t1_half";
+import { DEFAULT_ANNOTATION_TAU_1 } from "./annotation/tau_1";
+import { DEFAULT_ANNOTATION_TAU_MIX } from "./annotation/tau_mix";
+import { DEFAULT_ANNOTATION_LABEL_DELTA } from "./annotation/label_delta";
+import { DEFAULT_ANNOTATION_LABEL_DELTA_CAP } from "./annotation/label_Delta_cap";
+import { DEFAULT_ANNOTATION_LABEL_TAU } from "./annotation/label_tau";
+import { DEFAULT_ANNOTATION_LABEL_T1 } from "./annotation/label_t1";
+import { DEFAULT_ANNOTATION_LABEL_T1_HALF } from "./annotation/label_t1_half";
+
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
 		location: "builtin",
@@ -59,7 +72,20 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7762": MLEV,
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7763": SPIN_LOCK,
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7764": WALTZ,
-				"dcfed31a-e1bd-4012-8777-2cec4e6b7755": DEFAULT_GRADIENT
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7755": DEFAULT_GRADIENT,
+
+				"e9530b12-6b62-48e0-89de-60b61c7b87e1": DEFAULT_ANNOTATION_DELTA,
+				"e9530b12-6b62-48e0-89de-60b61c7b87e2": DEFAULT_ANNOTATION_DELTA_CAP,
+				"e9530b12-6b62-48e0-89de-60b61c7b87e3": DEFAULT_ANNOTATION_TAU,
+				"e9530b12-6b62-48e0-89de-60b61c7b87e4": DEFAULT_ANNOTATION_T1,
+				"e9530b12-6b62-48e0-89de-60b61c7b87e5": DEFAULT_ANNOTATION_T1_HALF,
+				"e9530b12-6b62-48e0-89de-60b61c7b87e6": DEFAULT_ANNOTATION_TAU_1,
+				"e9530b12-6b62-48e0-89de-60b61c7b87e7": DEFAULT_ANNOTATION_TAU_MIX,
+				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e81": DEFAULT_ANNOTATION_LABEL_DELTA,
+				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e82": DEFAULT_ANNOTATION_LABEL_DELTA_CAP,
+				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e83": DEFAULT_ANNOTATION_LABEL_TAU,
+				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e84": DEFAULT_ANNOTATION_LABEL_T1,
+				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e85": DEFAULT_ANNOTATION_LABEL_T1_HALF
 			}
 		}
 	}
