@@ -17,10 +17,14 @@ import { DEFAULT_TRAPEZIUM } from "./svgPulse/trapezium";
 import { DEFAULT_LATEX } from "./latex";
 import { DEFAULT_TEXT } from "./text";
 import { SchemeDict } from "../../types/schemes";
-import { DISPSI2 } from "./DIPSI2";
 import { DEFAULT_SIMPLE_LABEL_GROUP } from "./simpleLabelGroup";
 import { DEFAULT_LABEL } from "./label";
 import { DEFAULT_GRADIENT } from "./simplePulse/gradient";
+import { CW } from "./composite/CW";
+import { DIPSI2 } from "./composite/DIPSI2";
+import { MLEV } from "./composite/MLEV";
+import { SPIN_LOCK } from "./composite/SPIN_LOCK";
+import { WALTZ } from "./composite/WALTZ";
 
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
@@ -48,7 +52,11 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"09584fb0-d0dc-482a-bf9d-609a204035a0": DEFAULT_90H,
 				"73ea4ef5-bcca-47e0-bb4c-70488cf7b66e": DEFAULT_180H,
 
-				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DISPSI2,
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7753": DIPSI2,
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7761": CW,
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7762": MLEV,
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7763": SPIN_LOCK,
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7764": WALTZ,
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7755": DEFAULT_GRADIENT
 			}
 		}

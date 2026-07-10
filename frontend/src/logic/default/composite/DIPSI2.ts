@@ -1,9 +1,9 @@
-import { ILabelGroup } from "../hasComponents/labelGroup"
-import { IRectElement } from "../rectElement"
-import { ILaTeX } from "../latex"
-import { DEFAULT_LABEL } from "./label"
+import { ILabelGroup } from "../../hasComponents/labelGroup";
+import { ILaTeX } from "../../latex";
+import { IRectElement } from "../../rectElement";
 
-export const DISPSI2: ILabelGroup = {
+
+export const DIPSI2: ILabelGroup = {
     "padding": [0, 0, 0, 0],
     "offset": [0, 0],
     "contentWidth": 120,
