@@ -11,6 +11,7 @@ import * as SaltireLoHi from "./saltirelohi";
 
 import * as ChirpHiLo from "./chirphilo";
 import * as ChirpLoHi from "./chirplohi";
+import * as NameNeeded from "./name-needed";
 
 export const svgPulses = {
 	acquire: Acquire,
@@ -25,5 +26,6 @@ export const svgPulses = {
 	saltirelohi: SaltireLoHi,
 
 	chirphilo: ChirpHiLo,
-	chirplohi: ChirpLoHi
+	chirplohi: ChirpLoHi,
+	"name-needed": NameNeeded
 };

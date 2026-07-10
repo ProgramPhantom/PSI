@@ -6,7 +6,7 @@ export const DEFAULT_ANNOTATION_LABEL_DELTA: ILabel = {
 	"offset": [0, 0],
 	"padding": [8, 8, 8, 8],
 	"sizeMode": { x: "fit", y: "fit" },
-	"mainAxis": "x",
+	"mainAxis": "y",
 
 	"placementMode": { "type": "free" },
 	"ref": "annotation-label-delta",

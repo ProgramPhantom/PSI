@@ -11,6 +11,7 @@ import { DEFAULT_CHIRPHILO } from "./svgPulse/chirphilo";
 import { DEFAULT_CHIRPLOHI } from "./svgPulse/chirplohi";
 import { DEFAULT_SHAPED_GRADIENT_1 } from "./svgPulse/shaped_gradient_1";
 import { DEFAULT_SHAPED_GRADIENT_2 } from "./svgPulse/shaped_gradient_2";
+import { DEFAULT_NAME_NEEDED } from "./svgPulse/name-needed";
 import { DEFAULT_SALTIREHILO } from "./svgPulse/saltirehilo";
 import { DEFAULT_SALTIRELOHI } from "./svgPulse/saltirelohi";
 import { DEFAULT_TALLTRAPEZIUM } from "./svgPulse/talltrapezium";
@@ -61,6 +62,7 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"7f139332-cf1a-44de-8688-598f6621f3e2": DEFAULT_CHIRPLOHI,
 				"01c5ff6e-1a01-49ef-833f-c400f2534316": DEFAULT_SHAPED_GRADIENT_1,
 				"01c5ff6e-1a01-49ef-833f-c400f2534317": DEFAULT_SHAPED_GRADIENT_2,
+				"01c5ff6e-1a01-49ef-833f-c400f2534318": DEFAULT_NAME_NEEDED,
 				"1dfe9586-611c-49c2-bc85-ab9a82619699": DEFAULT_SALTIREHILO,
 				"2bceea9d-6761-4dc9-84d6-ce56b63427c4": DEFAULT_SALTIRELOHI,
 				"71c7b9bf-92a0-460a-9574-56fe91e9fa3d": DEFAULT_TALLTRAPEZIUM,
