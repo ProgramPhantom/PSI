@@ -122,14 +122,19 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								}
 							})
 							break;
-						case "pulse":
+						case "pulse": {
+							const orientation = newState.pulseData?.orientation !== "both" ? dropResult.data.orientation : "both";
+							const yAlign = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";
 							newState.pulseData = {
 								channelID: dropResult.data.channelID,
 								sequenceID: dropResult.data.sequenceID,
 								index: dropResult.data.index,
 
-								orientation: newState.pulseData?.orientation !== "both" ? dropResult.data.orientation : "both",
-								alignment: newState.pulseData?.alignment ?? { x: "centre", y: "far" },
+								orientation: orientation,
+								alignment: {
+									x: newState.pulseData?.alignment?.x ?? "centre",
+									y: yAlign
+								},
 								noSections: newState.pulseData?.noSections ?? 1,
 								clipBar: newState.pulseData?.clipBar ?? false
 							}
@@ -140,6 +145,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								type: "grid",
 								config: {}
 							}
+
+							newState.flipped = newState.pulseData.orientation === "bottom" ? true : false
 
 							if (dropResult.data.insert === true) {
 								ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
@@ -152,6 +159,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 									target: props.element
 								}
 							})
+						}
 							break
 						case "grid":
 							newState.placementMode = {
