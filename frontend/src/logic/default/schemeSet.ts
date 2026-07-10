@@ -9,7 +9,8 @@ import { DEFAULT_ACQUIRE } from "./svgPulse/acquire";
 import { DEFAULT_AMP } from "./svgPulse/amp";
 import { DEFAULT_CHIRPHILO } from "./svgPulse/chirphilo";
 import { DEFAULT_CHIRPLOHI } from "./svgPulse/chirplohi";
-import { DEFAULT_HALFSINE } from "./svgPulse/halfsine";
+import { DEFAULT_SHAPED_GRADIENT_1 } from "./svgPulse/shaped_gradient_1";
+import { DEFAULT_SHAPED_GRADIENT_2 } from "./svgPulse/shaped_gradient_2";
 import { DEFAULT_SALTIREHILO } from "./svgPulse/saltirehilo";
 import { DEFAULT_SALTIRELOHI } from "./svgPulse/saltirelohi";
 import { DEFAULT_TALLTRAPEZIUM } from "./svgPulse/talltrapezium";
@@ -44,7 +45,8 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"0ac27981-b1e4-4d11-9b95-633ea14d24fe": DEFAULT_AMP,
 				"f0f8adc5-5299-484a-9c67-a841c74f6aef": DEFAULT_CHIRPHILO,
 				"7f139332-cf1a-44de-8688-598f6621f3e2": DEFAULT_CHIRPLOHI,
-				"01c5ff6e-1a01-49ef-833f-c400f2534316": DEFAULT_HALFSINE,
+				"01c5ff6e-1a01-49ef-833f-c400f2534316": DEFAULT_SHAPED_GRADIENT_1,
+				"01c5ff6e-1a01-49ef-833f-c400f2534317": DEFAULT_SHAPED_GRADIENT_2,
 				"1dfe9586-611c-49c2-bc85-ab9a82619699": DEFAULT_SALTIREHILO,
 				"2bceea9d-6761-4dc9-84d6-ce56b63427c4": DEFAULT_SALTIRELOHI,
 				"71c7b9bf-92a0-460a-9574-56fe91e9fa3d": DEFAULT_TALLTRAPEZIUM,

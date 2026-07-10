@@ -1,6 +1,6 @@
 import { ISVGElement } from "../../svgElement"
 
-export const DEFAULT_HALFSINE: ISVGElement = {
+export const DEFAULT_SHAPED_GRADIENT_1: ISVGElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
 	"asset": { ref: "halfsine", id: "98da452d0f22f49b79f068c22f51c244800bf9728634a7bb35e56dc36494deb2" },
@@ -17,7 +17,7 @@ export const DEFAULT_HALFSINE: ISVGElement = {
 		"pulseType": { "category": "PFG" }
 	},
 
-	"ref": "halfsine",
+	"ref": "shaped_gradient_1",
 	"style": {},
 	"type": "svg"
 }

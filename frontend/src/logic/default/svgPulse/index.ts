@@ -1,5 +1,6 @@
 import * as Acquire from "./acquire";
-import * as HalfSine from "./halfsine";
+import * as ShapedGradient1 from "./shaped_gradient_1";
+import * as ShapedGradient2 from "./shaped_gradient_2";
 import * as AmpSeries from "./amp";
 import * as P180 from "./180Soft";
 import * as Trapezium from "./trapezium";
@@ -13,7 +14,8 @@ import * as ChirpLoHi from "./chirplohi";
 
 export const svgPulses = {
 	acquire: Acquire,
-	halfsine: HalfSine,
+	shaped_gradient_1: ShapedGradient1,
+	shaped_gradient_2: ShapedGradient2,
 	amp: AmpSeries,
 	"180": P180,
 	trap: Trapezium,
