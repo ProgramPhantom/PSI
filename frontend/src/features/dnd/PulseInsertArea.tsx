@@ -71,13 +71,13 @@ function PulseInsertArea(props: {areaSpec: IPulseArea; key: string}) {
 		top: `${props.areaSpec.area.y}px`,
 		left: `${props.areaSpec.area.x}px`,
 		opacity: 0.4,
-		zIndex: isActive ? 20000 : 200
+		zIndex: canDrop ? (isActive ? 40000 : 35000) : 200
 	};
 
 	return (
 		<div
 			ref={drop}
-			style={{...style, backgroundColor, pointerEvents: "visiblePainted",}}
+			style={{...style, backgroundColor, pointerEvents: "auto",}}
 			data-testid={props.areaSpec.channelID + props.areaSpec.index}
 			key={props.key}></div>
 	);

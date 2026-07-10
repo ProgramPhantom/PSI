@@ -97,14 +97,14 @@ function GridInsertArea(props: IGridInsertAreaProps) {
 		top: `${props.areaSpec.area.y}px`,
 		left: `${props.areaSpec.area.x}px`,
 		opacity: 0.4,
-		zIndex: isActive ? 20000 : 200,
+		zIndex: canDrop ? (isActive ? 40000 : 35000) : 200,
 		border: "2px dashed rgba(80, 80, 80, 1)"
 	};
 
 	return (
 		<div id={`(${props.areaSpec.coords.row}, ${props.areaSpec.coords.col})`}
 			ref={drop}
-			style={{ ...style, backgroundColor, pointerEvents: "visiblePainted", }}
+			style={{ ...style, backgroundColor, pointerEvents: "auto", }}
 		></div>
 	);
 }
