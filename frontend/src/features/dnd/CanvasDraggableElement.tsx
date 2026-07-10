@@ -123,20 +123,20 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							})
 							break;
 						case "pulse": {
-							const orientation = newState.pulseData?.orientation !== "both" ? dropResult.data.orientation : "both";
+							const orientation = newState.pulseLayoutConfig?.orientation !== "both" ? dropResult.data.orientation : "both";
 							const yAlign = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";
-							newState.pulseData = {
+							newState.pulseLayoutConfig = {
 								channelID: dropResult.data.channelID,
 								sequenceID: dropResult.data.sequenceID,
 								index: dropResult.data.index,
 
 								orientation: orientation,
 								alignment: {
-									x: newState.pulseData?.alignment?.x ?? "centre",
+									x: newState.pulseLayoutConfig?.alignment?.x ?? "centre",
 									y: yAlign
 								},
-								noSections: newState.pulseData?.noSections ?? 1,
-								clipBar: newState.pulseData?.clipBar ?? false
+								noSections: newState.pulseLayoutConfig?.noSections ?? 1,
+								clipBar: newState.pulseLayoutConfig?.clipBar ?? false
 							}
 
 							newState.parentId = dropResult.data.channelID;
@@ -146,7 +146,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								config: {}
 							}
 
-							newState.flipped = newState.pulseData.orientation === "bottom" ? true : false
+							newState.flipped = newState.pulseLayoutConfig.orientation === "bottom" ? true : false
 
 							if (dropResult.data.insert === true) {
 								ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);

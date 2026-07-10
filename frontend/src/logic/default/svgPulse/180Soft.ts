@@ -7,7 +7,7 @@ export const DEFAULT_180S: ISVGElement = {
 	"contentWidth": 70,
 	"contentHeight": 70,
 
-	"pulseData": {
+	"pulseLayoutConfig": {
 		"alignment": { "x": "centre", "y": "far" },
 		"orientation": "top",
 		"noSections": 1,

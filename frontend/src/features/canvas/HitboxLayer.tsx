@@ -24,7 +24,7 @@ export const FocusRules: IFocusRules = {
 
 		"label-group",
 		"simple-label-group",
-		(element: Visual) => element.pulseData !== undefined && element.placementMode?.type === "grid"
+		(element: Visual) => element.pulseLayoutConfig !== undefined && element.placementMode?.type === "grid"
 	],
 	notSelectableIfChildOf: {
 		"svg": ["label-group", "simple-label-group"],

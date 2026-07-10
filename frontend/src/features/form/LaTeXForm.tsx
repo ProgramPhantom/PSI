@@ -56,7 +56,7 @@ function LaTeXForm(props: ILaTeXFormProps) {
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
-								name={`${fullPrefix}.style.fontSize`}
+								name={`${fullPrefix}style.fontSize`}
 								render={({ field }) => (
 									<NumericInput
 										{...field}
@@ -76,7 +76,7 @@ function LaTeXForm(props: ILaTeXFormProps) {
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
-								name={`${fullPrefix}.style.colour`}
+								name={`${fullPrefix}style.colour`}
 								render={({ field }) => (
 									<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
 								)}></Controller>
@@ -88,7 +88,7 @@ function LaTeXForm(props: ILaTeXFormProps) {
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
-								name={`${fullPrefix}.style.background`}
+								name={`${fullPrefix}style.background`}
 								render={({ field: { onChange, onBlur, value, ref } }) => (
 									<input type={"color"} className={fieldStyles.compactColorInput} onChange={onChange} onBlur={onBlur} value={value} ref={ref}></input>
 								)}></Controller>

@@ -7,7 +7,7 @@ export const DEFAULT_TALLTRAPEZIUM: ISVGElement = {
 	"contentWidth": 30,
 	"contentHeight": 50,
 
-	"pulseData": {
+	"pulseLayoutConfig": {
 		"alignment": { "x": "centre", "y": "far" },
 		"orientation": "top",
 		"noSections": 1,

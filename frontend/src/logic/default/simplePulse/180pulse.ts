@@ -7,7 +7,7 @@ export const DEFAULT_180H: IRectElement = {
 	"contentWidth": 20,
 	"contentHeight": 50,
 
-	"pulseData": {
+	"pulseLayoutConfig": {
 		"alignment": { "x": "centre", "y": "far" },
 		"orientation": "top",
 		"noSections": 1,

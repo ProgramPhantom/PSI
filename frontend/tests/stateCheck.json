@@ -151,7 +151,7 @@
                                         "x": "fixed",
                                         "y": "fixed"
                                     },
-                                    "pulseData": {
+                                    "pulseLayoutConfig": {
                                         "channelID": "a227a4ae873248",
                                         "sequenceID": "af87912kas83",
                                         "clipBar": false,

@@ -63,7 +63,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		super(params);
 
 		this.offset = params.offset;
-		this.flipped = params.flipped ?? (isPulse(this) && this.pulseData?.orientation === "bottom");
+		this.flipped = params.flipped ?? (isPulse(this) && this.pulseLayoutConfig?.orientation === "bottom");
 
 		if (this.flipped) {
 			this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
@@ -80,7 +80,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		}
 
 		// Add to mask
-		if (isPulse(this) && this.pulseData.clipBar) {
+		if (isPulse(this) && this.pulseLayoutConfig.clipBar) {
 			// Find (or create) the mask
 			var mask = surface.root().findOne("#" + BAR_MASK_ID) as Mask;
 			if (!mask) {

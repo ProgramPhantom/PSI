@@ -7,7 +7,7 @@ export const DEFAULT_SALTIRELOHI: ISVGElement = {
 	"contentWidth": 100,
 	"contentHeight": 40,
 
-	"pulseData": {
+	"pulseLayoutConfig": {
 		"alignment": { "x": "centre", "y": "far" },
 		"orientation": "top",
 		"noSections": 1,

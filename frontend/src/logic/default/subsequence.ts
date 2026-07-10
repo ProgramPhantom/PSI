@@ -30,7 +30,7 @@ export const DEFAULT_SUBSEQUENCE: ISubgrid = {
 					"coords": { row: 0, col: 0 }
 				}
 			},
-			pulseData: {
+			pulseLayoutConfig: {
 				orientation: "both"
 			}
 		},
@@ -42,7 +42,7 @@ export const DEFAULT_SUBSEQUENCE: ISubgrid = {
 					"coords": { row: 3, col: 0 }
 				},
 			},
-			pulseData: {
+			pulseLayoutConfig: {
 				orientation: "both"
 			}
 		},

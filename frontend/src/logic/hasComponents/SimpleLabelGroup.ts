@@ -77,7 +77,7 @@ export default class SimpleLabelGroup extends Grid {
 			config: {
 				contribution: {
 					x: true,
-					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+					y: (isPulse(this) && this.pulseLayoutConfig.orientation === "both") ? false : true
 				}
 			}
 		};

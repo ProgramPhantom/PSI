@@ -92,20 +92,20 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					})
 					break;
 				case "pulse": {
-					const orientation = singletonState.pulseData?.orientation !== "both" ? dropResult.data.orientation : "both";
+					const orientation = singletonState.pulseLayoutConfig?.orientation !== "both" ? dropResult.data.orientation : "both";
 					const yAlign = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";
-					singletonState.pulseData = {
+					singletonState.pulseLayoutConfig = {
 						channelID: dropResult.data.channelID,
 						sequenceID: dropResult.data.sequenceID,
 						index: dropResult.data.index,
 
 						orientation: orientation,
 						alignment: {
-							x: singletonState.pulseData?.alignment?.x ?? "centre",
+							x: singletonState.pulseLayoutConfig?.alignment?.x ?? "centre",
 							y: yAlign
 						},
-						noSections: singletonState.pulseData?.noSections ?? 1,
-						clipBar: singletonState.pulseData?.clipBar ?? false,
+						noSections: singletonState.pulseLayoutConfig?.noSections ?? 1,
+						clipBar: singletonState.pulseLayoutConfig?.clipBar ?? false,
 
 					}
 
@@ -116,7 +116,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 						config: {}
 					}
 
-					singletonState.flipped = singletonState.pulseData.orientation === "bottom" ? true : false
+					singletonState.flipped = singletonState.pulseLayoutConfig.orientation === "bottom" ? true : false
 
 					if (dropResult.data.insert === true) {
 						ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);

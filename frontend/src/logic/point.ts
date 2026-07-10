@@ -1,3 +1,5 @@
+import { IPulseData } from "./pulseData";
+
 export type OwnershipType = "component" | "free";
 export type ID = string;
 export const BAR_MASK_ID = "global-bar-mask";
@@ -40,7 +42,8 @@ export interface IElement {
 	id?: ID;
 	type: AllComponentTypes;
 	parentId?: ID;
-	role?: string
+	role?: string;
+	pulseData?: IPulseData;
 }
 
 export interface IPoint extends IElement {
@@ -62,7 +65,8 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 			id: this.id,
 			type: this.type,
 			parentId: this.parentId,
-			role: this.role
+			role: this.role,
+			pulseData: this.pulseData
 		};
 	}
 
@@ -81,6 +85,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 	ref: string;
 	role?: string;
 	public type: AllComponentTypes;
+	public pulseData?: IPulseData;
 
 	constructor(params: IPoint) {
 		this._x = Math.round(params.x ?? 0);
@@ -97,6 +102,7 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 
 		this.type = params.type
 		this.parentId = params.parentId;
+		this.pulseData = params.pulseData;
 	}
 
 	get x(): number {

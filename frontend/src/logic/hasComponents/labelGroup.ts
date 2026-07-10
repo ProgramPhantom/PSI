@@ -29,7 +29,7 @@ export default class LabelGroup
 				type: "label-group",
 				ref: targetState.ref + "-labelGroup",
 				parentId: targetState.parentId,
-				pulseData: { ...pulseState.pulseData },
+				pulseLayoutConfig: { ...pulseState.pulseLayoutConfig },
 				placementMode: structuredClone(pulseState.placementMode),
 				sizeMode: { x: "fit", y: "fit" },
 				padding: targetState.padding ?? [0, 0, 0, 0],
@@ -147,11 +147,11 @@ export default class LabelGroup
 		let minPadding = 2;
 
 		if (isPulse(this)) {
-			if (this.pulseData.orientation === "bottom") {
+			if (this.pulseLayoutConfig.orientation === "bottom") {
 				contributionX = false;
 				contributionY = false;
 				minPadding = 4;
-			} else if (this.pulseData.orientation === "both") {
+			} else if (this.pulseLayoutConfig.orientation === "both") {
 				contributionX = true;
 				contributionY = false;
 			}
@@ -190,7 +190,7 @@ export default class LabelGroup
 			config: {
 				contribution: {
 					x: true,
-					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+					y: (isPulse(this) && this.pulseLayoutConfig.orientation === "both") ? false : true
 				}
 			}
 		}
@@ -218,11 +218,11 @@ export default class LabelGroup
 		let minPadding = 2;
 
 		if (isPulse(this)) {
-			if (this.pulseData.orientation === "top") {
+			if (this.pulseLayoutConfig.orientation === "top") {
 				contributionX = false;
 				contributionY = false;
 				minPadding = 4;
-			} else if (this.pulseData.orientation === "both") {
+			} else if (this.pulseLayoutConfig.orientation === "both") {
 				contributionX = true;
 				contributionY = false;
 			}
@@ -261,7 +261,7 @@ export default class LabelGroup
 			config: {
 				contribution: {
 					x: true,
-					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+					y: (isPulse(this) && this.pulseLayoutConfig.orientation === "both") ? false : true
 				}
 			}
 		}
@@ -289,7 +289,7 @@ export default class LabelGroup
 			config: {
 				contribution: {
 					x: true,
-					y: (isPulse(this) && this.pulseData.orientation === "both") ? false : true
+					y: (isPulse(this) && this.pulseLayoutConfig.orientation === "both") ? false : true
 				}
 			}
 		}

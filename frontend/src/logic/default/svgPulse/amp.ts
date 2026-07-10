@@ -7,7 +7,7 @@ export const DEFAULT_AMP: ISVGElement = {
 	"contentWidth": 30,
 	"contentHeight": 80,
 
-	"pulseData": {
+	"pulseLayoutConfig": {
 		"alignment": { "x": "centre", "y": "far" },
 		"orientation": "top",
 		"noSections": 1,

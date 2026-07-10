@@ -38,8 +38,8 @@ export interface IPulseConfig {
 	clipBar?: boolean;
 }
 
-export const isPulse = (element: ISpacial): element is ISpacial & { pulseData: IPulseConfig } => {
-	return element.pulseData !== undefined
+export const isPulse = (element: ISpacial): element is ISpacial & { pulseLayoutConfig: IPulseConfig } => {
+	return element.pulseLayoutConfig !== undefined
 }
 
 export type GhostTemplate = { relativePosition: { relRow: number, relCol: number }, size: { width: number, height: number } }
@@ -118,7 +118,7 @@ export interface ISpacial extends IPoint {
 	placementMode?: PlacementConfiguration
 	placementControl?: PlacementControl
 	sizeMode?: SizeConfiguration
-	pulseData?: IPulseConfig
+	pulseLayoutConfig?: IPulseConfig
 }
 
 export type UpdateNotification = (...args: any[]) => any;
@@ -161,7 +161,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			placementMode: this._placementMode,
 			placementControl: this.placementControl,
 			sizeMode: this.sizeMode,
-			pulseData: this.pulseData,
+			pulseLayoutConfig: this.pulseLayoutConfig,
 			...super.state
 		};
 	}
@@ -198,15 +198,15 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	public placementControl: PlacementControl;
 	public sizeMode: SizeConfiguration;
 
-	private _pulseData?: IPulseConfig | undefined;
-	public get pulseData(): IPulseConfig | undefined {
-		if (this.placementMode?.type === "grid" && this._pulseData !== undefined) {
-			this.updatePulseDataFromGridConfig();
+	private _pulseLayoutConfig?: IPulseConfig | undefined;
+	public get pulseLayoutConfig(): IPulseConfig | undefined {
+		if (this.placementMode?.type === "grid" && this._pulseLayoutConfig !== undefined) {
+			this.updatePulseLayoutConfigFromGridConfig();
 		}
-		return this._pulseData;
+		return this._pulseLayoutConfig;
 	}
-	public set pulseData(value: IPulseConfig | undefined) {
-		this._pulseData = value;
+	public set pulseLayoutConfig(value: IPulseConfig | undefined) {
+		this._pulseLayoutConfig = value;
 	}
 
 	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
@@ -232,9 +232,9 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this._contentWidth = params.contentWidth ?? 0;
 		this._contentHeight = params.contentHeight ?? 0;
 
-		if (params.pulseData !== undefined) {
-			this._pulseData = params.pulseData;
-			this.setGridConfigUsingPulseData(params.pulseData);
+		if (params.pulseLayoutConfig !== undefined) {
+			this._pulseLayoutConfig = params.pulseLayoutConfig;
+			this.setGridConfigUsingPulseLayoutConfig(params.pulseLayoutConfig);
 		}
 
 	}
@@ -657,7 +657,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	}
 
-	private updatePulseDataFromGridConfig() {
+	private updatePulseLayoutConfigFromGridConfig() {
 		if (this.placementMode?.type === "grid") {
 
 			let orientation: Orientation = "top";
@@ -674,10 +674,10 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			}
 
 
-			this._pulseData = {
-				channelID: this._pulseData?.channelID,
-				sequenceID: this._pulseData?.sequenceID,
-				clipBar: this._pulseData?.clipBar,
+			this._pulseLayoutConfig = {
+				channelID: this._pulseLayoutConfig?.channelID,
+				sequenceID: this._pulseLayoutConfig?.sequenceID,
+				clipBar: this._pulseLayoutConfig?.clipBar,
 
 				noSections: this.placementMode.config.gridSize?.noCols ?? 1,
 				index: this.placementMode.config.coords?.col ?? 0,
@@ -690,14 +690,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	}
 
-	public setGridConfigUsingPulseData(pulseData: IPulseConfig) {
-		if (this._pulseData === undefined || this.placementMode.type !== "grid") {
+	public setGridConfigUsingPulseLayoutConfig(pulseLayoutConfig: IPulseConfig) {
+		if (this._pulseLayoutConfig === undefined || this.placementMode.type !== "grid") {
 			return
 		}
 
 		let row = 0;
-		if (pulseData.orientation !== undefined) {
-			switch (pulseData.orientation) {
+		if (pulseLayoutConfig.orientation !== undefined) {
+			switch (pulseLayoutConfig.orientation) {
 				case "top":
 					row = 0;
 					break;
@@ -713,8 +713,8 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 
 		let col = 0;
-		if (pulseData.index !== undefined) {
-			col = pulseData.index;
+		if (pulseLayoutConfig.index !== undefined) {
+			col = pulseLayoutConfig.index;
 		} else if (this.placementMode.config.coords !== undefined) {
 			col = this.placementMode.config.coords.col;
 		}
@@ -722,7 +722,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		let coords: { row: number, col: number } = { row: row, col: col };
 
 		let yAlign: SiteNames = "far";
-		let effectiveOrientation = pulseData.orientation;
+		let effectiveOrientation = pulseLayoutConfig.orientation;
 		if (effectiveOrientation === undefined) {
 			switch (row) {
 				case 0:
@@ -744,12 +744,12 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 
 		let alignment: Record<Dimensions, SiteNames> = {
-			x: pulseData.alignment?.x ?? "centre",
-			y: pulseData.alignment?.y ?? yAlign
+			x: pulseLayoutConfig.alignment?.x ?? "centre",
+			y: pulseLayoutConfig.alignment?.y ?? yAlign
 		}
 
 		let contribution = this.placementMode.config.contribution;
-		if (pulseData.orientation === "both") {
+		if (pulseLayoutConfig.orientation === "both") {
 			contribution = { x: true, y: false }
 		} else if (contribution !== undefined) {
 			contribution = {
@@ -761,7 +761,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.placementMode.config = {
 			"alignment": alignment,
 			"coords": coords,
-			"gridSize": { noRows: 1, noCols: pulseData?.noSections ?? 1 },
+			"gridSize": { noRows: 1, noCols: pulseLayoutConfig?.noSections ?? 1 },
 
 			"contribution": contribution,
 		}

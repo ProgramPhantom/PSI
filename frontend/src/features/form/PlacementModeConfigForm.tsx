@@ -26,9 +26,9 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 		control,
 		name: `${fullPrefix}placementControl`
 	});
-	const pulseData = useWatch({
+	const pulseLayoutConfig = useWatch({
 		control,
-		name: `${fullPrefix}pulseData`
+		name: `${fullPrefix}pulseLayoutConfig`
 	});
 
 	let details: React.ReactNode;
@@ -46,7 +46,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 	);
 
 
-	if (pulseData && type === "grid") {
+	if (pulseLayoutConfig && type === "grid") {
 		details = (
 			<>
 
@@ -56,15 +56,15 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					fontSize: "0.8em", opacity: 0.7,
 					display: "flex", justifyContent: "space-between"
 				}}>
-					<span>Index: {pulseData?.index ?? "-"}</span>
-					<span>ChannelID: {pulseData?.channelID ?? "-"}</span>
-					<span>SequenceID: {pulseData?.sequenceID ?? "-"}</span>
+					<span>Index: {pulseLayoutConfig?.index ?? "-"}</span>
+					<span>ChannelID: {pulseLayoutConfig?.channelID ?? "-"}</span>
+					<span>SequenceID: {pulseLayoutConfig?.sequenceID ?? "-"}</span>
 				</Card >
 
 				<SimpleField label="Orientation">
 					<Controller
 						control={control}
-						name={`${fullPrefix}pulseData.orientation`}
+						name={`${fullPrefix}pulseLayoutConfig.orientation`}
 						defaultValue="top"
 						render={({ field }) => (
 							<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
@@ -82,7 +82,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					leftField={
 						<Controller
 							control={control}
-							name={`${fullPrefix}pulseData.alignment.x`}
+							name={`${fullPrefix}pulseLayoutConfig.alignment.x`}
 							defaultValue="here"
 							render={({ field }) => (
 								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
@@ -97,7 +97,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					rightField={
 						<Controller
 							control={control}
-							name={`${fullPrefix}pulseData.alignment.y`}
+							name={`${fullPrefix}pulseLayoutConfig.alignment.y`}
 							defaultValue="far"
 							render={({ field }) => (
 								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
@@ -113,7 +113,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 				<SimpleField label="No. Sections">
 					<Controller
 						control={control}
-						name={`${fullPrefix}pulseData.noSections`}
+						name={`${fullPrefix}pulseLayoutConfig.noSections`}
 						defaultValue={1}
 						render={({ field }) => (
 							<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={1} max={10} size="small" fill />
@@ -124,7 +124,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 				<SimpleField inline label="Clip Channel Bar">
 					<Controller
 						control={control}
-						name={`${fullPrefix}pulseData.clipBar`}
+						name={`${fullPrefix}pulseLayoutConfig.clipBar`}
 						render={({ field }) => (
 							<Switch {...field} onChange={field.onChange} checked={field.value} className={fieldStyles.compactSwitch} />
 						)}

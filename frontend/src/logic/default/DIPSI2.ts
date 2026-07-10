@@ -9,7 +9,7 @@ export const DISPSI2: ILabelGroup = {
     "contentWidth": 120,
     "contentHeight": 30,
 
-    "pulseData": {
+    "pulseLayoutConfig": {
         "alignment": { "x": "centre", "y": "far" },
         "orientation": "top",
         "noSections": 1,
