@@ -55,7 +55,7 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 									{...field}
 									className={fieldStyles.compactNumericInput}
 									onValueChange={field.onChange}
-									min={1}
+									min={0}
 									size={"small"}></NumericInput>
 							)}></Controller>
 					</SimpleField>

@@ -20,7 +20,8 @@ import { DEFAULT_TEXT } from "./text";
 import { SchemeDict } from "../../types/schemes";
 import { DEFAULT_SIMPLE_LABEL_GROUP } from "./simpleLabelGroup";
 import { DEFAULT_LABEL } from "./label";
-import { DEFAULT_GRADIENT } from "./simplePulse/gradient";
+import { DEFAULT_GRADIENT_LONG } from "./simplePulse/gradient_long";
+import { DEFAULT_GRADIENT_SHORT } from "./simplePulse/gradient_short";
 import { CW } from "./composite/CW";
 import { DIPSI2 } from "./composite/DIPSI2";
 import { MLEV } from "./composite/MLEV";
@@ -72,7 +73,8 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7762": MLEV,
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7763": SPIN_LOCK,
 				"dcfed31a-e1bd-4012-8777-2cec4e6b7764": WALTZ,
-				"dcfed31a-e1bd-4012-8777-2cec4e6b7755": DEFAULT_GRADIENT,
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7755": DEFAULT_GRADIENT_LONG,
+				"dcfed31a-e1bd-4012-8777-2cec4e6b7756": DEFAULT_GRADIENT_SHORT,
 
 				"e9530b12-6b62-48e0-89de-60b61c7b87e1": DEFAULT_ANNOTATION_DELTA,
 				"e9530b12-6b62-48e0-89de-60b61c7b87e2": DEFAULT_ANNOTATION_DELTA_CAP,

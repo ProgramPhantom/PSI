@@ -1,6 +1,6 @@
 import { IRectElement } from "../../rectElement"
 
-export const DEFAULT_GRADIENT: IRectElement = {
+export const DEFAULT_GRADIENT_LONG: IRectElement = {
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],
 	"contentWidth": 150,
@@ -22,7 +22,6 @@ export const DEFAULT_GRADIENT: IRectElement = {
 		"strokeWidth": 0
 	},
 
-	"ref": "gradient",
+	"ref": "gradient-long",
 	"type": "rect"
 }
-
