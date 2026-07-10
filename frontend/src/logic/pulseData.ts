@@ -1,4 +1,4 @@
-export type ShapedPulseType = "Hard" | "Soft (shaped)" | "Composite" | "Adiabatic";
+export type ShapedPulseType = "Hard" | "Soft" | "Composite" | "Adiabatic";
 
 export type PulseType =
 	| { category: "PFG" }

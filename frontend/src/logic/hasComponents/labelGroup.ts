@@ -27,7 +27,7 @@ export default class LabelGroup
 
 			const labelGroupState: ILabelGroup = {
 				type: "label-group",
-				ref: targetState.ref + "-labelGroup",
+				ref: targetState.ref,
 				parentId: targetState.parentId,
 				pulseLayoutConfig: { ...pulseState.pulseLayoutConfig },
 				placementMode: structuredClone(pulseState.placementMode),
@@ -137,7 +137,7 @@ export default class LabelGroup
 		}
 		child.placementControl = "auto"
 
-		this.ref = child.ref + "-labelGroup";
+		this.ref = child.ref;
 	}
 
 	addLabelTop({ child, index }: AddDispatchData<Visual>) {

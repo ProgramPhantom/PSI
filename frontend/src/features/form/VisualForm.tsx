@@ -78,33 +78,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	return (
 		<>
 			<ControlGroup vertical={true} className={styles.formGroupContainer}>
-				{/* Reference */}
-				<SimpleField
-					style={{ userSelect: "none" }}
-					fill={false}
-					inline={true}
-					label={(<InformationLabel text="Reference" helpType="ref" />)}
-					labelFor="ref-input"
-					intent={errors?.ref ? "danger" : "none"}
-					helperText={(errors?.ref?.message ?? "").toString()}>
-					<Controller
-						control={formControls.control}
-						name={`${fullPrefix}ref`}
-						render={({ field }) => (
-							<InputGroup
-								id="ref-input"
-								{...field}
-								className={fieldStyles.compactInputGroup}
-								size="small"
-								intent={errors?.ref ? "danger" : "none"}
-							/>
-						)}
-						rules={{
-							required: "Reference is required", // message shown if empty
-							validate: (value) => value.trim() !== "" || "Reference cannot be empty" // extra safeguard against only-spaces
-						}}></Controller>
-				</SimpleField>
-
 				{/* Width and height */}
 				{(props.widthDisplay !== false || props.heightDisplay !== false) && (
 					<DoubleField

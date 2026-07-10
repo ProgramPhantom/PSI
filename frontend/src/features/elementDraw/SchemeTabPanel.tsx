@@ -16,9 +16,21 @@ interface SchemeTabPanelProps {
 
 const filterElement = (element: Visual, filter: string) => {
 	if (filter === "All") return true;
-	if (filter === "Channels") return element.type === "channel";
-	if (filter === "Sequences") return element.type === "sequence";
-	if (filter === "Pulses") return isPulse(element);
+	if (filter === "Hard") {
+		return isPulse(element) && element.pulseData?.pulseType?.category === "shape" && element.pulseData.pulseType.type === "Hard";
+	}
+	if (filter === "Soft") {
+		return isPulse(element) && element.pulseData?.pulseType?.category === "shape" && element.pulseData.pulseType.type === "Soft";
+	}
+	if (filter === "Composite") {
+		return isPulse(element) && element.pulseData?.pulseType?.category === "shape" && element.pulseData.pulseType.type === "Composite";
+	}
+	if (filter === "Adiabatic") {
+		return isPulse(element) && element.pulseData?.pulseType?.category === "shape" && element.pulseData.pulseType.type === "Adiabatic";
+	}
+	if (filter === "PFGs") {
+		return isPulse(element) && element.pulseData?.pulseType?.category === "PFG";
+	}
 	if (filter === "Annotation") return element.type === "label" || element.type === "text";
 	return true;
 };
@@ -45,9 +57,11 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 						renderActiveTabPanelOnly={false}
 					>
 						<Tab id="All" title="All" />
-						<Tab id="Sequences" title="Sequences" />
-						<Tab id="Channels" title="Channels" />
-						<Tab id="Pulses" title="Pulses" />
+						<Tab id="Hard" title="Hard" />
+						<Tab id="Soft" title="Soft" />
+						<Tab id="Composite" title="Composite" />
+						<Tab id="Adiabatic" title="Adiabatic" />
+						<Tab id="PFGs" title="PFGs" />
 						<Tab id="Annotation" title="Annotation" />
 					</Tabs>
 				</div>

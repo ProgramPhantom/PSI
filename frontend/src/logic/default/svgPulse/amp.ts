@@ -14,7 +14,7 @@ export const DEFAULT_AMP: ISVGElement = {
 	},
 
 	"pulseData": {
-		"pulseType": { "category": "shape", "type": "Soft (shaped)" }
+		"pulseType": { "category": "shape", "type": "Soft" }
 	},
 
 	"ref": "amp",
