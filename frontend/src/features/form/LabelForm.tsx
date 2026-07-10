@@ -1,13 +1,9 @@
-import { Button, ControlGroup, HTMLSelect, Section } from "@blueprintjs/core";
-import { useEffect, useState } from "react";
+import { ControlGroup, HTMLSelect, Section } from "@blueprintjs/core";
 import { Controller, useFormContext } from "react-hook-form";
 import ArrowForm from "./ArrowForm";
 import LaTeXForm from "./LaTeXForm";
 import { FormRequirements } from "./FormBase";
-import { ILaTeX } from "../../logic/latex";
-import { ILine } from "../../logic/line";
 import VisualForm from "./VisualForm";
-import { DEFAULT_LABEL } from "../../logic/default/label";
 import { SimpleField } from "./fields/SimpleField";
 import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
@@ -26,49 +22,6 @@ function LabelForm(props: ILabelArrayFormProps) {
 
 	let textPrefix = textIndex !== -1 ? `${fullPrefix}children.${textIndex}` : undefined;
 	let linePrefix = lineIndex !== -1 ? `${fullPrefix}children.${lineIndex}` : undefined;
-
-	const [textOn, setTextOn] = useState<boolean>(textIndex !== -1);
-	useEffect(() => {
-		setTextOn(textIndex !== -1);
-	}, [props.target, textIndex]);
-
-	const [lineOn, setLineOn] = useState<boolean>(lineIndex !== -1);
-	useEffect(() => {
-		setLineOn(lineIndex !== -1);
-	}, [props.target, lineIndex]);
-
-	const [textBackup, setTextBackup] = useState<ILaTeX | undefined>(undefined);
-	const [lineBackup, setLineBackup] = useState<ILine | undefined>(undefined);
-
-	const toggleText = () => {
-		let currentChildren: any[] = formControls.getValues(`${fullPrefix}children`) || [];
-		if (textOn && textIndex !== -1) {
-			setTextBackup(currentChildren[textIndex]);
-			currentChildren = currentChildren.filter((c, i) => i !== textIndex);
-			formControls.setValue(`${fullPrefix}children`, currentChildren);
-			setTextOn(false);
-		} else {
-			let defaultText = DEFAULT_LABEL.children.find((c: any) => c.role === "text");
-			let toAdd = textBackup ?? (defaultText ? { ...defaultText } : { type: "latex", role: "text" });
-			formControls.setValue(`${fullPrefix}children`, [...currentChildren, toAdd]);
-			setTextOn(true);
-		}
-	}
-
-	const toggleLine = () => {
-		let currentChildren: any[] = formControls.getValues(`${fullPrefix}children`) || [];
-		if (lineOn && lineIndex !== -1) {
-			setLineBackup(currentChildren[lineIndex]);
-			currentChildren = currentChildren.filter((c, i) => i !== lineIndex);
-			formControls.setValue(`${fullPrefix}children`, currentChildren);
-			setLineOn(false);
-		} else {
-			let defaultLine = DEFAULT_LABEL.children.find((c: any) => c.role === "line");
-			let toAdd = lineBackup ?? (defaultLine ? { ...defaultLine } : { type: "line", role: "line" });
-			formControls.setValue(`${fullPrefix}children`, [...currentChildren, toAdd]);
-			setLineOn(true);
-		}
-	}
 
 	return (
 		<>
@@ -100,16 +53,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				collapsible={true}
-				title={"Text"}
-				rightElement={
-					<Button
-						icon={textOn ? "eye-open" : "eye-off"}
-						intent="none"
-						onClick={(e) => {
-							e.stopPropagation();
-							toggleText();
-						}}></Button>
-				}>
+				title={"Text"}>
 
 				{textPrefix && <LaTeXForm prefix={textPrefix}></LaTeXForm>}
 
@@ -121,16 +65,7 @@ function LabelForm(props: ILabelArrayFormProps) {
 				collapseProps={{ defaultIsOpen: false }}
 				compact={true}
 				collapsible={true}
-				title={"Arrow"}
-				rightElement={
-					<Button
-						icon={lineOn ? "eye-open" : "eye-off"}
-						intent="none"
-						onClick={(e) => {
-							e.stopPropagation();
-							toggleLine();
-						}}></Button>
-				}>
+				title={"Arrow"}>
 				{linePrefix && <ArrowForm prefix={linePrefix}></ArrowForm>}
 			</Section>
 		</>
