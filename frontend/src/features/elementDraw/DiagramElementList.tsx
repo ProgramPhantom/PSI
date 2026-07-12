@@ -3,6 +3,7 @@ import { HTMLTable } from "@blueprintjs/core";
 import { useAppDispatch } from "../../redux/hooks";
 import { loadDiagram } from "../../redux/thunks/diagramThunks";
 import Diagram from "../../logic/hasComponents/diagram";
+import styles from "./styles/DiagramElementList.module.scss";
 
 interface DiagramElementListProps {
 	diagramElements: Diagram[];
@@ -12,15 +13,15 @@ export const DiagramElementList: React.FC<DiagramElementListProps> = ({ diagramE
 	const dispatch = useAppDispatch();
 
 	return (
-		<div style={{ padding: "16px", overflowY: "auto", height: "100%" }} className="custom-scrollbar">
-			<HTMLTable interactive={true} striped={true} style={{ width: "100%" }}>
+		<div className={`${styles.container} custom-scrollbar`}>
+			<HTMLTable interactive={true} striped={true}>
 				<thead>
 					<tr>
-						<th style={{ padding: "8px 12px" }}>Name</th>
-						<th style={{ padding: "8px 12px" }}>ID</th>
-						<th style={{ padding: "8px 12px" }}>Sequences</th>
-						<th style={{ padding: "8px 12px" }}>Channels</th>
-						<th style={{ padding: "8px 12px" }}>Dimensions</th>
+						<th>Name</th>
+						<th>ID</th>
+						<th>Sequences</th>
+						<th>Channels</th>
+						<th>Dimensions</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -40,15 +41,15 @@ export const DiagramElementList: React.FC<DiagramElementListProps> = ({ diagramE
 								style={{ cursor: "pointer" }}
 								title="Double-click to load diagram"
 							>
-								<td style={{ fontWeight: 600, padding: "10px 12px", verticalAlign: "middle" }}>
+								<td className={styles.boldText}>
 									{diagram.ref || "unnamed"}
 								</td>
-								<td style={{ fontFamily: "monospace", fontSize: "11px", color: "#5c7080", padding: "10px 12px", verticalAlign: "middle" }}>
+								<td className={styles.monoText}>
 									{diagram.id}
 								</td>
-								<td style={{ padding: "10px 12px", verticalAlign: "middle" }}>{seqCount}</td>
-								<td style={{ padding: "10px 12px", verticalAlign: "middle" }}>{chanCount}</td>
-								<td style={{ padding: "10px 12px", verticalAlign: "middle" }}>
+								<td>{seqCount}</td>
+								<td>{chanCount}</td>
+								<td>
 									{`${diagram.contentWidth ?? 0} x ${diagram.contentHeight ?? 0}`}
 								</td>
 							</tr>

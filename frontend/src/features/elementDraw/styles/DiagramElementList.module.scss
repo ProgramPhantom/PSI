@@ -1,0 +1,34 @@
+.container {
+	padding: 0;
+	overflow-y: auto;
+	flex-grow: 1;
+	min-height: 0;
+
+	table {
+		width: 100%;
+
+		thead th {
+			position: sticky;
+			top: 0;
+			background-color: #ffffff;
+			z-index: 1;
+			box-shadow: inset 0 -1px 0 #d3d8de;
+			padding: 6px 8px !important;
+		}
+
+		tbody td {
+			padding: 6px 8px !important;
+			vertical-align: middle !important;
+		}
+	}
+}
+
+.boldText {
+	font-weight: 600;
+}
+
+.monoText {
+	font-family: monospace;
+	font-size: 11px;
+	color: #5c7080;
+}
