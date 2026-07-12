@@ -2,7 +2,7 @@ import { Button, ButtonGroup, Colors, EditableText, Icon, Menu, MenuDivider, Men
 import React from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import * as Actions from "../../redux/thunks/actionThunks";
-import { setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen } from "../../redux/slices/dialogSlice";
+import { setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
 import { setFileName } from "../../redux/slices/diagramSlice";
 import { selectCurrentDiagramSource, selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
 
@@ -86,7 +86,7 @@ const Toolbar: React.FC = () => {
 								<MenuItem icon="bug" text="Report bug" label="Ctrl+B" onClick={() => dispatch(Actions.handleDebugIssue())} />
 								<MenuItem icon="reset" text="Reset App" onClick={() => dispatch(Actions.resetApp())} />
 								<MenuDivider />
-								<MenuItem icon="info-sign" text="About" active={false} disabled={true} onClick={() => { }} />
+								<MenuItem icon="info-sign" text="About" onClick={() => dispatch(setAboutDialogOpen(true))} />
 							</Menu>
 						}>
 						<Button text="Help" />

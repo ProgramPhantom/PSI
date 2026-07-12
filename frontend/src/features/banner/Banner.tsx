@@ -3,7 +3,7 @@ import React from "react";
 import ENGINE from "../../logic/engine";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
-import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen } from "../../redux/slices/dialogSlice";
+import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import logoUrl from "../../assets/app/Logo1.svg";
 
@@ -15,7 +15,7 @@ export default function Banner() {
 	return (
 		<Navbar>
 			<Navbar.Group>
-				<img src={logoUrl} width={30} height={20} style={{ marginRight: "10px" }} alt="Pulse Logo" />
+				<img src={logoUrl} width={30} height={20} style={{ marginRight: "10px", cursor: "pointer" }} alt="Pulse Logo" onClick={() => dispatch(setAboutDialogOpen(true))} />
 				<Navbar.Heading>Pulse Planner v0.7.5 (BETA)</Navbar.Heading>
 				<Tooltip content="Open (Ctrl+O)" position={Position.BOTTOM}>
 					<Button

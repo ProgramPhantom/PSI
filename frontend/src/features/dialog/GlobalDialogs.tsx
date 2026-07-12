@@ -7,7 +7,8 @@ import {
     setLoginDialogOpen,
     setUserDialogOpen,
     setDiagramsDialogOpen,
-    setAssetStoreDialogOpen
+    setAssetStoreDialogOpen,
+    setAboutDialogOpen
 } from "../../redux/slices/dialogSlice";
 import { PNGExportDialog } from "./PNGExportDialog";
 import { LoadDiagramFileDialog } from "./LoadDiagramFileDialog";
@@ -19,6 +20,7 @@ import { SaveAsDialog } from "./SaveAsDialog";
 import { WelcomeDialog } from "./WelcomeDialog";
 import { UnsavedDiagramAlert } from "./UnsavedDiagramAlert";
 import { UnsavedDiagramLogoutAlert } from "./UnsavedDiagramLogoutAlert";
+import { AboutDialog } from "./AboutDialog";
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -29,7 +31,8 @@ export const GlobalDialogs: React.FC = () => {
         isLoginDialogOpen,
         isUserDialogOpen,
         isDiagramsDialogOpen,
-        isAssetStoreDialogOpen
+        isAssetStoreDialogOpen,
+        isAboutDialogOpen
     } = useAppSelector((state) => state.dialog);
 
     return (
@@ -69,6 +72,11 @@ export const GlobalDialogs: React.FC = () => {
             <SaveAsDialog
                 isOpen={isSaveAsDialogOpen}
                 onClose={() => dispatch(setSaveAsDialogOpen(false))}
+            />
+
+            <AboutDialog
+                isOpen={isAboutDialogOpen}
+                onClose={() => dispatch(setAboutDialogOpen(false))}
             />
 
             <UnsavedDiagramAlert />
