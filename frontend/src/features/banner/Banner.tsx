@@ -5,6 +5,7 @@ import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
 import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
+import logoUrl from "../../assets/app/Logo1.svg";
 
 export default function Banner() {
 	const { data: user } = useGetMeQuery();
@@ -14,7 +15,7 @@ export default function Banner() {
 	return (
 		<Navbar>
 			<Navbar.Group>
-				<Icon icon="pulse" size={20} style={{ marginRight: "10px" }}></Icon>
+				<img src={logoUrl} width={30} height={20} style={{ marginRight: "10px" }} alt="Pulse Logo" />
 				<Navbar.Heading>Pulse Planner v0.7.5 (BETA)</Navbar.Heading>
 				<Tooltip content="Open (Ctrl+O)" position={Position.BOTTOM}>
 					<Button
