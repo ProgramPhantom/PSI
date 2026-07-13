@@ -15,7 +15,7 @@ export default function Banner() {
 	return (
 		<Navbar>
 			<Navbar.Group>
-				<img src={logoUrl} width={30} height={20} style={{ marginRight: "10px", cursor: "pointer" }} alt="Pulse Logo" onClick={() => dispatch(setAboutDialogOpen(true))} />
+				<img src={logoUrl} width={30} height={20} style={{ marginRight: "10px", cursor: "help" }} alt="Pulse Logo" onClick={() => dispatch(setAboutDialogOpen(true))} />
 				<Navbar.Heading>Pulse Planner v0.7.5 (BETA)</Navbar.Heading>
 				<Tooltip content="Open (Ctrl+O)" position={Position.BOTTOM}>
 					<Button
