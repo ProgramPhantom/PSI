@@ -174,7 +174,7 @@ export function AboutDialog(props: IAboutDialogProps) {
 										<div className={`${styles.avatar} ${styles.avatarBlue}`}>HV</div>
 										<div>
 											<strong className={styles.memberName}>Henry Varley</strong>
-											<div className={styles.memberRole}>Lead Architect & Primary Developer</div>
+											<div className={styles.memberRole}>Primary Developer</div>
 										</div>
 									</div>
 
@@ -182,15 +182,7 @@ export function AboutDialog(props: IAboutDialogProps) {
 										<div className={`${styles.avatar} ${styles.avatarGreen}`}>CR</div>
 										<div>
 											<strong className={styles.memberName}>Conrad Robinson</strong>
-											<div className={styles.memberRole}>Sequence Modeling & Calculation Engine</div>
-										</div>
-									</div>
-
-									<div className={styles.teamMember}>
-										<div className={`${styles.avatar} ${styles.avatarOrange}`}>GN</div>
-										<div>
-											<strong className={styles.memberName}>Gabriel Vilella Nilsson</strong>
-											<div className={styles.memberRole}>UI/UX Contributor & Graphics Styling</div>
+											<div className={styles.memberRole}>Started construction of the backend</div>
 										</div>
 									</div>
 								</div>

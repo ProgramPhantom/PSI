@@ -68,7 +68,7 @@ export const logout = createAsyncThunk<void, boolean | void>(
             console.error(error);
         }
     },
-    
+
 );
 
 export const handleExportDiagramFile = createAsyncThunk(
@@ -236,6 +236,64 @@ Add any other context about the problem here.
 
         const issueUrl = `https://github.com/ProgramPhantom/PSI/issues/new?body=${encodeURIComponent(issueBody)}`;
         window.open(issueUrl, "_blank");
+    }
+);
+
+export const handleReportBugEmail = createAsyncThunk(
+    'actions/handleReportBugEmail',
+    async () => {
+        const stateObject: IDiagram = ENGINE.handler.diagram.state;
+        const stateString = JSON.stringify(stateObject, undefined, 4);
+        const blob = new Blob([stateString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "psi_debug_state.json";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const timestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+        const subject = `PSI Bug Report - ${timestamp}`;
+
+        const emailBody = `
+Dear Henry,
+
+Please fill in the bug report details below:
+
+**Describe the bug**
+[A description of what the bug is]
+
+**To Reproduce**
+Steps to reproduce the behavior :
+1. Add '...'
+2. change '...'
+3. Scroll down to '...'
+4. See error
+(Example)
+
+**Expected behavior**
+[A description of what you expected to happen]
+
+**State File**
+[Please attach the downloaded 'psi_debug_state.json' file to this email]
+
+**Desktop / System Information**
+- User Agent: ${navigator.userAgent}
+- Screen: ${window.screen.width}x${window.screen.height}
+- URL: ${window.location.href}
+`.trim();
+
+        const mailtoUrl = `mailto:henry.varley@manchester.ac.uk?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+        window.location.href = mailtoUrl;
     }
 );
 

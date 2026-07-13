@@ -83,7 +83,8 @@ const Toolbar: React.FC = () => {
 						position={Position.BOTTOM_LEFT}
 						content={
 							<Menu>
-								<MenuItem icon="bug" text="Report bug" label="Ctrl+B" onClick={() => dispatch(Actions.handleDebugIssue())} />
+								<MenuItem icon="bug" text="Report bug (GitHub)" label="Ctrl+B" onClick={() => dispatch(Actions.handleDebugIssue())} />
+								<MenuItem icon="envelope" text="Report bug (Email)" label="Ctrl+Alt+B" onClick={() => dispatch(Actions.handleReportBugEmail())} />
 								<MenuItem icon="reset" text="Reset App" onClick={() => dispatch(Actions.resetApp())} />
 								<MenuDivider />
 								<MenuItem icon="info-sign" text="About" onClick={() => dispatch(setAboutDialogOpen(true))} />

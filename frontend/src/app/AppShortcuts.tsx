@@ -155,9 +155,18 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
             {
                 combo: "ctrl+b",
                 global: true,
-                label: "Report bug",
+                label: "Report bug (Github)",
                 onKeyDown: () => {
                     dispatch(Actions.handleDebugIssue());
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+alt+b",
+                global: true,
+                label: "Report bug (Email)",
+                onKeyDown: () => {
+                    dispatch(Actions.handleReportBugEmail());
                 },
                 preventDefault: true
             },
