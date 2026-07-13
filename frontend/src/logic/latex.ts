@@ -59,8 +59,8 @@ export class LaTeX extends TextBase implements ILaTeX {
 		SVGobj.id("svgTempID");
 		SVGobj.attr({ preserveAspectRatio: "xMinYMin" });
 
-		var exWidthString: string = <string>SVGobj.width() || "50";
-		var exHeightString: string = <string>SVGobj.height() || "50";
+		var exWidthString: string = String(SVGobj.width() || "50");
+		var exHeightString: string = String(SVGobj.height() || "50");
 
 		var exWidth: number = parseFloat(exWidthString);
 		var exHeight: number = parseFloat(exHeightString);
