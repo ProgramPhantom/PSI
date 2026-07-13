@@ -227,7 +227,16 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 		this._placementMode = params.placementMode ?? { type: "free" }
 		this.placementControl = params.placementControl ?? "user";
-		this.sizeMode = params.sizeMode ?? { x: "fixed", y: "fixed" }
+		this.sizeMode = params.sizeMode ? { ...params.sizeMode } : { x: "fixed", y: "fixed" };
+
+		if (this._placementMode.type === "free") {
+			if (this.sizeMode.x === "grow") {
+				this.sizeMode.x = "fixed";
+			}
+			if (this.sizeMode.y === "grow") {
+				this.sizeMode.y = "fixed";
+			}
+		}
 
 		this._contentWidth = params.contentWidth ?? 0;
 		this._contentHeight = params.contentHeight ?? 0;

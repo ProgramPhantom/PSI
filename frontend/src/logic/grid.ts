@@ -543,6 +543,87 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	public growElement(containerSize: Size): Record<Dimensions, number> {
 		let change = super.growElement(containerSize);
 
+		const epsilon = 1e-5;
+
+		// Resize columns (x axis)
+		let remainingXChange: number = change.x;
+		const activeColumns = this.gridSizes.columns.filter(col => col.getSizeByDimension("x") > epsilon);
+		if (activeColumns.length === 0) {
+			remainingXChange = 0;
+		}
+		while (remainingXChange > epsilon) {
+			let smallestLength: number = activeColumns[0].getSizeByDimension("x");
+			let secondSmallestLength: number = Infinity;
+
+			activeColumns.forEach((col) => {
+				let colLength: number = col.getSizeByDimension("x");
+				if (colLength < smallestLength - epsilon) {  // New smallest length found
+					secondSmallestLength = smallestLength;
+					smallestLength = colLength;
+				} else if (colLength > smallestLength + epsilon) {
+					secondSmallestLength = Math.min(secondSmallestLength, colLength);
+				}
+			});
+
+			let sizeToAdd: number = secondSmallestLength === Infinity
+				? remainingXChange
+				: (secondSmallestLength - smallestLength);
+
+			let smallestCols = activeColumns.filter(col =>
+				Math.abs(col.getSizeByDimension("x") - smallestLength) <= epsilon
+			);
+
+			sizeToAdd = Math.min(sizeToAdd, remainingXChange / smallestCols.length);
+
+			smallestCols.forEach((col) => {
+				col.setSizeByDimension(col.getSizeByDimension("x") + sizeToAdd, "x");
+				remainingXChange -= sizeToAdd;
+			});
+		}
+
+		// Resize rows (y axis)
+		let remainingYChange: number = change.y;
+		const activeRows = this.gridSizes.rows.filter(row => row.getSizeByDimension("y") > epsilon);
+		if (activeRows.length === 0) {
+			remainingYChange = 0;
+		}
+		while (remainingYChange > epsilon) {
+			let smallestLength: number = activeRows[0].getSizeByDimension("y");
+			let secondSmallestLength: number = Infinity;
+
+			activeRows.forEach((row) => {
+				let rowLength: number = row.getSizeByDimension("y");
+				if (rowLength < smallestLength - epsilon) {  // New smallest length found
+					secondSmallestLength = smallestLength;
+					smallestLength = rowLength;
+				} else if (rowLength > smallestLength + epsilon) {
+					secondSmallestLength = Math.min(secondSmallestLength, rowLength);
+				}
+			});
+
+			let sizeToAdd: number = secondSmallestLength === Infinity
+				? remainingYChange
+				: (secondSmallestLength - smallestLength);
+
+			let smallestRows = activeRows.filter(row =>
+				Math.abs(row.getSizeByDimension("y") - smallestLength) <= epsilon
+			);
+
+			sizeToAdd = Math.min(sizeToAdd, remainingYChange / smallestRows.length);
+
+			smallestRows.forEach((row) => {
+				row.setSizeByDimension(row.getSizeByDimension("y") + sizeToAdd, "y");
+				remainingYChange -= sizeToAdd;
+			});
+		}
+
+		// // Apply the grown column and row sizes to cells:
+		// this.applyCellSizes();
+
+		// // Apply the grown sizes to subgrids:
+		// this.applySizesToSubgrids();
+
+		// Iterate over cells and grow each
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
 				if (cell?.elements !== undefined) {

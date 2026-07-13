@@ -137,6 +137,10 @@ export default class LabelGroup
 		}
 		child.placementControl = "auto"
 
+		if (this.sizeMode.x === "grow") {
+			child.sizeMode.x = "grow"
+		}
+
 		this.ref = child.ref;
 	}
 

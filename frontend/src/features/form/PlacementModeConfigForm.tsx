@@ -139,7 +139,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					<SimpleField label="Row">
 						<Controller
 							control={control}
-							name={`${fullPrefix}placementMode.gridConfig.coords.row`}
+							name={`${fullPrefix}placementMode.config.coords.row`}
 							defaultValue={0}
 							render={({ field }) => (
 								<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={0} size="small" fill />
@@ -149,7 +149,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					<SimpleField label="Col">
 						<Controller
 							control={control}
-							name={`${fullPrefix}placementMode.gridConfig.coords.col`}
+							name={`${fullPrefix}placementMode.config.coords.col`}
 							defaultValue={0}
 							render={({ field }) => (
 								<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={0} size="small" fill />
@@ -162,7 +162,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					<SimpleField label="Row Span">
 						<Controller
 							control={control}
-							name={`${fullPrefix}placementMode.gridConfig.gridSize.noRows`}
+							name={`${fullPrefix}placementMode.config.gridSize.noRows`}
 							defaultValue={1}
 							render={({ field }) => (
 								<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={1} size="small" fill />
@@ -172,7 +172,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					<SimpleField label="Col Span">
 						<Controller
 							control={control}
-							name={`${fullPrefix}placementMode.gridConfig.gridSize.noCols`}
+							name={`${fullPrefix}placementMode.config.gridSize.noCols`}
 							defaultValue={1}
 							render={({ field }) => (
 								<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={1} size="small" fill />
@@ -187,7 +187,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					leftField={
 						<Controller
 							control={control}
-							name={`${fullPrefix}placementMode.gridConfig.alignment.x`}
+							name={`${fullPrefix}placementMode.config.alignment.x`}
 							defaultValue="here"
 							render={({ field }) => (
 								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
@@ -202,7 +202,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					rightField={
 						<Controller
 							control={control}
-							name={`${fullPrefix}placementMode.gridConfig.alignment.y`}
+							name={`${fullPrefix}placementMode.config.alignment.y`}
 							defaultValue="here"
 							render={({ field }) => (
 								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
@@ -218,7 +218,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 				<div style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: "5px" }}>
 					<Controller
 						control={control}
-						name={`${fullPrefix}placementMode.gridConfig.contribution.x`}
+						name={`${fullPrefix}placementMode.config.contribution.x`}
 						defaultValue={false}
 						render={({ field }) => (
 							<Switch {...field} checked={field.value} label="Contribute X" onChange={(e) => field.onChange(e.target.checked)} />
@@ -226,7 +226,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					/>
 					<Controller
 						control={control}
-						name={`${fullPrefix}placementMode.gridConfig.contribution.y`}
+						name={`${fullPrefix}placementMode.config.contribution.y`}
 						defaultValue={false}
 						render={({ field }) => (
 							<Switch {...field} checked={field.value} label="Contribute Y" onChange={(e) => field.onChange(e.target.checked)} />
@@ -239,7 +239,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 		details = (
 			<>
 				<div style={{ padding: "4px 8px", fontSize: "0.8em", opacity: 0.7 }}>
-					Index: {placementMode?.alignerConfig?.index ?? "N/A"}
+					Index: {placementMode?.config?.index ?? "N/A"}
 				</div>
 
 				<DoubleField
@@ -248,7 +248,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					leftField={
 						<Controller
 							control={control}
-							name={`${fullPrefix}placementMode.alignerConfig.alignment.mainAxis`}
+							name={`${fullPrefix}placementMode.config.alignment.mainAxis`}
 							defaultValue="centre"
 							render={({ field }) => (
 								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
@@ -263,7 +263,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					rightField={
 						<Controller
 							control={control}
-							name={`${fullPrefix}placementMode.alignerConfig.alignment.crossAxis`}
+							name={`${fullPrefix}placementMode.config.alignment.crossAxis`}
 							defaultValue="centre"
 							render={({ field }) => (
 								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down" fill>
@@ -279,7 +279,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 				<div style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: "5px" }}>
 					<Controller
 						control={control}
-						name={`${fullPrefix}placementMode.alignerConfig.contribution.mainAxis`}
+						name={`${fullPrefix}placementMode.config.contribution.mainAxis`}
 						defaultValue={true}
 						render={({ field }) => (
 							<Switch {...field} checked={field.value} label="Main Axis" onChange={(e) => field.onChange(e.target.checked)} />
@@ -287,7 +287,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 					/>
 					<Controller
 						control={control}
-						name={`${fullPrefix}placementMode.alignerConfig.contribution.crossAxis`}
+						name={`${fullPrefix}placementMode.config.contribution.crossAxis`}
 						defaultValue={false}
 						render={({ field }) => (
 							<Switch {...field} checked={field.value} label="Cross Axis" onChange={(e) => field.onChange(e.target.checked)} />

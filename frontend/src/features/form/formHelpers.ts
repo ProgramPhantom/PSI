@@ -113,10 +113,18 @@ export function resolveFormDataFromTarget(
 			creatingLabelRoles = getFallbackLabelRoles();
 		}
 
+		const defaults = structuredClone(formBundle.defaults);
+		const isCol = Collection.isCollection(defaults);
+		const fallbackMode = isCol ? "fit" : "fixed";
+		defaults.sizeMode = {
+			x: defaults.sizeMode?.x ?? fallbackMode,
+			y: defaults.sizeMode?.y ?? fallbackMode,
+		};
+
 		return {
 			primary: {
 				Form: formBundle.form,
-				defaults: structuredClone(formBundle.defaults),
+				defaults: defaults,
 				elementType: objectType,
 			},
 			roleDefaults,
@@ -328,7 +336,10 @@ function buildLabelGroup(
 	const result: ICollection = {
 		...masterData,
 		children,
-		sizeMode: { x: "fit", y: "fit" },
+		sizeMode: {
+			x: masterData.sizeMode?.x === "grow" ? "grow" : "fit",
+			y: masterData.sizeMode?.y === "grow" ? "grow" : "fit",
+		},
 		type: masterData.type === "simple-label-group" ? "simple-label-group" : "label-group",
 	}
 

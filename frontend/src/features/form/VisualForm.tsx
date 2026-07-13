@@ -57,16 +57,17 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 		fullPrefix
 	);
 
-	const currentX = watchedSizeModeX ?? theseVals?.sizeMode?.x ?? props.target?.sizeMode.x ?? "fixed";
-	const currentY = watchedSizeModeY ?? theseVals?.sizeMode?.y ?? props.target?.sizeMode.y ?? "fixed";
-
-	const widthActive = currentX === "fixed";
-	const heightActive = currentY === "fixed";
-
 	const isCollection = !!(
 		(theseVals && Collection.isCollection(theseVals)) ||
 		(props.target && Collection.isICollection(props.target))
 	);
+
+	const fallbackMode = isCollection ? "fit" : "fixed";
+	const currentX = watchedSizeModeX ?? theseVals?.sizeMode?.x ?? props.target?.sizeMode.x ?? fallbackMode;
+	const currentY = watchedSizeModeY ?? theseVals?.sizeMode?.y ?? props.target?.sizeMode.y ?? fallbackMode;
+
+	const widthActive = currentX === "fixed";
+	const heightActive = currentY === "fixed";
 	const placementModeType = watchedPlacementModeType ?? theseVals?.placementMode?.type ?? props.target?.placementMode?.type ?? "free";
 	const placementControl = watchedPlacementControl ?? theseVals?.placementControl ?? props.target?.placementControl ?? "user";
 	let sizeOptions = isCollection ? ["fit", "grow"] : ["fixed", "fit", "grow"];
@@ -357,6 +358,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 							<Controller
 								control={formControls.control}
 								name={`${fullPrefix}sizeMode.x`}
+								defaultValue={currentX}
 								render={({ field }) => (
 									<HTMLSelect
 										{...field}
@@ -374,6 +376,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 							<Controller
 								control={formControls.control}
 								name={`${fullPrefix}sizeMode.y`}
+								defaultValue={currentY}
 								render={({ field }) => (
 									<HTMLSelect
 										{...field}
