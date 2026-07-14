@@ -1,0 +1,20 @@
+import { ILaTeX } from "../../latex"
+
+export const DEFAULT_ANNOTATION_G4: ILaTeX = {
+	"ref": "annotation-g4",
+	"contentWidth": 10,
+	"contentHeight": 10,
+	"text": "G_4",
+	"padding": [8, 8, 8, 8],
+	"offset": [0, 0],
+
+	"style": {
+		"fontSize": 35,
+		"colour": "black",
+		"background": null,
+		"display": "block"
+	},
+
+	"sizeMode": { x: "fit", y: "fit" },
+	"type": "latex"
+}

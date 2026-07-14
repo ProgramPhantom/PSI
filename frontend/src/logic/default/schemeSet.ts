@@ -37,6 +37,10 @@ import { DEFAULT_ANNOTATION_T1 } from "./annotation/t1";
 import { DEFAULT_ANNOTATION_T1_HALF } from "./annotation/t1_half";
 import { DEFAULT_ANNOTATION_TAU_1 } from "./annotation/tau_1";
 import { DEFAULT_ANNOTATION_TAU_MIX } from "./annotation/tau_mix";
+import { DEFAULT_ANNOTATION_G1 } from "./annotation/g_1";
+import { DEFAULT_ANNOTATION_G2 } from "./annotation/g_2";
+import { DEFAULT_ANNOTATION_G3 } from "./annotation/g_3";
+import { DEFAULT_ANNOTATION_G4 } from "./annotation/g_4";
 import { DEFAULT_ANNOTATION_LABEL_DELTA } from "./annotation/label_delta";
 import { DEFAULT_ANNOTATION_LABEL_DELTA_CAP } from "./annotation/label_Delta_cap";
 import { DEFAULT_ANNOTATION_LABEL_TAU } from "./annotation/label_tau";
@@ -87,6 +91,10 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"e9530b12-6b62-48e0-89de-60b61c7b87e5": DEFAULT_ANNOTATION_T1_HALF,
 				"e9530b12-6b62-48e0-89de-60b61c7b87e6": DEFAULT_ANNOTATION_TAU_1,
 				"e9530b12-6b62-48e0-89de-60b61c7b87e7": DEFAULT_ANNOTATION_TAU_MIX,
+				"c745bf93-517d-4493-9794-1eda71723a0a": DEFAULT_ANNOTATION_G1,
+				"1a31b0d5-892b-46d1-b9db-03b223e14be9": DEFAULT_ANNOTATION_G2,
+				"7a0490ae-84e0-4bb9-8d51-3477a9f4532a": DEFAULT_ANNOTATION_G3,
+				"69210400-7c83-4927-abee-7df65da24909": DEFAULT_ANNOTATION_G4,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e81": DEFAULT_ANNOTATION_LABEL_DELTA,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e82": DEFAULT_ANNOTATION_LABEL_DELTA_CAP,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e83": DEFAULT_ANNOTATION_LABEL_TAU,
