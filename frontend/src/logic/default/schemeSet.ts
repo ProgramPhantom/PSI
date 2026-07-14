@@ -47,6 +47,7 @@ import { DEFAULT_ANNOTATION_LABEL_TAU } from "./annotation/label_tau";
 import { DEFAULT_ANNOTATION_LABEL_T1 } from "./annotation/label_t1";
 import { DEFAULT_ANNOTATION_LABEL_T1_HALF } from "./annotation/label_t1_half";
 import { D1PSYCHE } from "./diagrams/1DPSYCHE";
+import { D1SAPPHIRE } from "./diagrams/1DSAPPHIRE";
 
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
@@ -100,7 +101,8 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e83": DEFAULT_ANNOTATION_LABEL_TAU,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e84": DEFAULT_ANNOTATION_LABEL_T1,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e85": DEFAULT_ANNOTATION_LABEL_T1_HALF,
-				"c8014d42-f304-4e2e-a076-a6a425131ad4": D1PSYCHE
+				"c8014d42-f304-4e2e-a076-a6a425131ad4": D1PSYCHE,
+				"c4014e43-f304-4e2e-a076-a6a425131ad4": D1SAPPHIRE
 			}
 		}
 	}
