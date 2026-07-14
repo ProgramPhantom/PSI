@@ -184,6 +184,7 @@ export default class Channel extends Subgrid implements IChannel {
 				}
 			}
 		}
+		child.sizeMode.x = "grow"
 		child.ref = this.ref + "-bar";
 	}
 
