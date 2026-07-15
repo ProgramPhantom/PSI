@@ -126,30 +126,46 @@ export const initialiseAssets = createAsyncThunk<void, void>(
                 const keys = await localforage.keys();
                 for (const key of keys) {
                     const svgStore: SVGDBEntry | null = await localforage.getItem<SVGDBEntry>(key);
-                    if (svgStore) {
-                        localStoreAssetData.add(svgStore)
+                    if (
+                        svgStore &&
+                        typeof svgStore === "object" &&
+                        typeof svgStore.ref === "string" &&
+                        svgStore.file instanceof Blob
+                    ) {
+                        localStoreAssetData.add(svgStore as SVGDBEntry);
                     }
                 }
             } catch (e) {
                 console.warn("Failed to load local svg data");
             }
 
+            const promises: Promise<any>[] = [];
 
             for (const entry of builtInAssets) {
-                thunkAPI.dispatch(loadAsset({
-                    file: entry.file,
-                    reference: entry.ref,
-                    source: "builtin"
-                }));
+                promises.push(
+                    thunkAPI.dispatch(
+                        loadAsset({
+                            file: entry.file,
+                            reference: entry.ref,
+                            source: "builtin"
+                        })
+                    )
+                );
             }
 
             for (const entry of localStoreAssetData) {
-                thunkAPI.dispatch(loadAsset({
-                    file: entry.file,
-                    reference: entry.ref,
-                    source: "local"
-                }));
+                promises.push(
+                    thunkAPI.dispatch(
+                        loadAsset({
+                            file: entry.file,
+                            reference: entry.ref,
+                            source: "local"
+                        })
+                    )
+                );
             }
+
+            await Promise.all(promises);
 
         } catch (e) {
             console.warn("Failed to initialize assets", e);
