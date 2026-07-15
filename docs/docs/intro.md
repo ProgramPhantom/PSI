@@ -32,9 +32,9 @@ graph TD
 
 - **[Sequence Diagram Concepts](./explanation.md)**: Overview of general terminology and the positioning engine.
 - **Components & Logic (hasComponents)**: Documentation of individual classes and structures that manage state and layout:
-  - **[Diagram](./diagram.md)**: The root node of a sequence diagram.
-  - **[Sequence](./sequence.md)**: A collection of channels and pulse alignments.
-  - **[Channel](./channel.md)**: A single track (or axis) containing pulses.
-  - **[LabelGroup](./labelGroup.md)** & **[SimpleLabelGroup](./simpleLabelGroup.md)**: Handling annotations and labels.
-  - **[Label](./label.md)**: Individual text labels.
-  - **[SequenceAligner](./sequenceAligner.md)**: Logic for channel positioning.
+  - **[Diagram](./components/diagram.md)**: The root node of a sequence diagram.
+  - **[Sequence](./components/sequence.md)**: A collection of channels and pulse alignments.
+  - **[Channel](./components/channel.md)**: A single track (or axis) containing pulses.
+  - **[LabelGroup](./components/labelGroup.md)** & **[SimpleLabelGroup](./components/simpleLabelGroup.md)**: Handling annotations and labels.
+  - **[Label](./components/label.md)**: Individual text labels.
+  - **[SequenceAligner](./components/sequenceAligner.md)**: Logic for channel positioning.

@@ -1,13 +1,24 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
- */
-
 .heroBanner {
+  background: linear-gradient(135deg, #1a2530 0%, #2c3e50 100%);
   padding: 4rem 0;
   text-align: center;
   position: relative;
   overflow: hidden;
+  border-bottom: 3px solid var(--ifm-color-primary);
+}
+
+.logoWrapper {
+  margin-bottom: 1.5rem;
+}
+
+.heroLogo {
+  filter: drop-shadow(0px 6px 10px rgba(0, 0, 0, 0.4));
+  transform: scale(1.15);
+  transition: transform 0.3s ease;
+}
+
+.heroLogo:hover {
+  transform: scale(1.22);
 }
 
 @media screen and (max-width: 996px) {
@@ -20,4 +31,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.mainContent {
+  padding: 2rem 0;
+}
+
+.featureCallout {
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--ifm-background-color);
+  border-radius: 8px;
+  border-left: 4px solid var(--ifm-color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.featureCallout h3 {
+  margin-top: 0;
+  color: var(--ifm-color-primary);
+}
+
+.featureCallout ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.6;
+}
+
+.featureCallout li {
+  margin-bottom: 0.5rem;
 }

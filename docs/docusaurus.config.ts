@@ -1,5 +1,5 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Pulse Planner Wiki',
   tagline: 'Documentation for Pulse Planner',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/Logo1_white.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -78,7 +78,8 @@ const config: Config = {
       title: 'Pulse Planner Wiki',
       logo: {
         alt: 'Pulse Planner Logo',
-        src: 'img/logo.svg',
+        src: 'img/Logo1.svg',
+        srcDark: 'img/Logo1_white.svg',
       },
       items: [
         {
@@ -103,23 +104,6 @@ const config: Config = {
             {
               label: 'Wiki Home',
               to: '/',
-            },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
             },
           ],
         },
