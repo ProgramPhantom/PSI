@@ -16,7 +16,7 @@ When you first open Pulse Planner, a `^1H` channel is already on the canvas — 
 
 1. Click the channel to select it. A **Modify** panel opens on the right.
 2. Click the **Components** tab.
-3. Under **Label**, edit the **Text (LaTeX)** field — e.g. `^{13}\textrm{C}` renders as ¹³C.
+3. Under **Label**, edit the **Text (LaTeX)** field — e.g. $^{13}\textrm{C}$.
 4. Click **Apply** at the bottom of the panel to confirm.
 
 ![Renaming a channel](/gif/quickstart-rename-channel.gif)
