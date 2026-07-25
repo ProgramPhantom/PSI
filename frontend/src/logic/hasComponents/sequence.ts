@@ -136,9 +136,9 @@ export default class Sequence extends Grid implements ISequence {
 
 	// --------------- Helpers -----------------------
 	//#region 
-	private colHasNonStructureElement(col_index: number): boolean {
+	public colHasNonStructureElement(col_index: number): boolean {
 		let col: GridCell[] | undefined = this.getColumn(col_index);
-		if (col === undefined) { return false } ''
+		if (col === undefined) { return false }
 
 		let hasNonStructureElement: boolean = false;
 		for (let row_index = 0; row_index < this.numRows; row_index++) {
@@ -149,6 +149,34 @@ export default class Sequence extends Grid implements ISequence {
 		}
 
 		return hasNonStructureElement;
+	}
+
+	public getNonStructureElementsInCol(col_index: number): Visual[] {
+		let elementsInCol: Visual[] = [];
+		for (let row_index = 0; row_index < this.numRows; row_index++) {
+			let elements: Visual[] = this.getGridElementsAtCell({ row: row_index, col: col_index });
+			for (let el of elements) {
+				if (!this.isStructure(el)) {
+					elementsInCol.push(el);
+				}
+			}
+		}
+		return elementsInCol;
+	}
+
+	public override removeColumn(index?: number, remove?: true | "if-empty"): void {
+		if (index !== undefined) {
+			// Remove pulses 
+			let nonStructureElements = this.getNonStructureElementsInCol(index);
+			for (let el of nonStructureElements) {
+				for (let ch of this.channels) {
+					if (ch.children.some(c => c.id === el.id)) {
+						ch.remove({ child: el });
+					}
+				}
+			}
+		}
+		super.removeColumn(index, remove);
 	}
 
 	public cellHasNonStructureElement(coords: { row: number, col: number }): boolean {

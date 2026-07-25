@@ -1,5 +1,5 @@
 import React, { useState, useSyncExternalStore } from "react";
-import { Colors } from "@blueprintjs/core";
+import { Alert, Colors } from "@blueprintjs/core";
 import ENGINE from "../../logic/engine";
 import Sequence from "../../logic/hasComponents/sequence";
 import styles from "./styles/SequenceColumnEditor.module.scss";
@@ -9,8 +9,8 @@ interface SequenceColumnEditorProps {
 }
 
 export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorProps) {
-	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	const [hoveredState, setHoveredState] = useState<{ type: "add" | "remove"; colIndex: number } | null>(null);
+	const [pendingDeleteCol, setPendingDeleteCol] = useState<number | null>(null);
 
 	if (!sequence || sequence.numColumns < 1) {
 		return null;
@@ -49,7 +49,11 @@ export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorP
 				onClick={(e) => {
 					e.stopPropagation();
 					setHoveredState(null);
-					ENGINE.handler.removeColumn(sequence.id, c);
+					if (sequence.colHasNonStructureElement(c)) {
+						setPendingDeleteCol(c);
+					} else {
+						ENGINE.handler.removeColumn(sequence.id, c);
+					}
 				}}
 				style={{
 					left: `${left}px`,
@@ -142,10 +146,31 @@ export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorP
 	}
 
 	return (
-		<div id={`${sequence.id}-column-editor`} style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>
-			{hoverOverlay}
-			{removeButtons}
-			{addButtons}
-		</div>
+		<>
+			<div id={`${sequence.id}-column-editor`} style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>
+				{hoverOverlay}
+				{removeButtons}
+				{addButtons}
+			</div>
+
+			<Alert
+				cancelButtonText="Cancel"
+				confirmButtonText="Delete Column"
+				icon="warning-sign"
+				intent="danger"
+				isOpen={pendingDeleteCol !== null}
+				onCancel={() => setPendingDeleteCol(null)}
+				onConfirm={() => {
+					if (pendingDeleteCol !== null) {
+						ENGINE.handler.removeColumn(sequence.id, pendingDeleteCol);
+						setPendingDeleteCol(null);
+					}
+				}}
+			>
+				<p style={{ margin: 0 }}>
+					This column contains pulses. Are you sure you want to delete it?
+				</p>
+			</Alert>
+		</>
 	);
 }

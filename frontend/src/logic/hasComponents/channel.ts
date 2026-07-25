@@ -112,7 +112,7 @@ export default class Channel extends Subgrid implements IChannel {
 		this.sizeBar()
 	}
 
-	public remove({ child }: RemoveDispatchData<GridCellElement>) {
+	public remove({ child }: RemoveDispatchData) {
 		super.remove({ child })
 	}
 
