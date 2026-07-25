@@ -576,7 +576,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
 												}
 												<SequencesPulseDropField></SequencesPulseDropField>
-												<SequencesColumnEditor></SequencesColumnEditor>
+												<SequencesColumnEditor scale={zoom}></SequencesColumnEditor>
 												<LabelGroupDropFields></LabelGroupDropFields>
 											</div>
 

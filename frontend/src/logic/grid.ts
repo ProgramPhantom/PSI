@@ -1789,6 +1789,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	// ---------------- Helpers ---------------------
 	//#region 
+	protected doesCellHaveChild(cell: GridCell<C>): boolean {
+		if (cell === undefined) { return true; }
+		let hasElements = cell.elements !== undefined && cell.elements.length > 0;
+		let hasSources = cell.sources !== undefined && Object.keys(cell.sources).length > 0;
+		return !hasElements && !hasSources;
+	}
+
 	protected isCellArrayEmpty(target: GridCell<C>[]): boolean {
 		return !target.some((c) => c !== undefined)
 	}

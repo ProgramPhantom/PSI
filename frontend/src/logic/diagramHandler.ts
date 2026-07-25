@@ -503,6 +503,35 @@ export default class DiagramHandler implements IDraw {
 		return { ok: true, value: {} }
 	}
 
+	@draws
+	public setColumnWidth(sequenceId: ID, colIndex: number, width: number): Result {
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
+
+		if (sequence === undefined) {
+			console.warn(`Cannot set column width in sequence with id ${sequenceId}`);
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
+		}
+
+		if (sequence.numRows === 0 || colIndex < 0 || colIndex >= sequence.numColumns) {
+			return { ok: false, error: `Column index ${colIndex} out of bounds or no rows` };
+		}
+
+		let cell = sequence.getCell({ row: 0, col: colIndex });
+		let ghosts = (cell?.ghosts ?? []).filter((g) => g.owner !== "column-resize");
+		ghosts.push({ size: { width, height: 0 }, owner: "column-resize" });
+
+		if (cell === undefined) {
+			sequence.setMatrixAtCoord(
+				{ ghosts },
+				{ row: 0, column: colIndex }
+			);
+		} else {
+			cell.ghosts = ghosts;
+		}
+
+		return { ok: true, value: {} };
+	}
+
 	public createVisual<T extends Visual = Visual>(parameters: IVisual, type: AllComponentTypes): Result<T> {
 		try {
 			var element: T | undefined = this.EngineConstructor(parameters, type) as T | undefined;

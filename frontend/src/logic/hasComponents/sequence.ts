@@ -58,6 +58,7 @@ export default class Sequence extends Grid implements ISequence {
 			"channel": {
 				objects: [],
 				initialiser: this.configureChannel.bind(this),
+				destructor: this.destroyChannel.bind(this)
 			}
 		}
 
@@ -72,7 +73,7 @@ export default class Sequence extends Grid implements ISequence {
 		// this.deleteEmptyColumns();
 
 		var size: Size = super.computeSize();
-		return size
+		return size;
 	}
 
 	public override computePositions(root: { x: number, y: number }): void {
@@ -117,11 +118,22 @@ export default class Sequence extends Grid implements ISequence {
 	// -------------- Channel interaction -------------
 	//#region 
 	private configureChannel({ child, index }: AddDispatchData<Channel>) {
+		// Fires after the channel has been added to structured children
 		child.placementControl = "auto";
 		child.placementMode = {
 			type: "subgrid", config: {
-				coords: { row: this.numRows, col: 0, },
+				coords: { row: (this.numChannels - 1) * 3, col: 0, },
 				fill: { cols: true, rows: false }
+			}
+		}
+	}
+
+	private destroyChannel({ child }: RemoveDispatchData<Channel>) {
+		let startRow = child.placementMode?.config?.coords?.row ?? this.locateElement(child)?.row;
+		if (startRow !== undefined && startRow >= 0) {
+			let noRows = child.numRows ?? 3;
+			for (let i = 0; i < noRows; i++) {
+				this.removeRow(startRow);
 			}
 		}
 	}

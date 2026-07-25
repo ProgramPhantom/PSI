@@ -1,4 +1,4 @@
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import { Alert, Colors } from "@blueprintjs/core";
 import ENGINE from "../../logic/engine";
 import Sequence from "../../logic/hasComponents/sequence";
@@ -6,11 +6,54 @@ import styles from "./styles/SequenceColumnEditor.module.scss";
 
 interface SequenceColumnEditorProps {
 	sequence: Sequence;
+	scale?: number;
 }
 
-export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorProps) {
+interface IDragState {
+	colIndex: number;
+	startX: number;
+	initialWidth: number;
+	currentDelta: number;
+}
+
+export default function SequenceColumnEditor({ sequence, scale = 1 }: SequenceColumnEditorProps) {
+	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	const [hoveredState, setHoveredState] = useState<{ type: "add" | "remove"; colIndex: number } | null>(null);
 	const [pendingDeleteCol, setPendingDeleteCol] = useState<number | null>(null);
+	const [draggingHandle, setDraggingHandle] = useState<IDragState | null>(null);
+
+	// Handle window mousemove and mouseup listeners when dragging a column resize handle
+	useEffect(() => {
+		if (!draggingHandle) return;
+
+		const handleMouseMove = (e: MouseEvent) => {
+			const deltaPixels = e.clientX - draggingHandle.startX;
+			const deltaDiagram = deltaPixels / scale;
+			const targetWidth = Math.max(10, draggingHandle.initialWidth + deltaDiagram);
+			const currentDelta = targetWidth - draggingHandle.initialWidth;
+
+			setDraggingHandle((prev) => (prev ? { ...prev, currentDelta } : null));
+		};
+
+		const handleMouseUp = (e: MouseEvent) => {
+			const deltaPixels = e.clientX - draggingHandle.startX;
+			const deltaDiagram = deltaPixels / scale;
+			const finalWidth = Math.max(10, draggingHandle.initialWidth + deltaDiagram);
+
+			// Commit column width change via DiagramHandler on mouse release
+			ENGINE.handler.setColumnWidth(sequence.id, draggingHandle.colIndex, finalWidth);
+
+			setDraggingHandle(null);
+		};
+
+		window.addEventListener("mousemove", handleMouseMove);
+		window.addEventListener("mouseup", handleMouseUp);
+
+		return () => {
+			window.removeEventListener("mousemove", handleMouseMove);
+			window.removeEventListener("mouseup", handleMouseUp);
+		};
+	}, [draggingHandle, sequence, scale]);
 
 	if (!sequence || sequence.numColumns < 1) {
 		return null;
@@ -28,6 +71,7 @@ export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorP
 
 	const removeButtons: React.ReactNode[] = [];
 	const addButtons: React.ReactNode[] = [];
+	const resizeHandles: React.ReactNode[] = [];
 
 	// Columns 0 and 1 are the first two columns (labels and first pulse column) and are always present.
 	// For columns c >= 2: render a "-" remove button centered horizontally on the column.
@@ -94,6 +138,39 @@ export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorP
 		);
 	}
 
+	// Render grey vertical resize handle lines at each column boundary (right edge of column c) in-line with buttons
+	for (let c = 1; c < numCols; c++) {
+		const cell = row0[c];
+		if (!cell) continue;
+
+		const xBoundary = cell.x + cell.width;
+		const left = xBoundary - BUTTON_SIZE / 2;
+
+		resizeHandles.push(
+			<button
+				key={`resize-col-${c}`}
+				type="button"
+				className={styles.resizeHandle}
+				title="Drag to resize column"
+				onMouseDown={(e) => {
+					e.stopPropagation();
+					e.preventDefault();
+					setDraggingHandle({
+						colIndex: c,
+						startX: e.clientX,
+						initialWidth: cell.width,
+						currentDelta: 0
+					});
+				}}
+				style={{
+					left: `${left}px`,
+					top: `${addStripTop - 10}px`
+				}}>
+				<div className={styles.line} />
+			</button>
+		);
+	}
+
 	// Render hover effect overlay
 	let hoverOverlay: React.ReactNode = null;
 	if (hoveredState) {
@@ -145,12 +222,37 @@ export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorP
 		}
 	}
 
+	// Render real-time drag preview line while dragging
+	let dragPreview: React.ReactNode = null;
+	if (draggingHandle) {
+		const targetCell = row0[draggingHandle.colIndex];
+		if (targetCell) {
+			const previewX = targetCell.x + targetCell.width + draggingHandle.currentDelta;
+			dragPreview = (
+				<div
+					style={{
+						position: "absolute",
+						left: `${previewX - 1}px`,
+						top: `${sequence.y}px`,
+						width: "2px",
+						height: `${sequence.height}px`,
+						backgroundColor: Colors.BLUE3,
+						pointerEvents: "none",
+						zIndex: 37000
+					}}
+				/>
+			);
+		}
+	}
+
 	return (
 		<>
 			<div id={`${sequence.id}-column-editor`} style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>
 				{hoverOverlay}
+				{dragPreview}
 				{removeButtons}
 				{addButtons}
+				{resizeHandles}
 			</div>
 
 			<Alert
