@@ -477,15 +477,30 @@ export default class DiagramHandler implements IDraw {
 	// ------------------------------------------
 
 
-	public addColumn(sequenceId: ID, index: number) {
+	@draws
+	public addColumn(sequenceId: ID, index: number): Result {
 		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
 
 		if (sequence === undefined) {
 			console.warn(`Cannot insert column in sequence with id ${sequenceId}`)
-			return
+			return { ok: false, error: `Sequence ${sequenceId} not found` }
 		}
 
 		sequence.insertEmptyColumn(index);
+		return { ok: true, value: {} }
+	}
+
+	@draws
+	public removeColumn(sequenceId: ID, index: number): Result {
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
+
+		if (sequence === undefined) {
+			console.warn(`Cannot remove column in sequence with id ${sequenceId}`)
+			return { ok: false, error: `Sequence ${sequenceId} not found` }
+		}
+
+		sequence.removeColumn(index);
+		return { ok: true, value: {} }
 	}
 
 	public createVisual<T extends Visual = Visual>(parameters: IVisual, type: AllComponentTypes): Result<T> {

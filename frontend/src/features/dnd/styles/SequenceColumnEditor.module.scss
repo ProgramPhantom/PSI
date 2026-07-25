@@ -1,0 +1,47 @@
+.columnEditorBtn {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	border: 1px solid #d3d8de;
+	background-color: #ffffff;
+	font-size: 8px;
+	font-weight: bold;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+	z-index: 36000;
+	padding: 0;
+	pointer-events: auto;
+	opacity: 0.5;
+	transition: opacity 0.15s ease-in-out;
+
+	&:hover {
+		opacity: 1;
+	}
+
+	&.removeBtn {
+		color: #db3737;
+
+		.label {
+			position: relative;
+			top: -1px;
+			line-height: 1;
+			user-select: none;
+		}
+	}
+
+	&.addBtn {
+		color: #106ba3;
+
+		.label {
+			position: relative;
+			top: -0.6px;
+			line-height: 1;
+			user-select: none;
+		}
+	}
+}

@@ -69,7 +69,7 @@ export default class Sequence extends Grid implements ISequence {
 	//#region
 	public override computeSize(): Size {
 		// Do this so if Channels self added a column
-		this.deleteEmptyColumns();
+		// this.deleteEmptyColumns();
 
 		var size: Size = super.computeSize();
 		return size
@@ -171,7 +171,7 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public getChannelOnRow(row: number): Channel | undefined {
-		let cell: GridCell = this.getCell({row: row, col: 0});
+		let cell: GridCell = this.getCell({ row: row, col: 0 });
 		let channel: Channel | undefined = cell?.elements?.filter(e => e instanceof Channel)?.[0];
 
 		return channel;
