@@ -1,4 +1,5 @@
-import React, { useSyncExternalStore } from "react";
+import React, { useState, useSyncExternalStore } from "react";
+import { Colors } from "@blueprintjs/core";
 import ENGINE from "../../logic/engine";
 import Sequence from "../../logic/hasComponents/sequence";
 import styles from "./styles/SequenceColumnEditor.module.scss";
@@ -9,6 +10,7 @@ interface SequenceColumnEditorProps {
 
 export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorProps) {
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+	const [hoveredState, setHoveredState] = useState<{ type: "add" | "remove"; colIndex: number } | null>(null);
 
 	if (!sequence || sequence.numColumns < 1) {
 		return null;
@@ -21,7 +23,8 @@ export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorP
 	}
 
 	const BUTTON_SIZE = 10;
-	const stripTop = sequence.y - BUTTON_SIZE - 6;
+	const addStripTop = sequence.y - BUTTON_SIZE - 6;
+	const removeStripTop = addStripTop - 8;
 
 	const removeButtons: React.ReactNode[] = [];
 	const addButtons: React.ReactNode[] = [];
@@ -41,13 +44,16 @@ export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorP
 				type="button"
 				className={`${styles.columnEditorBtn} ${styles.removeBtn}`}
 				title="Remove column"
+				onMouseEnter={() => setHoveredState({ type: "remove", colIndex: c })}
+				onMouseLeave={() => setHoveredState(null)}
 				onClick={(e) => {
 					e.stopPropagation();
+					setHoveredState(null);
 					ENGINE.handler.removeColumn(sequence.id, c);
 				}}
 				style={{
 					left: `${left}px`,
-					top: `${stripTop}px`
+					top: `${removeStripTop}px`
 				}}>
 				<span className={styles.label}>-</span>
 			</button>
@@ -68,21 +74,76 @@ export default function SequenceColumnEditor({ sequence }: SequenceColumnEditorP
 				type="button"
 				className={`${styles.columnEditorBtn} ${styles.addBtn}`}
 				title="Insert column"
+				onMouseEnter={() => setHoveredState({ type: "add", colIndex: c })}
+				onMouseLeave={() => setHoveredState(null)}
 				onClick={(e) => {
 					e.stopPropagation();
+					setHoveredState(null);
 					ENGINE.handler.addColumn(sequence.id, c + 1);
 				}}
 				style={{
 					left: `${left}px`,
-					top: `${stripTop}px`
+					top: `${addStripTop}px`
 				}}>
 				<span className={styles.label}>+</span>
 			</button>
 		);
 	}
 
+	// Render hover effect overlay
+	let hoverOverlay: React.ReactNode = null;
+	if (hoveredState) {
+		const targetCell = row0[hoveredState.colIndex];
+		if (targetCell) {
+			if (hoveredState.type === "add") {
+				// Thin blue line stretching top to bottom of sequence at boundary
+				const xBoundary = targetCell.x + targetCell.width;
+				hoverOverlay = (
+					<div
+						style={{
+							position: "absolute",
+							left: `${xBoundary - 1}px`,
+							top: `${sequence.y}px`,
+							width: "1px",
+							height: `${sequence.height}px`,
+							backgroundColor: Colors.BLUE3,
+							pointerEvents: "none",
+							zIndex: 35000
+						}}
+					/>
+				);
+			} else if (hoveredState.type === "remove") {
+				// Red outline rect with diagonal red line hashed fill pattern
+				hoverOverlay = (
+					<div
+						style={{
+							position: "absolute",
+							left: `${targetCell.x}px`,
+							top: `${sequence.y}px`,
+							width: `${targetCell.width}px`,
+							height: `${sequence.height}px`,
+							border: `1px solid ${Colors.RED3}`,
+							backgroundColor: "rgba(219, 55, 55, 0.04)",
+							backgroundImage: `repeating-linear-gradient(
+								-45deg,
+								rgba(219, 55, 55, 0.25),
+								rgba(219, 55, 55, 0.25) 2px,
+								transparent 2px,
+								transparent 6px
+							)`,
+							boxSizing: "border-box",
+							pointerEvents: "none",
+							zIndex: 35000
+						}}
+					/>
+				);
+			}
+		}
+	}
+
 	return (
 		<div id={`${sequence.id}-column-editor`} style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}>
+			{hoverOverlay}
 			{removeButtons}
 			{addButtons}
 		</div>
