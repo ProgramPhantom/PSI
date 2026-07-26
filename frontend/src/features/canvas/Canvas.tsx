@@ -22,9 +22,11 @@ import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import SequencesColumnEditor from "../dnd/SequencesColumnEditor";
 import LabelGroupDropFields from "../dnd/LabelGroupDropFields";
 import QuietUploadArea from "../QuietUploadArea";
+import Channel from "../../logic/hasComponents/channel";
 import { CanvasTextInput } from "./CanvasTextInput";
 import { CanvasToolToolbar } from "./CanvasToolToolbar";
 import { ChannelAddToolbar } from "./ChannelAddToolbar";
+import { ChannelReorderButtons } from "./ChannelReorderButtons";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import styles from "./styles/toolbars.module.scss"
@@ -465,6 +467,19 @@ const Canvas: React.FC<ICanvasProps> = () => {
 							<CanvasToolToolbar />
 						</div>
 
+						{selectedElement instanceof Channel && (
+							<div
+								style={{
+									position: "absolute",
+									top: "50%",
+									right: "8px",
+									transform: "translateY(-50%)",
+									zIndex: 10,
+								}}>
+								<ChannelReorderButtons channel={selectedElement} />
+							</div>
+						)}
+
 
 						<CanvasDropContainer scale={zoom}>
 							<TransformWrapper
@@ -545,6 +560,8 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													y={el.y}
 													isHidden={el.id === editingElementId}></CanvasDraggableElement>
 											))}
+
+
 
 
 											{/* Tools */}
