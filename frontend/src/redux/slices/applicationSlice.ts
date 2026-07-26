@@ -32,10 +32,17 @@ export const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
     subgrid: false
 };
 
+export interface CanvasMousePosition {
+    x: number;
+    y: number;
+}
+
 export interface ApplicationState {
     selectedElementId: string | undefined;
     debugSelectionTypes: Record<AllComponentTypes, boolean>;
     selectedTool: CanvasTool;
+    isMouseOverCanvas: boolean;
+    canvasMousePosition: CanvasMousePosition | undefined;
 }
 
 const initialState: ApplicationState = {
@@ -44,7 +51,9 @@ const initialState: ApplicationState = {
     selectedTool: {
         type: 'select',
         config: {}
-    }
+    },
+    isMouseOverCanvas: false,
+    canvasMousePosition: undefined
 };
 
 export const applicationSlice = createSlice({
@@ -59,11 +68,19 @@ export const applicationSlice = createSlice({
         },
         setSelectedTool: (state, action: PayloadAction<CanvasTool>) => {
             state.selectedTool = action.payload;
+        },
+        setCanvasMousePosition: (
+            state,
+            action: PayloadAction<{ isMouseOverCanvas: boolean; position?: CanvasMousePosition }>
+        ) => {
+            state.isMouseOverCanvas = action.payload.isMouseOverCanvas;
+            state.canvasMousePosition = action.payload.position;
         }
     },
 });
 
-export const { setSelectedElementId, toggleDebugSelectionType, setSelectedTool } = applicationSlice.actions;
+export const { setSelectedElementId, toggleDebugSelectionType, setSelectedTool, setCanvasMousePosition } = applicationSlice.actions;
 
 export default applicationSlice.reducer;
+
 

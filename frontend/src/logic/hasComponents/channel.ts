@@ -74,7 +74,7 @@ export default class Channel extends Subgrid implements IChannel {
 	constructor(params: IChannel) {
 		super(params);
 
-		this.initialiseChannel();
+
 		this.role = "channel"
 	}
 

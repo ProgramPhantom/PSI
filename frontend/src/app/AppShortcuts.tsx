@@ -260,6 +260,32 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                 preventDefault: true
             },
             {
+                combo: "ctrl+c",
+                global: true,
+                label: "Copy selected element",
+                onKeyDown: (e) => {
+                    const target = e.target as HTMLElement | null;
+                    if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+                        return;
+                    }
+                    dispatch(Actions.handleCopyElement());
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+v",
+                global: true,
+                label: "Paste element",
+                onKeyDown: (e) => {
+                    const target = e.target as HTMLElement | null;
+                    if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+                        return;
+                    }
+                    dispatch(Actions.handlePasteElement());
+                },
+                preventDefault: true
+            },
+            {
                 combo: "ctrl+shift+c",
                 global: true,
                 label: "Copy state",

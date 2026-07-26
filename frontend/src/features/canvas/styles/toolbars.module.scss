@@ -14,6 +14,8 @@
         flex-direction: column;
         align-items: center;
         gap: 6px;
+        min-width: 38px;
+        box-sizing: border-box;
 
 
         // Custom compact sizing for vertical buttons to fit well

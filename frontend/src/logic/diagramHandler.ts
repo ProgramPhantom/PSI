@@ -174,8 +174,6 @@ export default class DiagramHandler implements IDraw {
 		}
 
 
-		this.surface.add(new Rect().move(0, 0).id("diagram-root"));
-
 		this.surface.viewbox(this.diagram.x, this.diagram.y, this.diagram.width, this.diagram.height);
 		this.surface.size(`${this.diagram.width}px`, `${this.diagram.height}px`);
 

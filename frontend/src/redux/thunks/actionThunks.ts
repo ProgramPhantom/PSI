@@ -5,11 +5,29 @@ import { appToaster } from "../../app/Toaster";
 import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
+import { ClearIDs } from "../../logic/collection";
+import Visual, { IVisual } from "../../logic/visual";
+import Channel from "../../logic/hasComponents/channel";
 import { RootState } from "../rootReducer";
 import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
+import { setSelectedElementId } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
 import { selectCurrentFileName } from "../selectors/diagramSelectors";
+
+let inMemoryCopiedElementState: IVisual | null = null;
+
+function canCopyElement(element: Visual): boolean {
+    if (element.type === "channel" || element instanceof Channel) {
+        appToaster.show({
+            message: "Channels cannot be copied",
+            intent: "warning"
+        });
+        return false;
+    }
+    return true;
+}
+
 
 
 // --- Logic Handlers ---
@@ -139,6 +157,105 @@ export const handleCopyState = createAsyncThunk(
             message: "State copied to clipboard",
             intent: "success"
         });
+    }
+);
+
+export const handleCopyElement = createAsyncThunk(
+    'actions/handleCopyElement',
+    async (_, { getState }) => {
+        const state = getState() as RootState;
+        const selectedElementId = state.application.selectedElementId;
+        if (!selectedElementId) return;
+
+        const element = ENGINE.handler.identifyElement(selectedElementId);
+        if (!element) return;
+
+        if (!canCopyElement(element)) {
+            return;
+        }
+
+        const stateObject: IVisual = element.state;
+        inMemoryCopiedElementState = structuredClone(stateObject);
+
+        const stateString = JSON.stringify(stateObject, undefined, 4);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(stateString).catch((err) => {
+                console.warn("Could not write element to navigator.clipboard", err);
+            });
+        }
+
+        appToaster.show({
+            message: "Element copied to clipboard",
+            intent: "success"
+        });
+    }
+);
+
+export const handlePasteElement = createAsyncThunk(
+    'actions/handlePasteElement',
+    async (_, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const isOverCanvas = state.application.isMouseOverCanvas;
+        const mousePos = state.application.canvasMousePosition;
+
+        const doPaste = (stateObject: IVisual) => {
+            if (stateObject.type === "channel") {
+                appToaster.show({
+                    message: "Channels cannot be copied",
+                    intent: "warning"
+                });
+                return;
+            }
+
+            const newElementState: IVisual = structuredClone(stateObject);
+            ClearIDs(newElementState);
+
+            let targetX: number;
+            let targetY: number;
+
+            if (isOverCanvas && mousePos) {
+                targetX = mousePos.x;
+                targetY = mousePos.y;
+            } else {
+                const baseX = typeof newElementState.x === "number" ? newElementState.x : 0;
+                const baseY = typeof newElementState.y === "number" ? newElementState.y : 0;
+                targetX = baseX + 20;
+                targetY = baseY + 20;
+            }
+
+            newElementState.x = targetX;
+            newElementState.y = targetY;
+            newElementState.placementMode = {
+                type: "free"
+            };
+            newElementState.parentId = ENGINE.handler.diagram.id;
+
+            ENGINE.handler.act({
+                type: "add",
+                input: {
+                    child: newElementState
+                }
+            });
+        };
+
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    const parsed = JSON.parse(text);
+                    if (parsed && typeof parsed === "object" && parsed.type && parsed.type !== "diagram" && parsed.type !== "channel") {
+                        doPaste(parsed);
+                        return;
+                    }
+                }
+            } catch {
+                // Ignore reading clipboard error, fall back below
+            }
+        }
+
+        if (inMemoryCopiedElementState && inMemoryCopiedElementState.type !== "channel") {
+            doPaste(inMemoryCopiedElementState);
+        }
     }
 );
 

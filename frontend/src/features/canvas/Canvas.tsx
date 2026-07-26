@@ -8,7 +8,7 @@ import { IToolConfig } from "../../app/App";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
+import { setCanvasMousePosition, setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
 import { setSaveState } from "../../redux/slices/diagramSlice";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
 import Toolbar from "../banner/Toolbar";
@@ -79,12 +79,40 @@ const SeamlessPanner = () => {
 	return null;
 };
 
+const CanvasMouseCoordinates: React.FC = React.memo(function CanvasMouseCoordinates() {
+	const isMouseOverCanvas = useAppSelector((state) => state.application.isMouseOverCanvas);
+	const canvasMousePosition = useAppSelector((state) => state.application.canvasMousePosition);
+
+	if (!isMouseOverCanvas || !canvasMousePosition) {
+		return null;
+	}
+
+	return (
+		<span
+			style={{
+				fontSize: "10px",
+				fontFamily: "monospace",
+				color: Colors.GRAY2,
+				opacity: 0.9,
+				userSelect: "none",
+				pointerEvents: "none",
+				whiteSpace: "nowrap",
+				paddingLeft: "2px"
+			}}>
+			{Math.round(canvasMousePosition.x)}x{Math.round(canvasMousePosition.y)}
+		</span>
+	);
+});
+
 const Canvas: React.FC<ICanvasProps> = () => {
 	const dispatch = useAppDispatch();
 
 	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
 	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
 	const selectedTool = useAppSelector((state) => state.application.selectedTool);
+
+	const lastCoordsRef = useRef<{ rx: number; ry: number } | null>(null);
+	const rafIdRef = useRef<number | null>(null);
 
 	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
 	const [rawHoveredElement, setRawHoveredElement] = useState<Visual | undefined>(undefined);
@@ -142,7 +170,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		selectVisual(e);
 	}
 
-	const getCoordinates = (e: React.MouseEvent<HTMLDivElement>): { x: number; y: number } => {
+	const getCoordinates = (e: React.MouseEvent<HTMLDivElement> | MouseEvent): { x: number; y: number } => {
 		const drawDiv = document.getElementById("diagram-root") as HTMLElement;
 		if (!drawDiv) {
 			return { x: e.clientX, y: e.clientY };
@@ -380,6 +408,32 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						position: "relative",
 						cursor: activeToolBehavior.cursor
 					}}
+					onMouseMove={(e) => {
+						const coords = getCoordinates(e);
+						const rx = Math.round(coords.x);
+						const ry = Math.round(coords.y);
+
+						if (lastCoordsRef.current?.rx === rx && lastCoordsRef.current?.ry === ry) {
+							return;
+						}
+						lastCoordsRef.current = { rx, ry };
+
+						if (rafIdRef.current === null) {
+							rafIdRef.current = requestAnimationFrame(() => {
+								dispatch(setCanvasMousePosition({ isMouseOverCanvas: true, position: coords }));
+								rafIdRef.current = null;
+							});
+						}
+					}}
+					onMouseLeave={() => {
+						stopHover();
+						if (rafIdRef.current !== null) {
+							cancelAnimationFrame(rafIdRef.current);
+							rafIdRef.current = null;
+						}
+						lastCoordsRef.current = null;
+						dispatch(setCanvasMousePosition({ isMouseOverCanvas: false, position: undefined }));
+					}}
 					onMouseDown={(e) => {
 						dragStartRef.current = { x: e.clientX, y: e.clientY };
 					}}
@@ -414,9 +468,13 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								top: "6px",
 								left: "6px",
 								zIndex: 10,
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "flex-start",
+								gap: "4px"
 							}}>
 							<div
-								className={`${styles["frosted-toolbar"]} ${styles.vertical}`}
+								className={styles["frosted-toolbar"]}
 								onClick={(e) => e.stopPropagation()}
 								onMouseUp={(e) => e.stopPropagation()}
 								onMouseDown={(e) => e.stopPropagation()}
@@ -445,6 +503,8 @@ const Canvas: React.FC<ICanvasProps> = () => {
 									<span className={styles["zoom-suffix"]}>x</span>
 								</div>
 							</div>
+
+							<CanvasMouseCoordinates />
 						</div>
 
 						<div
