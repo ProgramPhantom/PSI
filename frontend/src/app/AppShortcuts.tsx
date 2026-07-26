@@ -1,5 +1,6 @@
 import { HotkeyConfig, useHotkeys } from "@blueprintjs/core";
 import React, { useCallback, useMemo } from "react";
+import Collection from "../logic/collection";
 import ENGINE from "../logic/engine";
 import { IVisual } from "../logic/visual";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
@@ -24,22 +25,40 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
         const element = ENGINE.handler.identifyElement(selectedElementId);
         if (!element) return;
 
-        const newState: IVisual = { ...element.state };
-        if (element.placementMode.type === "free") {
-            newState.x = element.x + dx;
-            newState.y = element.y + dy;
-        } else {
-            const [ox, oy] = element.offset ?? [0, 0];
-            newState.offset = [ox + dx, oy + dy];
-        }
+        const isCollection = Collection.isCollection(element) || Collection.isICollection(element.state);
 
-        ENGINE.handler.act({
-            type: "modify",
-            input: {
-                target: element,
-                child: newState
+        if (element.placementMode.type === "free") {
+            const newState: IVisual = {
+                ...element.state,
+                x: element.x + dx,
+                y: element.y + dy
+            };
+            ENGINE.handler.act({
+                type: "modify",
+                input: {
+                    target: element,
+                    child: newState
+                }
+            });
+        } else {
+            // Collections do not support offset positioning when not in free placement mode
+            if (isCollection) {
+                return;
             }
-        });
+
+            const [ox, oy] = element.offset ?? [0, 0];
+            const newState: IVisual = {
+                ...element.state,
+                offset: [ox + dx, oy + dy]
+            };
+            ENGINE.handler.act({
+                type: "modify",
+                input: {
+                    target: element,
+                    child: newState
+                }
+            });
+        }
     }, [selectedElementId]);
 
     const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
