@@ -196,10 +196,13 @@ export default class DiagramHandler implements IDraw {
 	}
 
 	computeDiagram() {
+		const start = performance.now();
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);
 		this.diagram.computePositions({ x: 0, y: 0 });
-		this.computeBoundaryTree()
+		this.computeBoundaryTree();
+		const end = performance.now();
+		console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
 	}
 
 	computeBoundaryTree() {
@@ -265,6 +268,7 @@ export default class DiagramHandler implements IDraw {
 
 
 	public act<T extends ActionNames>(action: IDispatchAction<T>) {
+		const start = performance.now();
 		let actionResult: ActionResult<T> = this.dispatchAction(
 			action.type,
 			action.input
@@ -288,6 +292,8 @@ export default class DiagramHandler implements IDraw {
 			this.undoStack.push(dispatchedAction as AnyCompletedAction);
 			this.redoStack = [];
 		}
+		const end = performance.now();
+		console.log(`act (${action.type}) took ${(end - start).toFixed(2)} ms`);
 	}
 
 	public undo() {
