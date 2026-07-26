@@ -566,6 +566,60 @@ export default class DiagramHandler implements IDraw {
 		return { ok: true, value: {} };
 	}
 
+	public reorderChannel(channelId: ID, direction: "up" | "down"): Result {
+		let channel = this.diagram.channelsDict[channelId] || this.allElements[channelId];
+		if (!channel) {
+			console.warn(`Cannot reorder channel with id ${channelId}: channel not found`);
+			return { ok: false, error: `Channel ${channelId} not found` };
+		}
+
+		let sequence: Sequence | undefined;
+		if (channel.parentId) {
+			sequence = this.diagram.sequenceDict[channel.parentId];
+		}
+
+		if (!sequence) {
+			console.warn(`Cannot reorder channel ${channelId}: parent sequence not found`);
+			return { ok: false, error: `Sequence for channel ${channelId} not found` };
+		}
+
+		let seqState = structuredClone(sequence.state);
+		if (!seqState.children) {
+			return { ok: false, error: `Sequence ${sequence.id} has no children` };
+		}
+
+		let index = seqState.children.findIndex((c) => c.id === channelId);
+		if (index === -1) {
+			return { ok: false, error: `Channel ${channelId} not found in sequence children` };
+		}
+
+		let targetIndex = direction === "up" ? index - 1 : index + 1;
+		if (targetIndex < 0 || targetIndex >= seqState.children.length) {
+			return { ok: true, value: {} };
+		}
+
+		let temp = seqState.children[index];
+		seqState.children[index] = seqState.children[targetIndex];
+		seqState.children[targetIndex] = temp;
+
+		let tempResult = this.createVisual<Sequence>(seqState, "sequence");
+		if (tempResult.ok === false) {
+			return { ok: false, error: tempResult.error };
+		}
+		let updatedSeq = tempResult.value;
+
+		this.act({
+			type: "modify",
+			input: {
+				child: updatedSeq,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
+	}
+
+
 	public createVisual<T extends Visual = Visual>(parameters: IVisual, type: AllComponentTypes): Result<T> {
 		try {
 			var element: T | undefined = this.EngineConstructor(parameters, type) as T | undefined;
