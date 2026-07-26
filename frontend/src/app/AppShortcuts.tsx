@@ -61,6 +61,38 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [selectedElementId]);
 
+    const handleResetOffset = useCallback((e: KeyboardEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+            return;
+        }
+
+        if (!selectedElementId) return;
+        const element = ENGINE.handler.identifyElement(selectedElementId);
+        if (!element) return;
+
+        if (element.placementMode.type !== "free") {
+            const isCollection = Collection.isCollection(element) || Collection.isICollection(element.state);
+            if (isCollection) return;
+
+            const [ox, oy] = element.offset ?? [0, 0];
+            if (ox === 0 && oy === 0) return;
+
+            const newState: IVisual = {
+                ...element.state,
+                offset: [0, 0]
+            };
+
+            ENGINE.handler.act({
+                type: "modify",
+                input: {
+                    target: element,
+                    child: newState
+                }
+            });
+        }
+    }, [selectedElementId]);
+
     const hotkeys: HotkeyConfig[] = useMemo<HotkeyConfig[]>(
         () => [
             {
@@ -104,6 +136,13 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                         dispatch(setSelectedElementId(undefined));
                     }
                 },
+                preventDefault: true
+            },
+            {
+                combo: "r",
+                global: true,
+                label: "Reset element offset",
+                onKeyDown: (e) => handleResetOffset(e),
                 preventDefault: true
             },
             {
@@ -275,7 +314,7 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                 preventDefault: true
             },
         ],
-        [dispatch, handleNudge, isDebugLayerDialogOpen, selectedElement]
+        [dispatch, handleNudge, handleResetOffset, isDebugLayerDialogOpen, selectedElement]
     );
 
     useHotkeys(hotkeys);
