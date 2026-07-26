@@ -58,6 +58,7 @@ export default class Sequence extends Grid implements ISequence {
 			"channel": {
 				objects: [],
 				initialiser: this.configureChannel.bind(this),
+				destructor: this.destroyChannel.bind(this)
 			}
 		}
 
@@ -69,10 +70,10 @@ export default class Sequence extends Grid implements ISequence {
 	//#region
 	public override computeSize(): Size {
 		// Do this so if Channels self added a column
-		this.deleteEmptyColumns();
+		// this.deleteEmptyColumns();
 
 		var size: Size = super.computeSize();
-		return size
+		return size;
 	}
 
 	public override computePositions(root: { x: number, y: number }): void {
@@ -117,11 +118,22 @@ export default class Sequence extends Grid implements ISequence {
 	// -------------- Channel interaction -------------
 	//#region 
 	private configureChannel({ child, index }: AddDispatchData<Channel>) {
+		// Fires after the channel has been added to structured children
 		child.placementControl = "auto";
 		child.placementMode = {
 			type: "subgrid", config: {
-				coords: { row: this.numRows, col: 0, },
+				coords: { row: (this.numChannels - 1) * 3, col: 0, },
 				fill: { cols: true, rows: false }
+			}
+		}
+	}
+
+	private destroyChannel({ child }: RemoveDispatchData<Channel>) {
+		let startRow = child.placementMode?.config?.coords?.row ?? this.locateElement(child)?.row;
+		if (startRow !== undefined && startRow >= 0) {
+			let noRows = child.numRows ?? 3;
+			for (let i = 0; i < noRows; i++) {
+				this.removeRow(startRow);
 			}
 		}
 	}
@@ -136,9 +148,9 @@ export default class Sequence extends Grid implements ISequence {
 
 	// --------------- Helpers -----------------------
 	//#region 
-	private colHasNonStructureElement(col_index: number): boolean {
+	public colHasNonStructureElement(col_index: number): boolean {
 		let col: GridCell[] | undefined = this.getColumn(col_index);
-		if (col === undefined) { return false } ''
+		if (col === undefined) { return false }
 
 		let hasNonStructureElement: boolean = false;
 		for (let row_index = 0; row_index < this.numRows; row_index++) {
@@ -149,6 +161,34 @@ export default class Sequence extends Grid implements ISequence {
 		}
 
 		return hasNonStructureElement;
+	}
+
+	public getNonStructureElementsInCol(col_index: number): Visual[] {
+		let elementsInCol: Visual[] = [];
+		for (let row_index = 0; row_index < this.numRows; row_index++) {
+			let elements: Visual[] = this.getGridElementsAtCell({ row: row_index, col: col_index });
+			for (let el of elements) {
+				if (!this.isStructure(el)) {
+					elementsInCol.push(el);
+				}
+			}
+		}
+		return elementsInCol;
+	}
+
+	public override removeColumn(index?: number, remove?: true | "if-empty"): void {
+		if (index !== undefined) {
+			// Remove pulses 
+			let nonStructureElements = this.getNonStructureElementsInCol(index);
+			for (let el of nonStructureElements) {
+				for (let ch of this.channels) {
+					if (ch.children.some(c => c.id === el.id)) {
+						ch.remove({ child: el });
+					}
+				}
+			}
+		}
+		super.removeColumn(index, remove);
 	}
 
 	public cellHasNonStructureElement(coords: { row: number, col: number }): boolean {
@@ -171,7 +211,7 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 	public getChannelOnRow(row: number): Channel | undefined {
-		let cell: GridCell = this.getCell({row: row, col: 0});
+		let cell: GridCell = this.getCell({ row: row, col: 0 });
 		let channel: Channel | undefined = cell?.elements?.filter(e => e instanceof Channel)?.[0];
 
 		return channel;

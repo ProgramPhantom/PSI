@@ -477,15 +477,71 @@ export default class DiagramHandler implements IDraw {
 	// ------------------------------------------
 
 
-	public addColumn(sequenceId: ID, index: number) {
-		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
+	public addColumn(sequenceId: ID, index: number): Result {
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
 
 		if (sequence === undefined) {
-			console.warn(`Cannot insert column in sequence with id ${sequenceId}`)
-			return
+			console.warn(`Cannot insert column in sequence with id ${sequenceId}`);
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
 		}
 
 		sequence.insertEmptyColumn(index);
+
+		this.act({
+			type: "modify",
+			input: {
+				child: sequence.state,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
+	}
+
+	public removeColumn(sequenceId: ID, index: number): Result {
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
+
+		if (sequence === undefined) {
+			console.warn(`Cannot remove column in sequence with id ${sequenceId}`);
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
+		}
+
+		sequence.removeColumn(index);
+
+		this.act({
+			type: "modify",
+			input: {
+				child: sequence.state,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
+	}
+
+	public setColumnWidth(sequenceId: ID, colIndex: number, width: number): Result {
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
+
+		if (sequence === undefined) {
+			console.warn(`Cannot set column width in sequence with id ${sequenceId}`);
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
+		}
+
+		if (sequence.numRows === 0 || colIndex < 0 || colIndex >= sequence.numColumns) {
+			return { ok: false, error: `Column index ${colIndex} out of bounds or no rows` };
+		}
+
+		sequence.setMinColumnWidth(colIndex, width);
+
+		this.act({
+			type: "modify",
+			input: {
+				child: sequence.state,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
 	}
 
 	public createVisual<T extends Visual = Visual>(parameters: IVisual, type: AllComponentTypes): Result<T> {

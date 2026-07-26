@@ -335,6 +335,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			}
 		}
 
+		child.erase();
 		this.children.splice(index, 1);
 	}
 
