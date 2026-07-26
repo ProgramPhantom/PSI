@@ -10,7 +10,10 @@ export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 	minWidth?: number,
 
 	numRows?: number,
-	numColumns?: number
+	numColumns?: number,
+
+	minRowHeights?: number[],
+	minColWidths?: number[]
 }
 
 type GridElement<S extends Visual = Visual> = GridCellElement<S> | Subgrid<S>;
@@ -44,6 +47,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			minWidth: this.min.width,
 			numRows: this.numRows,
 			numColumns: this.numColumns,
+			minRowHeights: [...this.minRowHeights],
+			minColWidths: [...this.minColWidths],
 			...super.state
 		};
 	}
@@ -145,6 +150,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	public gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
 	public cells: Spacial[][];
 
+	public minRowHeights: number[] = [];
+	public minColWidths: number[] = [];
+
 	constructor(params: IGrid) {
 		super(params);
 
@@ -153,6 +161,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.min = { width: params.minWidth ?? 0, height: params.minHeight ?? 0 };
 
 
+		this.minRowHeights = params.minRowHeights ?? [];
+		this.minColWidths = params.minColWidths ?? [];
+
+		this.setMatrixBottomRight({ row: params.numRows ? params.numRows - 1 : undefined, col: params.numColumns ? params.numColumns - 1 : undefined })
 	}
 
 
@@ -183,7 +195,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			var colEntries: GridCell<C>[] = col.filter((cell) => cell !== undefined);
 
 			// Find width of column
-			var widths: number[] = [];
+			var minColW = this.minColWidths[col_index] ?? 0;
+			var widths: number[] = [minColW];
 			for (let cell of colEntries) {
 
 				if (cell?.ghosts !== undefined) {
@@ -328,7 +341,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			var rowEntries: OccupiedCell<C>[] = row.filter((cell) => cell !== undefined);
 
 			// Find height of the row
-			var heights: number[] = [];
+			var minRowH = this.minRowHeights[row_index] ?? 0;
+			var heights: number[] = [minRowH];
 			for (let cell of rowEntries) {
 
 				if (cell?.ghosts !== undefined) {
@@ -1027,7 +1041,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				let row = r + topLeft.row;
 				let col = c + topLeft.col;
 
-				let cell = this.gridMatrix[row][col]
+				let cell: GridCell<C> = this.gridMatrix[row]?.[col]
 				if (cell?.elements === undefined) {
 					console.warn(`Erroneous form for element ${child.ref}`)
 					continue
@@ -1243,6 +1257,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
 		}
 
+		if (this.minColWidths.length < this.numColumns) {
+			this.minColWidths.splice(INDEX, 0, 0);
+		}
+
 		this.shiftElementColumnIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
@@ -1286,6 +1304,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		this.gridMatrix.splice(INDEX, 0, newRow);
 
+		if (this.minRowHeights.length < this.numRows) {
+			this.minRowHeights.splice(INDEX, 0, 0);
+		}
+
 		this.shiftElementRowIndexes(INDEX, 1);
 
 		this.growSubgrids();
@@ -1309,6 +1331,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);
+		}
+
+		if (INDEX < this.minColWidths.length) {
+			this.minColWidths.splice(INDEX, 1);
 		}
 
 		this.shiftElementColumnIndexes(INDEX, -1);
@@ -1343,6 +1369,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		if (onlyIfEmpty === true && !empty) { return }
 
 		this.gridMatrix.splice(INDEX, 1);
+
+		if (INDEX < this.minRowHeights.length) {
+			this.minRowHeights.splice(INDEX, 1);
+		}
 
 		this.shiftElementRowIndexes(INDEX, -1);
 	}
@@ -1675,6 +1705,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	//#region 
 	public setChildSize(child: GridElement<C>, size: { noRows: number, noCols: number }) {
 		let location: { row: number, col: number } | undefined = this.locateElement(child)
+		// let location: { row: number, col: number } | undefined = child.placementMode.config.coords
 
 		if (location === undefined) {
 			console.warn(`Cannot locate child for size change ${child.ref}`)
@@ -1782,6 +1813,22 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 			sg.computeCells();
 		})
+	}
+
+	public setMinColumnWidth(colIndex: number, width: number) {
+		if (colIndex < 0 || colIndex >= this.numColumns) {
+			console.warn(`Column index ${colIndex} out of bounds (numColumns: ${this.numColumns})`);
+			return;
+		}
+		this.minColWidths[colIndex] = width;
+	}
+
+	public setMinRowHeight(rowIndex: number, height: number) {
+		if (rowIndex < 0 || rowIndex >= this.numRows) {
+			console.warn(`Row index ${rowIndex} out of bounds (numRows: ${this.numRows})`);
+			return;
+		}
+		this.minRowHeights[rowIndex] = height;
 	}
 	//#endregion
 	// -----------------------------------------------

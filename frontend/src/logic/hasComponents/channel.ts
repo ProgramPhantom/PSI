@@ -52,11 +52,11 @@ export default class Channel extends Subgrid implements IChannel {
 	}
 
 	get label(): GridCellElement<LaTeX> | undefined {
-		let label: GridCellElement<LaTeX> | undefined = this.roles["label"].object as GridCellElement<LaTeX> | undefined;
+		let label: GridCellElement<LaTeX> | undefined = this.roles["label"]?.object as GridCellElement<LaTeX> | undefined;
 		return label
 	}
 	get bar(): GridCellElement<RectElement> | undefined {
-		let bar: GridCellElement<RectElement> | undefined = this.roles["bar"].object as GridCellElement<RectElement> | undefined;
+		let bar: GridCellElement<RectElement> | undefined = this.roles["bar"]?.object as GridCellElement<RectElement> | undefined;
 		return bar
 	}
 
@@ -87,12 +87,7 @@ export default class Channel extends Subgrid implements IChannel {
 	}
 
 	private initialiseChannel() {
-		this.insertEmptyRow();
-		this.insertEmptyRow();
-		this.insertEmptyRow();
-
-		this.insertEmptyColumn();
-		this.insertEmptyColumn();
+		this.setMatrixBottomRight({ row: 2, col: 1 })
 
 		this.setMatrixAtCoord({
 			ghosts: [{ size: { width: 0, height: 10 } }],

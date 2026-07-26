@@ -4,7 +4,7 @@ import { DEFAULT_CHANNEL } from "./channel";
 export const DEFAULT_SEQUENCE: ISequence = {
 	"ref": "sequence",
 
-	"minWidth": 40,
+	"minWidth": 10,
 
 	"padding": [0, 0, 0, 0],
 	"offset": [0, 0],

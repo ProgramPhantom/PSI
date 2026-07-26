@@ -477,33 +477,48 @@ export default class DiagramHandler implements IDraw {
 	// ------------------------------------------
 
 
-	@draws
 	public addColumn(sequenceId: ID, index: number): Result {
-		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
 
 		if (sequence === undefined) {
-			console.warn(`Cannot insert column in sequence with id ${sequenceId}`)
-			return { ok: false, error: `Sequence ${sequenceId} not found` }
+			console.warn(`Cannot insert column in sequence with id ${sequenceId}`);
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
 		}
 
 		sequence.insertEmptyColumn(index);
-		return { ok: true, value: {} }
+
+		this.act({
+			type: "modify",
+			input: {
+				child: sequence.state,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
 	}
 
-	@draws
 	public removeColumn(sequenceId: ID, index: number): Result {
-		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
 
 		if (sequence === undefined) {
-			console.warn(`Cannot remove column in sequence with id ${sequenceId}`)
-			return { ok: false, error: `Sequence ${sequenceId} not found` }
+			console.warn(`Cannot remove column in sequence with id ${sequenceId}`);
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
 		}
 
 		sequence.removeColumn(index);
-		return { ok: true, value: {} }
+
+		this.act({
+			type: "modify",
+			input: {
+				child: sequence.state,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
 	}
 
-	@draws
 	public setColumnWidth(sequenceId: ID, colIndex: number, width: number): Result {
 		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
 
@@ -516,18 +531,15 @@ export default class DiagramHandler implements IDraw {
 			return { ok: false, error: `Column index ${colIndex} out of bounds or no rows` };
 		}
 
-		let cell = sequence.getCell({ row: 0, col: colIndex });
-		let ghosts = (cell?.ghosts ?? []).filter((g) => g.owner !== "column-resize");
-		ghosts.push({ size: { width, height: 0 }, owner: "column-resize" });
+		sequence.setMinColumnWidth(colIndex, width);
 
-		if (cell === undefined) {
-			sequence.setMatrixAtCoord(
-				{ ghosts },
-				{ row: 0, column: colIndex }
-			);
-		} else {
-			cell.ghosts = ghosts;
-		}
+		this.act({
+			type: "modify",
+			input: {
+				child: sequence.state,
+				target: sequence
+			}
+		});
 
 		return { ok: true, value: {} };
 	}
