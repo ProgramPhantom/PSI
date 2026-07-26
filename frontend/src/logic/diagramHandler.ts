@@ -485,12 +485,17 @@ export default class DiagramHandler implements IDraw {
 			return { ok: false, error: `Sequence ${sequenceId} not found` };
 		}
 
-		sequence.insertEmptyColumn(index);
+		let tempResult = this.createVisual<Sequence>(structuredClone(sequence.state), "sequence");
+		if (tempResult.ok === false) {
+			return { ok: false, error: tempResult.error };
+		}
+		let updatedSeq = tempResult.value;
+		updatedSeq.insertEmptyColumn(index);
 
 		this.act({
 			type: "modify",
 			input: {
-				child: sequence.state,
+				child: updatedSeq,
 				target: sequence
 			}
 		});
@@ -506,12 +511,18 @@ export default class DiagramHandler implements IDraw {
 			return { ok: false, error: `Sequence ${sequenceId} not found` };
 		}
 
-		sequence.removeColumn(index);
+		// Inefficient. Fix later
+		let tempResult = this.createVisual<Sequence>(structuredClone(sequence.state), "sequence");
+		if (tempResult.ok === false) {
+			return { ok: false, error: tempResult.error };
+		}
+		let updatedSeq = tempResult.value;
+		updatedSeq.removeColumn(index);
 
 		this.act({
 			type: "modify",
 			input: {
-				child: sequence.state,
+				child: updatedSeq,
 				target: sequence
 			}
 		});
@@ -531,12 +542,17 @@ export default class DiagramHandler implements IDraw {
 			return { ok: false, error: `Column index ${colIndex} out of bounds or no rows` };
 		}
 
-		sequence.setMinColumnWidth(colIndex, width);
+		let tempResult = this.createVisual<Sequence>(structuredClone(sequence.state), "sequence");
+		if (tempResult.ok === false) {
+			return { ok: false, error: tempResult.error };
+		}
+		let updatedSeq = tempResult.value;
+		updatedSeq.setMinColumnWidth(colIndex, width);
 
 		this.act({
 			type: "modify",
 			input: {
-				child: sequence.state,
+				child: updatedSeq,
 				target: sequence
 			}
 		});
