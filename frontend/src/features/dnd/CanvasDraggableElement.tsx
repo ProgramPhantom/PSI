@@ -276,29 +276,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						opacity: (isDragging || props.isHidden) ? 0 : 1
 					}}>
 
-					{showOffsetIndicator && (
-						<g className="offset-indicator">
-							<line
-								x1={drawnCenterX}
-								y1={drawnCenterY}
-								x2={layoutCenterX}
-								y2={layoutCenterY}
-								stroke={Colors.BLUE3}
-								strokeWidth="1px"
-								strokeDasharray="1 1"
-								opacity="0.8"
-							/>
-							<circle
-								cx={layoutCenterX}
-								cy={layoutCenterY}
-								r="2"
-								fill={Colors.GRAY1}
-								strokeWidth="1.5px"
-								opacity="0.5"
-							/>
 
-						</g>
-					)}
 
 					{props.element.padding.some((v) => v > 0) ? (
 						<rect
@@ -336,6 +314,30 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							fillOpacity: props.visualState === "selected" ? "10%" : "0",
 							strokeDasharray: props.visualState === "selected" ? "none" : "2 2"
 						}}></rect>
+
+					{showOffsetIndicator && (
+						<g className="offset-indicator">
+							<line
+								x1={drawnCenterX}
+								y1={drawnCenterY}
+								x2={layoutCenterX}
+								y2={layoutCenterY}
+								stroke={Colors.BLUE3}
+								strokeWidth="1px"
+								strokeDasharray="1 1"
+								opacity="0.8"
+							/>
+							<circle
+								cx={layoutCenterX}
+								cy={layoutCenterY}
+								r="2"
+								fill={Colors.GRAY1}
+								strokeWidth="1.5px"
+								opacity="0.5"
+							/>
+
+						</g>
+					)}
 				</svg>
 			</>
 		);
