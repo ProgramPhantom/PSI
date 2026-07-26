@@ -13,6 +13,8 @@ import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 
 
 
+export const OFFSET_INDICATOR_THRESHOLD = 3;
+
 interface IDraggableElementProps {
 	name: string;
 	element: Visual;
@@ -22,6 +24,7 @@ interface IDraggableElementProps {
 	reselect: (e: Visual) => void;
 	visualState: "hovered" | "selected";
 	isHidden?: boolean;
+	offsetIndicatorThreshold?: number;
 }
 
 export interface CanvasDraggableElementPayload {
@@ -33,6 +36,17 @@ export interface CanvasDraggableElementPayload {
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
 		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
+
+		const threshold = props.offsetIndicatorThreshold ?? OFFSET_INDICATOR_THRESHOLD;
+		const isFree = props.element.placementMode.type === "free";
+		const [ox, oy] = props.element.offset ?? [0, 0];
+		const offsetDistance = Math.hypot(ox, oy);
+		const showOffsetIndicator = !isFree && offsetDistance >= threshold;
+
+		const drawnCenterX = props.element.drawCX + props.element.drawContentWidth / 2;
+		const drawnCenterY = props.element.drawCY + props.element.drawContentHeight / 2;
+		const layoutCenterX = drawnCenterX - ox;
+		const layoutCenterY = drawnCenterY - oy;
 
 		// Compute drag element type:
 		let dragElementType = DragElementTypes.OTHER;
@@ -262,6 +276,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						opacity: (isDragging || props.isHidden) ? 0 : 1
 					}}>
 
+
+
 					{props.element.padding.some((v) => v > 0) ? (
 						<rect
 							x={props.element.drawX}
@@ -298,6 +314,30 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							fillOpacity: props.visualState === "selected" ? "10%" : "0",
 							strokeDasharray: props.visualState === "selected" ? "none" : "2 2"
 						}}></rect>
+
+					{showOffsetIndicator && (
+						<g className="offset-indicator">
+							<line
+								x1={drawnCenterX}
+								y1={drawnCenterY}
+								x2={layoutCenterX}
+								y2={layoutCenterY}
+								stroke={Colors.BLUE3}
+								strokeWidth="1px"
+								strokeDasharray="1 1"
+								opacity="0.8"
+							/>
+							<circle
+								cx={layoutCenterX}
+								cy={layoutCenterY}
+								r="2"
+								fill={Colors.GRAY1}
+								strokeWidth="1.5px"
+								opacity="0.5"
+							/>
+
+						</g>
+					)}
 				</svg>
 			</>
 		);
