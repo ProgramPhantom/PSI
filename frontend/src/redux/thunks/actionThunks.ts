@@ -13,7 +13,7 @@ import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../sli
 import { setSelectedElementId } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
-import { selectCurrentFileName } from "../selectors/diagramSelectors";
+import { selectCurrentAuthor, selectCurrentFileName, selectCurrentInstitution } from "../selectors/diagramSelectors";
 
 let inMemoryCopiedElementState: IVisual | null = null;
 
@@ -94,6 +94,8 @@ export const handleExportDiagramFile = createAsyncThunk(
     async (_, { getState }) => {
         const state = getState() as RootState;
         const fileName = selectCurrentFileName(state);
+        const author = selectCurrentAuthor(state);
+        const institution = selectCurrentInstitution(state);
         const UUID = state.diagram.diagramUUID
 
         if (UUID === undefined) {
@@ -108,6 +110,8 @@ export const handleExportDiagramFile = createAsyncThunk(
             UUID: UUID,
             source: "local",
             diagramName: fileName,
+            originalAuthor: author || undefined,
+            institution: institution || undefined,
             dateCreated: new Date().toISOString()
         });
 

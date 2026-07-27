@@ -30,6 +30,28 @@ export const selectCurrentDiagramSource = createSelector(
     }
 );
 
+export const selectCurrentAuthor = createSelector(
+    [recentDiagramsSelectors.selectEntities, selectCurrentDiagramUUID],
+    (entities, uuid) => {
+        if (uuid) {
+            const diagram = entities[uuid];
+            if (diagram) return diagram.author ?? "";
+        }
+        return "";
+    }
+);
+
+export const selectCurrentInstitution = createSelector(
+    [recentDiagramsSelectors.selectEntities, selectCurrentDiagramUUID],
+    (entities, uuid) => {
+        if (uuid) {
+            const diagram = entities[uuid];
+            if (diagram) return diagram.institution ?? "";
+        }
+        return "";
+    }
+);
+
 export const selectLocalRecentDiagrams = createSelector(
     recentDiagramsSelectors.selectAll,
     (diagrams) => diagrams.filter((d) => d.diagramSource === "local")

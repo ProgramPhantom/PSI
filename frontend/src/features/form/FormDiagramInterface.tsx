@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
 import { ElementForm, SubmitButtonRef } from "./ElementForm";
+import DiagramForm from "./DiagramForm";
 
 type FormEffect = "submit" | "delete" | "modify";
 
@@ -101,10 +102,10 @@ export function FormDiagramInterface() {
 						{target === undefined ? (
 							<>
 								<EntityTitle
-									title={"Create Channel"}
+									title={"Pulse Sequence"}
 									icon={
 										<Icon
-											icon="cube-add"
+											icon="pulse"
 											onClick={() => {
 												setIsDialogOpen(true);
 											}}
@@ -176,38 +177,43 @@ export function FormDiagramInterface() {
 					overflow: "hidden",
 					padding: "0px"
 				}}>
-				<ElementForm
-					key={targetType}
-					ref={submitRef}
-					objectType={targetType as UserComponentType}
-					target={target}
-					callback={handleFormSubmit}></ElementForm>
+				{target === undefined ? (
+					<DiagramForm />
+				) : (
+					<>
+						<ElementForm
+							key={targetType}
+							ref={submitRef}
+							objectType={targetType as UserComponentType}
+							target={target}
+							callback={handleFormSubmit}></ElementForm>
 
-				<div
-					id="submit-area"
-					style={{
-						width: "100%",
-						alignSelf: "center",
-						margin: "4px 2px 4px 2px",
-						padding: "0px 4px 0px 4px",
-						flexShrink: 0,
-						display: "flex",
-						flexDirection: "column"
-					}}>
-					<Divider></Divider>
+						<div
+							id="submit-area"
+							style={{
+								width: "100%",
+								alignSelf: "center",
+								margin: "4px 2px 4px 2px",
+								padding: "0px 4px 0px 4px",
+								flexShrink: 0,
+								display: "flex",
+								flexDirection: "column"
+							}}>
+							<Divider></Divider>
 
-
-					<Tooltip
-						content={`Modification for ${targetType} is not yet implemented`}
-						disabled={submissionValid} position="top">
-						<AnchorButton
-							style={{ width: "100%" }}
-							disabled={!submissionValid}
-							onClick={() => submitRef.current?.submit()}
-							text={target !== undefined ? "Apply" : "Add"}
-							icon={target !== undefined ? "tick" : "add"}></AnchorButton>
-					</Tooltip>
-				</div>
+							<Tooltip
+								content={`Modification for ${targetType} is not yet implemented`}
+								disabled={submissionValid} position="top">
+								<AnchorButton
+									style={{ width: "100%" }}
+									disabled={!submissionValid}
+									onClick={() => submitRef.current?.submit()}
+									text="Apply"
+									icon="tick"></AnchorButton>
+							</Tooltip>
+						</div>
+					</>
+				)}
 			</div>
 
 			{/* DEBUG: Inspect object dialog */}
