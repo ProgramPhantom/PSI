@@ -447,6 +447,17 @@ export default class DiagramHandler implements IDraw {
 			}
 		}
 
+		// Handle edge case for modifying the root diagram (which has no parent)
+		if (target.id === this.diagram.id) {
+			if (!(childInstance instanceof Diagram)) {
+				return { ok: false, error: `Invalid visual type for diagram modification` };
+			}
+			target.erase();
+			this.diagram = childInstance;
+			this.diagram.svg?.show();
+			return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } };
+		}
+
 		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
 		if (parent === undefined) {
 			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
