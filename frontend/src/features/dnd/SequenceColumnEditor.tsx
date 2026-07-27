@@ -109,7 +109,7 @@ export default function SequenceColumnEditor({ sequence, scale = 1 }: SequenceCo
 	}
 
 	// For columns c >= 1: render a "+" add button aligned at the right boundary of column c (between col c and c+1).
-	for (let c = 1; c < numCols; c++) {
+	for (let c = 0; c < numCols; c++) {
 		const cell = row0[c];
 		if (!cell) continue;
 
