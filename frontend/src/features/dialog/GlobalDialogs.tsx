@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
     setLoadDialogOpen,
     setPNGDialogOpen,
+    setSVGDialogOpen,
     setSaveAsDialogOpen,
     setLoginDialogOpen,
     setUserDialogOpen,
@@ -11,6 +12,7 @@ import {
     setAboutDialogOpen
 } from "../../redux/slices/dialogSlice";
 import { PNGExportDialog } from "./PNGExportDialog";
+import { SVGExportDialog } from "./SVGExportDialog";
 import { LoadDiagramFileDialog } from "./LoadDiagramFileDialog";
 import { LoginDialog } from "./LoginDialog";
 import { UserDialog } from "../banner/UserDrawer";
@@ -26,6 +28,7 @@ export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
     const {
         isPNGDialogOpen,
+        isSVGDialogOpen,
         isLoadDialogOpen,
         isSaveAsDialogOpen,
         isLoginDialogOpen,
@@ -42,6 +45,11 @@ export const GlobalDialogs: React.FC = () => {
             <PNGExportDialog
                 close={() => dispatch(setPNGDialogOpen(false))}
                 isOpen={isPNGDialogOpen}
+            />
+
+            <SVGExportDialog
+                close={() => dispatch(setSVGDialogOpen(false))}
+                isOpen={isSVGDialogOpen}
             />
 
             <LoadDiagramFileDialog

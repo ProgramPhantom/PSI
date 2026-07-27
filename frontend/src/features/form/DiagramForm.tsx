@@ -21,7 +21,7 @@ import {
 	selectCurrentInstitution
 } from "../../redux/selectors/diagramSelectors";
 import { setAuthor, setFileName, setInstitution } from "../../redux/slices/diagramSlice";
-import { setPNGDialogOpen } from "../../redux/slices/dialogSlice";
+import { setPNGDialogOpen, setSVGDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import { DoubleField } from "./fields/DoubleField";
 import { QuadField } from "./fields/QuadField";
@@ -206,7 +206,7 @@ export const DiagramForm: React.FC = () => {
 								icon="flow-linear"
 								text="SVG"
 								title="Export SVG image"
-								onClick={() => dispatch(Actions.handleSaveSVG())}
+								onClick={() => dispatch(setSVGDialogOpen(true))}
 							/>
 							<Button
 								icon="media"
