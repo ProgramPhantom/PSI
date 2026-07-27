@@ -418,7 +418,7 @@ Steps to reproduce the behavior :
     }
 );
 
-export const SavePNG = createAsyncThunk<void, { width: number, height: number }>(
+export const SavePNG = createAsyncThunk<void, { width: number, height: number, fileName?: string }>(
     'actions/SavePNG',
     async (dimensions, { getState }) => {
         try {
@@ -426,7 +426,9 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
             const height = dimensions.height;
 
             const state = getState() as RootState;
-            const fileName = selectCurrentFileName(state);
+            const defaultName = selectCurrentFileName(state);
+            const rawFileName = dimensions.fileName?.trim() || defaultName || "pulse-diagram";
+            const exportFileName = rawFileName.endsWith(".png") ? rawFileName : `${rawFileName}.png`;
 
             // Get the current SVG surface from the ENGINE
             const surface = ENGINE.surface;
@@ -471,11 +473,11 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
                     // Convert canvas to blob and save
                     canvas.toBlob((blob) => {
                         if (blob) {
-                            saveAs(blob, fileName);
+                            saveAs(blob, exportFileName);
 
                             // Show success message
                             appToaster.show({
-                                message: `PNG saved successfully as ${fileName}`,
+                                message: `PNG saved successfully as ${exportFileName}`,
                                 intent: "success",
                                 icon: "tick-circle"
                             });
