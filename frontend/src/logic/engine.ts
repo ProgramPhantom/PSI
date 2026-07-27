@@ -1,4 +1,4 @@
-import { Element, Svg } from "@svgdotjs/svg.js";
+import { Element, Rect, Svg } from "@svgdotjs/svg.js";
 import localforage from "localforage";
 import AssetStore from "./assetStore";
 import Collection, { ICollection } from "./collection";
@@ -32,7 +32,8 @@ class ENGINE {
 	private static _surface: Svg;
 	static set surface(s: Svg) {
 		ENGINE._surface = s;
-		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID })
+		ENGINE._surface.attr({ "id": ENGINE.SURFACE_ID });
+		ENGINE._surface.add(new Rect().move(0, 0).id("diagram-root"));
 
 		ENGINE._handler = new DiagramHandler(s, ENGINE.emitChange, ENGINE.ConstructElement);
 	}

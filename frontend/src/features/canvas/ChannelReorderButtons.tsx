@@ -32,7 +32,7 @@ export const ChannelReorderButtons: React.FC<ChannelReorderButtonsProps> = React
 					icon="chevron-up"
 					variant="minimal"
 					size="small"
-					style={{ width: "18px", height: "18px", minWidth: "18px", minHeight: "18px", padding: 0 }}
+					style={{ width: "10px", height: "18px", minWidth: "18px", minHeight: "18px", padding: 0 }}
 					title="Move channel up"
 					onClick={handleMoveUp}
 				/>
@@ -40,7 +40,7 @@ export const ChannelReorderButtons: React.FC<ChannelReorderButtonsProps> = React
 					icon="chevron-down"
 					variant="minimal"
 					size="small"
-					style={{ width: "18px", height: "18px", minWidth: "18px", minHeight: "18px", padding: 0 }}
+					style={{ width: "10px", height: "18px", minWidth: "18px", minHeight: "18px", padding: 0 }}
 					title="Move channel down"
 					onClick={handleMoveDown}
 				/>
