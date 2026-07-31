@@ -13,7 +13,7 @@ import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../sli
 import { setSelectedElementId } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
-import { selectCurrentFileName } from "../selectors/diagramSelectors";
+import { selectCurrentAuthor, selectCurrentFileName, selectCurrentInstitution } from "../selectors/diagramSelectors";
 
 let inMemoryCopiedElementState: IVisual | null = null;
 
@@ -94,6 +94,8 @@ export const handleExportDiagramFile = createAsyncThunk(
     async (_, { getState }) => {
         const state = getState() as RootState;
         const fileName = selectCurrentFileName(state);
+        const author = selectCurrentAuthor(state);
+        const institution = selectCurrentInstitution(state);
         const UUID = state.diagram.diagramUUID
 
         if (UUID === undefined) {
@@ -108,6 +110,8 @@ export const handleExportDiagramFile = createAsyncThunk(
             UUID: UUID,
             source: "local",
             diagramName: fileName,
+            originalAuthor: author || undefined,
+            institution: institution || undefined,
             dateCreated: new Date().toISOString()
         });
 
@@ -279,12 +283,152 @@ export const handleDownloadState = createAsyncThunk(
     }
 );
 
-export const handleSaveSVG = createAsyncThunk(
+function unrollSVGUseElements(doc: Document) {
+    const useElements = Array.from(doc.querySelectorAll("use"));
+    
+    useElements.forEach((useEl) => {
+        const href = useEl.getAttribute("href") || useEl.getAttribute("xlink:href");
+        if (!href || !href.startsWith("#")) return;
+
+        const targetId = href.slice(1);
+        const targetEl = doc.getElementById(targetId);
+        if (!targetEl) return;
+
+        // Clone target element
+        const clone = targetEl.cloneNode(true) as Element;
+        clone.removeAttribute("id"); // Avoid ID conflicts
+
+        // Extract positional and transform attributes from <use>
+        const x = parseFloat(useEl.getAttribute("x") || "0");
+        const y = parseFloat(useEl.getAttribute("y") || "0");
+        const useTransform = useEl.getAttribute("transform");
+        const targetTransform = clone.getAttribute("transform");
+
+        // Build combined transform list
+        const transforms: string[] = [];
+        if (x !== 0 || y !== 0) {
+            transforms.push(`translate(${x}, ${y})`);
+        }
+        if (useTransform) {
+            transforms.push(useTransform);
+        }
+        if (targetTransform) {
+            transforms.push(targetTransform);
+        }
+
+        if (transforms.length > 0) {
+            clone.setAttribute("transform", transforms.join(" "));
+        }
+
+        // Copy fill/stroke/style if present on <use>
+        ["fill", "stroke", "style", "class"].forEach((attr) => {
+            if (useEl.hasAttribute(attr) && !clone.hasAttribute(attr)) {
+                clone.setAttribute(attr, useEl.getAttribute(attr)!);
+            }
+        });
+
+        // Replace <use> with clone
+        useEl.parentNode?.replaceChild(clone, useEl);
+    });
+}
+
+function flattenNestedSVGElements(doc: Document) {
+    const rootSvg = doc.querySelector("svg");
+    if (!rootSvg) return;
+
+    // Get all nested <svg> elements (excluding the root document <svg>)
+    const allSvgs = Array.from(doc.querySelectorAll("svg"));
+    const nestedSvgs = allSvgs.filter((el) => el !== rootSvg);
+
+    nestedSvgs.forEach((svgEl) => {
+        const xStr = svgEl.getAttribute("x") || "0";
+        const yStr = svgEl.getAttribute("y") || "0";
+        const x = parseFloat(xStr) || 0;
+        const y = parseFloat(yStr) || 0;
+
+        const wStr = svgEl.getAttribute("width");
+        const hStr = svgEl.getAttribute("height");
+        const width = wStr ? parseFloat(wStr) : NaN;
+        const height = hStr ? parseFloat(hStr) : NaN;
+
+        const viewBox = svgEl.getAttribute("viewBox");
+
+        const gEl = doc.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        // Copy all attributes except positioning/viewBox attributes
+        Array.from(svgEl.attributes).forEach((attr) => {
+            const attrName = attr.name.toLowerCase();
+            if (!["x", "y", "width", "height", "viewbox", "xmlns", "xmlns:xlink", "version"].includes(attrName)) {
+                gEl.setAttribute(attr.name, attr.value);
+            }
+        });
+
+        const transforms: string[] = [];
+
+        if (viewBox) {
+            const vbParts = viewBox.trim().split(/[\s,]+/).map(parseFloat);
+            if (vbParts.length === 4 && !vbParts.some(isNaN)) {
+                const [vbX, vbY, vbW, vbH] = vbParts;
+                let scaleX = 1;
+                let scaleY = 1;
+
+                if (!isNaN(width) && vbW > 0) {
+                    scaleX = width / vbW;
+                }
+                if (!isNaN(height) && vbH > 0) {
+                    scaleY = height / vbH;
+                } else if (!isNaN(width) && vbW > 0) {
+                    scaleY = scaleX;
+                } else if (!isNaN(height) && vbH > 0 && isNaN(width)) {
+                    scaleX = scaleY;
+                }
+
+                transforms.push(`translate(${x}, ${y})`);
+                transforms.push(`scale(${scaleX}, ${scaleY})`);
+                if (vbX !== 0 || vbY !== 0) {
+                    transforms.push(`translate(${-vbX}, ${-vbY})`);
+                }
+            } else if (x !== 0 || y !== 0) {
+                transforms.push(`translate(${x}, ${y})`);
+            }
+        } else if (x !== 0 || y !== 0) {
+            transforms.push(`translate(${x}, ${y})`);
+        }
+
+        const existingTransform = gEl.getAttribute("transform");
+        if (existingTransform) {
+            transforms.push(existingTransform);
+        }
+
+        if (transforms.length > 0) {
+            gEl.setAttribute("transform", transforms.join(" "));
+        }
+
+        // Move all children from svgEl to gEl
+        while (svgEl.firstChild) {
+            gEl.appendChild(svgEl.firstChild);
+        }
+
+        // Replace nested <svg> with <g>
+        svgEl.parentNode?.replaceChild(gEl, svgEl);
+    });
+}
+
+export interface SaveSVGOptions {
+    width?: number;
+    height?: number;
+    backgroundColor?: string;
+    fileName?: string;
+}
+
+export const handleSaveSVG = createAsyncThunk<void, SaveSVGOptions | void>(
     'actions/handleSaveSVG',
-    async (_, { getState }) => {
+    async (options, { getState }) => {
         try {
             const state = getState() as RootState;
-            const fileNameFromRedux = selectCurrentFileName(state);
+            const defaultName = selectCurrentFileName(state);
+            const rawName = options?.fileName?.trim() || defaultName || "pulse-diagram";
+            const fileName = rawName.endsWith(".svg") ? rawName : `${rawName}.svg`;
 
             const surface = ENGINE.surface;
             const svgClone = surface.clone(true, false);
@@ -292,9 +436,67 @@ export const handleSaveSVG = createAsyncThunk(
             hitboxElements.forEach((element) => {
                 element.remove();
             });
+
             const svgString = svgClone.svg();
-            const blob = new Blob([svgString], { type: "image/svg+xml" });
-            const fileName = fileNameFromRedux || `pulse-diagram-${Date.now()}.svg`;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgString, "image/svg+xml");
+            const svgEl = doc.querySelector("svg");
+
+            if (svgEl) {
+                // 1. Dereference / unroll all <use> tags for vector editor compatibility
+                unrollSVGUseElements(doc);
+
+                // 2. Flatten nested <svg> elements into <g transform="..."> for Figma / Illustrator / Inkscape compatibility
+                flattenNestedSVGElements(doc);
+
+                // 3. Add background fill if requested
+                if (options?.backgroundColor && options.backgroundColor !== "transparent") {
+                    const viewBoxAttr = svgEl.getAttribute("viewBox");
+                    let bgX = ENGINE.handler.diagram?.x ?? 0;
+                    let bgY = ENGINE.handler.diagram?.y ?? 0;
+                    let bgW = ENGINE.handler.diagram?.width ?? 800;
+                    let bgH = ENGINE.handler.diagram?.height ?? 600;
+
+                    if (viewBoxAttr) {
+                        const vbParts = viewBoxAttr.trim().split(/[\s,]+/).map(parseFloat);
+                        if (vbParts.length === 4 && !vbParts.some(isNaN)) {
+                            bgX = vbParts[0];
+                            bgY = vbParts[1];
+                            bgW = vbParts[2];
+                            bgH = vbParts[3];
+                        }
+                    }
+
+                    const bgRect = doc.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    bgRect.setAttribute("x", `${bgX}`);
+                    bgRect.setAttribute("y", `${bgY}`);
+                    bgRect.setAttribute("width", `${bgW}`);
+                    bgRect.setAttribute("height", `${bgH}`);
+                    bgRect.setAttribute("fill", options.backgroundColor);
+                    if (svgEl.firstChild) {
+                        svgEl.insertBefore(bgRect, svgEl.firstChild);
+                    } else {
+                        svgEl.appendChild(bgRect);
+                    }
+                }
+
+                // Adjust dimensions if specified
+                if (options?.width && options.width > 0) {
+                    const currentW = ENGINE.handler.diagram?.width || 800;
+                    const currentH = ENGINE.handler.diagram?.height || 600;
+                    const ratio = currentW / currentH;
+                    const targetW = options.width;
+                    const targetH = options.height || Math.round(targetW / ratio);
+
+                    svgEl.setAttribute("width", `${targetW}px`);
+                    svgEl.setAttribute("height", `${targetH}px`);
+                }
+            }
+
+            const serializer = new XMLSerializer();
+            const finalSvgString = svgEl ? serializer.serializeToString(doc) : svgString;
+            const blob = new Blob([finalSvgString], { type: "image/svg+xml;charset=utf-8" });
+
             saveAs(blob, fileName);
             appToaster.show({
                 message: `SVG saved successfully as ${fileName}`,
@@ -414,7 +616,7 @@ Steps to reproduce the behavior :
     }
 );
 
-export const SavePNG = createAsyncThunk<void, { width: number, height: number }>(
+export const SavePNG = createAsyncThunk<void, { width: number, height: number, fileName?: string }>(
     'actions/SavePNG',
     async (dimensions, { getState }) => {
         try {
@@ -422,7 +624,9 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
             const height = dimensions.height;
 
             const state = getState() as RootState;
-            const fileName = selectCurrentFileName(state);
+            const defaultName = selectCurrentFileName(state);
+            const rawFileName = dimensions.fileName?.trim() || defaultName || "pulse-diagram";
+            const exportFileName = rawFileName.endsWith(".png") ? rawFileName : `${rawFileName}.png`;
 
             // Get the current SVG surface from the ENGINE
             const surface = ENGINE.surface;
@@ -467,11 +671,11 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
                     // Convert canvas to blob and save
                     canvas.toBlob((blob) => {
                         if (blob) {
-                            saveAs(blob, fileName);
+                            saveAs(blob, exportFileName);
 
                             // Show success message
                             appToaster.show({
-                                message: `PNG saved successfully as ${fileName}`,
+                                message: `PNG saved successfully as ${exportFileName}`,
                                 intent: "success",
                                 icon: "tick-circle"
                             });

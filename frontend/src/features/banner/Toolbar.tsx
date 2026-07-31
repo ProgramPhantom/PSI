@@ -2,7 +2,7 @@ import { Button, ButtonGroup, Colors, EditableText, Icon, Menu, MenuDivider, Men
 import React from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import * as Actions from "../../redux/thunks/actionThunks";
-import { setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
+import { setLoadDialogOpen, setPNGDialogOpen, setSVGDialogOpen, setSaveAsDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
 import { setFileName } from "../../redux/slices/diagramSlice";
 import { selectCurrentDiagramSource, selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
 
@@ -70,7 +70,7 @@ const Toolbar: React.FC = () => {
 						position={Position.BOTTOM_LEFT}
 						content={
 							<Menu>
-								<MenuItem icon="cloud-download" text="Export SVG" label="Alt+Shift+S" onClick={() => dispatch(Actions.handleSaveSVG())} />
+								<MenuItem icon="cloud-download" text="Export SVG" label="Alt+Shift+S" onClick={() => dispatch(setSVGDialogOpen(true))} />
 								<MenuItem icon="media" text="Export PNG" label="Ctrl+E" onClick={() => dispatch(setPNGDialogOpen(true))} />
 								<MenuDivider />
 								<MenuItem icon="document-share" text="Export .nmrd" label="Ctrl+Alt+S" onClick={() => dispatch(Actions.handleExportDiagramFile())} />

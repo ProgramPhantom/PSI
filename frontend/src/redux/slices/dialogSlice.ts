@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface DialogState {
     isPNGDialogOpen: boolean;
+    isSVGDialogOpen: boolean;
     isLoadDialogOpen: boolean;
     isSaveAsDialogOpen: boolean;
     isLoginDialogOpen: boolean;
@@ -16,6 +17,7 @@ export interface DialogState {
 
 const initialState: DialogState = {
     isPNGDialogOpen: false,
+    isSVGDialogOpen: false,
     isLoadDialogOpen: false,
     isSaveAsDialogOpen: false,
     isLoginDialogOpen: false,
@@ -34,6 +36,9 @@ export const dialogSlice = createSlice({
     reducers: {
         setPNGDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isPNGDialogOpen = action.payload;
+        },
+        setSVGDialogOpen: (state, action: PayloadAction<boolean>) => {
+            state.isSVGDialogOpen = action.payload;
         },
         setLoadDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isLoadDialogOpen = action.payload;
@@ -70,6 +75,7 @@ export const dialogSlice = createSlice({
 
 export const {
     setPNGDialogOpen,
+    setSVGDialogOpen,
     setLoadDialogOpen,
     setSaveAsDialogOpen,
     setLoginDialogOpen,

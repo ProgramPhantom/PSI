@@ -6,6 +6,8 @@ export interface RecentDiagram {
     diagramUUID: string;
     opened: string;
     diagramSource: DiagramSource;
+    author?: string;
+    institution?: string;
 }
 
 export type LoadStatus = "unloaded" | "fetchServer" | "opening" | "open";
@@ -36,6 +38,22 @@ export const diagramSlice = createSlice({
                 recentDiagramsAdapter.updateOne(state, {
                     id: state.diagramUUID,
                     changes: { name: action.payload }
+                });
+            }
+        },
+        setAuthor: (state, action: PayloadAction<string>) => {
+            if (state.diagramUUID) {
+                recentDiagramsAdapter.updateOne(state, {
+                    id: state.diagramUUID,
+                    changes: { author: action.payload }
+                });
+            }
+        },
+        setInstitution: (state, action: PayloadAction<string>) => {
+            if (state.diagramUUID) {
+                recentDiagramsAdapter.updateOne(state, {
+                    id: state.diagramUUID,
+                    changes: { institution: action.payload }
                 });
             }
         },
@@ -80,7 +98,9 @@ export const diagramSlice = createSlice({
 });
 
 export const { 
-    setFileName, 
+    setFileName,
+    setAuthor,
+    setInstitution,
     setDiagramUUID, 
     setSaveState, 
     addRecentDiagram, 

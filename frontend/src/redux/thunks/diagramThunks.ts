@@ -9,7 +9,7 @@ import { IDiagram } from "../../logic/hasComponents/diagram";
 import { IDiagramMetadata } from "../../types/diagram";
 import { api } from "../api/api";
 import { RootState } from "../rootReducer";
-import { selectCurrentDiagramSource, selectCurrentFileName } from "../selectors/diagramSelectors";
+import { selectCurrentAuthor, selectCurrentDiagramSource, selectCurrentFileName, selectCurrentInstitution } from "../selectors/diagramSelectors";
 import { addRecentDiagram, setDiagramLoadStatus, setDiagramSource, setDiagramUUID, setFileName, setSaveState } from "../slices/diagramSlice";
 import { loadAsset } from "./assetThunks";
 
@@ -133,8 +133,8 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
                 UUID: currentUUID,
                 source: "server",
                 diagramName: selectCurrentFileName(state),
-                institution: undefined,
-                originalAuthor: isLoggedIn ? `${userState.data.firstname} ${userState.data.surname}`.trim() : undefined,
+                institution: selectCurrentInstitution(state) || undefined,
+                originalAuthor: selectCurrentAuthor(state) || (isLoggedIn ? `${userState.data.firstname} ${userState.data.surname}`.trim() : undefined),
                 dateCreated: new Date().toISOString()
             };
 
@@ -226,8 +226,8 @@ export const saveDiagram = createAsyncThunk<void, {fileName?: string}>(
                     "UUID": currentUUID,
                     "source": "local",
                     diagramName: selectCurrentFileName(state),
-                    institution: undefined,
-                    originalAuthor: undefined,
+                    institution: selectCurrentInstitution(state) || undefined,
+                    originalAuthor: selectCurrentAuthor(state) || undefined,
                     dateCreated: new Date().toISOString()
                 });
                 const blob = await file.generateAsync({ type: "blob" });
@@ -317,6 +317,8 @@ export const openDiagram = createAsyncThunk<void, File>(
                             name: diagramName,
                             diagramUUID: manifestData.UUID,
                             diagramSource: manifestData.source ?? "local",
+                            author: manifestData.originalAuthor,
+                            institution: manifestData.institution,
                             opened: new Date().toISOString()
                         }));
                         
