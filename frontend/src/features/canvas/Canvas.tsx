@@ -618,6 +618,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													visualState={el.id === selectedElement?.id ? "selected" : "hovered"}
 													x={el.x}
 													y={el.y}
+													scale={zoom}
 													isHidden={el.id === editingElementId}></CanvasDraggableElement>
 											))}
 

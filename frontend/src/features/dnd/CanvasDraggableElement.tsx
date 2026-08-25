@@ -1,6 +1,6 @@
 import { Colors, Icon, Tooltip } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
-import React, { memo, useEffect, useRef } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { ClearIDs } from "../../logic/collection";
@@ -9,6 +9,7 @@ import LabelGroup from "../../logic/hasComponents/labelGroup";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
+import { CanvasResizeHandles, PreviewState } from "./CanvasResizeHandles";
 
 
 
@@ -25,6 +26,7 @@ interface IDraggableElementProps {
 	visualState: "hovered" | "selected";
 	isHidden?: boolean;
 	offsetIndicatorThreshold?: number;
+	scale?: number;
 }
 
 export interface CanvasDraggableElementPayload {
@@ -36,6 +38,14 @@ export interface CanvasDraggableElementPayload {
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
 		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
+		const [livePreview, setLivePreview] = useState<PreviewState | null>(null);
+
+		const origContentWidth = props.element.drawContentWidth > 0 ? props.element.drawContentWidth : 1;
+		const origContentHeight = props.element.drawContentHeight > 0 ? props.element.drawContentHeight : 1;
+		const visualX = livePreview ? livePreview.left : props.element.drawCX;
+		const visualY = livePreview ? livePreview.top : props.element.drawCY;
+		const visualScaleX = livePreview ? livePreview.width / origContentWidth : 1;
+		const visualScaleY = livePreview ? livePreview.height / origContentHeight : 1;
 
 		const threshold = props.offsetIndicatorThreshold ?? OFFSET_INDICATOR_THRESHOLD;
 		const isFree = props.element.placementMode.type === "free";
@@ -215,9 +225,6 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 		return (
 			<>
-				{/* <Rnd disableDragging={true} resizeHandleStyles={hStyle}>
-				<svg ref={visualRef}></svg>
-				</Rnd> */}
 				<div key={dragElementType}
 					className="nopan"
 					style={{
@@ -295,25 +302,47 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						<></>
 					)}
 
-					<svg ref={visualRef}
-						x={props.element.drawCX}
-						y={props.element.drawCY}
-						width="100%" height="100%" style={{ overflow: "visible" }}></svg>
+					<g
+						transform={`translate(${visualX}, ${visualY}) scale(${visualScaleX}, ${visualScaleY})`}
+						style={{ transformOrigin: "0 0" }}>
+						<svg
+							ref={visualRef}
+							x={0}
+							y={0}
+							width="100%"
+							height="100%"
+							style={{ overflow: "visible" }}></svg>
+					</g>
 
 
 
-					<rect
-						x={props.element.drawCX}
-						y={props.element.drawCY}
-						width={props.element.drawContentWidth}
-						height={props.element.drawContentHeight}
-						style={{
-							stroke: isDragging ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
-							strokeWidth: "1px",
-							fill: props.visualState === "selected" ? `${Colors.BLUE5}` : "transparent",
-							fillOpacity: props.visualState === "selected" ? "10%" : "0",
-							strokeDasharray: props.visualState === "selected" ? "none" : "2 2"
-						}}></rect>
+					{props.visualState === "hovered" && (
+						<rect
+							x={props.element.drawCX}
+							y={props.element.drawCY}
+							width={props.element.drawContentWidth}
+							height={props.element.drawContentHeight}
+							style={{
+								stroke: isDragging ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
+								strokeWidth: "1px",
+								fill: "transparent",
+								strokeDasharray: "2 2"
+							}}></rect>
+					)}
+					{props.visualState === "selected" && props.element.placementControl === "auto" && (
+						<rect
+							x={props.element.drawCX}
+							y={props.element.drawCY}
+							width={props.element.drawContentWidth}
+							height={props.element.drawContentHeight}
+							style={{
+								stroke: isDragging ? `none` : `${Colors.BLUE5}`,
+								strokeWidth: "1px",
+								fill: `${Colors.BLUE5}`,
+								fillOpacity: "10%",
+								strokeDasharray: "none"
+							}}></rect>
+					)}
 
 					{showOffsetIndicator && (
 						<g className="offset-indicator">
@@ -339,6 +368,10 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						</g>
 					)}
 				</svg>
+
+				{props.visualState === "selected" && !isDragging && !props.isHidden && props.element.placementControl !== "auto" && (
+					<CanvasResizeHandles element={props.element} scale={props.scale} onResize={setLivePreview} />
+				)}
 			</>
 		);
 	}
