@@ -322,8 +322,13 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 			}
 		};
 
+		const currentEffectiveScale = (scale && scale > 0) ? scale : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
+		const handleScale = 1 / (currentEffectiveScale > 0 ? currentEffectiveScale : 1);
+
 		return (
-			<div className={`nopan ${styles.resizeHandlesContainer}`}>
+			<div
+				className={`nopan ${styles.resizeHandlesContainer}`}
+				style={{ "--handle-scale": handleScale } as React.CSSProperties}>
 				<div
 					className={styles.selectionBox}
 					style={{
