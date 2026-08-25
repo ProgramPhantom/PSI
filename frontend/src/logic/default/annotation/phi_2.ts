@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_PHI_2: ILaTeX = {
-	"ref": "annotation-phi-2",
+	"ref": "phi-2",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "\\Phi_2",

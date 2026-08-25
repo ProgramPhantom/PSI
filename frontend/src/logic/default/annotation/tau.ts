@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_TAU: ILaTeX = {
-	"ref": "annotation-tau",
+	"ref": "tau",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "\\tau",

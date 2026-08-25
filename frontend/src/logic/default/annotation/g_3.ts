@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_G3: ILaTeX = {
-	"ref": "annotation-g3",
+	"ref": "g3",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "G_3",

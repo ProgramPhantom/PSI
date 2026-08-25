@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_DELTA_CAP: ILaTeX = {
-	"ref": "annotation-delta-cap",
+	"ref": "Delta-cap",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "\\Delta",

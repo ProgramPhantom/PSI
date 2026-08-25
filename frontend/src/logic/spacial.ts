@@ -229,14 +229,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ? { ...params.sizeMode } : { x: "fixed", y: "fixed" };
 
-		if (this._placementMode.type === "free") {
-			if (this.sizeMode.x === "grow") {
-				this.sizeMode.x = "fixed";
-			}
-			if (this.sizeMode.y === "grow") {
-				this.sizeMode.y = "fixed";
-			}
-		}
+		// if (this._placementMode.type === "free") {
+		// 	if (this.sizeMode.x === "grow") {
+		// 		this.sizeMode.x = "fixed";
+		// 	}
+		// 	if (this.sizeMode.y === "grow") {
+		// 		this.sizeMode.y = "fixed";
+		// 	}
+		// }
 
 		this._contentWidth = params.contentWidth ?? 0;
 		this._contentHeight = params.contentHeight ?? 0;
@@ -646,13 +646,24 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 
-	setSizeByDimension(v: number, dim: Dimensions) {
+	setContentSizeByDimension(v: number, dim: Dimensions) {
 		switch (dim) {
 			case "x":
 				this.contentWidth = v;
 				break;
 			case "y":
 				this.contentHeight = v;
+				break;
+		}
+	}
+
+	setSizeByDimension(v: number, dim: Dimensions) {
+		switch (dim) {
+			case "x":
+				this.width = v;
+				break;
+			case "y":
+				this.height = v;
 				break;
 		}
 	}
