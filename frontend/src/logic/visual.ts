@@ -136,16 +136,19 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return
 	}
 
-	protected computeSelf() {
+	protected computeSelf(containerSize?: Size) {
 		this.computeSize();
-		this.growElement(this.size);
+		this.growElement(containerSize ?? this.size);
 		this.computePositions({ x: 0, y: 0 });
 	}
 
-
-
 	// Construct and SVG with children positioned relative to (0, 0)
-	public getInternalRepresentation(): Element | undefined {
+	public getInternalRepresentation(containerSize?: Size): Element | undefined {
+		if (this.svg === undefined || containerSize !== undefined) {
+			this.computeSelf(containerSize);
+			let temporaryCanvas: Element = SVG();
+			this.draw(temporaryCanvas);
+		}
 		if (this.svg === undefined) { return undefined }
 
 		var cloned: Element = this.svg.clone(true, true);

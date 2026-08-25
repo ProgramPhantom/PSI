@@ -1,5 +1,6 @@
-import { Element } from "@svgdotjs/svg.js";
+import { Element, SVG } from "@svgdotjs/svg.js";
 import Visual, { Display, IVisual } from "./visual";
+import { Size } from "./spacial";
 
 export const EXTOPX = 38.314;
 export const SCALER = 5;
@@ -57,7 +58,12 @@ export abstract class TextBase extends Visual implements ITextBase {
 		super.draw(surface);
 	}
 
-	override getInternalRepresentation(): Element | undefined {
+	override getInternalRepresentation(containerSize?: Size): Element | undefined {
+		if (this.svg === undefined || containerSize !== undefined) {
+			this.computeSelf(containerSize);
+			let temporaryCanvas: Element = SVG();
+			this.draw(temporaryCanvas);
+		}
 		if (this.svg === undefined) {
 			return undefined;
 		}

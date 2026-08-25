@@ -5,7 +5,7 @@ import { DEFAULT_LINE } from "../line";
 export const DEFAULT_ANNOTATION_LABEL_T1: ILabel = {
 	"offset": [0, 0],
 	"padding": [8, 8, 8, 8],
-	"sizeMode": { x: "fit", y: "fit" },
+	"sizeMode": { x: "grow", y: "fit" },
 	"mainAxis": "y",
 
 	"placementMode": { "type": "free" },

@@ -97,11 +97,11 @@ export default class Line extends LineLike implements ILine {
 		return rect;
 	}
 
-	public getInternalRepresentation(): Element | undefined {
-		if (this.svg === undefined) {
+	public getInternalRepresentation(containerSize?: Size): Element | undefined {
+		if (this.svg === undefined || containerSize !== undefined) {
 			this.svg = new Svg();  // TODO: fix this
 			this.dirty = true;
-			this.computeSelf();
+			this.computeSelf(containerSize);
 			let temporaryCanvas: Element = SVG();
 			this.draw(temporaryCanvas);
 		}

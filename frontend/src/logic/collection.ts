@@ -219,12 +219,12 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	}
 
 	// Construct and SVG with children positioned relative to (0, 0)
-	override getInternalRepresentation(): Element | undefined {
+	override getInternalRepresentation(containerSize?: Size): Element | undefined {
 		var deltaX = -this.cx;
 		var deltaY = -this.cy;
 
-		if (this.svg === undefined) {
-			this.computeSelf();
+		if (this.svg === undefined || containerSize !== undefined) {
+			this.computeSelf(containerSize);
 			let temporaryCanvas: Element = SVG();
 			this.draw(temporaryCanvas);
 		}

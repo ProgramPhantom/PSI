@@ -590,7 +590,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			sizeToAdd = Math.min(sizeToAdd, remainingXChange / smallestCols.length);
 
 			smallestCols.forEach((col) => {
-				col.setSizeByDimension(col.getSizeByDimension("x") + sizeToAdd, "x");
+				col.setContentSizeByDimension(col.getSizeByDimension("x") + sizeToAdd, "x");
 				remainingXChange -= sizeToAdd;
 			});
 		}
@@ -626,7 +626,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			sizeToAdd = Math.min(sizeToAdd, remainingYChange / smallestRows.length);
 
 			smallestRows.forEach((row) => {
-				row.setSizeByDimension(row.getSizeByDimension("y") + sizeToAdd, "y");
+				row.setContentSizeByDimension(row.getSizeByDimension("y") + sizeToAdd, "y");
 				remainingYChange -= sizeToAdd;
 			});
 		}

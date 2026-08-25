@@ -167,15 +167,22 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 	const [showBin, setShowBin] = useState<boolean>(false);
 	const opacity = isDragging ? 0.5 : 1;
 
-	// Get visual
-	const element = useRef<Element>(props.element.getInternalRepresentation()!)
 	const visualRef = useRef<SVGSVGElement | null>(null);
 
 	useEffect(() => {
 		if (visualRef.current) {
-			visualRef.current.appendChild(element.current.node);
-			visualRef.current.setAttribute("width", props.element.contentWidth.toString())
-			visualRef.current.setAttribute("height", props.element.contentHeight.toString())
+			visualRef.current.innerHTML = "";
+			const previewContainerSize = { width: 80, height: 40 };
+			const internalElem = props.element.getInternalRepresentation(previewContainerSize);
+			if (internalElem) {
+				visualRef.current.appendChild(internalElem.node);
+
+				const elemWidth = Math.max(props.element.width || props.element.contentWidth || 10, 10);
+				const elemHeight = Math.max(props.element.height || props.element.contentHeight || 10, 10);
+
+				visualRef.current.setAttribute("viewBox", `0 0 ${elemWidth} ${elemHeight}`);
+				visualRef.current.setAttribute("preserveAspectRatio", "xMidYMid meet");
+			}
 		}
 	}, [props.element]);
 
@@ -250,9 +257,9 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				<></>
 			)}
 
-			<div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+			<div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", overflow: "hidden", padding: "4px" }}>
 				<svg ref={visualRef}
-					style={{ overflow: "scroll" }}></svg>
+					style={{ width: "100%", height: "100%", maxHeight: "75px" }}></svg>
 			</div>
 
 

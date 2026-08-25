@@ -4,12 +4,12 @@ import { DEFAULT_LINE } from "../line";
 
 export const DEFAULT_ANNOTATION_LABEL_DELTA_CAP: ILabel = {
 	"offset": [0, 0],
-	"padding": [8, 8, 8, 8],
-	"sizeMode": { x: "fit", y: "fit" },
+	"padding": [0, 0, 0, 0],
+	"sizeMode": { x: "grow", y: "fit" },
 	"mainAxis": "y",
 
 	"placementMode": { "type": "free" },
-	"ref": "annotation-label-delta-cap",
+	"ref": "label-Delta",
 
 	"labelConfig": {
 		"textPosition": "top"
@@ -20,7 +20,7 @@ export const DEFAULT_ANNOTATION_LABEL_DELTA_CAP: ILabel = {
 			"contentHeight": 10,
 
 			"text": "\\Delta",
-			"padding": [0, 0, 2, 0],
+			"padding": [0, 0, 5, 0],
 			"offset": [0, 0],
 
 			"style": {

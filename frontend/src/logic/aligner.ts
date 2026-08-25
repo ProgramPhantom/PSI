@@ -4,6 +4,7 @@ import Spacial, { Dimensions, SiteNames, Size } from "./spacial";
 import Visual, { AlignerElement, doesDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
+import PaddedBox from "./paddedBox";
 
 
 export interface IAligner<T extends IVisual = IVisual> extends ICollection {
@@ -42,7 +43,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 
 	minCrossAxis?: number;
 
-	cells: Spacial[];
+	cells: PaddedBox[];
 
 	constructor(params: IAligner) {
 		super(params);
@@ -59,12 +60,37 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	public computeSize(): Size {
 		this.children.forEach((c) => c.computeSize());
 
-		this.cells = Array.from({ length: this.numChildren }, () => new Spacial());
+		this.cells = Array.from({ length: this.numChildren }, () => new PaddedBox());
+
+		// Apply padding from this to cells. 
+		// If the orientation is vertical, the first cell will get top, left and right padding,
+		// and the last cell will get bottom, left and right padding.
+		// If the orientation is horizontal, the first cell will get left, top and bottom padding,
+		// and the last cell will get right, top and bottom padding.
+		this.cells.forEach((c, cell_index) => {
+			const isFirst = cell_index === 0;
+			const isLast = cell_index === this.numChildren - 1;
+			if (this.mainAxis === "x") {
+				c.padding = [
+					this.padding[0],
+					isLast ? this.padding[1] : 0,
+					this.padding[2],
+					isFirst ? this.padding[3] : 0
+				];
+			} else { // this.mainAxis === "y"
+				c.padding = [
+					isFirst ? this.padding[0] : 0,
+					this.padding[1],
+					isLast ? this.padding[2] : 0,
+					this.padding[3]
+				];
+			}
+		});
 
 		// Compute intrinsic length of main axis:
 		// This is the sum of main axis lengths:
 		this.children.forEach((child, child_index) => {
-			let correspondingCell: Spacial = this.cells[child_index]
+			let correspondingCell: Spacial = this.cells[child_index];
 
 			let contribution: boolean = true;
 			if (child.placementMode.type === "aligner") {
@@ -77,12 +103,12 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			}
 
 			if (contribution === true) {
-				correspondingCell.setSizeByDimension(child.getSizeByDimension(this.mainAxis), this.mainAxis)
+				correspondingCell.setContentSizeByDimension(child.getSizeByDimension(this.mainAxis), this.mainAxis);
 			} else {
-				correspondingCell.setSizeByDimension(0, this.mainAxis)
+				correspondingCell.setContentSizeByDimension(0, this.mainAxis);
 			}
-		})
-		let intrinsicLength: number = this.cells.reduce((l, cell) => l + cell.getSizeByDimension(this.mainAxis), 0)
+		});
+		let intrinsicLength: number = this.cells.reduce((l, cell) => l + cell.getSizeByDimension(this.mainAxis), 0);
 
 		// Find the cross axis length of the aligner;
 		// This is the max cross axis size of all elements;
@@ -99,18 +125,17 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			}
 
 			if (contribution === true) {
-				widths.push(child.getSizeByDimension(this.crossAxis))
+				widths.push(child.getSizeByDimension(this.crossAxis));
 			}
-		})
-		let intrinsicWidth: number = Math.max(...widths);
+		});
+		let intrinsicWidth: number = Math.max(0, this.minCrossAxis ?? 0, ...widths);
 		// Apply to cells:
 		this.cells.forEach((cell) => {
-			cell.setSizeByDimension(intrinsicWidth, this.crossAxis)
-		})
+			cell.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
+		});
 
-
-		this.setSizeByDimension(intrinsicLength, this.mainAxis)
-		this.setSizeByDimension(intrinsicWidth, this.crossAxis)
+		this.setSizeByDimension(intrinsicLength, this.mainAxis);
+		this.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
 
 		return { width: this.width, height: this.height };
 	}
@@ -139,16 +164,13 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 				let alignmentCell = targetCell;
 				if (!contribution && child_index > 0) {
 					alignmentCell = this.cells[child_index - 1];
-					child.x = alignmentCell.x;
-					targetCell.x = child.x;
-					targetCell.y = this.cy;
+					targetCell.x = alignmentCell.x;
+					targetCell.y = alignmentCell.y;
 				} else {
-					child.x = this.cx + xCount;
-					targetCell.x = child.x;
-					targetCell.y = this.cy;
+					targetCell.x = this.x + xCount;
+					targetCell.y = this.y;
+					xCount += targetCell.getSizeByDimension(this.mainAxis);
 				}
-
-				xCount += targetCell.getSizeByDimension(this.mainAxis);
 
 				let crossAlign: SiteNames = "centre";
 				let mainAlign: SiteNames | undefined = undefined;
@@ -159,12 +181,10 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 				}
 
 				alignmentCell.internalImmediateBind(child, "y", crossAlign);
-				if (mainAlign !== undefined) {
-					alignmentCell.internalImmediateBind(child, "x", mainAlign);
-				}
+				alignmentCell.internalImmediateBind(child, "x", mainAlign ?? "here");
 
 				child.computePositions({ x: child.x, y: child.y });
-			})
+			});
 		} else {  // this.mainAxis === "y"
 			this.children.forEach((child, child_index) => {
 				let targetCell = this.cells[child_index];
@@ -182,16 +202,13 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 				let alignmentCell = targetCell;
 				if (!contribution && child_index > 0) {
 					alignmentCell = this.cells[child_index - 1];
-					child.y = alignmentCell.y;
-					targetCell.y = child.y;
-					targetCell.x = this.cx;
+					targetCell.y = alignmentCell.y;
+					targetCell.x = alignmentCell.x;
 				} else {
-					child.y = this.cy + yCount;
-					targetCell.y = child.y;
-					targetCell.x = this.cx;
+					targetCell.y = this.y + yCount;
+					targetCell.x = this.x;
+					yCount += targetCell.getSizeByDimension(this.mainAxis);
 				}
-
-				yCount += targetCell.getSizeByDimension(this.mainAxis);
 
 				let crossAlign: SiteNames = "centre";
 				let mainAlign: SiteNames | undefined = undefined;
@@ -202,39 +219,36 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 				}
 
 				alignmentCell.internalImmediateBind(child, "x", crossAlign);
-				if (mainAlign !== undefined) {
-					alignmentCell.internalImmediateBind(child, "y", mainAlign);
-				}
+				alignmentCell.internalImmediateBind(child, "y", mainAlign ?? "here");
 
 				child.computePositions({ x: child.x, y: child.y });
-			})
+			});
 		}
 	}
 
 	public override growElement(containerSize: Size): Record<Dimensions, number> {
-		let change: Record<Dimensions, number> = super.growElement(containerSize)
-
+		let change: Record<Dimensions, number> = super.growElement(containerSize);
 
 		// Resize cells:
 		// Main axis:
 		let remainingMainAxisChange: number = change[this.mainAxis];
 		const epsilon = 1e-5;
 
-		if (this.children.length === 0) {
+		if (this.cells.length === 0) {
 			remainingMainAxisChange = 0;
 		}
 
 		while (remainingMainAxisChange > epsilon) {
-			let smallestLength: number = this.children[0].getSizeByDimension(this.mainAxis);
+			let smallestLength: number = this.cells[0].getSizeByDimension(this.mainAxis);
 			let secondSmallestLength: number = Infinity;
 
-			this.children.forEach((child) => {
-				let childLength: number = child.getSizeByDimension(this.mainAxis);
-				if (childLength < smallestLength - epsilon) {  // New smallest length found
+			this.cells.forEach((cell) => {
+				let cellLength: number = cell.getSizeByDimension(this.mainAxis);
+				if (cellLength < smallestLength - epsilon) {  // New smallest length found
 					secondSmallestLength = smallestLength;
-					smallestLength = childLength;
-				} else if (childLength > smallestLength + epsilon) {
-					secondSmallestLength = Math.min(secondSmallestLength, childLength);
+					smallestLength = cellLength;
+				} else if (cellLength > smallestLength + epsilon) {
+					secondSmallestLength = Math.min(secondSmallestLength, cellLength);
 				}
 			});
 
@@ -242,39 +256,39 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 				? remainingMainAxisChange
 				: (secondSmallestLength - smallestLength);
 
-			let smallestChildren = this.children.filter(child =>
-				Math.abs(child.getSizeByDimension(this.mainAxis) - smallestLength) <= epsilon
+			let smallestCells = this.cells.filter(cell =>
+				Math.abs(cell.getSizeByDimension(this.mainAxis) - smallestLength) <= epsilon
 			);
 
-			sizeToAdd = Math.min(sizeToAdd, remainingMainAxisChange / smallestChildren.length);
+			sizeToAdd = Math.min(sizeToAdd, remainingMainAxisChange / smallestCells.length);
 
-			smallestChildren.forEach((child) => {
-				child.setSizeByDimension(sizeToAdd, this.mainAxis);
+			const mainDimKey = this.mainAxis === "x" ? "width" : "height";
+			smallestCells.forEach((cell) => {
+				cell.setContentSizeByDimension(cell.contentSize[mainDimKey] + sizeToAdd, this.mainAxis);
 				remainingMainAxisChange -= sizeToAdd;
 			});
 		}
 		if (remainingMainAxisChange < 0) {
-			console.warn(`Aligner ${this.ref} is over spilling container on main axis`)
+			console.warn(`Aligner ${this.ref} is over spilling container on main axis`);
 		}
 
 		// Cross axis:
 		let remainingCrossAxisChange: number = change[this.crossAxis];
-		let containerCrossAxisSize: number = containerSize[this.crossAxis === "x" ? "width" : "height"]
+		let containerCrossAxisSize: number = containerSize[this.crossAxis === "x" ? "width" : "height"];
 		if (remainingCrossAxisChange > 0) {
 			this.cells.forEach((cell) => {
-				cell.setSizeByDimension(containerCrossAxisSize, this.crossAxis)
-			})
+				cell.setSizeByDimension(containerCrossAxisSize, this.crossAxis);
+			});
 		} else if (remainingCrossAxisChange < 0) {
-			console.warn(`Aligner ${this.ref} is over spilling container on cross axis`)
+			console.warn(`Aligner ${this.ref} is over spilling container on cross axis`);
 		}
 
-
-		// TODO:
+		// Grow children using cell contentSize
 		this.children.forEach((child, child_index) => {
 			let targetCell = this.cells[child_index];
 
 			child.growElement(targetCell.contentSize);
-		})
+		});
 
 		return change;
 	}
