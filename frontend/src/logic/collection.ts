@@ -229,7 +229,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			this.draw(temporaryCanvas);
 		}
 
-		var internalSVG = this.svg?.clone(true, true);
+		var internalSVG = this.svg?.clone(true, false);
 		internalSVG
 			?.attr({ style: "display: block;" })
 			.attr({ transform: `translate(${deltaX}, ${deltaY})` });

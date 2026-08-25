@@ -77,7 +77,7 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 			this.svg = SVG(MISSING_ASSET_SVG_DATA);
 		}
 
-		var internalSVG = this.svg?.clone(true, true);
+		var internalSVG = this.svg?.clone(true, false);
 		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
 
 		internalSVG.show()

@@ -1,4 +1,4 @@
-import { Defs, Element, Marker, Path, Rect, SVG } from "@svgdotjs/svg.js";
+import { Defs, Element, G, Marker, Path, Rect, SVG } from "@svgdotjs/svg.js";
 import LineLike, { ILineLike } from "./lineLike";
 import { UserComponentType } from "./point";
 import { Svg } from "@svgdotjs/svg.js";
@@ -108,11 +108,16 @@ export default class Line extends LineLike implements ILine {
 		if (this.svg === undefined) {
 			return undefined;
 		}
-		var internal: Element = this.svg.clone(true, true);
+		var group = new G().id(this.id);
+		if (this.markerDefs) {
+			group.add(this.markerDefs.clone(true, false));
+		}
+		var internal: Element = this.svg.clone(true, false);
 		internal.attr({ transform: `translate(${-this.drawCX}, ${-this.drawCY})` });
-		showSVGRecursively(internal);
+		group.add(internal);
+		showSVGRecursively(group);
 
-		return internal;
+		return group;
 	}
 
 	private createMarkerDefs(): Defs {
