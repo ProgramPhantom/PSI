@@ -4,8 +4,8 @@ import { DEFAULT_LINE } from "../line";
 
 export const DEFAULT_ANNOTATION_LABEL_T1_HALF: ILabel = {
 	"offset": [0, 0],
-	"padding": [8, 8, 8, 8],
-	"sizeMode": { x: "fit", y: "fit" },
+	"padding": [0, 0, 0, 0],
+	"sizeMode": { x: "grow", y: "fit" },
 	"mainAxis": "y",
 
 	"placementMode": { "type": "free" },

@@ -167,21 +167,54 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 	const [showBin, setShowBin] = useState<boolean>(false);
 	const opacity = isDragging ? 0.5 : 1;
 
-	const visualRef = useRef<SVGSVGElement | null>(null);
+	const containerRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
-		if (visualRef.current) {
-			visualRef.current.innerHTML = "";
+		if (containerRef.current) {
+			containerRef.current.innerHTML = "";
 			const previewContainerSize = { width: 80, height: 40 };
 			const internalElem = props.element.getInternalRepresentation(previewContainerSize);
 			if (internalElem) {
-				visualRef.current.appendChild(internalElem.node);
+				const node = internalElem.node;
+				let svgElement: SVGSVGElement;
 
-				const elemWidth = Math.max(props.element.width || props.element.contentWidth || 10, 10);
-				const elemHeight = Math.max(props.element.height || props.element.contentHeight || 10, 10);
+				if (node.nodeName.toLowerCase() === "svg") {
+					svgElement = node as SVGSVGElement;
+				} else {
+					svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+					svgElement.appendChild(node);
+				}
 
-				visualRef.current.setAttribute("viewBox", `0 0 ${elemWidth} ${elemHeight}`);
-				visualRef.current.setAttribute("preserveAspectRatio", "xMidYMid meet");
+				svgElement.setAttribute("preserveAspectRatio", "xMidYMid meet");
+				svgElement.style.width = "100%";
+
+				svgElement.style.maxHeight = "75px";
+				svgElement.style.maxWidth = "100%";
+				svgElement.removeAttribute("x");
+				svgElement.removeAttribute("y");
+
+				containerRef.current.appendChild(svgElement);
+
+				// Dynamically compute and set viewBox using getBBox to ensure centering and tight framing
+				try {
+					const bbox = svgElement.getBBox();
+					if (bbox.width > 0 && bbox.height > 0) {
+						const padX = Math.max(bbox.width * 0.08, 2);
+						const padY = Math.max(bbox.height * 0.08, 2);
+						svgElement.setAttribute(
+							"viewBox",
+							`${bbox.x - padX} ${bbox.y - padY} ${bbox.width + padX * 2} ${bbox.height + padY * 2}`
+						);
+					} else {
+						const elemWidth = Math.max(props.element.width || props.element.contentWidth || 10, 10);
+						const elemHeight = Math.max(props.element.height || props.element.contentHeight || 10, 10);
+						svgElement.setAttribute("viewBox", `0 0 ${elemWidth} ${elemHeight}`);
+					}
+				} catch {
+					const elemWidth = Math.max(props.element.width || props.element.contentWidth || 10, 10);
+					const elemHeight = Math.max(props.element.height || props.element.contentHeight || 10, 10);
+					svgElement.setAttribute("viewBox", `0 0 ${elemWidth} ${elemHeight}`);
+				}
 			}
 		}
 	}, [props.element]);
@@ -257,10 +290,18 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				<></>
 			)}
 
-			<div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", overflow: "hidden", padding: "4px" }}>
-				<svg ref={visualRef}
-					style={{ width: "100%", height: "100%", maxHeight: "75px" }}></svg>
-			</div>
+			<div
+				ref={containerRef}
+				style={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					width: "100%",
+					height: "100%",
+					overflow: "hidden",
+					padding: "4px"
+				}}
+			/>
 
 
 			<span
