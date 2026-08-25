@@ -4,12 +4,12 @@ import { DEFAULT_LINE } from "../line";
 
 export const DEFAULT_ANNOTATION_LABEL_T1: ILabel = {
 	"offset": [0, 0],
-	"padding": [8, 8, 8, 8],
+	"padding": [0, 0, 0, 0],
 	"sizeMode": { x: "grow", y: "fit" },
 	"mainAxis": "y",
 
 	"placementMode": { "type": "free" },
-	"ref": "annotation-label-t1",
+	"ref": "label-t1",
 
 	"labelConfig": {
 		"textPosition": "top"

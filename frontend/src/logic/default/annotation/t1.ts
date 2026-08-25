@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_T1: ILaTeX = {
-	"ref": "annotation-t1",
+	"ref": "t1",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "t_1",

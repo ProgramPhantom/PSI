@@ -9,7 +9,7 @@ export const DEFAULT_ANNOTATION_LABEL_T1_HALF: ILabel = {
 	"mainAxis": "y",
 
 	"placementMode": { "type": "free" },
-	"ref": "annotation-label-t1-half",
+	"ref": "label-t1-half",
 
 	"labelConfig": {
 		"textPosition": "top"

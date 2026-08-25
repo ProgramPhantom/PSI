@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_T1_HALF: ILaTeX = {
-	"ref": "annotation-t1-half",
+	"ref": "t1-half",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "\\frac{t_1}{2}",

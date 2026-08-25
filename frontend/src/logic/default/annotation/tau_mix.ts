@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_TAU_MIX: ILaTeX = {
-	"ref": "annotation-tau-mix",
+	"ref": "tau-mix",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "\\tau_{\\text{mix}}",
