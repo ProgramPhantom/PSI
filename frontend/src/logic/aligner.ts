@@ -134,8 +134,13 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			cell.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
 		});
 
-		this.setSizeByDimension(intrinsicLength, this.mainAxis);
-		this.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
+		// TODO: perf improvement by stopping compute when fixed?
+		if (this.sizeMode?.[this.mainAxis] !== "fixed") {
+			this.setSizeByDimension(intrinsicLength, this.mainAxis);
+		}
+		if (this.sizeMode?.[this.crossAxis] !== "fixed") {
+			this.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
+		}
 
 		return { width: this.width, height: this.height };
 	}

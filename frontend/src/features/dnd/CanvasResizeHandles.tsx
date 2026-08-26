@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import ENGINE from "../../logic/engine";
+import { SizeConfiguration } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import styles from "./styles/CanvasResizeHandles.module.scss";
 
@@ -261,10 +262,16 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				const yChanged = initial.isFree && finalResult.elemY !== initial.startElemY;
 
 				if (widthChanged || heightChanged || xChanged || yChanged) {
+					const newSizeMode: SizeConfiguration = {
+						x: widthChanged ? "fixed" : (initial.element.state.sizeMode?.x ?? "fixed"),
+						y: heightChanged ? "fixed" : (initial.element.state.sizeMode?.y ?? "fixed")
+					};
+
 					const newState: IVisual = {
 						...initial.element.state,
 						contentWidth: finalResult.width,
-						contentHeight: finalResult.height
+						contentHeight: finalResult.height,
+						sizeMode: newSizeMode
 					};
 
 					if (initial.isFree) {

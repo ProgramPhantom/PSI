@@ -483,15 +483,52 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridSizes.columns = columnRects;
 		this.gridSizes.rows = rowRects;
 
-		var totalWidth = this.gridSizes.columns.reduce((w, c) => w + c.width, 0);
-		var totalHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
+		var intrinsicWidth = this.gridSizes.columns.reduce((w, c) => w + c.width, 0);
+		var intrinsicHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
+
+		// Apply extra size if fixed size mode to rows/columns with grow elements.
+		if (this.sizeMode?.x === "fixed") {
+			const diffX = this.contentWidth - intrinsicWidth;
+			if (diffX > 0) {
+				const growCols = columnRects.filter((_, col_index) =>
+					this.gridMatrix.some(row => row[col_index]?.elements?.some(el => el.sizeMode.x === "grow"))
+				);
+				if (growCols.length > 0) {
+					const share = diffX / growCols.length;
+					growCols.forEach(col => col.width += share);
+					intrinsicWidth = this.contentWidth;
+				} else {
+					intrinsicWidth = Math.max(intrinsicWidth, this.contentWidth);
+				}
+			} else {
+				intrinsicWidth = Math.max(intrinsicWidth, this.contentWidth);
+			}
+		}
+		if (this.sizeMode?.y === "fixed") {
+			const diffY = this.contentHeight - intrinsicHeight;
+			if (diffY > 0) {
+				const growRows = rowRects.filter((_, row_index) =>
+					this.gridMatrix[row_index]?.some(cell => cell?.elements?.some(el => el.sizeMode.y === "grow"))
+				);
+				if (growRows.length > 0) {
+					const share = diffY / growRows.length;
+					growRows.forEach(row => row.height += share);
+					intrinsicHeight = this.contentHeight;
+				} else {
+					intrinsicHeight = Math.max(intrinsicHeight, this.contentHeight);
+				}
+			} else {
+				intrinsicHeight = Math.max(intrinsicHeight, this.contentHeight);
+			}
+		}
+
 
 		// Normalise width and height of columns/rows:
 		rowRects.forEach((row) => {
-			row.width = totalWidth
+			row.width = intrinsicWidth
 		})
 		columnRects.forEach((col) => {
-			col.height = totalHeight
+			col.height = intrinsicHeight
 		})
 
 		this.applyCellSizes();
@@ -500,8 +537,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridSizes.columns = columnRects;
 
 		// Set via content...
-		this.contentWidth = totalWidth;
-		this.contentHeight = totalHeight;
+		if (this.sizeMode?.x !== "fixed") {
+			this.contentWidth = intrinsicWidth;
+		}
+		if (this.sizeMode?.y !== "fixed") {
+			this.contentHeight = intrinsicHeight;
+		}
 
 
 		this.applySizesToSubgrids();

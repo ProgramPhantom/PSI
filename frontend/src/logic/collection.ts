@@ -144,8 +144,13 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		size.width = right - left;
 		size.height = bottom - top;
 
-		this.contentWidth = size.width;
-		this.contentHeight = size.height;
+		// TODO: perf improvement by stopping compute when fixed?
+		if (this.sizeMode?.x !== "fixed") {
+			this.contentWidth = size.width;
+		}
+		if (this.sizeMode?.y !== "fixed") {
+			this.contentHeight = size.height;
+		}
 
 		return { width: this.width, height: this.height }
 	}
