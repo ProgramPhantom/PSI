@@ -57,6 +57,17 @@ const DIRECTION_CLASS_MAP: Record<HandleDirection, string> = {
 	w: styles.handleW
 };
 
+const DIRECTION_CURSOR_MAP: Record<HandleDirection, string> = {
+	nw: "nwse-resize",
+	n: "ns-resize",
+	ne: "nesw-resize",
+	e: "ew-resize",
+	se: "nwse-resize",
+	s: "ns-resize",
+	sw: "nesw-resize",
+	w: "ew-resize"
+};
+
 function computeResizeGeometry(
 	direction: HandleDirection,
 	deltaX: number,
@@ -113,6 +124,7 @@ function computeResizeGeometry(
 export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.memo(
 	function CanvasResizeHandles({ element, scale = 1, onResize }: CanvasResizeHandlesProps) {
 		const [previewState, setPreviewState] = useState<PreviewState | null>(null);
+		const [activeDirection, setActiveDirection] = useState<HandleDirection | null>(null);
 
 		// Keep refs to latest element, scale, and onResize so drag listeners always have the freshest values
 		const elementRef = useRef(element);
@@ -140,6 +152,8 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 			const isFree = currentElement.placementMode.type === "free";
 			const rawScale = scaleRef.current;
 			const effectiveScale = (rawScale && rawScale > 0) ? rawScale : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
+
+			setActiveDirection(direction);
 
 			const initial: DragInitialState = {
 				direction,
@@ -207,6 +221,10 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 			};
 
 			const handlePointerUp = (e: MouseEvent | PointerEvent) => {
+				e.stopPropagation();
+				e.stopImmediatePropagation();
+				e.preventDefault();
+
 				// Remove window event listeners immediately
 				window.removeEventListener("mousemove", handlePointerMove, true);
 				window.removeEventListener("mouseup", handlePointerUp, true);
@@ -215,6 +233,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				dragCleanupRef.current = null;
 
 				setPreviewState(null);
+				setActiveDirection(null);
 				onResizeRef.current?.(null);
 
 				const deltaPixelsX = e.clientX - initial.startX;
@@ -274,6 +293,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				window.removeEventListener("mouseup", handlePointerUp, true);
 				window.removeEventListener("pointermove", handlePointerMove, true);
 				window.removeEventListener("pointerup", handlePointerUp, true);
+				setActiveDirection(null);
 				onResizeRef.current?.(null);
 			};
 		}, []);
@@ -291,6 +311,9 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 			(direction: HandleDirection, e: React.PointerEvent) => {
 				e.stopPropagation();
 				e.preventDefault();
+				try {
+					(e.target as HTMLElement)?.setPointerCapture?.(e.pointerId);
+				} catch {}
 				startResize(direction, e.clientX, e.clientY);
 			},
 			[startResize]
@@ -326,32 +349,81 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 		const handleScale = 1 / (currentEffectiveScale > 0 ? currentEffectiveScale : 1);
 
 		return (
-			<div
-				className={`nopan ${styles.resizeHandlesContainer}`}
-				style={{ "--handle-scale": handleScale } as React.CSSProperties}>
+			<>
+				{previewState && (
+					<div
+						className="nopan"
+						style={{
+							position: "fixed",
+							top: 0,
+							left: 0,
+							width: "100vw",
+							height: "100vh",
+							zIndex: 99999,
+							cursor: activeDirection ? DIRECTION_CURSOR_MAP[activeDirection] : "default",
+							pointerEvents: "auto"
+						}}
+						onMouseDown={(e) => {
+							e.stopPropagation();
+							e.preventDefault();
+						}}
+						onMouseMove={(e) => {
+							e.stopPropagation();
+							e.preventDefault();
+						}}
+						onMouseUp={(e) => {
+							e.stopPropagation();
+							e.preventDefault();
+						}}
+						onPointerDown={(e) => {
+							e.stopPropagation();
+							e.preventDefault();
+						}}
+						onPointerMove={(e) => {
+							e.stopPropagation();
+							e.preventDefault();
+						}}
+						onPointerUp={(e) => {
+							e.stopPropagation();
+							e.preventDefault();
+						}}
+						onClick={(e) => {
+							e.stopPropagation();
+							e.preventDefault();
+						}}
+					/>
+				)}
 				<div
-					className={styles.selectionBox}
-					style={{
-						left: currentLeft,
-						top: currentTop,
-						width: currentWidth,
-						height: currentHeight
-					}}
-				/>
+					className={`nopan ${styles.resizeHandlesContainer}`}
+					style={{ "--handle-scale": handleScale } as React.CSSProperties}
+					onMouseUp={(e) => e.stopPropagation()}
+					onClick={(e) => e.stopPropagation()}>
+					<div
+						className={styles.selectionBox}
+						style={{
+							left: currentLeft,
+							top: currentTop,
+							width: currentWidth,
+							height: currentHeight
+						}}
+					/>
 
-				{HANDLE_DIRECTIONS.map((dir) => {
-					const pos = getHandlePosition(dir);
-					return (
-						<div
-							key={dir}
-							className={`${styles.handle} ${DIRECTION_CLASS_MAP[dir]}`}
-							style={{ left: pos.left, top: pos.top }}
-							onMouseDown={(e) => handleMouseDown(dir, e)}
-							onPointerDown={(e) => handlePointerDown(dir, e)}
-						/>
-					);
-				})}
-			</div>
+					{HANDLE_DIRECTIONS.map((dir) => {
+						const pos = getHandlePosition(dir);
+						return (
+							<div
+								key={dir}
+								className={`${styles.handle} ${DIRECTION_CLASS_MAP[dir]}`}
+								style={{ left: pos.left, top: pos.top }}
+								onMouseDown={(e) => handleMouseDown(dir, e)}
+								onPointerDown={(e) => handlePointerDown(dir, e)}
+								onMouseUp={(e) => e.stopPropagation()}
+								onClick={(e) => e.stopPropagation()}
+							/>
+						);
+					})}
+				</div>
+			</>
 		);
 	}
 );

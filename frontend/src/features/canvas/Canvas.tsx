@@ -384,7 +384,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		return () => {
 			interactiveElements.forEach(el => el.svg?.show());
 		};
-	}, [interactiveElementIds]);
+	}, [interactiveElementIds, store]);
 
 	// Refresh canvas
 	useEffect(() => {

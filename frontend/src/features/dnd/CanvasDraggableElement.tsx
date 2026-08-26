@@ -215,13 +215,12 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 		useEffect(() => {
 			if (visualRef.current) {
-				visualRef.current.replaceChildren()
+				visualRef.current.replaceChildren();
 				visualRef.current.appendChild(visual.node);
 			}
-
-
-
 		}, [props.element, visual.node]);
+
+
 
 		return (
 			<>
