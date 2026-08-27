@@ -30,7 +30,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										5,
@@ -79,7 +79,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -128,7 +128,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -196,7 +196,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										8,
 										8,
@@ -256,7 +256,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -324,7 +324,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										8,
 										8,
@@ -386,7 +386,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										8,
 										8,
@@ -448,7 +448,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -508,7 +508,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -576,7 +576,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -638,7 +638,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -698,7 +698,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -766,7 +766,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										10,
 										10,
@@ -828,7 +828,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										8,
 										8,
@@ -894,7 +894,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -953,7 +953,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -997,7 +997,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -1056,7 +1056,7 @@ export const D1SAPPHIRE: IDiagram = {
 								0,
 								0
 							],
-							"flipped": false,
+							"flipped": { "x": false, "y": false },
 							"padding": [
 								10,
 								0,
@@ -1109,7 +1109,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										5,
@@ -1158,7 +1158,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -1213,7 +1213,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -1277,7 +1277,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												8,
 												8,
@@ -1321,7 +1321,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -1387,7 +1387,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -1451,7 +1451,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												8,
 												8,
@@ -1495,7 +1495,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -1561,7 +1561,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -1625,7 +1625,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												8,
 												8,
@@ -1669,7 +1669,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -1735,7 +1735,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -1799,7 +1799,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												8,
 												8,
@@ -1843,7 +1843,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -1909,7 +1909,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -1973,7 +1973,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												8,
 												8,
@@ -2017,7 +2017,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -2083,7 +2083,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -2147,7 +2147,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												8,
 												8,
@@ -2191,7 +2191,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -2257,7 +2257,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												0,
 												0,
@@ -2321,7 +2321,7 @@ export const D1SAPPHIRE: IDiagram = {
 												0,
 												0
 											],
-											"flipped": false,
+											"flipped": { "x": false, "y": false },
 											"padding": [
 												8,
 												8,
@@ -2365,7 +2365,7 @@ export const D1SAPPHIRE: IDiagram = {
 										0,
 										0
 									],
-									"flipped": false,
+									"flipped": { "x": false, "y": false },
 									"padding": [
 										0,
 										0,
@@ -2420,7 +2420,7 @@ export const D1SAPPHIRE: IDiagram = {
 								0,
 								0
 							],
-							"flipped": false,
+							"flipped": { "x": false, "y": false },
 							"padding": [
 								10,
 								0,
@@ -2460,7 +2460,7 @@ export const D1SAPPHIRE: IDiagram = {
 						0,
 						0
 					],
-					"flipped": false,
+					"flipped": { "x": false, "y": false },
 					"padding": [
 						0,
 						0,
@@ -2490,7 +2490,7 @@ export const D1SAPPHIRE: IDiagram = {
 				0,
 				0
 			],
-			"flipped": false,
+			"flipped": { "x": false, "y": false },
 			"padding": [
 				0,
 				0,
@@ -2520,7 +2520,7 @@ export const D1SAPPHIRE: IDiagram = {
 		0,
 		0
 	],
-	"flipped": false,
+	"flipped": { "x": false, "y": false },
 	"padding": [
 		10,
 		10,

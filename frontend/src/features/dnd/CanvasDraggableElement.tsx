@@ -136,7 +136,10 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								config: {}
 							}
 
-							newState.flipped = newState.pulseLayoutConfig?.orientation === "bottom" ? true : false
+							newState.flipped = {
+								x: false,
+								y: newState.pulseLayoutConfig?.orientation === "bottom"
+							};
 
 							if (dropResult.data.insert === true) {
 								ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);

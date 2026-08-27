@@ -11,7 +11,7 @@ export type Display = "none" | "block";
 
 export interface IVisual extends IPaddedBox {
 	offset: [number, number];
-	flipped?: boolean;
+	flipped?: { x: boolean; y: boolean };
 }
 
 export interface IDraw {
@@ -57,17 +57,24 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	maskId?: string;
 	maskBlock?: Rect;
 
-	flipped: boolean = false;
+	flipped: { x: boolean; y: boolean } = { x: false, y: false };
 
 	constructor(params: IVisual) {
 		super(params);
 
 		this.offset = params.offset;
-		this.flipped = params.flipped ?? (isPulse(this) && this.pulseLayoutConfig?.orientation === "bottom");
+		this.flipped = params.flipped ?? {
+			x: false,
+			y: isPulse(this) && this.pulseLayoutConfig?.orientation === "bottom"
+		};
 
-		if (this.flipped) {
+		if (this.flipped.y) {
 			this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
 			this.offset = [this.offset[0], -Math.abs(this.offset[1])];
+		}
+		if (this.flipped.x) {
+			this.padding = [this.padding[0], this.padding[3], this.padding[2], this.padding[1]];
+			this.offset = [-Math.abs(this.offset[0]), this.offset[1]];
 		}
 	}
 
