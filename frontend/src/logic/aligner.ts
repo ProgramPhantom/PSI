@@ -129,10 +129,6 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			}
 		});
 		let intrinsicWidth: number = Math.max(0, this.minCrossAxis ?? 0, ...widths);
-		// Apply to cells:
-		this.cells.forEach((cell) => {
-			cell.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
-		});
 
 		if (this.mainAxis === "x") {
 			this.minContentWidth = intrinsicLength;
@@ -155,6 +151,12 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			const minCross = this.crossAxis === "x" ? this.minContentWidth : this.minContentHeight;
 			this.setContentSizeByDimension(Math.max(minCross, this.getContentSizeByDimension(this.crossAxis)), this.crossAxis);
 		}
+
+		// Apply final cross-axis content size to all cells
+		const finalCrossContentSize = this.getContentSizeByDimension(this.crossAxis);
+		this.cells.forEach((cell) => {
+			cell.setContentSizeByDimension(finalCrossContentSize, this.crossAxis);
+		});
 
 		return { width: this.width, height: this.height };
 	}
@@ -250,7 +252,8 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 
 		// Resize cells:
 		// Main axis:
-		let remainingMainAxisChange: number = change[this.mainAxis];
+		const currentTotalCellLength = this.cells.reduce((l, cell) => l + cell.getSizeByDimension(this.mainAxis), 0);
+		let remainingMainAxisChange: number = this.getSizeByDimension(this.mainAxis) - currentTotalCellLength;
 		const epsilon = 1e-5;
 
 		if (this.cells.length === 0) {
@@ -287,20 +290,15 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 				remainingMainAxisChange -= sizeToAdd;
 			});
 		}
-		if (remainingMainAxisChange < 0) {
+		if (remainingMainAxisChange < -epsilon) {
 			console.warn(`Aligner ${this.ref} is over spilling container on main axis`);
 		}
 
 		// Cross axis:
-		let remainingCrossAxisChange: number = change[this.crossAxis];
-		let containerCrossAxisSize: number = containerSize[this.crossAxis === "x" ? "width" : "height"];
-		if (remainingCrossAxisChange > 0) {
-			this.cells.forEach((cell) => {
-				cell.setSizeByDimension(containerCrossAxisSize, this.crossAxis);
-			});
-		} else if (remainingCrossAxisChange < 0) {
-			console.warn(`Aligner ${this.ref} is over spilling container on cross axis`);
-		}
+		const crossContentSize = this.getContentSizeByDimension(this.crossAxis);
+		this.cells.forEach((cell) => {
+			cell.setContentSizeByDimension(crossContentSize, this.crossAxis);
+		});
 
 		// Grow children using cell contentSize
 		this.children.forEach((child, child_index) => {
