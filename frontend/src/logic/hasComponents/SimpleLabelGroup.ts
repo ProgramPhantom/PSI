@@ -1,7 +1,7 @@
 import { AddDispatchData, Components } from "../collection";
 import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
-import { isPulse } from "../spacial";
+import { isPulse, Size } from "../spacial";
 import Visual, { GridCellElement } from "../visual";
 import Label from "./label";
 
@@ -56,6 +56,22 @@ export default class SimpleLabelGroup extends Grid {
 		super(params);
 		this.setMatrixBottomRight({ row: 2, col: 0 });
 		this.squeeze = false;
+	}
+
+	public override computeSize(): Size {
+		if (this.coreChild) {
+			if (this.sizeMode?.x === "grow" || this.sizeMode?.x === "fixed") {
+				this.coreChild.sizeMode.x = "grow";
+			} else if (this.coreChild.sizeMode.x === "grow") {
+				this.coreChild.sizeMode.x = "fixed";
+			}
+			if (this.sizeMode?.y === "grow" || this.sizeMode?.y === "fixed") {
+				this.coreChild.sizeMode.y = "grow";
+			} else if (this.coreChild.sizeMode.y === "grow") {
+				this.coreChild.sizeMode.y = "fixed";
+			}
+		}
+		return super.computeSize();
 	}
 
 	private setCoreChild({ child, index }: AddDispatchData<Visual>) {
