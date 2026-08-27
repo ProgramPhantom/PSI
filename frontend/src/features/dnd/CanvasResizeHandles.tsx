@@ -160,8 +160,8 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				direction,
 				startX: clientX,
 				startY: clientY,
-				startContentWidth: currentElement.contentWidth ?? currentElement.drawContentWidth ?? 0,
-				startContentHeight: currentElement.contentHeight ?? currentElement.drawContentHeight ?? 0,
+				startContentWidth: currentElement.drawContentWidth ?? currentElement.contentWidth ?? 0,
+				startContentHeight: currentElement.drawContentHeight ?? currentElement.contentHeight ?? 0,
 				startElemX: currentElement.x ?? 0,
 				startElemY: currentElement.y ?? 0,
 				startDrawCX: currentElement.drawCX ?? 0,
@@ -267,10 +267,16 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 						y: heightChanged ? "fixed" : (initial.element.state.sizeMode?.y ?? "fixed")
 					};
 
+					const extraWidth = Math.max(0, (initial.element.drawContentWidth ?? 0) - (initial.element.contentWidth ?? 0));
+					const extraHeight = Math.max(0, (initial.element.drawContentHeight ?? 0) - (initial.element.contentHeight ?? 0));
+
+					const targetContentWidth = Math.max(0, finalResult.width - extraWidth);
+					const targetContentHeight = Math.max(0, finalResult.height - extraHeight);
+
 					const newState: IVisual = {
 						...initial.element.state,
-						contentWidth: finalResult.width,
-						contentHeight: finalResult.height,
+						contentWidth: targetContentWidth,
+						contentHeight: targetContentHeight,
 						sizeMode: newSizeMode
 					};
 
@@ -320,7 +326,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				e.preventDefault();
 				try {
 					(e.target as HTMLElement)?.setPointerCapture?.(e.pointerId);
-				} catch {}
+				} catch { }
 				startResize(direction, e.clientX, e.clientY);
 			},
 			[startResize]

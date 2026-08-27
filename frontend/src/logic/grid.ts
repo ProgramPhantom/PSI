@@ -56,17 +56,29 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	public override get drawWidth(): number {
 		return this.width + this.spill.left + this.spill.right;
 	}
+	public override set drawWidth(val: number) {
+		this.width = Math.max(0, val - (this.spill.left + this.spill.right));
+	}
 
 	public override get drawHeight(): number {
 		return this.height + this.spill.top + this.spill.bottom;
+	}
+	public override set drawHeight(val: number) {
+		this.height = Math.max(0, val - (this.spill.top + this.spill.bottom));
 	}
 
 	public override get drawContentWidth(): number {
 		return this.contentWidth + this.spill.left + this.spill.right;
 	}
+	public override set drawContentWidth(val: number) {
+		this.contentWidth = Math.max(0, val - (this.spill.left + this.spill.right));
+	}
 
 	public override get drawContentHeight(): number {
 		return this.contentHeight + this.spill.top + this.spill.bottom;
+	}
+	public override set drawContentHeight(val: number) {
+		this.contentHeight = Math.max(0, val - (this.spill.top + this.spill.bottom));
 	}
 
 	public get drawCX(): number {
