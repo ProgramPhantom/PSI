@@ -8,7 +8,6 @@ export const DEFAULT_ANNOTATION_LABEL_DELTA: ILabel = {
 	"sizeMode": { x: "grow", y: "fit" },
 	"mainAxis": "y",
 
-	"placementMode": { "type": "free" },
 	"ref": "label-delta",
 
 	"labelConfig": {

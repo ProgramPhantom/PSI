@@ -8,7 +8,6 @@ export const DEFAULT_ANNOTATION_LABEL_T1: ILabel = {
 	"sizeMode": { x: "grow", y: "fit" },
 	"mainAxis": "y",
 
-	"placementMode": { "type": "free" },
 	"ref": "label-t1",
 
 	"labelConfig": {

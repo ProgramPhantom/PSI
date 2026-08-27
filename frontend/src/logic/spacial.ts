@@ -66,7 +66,7 @@ export type PlacementConfiguration = { type: "free" } |
 { type: "grid"; config: IGridConfig } |
 { type: "aligner", config: IAlignerConfig } |
 { type: "subgrid", config: ISubgridConfig } |
-{ type: "static" }
+{ type: "singleton" }
 
 
 export type PlacementControl = "auto" | "user";
@@ -252,18 +252,18 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	) {
 		super(params);
 
-		this._placementMode = params.placementMode ?? { type: "free" }
+		this._placementMode = params.placementMode ?? { type: "singleton" }
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ? { ...params.sizeMode } : { x: "fixed", y: "fixed" };
 
-		// if (this._placementMode.type === "free") {
-		// 	if (this.sizeMode.x === "grow") {
-		// 		this.sizeMode.x = "fixed";
-		// 	}
-		// 	if (this.sizeMode.y === "grow") {
-		// 		this.sizeMode.y = "fixed";
-		// 	}
-		// }
+		if (this._placementMode.type === "free") {
+			if (this.sizeMode.x === "grow") {
+				this.sizeMode.x = "fit";
+			}
+			if (this.sizeMode.y === "grow") {
+				this.sizeMode.y = "fit";
+			}
+		}
 
 		this._contentWidth = params.contentWidth ?? 0;
 		this._contentHeight = params.contentHeight ?? 0;
