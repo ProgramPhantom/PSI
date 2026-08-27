@@ -337,8 +337,8 @@ function buildLabelGroup(
 		...masterData,
 		children,
 		sizeMode: {
-			x: masterData.sizeMode?.x === "grow" ? "grow" : "fit",
-			y: masterData.sizeMode?.y === "grow" ? "grow" : "fit",
+			x: masterData.sizeMode?.x ?? "fit",
+			y: masterData.sizeMode?.y ?? "fit",
 		},
 		type: masterData.type === "simple-label-group" ? "simple-label-group" : "label-group",
 	}

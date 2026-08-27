@@ -183,6 +183,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	// ---------------- Compute Methods ----------------
 	//#region 
 	public override computeSize(): Size {
+		this.spill = { top: 0, bottom: 0, left: 0, right: 0 };
 		this.refreshSubgrids();
 		this.growSubgrids();
 
@@ -275,6 +276,21 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			columnRects[col_index].width = maxWidth;
 		})
 
+		// Allocate fixed container width to grow columns before computing spills
+		if (this.sizeMode?.x === "fixed") {
+			const fixedWidth = columnRects.reduce((w, c) => w + c.width, 0);
+			const diffX = this.contentWidth - fixedWidth;
+			if (diffX > 0) {
+				const growCols = columnRects.filter((_, col_index) =>
+					this.gridMatrix.some(row => row[col_index]?.elements?.some(el => el.sizeMode.x === "grow"))
+				);
+				if (growCols.length > 0) {
+					const share = diffX / growCols.length;
+					growCols.forEach(col => col.width += share);
+				}
+			}
+		}
+
 		// Second pass, apply spills.
 		colSpillingElements.forEach((col, col_index) => {
 			let targetColWidth: number = columnRects[col_index].width;
@@ -319,18 +335,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			let leftRow: Spacial | undefined = columnRects[col_index - 1];
 			let rightRow: Spacial | undefined = columnRects[col_index + 1];
 
+
 			if (leftRow !== undefined) {
 				leftRow.width = Math.max(maxLeftSpill, leftRow.width);
 			} else if (maxLeftSpill > 0) {
 				console.warn(`Element spilling to left of grid ${this.ref}`);
-				this.spill.left = Math.max(this.spill.left, maxLeftSpill)
+				this.spill.left = Math.max(this.spill.left, maxLeftSpill);
 			}
 
 			if (rightRow !== undefined) {
-				rightRow.width = Math.max(maxRightSpill, rightRow.width)
+				rightRow.width = Math.max(maxRightSpill, rightRow.width);
 			} else if (maxRightSpill > 0) {
-				console.warn(`Element spilling to right of grid ${this.ref}`)
-				this.spill.right = Math.max(this.spill.right, maxRightSpill)
+				console.warn(`Element spilling to right of grid ${this.ref}`);
+				this.spill.right = Math.max(this.spill.right, maxRightSpill);
 			}
 		})
 
@@ -426,6 +443,21 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			rowRects[row_index].height = maxHeight;
 		})
 
+		// Allocate fixed container height to grow rows before computing spills
+		if (this.sizeMode?.y === "fixed") {
+			const fixedHeight = rowRects.reduce((h, r) => h + r.height, 0);
+			const diffY = this.contentHeight - fixedHeight;
+			if (diffY > 0) {
+				const growRows = rowRects.filter((_, row_index) =>
+					this.gridMatrix[row_index]?.some(cell => cell?.elements?.some(el => el.sizeMode.y === "grow"))
+				);
+				if (growRows.length > 0) {
+					const share = diffY / growRows.length;
+					growRows.forEach(row => row.height += share);
+				}
+			}
+		}
+
 		// Second pass, apply spills.
 		rowSpillingElements.forEach((row, row_index) => {
 			let targetRowHight: number = rowRects[row_index].height;
@@ -471,18 +503,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			let aboveRow: Spacial | undefined = rowRects[row_index - 1];
 			let belowRow: Spacial | undefined = rowRects[row_index + 1];
 
+
 			if (aboveRow !== undefined) {
 				aboveRow.height = Math.max(maxAboveSpill, aboveRow.height);
 			} else if (maxAboveSpill > 0) {
 				console.warn(`Element spilling above grid ${this.ref}`);
-				this.spill.top = Math.max(this.spill.top, maxAboveSpill)
+				this.spill.top = Math.max(this.spill.top, maxAboveSpill);
 			}
 
 			if (belowRow !== undefined) {
-				belowRow.height = Math.max(maxBelowSpill, belowRow.height)
+				belowRow.height = Math.max(maxBelowSpill, belowRow.height);
 			} else if (maxBelowSpill > 0) {
-				console.warn(`Element spilling below grid ${this.ref}`)
-				this.spill.bottom = Math.max(this.spill.bottom, maxBelowSpill)
+				console.warn(`Element spilling below grid ${this.ref}`);
+				this.spill.bottom = Math.max(this.spill.bottom, maxBelowSpill);
 			}
 		})
 
@@ -495,53 +528,23 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridSizes.columns = columnRects;
 		this.gridSizes.rows = rowRects;
 
-		var intrinsicWidth = this.gridSizes.columns.reduce((w, c) => w + c.width, 0);
-		var intrinsicHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
+		var totalWidth = this.gridSizes.columns.reduce((w, c) => w + c.width, 0);
+		var totalHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
 
-		// Apply extra size if fixed size mode to rows/columns with grow elements.
 		if (this.sizeMode?.x === "fixed") {
-			const diffX = this.contentWidth - intrinsicWidth;
-			if (diffX > 0) {
-				const growCols = columnRects.filter((_, col_index) =>
-					this.gridMatrix.some(row => row[col_index]?.elements?.some(el => el.sizeMode.x === "grow"))
-				);
-				if (growCols.length > 0) {
-					const share = diffX / growCols.length;
-					growCols.forEach(col => col.width += share);
-					intrinsicWidth = this.contentWidth;
-				} else {
-					intrinsicWidth = Math.max(intrinsicWidth, this.contentWidth);
-				}
-			} else {
-				intrinsicWidth = Math.max(intrinsicWidth, this.contentWidth);
-			}
+			totalWidth = Math.max(totalWidth, this.contentWidth);
 		}
 		if (this.sizeMode?.y === "fixed") {
-			const diffY = this.contentHeight - intrinsicHeight;
-			if (diffY > 0) {
-				const growRows = rowRects.filter((_, row_index) =>
-					this.gridMatrix[row_index]?.some(cell => cell?.elements?.some(el => el.sizeMode.y === "grow"))
-				);
-				if (growRows.length > 0) {
-					const share = diffY / growRows.length;
-					growRows.forEach(row => row.height += share);
-					intrinsicHeight = this.contentHeight;
-				} else {
-					intrinsicHeight = Math.max(intrinsicHeight, this.contentHeight);
-				}
-			} else {
-				intrinsicHeight = Math.max(intrinsicHeight, this.contentHeight);
-			}
+			totalHeight = Math.max(totalHeight, this.contentHeight);
 		}
-
 
 		// Normalise width and height of columns/rows:
 		rowRects.forEach((row) => {
-			row.width = intrinsicWidth
-		})
+			row.width = totalWidth;
+		});
 		columnRects.forEach((col) => {
-			col.height = intrinsicHeight
-		})
+			col.height = totalHeight;
+		});
 
 		this.applyCellSizes();
 
@@ -550,10 +553,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		// Set via content...
 		if (this.sizeMode?.x !== "fixed") {
-			this.contentWidth = intrinsicWidth;
+			this.contentWidth = totalWidth;
 		}
 		if (this.sizeMode?.y !== "fixed") {
-			this.contentHeight = intrinsicHeight;
+			this.contentHeight = totalHeight;
 		}
 
 

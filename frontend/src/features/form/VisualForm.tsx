@@ -70,7 +70,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	const heightActive = currentY === "fixed";
 	const placementModeType = watchedPlacementModeType ?? theseVals?.placementMode?.type ?? props.target?.placementMode?.type ?? "free";
 	const placementControl = watchedPlacementControl ?? theseVals?.placementControl ?? props.target?.placementControl ?? "user";
-	let sizeOptions = isCollection ? ["fit", "grow"] : ["fixed", "fit", "grow"];
+	let sizeOptions = ["fixed", "fit", "grow"];
 	if (placementModeType === "free") {
 		sizeOptions = sizeOptions.filter((opt) => opt !== "grow");
 	}
