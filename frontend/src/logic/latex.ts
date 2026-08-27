@@ -171,7 +171,7 @@ export class LaTeX extends TextBase implements ILaTeX {
 			this.svg.add(
 				SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`),
 				0
-			);
+			).move(this.x, this.y);
 		}
 
 		cascadeID(this.svg, this.id);
