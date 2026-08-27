@@ -81,22 +81,40 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.contentHeight = Math.max(0, val - (this.spill.top + this.spill.bottom));
 	}
 
-	public get drawCX(): number {
+	public override get drawCX(): number {
 		const offset = this.isFree ? 0 : this.offset[0];
 		return this.cx + offset - this.spill.left;
 	}
-	public get drawCY(): number {
+	public override set drawCX(val: number) {
+		const offset = this.isFree ? 0 : this.offset[0];
+		this.cx = val - offset + this.spill.left;
+	}
+
+	public override get drawCY(): number {
 		const offset = this.isFree ? 0 : this.offset[1];
 		return this.cy + offset - this.spill.top;
 	}
+	public override set drawCY(val: number) {
+		const offset = this.isFree ? 0 : this.offset[1];
+		this.cy = val - offset + this.spill.top;
+	}
 
-	public get drawX(): number {
+	public override get drawX(): number {
 		const offset = this.isFree ? 0 : this.offset[0];
 		return this.x + offset - this.spill.left;
 	}
-	public get drawY(): number {
+	public override set drawX(val: number) {
+		const offset = this.isFree ? 0 : this.offset[0];
+		this.x = val - offset + this.spill.left;
+	}
+
+	public override get drawY(): number {
 		const offset = this.isFree ? 0 : this.offset[1];
 		return this.y + offset - this.spill.top;
+	}
+	public override set drawY(val: number) {
+		const offset = this.isFree ? 0 : this.offset[1];
+		this.y = val - offset + this.spill.top;
 	}
 
 	public override get x(): number {

@@ -210,15 +210,29 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	public get drawCX(): number {
 		return this.cx + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
 	}
+	public set drawCX(val: number) {
+		this.cx = val - (this.placementMode?.type === "free" ? 0 : this.offset[0]);
+	}
+
 	public get drawCY(): number {
 		return this.cy + (this.placementMode?.type === "free" ? 0 : this.offset[1]);
+	}
+	public set drawCY(val: number) {
+		this.cy = val - (this.placementMode?.type === "free" ? 0 : this.offset[1]);
 	}
 
 	public get drawX(): number {
 		return this.x + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
 	}
+	public set drawX(val: number) {
+		this.x = val - (this.placementMode?.type === "free" ? 0 : this.offset[0]);
+	}
+
 	public get drawY(): number {
 		return this.y + (this.placementMode?.type === "free" ? 0 : this.offset[1]);
+	}
+	public set drawY(val: number) {
+		this.y = val - (this.placementMode?.type === "free" ? 0 : this.offset[1]);
 	}
 
 	public getHitbox(): Rect {

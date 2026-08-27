@@ -258,8 +258,8 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 
 				const widthChanged = finalResult.width !== initial.startContentWidth;
 				const heightChanged = finalResult.height !== initial.startContentHeight;
-				const xChanged = initial.isFree && finalResult.elemX !== initial.startElemX;
-				const yChanged = initial.isFree && finalResult.elemY !== initial.startElemY;
+				const xChanged = initial.isFree && finalResult.drawCX !== initial.startDrawCX;
+				const yChanged = initial.isFree && finalResult.drawCY !== initial.startDrawCY;
 
 				if (widthChanged || heightChanged || xChanged || yChanged) {
 					const newSizeMode: SizeConfiguration = {
@@ -272,6 +272,8 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 
 					const targetContentWidth = Math.max(0, finalResult.width - extraWidth);
 					const targetContentHeight = Math.max(0, finalResult.height - extraHeight);
+					const targetX = finalResult.drawCX;
+					const targetY = finalResult.drawCY;
 
 					const newState: IVisual = {
 						...initial.element.state,
@@ -281,8 +283,8 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					};
 
 					if (initial.isFree) {
-						newState.x = finalResult.elemX;
-						newState.y = finalResult.elemY;
+						newState.x = targetX;
+						newState.y = targetY;
 					}
 
 					ENGINE.handler.act({
