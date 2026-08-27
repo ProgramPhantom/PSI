@@ -111,24 +111,12 @@ export interface IHaveSize {
 	computeSize: () => Size
 }
 
-export function normalizeAngle(deg: number): number {
-	let normalized = deg % 360;
-	if (normalized < 0) {
-		normalized += 360;
-	}
-	// Avoid -0 and clean up floating point imprecision
-	if (Object.is(normalized, -0) || Math.abs(normalized - 360) < 1e-9) {
-		normalized = 0;
-	}
-	return Math.round(normalized * 100) / 100;
-}
 
 export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
 	minContentWidth?: number;
 	minContentHeight?: number;
-	rotation?: number;
 
 	placementMode?: PlacementConfiguration
 	placementControl?: PlacementControl
@@ -175,7 +163,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			contentHeight: this._contentHeight,
 			minContentWidth: this.minContentWidth,
 			minContentHeight: this.minContentHeight,
-			rotation: this.rotation,
 			placementMode: this._placementMode,
 			placementControl: this.placementControl,
 			sizeMode: this.sizeMode,
@@ -200,14 +187,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 	protected _contentWidth: number;
 	protected _contentHeight: number;
-	protected _rotation: number = 0;
-
-	public get rotation(): number {
-		return this._rotation;
-	}
-	public set rotation(value: number) {
-		this._rotation = normalizeAngle(value);
-	}
 
 	protected _placementMode: PlacementConfiguration;
 	public get placementMode() {
@@ -242,7 +221,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		params: ISpacial = {
 			contentWidth: 0,
 			contentHeight: 0,
-			rotation: 0,
 			placementMode: { type: "free" },
 			placementControl: "user",
 			sizeMode: { x: "fixed", y: "fixed" },
@@ -267,7 +245,6 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 		this._contentWidth = params.contentWidth ?? 0;
 		this._contentHeight = params.contentHeight ?? 0;
-		this._rotation = params.rotation !== undefined ? normalizeAngle(params.rotation) : 0;
 
 		if (params.pulseLayoutConfig !== undefined) {
 			this._pulseLayoutConfig = params.pulseLayoutConfig;
@@ -615,12 +592,12 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				if (ofContent) {
 					return this.cx;
 				}
-				return this._x;
+				return this.x;
 			case "y":
 				if (ofContent) {
 					return this.cy;
 				}
-				return this._y;
+				return this.y;
 		}
 	}
 	public setNear(dimension: Dimensions, v: number) {

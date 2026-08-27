@@ -4,6 +4,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import Collection from "../../logic/collection";
 import { UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
+import { useAppDispatch } from "../../redux/hooks";
 import { CollectionChildrenList } from "./CollectionChildrenList";
 import {
 	ResolvedFormTargets,
@@ -11,7 +12,9 @@ import {
 	resolveFormDataFromTarget
 } from "./formHelpers";
 import LabelListForm from "./LabelListForm";
-import RoleChildrenForm, { RoleChildrenFormData } from "./RoleChildrenForm";
+import RoleButtonStrip from "./RoleButtonStrip";
+import RoleSubformDialog from "./RoleSubformDialog";
+import { RoleChildrenFormData } from "./RoleChildrenForm";
 import styles from "./styles/ElementForm.module.scss"
 
 
@@ -30,6 +33,7 @@ export type SubmitButtonRef = {
 
 export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementFormProps>(
 	(props, ref) => {
+		const dispatch = useAppDispatch();
 		const resolved = useMemo(() => {
 			try {
 				return resolveFormDataFromTarget(props.target, props.objectType);
@@ -107,7 +111,7 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 
 		const hasLabelRoles = labelRoles.length > 0;
 		const showLabelsTab = allowLabels || isLabelGroup || hasLabelRoles;
-		const showComponentsTab = componentRoles.length > 0;
+		const hasComponentRoles = componentRoles.length > 0;
 
 		return (
 			<>
@@ -123,6 +127,11 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 					}}>
 					{/* Genius AI solution */}
 					<button type="submit" style={{ display: "none" }} />
+
+					{hasComponentRoles && (
+						<RoleButtonStrip roles={componentRoles} />
+					)}
+
 					<div
 						style={{ flex: "1 1 0", minHeight: 0, display: "flex", flexDirection: "column" }}
 						className="custom-scrollbar"
@@ -158,24 +167,6 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 									<></>
 								)}
 
-								{showComponentsTab ? (
-									<Tab
-										style={{ userSelect: "none" }}
-										id={"components"}
-										title={"Components"}
-										panel={
-											<>
-												<FormProvider {...roleFormControls}>
-													<RoleChildrenForm
-														editableRoles={componentRoles}
-														target={props.target}></RoleChildrenForm>
-												</FormProvider>
-											</>
-										}></Tab>
-								) : (
-									<></>
-								)}
-
 								{isCollection ? (
 									<Tab
 										style={{ userSelect: "none" }}
@@ -190,6 +181,10 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 							</Tabs>
 						</div>
 					</div>
+
+					<FormProvider {...roleFormControls}>
+						<RoleSubformDialog target={props.target} />
+					</FormProvider>
 				</form>
 			</>
 		);

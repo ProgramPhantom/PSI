@@ -1,3 +1,4 @@
+import { IconName } from "@blueprintjs/core";
 import { Components, ICollection } from "../../logic/collection";
 import LabelGroup, { ILabelGroup } from "../../logic/hasComponents/labelGroup";
 import SimpleLabelGroup from "../../logic/hasComponents/SimpleLabelGroup";
@@ -32,7 +33,7 @@ export interface ResolvedFormTargets {
 	isCollection: boolean;
 	/** Roles from the label-group schema (for the Labels tab) */
 	labelRoles: EditableRole[];
-	/** Roles from the element's own schema (for the Components tab) */
+	/** Roles from the element's own schema (for role child buttons/modals) */
 	componentRoles: EditableRole[];
 }
 
@@ -40,9 +41,24 @@ export interface EditableRole {
 	roleName: string;
 	displayName: string;
 	elementType: AllComponentTypes;
+	icon?: IconName;
 	currentState?: IVisual;
 	mandatory?: boolean;
 	defaultValues?: any;
+}
+
+export function getRoleIcon(role: { roleName: string; elementType: AllComponentTypes; icon?: IconName }): IconName {
+	if (role.icon) return role.icon;
+	if (role.elementType === "latex") return "function";
+	if (role.elementType === "text") return "font";
+	if (role.elementType === "line") return "arrows-horizontal";
+	if (role.elementType === "rect") return "square";
+	if (role.elementType === "label") return "tag";
+	if (role.elementType === "svg") return "media";
+	if (role.roleName === "label" || role.roleName === "text") return "function";
+	if (role.roleName === "bar") return "square";
+	if (role.roleName === "line") return "arrows-horizontal";
+	return "widget";
 }
 
 
@@ -67,6 +83,7 @@ export function resolveFormDataFromTarget(
 			roleName,
 			displayName: schema.displayName,
 			elementType: schema.elementType,
+			icon: schema.icon ?? getRoleIcon({ roleName, elementType: schema.elementType, icon: schema.icon }),
 			mandatory: schema.mandatory,
 			defaultValues: schema.defaultValues
 		}));
@@ -84,6 +101,7 @@ export function resolveFormDataFromTarget(
 					roleName,
 					displayName: schema.displayName,
 					elementType: schema.elementType,
+					icon: schema.icon ?? getRoleIcon({ roleName, elementType: schema.elementType, icon: schema.icon }),
 					mandatory: schema.mandatory,
 					defaultValues: schema.defaultValues
 				};
@@ -102,7 +120,7 @@ export function resolveFormDataFromTarget(
 				return role;
 			});
 
-			if (objectType === "label-group") {
+			if (objectType === "label-group" || objectType === "simple-label-group") {
 				creatingLabelRoles = rolesArray;
 			} else {
 				creatingComponentRoles = rolesArray;
@@ -169,15 +187,12 @@ export function resolveFormDataFromTarget(
 	// Resolve editable roles from any Collection
 	if (isCollection) {
 		const collection = target as Collection;
-		const roles: Components = collection.roles;
+		const roles: Components = collection.roles ?? {};
 		const schemaRoles = formBundle.roles ?? {};
 
-		// Iterate through the target's roles
-		// If the role is defined in the form bundle's schema, it's editable
-		for (const [roleName, roleEntry] of Object.entries(roles)) {
-			const roleSchema = schemaRoles[roleName];
-			if (!roleSchema) continue;
-
+		// Iterate through the form bundle's schema roles
+		for (const [roleName, roleSchema] of Object.entries(schemaRoles)) {
+			const roleEntry = roles[roleName];
 			const elementType = roleSchema.elementType;
 			if (!elementType) continue;
 
@@ -185,24 +200,34 @@ export function resolveFormDataFromTarget(
 				roleName,
 				displayName: roleSchema.displayName,
 				elementType,
-				currentState: roleEntry.object ? structuredClone(roleEntry.object.state) : undefined,
+				icon: roleSchema.icon ?? getRoleIcon({ roleName, elementType, icon: roleSchema.icon }),
+				currentState: roleEntry?.object ? structuredClone(roleEntry.object.state) : undefined,
 				mandatory: roleSchema.mandatory,
 				defaultValues: roleSchema.defaultValues
 			};
 
-			if (objectType === "label-group") {
+			if (objectType === "label-group" || objectType === "simple-label-group") {
 				labelRoles.push(role);
 			} else {
 				componentRoles.push(role);
 			}
 
-			if (roleEntry.object) {
+			if (roleEntry?.object) {
 				roleDefaults[roleName] = structuredClone(roleEntry.object.state);
+			} else if (roleSchema.mandatory) {
+				const childBundle = FORM_DEFAULTS[elementType];
+				if (childBundle) {
+					let defaultVal = structuredClone(childBundle.defaults);
+					if (roleSchema.defaultValues) {
+						defaultVal = { ...defaultVal, ...roleSchema.defaultValues };
+					}
+					roleDefaults[roleName] = defaultVal;
+				}
 			}
 		}
 	}
 
-	if (allowLabels && objectType !== "label-group") {
+	if (allowLabels && objectType !== "label-group" && objectType !== "simple-label-group") {
 		// Target is not a label-group, but it supports labels — provide LabelGroup 
 		// roles so the user can add labels and trigger promotion to a LabelGroup.
 		labelRoles = getFallbackLabelRoles();

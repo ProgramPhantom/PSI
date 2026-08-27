@@ -3,8 +3,7 @@ import {
 	HTMLSelect,
 	InputGroup,
 	NumericInput,
-	Section,
-	Switch
+	Section
 } from "@blueprintjs/core";
 import React from "react";
 import { Controller, FieldErrors, useFormContext, useWatch } from "react-hook-form";
@@ -144,43 +143,6 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 						/>
 					);
 				})()}
-
-				{/* Flipped */}
-				<DoubleField
-					label="Flipped"
-					leftLabel="X"
-					leftField={
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}flipped.x`}
-							render={({ field }) => (
-								<Switch
-									{...field}
-									id="flipped-x-switch"
-									onChange={(e) => field.onChange((e.target as HTMLInputElement).checked)}
-									checked={Boolean(field.value)}
-									className={fieldStyles.compactSwitch}
-								/>
-							)}
-						/>
-					}
-					rightLabel="Y"
-					rightField={
-						<Controller
-							control={formControls.control}
-							name={`${fullPrefix}flipped.y`}
-							render={({ field }) => (
-								<Switch
-									{...field}
-									id="flipped-y-switch"
-									onChange={(e) => field.onChange((e.target as HTMLInputElement).checked)}
-									checked={Boolean(field.value)}
-									className={fieldStyles.compactSwitch}
-								/>
-							)}
-						/>
-					}
-				/>
 
 			</ControlGroup>
 

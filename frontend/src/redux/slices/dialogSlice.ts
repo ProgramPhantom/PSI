@@ -1,4 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { IconName } from '@blueprintjs/core';
+import { AllComponentTypes } from '../../logic/point';
+
+export interface RoleSubformLevel {
+    roleName: string;
+    prefix: string;
+    displayName: string;
+    elementType: AllComponentTypes;
+    icon?: IconName;
+}
 
 export interface DialogState {
     isPNGDialogOpen: boolean;
@@ -13,6 +23,7 @@ export interface DialogState {
     isNewDiagramAlertOpen: boolean;
     isUnsavedDiagramLogoutAlertOpen: boolean;
     isAboutDialogOpen: boolean;
+    roleSubformStack: RoleSubformLevel[];
 }
 
 const initialState: DialogState = {
@@ -27,7 +38,8 @@ const initialState: DialogState = {
     isAssetStoreDialogOpen: false,
     isNewDiagramAlertOpen: false,
     isUnsavedDiagramLogoutAlertOpen: false,
-    isAboutDialogOpen: false
+    isAboutDialogOpen: false,
+    roleSubformStack: []
 };
 
 export const dialogSlice = createSlice({
@@ -69,6 +81,15 @@ export const dialogSlice = createSlice({
         },
         setAboutDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isAboutDialogOpen = action.payload;
+        },
+        pushRoleSubform: (state, action: PayloadAction<RoleSubformLevel>) => {
+            state.roleSubformStack.push(action.payload);
+        },
+        popRoleSubform: (state) => {
+            state.roleSubformStack.pop();
+        },
+        closeAllRoleSubforms: (state) => {
+            state.roleSubformStack = [];
         }
     },
 });
@@ -85,7 +106,10 @@ export const {
     setAssetStoreDialogOpen,
     setNewDiagramAlertOpen,
     setUnsavedDiagramLogoutAlertOpen,
-    setAboutDialogOpen
+    setAboutDialogOpen,
+    pushRoleSubform,
+    popRoleSubform,
+    closeAllRoleSubforms
 } = dialogSlice.actions;
 
 export default dialogSlice.reducer;

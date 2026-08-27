@@ -1,4 +1,4 @@
-import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
+import { Element, Rect, SVG, Element as SVGElement, Svg } from "@svgdotjs/svg.js";
 import { cascadeID } from "./util2";
 import { UserComponentType } from "./point";
 import { TextBase, ITextBase, PT_TO_PX, TEX_EX_TO_EM } from "./textBase";
@@ -107,10 +107,12 @@ export class LaTeX extends TextBase implements ILaTeX {
 			});
 
 			if (this.style.background) {
-				this.svg.add(
-					SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`),
-					0
-				);
+				const box = (this.svg as Svg).viewbox();
+				const bgRect = new Rect()
+					.size(box.width || "100%", box.height || "100%")
+					.move(box.x, box.y)
+					.fill(this.style.background);
+				this.svg.add(bgRect, 0);
 			}
 			cascadeID(this.svg, this.id);
 			return;
@@ -168,10 +170,12 @@ export class LaTeX extends TextBase implements ILaTeX {
 		});
 
 		if (this.style.background) {
-			this.svg.add(
-				SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`),
-				0
-			);
+			const box = (this.svg as Svg).viewbox();
+			const bgRect = new Rect()
+				.size(box.width || "100%", box.height || "100%")
+				.move(box.x, box.y)
+				.fill(this.style.background);
+			this.svg.add(bgRect, 0);
 		}
 
 		cascadeID(this.svg, this.id);

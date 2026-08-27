@@ -214,24 +214,39 @@ export default abstract class LineLike extends Visual {
 	}
 
 
-	public override get x(): number {
+	public override get cx(): number {
 		return this.centreX - this.computeBoundingBox().width / 2;
 	}
-	public override set x(v: number) {
-		let currX: number = this.x;
-		this.startX += v - currX;
-		this.endX += v - currX;
-		this._x = v;
+	public override set cx(v: number) {
+		let currCX: number = this.cx;
+		this.startX += v - currCX;
+		this.endX += v - currCX;
+		this._x = v - this.padding[3];
+	}
 
+	public override get cy(): number {
+		return this.centreY - this.computeBoundingBox().height / 2;
+	}
+	public override set cy(v: number) {
+		let currCY: number = this.cy;
+		this.startY += v - currCY;
+		this.endY += v - currCY;
+		this._y = v - this.padding[0];
+	}
+
+	public override get x(): number {
+		return this.cx - this.padding[3];
+	}
+	public override set x(v: number) {
+		this.cx = v + this.padding[3];
+		this._x = v;
 	}
 
 	public override get y(): number {
-		return this.centreY - this.computeBoundingBox().height / 2;
+		return this.cy - this.padding[0];
 	}
 	public override set y(v: number) {
-		let currY: number = this.y;  // Fixes problems
-		this.startY += v - currY;
-		this.endY += v - currY;
+		this.cy = v + this.padding[0];
 		this._y = v;
 	}
 }

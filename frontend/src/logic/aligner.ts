@@ -4,7 +4,6 @@ import Spacial, { Dimensions, SiteNames, Size } from "./spacial";
 import Visual, { AlignerElement, doesDraw, IVisual } from "./visual";
 import { G } from "@svgdotjs/svg.js";
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
-import PaddedBox from "./paddedBox";
 
 
 export interface IAligner<T extends IVisual = IVisual> extends ICollection {
@@ -43,7 +42,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 
 	minCrossAxis?: number;
 
-	cells: PaddedBox[];
+	cells: Spacial[];
 
 	constructor(params: IAligner) {
 		super(params);
@@ -60,32 +59,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	public computeSize(): Size {
 		this.children.forEach((c) => c.computeSize());
 
-		this.cells = Array.from({ length: this.numChildren }, () => new PaddedBox());
-
-		// Apply padding from this to cells. 
-		// If the orientation is vertical, the first cell will get top, left and right padding,
-		// and the last cell will get bottom, left and right padding.
-		// If the orientation is horizontal, the first cell will get left, top and bottom padding,
-		// and the last cell will get right, top and bottom padding.
-		this.cells.forEach((c, cell_index) => {
-			const isFirst = cell_index === 0;
-			const isLast = cell_index === this.numChildren - 1;
-			if (this.mainAxis === "x") {
-				c.padding = [
-					this.padding[0],
-					isLast ? this.padding[1] : 0,
-					this.padding[2],
-					isFirst ? this.padding[3] : 0
-				];
-			} else { // this.mainAxis === "y"
-				c.padding = [
-					isFirst ? this.padding[0] : 0,
-					this.padding[1],
-					isLast ? this.padding[2] : 0,
-					this.padding[3]
-				];
-			}
-		});
+		this.cells = Array.from({ length: this.numChildren }, () => new Spacial());
 
 		// Compute intrinsic length of main axis:
 		// This is the sum of main axis lengths:
@@ -140,10 +114,10 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 
 		// TODO: perf improvement by stopping compute when fixed?
 		if (this.sizeMode?.[this.mainAxis] !== "fixed") {
-			this.setSizeByDimension(intrinsicLength, this.mainAxis);
+			this.setContentSizeByDimension(intrinsicLength, this.mainAxis);
 		} else {
 			const minMain = this.mainAxis === "x" ? this.minContentWidth : this.minContentHeight;
-			this.setSizeByDimension(Math.max(minMain, this.getSizeByDimension(this.mainAxis)), this.mainAxis);
+			this.setContentSizeByDimension(Math.max(minMain, this.getContentSizeByDimension(this.mainAxis)), this.mainAxis);
 		}
 		if (this.sizeMode?.[this.crossAxis] !== "fixed") {
 			this.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
@@ -188,8 +162,8 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 					targetCell.x = alignmentCell.x;
 					targetCell.y = alignmentCell.y;
 				} else {
-					targetCell.x = this.x + xCount;
-					targetCell.y = this.y;
+					targetCell.x = this.cx + xCount;
+					targetCell.y = this.cy;
 					xCount += targetCell.getSizeByDimension(this.mainAxis);
 				}
 
@@ -226,8 +200,8 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 					targetCell.y = alignmentCell.y;
 					targetCell.x = alignmentCell.x;
 				} else {
-					targetCell.y = this.y + yCount;
-					targetCell.x = this.x;
+					targetCell.y = this.cy + yCount;
+					targetCell.x = this.cx;
 					yCount += targetCell.getSizeByDimension(this.mainAxis);
 				}
 
@@ -253,7 +227,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		// Resize cells:
 		// Main axis:
 		const currentTotalCellLength = this.cells.reduce((l, cell) => l + cell.getSizeByDimension(this.mainAxis), 0);
-		let remainingMainAxisChange: number = this.getSizeByDimension(this.mainAxis) - currentTotalCellLength;
+		let remainingMainAxisChange: number = this.getContentSizeByDimension(this.mainAxis) - currentTotalCellLength;
 		const epsilon = 1e-5;
 
 		if (this.cells.length === 0) {
@@ -360,7 +334,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		}
 	}
 
-	public getCells(): PaddedBox[] {
+	public getCells(): Spacial[] {
 		return this.cells;
 	}
 

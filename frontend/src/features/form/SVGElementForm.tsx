@@ -2,7 +2,8 @@ import {
 	Button,
 	Callout,
 	ControlGroup,
-	HTMLSelect
+	HTMLSelect,
+	Switch
 } from "@blueprintjs/core";
 import React, { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
@@ -10,6 +11,7 @@ import ENGINE from "../../logic/engine";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import SVGUploadDialog from "./SVGUploadDialog";
+import { DoubleField } from "./fields/DoubleField";
 import { SimpleField } from "./fields/SimpleField";
 import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
@@ -17,7 +19,7 @@ import fieldStyles from "./styles/FormFields.module.scss";
 interface ISVGElementFormProps extends FormRequirements { }
 
 const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
-	const fullPrefix = props.prefix !== undefined ? `${props.prefix}.` : "";
+	const fullPrefix = props.prefix !== undefined && props.prefix !== "" ? `${props.prefix}.` : "";
 
 	const formControls = useFormContext();
 
@@ -95,9 +97,46 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
 						);
 					}}
 				/>
+
+				{/* Flipped */}
+				<DoubleField
+					label="Flipped"
+					leftLabel="X"
+					leftField={
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}flipped.x`}
+							render={({ field }) => (
+								<Switch
+									{...field}
+									id="flipped-x-switch"
+									onChange={(e) => field.onChange((e.target as HTMLInputElement).checked)}
+									checked={Boolean(field.value)}
+									className={fieldStyles.compactSwitch}
+								/>
+							)}
+						/>
+					}
+					rightLabel="Y"
+					rightField={
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}flipped.y`}
+							render={({ field }) => (
+								<Switch
+									{...field}
+									id="flipped-y-switch"
+									onChange={(e) => field.onChange((e.target as HTMLInputElement).checked)}
+									checked={Boolean(field.value)}
+									className={fieldStyles.compactSwitch}
+								/>
+							)}
+						/>
+					}
+				/>
 			</ControlGroup >
 
-			<VisualForm target={props.target} heightDisplay={true} widthDisplay={true}></VisualForm>
+			<VisualForm target={props.target} heightDisplay={true} widthDisplay={true} prefix={props.prefix}></VisualForm>
 
 			<SVGUploadDialog
 				isOpen={isUploadDialogOpen}
