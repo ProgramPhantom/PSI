@@ -9,7 +9,7 @@ export const DEFAULT_ANNOTATION_T1_HALF: ILaTeX = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 35,
+		"fontSize": 10,
 		"colour": "black",
 		"background": null,
 		"display": "block"

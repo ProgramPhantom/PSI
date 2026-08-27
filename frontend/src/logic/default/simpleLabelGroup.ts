@@ -35,7 +35,7 @@ export const DEFAULT_SIMPLE_LABEL_GROUP: ISimpleLabelGroup = {
 					"padding": [0, 0, 2, 0],
 					"offset": [0, 0],
 					"style": {
-						"fontSize": 35,
+						"fontSize": 10,
 						"colour": "black",
 						"background": null,
 						"display": "block"
@@ -66,7 +66,7 @@ export const DEFAULT_SIMPLE_LABEL_GROUP: ISimpleLabelGroup = {
 					"padding": [0, 0, 2, 0],
 					"offset": [0, 0],
 					"style": {
-						"fontSize": 35,
+						"fontSize": 10,
 						"colour": "black",
 						"background": null,
 						"display": "block"

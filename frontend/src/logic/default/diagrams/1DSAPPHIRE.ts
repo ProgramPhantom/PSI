@@ -20,7 +20,7 @@ export const D1SAPPHIRE: IDiagram = {
 							"children": [
 								{
 									"style": {
-										"fontSize": 55,
+										"fontSize": 14,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -186,7 +186,7 @@ export const D1SAPPHIRE: IDiagram = {
 								},
 								{
 									"style": {
-										"fontSize": 35,
+										"fontSize": 10,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -314,7 +314,7 @@ export const D1SAPPHIRE: IDiagram = {
 								},
 								{
 									"style": {
-										"fontSize": 35,
+										"fontSize": 10,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -376,7 +376,7 @@ export const D1SAPPHIRE: IDiagram = {
 								},
 								{
 									"style": {
-										"fontSize": 35,
+										"fontSize": 10,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -438,7 +438,7 @@ export const D1SAPPHIRE: IDiagram = {
 								},
 								{
 									"style": {
-										"fontSize": 35,
+										"fontSize": 10,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -566,7 +566,7 @@ export const D1SAPPHIRE: IDiagram = {
 								},
 								{
 									"style": {
-										"fontSize": 35,
+										"fontSize": 10,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -628,7 +628,7 @@ export const D1SAPPHIRE: IDiagram = {
 								},
 								{
 									"style": {
-										"fontSize": 35,
+										"fontSize": 10,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -756,7 +756,7 @@ export const D1SAPPHIRE: IDiagram = {
 								},
 								{
 									"style": {
-										"fontSize": 35,
+										"fontSize": 10,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -818,7 +818,7 @@ export const D1SAPPHIRE: IDiagram = {
 								},
 								{
 									"style": {
-										"fontSize": 35,
+										"fontSize": 10,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -943,7 +943,7 @@ export const D1SAPPHIRE: IDiagram = {
 										},
 										{
 											"style": {
-												"fontSize": 35,
+												"fontSize": 10,
 												"colour": "black",
 												"background": null,
 												"display": "block"
@@ -1099,7 +1099,7 @@ export const D1SAPPHIRE: IDiagram = {
 							"children": [
 								{
 									"style": {
-										"fontSize": 55,
+										"fontSize": 14,
 										"colour": "black",
 										"background": null,
 										"display": "block"
@@ -1267,7 +1267,7 @@ export const D1SAPPHIRE: IDiagram = {
 										},
 										{
 											"style": {
-												"fontSize": 35,
+												"fontSize": 10,
 												"colour": "black",
 												"background": null,
 												"display": "block"
@@ -1441,7 +1441,7 @@ export const D1SAPPHIRE: IDiagram = {
 										},
 										{
 											"style": {
-												"fontSize": 35,
+												"fontSize": 10,
 												"colour": "black",
 												"background": null,
 												"display": "block"
@@ -1615,7 +1615,7 @@ export const D1SAPPHIRE: IDiagram = {
 										},
 										{
 											"style": {
-												"fontSize": 35,
+												"fontSize": 10,
 												"colour": "black",
 												"background": null,
 												"display": "block"
@@ -1789,7 +1789,7 @@ export const D1SAPPHIRE: IDiagram = {
 										},
 										{
 											"style": {
-												"fontSize": 35,
+												"fontSize": 10,
 												"colour": "black",
 												"background": null,
 												"display": "block"
@@ -1963,7 +1963,7 @@ export const D1SAPPHIRE: IDiagram = {
 										},
 										{
 											"style": {
-												"fontSize": 35,
+												"fontSize": 10,
 												"colour": "black",
 												"background": null,
 												"display": "block"
@@ -2137,7 +2137,7 @@ export const D1SAPPHIRE: IDiagram = {
 										},
 										{
 											"style": {
-												"fontSize": 35,
+												"fontSize": 10,
 												"colour": "black",
 												"background": null,
 												"display": "block"
@@ -2311,7 +2311,7 @@ export const D1SAPPHIRE: IDiagram = {
 										},
 										{
 											"style": {
-												"fontSize": 35,
+												"fontSize": 10,
 												"colour": "black",
 												"background": null,
 												"display": "block"

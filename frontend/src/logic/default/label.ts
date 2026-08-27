@@ -24,7 +24,7 @@ export const DEFAULT_LABEL: ILabel = {
 			"offset": [0, 0],
 
 			"style": {
-				"fontSize": 25,
+				"fontSize": 10,
 				"colour": "black",
 				"background": null,
 				"display": "block"

@@ -72,7 +72,7 @@ function TextForm(props: ITextFormProps) {
 						</SimpleField>
 
 						<SimpleField
-							label="Font Size"
+							label="Font Size (pt)"
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}

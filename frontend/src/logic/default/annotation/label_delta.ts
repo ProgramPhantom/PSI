@@ -24,7 +24,7 @@ export const DEFAULT_ANNOTATION_LABEL_DELTA: ILabel = {
 			"offset": [0, 0],
 
 			"style": {
-				"fontSize": 45,
+				"fontSize": 10,
 				"colour": "black",
 				"background": null,
 				"display": "block"

@@ -2,8 +2,8 @@ import { Element, SVG } from "@svgdotjs/svg.js";
 import Visual, { Display, IVisual } from "./visual";
 import { Size } from "./spacial";
 
-export const EXTOPX = 38.314;
-export const SCALER = 5;
+export const PT_TO_PX = 96 / 72;
+export const TEX_EX_TO_EM = 0.438;
 
 export interface ITextStyle {
 	fontSize: number;

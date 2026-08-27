@@ -1,7 +1,7 @@
 import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
 import { cascadeID } from "./util2";
 import { UserComponentType } from "./point";
-import { TextBase, ITextBase } from "./textBase";
+import { TextBase, ITextBase, PT_TO_PX } from "./textBase";
 
 export interface IText extends ITextBase {
 	fontFamily?: string;
@@ -28,7 +28,7 @@ export class Text extends TextBase implements IText {
 		this.fontFamily = params.fontFamily ?? "sans-serif";
 
 		this.intrinsicSize = this.resolveDimensions();
-		this.wHRatio = this.intrinsicSize.width / this.intrinsicSize.height;
+		this.wHRatio = this.intrinsicSize.height > 0 ? (this.intrinsicSize.width / this.intrinsicSize.height) : 1;
 
 		this.contentWidth = this.intrinsicSize.width;
 		this.contentHeight = this.intrinsicSize.height;
@@ -40,27 +40,29 @@ export class Text extends TextBase implements IText {
 	}
 
 	resolveDimensions(): { width: number; height: number } {
+		const fontSizePx = (this.style.fontSize ?? 12) * PT_TO_PX;
+
 		if (typeof document === "undefined") {
-			this.ascent = this.style.fontSize;
+			this.ascent = fontSizePx;
 			this.descent = 0;
-			return { width: 10, height: this.style.fontSize };
+			return { width: 10, height: fontSizePx };
 		}
 
 		const canvas = document.createElement("canvas");
 		const ctx = canvas.getContext("2d");
 		if (!ctx) {
-			this.ascent = this.style.fontSize;
+			this.ascent = fontSizePx;
 			this.descent = 0;
-			return { width: 10, height: this.style.fontSize };
+			return { width: 10, height: fontSizePx };
 		}
 
-		ctx.font = `${this.style.fontSize}px ${this.fontFamily}`;
+		ctx.font = `${fontSizePx}px ${this.fontFamily}`;
 		const metrics = ctx.measureText(this.text);
 
-		const ascent = metrics.actualBoundingBoxAscent !== undefined ? metrics.actualBoundingBoxAscent : (this.style.fontSize * 0.85);
-		const descent = (metrics.actualBoundingBoxDescent !== undefined ? metrics.actualBoundingBoxDescent : (this.style.fontSize * 0.15)) + Text.descentPadding;
+		const ascent = metrics.actualBoundingBoxAscent !== undefined ? metrics.actualBoundingBoxAscent : (fontSizePx * 0.85);
+		const descent = (metrics.actualBoundingBoxDescent !== undefined ? metrics.actualBoundingBoxDescent : (fontSizePx * 0.15)) + Text.descentPadding;
 		const width = metrics.width || 1;
-		const height = ascent + descent || this.style.fontSize || 12;
+		const height = ascent + descent || fontSizePx || 12;
 
 		this.ascent = ascent;
 		this.descent = descent;
@@ -72,13 +74,14 @@ export class Text extends TextBase implements IText {
 	}
 
 	constructSVG(): void {
+		const fontSizePx = (this.style.fontSize ?? 12) * PT_TO_PX;
 		const svgNamespace = "http://www.w3.org/2000/svg";
 		const crudeSvg = SVG(document.createElementNS(svgNamespace, "svg")) as SVGElement;
 
 		const textElement = SVG(document.createElementNS(svgNamespace, "text")) as SVGElement;
 		textElement.attr({
 			"font-family": this.fontFamily,
-			"font-size": `${this.style.fontSize}px`,
+			"font-size": `${fontSizePx}px`,
 			"fill": this.style.colour,
 			"x": 0,
 			"y": this.ascent

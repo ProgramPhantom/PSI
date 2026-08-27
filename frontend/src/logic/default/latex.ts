@@ -9,7 +9,7 @@ export const DEFAULT_LATEX: ILaTeX = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 35,
+		"fontSize": 12,
 		"colour": "black",
 		"background": null,
 		"display": "block"
