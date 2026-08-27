@@ -592,12 +592,12 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				if (ofContent) {
 					return this.cx;
 				}
-				return this._x;
+				return this.x;
 			case "y":
 				if (ofContent) {
 					return this.cy;
 				}
-				return this._y;
+				return this.y;
 		}
 	}
 	public setNear(dimension: Dimensions, v: number) {
