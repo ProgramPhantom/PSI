@@ -1,0 +1,77 @@
+.editorWrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.15s ease-in-out;
+
+	&.visible {
+		opacity: 1;
+	}
+}
+
+.hoverArea {
+	position: absolute;
+	background: transparent;
+	pointer-events: auto;
+	cursor: default;
+}
+
+.paddingIndicator {
+	position: absolute;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(2px);
+	padding: 0px 1px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+	font-size: 8.5px;
+	font-weight: 500;
+	color: #394b59;
+	border-radius: 2px;
+	border: 1px solid rgba(0, 0, 0, 0.18);
+	z-index: 36000;
+	pointer-events: auto;
+	transform: translate(-100%, -50%);
+	transition: background-color 0.12s ease-in-out, border-color 0.12s ease-in-out;
+
+	&:hover,
+	&.active {
+		background: rgba(255, 255, 255, 0.98);
+		border-color: rgba(0, 0, 0, 0.35);
+	}
+
+	.paddingInput {
+		background: transparent;
+		border: none;
+		outline: none;
+		box-shadow: none;
+		padding: 0;
+		margin: 0;
+		font-size: 8.5px;
+		font-weight: 500;
+		font-family: inherit;
+		color: #182026;
+		text-align: center;
+		line-height: 1;
+		cursor: text;
+
+		&::-webkit-outer-spin-button,
+		&::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+	}
+
+	.paddingSuffix {
+		margin-left: 0px;
+		color: #8a9ba8;
+		font-size: 7.5px;
+		font-weight: normal;
+		pointer-events: none;
+		user-select: none;
+		line-height: 1;
+	}
+}

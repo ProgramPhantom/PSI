@@ -5,6 +5,7 @@ import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } fr
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
 import { ISubgrid } from "./grid.ts";
+import Channel, { IChannel } from "./hasComponents/channel.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram.ts";
 import Sequence from "./hasComponents/sequence.ts";
 import { AllComponentTypes, ID } from "./point.ts";
@@ -610,6 +611,68 @@ export default class DiagramHandler implements IDraw {
 		let temp = seqState.children[index];
 		seqState.children[index] = seqState.children[targetIndex];
 		seqState.children[targetIndex] = temp;
+
+		let tempResult = this.createVisual<Sequence>(seqState, "sequence");
+		if (tempResult.ok === false) {
+			return { ok: false, error: tempResult.error };
+		}
+		let updatedSeq = tempResult.value;
+
+		this.act({
+			type: "modify",
+			input: {
+				child: updatedSeq,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
+	}
+
+	public setChannelPadding(
+		channelId: ID,
+		padding: { top?: number; bottom?: number } | [number, number, number, number]
+	): Result {
+		let channel = this.diagram.channelsDict[channelId] || (this.allElements[channelId] as Channel | undefined);
+		if (!channel || !(channel instanceof Channel)) {
+			console.warn(`Cannot set padding for channel with id ${channelId}: channel not found`);
+			return { ok: false, error: `Channel ${channelId} not found` };
+		}
+
+		let sequence: Sequence | undefined;
+		if (channel.parentId) {
+			sequence = this.diagram.sequenceDict[channel.parentId];
+		}
+
+		if (!sequence) {
+			console.warn(`Cannot set padding for channel ${channelId}: parent sequence not found`);
+			return { ok: false, error: `Sequence for channel ${channelId} not found` };
+		}
+
+		let newPadding: [number, number, number, number] = [...channel.padding];
+		if (Array.isArray(padding)) {
+			newPadding = [
+				Math.max(0, padding[0] ?? 0),
+				Math.max(0, padding[1] ?? 0),
+				Math.max(0, padding[2] ?? 0),
+				Math.max(0, padding[3] ?? 0)
+			];
+		} else {
+			if (padding.top !== undefined) newPadding[0] = Math.max(0, padding.top);
+			if (padding.bottom !== undefined) newPadding[2] = Math.max(0, padding.bottom);
+		}
+
+		let seqState = structuredClone(sequence.state);
+		if (!seqState.children) {
+			return { ok: false, error: `Sequence ${sequence.id} has no children` };
+		}
+
+		let channelIndex = seqState.children.findIndex((c) => c.id === channelId);
+		if (channelIndex === -1) {
+			return { ok: false, error: `Channel ${channelId} not found in sequence children` };
+		}
+
+		(seqState.children[channelIndex] as IChannel).padding = newPadding;
 
 		let tempResult = this.createVisual<Sequence>(seqState, "sequence");
 		if (tempResult.ok === false) {
