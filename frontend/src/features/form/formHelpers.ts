@@ -214,7 +214,7 @@ export function resolveFormDataFromTarget(
 
 			if (roleEntry?.object) {
 				roleDefaults[roleName] = structuredClone(roleEntry.object.state);
-			} else {
+			} else if (roleSchema.mandatory) {
 				const childBundle = FORM_DEFAULTS[elementType];
 				if (childBundle) {
 					let defaultVal = structuredClone(childBundle.defaults);
