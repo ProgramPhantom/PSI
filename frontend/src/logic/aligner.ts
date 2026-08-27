@@ -362,6 +362,10 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		}
 	}
 
+	public getCells(): PaddedBox[] {
+		return this.cells;
+	}
+
 	protected locateChildById(id: ID): number | undefined {
 		var childIndex: number | undefined = undefined;
 
