@@ -81,7 +81,7 @@ export default class Label extends Aligner implements ILabel {
 				alignment: { crossAxis: "centre", mainAxis: "centre" }
 			}
 		}
-		child.padding = [0, 0, 0, 0];
+
 
 		child.placementControl = "auto"
 
