@@ -61,7 +61,7 @@ const CollectionDebug: React.FC<ICollectionDebug> = (props) => {
 									height: height,
 									...headStyle
 								}}>
-								<p style={{fontSize: 5}}>{width}</p>
+								<p style={{ fontSize: 5 }}>{width}</p>
 							</div>
 						</>
 					);

@@ -44,6 +44,10 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return { [this.id]: this };
 	}
 
+	public get isResizable(): boolean {
+		return true;
+	}
+
 	private _dirty: boolean = true;
 	public get dirty(): boolean {
 		return this._dirty;

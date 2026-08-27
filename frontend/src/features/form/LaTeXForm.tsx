@@ -52,7 +52,7 @@ function LaTeXForm(props: ILaTeXFormProps) {
 					collapsible={true}>
 					<ControlGroup vertical={true} className={styles.formGroupContainer}>
 						<SimpleField
-							label="Font Size"
+							label="Font Size (pt)"
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}

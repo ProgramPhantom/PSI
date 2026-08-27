@@ -47,7 +47,7 @@ export const DIPSI2: ILabelGroup = {
             "offset": [0, 0],
 
             "style": {
-                "fontSize": 34,
+                "fontSize": 16,
                 "colour": "white",
                 "background": null,
                 "display": "block"

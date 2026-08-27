@@ -1,5 +1,7 @@
 import { Element, SVG, Element as SVGElement } from "@svgdotjs/svg.js";
 import { cascadeID } from "./util2";
+import { UserComponentType } from "./point";
+import { TextBase, ITextBase, PT_TO_PX, TEX_EX_TO_EM } from "./textBase";
 
 const MISSING_ASSET: Record<string, string> = import.meta.glob("../assets/app/MissingAsset2.svg", {
 	query: "?raw",
@@ -23,10 +25,9 @@ function TeXToSVG(tex: string): string {
 	}
 	return MISSING_ASSET_SVG_DATA;
 }
-import { UserComponentType } from "./point";
-import { TextBase, ITextBase, EXTOPX, SCALER } from "./textBase";
 
-export interface ILaTeX extends ITextBase {}
+
+export interface ILaTeX extends ITextBase { }
 
 export class LaTeX extends TextBase implements ILaTeX {
 	static ElementType: UserComponentType = "latex";
@@ -43,10 +44,10 @@ export class LaTeX extends TextBase implements ILaTeX {
 		this.type = "latex";
 
 		this.intrinsicSize = this.resolveDimensions();
-		this.wHRatio = this.intrinsicSize.width / this.intrinsicSize.height;
+		this.wHRatio = this.intrinsicSize.height > 0 ? (this.intrinsicSize.width / this.intrinsicSize.height) : 1;
 
-		this.contentHeight = ((this.intrinsicSize.height / SCALER) * this.style.fontSize) / EXTOPX;
-		this.contentWidth = ((this.intrinsicSize.width / SCALER) * this.style.fontSize) / EXTOPX;
+		this.contentWidth = this.intrinsicSize.width;
+		this.contentHeight = this.intrinsicSize.height;
 
 		this.minContentWidth = this.contentWidth;
 		this.minContentHeight = this.contentHeight;
@@ -55,31 +56,37 @@ export class LaTeX extends TextBase implements ILaTeX {
 	}
 
 	resolveDimensions(): { width: number; height: number } {
-		var SVGEquation: string = TeXToSVG(`${this.text}`);
+		const fontSizePx = (this.style.fontSize ?? 12) * PT_TO_PX;
+		const exInPx = fontSizePx * TEX_EX_TO_EM;
 
-		var SVGobj: SVGElement = SVG(SVGEquation);
+		const SVGEquation: string = TeXToSVG(`${this.text}`);
+
+		const SVGobj: SVGElement = SVG(SVGEquation);
 
 		SVGobj.id("svgTempID");
 		SVGobj.attr({ preserveAspectRatio: "xMinYMin" });
 
-		var exWidthString: string = String(SVGobj.width() || "50");
-		var exHeightString: string = String(SVGobj.height() || "50");
+		const exWidthString: string = String(SVGobj.width() || "50");
+		const exHeightString: string = String(SVGobj.height() || "50");
 
-		var exWidth: number = parseFloat(exWidthString);
-		var exHeight: number = parseFloat(exHeightString);
+		const exWidth: number = parseFloat(exWidthString);
+		const exHeight: number = parseFloat(exHeightString);
 
 		SVGobj.remove();
 
 		// If it's a MathJax SVG (has "ex" unit suffix)
 		if (exWidthString.endsWith("ex")) {
-			return { width: exWidth * EXTOPX, height: exHeight * EXTOPX };
+			return {
+				width: Math.ceil(exWidth * exInPx),
+				height: Math.ceil(exHeight * exInPx)
+			};
 		}
-		
+
 		// If it's the fallback placeholder SVG (does not have "ex" unit)
 		// Scale it down to a height of 2ex so it matches normal text size
-		const targetHeight = 2.0 * EXTOPX;
-		const aspectRatio = exWidth / exHeight;
-		return { width: targetHeight * aspectRatio, height: targetHeight };
+		const targetHeight = Math.ceil(2.0 * exInPx);
+		const aspectRatio = exHeight > 0 ? (exWidth / exHeight) : 1;
+		return { width: Math.ceil(targetHeight * aspectRatio), height: targetHeight };
 	}
 
 	constructSVG(): void {
@@ -92,10 +99,13 @@ export class LaTeX extends TextBase implements ILaTeX {
 		const firstChildNode = crudeSvg.children()[0]?.node;
 		if (crudeSvg.children().length < 2 || !firstChildNode || firstChildNode.nodeName.toLowerCase() !== "defs") {
 			this.svg = crudeSvg;
-			this.svg.attr({ height: null, preserveAspectRatio: "xMinYMin" });
-			this.svg.width(this.contentWidth!);
-			this.svg.attr({ style: `color:${this.style.colour}` });
-			
+			this.svg.attr({
+				width: this.contentWidth,
+				height: this.contentHeight,
+				preserveAspectRatio: "xMinYMin",
+				style: `color:${this.style.colour}; overflow: visible;`
+			});
+
 			if (this.style.background) {
 				this.svg.add(
 					SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`),
@@ -150,14 +160,15 @@ export class LaTeX extends TextBase implements ILaTeX {
 
 		this.svg = crudeSvg;
 
-		this.svg.attr({ height: null, preserveAspectRatio: "xMinYMin" });
-		this.svg.width(this.contentWidth!);
-		this.svg.attr({ style: `color:${this.style.colour}` });
-
-		var group = this.svg.children()[1];
+		this.svg.attr({
+			width: this.contentWidth,
+			height: this.contentHeight,
+			preserveAspectRatio: "xMinYMin",
+			style: `color:${this.style.colour}; overflow: visible;`
+		});
 
 		if (this.style.background) {
-			group.add(
+			this.svg.add(
 				SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`),
 				0
 			);

@@ -274,6 +274,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 				<svg
 					style={{
+
 						position: "absolute",
 						top: 0,
 						left: 0,
@@ -282,7 +283,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						pointerEvents: "none",
 						zIndex: 2000,
 						overflow: "visible",
-						opacity: (isDragging || props.isHidden) ? 0 : 1
+						opacity: (isDragging || props.isHidden) ? 0 : 1,
+
 					}}>
 
 
@@ -328,7 +330,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								stroke: isDragging ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
 								strokeWidth: "1px",
 								fill: "transparent",
-								strokeDasharray: "2 2"
+								strokeDasharray: "2 2",
 							}}></rect>
 					)}
 					{props.visualState === "selected" && props.element.placementControl === "auto" && (

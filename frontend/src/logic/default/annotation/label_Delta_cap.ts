@@ -8,7 +8,6 @@ export const DEFAULT_ANNOTATION_LABEL_DELTA_CAP: ILabel = {
 	"sizeMode": { x: "grow", y: "fit" },
 	"mainAxis": "y",
 
-	"placementMode": { "type": "free" },
 	"ref": "label-Delta",
 
 	"labelConfig": {
@@ -24,7 +23,7 @@ export const DEFAULT_ANNOTATION_LABEL_DELTA_CAP: ILabel = {
 			"offset": [0, 0],
 
 			"style": {
-				"fontSize": 25,
+				"fontSize": 10,
 				"colour": "black",
 				"background": null,
 				"display": "block"

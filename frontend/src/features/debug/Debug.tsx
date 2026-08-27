@@ -2,16 +2,19 @@ import React from "react";
 import { Colors } from "@blueprintjs/core";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes } from "../../logic/point";
-import Visual from "../../logic/visual";
+import Visual, { AlignerElement } from "../../logic/visual";
 import Grid from "../../logic/grid";
+import Aligner from "../../logic/aligner";
 import PaddedBox from "../../logic/paddedBox";
 import Collection from "../../logic/collection";
 import { isPulse } from "../../logic/spacial";
 import PaddedBoxDebug from "./PaddedBoxDebug";
 import GridDebug from "./GridDebug";
+import AlignerDebug from "./AlignerDebug";
 import PulseDebug from "./PulseDebug";
 import CollectionDebug from "./Collection";
 import { useAppSelector } from "../../redux/hooks";
+import Sequence from "../../logic/hasComponents/sequence";
 
 export interface IDebug {
 	debugGroupSelection?: Record<AllComponentTypes, boolean>;
@@ -25,6 +28,10 @@ export function renderElementDebug(element: Visual, key?: string | number): JSX.
 
 	if (element instanceof Grid) {
 		return <GridDebug key={key ?? element.id} element={element} />;
+	}
+
+	if (element instanceof Aligner) {
+		return <AlignerDebug key={key ?? element.id} element={element} />;
 	}
 
 	if (isPulse(element)) {
@@ -49,8 +56,8 @@ const Debug: React.FC<IDebug> = (props) => {
 		props.selectedElement !== undefined
 			? props.selectedElement
 			: reduxSelectedElementId
-			? ENGINE.handler.identifyElement(reduxSelectedElementId)
-			: undefined;
+				? ENGINE.handler.identifyElement(reduxSelectedElementId)
+				: undefined;
 
 	return (
 		<>
@@ -92,9 +99,9 @@ const Debug: React.FC<IDebug> = (props) => {
 						);
 					case "sequence-aligner":
 						return (
-							<PaddedBoxDebug
+							<AlignerDebug
 								key={ENGINE.handler.diagram.sequenceAligner.id}
-								element={ENGINE.handler.diagram.sequenceAligner}
+								element={ENGINE.handler.diagram.sequenceAligner as Aligner<any>}
 								contentColour={Colors.SEPIA3}
 							/>
 						);

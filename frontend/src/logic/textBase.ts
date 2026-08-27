@@ -2,8 +2,8 @@ import { Element, SVG } from "@svgdotjs/svg.js";
 import Visual, { Display, IVisual } from "./visual";
 import { Size } from "./spacial";
 
-export const EXTOPX = 38.314;
-export const SCALER = 5;
+export const PT_TO_PX = 96 / 72;
+export const TEX_EX_TO_EM = 0.438;
 
 export interface ITextStyle {
 	fontSize: number;
@@ -24,6 +24,10 @@ export abstract class TextBase extends Visual implements ITextBase {
 	style: ITextStyle;
 	intrinsicSize!: { width: number; height: number };
 	wHRatio!: number;
+
+	public override get isResizable(): boolean {
+		return false;
+	}
 
 	get state(): ITextBase {
 		return {
@@ -69,7 +73,7 @@ export abstract class TextBase extends Visual implements ITextBase {
 		}
 
 		var internalSVG = this.svg?.clone(true, false);
-		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
+		internalSVG?.attr({ style: "display: block; overflow: visible;" }).move(0, 0);
 		internalSVG.show();
 
 		return internalSVG;

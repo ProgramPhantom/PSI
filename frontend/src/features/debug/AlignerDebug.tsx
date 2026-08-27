@@ -1,16 +1,13 @@
-import { CSSProperties } from "react";
-import Grid from "../../logic/grid";
+import React, { CSSProperties } from "react";
+import Aligner from "../../logic/aligner";
 import { Colors } from "@blueprintjs/core";
-import CollectionDebug from "./Collection";
-import PaddedBox from "../../logic/paddedBox";
-import PaddedBoxDebug from "./PaddedBoxDebug";
 
-export interface IGridDebug {
-	element: Grid;
+export interface IAlignerDebug {
+	element: Aligner<any>;
 	contentColour?: string;
 }
 
-const GridDebug: React.FC<IGridDebug> = (props) => {
+const AlignerDebug: React.FC<IAlignerDebug> = (props) => {
 	var style: CSSProperties = {
 		border: "dashed",
 		strokeOpacity: 1,
@@ -19,7 +16,7 @@ const GridDebug: React.FC<IGridDebug> = (props) => {
 		fill: "none",
 		position: "absolute",
 		pointerEvents: "none",
-		background: props.contentColour === undefined ? Colors.RED3 : props.contentColour
+		background: props.contentColour === undefined ? Colors.ORANGE3 : props.contentColour
 	};
 
 	var x1 = props.element.x;
@@ -35,29 +32,29 @@ const GridDebug: React.FC<IGridDebug> = (props) => {
 
 	var padding = props.element.padding;
 
+	const cells = props.element.getCells ? props.element.getCells() : (props.element.cells ?? []);
+
 	return (
 		<>
-
 			<div
 				style={{
 					position: "absolute",
 					left: cx,
 					top: cy - 3,
 				}}>
-				<p style={{
-					fontSize: 2,
-				}}>
+				<p style={{ fontSize: 2 }}>
 					{`(${x1}, ${y1})`}
 				</p>
 			</div>
 
-			{props.element.getCells().map((c, cell_index) => {
+			{cells.map((c, cell_index) => {
 				if (c.width === 0 || c.height === 0) {
-					return <></>
+					return null;
 				}
 
 				return (
-					<div key={cell_index}
+					<div
+						key={cell_index}
 						style={{
 							width: c.width,
 							height: c.height,
@@ -67,9 +64,8 @@ const GridDebug: React.FC<IGridDebug> = (props) => {
 						}}></div>
 				);
 			})}
-			{/* <PaddedBoxDebug element={props.grid}></PaddedBoxDebug> */}
 		</>
 	);
 };
 
-export default GridDebug;
+export default AlignerDebug;
