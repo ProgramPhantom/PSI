@@ -81,6 +81,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.contentHeight = Math.max(0, val - (this.spill.top + this.spill.bottom));
 	}
 
+	public override get minDrawContentWidth(): number {
+		return this.minContentWidth + this.spill.left + this.spill.right;
+	}
+	public override get minDrawContentHeight(): number {
+		return this.minContentHeight + this.spill.top + this.spill.bottom;
+	}
+
 	public override get drawCX(): number {
 		const offset = this.isFree ? 0 : this.offset[0];
 		return this.cx + offset - this.spill.left;
@@ -218,6 +225,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		// Let's compute the width and height of each column
 		var columnRects: Spacial[] = Array.from({ length: gridColumns.length }, () => new Spacial())
+		var colMinWidths: number[] = Array.from({ length: gridColumns.length }, () => 0);
 		var colSpillingElements: GridElement<C>[][] = Array.from({ length: gridColumns.length }, () => []);
 		var colExtras: number[][] = Array.from({ length: gridColumns.length }, () => []);
 
@@ -228,10 +236,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			// Find width of column
 			var minColW = this.minColWidths[col_index] ?? 0;
 			var widths: number[] = [minColW];
+			var minWidths: number[] = [minColW];
 			for (let cell of colEntries) {
 
 				if (cell?.ghosts !== undefined) {
 					widths.push(...cell.ghosts.map((g) => g.size.width));
+					minWidths.push(...cell.ghosts.map((g) => g.size.width));
 				}
 
 				if (cell?.extra !== undefined) {
@@ -255,13 +265,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						// Compute partial width contribution (distribute evenly):
 						let width: number = child.width;
+						let minW: number = child.minContentWidth ?? child.minWidth ?? child.width ?? 5;
 
 						if ((placementMode?.gridSize?.noCols ?? 0) > 1) {
 							width = 0;
+							minW = 0;
 						}
 
 						if (this.isSubgridChild(child)) {
 							width = child.gridSizes.columns[col_index - child.placementMode.config.coords.col].width;
+							minW = child.minContentWidth;
 
 							// Spilling to left
 							if (col_index === child.placementMode.config.coords.col &&
@@ -279,7 +292,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						}
 
 						if (contributing === true) {
-							widths.push(width)
+							widths.push(width);
+							minWidths.push(minW);
+						} else if (child.sizeMode.x === "grow") {
+							minWidths.push(minW);
 						}
 						if (spilling === true) {
 							colSpillingElements[col_index].push(child);
@@ -291,8 +307,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 			// Set the width of this column
 			var maxWidth = Math.max(...widths, this.min.width);
+			var maxMinW = Math.max(...minWidths, this.min.width);
 			columnRects[col_index].width = maxWidth;
+			colMinWidths[col_index] = maxMinW;
 		})
+
+		this.minContentWidth = colMinWidths.reduce((w, c) => w + c, 0);
 
 		// Allocate fixed container width to grow columns before computing spills
 		if (this.sizeMode?.x === "fixed") {
@@ -380,6 +400,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		// Now lets compute the width and height of each row
 		var rowRects: Spacial[] = Array.from({ length: gridRows.length }, () => new Spacial())
+		var rowMinHeights: number[] = Array.from({ length: gridRows.length }, () => 0);
 		var rowSpillingElements: GridElement<C>[][] = Array.from({ length: gridRows.length }, () => []);
 		var rowExtras: number[][] = Array.from({ length: gridRows.length }, () => []);
 
@@ -390,10 +411,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			// Find height of the row
 			var minRowH = this.minRowHeights[row_index] ?? 0;
 			var heights: number[] = [minRowH];
+			var minHeights: number[] = [minRowH];
 			for (let cell of rowEntries) {
 
 				if (cell?.ghosts !== undefined) {
 					heights.push(...cell?.ghosts.map(g => g.size.height));
+					minHeights.push(...cell?.ghosts.map(g => g.size.height));
 				}
 
 				if (cell?.extra !== undefined) {
@@ -417,13 +440,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						// Compute partial width contribution (distribute evenly):
 						let height: number = child.height;
+						let minH: number = child.minContentHeight ?? child.minHeight ?? child.height ?? 5;
 
 						if (placementMode !== undefined && (placementMode.gridSize?.noRows ?? 0) > 1) {
 							height = 0;
+							minH = 0;
 						}
 
 						if (this.isSubgridChild(child)) {
 							height = child.gridSizes.rows[row_index - child.placementMode.config.coords.row].height;
+							minH = child.minContentHeight;
 
 							// Given this is the top or bottom row of the subgrid, check if the subgrid is spilling
 							// vertically and add to spilling elements if so.
@@ -446,7 +472,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						}
 
 						if (contributing === true) {
-							heights.push(height)
+							heights.push(height);
+							minHeights.push(minH);
+						} else if (child.sizeMode.y === "grow") {
+							minHeights.push(minH);
 						}
 						if (spilling === true) {
 							rowSpillingElements[row_index].push(child);
@@ -457,9 +486,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			}
 
 			// Set the width of this column
-			var maxHeight = Math.max(...heights, this.min.height)
+			var maxHeight = Math.max(...heights, this.min.height);
+			var maxMinH = Math.max(...minHeights, this.min.height);
 			rowRects[row_index].height = maxHeight;
+			rowMinHeights[row_index] = maxMinH;
 		})
+
+		this.minContentHeight = rowMinHeights.reduce((h, r) => h + r, 0);
 
 		// Allocate fixed container height to grow rows before computing spills
 		if (this.sizeMode?.y === "fixed") {
@@ -550,9 +583,11 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var totalHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
 
 		if (this.sizeMode?.x === "fixed") {
+			this.contentWidth = Math.max(this.minContentWidth, this.contentWidth);
 			totalWidth = Math.max(totalWidth, this.contentWidth);
 		}
 		if (this.sizeMode?.y === "fixed") {
+			this.contentHeight = Math.max(this.minContentHeight, this.contentHeight);
 			totalHeight = Math.max(totalHeight, this.contentHeight);
 		}
 

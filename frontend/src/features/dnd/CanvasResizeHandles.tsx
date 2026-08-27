@@ -29,6 +29,8 @@ interface DragInitialState {
 	startElemY: number;
 	startDrawCX: number;
 	startDrawCY: number;
+	minDrawWidth: number;
+	minDrawHeight: number;
 	isFree: boolean;
 	effectiveScale: number;
 	element: Visual;
@@ -79,7 +81,9 @@ function computeResizeGeometry(
 	startY: number,
 	startDrawCX: number,
 	startDrawCY: number,
-	isFree: boolean
+	isFree: boolean,
+	minWidth: number = MIN_SIZE,
+	minHeight: number = MIN_SIZE
 ): ResizeResult {
 	let targetWidth = startWidth;
 	let targetHeight = startHeight;
@@ -88,11 +92,14 @@ function computeResizeGeometry(
 	let newDrawCX = startDrawCX;
 	let newDrawCY = startDrawCY;
 
+	const effectiveMinWidth = Math.max(MIN_SIZE, minWidth);
+	const effectiveMinHeight = Math.max(MIN_SIZE, minHeight);
+
 	// Width / X calculations
 	if (direction === "e" || direction === "ne" || direction === "se") {
-		targetWidth = Math.max(MIN_SIZE, Math.round(startWidth + deltaX));
+		targetWidth = Math.max(effectiveMinWidth, Math.round(startWidth + deltaX));
 	} else if (direction === "w" || direction === "nw" || direction === "sw") {
-		targetWidth = Math.max(MIN_SIZE, Math.round(startWidth - deltaX));
+		targetWidth = Math.max(effectiveMinWidth, Math.round(startWidth - deltaX));
 		const actualDeltaX = startWidth - targetWidth;
 		if (isFree) {
 			newElemX = Math.round(startX + actualDeltaX);
@@ -102,9 +109,9 @@ function computeResizeGeometry(
 
 	// Height / Y calculations
 	if (direction === "s" || direction === "se" || direction === "sw") {
-		targetHeight = Math.max(MIN_SIZE, Math.round(startHeight + deltaY));
+		targetHeight = Math.max(effectiveMinHeight, Math.round(startHeight + deltaY));
 	} else if (direction === "n" || direction === "ne" || direction === "nw") {
-		targetHeight = Math.max(MIN_SIZE, Math.round(startHeight - deltaY));
+		targetHeight = Math.max(effectiveMinHeight, Math.round(startHeight - deltaY));
 		const actualDeltaY = startHeight - targetHeight;
 		if (isFree) {
 			newElemY = Math.round(startY + actualDeltaY);
@@ -166,6 +173,8 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				startElemY: currentElement.y ?? 0,
 				startDrawCX: currentElement.drawCX ?? 0,
 				startDrawCY: currentElement.drawCY ?? 0,
+				minDrawWidth: currentElement.minDrawContentWidth ?? currentElement.minContentWidth ?? MIN_SIZE,
+				minDrawHeight: currentElement.minDrawContentHeight ?? currentElement.minContentHeight ?? MIN_SIZE,
 				isFree,
 				effectiveScale: effectiveScale > 0 ? effectiveScale : 1,
 				element: currentElement
@@ -207,7 +216,9 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					initial.startElemY,
 					initial.startDrawCX,
 					initial.startDrawCY,
-					initial.isFree
+					initial.isFree,
+					initial.minDrawWidth,
+					initial.minDrawHeight
 				);
 
 				const updatedPreview: PreviewState = {
@@ -253,7 +264,9 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					initial.startElemY,
 					initial.startDrawCX,
 					initial.startDrawCY,
-					initial.isFree
+					initial.isFree,
+					initial.minDrawWidth,
+					initial.minDrawHeight
 				);
 
 				const widthChanged = finalResult.width !== initial.startContentWidth;

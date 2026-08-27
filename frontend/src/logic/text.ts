@@ -33,6 +33,9 @@ export class Text extends TextBase implements IText {
 		this.contentWidth = this.intrinsicSize.width;
 		this.contentHeight = this.intrinsicSize.height;
 
+		this.minContentWidth = this.contentWidth;
+		this.minContentHeight = this.contentHeight;
+
 		this.constructSVG();
 	}
 

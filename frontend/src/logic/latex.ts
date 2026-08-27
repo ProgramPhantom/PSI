@@ -48,6 +48,9 @@ export class LaTeX extends TextBase implements ILaTeX {
 		this.contentHeight = ((this.intrinsicSize.height / SCALER) * this.style.fontSize) / EXTOPX;
 		this.contentWidth = ((this.intrinsicSize.width / SCALER) * this.style.fontSize) / EXTOPX;
 
+		this.minContentWidth = this.contentWidth;
+		this.minContentHeight = this.contentHeight;
+
 		this.constructSVG();
 	}
 

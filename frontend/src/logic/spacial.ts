@@ -114,6 +114,8 @@ export interface IHaveSize {
 export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
+	minContentWidth?: number;
+	minContentHeight?: number;
 
 	placementMode?: PlacementConfiguration
 	placementControl?: PlacementControl
@@ -158,6 +160,8 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
+			minContentWidth: this.minContentWidth,
+			minContentHeight: this.minContentHeight,
 			placementMode: this._placementMode,
 			placementControl: this.placementControl,
 			sizeMode: this.sizeMode,
@@ -317,6 +321,37 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	// ----------- Size --------------
+	protected _minContentWidth: number = 5;
+	protected _minContentHeight: number = 5;
+
+	get minContentWidth(): number {
+		return this._minContentWidth;
+	}
+	set minContentWidth(v: number) {
+		this._minContentWidth = v;
+	}
+
+	get minContentHeight(): number {
+		return this._minContentHeight;
+	}
+	set minContentHeight(v: number) {
+		this._minContentHeight = v;
+	}
+
+	get minWidth(): number {
+		return this.minContentWidth;
+	}
+	set minWidth(v: number) {
+		this.minContentWidth = v;
+	}
+
+	get minHeight(): number {
+		return this.minContentHeight;
+	}
+	set minHeight(v: number) {
+		this.minContentHeight = v;
+	}
+
 	get contentWidth(): number {
 		return this._contentWidth;
 	}
@@ -674,6 +709,15 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				return this.width;
 			case "y":
 				return this.height;
+		}
+	}
+
+	getContentSizeByDimension(dim: Dimensions): number {
+		switch (dim) {
+			case "x":
+				return this.contentWidth;
+			case "y":
+				return this.contentHeight;
 		}
 	}
 
