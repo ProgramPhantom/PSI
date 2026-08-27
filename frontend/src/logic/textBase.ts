@@ -73,7 +73,7 @@ export abstract class TextBase extends Visual implements ITextBase {
 		}
 
 		var internalSVG = this.svg?.clone(true, false);
-		internalSVG?.attr({ style: "display: block; overflow: visible;" }).move(0, 0);
+		internalSVG?.css({ display: "block", overflow: "visible" }).move(0, 0);
 		internalSVG.show();
 
 		return internalSVG;
