@@ -283,10 +283,13 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					const extraWidth = Math.max(0, (initial.element.drawContentWidth ?? 0) - (initial.element.contentWidth ?? 0));
 					const extraHeight = Math.max(0, (initial.element.drawContentHeight ?? 0) - (initial.element.contentHeight ?? 0));
 
+					const padLeft = initial.element.padding?.[3] ?? 0;
+					const padTop = initial.element.padding?.[0] ?? 0;
+
 					const targetContentWidth = Math.max(0, finalResult.width - extraWidth);
 					const targetContentHeight = Math.max(0, finalResult.height - extraHeight);
-					const targetX = finalResult.drawCX;
-					const targetY = finalResult.drawCY;
+					const targetX = finalResult.drawCX - padLeft;
+					const targetY = finalResult.drawCY - padTop;
 
 					const newState: IVisual = {
 						...initial.element.state,
