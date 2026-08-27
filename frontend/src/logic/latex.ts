@@ -76,14 +76,17 @@ export class LaTeX extends TextBase implements ILaTeX {
 
 		// If it's a MathJax SVG (has "ex" unit suffix)
 		if (exWidthString.endsWith("ex")) {
-			return { width: exWidth * exInPx, height: exHeight * exInPx };
+			return {
+				width: Math.ceil(exWidth * exInPx),
+				height: Math.ceil(exHeight * exInPx)
+			};
 		}
 
 		// If it's the fallback placeholder SVG (does not have "ex" unit)
 		// Scale it down to a height of 2ex so it matches normal text size
-		const targetHeight = 2.0 * exInPx;
+		const targetHeight = Math.ceil(2.0 * exInPx);
 		const aspectRatio = exHeight > 0 ? (exWidth / exHeight) : 1;
-		return { width: targetHeight * aspectRatio, height: targetHeight };
+		return { width: Math.ceil(targetHeight * aspectRatio), height: targetHeight };
 	}
 
 	constructSVG(): void {
@@ -96,9 +99,12 @@ export class LaTeX extends TextBase implements ILaTeX {
 		const firstChildNode = crudeSvg.children()[0]?.node;
 		if (crudeSvg.children().length < 2 || !firstChildNode || firstChildNode.nodeName.toLowerCase() !== "defs") {
 			this.svg = crudeSvg;
-			this.svg.attr({ height: null, preserveAspectRatio: "xMinYMin" });
-			this.svg.width(this.contentWidth!);
-			this.svg.attr({ style: `color:${this.style.colour}` });
+			this.svg.attr({
+				width: this.contentWidth,
+				height: this.contentHeight,
+				preserveAspectRatio: "xMinYMin",
+				style: `color:${this.style.colour}; overflow: visible;`
+			});
 
 			if (this.style.background) {
 				this.svg.add(
@@ -154,14 +160,15 @@ export class LaTeX extends TextBase implements ILaTeX {
 
 		this.svg = crudeSvg;
 
-		this.svg.attr({ height: null, preserveAspectRatio: "xMinYMin" });
-		this.svg.width(this.contentWidth!);
-		this.svg.attr({ style: `color:${this.style.colour}` });
-
-		var group = this.svg.children()[1];
+		this.svg.attr({
+			width: this.contentWidth,
+			height: this.contentHeight,
+			preserveAspectRatio: "xMinYMin",
+			style: `color:${this.style.colour}; overflow: visible;`
+		});
 
 		if (this.style.background) {
-			group.add(
+			this.svg.add(
 				SVG(`<rect width="100%" height="100%" fill="${this.style.background}"></rect>`),
 				0
 			);

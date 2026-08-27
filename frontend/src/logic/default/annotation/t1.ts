@@ -9,7 +9,7 @@ export const DEFAULT_ANNOTATION_T1: ILaTeX = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 10,
+		"fontSize": 20,
 		"colour": "black",
 		"background": null,
 		"display": "block"
