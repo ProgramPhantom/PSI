@@ -83,6 +83,8 @@ export default class Label extends Aligner implements ILabel {
 		}
 		child.padding = [0, 0, 0, 0];
 
+		child.placementControl = "auto"
+
 		if (this.labelConfig?.textPosition === "bottom") {
 			this.setChildIndex(child, 1);
 		} else {
@@ -97,6 +99,8 @@ export default class Label extends Aligner implements ILabel {
 				alignment: { crossAxis: "centre", mainAxis: "centre" }
 			}
 		}
+
+		child.placementControl = "auto"
 
 		child.sizeMode = {
 			x: this.crossAxis === "x" ? "grow" : "fixed",

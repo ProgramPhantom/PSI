@@ -64,6 +64,8 @@ export default class Sequence extends Grid implements ISequence {
 
 	constructor(params: ISequence) {
 		super(params);
+
+		this.sizeMode = { x: "fit", y: "fit" }
 	}
 
 	// --------------- Compute Methods ---------------

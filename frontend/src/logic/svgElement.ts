@@ -95,7 +95,11 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		}
 
 		// Apply flip based on this.flipped
-		if (this.flipped) {
+		if (this.flipped?.x && this.flipped?.y) {
+			this.elementGroup.transform({ flip: "both", origin: "center" });
+		} else if (this.flipped?.x) {
+			this.elementGroup.transform({ flip: "x", origin: "center" });
+		} else if (this.flipped?.y) {
 			this.elementGroup.transform({ flip: "y", origin: "center" });
 		} else {
 			this.elementGroup.transform({});

@@ -67,6 +67,13 @@ export default class SimpleLabelGroup extends Grid {
 		};
 		child.placementControl = "auto";
 
+		if (this.sizeMode?.x === "grow" || this.sizeMode?.x === "fixed") {
+			child.sizeMode.x = "grow";
+		}
+		if (this.sizeMode?.y === "grow" || this.sizeMode?.y === "fixed") {
+			child.sizeMode.y = "grow";
+		}
+
 		this.ref = child.ref + "-simpleLabelGroup";
 	}
 

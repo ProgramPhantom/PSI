@@ -134,8 +134,27 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			cell.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
 		});
 
-		this.setSizeByDimension(intrinsicLength, this.mainAxis);
-		this.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
+		if (this.mainAxis === "x") {
+			this.minContentWidth = intrinsicLength;
+			this.minContentHeight = intrinsicWidth;
+		} else {
+			this.minContentWidth = intrinsicWidth;
+			this.minContentHeight = intrinsicLength;
+		}
+
+		// TODO: perf improvement by stopping compute when fixed?
+		if (this.sizeMode?.[this.mainAxis] !== "fixed") {
+			this.setSizeByDimension(intrinsicLength, this.mainAxis);
+		} else {
+			const minMain = this.mainAxis === "x" ? this.minContentWidth : this.minContentHeight;
+			this.setSizeByDimension(Math.max(minMain, this.getSizeByDimension(this.mainAxis)), this.mainAxis);
+		}
+		if (this.sizeMode?.[this.crossAxis] !== "fixed") {
+			this.setContentSizeByDimension(intrinsicWidth, this.crossAxis);
+		} else {
+			const minCross = this.crossAxis === "x" ? this.minContentWidth : this.minContentHeight;
+			this.setContentSizeByDimension(Math.max(minCross, this.getContentSizeByDimension(this.crossAxis)), this.crossAxis);
+		}
 
 		return { width: this.width, height: this.height };
 	}

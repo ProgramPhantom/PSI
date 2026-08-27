@@ -102,7 +102,10 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 						config: {}
 					}
 
-					singletonState.flipped = singletonState.pulseLayoutConfig?.orientation === "bottom" ? true : false
+					singletonState.flipped = {
+						x: false,
+						y: singletonState.pulseLayoutConfig?.orientation === "bottom"
+					};
 
 					if (dropResult.data.insert === true) {
 						ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);

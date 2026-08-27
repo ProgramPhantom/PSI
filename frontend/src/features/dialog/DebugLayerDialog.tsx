@@ -1,6 +1,6 @@
 import { Checkbox, Dialog, DialogBody } from "@blueprintjs/core";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { toggleDebugSelectionType } from "../../redux/slices/applicationSlice";
+import { toggleDebugSelectionType, toggleDebugSelectedElement } from "../../redux/slices/applicationSlice";
 import { setDebugLayerDialogOpen } from "../../redux/slices/dialogSlice";
 
 
@@ -8,6 +8,7 @@ export function DebugLayerDialog() {
 	const dispatch = useAppDispatch();
 	const open = useAppSelector((state) => state.dialog.isDebugLayerDialogOpen);
 	const debugSelection = useAppSelector((state) => state.application.debugSelectionTypes);
+	const debugSelectedElement = useAppSelector((state) => state.application.debugSelectedElement);
 
 	return (
 		<Dialog
@@ -22,6 +23,14 @@ export function DebugLayerDialog() {
 			icon="wrench">
 			<DialogBody style={{}}>
 				<div style={{ display: "flex", flexDirection: "column" }}>
+					<Checkbox
+						label="Selected Element"
+						alignIndicator="end"
+						checked={debugSelectedElement}
+						onChange={() => {
+							dispatch(toggleDebugSelectedElement());
+						}}></Checkbox>
+
 					<Checkbox
 						label="Pulses"
 						alignIndicator="end"

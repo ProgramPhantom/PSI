@@ -71,8 +71,8 @@ export type PlacementConfiguration = { type: "free" } |
 
 export type PlacementControl = "auto" | "user";
 
-export type ContainerSizeMethod = "fit" | "grow"
-export type SizeMethod = "fixed" | ContainerSizeMethod
+export type ContainerSizeMethod = "fixed" | "fit" | "grow"
+export type SizeMethod = ContainerSizeMethod
 export type SizeConfiguration = Record<Dimensions, SizeMethod>
 
 
@@ -111,9 +111,24 @@ export interface IHaveSize {
 	computeSize: () => Size
 }
 
+export function normalizeAngle(deg: number): number {
+	let normalized = deg % 360;
+	if (normalized < 0) {
+		normalized += 360;
+	}
+	// Avoid -0 and clean up floating point imprecision
+	if (Object.is(normalized, -0) || Math.abs(normalized - 360) < 1e-9) {
+		normalized = 0;
+	}
+	return Math.round(normalized * 100) / 100;
+}
+
 export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
+	minContentWidth?: number;
+	minContentHeight?: number;
+	rotation?: number;
 
 	placementMode?: PlacementConfiguration
 	placementControl?: PlacementControl
@@ -158,6 +173,9 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
+			minContentWidth: this.minContentWidth,
+			minContentHeight: this.minContentHeight,
+			rotation: this.rotation,
 			placementMode: this._placementMode,
 			placementControl: this.placementControl,
 			sizeMode: this.sizeMode,
@@ -182,6 +200,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 	protected _contentWidth: number;
 	protected _contentHeight: number;
+	protected _rotation: number = 0;
+
+	public get rotation(): number {
+		return this._rotation;
+	}
+	public set rotation(value: number) {
+		this._rotation = normalizeAngle(value);
+	}
 
 	protected _placementMode: PlacementConfiguration;
 	public get placementMode() {
@@ -216,6 +242,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		params: ISpacial = {
 			contentWidth: 0,
 			contentHeight: 0,
+			rotation: 0,
 			placementMode: { type: "free" },
 			placementControl: "user",
 			sizeMode: { x: "fixed", y: "fixed" },
@@ -240,6 +267,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 		this._contentWidth = params.contentWidth ?? 0;
 		this._contentHeight = params.contentHeight ?? 0;
+		this._rotation = params.rotation !== undefined ? normalizeAngle(params.rotation) : 0;
 
 		if (params.pulseLayoutConfig !== undefined) {
 			this._pulseLayoutConfig = params.pulseLayoutConfig;
@@ -317,6 +345,37 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	// ----------- Size --------------
+	protected _minContentWidth: number = 5;
+	protected _minContentHeight: number = 5;
+
+	get minContentWidth(): number {
+		return this._minContentWidth;
+	}
+	set minContentWidth(v: number) {
+		this._minContentWidth = v;
+	}
+
+	get minContentHeight(): number {
+		return this._minContentHeight;
+	}
+	set minContentHeight(v: number) {
+		this._minContentHeight = v;
+	}
+
+	get minWidth(): number {
+		return this.minContentWidth;
+	}
+	set minWidth(v: number) {
+		this.minContentWidth = v;
+	}
+
+	get minHeight(): number {
+		return this.minContentHeight;
+	}
+	set minHeight(v: number) {
+		this.minContentHeight = v;
+	}
+
 	get contentWidth(): number {
 		return this._contentWidth;
 	}
@@ -674,6 +733,15 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				return this.width;
 			case "y":
 				return this.height;
+		}
+	}
+
+	getContentSizeByDimension(dim: Dimensions): number {
+		switch (dim) {
+			case "x":
+				return this.contentWidth;
+			case "y":
+				return this.contentHeight;
 		}
 	}
 

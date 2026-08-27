@@ -3,7 +3,8 @@ import {
 	HTMLSelect,
 	InputGroup,
 	NumericInput,
-	Section
+	Section,
+	Switch
 } from "@blueprintjs/core";
 import React from "react";
 import { Controller, FieldErrors, useFormContext, useWatch } from "react-hook-form";
@@ -70,7 +71,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	const heightActive = currentY === "fixed";
 	const placementModeType = watchedPlacementModeType ?? theseVals?.placementMode?.type ?? props.target?.placementMode?.type ?? "free";
 	const placementControl = watchedPlacementControl ?? theseVals?.placementControl ?? props.target?.placementControl ?? "user";
-	let sizeOptions = isCollection ? ["fit", "grow"] : ["fixed", "fit", "grow"];
+	let sizeOptions = ["fixed", "fit", "grow"];
 	if (placementModeType === "free") {
 		sizeOptions = sizeOptions.filter((opt) => opt !== "grow");
 	}
@@ -80,63 +81,106 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 		<>
 			<ControlGroup vertical={true} className={styles.formGroupContainer}>
 				{/* Width and height */}
-				{(props.widthDisplay !== false || props.heightDisplay !== false) && (
-					<DoubleField
-						label={(!widthActive || !heightActive) ? "Content Size (inherited)" : "Content Size"}
-						intent={(errors?.contentWidth || errors?.contentHeight) ? "danger" : "none"}
-						helperText={(errors?.contentWidth?.message || errors?.contentHeight?.message)?.toString()}
-						leftLabel={props.widthDisplay !== false ? "W" : undefined}
-						leftField={
-							props.widthDisplay !== false ? (
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}contentWidth`}
-									render={({ field }) => (
-										<NumericInput fill
-											{...field}
-											id="width-input"
-											className={fieldStyles.compactNumericInput}
-											onValueChange={field.onChange}
-											size="small"
-											disabled={!widthActive}
-											title={!widthActive ? "Width inherited" : ""}
-											intent={errors?.contentWidth ? "danger" : "none"}
-											allowNumericCharactersOnly={true}></NumericInput>
-									)}
-									rules={{
-										required: { value: widthActive, message: "Width required" },
-										min: { value: widthActive ? 1 : 0, message: "Width must be at least 1" },
-										max: { value: 10000, message: "Width cannot exceed 10000" },
-									}}></Controller>
-							) : undefined
-						}
-						rightLabel={props.heightDisplay !== false ? "H" : undefined}
-						rightField={
-							props.heightDisplay !== false ? (
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}contentHeight`}
-									render={({ field }) => (
-										<NumericInput fill
-											{...field}
-											id="height-input"
-											className={fieldStyles.compactNumericInput}
-											onValueChange={field.onChange}
-											size="small"
-											disabled={!heightActive}
-											title={!heightActive ? "Height inherited" : ""}
-											intent={errors?.contentHeight ? "danger" : "none"}
-										></NumericInput>
-									)}
-									rules={{
-										required: { value: heightActive, message: "Height required" },
-										min: { value: heightActive ? 1 : 0, message: "Height must be at least 1" },
-										max: { value: 10000, message: "Height cannot exceed 10000" },
-									}}></Controller>
-							) : undefined
-						}
-					/>
-				)}
+				{(props.widthDisplay !== false || props.heightDisplay !== false) && (() => {
+					const minWidthVal = props.target?.minContentWidth ?? (widthActive ? 1 : 0);
+					const minHeightVal = props.target?.minContentHeight ?? (heightActive ? 1 : 0);
+					return (
+						<DoubleField
+							label={(!widthActive || !heightActive) ? "Content Size (inherited)" : "Content Size"}
+							intent={(errors?.contentWidth || errors?.contentHeight) ? "danger" : "none"}
+							helperText={(errors?.contentWidth?.message || errors?.contentHeight?.message)?.toString()}
+							leftLabel={props.widthDisplay !== false ? "W" : undefined}
+							leftField={
+								props.widthDisplay !== false ? (
+									<Controller
+										control={formControls.control}
+										name={`${fullPrefix}contentWidth`}
+										render={({ field }) => (
+											<NumericInput fill
+												{...field}
+												id="width-input"
+												className={fieldStyles.compactNumericInput}
+												onValueChange={field.onChange}
+												size="small"
+												min={widthActive ? minWidthVal : undefined}
+												disabled={!widthActive}
+												title={!widthActive ? "Width inherited" : ""}
+												intent={errors?.contentWidth ? "danger" : "none"}
+												allowNumericCharactersOnly={true}></NumericInput>
+										)}
+										rules={{
+											required: { value: widthActive, message: "Width required" },
+											min: { value: minWidthVal, message: `Width must be at least ${minWidthVal}` },
+											max: { value: 10000, message: "Width cannot exceed 10000" },
+										}}></Controller>
+								) : undefined
+							}
+							rightLabel={props.heightDisplay !== false ? "H" : undefined}
+							rightField={
+								props.heightDisplay !== false ? (
+									<Controller
+										control={formControls.control}
+										name={`${fullPrefix}contentHeight`}
+										render={({ field }) => (
+											<NumericInput fill
+												{...field}
+												id="height-input"
+												className={fieldStyles.compactNumericInput}
+												onValueChange={field.onChange}
+												size="small"
+												min={heightActive ? minHeightVal : undefined}
+												disabled={!heightActive}
+												title={!heightActive ? "Height inherited" : ""}
+												intent={errors?.contentHeight ? "danger" : "none"}
+											></NumericInput>
+										)}
+										rules={{
+											required: { value: heightActive, message: "Height required" },
+											min: { value: minHeightVal, message: `Height must be at least ${minHeightVal}` },
+											max: { value: 10000, message: "Height cannot exceed 10000" },
+										}}></Controller>
+								) : undefined
+							}
+						/>
+					);
+				})()}
+
+				{/* Flipped */}
+				<DoubleField
+					label="Flipped"
+					leftLabel="X"
+					leftField={
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}flipped.x`}
+							render={({ field }) => (
+								<Switch
+									{...field}
+									id="flipped-x-switch"
+									onChange={(e) => field.onChange((e.target as HTMLInputElement).checked)}
+									checked={Boolean(field.value)}
+									className={fieldStyles.compactSwitch}
+								/>
+							)}
+						/>
+					}
+					rightLabel="Y"
+					rightField={
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}flipped.y`}
+							render={({ field }) => (
+								<Switch
+									{...field}
+									id="flipped-y-switch"
+									onChange={(e) => field.onChange((e.target as HTMLInputElement).checked)}
+									checked={Boolean(field.value)}
+									className={fieldStyles.compactSwitch}
+								/>
+							)}
+						/>
+					}
+				/>
 
 			</ControlGroup>
 
