@@ -439,7 +439,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 						}}
 					/>
 
-					{HANDLE_DIRECTIONS.map((dir) => {
+					{element.isResizable && HANDLE_DIRECTIONS.map((dir) => {
 						const pos = getHandlePosition(dir);
 						return (
 							<div

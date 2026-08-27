@@ -25,6 +25,10 @@ export abstract class TextBase extends Visual implements ITextBase {
 	intrinsicSize!: { width: number; height: number };
 	wHRatio!: number;
 
+	public override get isResizable(): boolean {
+		return false;
+	}
+
 	get state(): ITextBase {
 		return {
 			style: this.style,
