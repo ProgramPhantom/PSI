@@ -1,5 +1,5 @@
-import { Button, Menu, MenuDivider, MenuItem, Popover } from "@blueprintjs/core";
-import React from "react";
+import { Button, Checkbox, Menu, MenuDivider, MenuItem, Popover } from "@blueprintjs/core";
+import React, { useEffect } from "react";
 import { defaultLine } from "../../../logic/default/index";
 import { HeadStyle } from "../../../logic/line";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
@@ -35,6 +35,19 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
         ((defaultLine.lineStyle?.stroke as string) ?? "#000000");
     const selectedDashing = (config?.lineStyle?.dashing as [number, number]) ??
         ((defaultLine.lineStyle?.dashing as [number, number]) ?? [0, 0]);
+
+    const isCustomColor = !COLOR_PRESETS.some(
+        (c) => c.toLowerCase() === selectedStroke.toLowerCase()
+    );
+    const [customColorValue, setCustomColorValue] = React.useState(
+        isCustomColor ? selectedStroke : "#ff0000"
+    );
+
+    useEffect(() => {
+        if (!COLOR_PRESETS.some((c) => c.toLowerCase() === selectedStroke.toLowerCase())) {
+            setCustomColorValue(selectedStroke);
+        }
+    }, [selectedStroke]);
 
     const updateArrowConfig = (partial: any) => {
         const currentConfig = {
@@ -95,6 +108,19 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                 headStyle: selectedHeadStyle
             }
         });
+    };
+
+    const handleCustomCheckboxChange = (checked: boolean) => {
+        if (checked) {
+            handleStrokeSelect(customColorValue);
+        } else {
+            handleStrokeSelect(COLOR_PRESETS[0]);
+        }
+    };
+
+    const handleCustomColorBlur = (color: string) => {
+        setCustomColorValue(color);
+        handleStrokeSelect(color);
     };
 
     const handleDashingSelect = (dashing: [number, number]) => {
@@ -247,12 +273,17 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                         ))}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                        <Checkbox
+                            checked={isCustomColor}
+                            onChange={(e) => handleCustomCheckboxChange((e.target as HTMLInputElement).checked)}
+                            style={{ margin: 0 }}
+                        />
                         <span style={{ fontSize: '12px' }}>Custom:</span>
                         <input
                             type="color"
-                            key={selectedStroke}
-                            defaultValue={selectedStroke}
-                            onBlur={(e) => handleStrokeSelect(e.target.value)}
+                            key={customColorValue}
+                            defaultValue={customColorValue}
+                            onBlur={(e) => handleCustomColorBlur(e.target.value)}
                             style={{ width: '28px', height: '24px', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}
                         />
                     </div>
