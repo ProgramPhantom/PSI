@@ -231,15 +231,15 @@ export function LineTool(props: IDrawArrowProps) {
 
 	return (
 		<>
-			{/* Fullscreen mouse capture backdrop */}
+			{/* Mouse capture backdrop covering negative and positive diagram space */}
 			<div
 				className="nopan"
 				style={{
-					position: "fixed",
-					left: 0,
-					top: 0,
-					width: "100vw",
-					height: "100vh",
+					position: "absolute",
+					left: "-50000px",
+					top: "-50000px",
+					width: "100000px",
+					height: "100000px",
 					pointerEvents: "auto",
 					cursor: "crosshair",
 					zIndex: 10002
