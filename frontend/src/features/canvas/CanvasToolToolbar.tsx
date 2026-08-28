@@ -17,6 +17,12 @@ const COLOR_PRESETS = [
     "#d13913"
 ];
 
+const DASH_STYLES: { dashing: [number, number]; id: string }[] = [
+    { dashing: [0, 0], id: "solid" },
+    { dashing: [6, 6], id: "dashed" },
+    { dashing: [2, 4], id: "dotted" }
+];
+
 export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
@@ -54,7 +60,7 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
         ? (selectedTool.config?.thickness ?? arrowToolConfig.current.thickness)
         : arrowToolConfig.current.thickness;
 
-    const selectedHeadStyle = selectedTool.type === 'arrow'
+    const selectedHeadStyle: [HeadStyle, HeadStyle] = selectedTool.type === 'arrow'
         ? (selectedTool.config?.lineStyle?.headStyle ?? arrowToolConfig.current.lineStyle.headStyle)
         : arrowToolConfig.current.lineStyle.headStyle;
 
@@ -90,12 +96,28 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
         }));
     };
 
-    const handleHeadStyleSelect = (headStyle: [HeadStyle, HeadStyle]) => {
+    const handleStartHeadSelect = (startHead: HeadStyle) => {
+        const newHeadStyle: [HeadStyle, HeadStyle] = [startHead, selectedHeadStyle[1]];
         arrowToolConfig.current = {
             ...arrowToolConfig.current,
             lineStyle: {
                 ...arrowToolConfig.current.lineStyle,
-                headStyle
+                headStyle: newHeadStyle
+            }
+        };
+        dispatch(setSelectedTool({
+            type: 'arrow',
+            config: arrowToolConfig.current
+        }));
+    };
+
+    const handleEndHeadSelect = (endHead: HeadStyle) => {
+        const newHeadStyle: [HeadStyle, HeadStyle] = [selectedHeadStyle[0], endHead];
+        arrowToolConfig.current = {
+            ...arrowToolConfig.current,
+            lineStyle: {
+                ...arrowToolConfig.current.lineStyle,
+                headStyle: newHeadStyle
             }
         };
         dispatch(setSelectedTool({
@@ -366,74 +388,117 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                 </Tooltip>
                 <Popover
                     content={
-                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                            <Menu style={{ minWidth: 150 }}>
-                                <MenuDivider title="Arrowhead Style" />
-                                <MenuItem
-                                    text="Single Arrow (→)"
-                                    active={selectedHeadStyle[0] === 'none' && selectedHeadStyle[1] === 'default'}
-                                    onClick={() => handleHeadStyleSelect(['none', 'default'])}
-                                />
-                                <MenuItem
-                                    text="Double Arrow (↔)"
-                                    active={selectedHeadStyle[0] === 'default' && selectedHeadStyle[1] === 'default'}
-                                    onClick={() => handleHeadStyleSelect(['default', 'default'])}
-                                />
-                                <MenuItem
-                                    text="Plain Line (—)"
-                                    active={selectedHeadStyle[0] === 'none' && selectedHeadStyle[1] === 'none'}
-                                    onClick={() => handleHeadStyleSelect(['none', 'none'])}
-                                />
-                                <MenuItem
-                                    text="Reverse Arrow (←)"
-                                    active={selectedHeadStyle[0] === 'default' && selectedHeadStyle[1] === 'none'}
-                                    onClick={() => handleHeadStyleSelect(['default', 'none'])}
-                                />
-                                <MenuItem
-                                    text="Thin Arrow (⭢)"
-                                    active={selectedHeadStyle[0] === 'none' && selectedHeadStyle[1] === 'thin'}
-                                    onClick={() => handleHeadStyleSelect(['none', 'thin'])}
-                                />
-                                <MenuItem
-                                    text="Thin Double (⭤)"
-                                    active={selectedHeadStyle[0] === 'thin' && selectedHeadStyle[1] === 'thin'}
-                                    onClick={() => handleHeadStyleSelect(['thin', 'thin'])}
-                                />
-                            </Menu>
+                        <div style={{ display: 'flex', flexDirection: 'row', padding: '4px' }}>
+                            {/* Column 1: Arrowheads with Start and End dropdowns */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '6px 10px', minWidth: 140 }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, color: '#5f6b7c', textTransform: 'uppercase' }}>
+                                    Arrowheads
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#5f6b7c' }}>Start</span>
+                                    <Popover
+                                        minimal={true}
+                                        position="bottom-left"
+                                        content={
+                                            <Menu style={{ minWidth: 100 }}>
+                                                <MenuItem
+                                                    text="None"
+                                                    active={selectedHeadStyle[0] === 'none'}
+                                                    onClick={() => handleStartHeadSelect('none')}
+                                                />
+                                                <MenuItem
+                                                    text="Default"
+                                                    active={selectedHeadStyle[0] === 'default'}
+                                                    onClick={() => handleStartHeadSelect('default')}
+                                                />
+                                                <MenuItem
+                                                    text="Thin"
+                                                    active={selectedHeadStyle[0] === 'thin'}
+                                                    onClick={() => handleStartHeadSelect('thin')}
+                                                />
+                                            </Menu>
+                                        }
+                                    >
+                                        <Button
+                                            text={selectedHeadStyle[0].charAt(0).toUpperCase() + selectedHeadStyle[0].slice(1)}
+                                            endIcon="caret-down"
+                                            size="small"
+                                            variant="outlined"
+                                            style={{ justifyContent: 'space-between', minWidth: '100px' }}
+                                        />
+                                    </Popover>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#5f6b7c' }}>End</span>
+                                    <Popover
+                                        minimal={true}
+                                        position="bottom-left"
+                                        content={
+                                            <Menu style={{ minWidth: 100 }}>
+                                                <MenuItem
+                                                    text="None"
+                                                    active={selectedHeadStyle[1] === 'none'}
+                                                    onClick={() => handleEndHeadSelect('none')}
+                                                />
+                                                <MenuItem
+                                                    text="Default"
+                                                    active={selectedHeadStyle[1] === 'default'}
+                                                    onClick={() => handleEndHeadSelect('default')}
+                                                />
+                                                <MenuItem
+                                                    text="Thin"
+                                                    active={selectedHeadStyle[1] === 'thin'}
+                                                    onClick={() => handleEndHeadSelect('thin')}
+                                                />
+                                            </Menu>
+                                        }
+                                    >
+                                        <Button
+                                            text={selectedHeadStyle[1].charAt(0).toUpperCase() + selectedHeadStyle[1].slice(1)}
+                                            endIcon="caret-down"
+                                            size="small"
+                                            variant="outlined"
+                                            style={{ justifyContent: 'space-between', minWidth: '100px' }}
+                                        />
+                                    </Popover>
+                                </div>
+                            </div>
 
                             <div style={{ width: 1, backgroundColor: 'rgba(200, 200, 200, 0.3)', margin: '4px 0' }} />
 
-                            <Menu style={{ minWidth: 120 }}>
+                            {/* Column 2: Thickness with horizontal rects and pixel count */}
+                            <Menu style={{ minWidth: 130 }}>
                                 <MenuDivider title="Thickness" />
-                                <MenuItem
-                                    text="Thin (1px)"
-                                    active={selectedThickness === 1}
-                                    onClick={() => handleThicknessSelect(1)}
-                                />
-                                <MenuItem
-                                    text="Regular (2px)"
-                                    active={selectedThickness === 2}
-                                    onClick={() => handleThicknessSelect(2)}
-                                />
-                                <MenuItem
-                                    text="Medium (3px)"
-                                    active={selectedThickness === 3}
-                                    onClick={() => handleThicknessSelect(3)}
-                                />
-                                <MenuItem
-                                    text="Thick (4px)"
-                                    active={selectedThickness === 4}
-                                    onClick={() => handleThicknessSelect(4)}
-                                />
-                                <MenuItem
-                                    text="Extra Thick (6px)"
-                                    active={selectedThickness === 6}
-                                    onClick={() => handleThicknessSelect(6)}
-                                />
+                                {[1, 2, 3, 4, 6, 8].map((thickness) => {
+                                    const isActive = selectedThickness === thickness;
+                                    return (
+                                        <MenuItem
+                                            key={thickness}
+                                            active={isActive}
+                                            onClick={() => handleThicknessSelect(thickness)}
+                                            text={
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '14px' }}>
+                                                    <div
+                                                        style={{
+                                                            width: '45px',
+                                                            height: `${thickness}px`,
+                                                            backgroundColor: isActive ? '#fff' : '#182026',
+                                                            borderRadius: '1px'
+                                                        }}
+                                                    />
+                                                    <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>{thickness}px</span>
+                                                </div>
+                                            }
+                                        />
+                                    );
+                                })}
                             </Menu>
 
                             <div style={{ width: 1, backgroundColor: 'rgba(200, 200, 200, 0.3)', margin: '4px 0' }} />
 
+                            {/* Column 3: Color & Dash Style (visual SVG path) */}
                             <div style={{ minWidth: 140, padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 <div style={{ fontSize: '11px', fontWeight: 600, color: '#5f6b7c', textTransform: 'uppercase', marginBottom: '2px' }}>
                                     Color
@@ -471,21 +536,33 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                                     Dash Style
                                 </div>
                                 <Menu style={{ padding: 0, minWidth: 'unset' }}>
-                                    <MenuItem
-                                        text="Solid"
-                                        active={selectedDashing[0] === 0}
-                                        onClick={() => handleDashingSelect([0, 0])}
-                                    />
-                                    <MenuItem
-                                        text="Dashed"
-                                        active={selectedDashing[0] === 6}
-                                        onClick={() => handleDashingSelect([6, 6])}
-                                    />
-                                    <MenuItem
-                                        text="Dotted"
-                                        active={selectedDashing[0] === 2}
-                                        onClick={() => handleDashingSelect([2, 4])}
-                                    />
+                                    {DASH_STYLES.map((dash) => {
+                                        const isActive = selectedDashing[0] === dash.dashing[0];
+                                        const strokeColor = isActive ? '#fff' : '#182026';
+                                        return (
+                                            <MenuItem
+                                                key={dash.id}
+                                                active={isActive}
+                                                onClick={() => handleDashingSelect(dash.dashing)}
+                                                text={
+                                                    <div style={{ display: 'flex', alignItems: 'center', height: '18px', width: '70px' }}>
+                                                        <svg width="70" height="12" style={{ display: 'block', overflow: 'visible' }}>
+                                                            <line
+                                                                x1="2"
+                                                                y1="6"
+                                                                x2="68"
+                                                                y2="6"
+                                                                stroke={strokeColor}
+                                                                strokeWidth="2.5"
+                                                                strokeDasharray={dash.dashing[0] > 0 ? `${dash.dashing[0]} ${dash.dashing[1]}` : undefined}
+                                                                strokeLinecap="round"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                }
+                                            />
+                                        );
+                                    })}
                                 </Menu>
                             </div>
                         </div>
