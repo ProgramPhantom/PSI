@@ -142,17 +142,15 @@ export function LineTool(props: IDrawArrowProps) {
 	const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
 	const thickness = props.config?.thickness ?? 2;
 
-	let adjStartX = 0;
-	let adjStartY = 0;
-	let adjEndX = 0;
-	let adjEndY = 0;
+	let adjStartX = startPoint?.x ?? 0;
+	let adjStartY = startPoint?.y ?? 0;
+	let adjEndX = currentPoint?.x ?? 0;
+	let adjEndY = currentPoint?.y ?? 0;
 
 	if (startPoint && currentPoint) {
 		const dx = currentPoint.x - startPoint.x;
 		const dy = currentPoint.y - startPoint.y;
-		const angle = Math.atan2(dy, dx);
-		const cos = Math.cos(angle);
-		const sin = Math.sin(angle);
+		const length = Math.hypot(dx, dy);
 
 		const startMarkerLength = MARKER_LENGTHS[headStyle[0]] ?? 0;
 		const endMarkerLength = MARKER_LENGTHS[headStyle[1]] ?? 0;
@@ -160,28 +158,43 @@ export function LineTool(props: IDrawArrowProps) {
 		const startOffset = thickness * startMarkerLength;
 		const endOffset = thickness * endMarkerLength;
 
-		adjStartX = startPoint.x + cos * startOffset;
-		adjStartY = startPoint.y + sin * startOffset;
-		adjEndX = currentPoint.x - cos * endOffset;
-		adjEndY = currentPoint.y - sin * endOffset;
+		if (length > (startOffset + endOffset)) {
+			const angle = Math.atan2(dy, dx);
+			const cos = Math.cos(angle);
+			const sin = Math.sin(angle);
+
+			adjStartX = startPoint.x + cos * startOffset;
+			adjStartY = startPoint.y + sin * startOffset;
+			adjEndX = currentPoint.x - cos * endOffset;
+			adjEndY = currentPoint.y - sin * endOffset;
+		} else {
+			adjStartX = startPoint.x;
+			adjStartY = startPoint.y;
+			adjEndX = currentPoint.x;
+			adjEndY = currentPoint.y;
+		}
 	}
 
 	return (
-		<div
-			className="nopan"
-			style={{
-				position: "absolute",
-				left: -10000,
-				top: -10000,
-				width: 20000,
-				height: 20000,
-				pointerEvents: "auto",
-				cursor: "crosshair",
-				zIndex: 10002
-			}}
-			onClick={handleClick}
-			onMouseMove={handleMouseMove}
-		>
+		<>
+			{/* Fullscreen mouse capture backdrop */}
+			<div
+				className="nopan"
+				style={{
+					position: "fixed",
+					left: 0,
+					top: 0,
+					width: "100vw",
+					height: "100vh",
+					pointerEvents: "auto",
+					cursor: "crosshair",
+					zIndex: 10002
+				}}
+				onClick={handleClick}
+				onMouseMove={handleMouseMove}
+			/>
+
+			{/* Live Arrow Preview SVG */}
 			{startPoint && currentPoint && (
 				<svg
 					style={{
@@ -218,15 +231,6 @@ export function LineTool(props: IDrawArrowProps) {
 						</marker>
 					</defs>
 
-					{/* Start point anchor circle */}
-					<circle
-						cx={startPoint.x}
-						cy={startPoint.y}
-						r={Math.max(2.5, thickness)}
-						fill={stroke}
-						opacity={0.7}
-					/>
-
 					{/* Arrow path */}
 					<path
 						d={`M ${adjStartX} ${adjStartY} L ${adjEndX} ${adjEndY}`}
@@ -238,17 +242,9 @@ export function LineTool(props: IDrawArrowProps) {
 						markerEnd={headStyle[1] !== "none" ? `url(#preview-marker-${headStyle[1]})` : undefined}
 					/>
 
-					{/* Subtle endpoint guide circle */}
-					<circle
-						cx={currentPoint.x}
-						cy={currentPoint.y}
-						r={Math.max(2, thickness * 0.8)}
-						fill={stroke}
-						opacity={0.4}
-					/>
 				</svg>
 			)}
-		</div>
+		</>
 	);
 }
 

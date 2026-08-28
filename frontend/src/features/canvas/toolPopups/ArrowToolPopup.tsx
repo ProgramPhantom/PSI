@@ -250,7 +250,7 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
 
             {/* Column 3: Color & Dash Style (visual SVG path) */}
             <Menu style={{ minWidth: 140 }}>
-                <MenuDivider title="Color" />
+                <MenuDivider title="Colour" />
                 <div style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 22px)', gap: '6px' }}>
                         {COLOR_PRESETS.map((c) => (
