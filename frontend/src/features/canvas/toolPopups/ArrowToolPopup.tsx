@@ -118,6 +118,7 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                     <span style={{ fontSize: '12px', fontWeight: 500, color: '#5f6b7c' }}>Start</span>
                     <Popover
                         minimal={true}
+                        captureDismiss={true}
                         position="bottom-left"
                         content={
                             <Menu style={{ minWidth: 100 }}>
@@ -153,6 +154,7 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                     <span style={{ fontSize: '12px', fontWeight: 500, color: '#5f6b7c' }}>End</span>
                     <Popover
                         minimal={true}
+                        captureDismiss={true}
                         position="bottom-left"
                         content={
                             <Menu style={{ minWidth: 100 }}>
@@ -195,6 +197,7 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                     return (
                         <MenuItem
                             key={thickness}
+                            shouldDismissPopover={false}
                             active={isActive}
                             onClick={() => handleThicknessSelect(thickness)}
                             text={
@@ -261,6 +264,7 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                         return (
                             <MenuItem
                                 key={dash.id}
+                                shouldDismissPopover={false}
                                 active={isActive}
                                 onClick={() => handleDashingSelect(dash.dashing)}
                                 text={

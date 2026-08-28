@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Popover, Position, Tooltip } from "@blueprintjs/core";
-import React from "react";
+import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { CanvasToolType, setSelectedTool } from "../../redux/slices/applicationSlice";
 import styles from "./styles/toolbars.module.scss";
@@ -10,12 +10,17 @@ import TextToolPopup from "./toolPopups/TextToolPopup";
 export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
+    const [openPopup, setOpenPopup] = useState<CanvasToolType | null>(null);
 
     const selectTool = (toolType: CanvasToolType) => {
         dispatch(setSelectedTool({
             type: toolType,
             config: selectedTool.type === toolType ? selectedTool.config : {}
         }));
+    };
+
+    const togglePopup = (toolType: CanvasToolType) => {
+        setOpenPopup((prev) => (prev === toolType ? null : toolType));
     };
 
     return (
@@ -30,7 +35,10 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     icon="move"
                     active={selectedTool.type === 'select'}
                     intent={selectedTool.type === 'select' ? 'primary' : 'none'}
-                    onClick={() => selectTool('select')}
+                    onClick={() => {
+                        setOpenPopup(null);
+                        selectTool('select');
+                    }}
                     variant="minimal"
                 />
             </Tooltip>
@@ -46,14 +54,19 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     />
                 </Tooltip>
                 <Popover
+                    isOpen={openPopup === 'text'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'text' : null)}
                     content={<TextToolPopup />}
                     position="top"
                     minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
                 >
                     <Button
                         icon="caret-up"
-                        active={selectedTool.type === 'text'}
+                        active={openPopup === 'text'}
                         intent={selectedTool.type === 'text' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('text')}
                         variant="minimal"
                         style={{ minWidth: "16px", padding: 0 }}
                     />
@@ -71,14 +84,19 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     />
                 </Tooltip>
                 <Popover
+                    isOpen={openPopup === 'latex'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'latex' : null)}
                     content={<LaTeXToolPopup />}
                     position="top"
                     minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
                 >
                     <Button
                         icon="caret-up"
-                        active={selectedTool.type === 'latex'}
+                        active={openPopup === 'latex'}
                         intent={selectedTool.type === 'latex' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('latex')}
                         variant="minimal"
                         style={{ minWidth: "16px", padding: 0 }}
                     />
@@ -106,14 +124,19 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     />
                 </Tooltip>
                 <Popover
+                    isOpen={openPopup === 'arrow'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'arrow' : null)}
                     content={<ArrowToolPopup />}
                     position="top"
                     minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
                 >
                     <Button
                         icon="caret-up"
-                        active={selectedTool.type === 'arrow'}
+                        active={openPopup === 'arrow'}
                         intent={selectedTool.type === 'arrow' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('arrow')}
                         variant="minimal"
                         style={{ minWidth: "16px", padding: 0 }}
                     />

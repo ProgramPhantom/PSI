@@ -25,31 +25,37 @@ export const LaTeXToolPopup: React.FC = React.memo(() => {
             <MenuDivider title="Font Size" />
             <MenuItem
                 text="XS (15)"
+                shouldDismissPopover={false}
                 active={selectedFontSize === 15}
                 onClick={() => handleLaTeXFontSizeSelect(15)}
             />
             <MenuItem
                 text="S (25)"
+                shouldDismissPopover={false}
                 active={selectedFontSize === 25}
                 onClick={() => handleLaTeXFontSizeSelect(25)}
             />
             <MenuItem
                 text="M (35)"
+                shouldDismissPopover={false}
                 active={selectedFontSize === 35}
                 onClick={() => handleLaTeXFontSizeSelect(35)}
             />
             <MenuItem
                 text="L (45)"
+                shouldDismissPopover={false}
                 active={selectedFontSize === 45}
                 onClick={() => handleLaTeXFontSizeSelect(45)}
             />
             <MenuItem
                 text="XL (55)"
+                shouldDismissPopover={false}
                 active={selectedFontSize === 55}
                 onClick={() => handleLaTeXFontSizeSelect(55)}
             />
             <MenuItem
                 text="XXL (70)"
+                shouldDismissPopover={false}
                 active={selectedFontSize === 70}
                 onClick={() => handleLaTeXFontSizeSelect(70)}
             />
