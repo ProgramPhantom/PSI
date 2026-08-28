@@ -174,13 +174,15 @@ export default abstract class LineLike extends Visual {
 
 	public override get contentWidth(): number {
 		let val = this.computeBoundingBox().width;
-		this._contentWidth = val
+		this._contentWidth = val;
 		return val;
 	}
 	public override set contentWidth(v: number) {
-		// this.x2 = this.x + v;
-		// this._contentWidth = v;
-		//throw new Error("not possible")
+		if (this.sizeMode?.x === "fixed" && this.sizeMode?.y === "grow") {
+			// Vertical line growing along Y axis - keep X endpoints aligned
+			this.endX = this.startX;
+			return;
+		}
 
 		let quadrant = this.quadrant;
 
@@ -189,8 +191,6 @@ export default abstract class LineLike extends Visual {
 		} else {
 			this.startX = this.endX + v;
 		}
-
-
 	}
 
 	public override get contentHeight(): number {
@@ -199,18 +199,19 @@ export default abstract class LineLike extends Visual {
 		return val;
 	}
 	public override set contentHeight(v: number) {
-		// this.y2 = this.y + v;
-		//this._contentHeight = v;
+		if (this.sizeMode?.y === "fixed" && this.sizeMode?.x === "grow") {
+			// Horizontal line growing along X axis - keep Y endpoints aligned
+			this.endY = this.startY;
+			return;
+		}
 
-		// This needs investigating
 		let quadrant = this.quadrant;
 
-		if (quadrant === 2 || quadrant === 3) {
+		if (quadrant === 0 || quadrant === 1) {
 			this.endY = this.startY + v;
 		} else {
 			this.startY = this.endY + v;
 		}
-
 	}
 
 
