@@ -10,6 +10,7 @@ import LineLike, { ILineLike } from "../../logic/lineLike";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
+import { CanvasLineResizeHandles, LinePreviewState } from "./CanvasLineResizeHandles";
 import { CanvasResizeHandles, PreviewState } from "./CanvasResizeHandles";
 
 
@@ -40,6 +41,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
 		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
 		const [livePreview, setLivePreview] = useState<PreviewState | null>(null);
+		const [lineLivePreview, setLineLivePreview] = useState<LinePreviewState | null>(null);
 
 		const origContentWidth = props.element.drawContentWidth > 0 ? props.element.drawContentWidth : 1;
 		const origContentHeight = props.element.drawContentHeight > 0 ? props.element.drawContentHeight : 1;
@@ -324,7 +326,10 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 					<g
 						transform={`translate(${visualX}, ${visualY}) scale(${visualScaleX}, ${visualScaleY})`}
-						style={{ transformOrigin: "0 0" }}>
+						style={{
+							transformOrigin: "0 0",
+							opacity: lineLivePreview !== null ? 0 : 1
+						}}>
 						<svg
 							ref={visualRef}
 							x={0}
@@ -390,7 +395,11 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 				</svg>
 
 				{props.visualState === "selected" && !isDragging && !props.isHidden && props.element.placementControl !== "auto" && (
-					<CanvasResizeHandles element={props.element} scale={props.scale} onResize={setLivePreview} />
+					props.element instanceof LineLike ? (
+						<CanvasLineResizeHandles element={props.element} scale={props.scale} onResize={setLineLivePreview} />
+					) : (
+						<CanvasResizeHandles element={props.element} scale={props.scale} onResize={setLivePreview} />
+					)
 				)}
 			</>
 		);
