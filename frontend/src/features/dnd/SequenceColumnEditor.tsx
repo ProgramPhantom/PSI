@@ -38,7 +38,7 @@ export default function SequenceColumnEditor({ sequence, scale = 1 }: SequenceCo
 		const handleMouseUp = (e: MouseEvent) => {
 			const deltaPixels = e.clientX - draggingHandle.startX;
 			const deltaDiagram = deltaPixels / scale;
-			const finalWidth = Math.max(10, draggingHandle.initialWidth + deltaDiagram);
+			const finalWidth = Math.round(Math.max(10, draggingHandle.initialWidth + deltaDiagram));
 
 			// Commit column width change via DiagramHandler on mouse release
 			ENGINE.handler.setColumnWidth(sequence.id, draggingHandle.colIndex, finalWidth);
