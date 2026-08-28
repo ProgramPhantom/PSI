@@ -249,8 +249,9 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                         <span style={{ fontSize: '12px' }}>Custom:</span>
                         <input
                             type="color"
-                            value={selectedStroke}
-                            onChange={(e) => handleStrokeSelect(e.target.value)}
+                            key={selectedStroke}
+                            defaultValue={selectedStroke}
+                            onBlur={(e) => handleStrokeSelect(e.target.value)}
                             style={{ width: '28px', height: '24px', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}
                         />
                     </div>
