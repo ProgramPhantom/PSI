@@ -68,6 +68,9 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 
 			setActiveHandle(handle);
 
+			const isCtrlPressedRef = { current: false };
+			const lastDeltaRef = { current: { deltaX: 0, deltaY: 0 } };
+
 			const initial: DragInitialState = {
 				handle,
 				clientX,
@@ -78,6 +81,57 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				endY: currentElement.endY,
 				effectiveScale: effectiveScale > 0 ? effectiveScale : 1,
 				element: currentElement
+			};
+
+			const computeSnappedEndpoints = (deltaX: number, deltaY: number, isCtrl: boolean): LinePreviewState => {
+				let rawStartX = initial.startX;
+				let rawStartY = initial.startY;
+				let rawEndX = initial.endX;
+				let rawEndY = initial.endY;
+
+				if (initial.handle === "start") {
+					rawStartX = Math.round(initial.startX + deltaX);
+					rawStartY = Math.round(initial.startY + deltaY);
+
+					if (isCtrl) {
+						const dx = rawStartX - initial.endX;
+						const dy = rawStartY - initial.endY;
+						if (Math.abs(dx) >= Math.abs(dy)) {
+							// Horizontal: match Y of anchor (end point)
+							return { startX: rawStartX, startY: initial.endY, endX: initial.endX, endY: initial.endY };
+						} else {
+							// Vertical: match X of anchor (end point)
+							return { startX: initial.endX, startY: rawStartY, endX: initial.endX, endY: initial.endY };
+						}
+					}
+
+					return { startX: rawStartX, startY: rawStartY, endX: initial.endX, endY: initial.endY };
+				} else {
+					rawEndX = Math.round(initial.endX + deltaX);
+					rawEndY = Math.round(initial.endY + deltaY);
+
+					if (isCtrl) {
+						const dx = rawEndX - initial.startX;
+						const dy = rawEndY - initial.startY;
+						if (Math.abs(dx) >= Math.abs(dy)) {
+							// Horizontal: match Y of anchor (start point)
+							return { startX: initial.startX, startY: initial.startY, endX: rawEndX, endY: initial.startY };
+						} else {
+							// Vertical: match X of anchor (start point)
+							return { startX: initial.startX, startY: initial.startY, endX: initial.startX, endY: rawEndY };
+						}
+					}
+
+					return { startX: initial.startX, startY: initial.startY, endX: rawEndX, endY: rawEndY };
+				}
+			};
+
+			const updatePreviewWithDelta = (deltaX: number, deltaY: number, isCtrl: boolean) => {
+				lastDeltaRef.current = { deltaX, deltaY };
+				const preview = computeSnappedEndpoints(deltaX, deltaY, isCtrl);
+				setPreviewState(preview);
+				onResizeRef.current?.(preview);
+				return preview;
 			};
 
 			const initialPreview: LinePreviewState = {
@@ -91,34 +145,33 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 			onResizeRef.current?.(initialPreview);
 
 			const handlePointerMove = (e: MouseEvent | PointerEvent) => {
+				const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
 				const deltaPixelsX = e.clientX - initial.clientX;
 				const deltaPixelsY = e.clientY - initial.clientY;
 
 				const deltaDiagramX = deltaPixelsX / initial.effectiveScale;
 				const deltaDiagramY = deltaPixelsY / initial.effectiveScale;
 
-				let updatedStartX = initial.startX;
-				let updatedStartY = initial.startY;
-				let updatedEndX = initial.endX;
-				let updatedEndY = initial.endY;
+				updatePreviewWithDelta(deltaDiagramX, deltaDiagramY, isCtrl);
+			};
 
-				if (initial.handle === "start") {
-					updatedStartX = Math.round(initial.startX + deltaDiagramX);
-					updatedStartY = Math.round(initial.startY + deltaDiagramY);
-				} else {
-					updatedEndX = Math.round(initial.endX + deltaDiagramX);
-					updatedEndY = Math.round(initial.endY + deltaDiagramY);
+			const handleKeyDown = (e: KeyboardEvent) => {
+				if (e.key === "Control") {
+					isCtrlPressedRef.current = true;
+					updatePreviewWithDelta(lastDeltaRef.current.deltaX, lastDeltaRef.current.deltaY, true);
 				}
+			};
 
-				const updatedPreview: LinePreviewState = {
-					startX: updatedStartX,
-					startY: updatedStartY,
-					endX: updatedEndX,
-					endY: updatedEndY
-				};
+			const handleKeyUp = (e: KeyboardEvent) => {
+				if (e.key === "Control") {
+					isCtrlPressedRef.current = false;
+					updatePreviewWithDelta(lastDeltaRef.current.deltaX, lastDeltaRef.current.deltaY, false);
+				}
+			};
 
-				setPreviewState(updatedPreview);
-				onResizeRef.current?.(updatedPreview);
+			const handleBlur = () => {
+				isCtrlPressedRef.current = false;
+				updatePreviewWithDelta(lastDeltaRef.current.deltaX, lastDeltaRef.current.deltaY, false);
 			};
 
 			const handlePointerUp = (e: MouseEvent | PointerEvent) => {
@@ -130,43 +183,36 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				window.removeEventListener("mouseup", handlePointerUp, true);
 				window.removeEventListener("pointermove", handlePointerMove, true);
 				window.removeEventListener("pointerup", handlePointerUp, true);
+				window.removeEventListener("keydown", handleKeyDown, true);
+				window.removeEventListener("keyup", handleKeyUp, true);
+				window.removeEventListener("blur", handleBlur, true);
 				dragCleanupRef.current = null;
 
 				setActiveHandle(null);
 				setPreviewState(null);
 				onResizeRef.current?.(null);
 
+				const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
 				const deltaPixelsX = e.clientX - initial.clientX;
 				const deltaPixelsY = e.clientY - initial.clientY;
 
 				const deltaDiagramX = deltaPixelsX / initial.effectiveScale;
 				const deltaDiagramY = deltaPixelsY / initial.effectiveScale;
 
-				let finalStartX = initial.startX;
-				let finalStartY = initial.startY;
-				let finalEndX = initial.endX;
-				let finalEndY = initial.endY;
+				const finalResult = computeSnappedEndpoints(deltaDiagramX, deltaDiagramY, isCtrl);
 
-				if (initial.handle === "start") {
-					finalStartX = Math.round(initial.startX + deltaDiagramX);
-					finalStartY = Math.round(initial.startY + deltaDiagramY);
-				} else {
-					finalEndX = Math.round(initial.endX + deltaDiagramX);
-					finalEndY = Math.round(initial.endY + deltaDiagramY);
-				}
-
-				const hasMoved = finalStartX !== initial.startX || finalStartY !== initial.startY ||
-					finalEndX !== initial.endX || finalEndY !== initial.endY;
+				const hasMoved = finalResult.startX !== initial.startX || finalResult.startY !== initial.startY ||
+					finalResult.endX !== initial.endX || finalResult.endY !== initial.endY;
 
 				if (hasMoved) {
 					const newLineState: ILineLike = {
 						...initial.element.state,
-						startX: finalStartX,
-						startY: finalStartY,
-						endX: finalEndX,
-						endY: finalEndY,
-						x: Math.min(finalStartX, finalEndX),
-						y: Math.min(finalStartY, finalEndY)
+						startX: finalResult.startX,
+						startY: finalResult.startY,
+						endX: finalResult.endX,
+						endY: finalResult.endY,
+						x: Math.min(finalResult.startX, finalResult.endX),
+						y: Math.min(finalResult.startY, finalResult.endY)
 					};
 
 					ENGINE.handler.act({
@@ -183,12 +229,18 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 			window.addEventListener("mouseup", handlePointerUp, true);
 			window.addEventListener("pointermove", handlePointerMove, true);
 			window.addEventListener("pointerup", handlePointerUp, true);
+			window.addEventListener("keydown", handleKeyDown, true);
+			window.addEventListener("keyup", handleKeyUp, true);
+			window.addEventListener("blur", handleBlur, true);
 
 			dragCleanupRef.current = () => {
 				window.removeEventListener("mousemove", handlePointerMove, true);
 				window.removeEventListener("mouseup", handlePointerUp, true);
 				window.removeEventListener("pointermove", handlePointerMove, true);
 				window.removeEventListener("pointerup", handlePointerUp, true);
+				window.removeEventListener("keydown", handleKeyDown, true);
+				window.removeEventListener("keyup", handleKeyUp, true);
+				window.removeEventListener("blur", handleBlur, true);
 				setActiveHandle(null);
 				setPreviewState(null);
 				onResizeRef.current?.(null);

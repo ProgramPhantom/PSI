@@ -31,6 +31,9 @@ export function LineTool(props: IDrawArrowProps) {
 	const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
 	const [currentPoint, setCurrentPoint] = useState<{ x: number; y: number } | null>(null);
 
+	const rawPointRef = React.useRef<{ x: number; y: number } | null>(null);
+	const isCtrlPressedRef = React.useRef<boolean>(false);
+
 	const getCanvasCoords = useCallback(
 		(e: React.MouseEvent | MouseEvent): { x: number; y: number } => {
 			const drawDiv = document.getElementById("diagram-root") as HTMLElement;
@@ -46,16 +49,37 @@ export function LineTool(props: IDrawArrowProps) {
 		[props.zoom]
 	);
 
+	const computeSnappedPoint = useCallback((raw: { x: number; y: number }, origin: { x: number; y: number }, isCtrl: boolean) => {
+		if (!isCtrl) return raw;
+		const dx = raw.x - origin.x;
+		const dy = raw.y - origin.y;
+		return Math.abs(dx) >= Math.abs(dy)
+			? { x: raw.x, y: origin.y }
+			: { x: origin.x, y: raw.y };
+	}, []);
+
+	const updateCurrentPosition = useCallback((rawCoords: { x: number; y: number }, isCtrl: boolean) => {
+		rawPointRef.current = rawCoords;
+		if (startPoint) {
+			const finalCoords = computeSnappedPoint(rawCoords, startPoint, isCtrl);
+			setCurrentPoint(finalCoords);
+		}
+	}, [startPoint, computeSnappedPoint]);
+
 	const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
 		e.preventDefault();
 
-		const coords = getCanvasCoords(e);
+		const rawCoords = getCanvasCoords(e);
+		rawPointRef.current = rawCoords;
 
 		if (!startPoint) {
-			setStartPoint(coords);
-			setCurrentPoint(coords);
+			setStartPoint(rawCoords);
+			setCurrentPoint(rawCoords);
 		} else {
+			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
+			const coords = computeSnappedPoint(rawCoords, startPoint, isCtrl);
+
 			const dist = Math.hypot(coords.x - startPoint.x, coords.y - startPoint.y);
 			if (dist < 2) {
 				return;
@@ -102,13 +126,15 @@ export function LineTool(props: IDrawArrowProps) {
 			props.setTool({ type: "select", config: {} });
 			setStartPoint(null);
 			setCurrentPoint(null);
+			rawPointRef.current = null;
 		}
 	};
 
 	const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (startPoint) {
+			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
 			const coords = getCanvasCoords(e);
-			setCurrentPoint(coords);
+			updateCurrentPosition(coords, isCtrl);
 		}
 	};
 
@@ -117,25 +143,53 @@ export function LineTool(props: IDrawArrowProps) {
 			if (e.key === "Escape") {
 				setStartPoint(null);
 				setCurrentPoint(null);
+				rawPointRef.current = null;
 				props.setTool({ type: "select", config: {} });
+			} else if (e.key === "Control") {
+				isCtrlPressedRef.current = true;
+				if (startPoint && rawPointRef.current) {
+					const snapped = computeSnappedPoint(rawPointRef.current, startPoint, true);
+					setCurrentPoint(snapped);
+				}
+			}
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.key === "Control") {
+				isCtrlPressedRef.current = false;
+				if (startPoint && rawPointRef.current) {
+					setCurrentPoint(rawPointRef.current);
+				}
+			}
+		};
+
+		const handleBlur = () => {
+			isCtrlPressedRef.current = false;
+			if (startPoint && rawPointRef.current) {
+				setCurrentPoint(rawPointRef.current);
 			}
 		};
 
 		const handleGlobalMouseMove = (e: MouseEvent) => {
 			if (startPoint) {
+				const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
 				const coords = getCanvasCoords(e);
-				setCurrentPoint(coords);
+				updateCurrentPosition(coords, isCtrl);
 			}
 		};
 
 		window.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("keyup", handleKeyUp);
+		window.addEventListener("blur", handleBlur);
 		window.addEventListener("mousemove", handleGlobalMouseMove);
 
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("blur", handleBlur);
 			window.removeEventListener("mousemove", handleGlobalMouseMove);
 		};
-	}, [startPoint, getCanvasCoords, props]);
+	}, [startPoint, getCanvasCoords, props, computeSnappedPoint, updateCurrentPosition]);
 
 	const stroke = props.config?.lineStyle?.stroke ?? "#000000";
 	const dashing = props.config?.lineStyle?.dashing ?? [0, 0];
