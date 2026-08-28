@@ -10,6 +10,59 @@ export interface IPaddedBox extends ISpacial {
 
 // After inheriting from this class, x and y are now located away from the actual content, defined by this.padding.
 export default class PaddedBox extends Spacial implements IPaddedBox {
+	static override CreateUnion(...rects: (PaddedBox | Spacial)[]): PaddedBox {
+		if (rects.length === 0) {
+			return new PaddedBox();
+		}
+
+		let top = Infinity;
+		let left = Infinity;
+		let bottom = -Infinity;
+		let right = -Infinity;
+
+		let ctop = Infinity;
+		let cleft = Infinity;
+		let cbottom = -Infinity;
+		let cright = -Infinity;
+
+		rects.forEach((r) => {
+			top = Math.min(top, r.y);
+			bottom = Math.max(bottom, r.y2);
+			left = Math.min(left, r.x);
+			right = Math.max(right, r.x2);
+
+			let rCy = r instanceof PaddedBox ? r.cy : r.y;
+			let rCy2 = r instanceof PaddedBox ? r.cy2 : r.y2;
+			let rCx = r instanceof PaddedBox ? r.cx : r.x;
+			let rCx2 = r instanceof PaddedBox ? r.cx2 : r.x2;
+
+			ctop = Math.min(ctop, rCy);
+			cbottom = Math.max(cbottom, rCy2);
+			cleft = Math.min(cleft, rCx);
+			cright = Math.max(cright, rCx2);
+		});
+
+		let padTop = Math.max(0, ctop - top);
+		let padBottom = Math.max(0, bottom - cbottom);
+		let padLeft = Math.max(0, cleft - left);
+		let padRight = Math.max(0, right - cright);
+
+		let contentWidth = Math.max(0, cright - cleft);
+		let contentHeight = Math.max(0, cbottom - ctop);
+
+		return new PaddedBox({
+			x: left,
+			y: top,
+			contentWidth,
+			contentHeight,
+			padding: [padTop, padRight, padBottom, padLeft],
+			placementMode: { type: "free" },
+			ref: "union",
+			type: "lower-abstract"
+		});
+	}
+
+
 	get state(): IPaddedBox {
 		return {
 			padding: this.padding,

@@ -20,6 +20,7 @@ import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
 import GridDropField from "../dnd/GridDropField";
 import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import SequencesColumnEditor from "../dnd/SequencesColumnEditor";
+import SequencesChannelPaddingEditor from "../dnd/SequencesChannelPaddingEditor";
 import LabelGroupDropFields from "../dnd/LabelGroupDropFields";
 import QuietUploadArea from "../QuietUploadArea";
 import Channel from "../../logic/hasComponents/channel";
@@ -655,6 +656,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 												}
 												<SequencesPulseDropField></SequencesPulseDropField>
 												<SequencesColumnEditor scale={zoom}></SequencesColumnEditor>
+												<SequencesChannelPaddingEditor scale={zoom}></SequencesChannelPaddingEditor>
 												<LabelGroupDropFields></LabelGroupDropFields>
 											</div>
 

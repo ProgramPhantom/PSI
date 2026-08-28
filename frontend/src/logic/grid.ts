@@ -4,6 +4,7 @@ import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./
 import { ID } from "./point";
 import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { GridCellElement, IDraw, IVisual } from "./visual";
+import PaddedBox from "./paddedBox";
 
 export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 	minHeight?: number,
@@ -185,7 +186,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	protected gridMatrix: GridCell<C>[][] = [];
 
 	public gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
-	public cells: Spacial[][];
+	public cells: PaddedBox[][];
 
 	public minRowHeights: number[] = [];
 	public minColWidths: number[] = [];
@@ -211,6 +212,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.spill = { top: 0, bottom: 0, left: 0, right: 0 };
 		this.refreshSubgrids();
 		this.growSubgrids();
+		this.constructCells();
 
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
@@ -599,8 +601,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			col.height = totalHeight;
 		});
 
-		this.applyCellSizes();
-
 		this.gridSizes.rows = rowRects;
 		this.gridSizes.columns = columnRects;
 
@@ -612,7 +612,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.contentHeight = totalHeight;
 		}
 
-
+		this.propogateCellDimensions();
 		this.applySizesToSubgrids();
 
 		// ...so we can use padding
@@ -622,23 +622,27 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	public computePositions(root: { x: number, y: number }): void {
 		super.computePositions(root);
 
-
-
 		// Find dimension and positions of the cells.
-		this.computeCells();
+		this.positionConstituents();
 
-		// this.applyPositionsToSubgrids();
+		this.applyPositionsToSubgrids();
 
 		// Now iterate through the gridMatrix and set the position of children
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
 				if (cell !== undefined) {
-					var cellRect: Spacial = this.cells[row_index][column_index];
+					var cellRect: PaddedBox = this.cells[row_index][column_index];
 
 					for (let element of cell.elements ?? []) {
-						// If this is a reference cell then we don't set the position:
+						// Skip if not element source (so we don't compute position multiple times)
 						if (!this.isCellElementSource(element, { row: row_index, col: column_index })) {
 							continue
+						}
+
+						// Don't do this for subgrid this for subgrid children, they are already positioned.
+						if (this.isSubgridChild(element)) {
+							element.computePositions({ x: element.x, y: element.y });
+							continue;
 						}
 
 						let gridConfig: IGridConfig = element.placementMode.config;
@@ -652,8 +656,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						var alignment: { x: SiteNames, y: SiteNames } = gridConfig.alignment ?? { x: "here", y: "here" }
 
-						cellRect.internalImmediateBind(element, "x", alignment.x)
-						cellRect.internalImmediateBind(element, "y", alignment.y)
+						cellRect.internalImmediateBind(element, "x", alignment.x, true)
+						cellRect.internalImmediateBind(element, "y", alignment.y, true)
 
 						element.computePositions({ x: element.x, y: element.y });
 					}
@@ -769,7 +773,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		// Apply the grown column and row sizes to cells:
-		this.applyCellSizes();
+		this.propogateCellDimensions();
 
 		// Apply the grown sizes to subgrids:
 		// this.applySizesToSubgrids();
@@ -778,9 +782,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
 				if (cell?.elements !== undefined) {
-					let cellRect: Size = this.cells[row_index][column_index];
+					let targetCell: PaddedBox = this.cells[row_index][column_index];
 
-					if (cellRect === undefined) {
+					if (targetCell === undefined) {
 						throw new Error(`Index out of bounds row ${row_index}, col: ${column_index}`)
 					}
 
@@ -790,12 +794,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						let childBottomRight: { row: number, col: number } | undefined = this.getElementBottomRight(child);
 
-						// Create a rect union if the child is in multiple cells
-						if (childBottomRight !== undefined && (childBottomRight?.col !== column_index || childBottomRight?.row !== row_index)) {
-							cellRect = this.getCellUnionSize({ row: row_index, col: column_index }, childBottomRight);
+						let cellContentSize: Size;
+						if (this.isSubgridChild(child)) {
+							cellContentSize = (childBottomRight !== undefined && (childBottomRight.col !== column_index || childBottomRight.row !== row_index))
+								? this.getCellUnionSize({ row: row_index, col: column_index }, childBottomRight)
+								: { width: targetCell.width, height: targetCell.height };
+						} else {
+							cellContentSize = (childBottomRight !== undefined && (childBottomRight.col !== column_index || childBottomRight.row !== row_index))
+								? this.getCellUnionContentSize({ row: row_index, col: column_index }, childBottomRight)
+								: { width: targetCell.contentWidth, height: targetCell.contentHeight };
 						}
 
-						child.growElement(cellRect);
+						child.growElement(cellContentSize);
 					}
 
 				}
@@ -809,9 +819,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	// ------ Helpers ---------
 	/**
 	 * Computes the positions and sizes of cells in a grid layout.
-	 * Initializes the cells array with Spacial objects representing each cell's geometry.
+	 * Initializes the cells array with PaddedBox objects representing each cell's geometry.
 	 * Each cell's position is calculated based on cumulative widths (x-axis) and heights (y-axis)
-	 * from the grid's content origin point (contentX, contentY).
+	 * from the grid's origin point (x, y).
 	 * 
 	 * The computation uses:
 	 * - gridSizes.rows[].height for row heights
@@ -820,69 +830,133 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	 * @protected
 	 * @returns {void}
 	 */
-	protected computeCells() {
-		// First let's generate the sizes and positions of each cell
-
-		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new Spacial()));
-
+	protected positionCells() {
 		var xCount: number = 0;
 		var yCount: number = 0;
 
-		// Adjusts for the "fake" padding that subgrids can have (using the extra mechanic)
-		var startX = this instanceof Subgrid ? this.x : this.cx;
-		var startY = this instanceof Subgrid ? this.y : this.cy;
+		var startX = this.x;
+		var startY = this.y;
 
 		for (var row = 0; row < this.numRows; row++) {
 			xCount = 0;
-			var rowHeight: number = this.gridSizes.rows[row].height;
+			var rowHeight: number = this.gridSizes.rows[row]?.height ?? 0;
 
 			for (var col = 0; col < this.numColumns; col++) {
-				var colWidth: number = this.gridSizes.columns[col].width;
+				var colWidth: number = this.gridSizes.columns[col]?.width ?? 0;
 
-				this.cells[row][col] = new Spacial({
-					contentWidth: colWidth,
-					contentHeight: rowHeight,
-					x: startX + xCount,
-					y: startY + yCount,
-					ref: "grid-cell",
-					type: "lower-abstract"
-				})
+				let targetCell = this.cells[row]?.[col];
+				if (targetCell) {
+					targetCell.x = startX + xCount;
+					targetCell.y = startY + yCount;
+				}
 
 				xCount += colWidth;
 			}
 
 			yCount += rowHeight;
 		}
-
-
-		// Set positions of columns and rows
-		this.gridSizes.columns.forEach((col, i) => {
-			col.x = this.cells[0][i].x;
-			col.y = this.cells[0][0].y;
-		})
-		this.gridSizes.rows.forEach((row, i) => {
-			row.y = this.cells[i][0].y;
-			row.x = this.cells[0][0].x;
-		})
 	}
 
-	protected applyCellSizes() {
-		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new Spacial()));
+	protected positionColRows() {
+		// Set positions of columns and rows
+		this.gridSizes.columns.forEach((col, i) => {
+			if (this.cells[0]?.[i]) {
+				col.x = this.cells[0][i].x;
+				col.y = this.cells[0][0].y;
+			}
+		});
+		this.gridSizes.rows.forEach((row, i) => {
+			if (this.cells[i]?.[0]) {
+				row.y = this.cells[i][0].y;
+				row.x = this.cells[0][0].x;
+			}
+		});
+	}
 
-		this.gridSizes.rows.forEach((row, row_index) => {
-			this.gridSizes.columns.forEach((column, column_index) => {
-				let targetCell = this.cells[row_index][column_index];
+	protected positionConstituents() {
+		this.positionCells();
+		this.positionColRows();
+	}
 
-				targetCell.width = column.width;
-				targetCell.height = row.height;
-			})
-		})
+	protected constructCells() {
+		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new PaddedBox({
+			padding: [0, 0, 0, 0],
+			contentWidth: 0,
+			contentHeight: 0,
+			placementMode: { type: "free" },
+			placementControl: "user",
+			sizeMode: { x: "fixed", y: "fixed" },
+			ref: "grid-cell",
+			type: "lower-abstract"
+		})));
+
+		this.cells.forEach((row, row_index) => {
+			const isFirstRow = row_index === 0;
+			const isLastRow = row_index === this.numRows - 1;
+			row.forEach((targetCell, column_index) => {
+				const isFirstCol = column_index === 0;
+				const isLastCol = column_index === this.numColumns - 1;
+
+				targetCell.padding = [
+					isFirstRow ? this.padding[0] : 0,
+					isLastCol ? this.padding[1] : 0,
+					isLastRow ? this.padding[2] : 0,
+					isFirstCol ? this.padding[3] : 0
+				];
+			});
+		});
+
+		// Apply subgrid padding to cells within subgrids
+		this.subgridChildren.forEach((sg) => {
+			let topLeft: { row: number, col: number } = sg.placementMode.config.coords;
+			for (let r = 0; r < sg.numRows; r++) {
+				let gridRow = topLeft.row + r;
+				if (gridRow >= this.numRows) continue;
+
+				const isSgFirstRow = r === 0;
+				const isSgLastRow = r === sg.numRows - 1;
+
+				for (let c = 0; c < sg.numColumns; c++) {
+					let gridCol = topLeft.col + c;
+					if (gridCol >= this.numColumns) continue;
+
+					const isSgFirstCol = c === 0;
+					const isSgLastCol = c === sg.numColumns - 1;
+
+					let targetCell = this.cells[gridRow]?.[gridCol];
+					if (!targetCell) continue;
+
+					targetCell.padding = [
+						(isSgFirstRow ? sg.padding[0] : 0) + targetCell.padding[0],
+						(isSgLastCol ? sg.padding[1] : 0) + targetCell.padding[1],
+						(isSgLastRow ? sg.padding[2] : 0) + targetCell.padding[2],
+						(isSgFirstCol ? sg.padding[3] : 0) + targetCell.padding[3]
+					];
+				}
+			}
+		});
+	}
+
+	protected propogateCellDimensions() {
+		this.cells.forEach((row, row_index) => {
+			let rowSize = this.gridSizes.rows[row_index];
+			row.forEach((targetCell, column_index) => {
+				let column = this.gridSizes.columns[column_index];
+
+				if (column) {
+					targetCell.width = column.width;
+				}
+				if (rowSize) {
+					targetCell.height = rowSize.height;
+				}
+			});
+		});
 	}
 
 	/**
-	 * Returns a positioned Spacial that is the geometric union of the
+	 * Returns a positioned PaddedBox that is the geometric union of the
 	 * cells contained in the rectangle defined by topLeft and bottomRight
-	 * (inclusive). The returned Spacial carries x/y coordinates taken
+	 * (inclusive). The returned PaddedBox carries x/y coordinates taken
 	 * from the component cells, so computePositions must have been run
 	 * before calling this method for meaningful absolute positions.
 	 *
@@ -890,14 +964,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	 * @param bottomRight - bottom-right cell coordinate (inclusive)
 	 * @throws Error if the provided coordinates are not in the expected order
 	 */
-	public getPositionedCellUnion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial {
+	public getPositionedCellUnion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): PaddedBox {
 		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
 			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
 		}
 
-		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+		let cells: PaddedBox[] = this.getCellsInRegion(topLeft, bottomRight);
 
-		let union: Spacial = Spacial.CreateUnion(...cells);
+		let union: PaddedBox = PaddedBox.CreateUnion(...cells);
 
 		// Returns a positioned union of the cells in the region specified. Will
 		// not return an expected result if cells have not been positioned
@@ -923,14 +997,34 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
 		}
 
-		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+		let width: number = 0;
+		for (let c = topLeft.col; c <= bottomRight.col; c++) {
+			if (this.cells[topLeft.row] && this.cells[topLeft.row][c]) {
+				width += this.cells[topLeft.row][c].width;
+			}
+		}
 
-		let width: number = cells.reduce((w, c) => w + c.width, 0);
-		let height: number = cells.reduce((h, c) => h + c.height, 0);
+		let height: number = 0;
+		for (let r = topLeft.row; r <= bottomRight.row; r++) {
+			if (this.cells[r] && this.cells[r][topLeft.col]) {
+				height += this.cells[r][topLeft.col].height;
+			}
+		}
 
-		// Returns *size* of cell union. Works only for adjacent cells, and can be used before
-		// computePositions has been run.
 		return { width: width, height: height };
+	}
+
+	public getCellUnionContentSize(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Size {
+		let totalSize = this.getCellUnionSize(topLeft, bottomRight);
+		let padTop = this.cells[topLeft.row]?.[topLeft.col]?.padding[0] ?? 0;
+		let padRight = this.cells[topLeft.row]?.[bottomRight.col]?.padding[1] ?? 0;
+		let padBottom = this.cells[bottomRight.row]?.[topLeft.col]?.padding[2] ?? 0;
+		let padLeft = this.cells[topLeft.row]?.[topLeft.col]?.padding[3] ?? 0;
+
+		return {
+			width: Math.max(0, totalSize.width - padLeft - padRight),
+			height: Math.max(0, totalSize.height - padTop - padBottom)
+		};
 	}
 
 	private growSubgrids() {
@@ -1099,7 +1193,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridMatrix[coords.row][coords.column] = gridEntry;
 	}
 
-	public setGrid(grid: GridCell<C>[][], sizes: { columns: Spacial[], rows: Spacial[] }, cells: Spacial[][]) {
+	public setGrid(grid: GridCell<C>[][], sizes: { columns: Spacial[], rows: Spacial[] }, cells: PaddedBox[][]) {
 		this.gridMatrix = grid;
 		this.gridSizes = sizes;
 		this.cells = cells;
@@ -1708,7 +1802,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return this.gridMatrix[coords.row]?.[coords.col];
 	}
 
-	public getCells(): Spacial[] {
+	public getCells(): PaddedBox[] {
 		return this.cells.flat();
 	}
 
@@ -1794,13 +1888,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return subMatrix;
 	}
 
-	public getCellsInRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial[] {
+	public getCellsInRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): PaddedBox[] {
 		// Check valid input:
 		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
 			return []
 		}
 
-		let result: Spacial[] = [];
+		let result: PaddedBox[] = [];
 
 		for (let r = topLeft.row; r <= bottomRight.row; r++) {
 			if (this.cells[r] === undefined) { continue }
@@ -1935,7 +2029,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			sg.height = totalHeight;
 
 			// Set cells;
-			let cellSubregion: Spacial[][] = this.getCellRegion(topLeft, bottomRight);
+			let cellSubregion: PaddedBox[][] = this.getCellRegion(topLeft, bottomRight);
 			sg.cells = cellSubregion;
 		})
 	}
@@ -1943,12 +2037,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	private applyPositionsToSubgrids() {
 		this.subgridChildren.forEach((sg) => {
 			let topLeft: { row: number, col: number } = sg.placementMode.config.coords;
-			let topLeftCell: Spacial = this.cells[topLeft.row][topLeft.col];
+			let topLeftCell: PaddedBox = this.cells[topLeft.row][topLeft.col];
 
 			sg.x = topLeftCell.x;
 			sg.y = topLeftCell.y;
 
-			sg.computeCells();
+			sg.positionConstituents();
 		})
 	}
 
@@ -2059,18 +2153,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 	}
 
-	private getCellRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial[][] {
+	private getCellRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): PaddedBox[][] {
 		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
 			throw new Error(`Invalid input topLeft: (${topLeft.row}, ${topLeft.col})-(${bottomRight.row}, ${bottomRight.col})`)
 		}
 
-		let cells: Spacial[][] = [];
+		let cells: PaddedBox[][] = [];
 
 		for (let r = topLeft.row; r <= bottomRight.row; r++) {
-			let row: Spacial[] = this.cells[r];
+			let row: PaddedBox[] = this.cells[r];
 			if (row === undefined) { continue }
 
-			let rowSlice: Spacial[] = row.slice(topLeft.col, bottomRight.col);
+			let rowSlice: PaddedBox[] = row.slice(topLeft.col, bottomRight.col);
 			cells.push(rowSlice);
 		}
 
