@@ -3,7 +3,7 @@ import { DEFAULT_BAR } from "./bar";
 import { DEFAULT_CHANNEL_TEXT } from "./defaultChannelLabel";
 
 export const DEFAULT_CHANNEL: IChannel = {
-	"padding": [10, 0, 10, 0],
+	"padding": [20, 0, 20, 0],
 	"offset": [0, 0],
 	"ref": "my-channel",
 
