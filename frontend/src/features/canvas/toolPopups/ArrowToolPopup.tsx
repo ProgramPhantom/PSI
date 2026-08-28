@@ -107,85 +107,86 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'row', padding: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
             {/* Column 1: Arrowheads with Start and End dropdowns */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '6px 10px', minWidth: 140 }}>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#5f6b7c', textTransform: 'uppercase' }}>
-                    Arrowheads
-                </div>
+            <Menu style={{ minWidth: 140 }}>
+                <MenuDivider title="Arrowheads" />
+                <div style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 500, color: '#5f6b7c' }}>Start</span>
+                        <Popover
+                            minimal={true}
+                            captureDismiss={true}
+                            position="bottom-left"
+                            content={
+                                <Menu style={{ minWidth: 100 }}>
+                                    <MenuItem
+                                        text="None"
+                                        active={selectedHeadStyle[0] === 'none'}
+                                        onClick={() => handleStartHeadSelect('none')}
+                                    />
+                                    <MenuItem
+                                        text="Default"
+                                        active={selectedHeadStyle[0] === 'default'}
+                                        onClick={() => handleStartHeadSelect('default')}
+                                    />
+                                    <MenuItem
+                                        text="Thin"
+                                        active={selectedHeadStyle[0] === 'thin'}
+                                        onClick={() => handleStartHeadSelect('thin')}
+                                    />
+                                </Menu>
+                            }
+                        >
+                            <Button
+                                text={selectedHeadStyle[0].charAt(0).toUpperCase() + selectedHeadStyle[0].slice(1)}
+                                endIcon="caret-down"
+                                size="small"
+                                variant="outlined"
+                                fill={true}
+                                style={{ justifyContent: 'space-between' }}
+                            />
+                        </Popover>
+                    </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#5f6b7c' }}>Start</span>
-                    <Popover
-                        minimal={true}
-                        captureDismiss={true}
-                        position="bottom-left"
-                        content={
-                            <Menu style={{ minWidth: 100 }}>
-                                <MenuItem
-                                    text="None"
-                                    active={selectedHeadStyle[0] === 'none'}
-                                    onClick={() => handleStartHeadSelect('none')}
-                                />
-                                <MenuItem
-                                    text="Default"
-                                    active={selectedHeadStyle[0] === 'default'}
-                                    onClick={() => handleStartHeadSelect('default')}
-                                />
-                                <MenuItem
-                                    text="Thin"
-                                    active={selectedHeadStyle[0] === 'thin'}
-                                    onClick={() => handleStartHeadSelect('thin')}
-                                />
-                            </Menu>
-                        }
-                    >
-                        <Button
-                            text={selectedHeadStyle[0].charAt(0).toUpperCase() + selectedHeadStyle[0].slice(1)}
-                            endIcon="caret-down"
-                            size="small"
-                            variant="outlined"
-                            style={{ justifyContent: 'space-between', minWidth: '100px' }}
-                        />
-                    </Popover>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 500, color: '#5f6b7c' }}>End</span>
+                        <Popover
+                            minimal={true}
+                            captureDismiss={true}
+                            position="bottom-left"
+                            content={
+                                <Menu style={{ minWidth: 100 }}>
+                                    <MenuItem
+                                        text="None"
+                                        active={selectedHeadStyle[1] === 'none'}
+                                        onClick={() => handleEndHeadSelect('none')}
+                                    />
+                                    <MenuItem
+                                        text="Default"
+                                        active={selectedHeadStyle[1] === 'default'}
+                                        onClick={() => handleEndHeadSelect('default')}
+                                    />
+                                    <MenuItem
+                                        text="Thin"
+                                        active={selectedHeadStyle[1] === 'thin'}
+                                        onClick={() => handleEndHeadSelect('thin')}
+                                    />
+                                </Menu>
+                            }
+                        >
+                            <Button
+                                text={selectedHeadStyle[1].charAt(0).toUpperCase() + selectedHeadStyle[1].slice(1)}
+                                endIcon="caret-down"
+                                size="small"
+                                variant="outlined"
+                                fill={true}
+                                style={{ justifyContent: 'space-between' }}
+                            />
+                        </Popover>
+                    </div>
                 </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#5f6b7c' }}>End</span>
-                    <Popover
-                        minimal={true}
-                        captureDismiss={true}
-                        position="bottom-left"
-                        content={
-                            <Menu style={{ minWidth: 100 }}>
-                                <MenuItem
-                                    text="None"
-                                    active={selectedHeadStyle[1] === 'none'}
-                                    onClick={() => handleEndHeadSelect('none')}
-                                />
-                                <MenuItem
-                                    text="Default"
-                                    active={selectedHeadStyle[1] === 'default'}
-                                    onClick={() => handleEndHeadSelect('default')}
-                                />
-                                <MenuItem
-                                    text="Thin"
-                                    active={selectedHeadStyle[1] === 'thin'}
-                                    onClick={() => handleEndHeadSelect('thin')}
-                                />
-                            </Menu>
-                        }
-                    >
-                        <Button
-                            text={selectedHeadStyle[1].charAt(0).toUpperCase() + selectedHeadStyle[1].slice(1)}
-                            endIcon="caret-down"
-                            size="small"
-                            variant="outlined"
-                            style={{ justifyContent: 'space-between', minWidth: '100px' }}
-                        />
-                    </Popover>
-                </div>
-            </div>
+            </Menu>
 
             <div style={{ width: 1, backgroundColor: 'rgba(200, 200, 200, 0.3)', margin: '4px 0' }} />
 
@@ -206,7 +207,7 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                                         style={{
                                             width: '45px',
                                             height: `${thickness}px`,
-                                            backgroundColor: isActive ? '#fff' : '#182026',
+                                            backgroundColor: '#182026',
                                             borderRadius: '1px'
                                         }}
                                     />
@@ -221,73 +222,69 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
             <div style={{ width: 1, backgroundColor: 'rgba(200, 200, 200, 0.3)', margin: '4px 0' }} />
 
             {/* Column 3: Color & Dash Style (visual SVG path) */}
-            <div style={{ minWidth: 140, padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#5f6b7c', textTransform: 'uppercase', marginBottom: '2px' }}>
-                    Color
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 22px)', gap: '6px', marginBottom: '4px' }}>
-                    {COLOR_PRESETS.map((c) => (
-                        <div
-                            key={c}
-                            onClick={() => handleStrokeSelect(c)}
-                            style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: '4px',
-                                backgroundColor: c,
-                                cursor: 'pointer',
-                                border: selectedStroke.toLowerCase() === c.toLowerCase() ? '2px solid #106ba3' : '1px solid rgba(0,0,0,0.2)',
-                                boxShadow: selectedStroke.toLowerCase() === c.toLowerCase() ? '0 0 0 1px #fff inset' : 'none'
-                            }}
-                        />
-                    ))}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '12px' }}>Custom:</span>
-                    <input
-                        type="color"
-                        value={selectedStroke}
-                        onChange={(e) => handleStrokeSelect(e.target.value)}
-                        style={{ width: '28px', height: '24px', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}
-                    />
-                </div>
-
-                <MenuDivider />
-
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#5f6b7c', textTransform: 'uppercase', marginBottom: '2px' }}>
-                    Dash Style
-                </div>
-                <Menu style={{ padding: 0, minWidth: 'unset' }}>
-                    {DASH_STYLES.map((dash) => {
-                        const isActive = selectedDashing[0] === dash.dashing[0];
-                        const strokeColor = isActive ? '#fff' : '#182026';
-                        return (
-                            <MenuItem
-                                key={dash.id}
-                                shouldDismissPopover={false}
-                                active={isActive}
-                                onClick={() => handleDashingSelect(dash.dashing)}
-                                text={
-                                    <div style={{ display: 'flex', alignItems: 'center', height: '18px', width: '70px' }}>
-                                        <svg width="70" height="12" style={{ display: 'block', overflow: 'visible' }}>
-                                            <line
-                                                x1="2"
-                                                y1="6"
-                                                x2="68"
-                                                y2="6"
-                                                stroke={strokeColor}
-                                                strokeWidth="2.5"
-                                                strokeDasharray={dash.dashing[0] > 0 ? `${dash.dashing[0]} ${dash.dashing[1]}` : undefined}
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                    </div>
-                                }
+            <Menu style={{ minWidth: 140 }}>
+                <MenuDivider title="Color" />
+                <div style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 22px)', gap: '6px' }}>
+                        {COLOR_PRESETS.map((c) => (
+                            <div
+                                key={c}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStrokeSelect(c);
+                                }}
+                                style={{
+                                    width: 22,
+                                    height: 22,
+                                    borderRadius: '4px',
+                                    backgroundColor: c,
+                                    cursor: 'pointer',
+                                    border: selectedStroke.toLowerCase() === c.toLowerCase() ? '2px solid #106ba3' : '1px solid rgba(0,0,0,0.2)',
+                                    boxShadow: selectedStroke.toLowerCase() === c.toLowerCase() ? '0 0 0 1px #fff inset' : 'none'
+                                }}
                             />
-                        );
-                    })}
-                </Menu>
-            </div>
+                        ))}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                        <span style={{ fontSize: '12px' }}>Custom:</span>
+                        <input
+                            type="color"
+                            value={selectedStroke}
+                            onChange={(e) => handleStrokeSelect(e.target.value)}
+                            style={{ width: '28px', height: '24px', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}
+                        />
+                    </div>
+                </div>
+
+                <MenuDivider title="Dash Style" />
+                {DASH_STYLES.map((dash) => {
+                    const isActive = selectedDashing[0] === dash.dashing[0];
+                    return (
+                        <MenuItem
+                            key={dash.id}
+                            shouldDismissPopover={false}
+                            active={isActive}
+                            onClick={() => handleDashingSelect(dash.dashing)}
+                            text={
+                                <div style={{ display: 'flex', alignItems: 'center', height: '18px', width: '70px' }}>
+                                    <svg width="70" height="12" style={{ display: 'block', overflow: 'visible' }}>
+                                        <line
+                                            x1="2"
+                                            y1="6"
+                                            x2="68"
+                                            y2="6"
+                                            stroke="#182026"
+                                            strokeWidth="2.5"
+                                            strokeDasharray={dash.dashing[0] > 0 ? `${dash.dashing[0]} ${dash.dashing[1]}` : undefined}
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                </div>
+                            }
+                        />
+                    );
+                })}
+            </Menu>
         </div>
     );
 });
