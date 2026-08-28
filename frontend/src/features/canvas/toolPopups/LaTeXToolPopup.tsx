@@ -5,8 +5,9 @@ import { setSelectedTool } from "../../../redux/slices/applicationSlice";
 
 export const LaTeXToolPopup: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
+    const toolConfigs = useAppSelector((state) => state.application.toolConfigs);
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
-    const config = selectedTool.type === 'latex' ? selectedTool.config : undefined;
+    const config = selectedTool.type === 'latex' ? selectedTool.config : toolConfigs?.latex;
 
     const selectedFontSize = config?.fontSize ?? 35;
 

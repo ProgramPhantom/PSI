@@ -5,8 +5,9 @@ import { setSelectedTool } from "../../../redux/slices/applicationSlice";
 
 export const TextToolPopup: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
+    const toolConfigs = useAppSelector((state) => state.application.toolConfigs);
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
-    const config = selectedTool.type === 'text' ? selectedTool.config : undefined;
+    const config = selectedTool.type === 'text' ? selectedTool.config : toolConfigs?.text;
 
     const selectedFont = config?.fontFamily ?? 'sans-serif';
     const selectedFontSize = config?.fontSize ?? 20;

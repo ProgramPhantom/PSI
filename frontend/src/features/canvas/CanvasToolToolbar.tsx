@@ -14,8 +14,7 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
 
     const selectTool = (toolType: CanvasToolType) => {
         dispatch(setSelectedTool({
-            type: toolType,
-            config: selectedTool.type === toolType ? selectedTool.config : {}
+            type: toolType
         }));
     };
 

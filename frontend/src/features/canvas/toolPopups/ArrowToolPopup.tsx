@@ -24,8 +24,9 @@ const DASH_STYLES: { dashing: [number, number]; id: string }[] = [
 
 export const ArrowToolPopup: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
+    const toolConfigs = useAppSelector((state) => state.application.toolConfigs);
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
-    const config = selectedTool.type === 'arrow' ? selectedTool.config : undefined;
+    const config = selectedTool.type === 'arrow' ? selectedTool.config : toolConfigs?.arrow;
 
     const selectedThickness = config?.thickness ?? (defaultLine.thickness ?? 2);
     const selectedHeadStyle: [HeadStyle, HeadStyle] = (config?.lineStyle?.headStyle as [HeadStyle, HeadStyle]) ??
