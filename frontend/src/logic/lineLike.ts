@@ -9,11 +9,11 @@ export interface ILineLike extends IVisual {
 	adjustment: [number, number];
 	thickness?: number;
 
-	sx?: number;
-	sy?: number;
+	startX?: number;
+	startY?: number;
 
-	ex?: number;
-	ey?: number;
+	endX?: number;
+	endY?: number;
 }
 
 export default abstract class LineLike extends Visual {
@@ -21,40 +21,40 @@ export default abstract class LineLike extends Visual {
 		return {
 			adjustment: this.adjustment,
 			thickness: this.thickness,
+			startX: this.startX,
+			startY: this.startY,
+			endX: this.endX,
+			endY: this.endY,
 			...super.state
 		};
 	}
+
+	public override get isResizable(): boolean {
+		return false;
+	}
+
 	static HitboxPadding: number = 0;
 
 	adjustment: [number, number];
 	thickness: number;
 
-	private _sy: number = 0;
-	private _sx: number = 0;
-	private _ex: number = 0;
-	private _ey: number = 0;
+	private _startY: number = 0;
+	private _startX: number = 0;
+	private _endX: number = 0;
+	private _endY: number = 0;
 
 	constructor(params: ILineLike) {
 		super(params);
 
-		this.adjustment = params.adjustment;
+		this.adjustment = params.adjustment ?? [0, 0];
 
-		// this.startX = params.sx ?? params.x ?? 0;
-		// this.startY = params.sy ?? params.y ?? 0;
-		this.startX = 0;
-		this.startY = 0;
+		this.startX = params.startX ?? params.x ?? 0;
+		this.startY = params.startY ?? params.y ?? 0;
 
-		// this.endX = params.ex ?? 0;
-		// this.endY = params.ey ?? 0;
+		this.endX = params.endX ?? 0;
+		this.endY = params.endY ?? 0;
 
-		this.endX = 0;
-		this.endY = 0;
-
-		// this._x = this.startX;
-		// this._y = this.startY;
-
-
-		this.thickness = params.thickness ?? 1;
+		this.thickness = params.thickness ?? 2;
 	}
 
 
@@ -119,31 +119,31 @@ export default abstract class LineLike extends Visual {
 
 
 	public get startX(): number {
-		return this._sx;
+		return this._startX;
 	}
 	public set startX(v: number) {
-		this._sx = v;
+		this._startX = v;
 	}
 
 	public get startY(): number {
-		return this._sy;
+		return this._startY;
 	}
 	public set startY(v: number) {
-		this._sy = v;
+		this._startY = v;
 	}
 
 	public get endX(): number {
-		return this._ex;
+		return this._endX;
 	}
 	public set endX(v: number) {
-		this._ex = v;
+		this._endX = v;
 	}
 
 	public get endY(): number {
-		return this._ey;
+		return this._endY;
 	}
 	public set endY(v: number) {
-		this._ey = v;
+		this._endY = v;
 	}
 
 	public get centreX(): number {

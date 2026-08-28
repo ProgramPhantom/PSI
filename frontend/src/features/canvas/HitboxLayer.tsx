@@ -21,6 +21,7 @@ export const FocusRules: IFocusRules = {
 	alwaysSelectable: [
 		"channel",
 		"svg",
+		"line",
 
 		"label-group",
 		"simple-label-group",

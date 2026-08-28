@@ -632,6 +632,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													<LineTool
 														hoveredElement={hoveredElement}
 														config={selectedTool.config}
+														zoom={zoom}
 														setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
 												</div>
 											) : (

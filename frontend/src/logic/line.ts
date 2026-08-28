@@ -16,8 +16,6 @@ export interface ILineStyle {
 
 export interface ILine extends ILineLike {
 	lineStyle: ILineStyle;
-	x2?: number;
-	y2?: number;
 }
 
 export default class Line extends LineLike implements ILine {
@@ -38,8 +36,6 @@ export default class Line extends LineLike implements ILine {
 	get state(): ILine {
 		return {
 			lineStyle: this.lineStyle,
-			x2: this.x2,
-			y2: this.y2,
 			...super.state
 		};
 	}
@@ -190,7 +186,7 @@ export default class Line extends LineLike implements ILine {
 			var adjustedEndX = this.endX - cos * endOffset;
 			var adjustedEndY = this.endY - sin * endOffset;
 
-			var pathData: string = `M${adjustedStartX}, ${adjustedStartY}, ${adjustedEndX} ${adjustedEndY}`;
+			var pathData: string = `M ${adjustedStartX} ${adjustedStartY} L ${adjustedEndX} ${adjustedEndY}`;
 
 			var startStyle = this.lineStyle.headStyle[0];
 			var endStyle = this.lineStyle.headStyle[1];

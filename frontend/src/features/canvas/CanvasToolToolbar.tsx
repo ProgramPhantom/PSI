@@ -1,15 +1,42 @@
 import { Button, ButtonGroup, Position, Tooltip, Popover, Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
 import React from "react";
 import { defaultLine } from "../../logic/default/index";
+import { HeadStyle } from "../../logic/line";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { setSelectedTool, CanvasToolType } from "../../redux/slices/applicationSlice";
 import styles from "./styles/toolbars.module.scss";
+
+const COLOR_PRESETS = [
+    "#000000",
+    "#5c7080",
+    "#137cbd",
+    "#0f9960",
+    "#d9822b",
+    "#db3737",
+    "#7157d9",
+    "#d13913"
+];
 
 export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
     const textToolConfig = React.useRef({ fontFamily: 'sans-serif', fontSize: 20 });
     const latexToolConfig = React.useRef({ fontSize: 35 });
+    const arrowToolConfig = React.useRef<{
+        thickness: number;
+        lineStyle: {
+            stroke: string;
+            dashing: [number, number];
+            headStyle: [HeadStyle, HeadStyle];
+        };
+    }>({
+        thickness: defaultLine.thickness ?? 2,
+        lineStyle: {
+            stroke: (defaultLine.lineStyle?.stroke as string) ?? "#000000",
+            dashing: (defaultLine.lineStyle?.dashing as [number, number]) ?? [0, 0],
+            headStyle: (defaultLine.lineStyle?.headStyle as [HeadStyle, HeadStyle]) ?? ["none", "default"]
+        }
+    });
 
     const selectedFont = selectedTool.type === 'text'
         ? (selectedTool.config?.fontFamily ?? 'sans-serif')
@@ -22,6 +49,22 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
     const selectedLaTeXFontSize = selectedTool.type === 'latex'
         ? (selectedTool.config?.fontSize ?? 35)
         : latexToolConfig.current.fontSize;
+
+    const selectedThickness = selectedTool.type === 'arrow'
+        ? (selectedTool.config?.thickness ?? arrowToolConfig.current.thickness)
+        : arrowToolConfig.current.thickness;
+
+    const selectedHeadStyle = selectedTool.type === 'arrow'
+        ? (selectedTool.config?.lineStyle?.headStyle ?? arrowToolConfig.current.lineStyle.headStyle)
+        : arrowToolConfig.current.lineStyle.headStyle;
+
+    const selectedStroke = selectedTool.type === 'arrow'
+        ? (selectedTool.config?.lineStyle?.stroke ?? arrowToolConfig.current.lineStyle.stroke)
+        : arrowToolConfig.current.lineStyle.stroke;
+
+    const selectedDashing = selectedTool.type === 'arrow'
+        ? (selectedTool.config?.lineStyle?.dashing ?? arrowToolConfig.current.lineStyle.dashing)
+        : arrowToolConfig.current.lineStyle.dashing;
 
     const handleFontSelect = (fontFamily: string) => {
         textToolConfig.current = { ...textToolConfig.current, fontFamily };
@@ -47,11 +90,64 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
         }));
     };
 
+    const handleHeadStyleSelect = (headStyle: [HeadStyle, HeadStyle]) => {
+        arrowToolConfig.current = {
+            ...arrowToolConfig.current,
+            lineStyle: {
+                ...arrowToolConfig.current.lineStyle,
+                headStyle
+            }
+        };
+        dispatch(setSelectedTool({
+            type: 'arrow',
+            config: arrowToolConfig.current
+        }));
+    };
+
+    const handleThicknessSelect = (thickness: number) => {
+        arrowToolConfig.current = {
+            ...arrowToolConfig.current,
+            thickness
+        };
+        dispatch(setSelectedTool({
+            type: 'arrow',
+            config: arrowToolConfig.current
+        }));
+    };
+
+    const handleStrokeSelect = (stroke: string) => {
+        arrowToolConfig.current = {
+            ...arrowToolConfig.current,
+            lineStyle: {
+                ...arrowToolConfig.current.lineStyle,
+                stroke
+            }
+        };
+        dispatch(setSelectedTool({
+            type: 'arrow',
+            config: arrowToolConfig.current
+        }));
+    };
+
+    const handleDashingSelect = (dashing: [number, number]) => {
+        arrowToolConfig.current = {
+            ...arrowToolConfig.current,
+            lineStyle: {
+                ...arrowToolConfig.current.lineStyle,
+                dashing
+            }
+        };
+        dispatch(setSelectedTool({
+            type: 'arrow',
+            config: arrowToolConfig.current
+        }));
+    };
+
     const selectTool = (toolType: CanvasToolType) => {
         if (toolType === 'arrow') {
             dispatch(setSelectedTool({
                 type: 'arrow',
-                config: { lineStyle: defaultLine.lineStyle, mode: 'bind' }
+                config: arrowToolConfig.current
             }));
         } else if (toolType === 'text') {
             dispatch(setSelectedTool({
@@ -258,17 +354,157 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                 />
             </Tooltip>
 
-            <Tooltip hoverOpenDelay={2000} content="Arrow Tool" position={Position.TOP}>
-                <Button disabled
-                    icon="arrow-top-right"
-                    active={selectedTool.type === 'arrow'}
-                    intent={selectedTool.type === 'arrow' ? 'primary' : 'none'}
-                    onClick={() => selectTool('arrow')}
-                    variant="minimal"
-                />
-            </Tooltip>
+            <ButtonGroup>
+                <Tooltip hoverOpenDelay={2000} content="Arrow Tool" position={Position.TOP}>
+                    <Button
+                        icon="arrow-top-right"
+                        active={selectedTool.type === 'arrow'}
+                        intent={selectedTool.type === 'arrow' ? 'primary' : 'none'}
+                        onClick={() => selectTool('arrow')}
+                        variant="minimal"
+                    />
+                </Tooltip>
+                <Popover
+                    content={
+                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                            <Menu style={{ minWidth: 150 }}>
+                                <MenuDivider title="Arrowhead Style" />
+                                <MenuItem
+                                    text="Single Arrow (→)"
+                                    active={selectedHeadStyle[0] === 'none' && selectedHeadStyle[1] === 'default'}
+                                    onClick={() => handleHeadStyleSelect(['none', 'default'])}
+                                />
+                                <MenuItem
+                                    text="Double Arrow (↔)"
+                                    active={selectedHeadStyle[0] === 'default' && selectedHeadStyle[1] === 'default'}
+                                    onClick={() => handleHeadStyleSelect(['default', 'default'])}
+                                />
+                                <MenuItem
+                                    text="Plain Line (—)"
+                                    active={selectedHeadStyle[0] === 'none' && selectedHeadStyle[1] === 'none'}
+                                    onClick={() => handleHeadStyleSelect(['none', 'none'])}
+                                />
+                                <MenuItem
+                                    text="Reverse Arrow (←)"
+                                    active={selectedHeadStyle[0] === 'default' && selectedHeadStyle[1] === 'none'}
+                                    onClick={() => handleHeadStyleSelect(['default', 'none'])}
+                                />
+                                <MenuItem
+                                    text="Thin Arrow (⭢)"
+                                    active={selectedHeadStyle[0] === 'none' && selectedHeadStyle[1] === 'thin'}
+                                    onClick={() => handleHeadStyleSelect(['none', 'thin'])}
+                                />
+                                <MenuItem
+                                    text="Thin Double (⭤)"
+                                    active={selectedHeadStyle[0] === 'thin' && selectedHeadStyle[1] === 'thin'}
+                                    onClick={() => handleHeadStyleSelect(['thin', 'thin'])}
+                                />
+                            </Menu>
+
+                            <div style={{ width: 1, backgroundColor: 'rgba(200, 200, 200, 0.3)', margin: '4px 0' }} />
+
+                            <Menu style={{ minWidth: 120 }}>
+                                <MenuDivider title="Thickness" />
+                                <MenuItem
+                                    text="Thin (1px)"
+                                    active={selectedThickness === 1}
+                                    onClick={() => handleThicknessSelect(1)}
+                                />
+                                <MenuItem
+                                    text="Regular (2px)"
+                                    active={selectedThickness === 2}
+                                    onClick={() => handleThicknessSelect(2)}
+                                />
+                                <MenuItem
+                                    text="Medium (3px)"
+                                    active={selectedThickness === 3}
+                                    onClick={() => handleThicknessSelect(3)}
+                                />
+                                <MenuItem
+                                    text="Thick (4px)"
+                                    active={selectedThickness === 4}
+                                    onClick={() => handleThicknessSelect(4)}
+                                />
+                                <MenuItem
+                                    text="Extra Thick (6px)"
+                                    active={selectedThickness === 6}
+                                    onClick={() => handleThicknessSelect(6)}
+                                />
+                            </Menu>
+
+                            <div style={{ width: 1, backgroundColor: 'rgba(200, 200, 200, 0.3)', margin: '4px 0' }} />
+
+                            <div style={{ minWidth: 140, padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, color: '#5f6b7c', textTransform: 'uppercase', marginBottom: '2px' }}>
+                                    Color
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 22px)', gap: '6px', marginBottom: '4px' }}>
+                                    {COLOR_PRESETS.map((c) => (
+                                        <div
+                                            key={c}
+                                            onClick={() => handleStrokeSelect(c)}
+                                            style={{
+                                                width: 22,
+                                                height: 22,
+                                                borderRadius: '4px',
+                                                backgroundColor: c,
+                                                cursor: 'pointer',
+                                                border: selectedStroke.toLowerCase() === c.toLowerCase() ? '2px solid #106ba3' : '1px solid rgba(0,0,0,0.2)',
+                                                boxShadow: selectedStroke.toLowerCase() === c.toLowerCase() ? '0 0 0 1px #fff inset' : 'none'
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ fontSize: '12px' }}>Custom:</span>
+                                    <input
+                                        type="color"
+                                        value={selectedStroke}
+                                        onChange={(e) => handleStrokeSelect(e.target.value)}
+                                        style={{ width: '28px', height: '24px', padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}
+                                    />
+                                </div>
+
+                                <MenuDivider />
+
+                                <div style={{ fontSize: '11px', fontWeight: 600, color: '#5f6b7c', textTransform: 'uppercase', marginBottom: '2px' }}>
+                                    Dash Style
+                                </div>
+                                <Menu style={{ padding: 0, minWidth: 'unset' }}>
+                                    <MenuItem
+                                        text="Solid"
+                                        active={selectedDashing[0] === 0}
+                                        onClick={() => handleDashingSelect([0, 0])}
+                                    />
+                                    <MenuItem
+                                        text="Dashed"
+                                        active={selectedDashing[0] === 6}
+                                        onClick={() => handleDashingSelect([6, 6])}
+                                    />
+                                    <MenuItem
+                                        text="Dotted"
+                                        active={selectedDashing[0] === 2}
+                                        onClick={() => handleDashingSelect([2, 4])}
+                                    />
+                                </Menu>
+                            </div>
+                        </div>
+                    }
+                    position="top"
+                    minimal={true}
+                >
+                    <Button
+                        icon="caret-up"
+                        active={selectedTool.type === 'arrow'}
+                        intent={selectedTool.type === 'arrow' ? 'primary' : 'none'}
+                        variant="minimal"
+                        style={{ minWidth: "16px", padding: 0 }}
+                    />
+                </Popover>
+            </ButtonGroup>
         </div>
     );
 });
 
 export default CanvasToolToolbar;
+

@@ -6,6 +6,7 @@ import { getEmptyImage } from "react-dnd-html5-backend";
 import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import LabelGroup from "../../logic/hasComponents/labelGroup";
+import LineLike, { ILineLike } from "../../logic/lineLike";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
@@ -91,9 +92,24 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							const offsetX = item.offset?.x ?? 0;
 							const offsetY = item.offset?.y ?? 0;
 
+							const targetX = dropResult.data.x - (offsetX / scale);
+							const targetY = dropResult.data.y - (offsetY / scale);
 
-							newState.x = dropResult.data.x - (offsetX / scale);
-							newState.y = dropResult.data.y - (offsetY / scale);
+							if (item.element instanceof LineLike) {
+								const line = item.element;
+								const dx = targetX - line.x;
+								const dy = targetY - line.y;
+								const lineState = newState as ILineLike;
+								lineState.startX = line.startX + dx;
+								lineState.startY = line.startY + dy;
+								lineState.endX = line.endX + dx;
+								lineState.endY = line.endY + dy;
+								lineState.x = targetX;
+								lineState.y = targetY;
+							} else {
+								newState.x = targetX;
+								newState.y = targetY;
+							}
 
 							newState.parentId = ENGINE.handler.diagram.id;
 							newState.placementMode = {
