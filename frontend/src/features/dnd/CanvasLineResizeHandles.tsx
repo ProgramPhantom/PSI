@@ -296,6 +296,27 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 		const currentEndX = previewState ? previewState.endX : element.endX;
 		const currentEndY = previewState ? previewState.endY : element.endY;
 
+		const isHandleBound = useCallback(
+			(handle: LineHandleType): boolean => {
+				if (element.placementMode?.type === "binds") {
+					if (element.placementMode.config.some((r) => r.targetSiteName === handle)) {
+						return true;
+					}
+				}
+				if (element.bindingsToThis && element.bindingsToThis.some((b) => b.bindingRule.targetSiteName === handle)) {
+					return true;
+				}
+				return false;
+			},
+			[element]
+		);
+
+		const isStartBound = isHandleBound("start");
+		const isEndBound = isHandleBound("end");
+
+		const showStartBound = isStartBound && activeHandle !== "start";
+		const showEndBound = isEndBound && activeHandle !== "end";
+
 		const currentEffectiveScale = (scale && scale > 0) ? scale : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
 		const handleScale = 1 / (currentEffectiveScale > 0 ? currentEffectiveScale : 1);
 
@@ -424,25 +445,57 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				>
 					{/* Start Handle */}
 					<div
-						className={styles.handle}
+						className={`${styles.handle} ${showStartBound ? styles.boundHandle : ""}`}
 						style={{ left: currentStartX, top: currentStartY, cursor: "crosshair" }}
 						onMouseDown={(e) => handleMouseDown("start", e)}
 						onPointerDown={(e) => handlePointerDown("start", e)}
 						onMouseUp={(e) => e.stopPropagation()}
 						onClick={(e) => e.stopPropagation()}
-						title="Start Point"
-					/>
+						title={isStartBound ? "Start Point (Bound - Drag to unbind)" : "Start Point"}
+					>
+						{showStartBound && (
+							<svg
+								className={styles.boundIcon}
+								viewBox="0 0 8 8"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M 1.5 1.5 L 6.5 6.5 M 6.5 1.5 L 1.5 6.5"
+									stroke="grey"
+									strokeWidth="1.5"
+									strokeLinecap="round"
+								/>
+							</svg>
+						)}
+					</div>
 
 					{/* End Handle */}
 					<div
-						className={styles.handle}
+						className={`${styles.handle} ${showEndBound ? styles.boundHandle : ""}`}
 						style={{ left: currentEndX, top: currentEndY, cursor: "crosshair" }}
 						onMouseDown={(e) => handleMouseDown("end", e)}
 						onPointerDown={(e) => handlePointerDown("end", e)}
 						onMouseUp={(e) => e.stopPropagation()}
 						onClick={(e) => e.stopPropagation()}
-						title="End Point"
-					/>
+						title={isEndBound ? "End Point (Bound - Drag to unbind)" : "End Point"}
+					>
+						{showEndBound && (
+							<svg
+								className={styles.boundIcon}
+								viewBox="0 0 8 8"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M 1.5 1.5 L 6.5 6.5 M 6.5 1.5 L 1.5 6.5"
+									stroke="grey"
+									strokeWidth="1.5"
+									strokeLinecap="round"
+								/>
+							</svg>
+						)}
+					</div>
 				</div>
 			</>
 		);
