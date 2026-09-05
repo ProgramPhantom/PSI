@@ -11,7 +11,7 @@ import Sequence from "./hasComponents/sequence.ts";
 import { AllComponentTypes, ID } from "./point.ts";
 import Visual, { IDraw, IVisual } from "./visual.ts";
 import RBush from "rbush";
-import { RBushItem } from "./spacial.ts";
+import { IBindsPlacementConfig, RBushItem } from "./spacial.ts";
 
 
 /**
@@ -199,7 +199,6 @@ export default class DiagramHandler implements IDraw {
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);
 		this.diagram.computePositions({ x: 0, y: 0 });
-		this.diagram.enforceBindings();
 		this.computeBoundaryTree();
 		const end = performance.now();
 		console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
@@ -207,7 +206,7 @@ export default class DiagramHandler implements IDraw {
 
 	/**
 	 * Inspects an element and all its descendants for `placementMode: { type: "binds" }` configurations.
-	 * For each bound endpoint (start / end), resolves the target anchor object in the diagram
+	 * For each binding rule in `config`, resolves the anchor object in the diagram
 	 * and registers the corresponding binding on that anchor.
 	 *
 	 * @param element The root visual element or collection subtree to register bindings for.
@@ -215,20 +214,24 @@ export default class DiagramHandler implements IDraw {
 	public createElementBindings(element: Visual): void {
 		for (const el of Object.values(element.allElements)) {
 			if (el.placementMode?.type === "binds" && el.placementMode.config) {
-				const config = el.placementMode.config;
-				if (config.start && config.start.targetId) {
-					const anchor = this.identifyElement(config.start.targetId);
+				const config: IBindsPlacementConfig = el.placementMode.config;
+
+				for (const rule of config) {
+					const anchorId = rule.targetId || rule.anchorId;
+					if (!anchorId) continue;
+					const anchor: Visual | undefined = this.identifyElement(anchorId);
 					if (anchor) {
-						anchor.bind(el, "x", config.start.xAnchor, "start", config.start.offset?.[0], undefined, true);
-						anchor.bind(el, "y", config.start.yAnchor, "start", config.start.offset?.[1], undefined, true);
+						anchor.bind(
+							el,
+							rule.dimension,
+							rule.anchorSiteName,
+							rule.targetSiteName,
+							rule.offset,
+							rule.hint,
+							rule.bindToContent ?? true
+						);
 					}
-				}
-				if (config.end && config.end.targetId) {
-					const anchor = this.identifyElement(config.end.targetId);
-					if (anchor) {
-						anchor.bind(el, "x", config.end.xAnchor, "end", config.end.offset?.[0], undefined, true);
-						anchor.bind(el, "y", config.end.yAnchor, "end", config.end.offset?.[1], undefined, true);
-					}
+
 				}
 			}
 		}

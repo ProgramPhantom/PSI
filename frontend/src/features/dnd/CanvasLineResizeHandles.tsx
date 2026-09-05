@@ -207,25 +207,24 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				if (hasMoved) {
 					let updatedPlacementMode = initial.element.placementMode;
 					if (updatedPlacementMode?.type === "binds") {
-						const currentConfig = { ...updatedPlacementMode.config };
-						if (initial.handle === "start") {
-							if (currentConfig.start?.targetId) {
-								const anchor = ENGINE.handler.identifyElement(currentConfig.start.targetId);
-								anchor?.clearBindsTo(initial.element);
+						const handle = initial.handle;
+
+						const currentRules = updatedPlacementMode.config;
+						const rulesToRemove = currentRules.filter((r) => r.targetSiteName === handle);
+						for (const r of rulesToRemove) {
+							const anchorId = r.targetId || r.anchorId;
+							if (anchorId) {
+								const anchor = ENGINE.handler.identifyElement(anchorId);
+								anchor?.clearBindsTo(initial.element, r.dimension, handle);
 							}
-							delete currentConfig.start;
-						} else if (initial.handle === "end") {
-							if (currentConfig.end?.targetId) {
-								const anchor = ENGINE.handler.identifyElement(currentConfig.end.targetId);
-								anchor?.clearBindsTo(initial.element);
-							}
-							delete currentConfig.end;
 						}
-						if (currentConfig.start || currentConfig.end) {
-							updatedPlacementMode = { type: "binds", config: currentConfig };
+						const remainingRules = currentRules.filter((r) => r.targetSiteName !== handle);
+						if (remainingRules.length > 0) {
+							updatedPlacementMode = { type: "binds", config: remainingRules };
 						} else {
 							updatedPlacementMode = { type: "free" };
 						}
+
 					}
 
 					const newLineState: ILineLike = {

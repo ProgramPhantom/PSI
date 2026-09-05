@@ -3,7 +3,7 @@ import { IToolConfig, Tool } from "../../app/App";
 import { DEFAULT_LINE } from "../../logic/default/line";
 import ENGINE from "../../logic/engine";
 import { HeadStyle, ILineStyle, ILine } from "../../logic/line";
-import { IBindEndpointConfig, PlacementConfiguration } from "../../logic/spacial";
+import { IPlacementBindingRule, PlacementConfiguration } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
@@ -31,7 +31,7 @@ const MARKER_LENGTHS: Record<HeadStyle, number> = {
 export function LineTool(props: IDrawArrowProps) {
 	const dispatch = useAppDispatch();
 	const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
-	const [startBinding, setStartBinding] = useState<IBindEndpointConfig | null>(null);
+	const [startBindingRules, setStartBindingRules] = useState<IPlacementBindingRule[] | null>(null);
 	const [currentPoint, setCurrentPoint] = useState<{ x: number; y: number } | null>(null);
 
 	const rawPointRef = React.useRef<{ x: number; y: number } | null>(null);
@@ -69,10 +69,15 @@ export function LineTool(props: IDrawArrowProps) {
 		}
 	}, [startPoint, computeSnappedPoint]);
 
-	const commitLine = useCallback((endPoint: { x: number; y: number }, endBindingInfo: IBindEndpointConfig | null) => {
+	const commitLine = useCallback((endPoint: { x: number; y: number }, endBindingRules: IPlacementBindingRule[] | null) => {
 		if (!startPoint) return;
 		const dist = Math.hypot(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
-		if (dist < 2 && !startBinding && !endBindingInfo) {
+		const allRules: IPlacementBindingRule[] = [
+			...(startBindingRules ?? []),
+			...(endBindingRules ?? [])
+		];
+
+		if (dist < 2 && allRules.length === 0) {
 			return;
 		}
 
@@ -81,13 +86,10 @@ export function LineTool(props: IDrawArrowProps) {
 		const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
 		const thickness = props.config?.thickness ?? 2;
 
-		const placementMode: PlacementConfiguration = (startBinding || endBindingInfo)
+		const placementMode: PlacementConfiguration = allRules.length > 0
 			? {
 				type: "binds",
-				config: {
-					...(startBinding ? { start: startBinding } : {}),
-					...(endBindingInfo ? { end: endBindingInfo } : {})
-				}
+				config: allRules
 			}
 			: { type: "free" };
 
@@ -126,25 +128,51 @@ export function LineTool(props: IDrawArrowProps) {
 		dispatch(setSelectedElementId(newLine.id));
 		props.setTool({ type: "select", config: {} });
 		setStartPoint(null);
-		setStartBinding(null);
+		setStartBindingRules(null);
 		setCurrentPoint(null);
 		rawPointRef.current = null;
-	}, [startPoint, startBinding, props, dispatch]);
+	}, [startPoint, startBindingRules, props, dispatch]);
 
 	const handleSelectBind = (info: ISelectedBindingInfo) => {
-		const bindConfig: IBindEndpointConfig = {
-			targetId: info.anchorObject.id,
-			xAnchor: info.xAnchor,
-			yAnchor: info.yAnchor
-		};
-
 		if (!startPoint) {
+			const startRules: IPlacementBindingRule[] = [
+				{
+					targetId: info.anchorObject.id,
+					dimension: "x",
+					anchorSiteName: info.xAnchor,
+					targetSiteName: "start",
+					bindToContent: true
+				},
+				{
+					targetId: info.anchorObject.id,
+					dimension: "y",
+					anchorSiteName: info.yAnchor,
+					targetSiteName: "start",
+					bindToContent: true
+				}
+			];
 			setStartPoint(info.point);
-			setStartBinding(bindConfig);
+			setStartBindingRules(startRules);
 			setCurrentPoint(info.point);
 			rawPointRef.current = info.point;
 		} else {
-			commitLine(info.point, bindConfig);
+			const endRules: IPlacementBindingRule[] = [
+				{
+					targetId: info.anchorObject.id,
+					dimension: "x",
+					anchorSiteName: info.xAnchor,
+					targetSiteName: "end",
+					bindToContent: true
+				},
+				{
+					targetId: info.anchorObject.id,
+					dimension: "y",
+					anchorSiteName: info.yAnchor,
+					targetSiteName: "end",
+					bindToContent: true
+				}
+			];
+			commitLine(info.point, endRules);
 		}
 	};
 
@@ -157,7 +185,7 @@ export function LineTool(props: IDrawArrowProps) {
 
 		if (!startPoint) {
 			setStartPoint(rawCoords);
-			setStartBinding(null);
+			setStartBindingRules(null);
 			setCurrentPoint(rawCoords);
 		} else {
 			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
@@ -178,7 +206,7 @@ export function LineTool(props: IDrawArrowProps) {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				setStartPoint(null);
-				setStartBinding(null);
+				setStartBindingRules(null);
 				setCurrentPoint(null);
 				rawPointRef.current = null;
 				props.setTool({ type: "select", config: {} });

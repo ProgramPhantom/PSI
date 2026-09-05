@@ -63,16 +63,25 @@ export interface IAlignerConfig {
 
 export type SiteNames = "here" | "centre" | "far" | "start" | "end";
 
+export interface IPlacementBindingRule {
+	targetId: string;
+	anchorId?: string;
+	dimension: Dimensions;
+	anchorSiteName: SiteNames;
+	targetSiteName: SiteNames;
+	offset?: number;
+	bindToContent?: boolean;
+	hint?: string;
+}
+
+export type IBindsPlacementConfig = IPlacementBindingRule[];
+
+/** @deprecated Kept for backwards compatibility; use IPlacementBindingRule instead */
 export interface IBindEndpointConfig {
 	targetId: string;
 	xAnchor: SiteNames;
 	yAnchor: SiteNames;
 	offset?: [number, number];
-}
-
-export interface IBindsPlacementConfig {
-	start?: IBindEndpointConfig;
-	end?: IBindEndpointConfig;
 }
 
 export type PlacementConfiguration =
@@ -419,12 +428,13 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.bindings = this.bindings.filter((b) => !toRemove.includes(b));
 	}
 
-	public clearBindsTo(target: Spacial, dimension?: Dimensions) {
+	public clearBindsTo(target: Spacial, dimension?: Dimensions, targetSiteName?: SiteNames) {
 		var toRemove: IBinding[] = [];
 		for (var bind of this.bindings) {
 			if (
 				bind.targetObject === target
 				&& (bind.bindingRule.dimension === dimension || dimension === undefined)
+				&& (bind.bindingRule.targetSiteName === targetSiteName || targetSiteName === undefined)
 			) {
 				toRemove.push(bind);
 				console.warn(`Removing binding ${bind.hint}`);
