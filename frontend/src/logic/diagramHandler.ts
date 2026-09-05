@@ -257,9 +257,8 @@ export default class DiagramHandler implements IDraw {
 
 			// Transfer outgoing bindings where this element acts as an anchor
 			for (const bind of srcEl.bindings) {
-				const liveTarget = (this.identifyElement(bind.targetObject.id) as Visual) || bind.targetObject;
 				destEl.bind(
-					liveTarget,
+					bind.targetObject,
 					bind.bindingRule.dimension,
 					bind.bindingRule.anchorSiteName,
 					bind.bindingRule.targetSiteName,
@@ -299,14 +298,37 @@ export default class DiagramHandler implements IDraw {
 	 */
 	public unregisterElementBindings(element: Visual): void {
 		for (const el of Object.values(element.allElements)) {
-			// Remove bindings from this to other elements
+			// Remove bindings from this to other elements (where this element acts as an anchor)
 			for (const bind of [...el.bindings]) {
-				el.clearBindsTo(bind.targetObject);
+				const target = bind.targetObject;
+				el.clearBindsTo(target);
+
+				// Remove binding rules referencing this deleted anchor from the target's placementMode
+				if (target && target.placementMode?.type === "binds") {
+					const remainingRules = target.placementMode.config.filter(
+						(rule) => rule.targetId !== el.id && rule.anchorId !== el.id
+					);
+
+					if (remainingRules.length > 0) {
+						target.placementMode = {
+							type: "binds",
+							config: remainingRules
+						};
+					} else {
+						target.placementMode = {
+							type: "free"
+						};
+					}
+				}
 			}
 
-			// Remove bindings from other elements to this.
+			// Remove bindings from other elements to this (where this element is the target)
 			for (const bind of [...el.bindingsToThis]) {
 				bind.anchorObject.clearBindsTo(el);
+			}
+
+			if (el.placementMode?.type === "binds") {
+				el.placementMode = { type: "free" };
 			}
 		}
 	}
