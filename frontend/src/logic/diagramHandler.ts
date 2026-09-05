@@ -199,6 +199,7 @@ export default class DiagramHandler implements IDraw {
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);
 		this.diagram.computePositions({ x: 0, y: 0 });
+		this.diagram.enforceBindings();
 		this.computeBoundaryTree();
 		const end = performance.now();
 		console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
@@ -256,8 +257,9 @@ export default class DiagramHandler implements IDraw {
 
 			// Transfer outgoing bindings where this element acts as an anchor
 			for (const bind of srcEl.bindings) {
+				const liveTarget = (this.identifyElement(bind.targetObject.id) as Visual) || bind.targetObject;
 				destEl.bind(
-					bind.targetObject,
+					liveTarget,
 					bind.bindingRule.dimension,
 					bind.bindingRule.anchorSiteName,
 					bind.bindingRule.targetSiteName,
