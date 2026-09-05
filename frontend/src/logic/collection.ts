@@ -188,6 +188,13 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 		return sizeDiff;
 	}
+
+	public override enforceBindings(): void {
+		super.enforceBindings();
+		for (const child of this.children) {
+			child.enforceBindings();
+		}
+	}
 	//#endregion
 	// --------------------------------------------------
 

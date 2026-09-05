@@ -2,7 +2,7 @@ import { Element, Mask, Rect, SVG } from "@svgdotjs/svg.js";
 import RBush from "rbush";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
 import { BAR_MASK_ID, ID, UserComponentType } from "./point";
-import { Bounds, IAlignerConfig, IGridConfig, IPulseConfig, isPulse, RBushItem, Size } from "./spacial";
+import { Bounds, IAlignerConfig, IBindsPlacementConfig, IGridConfig, IPulseConfig, isPulse, RBushItem, Size } from "./spacial";
 
 
 export type Offset = [number, number];
@@ -29,7 +29,7 @@ export type GridCellElement<T extends Visual = Visual> = T & { placementMode: { 
 
 export type AlignerElement<T extends Visual = Visual> = T & { placementMode: { type: "aligner"; config: IAlignerConfig } };
 export type FreeElement<T extends Visual = Visual> = T & { placementMode: { type: "free" } };
-export type BindsElement<T extends Visual = Visual> = T & { placementMode: { type: "binds"; bindings: undefined } };
+export type BoundElement<T extends Visual = Visual> = T & { placementMode: { type: "binds"; config: IBindsPlacementConfig } };
 
 export default abstract class Visual extends PaddedBox implements IVisual {
 	static ElementType: UserComponentType = "rect";

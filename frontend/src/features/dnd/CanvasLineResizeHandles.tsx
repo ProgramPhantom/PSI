@@ -205,8 +205,32 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 					finalResult.endX !== initial.endX || finalResult.endY !== initial.endY;
 
 				if (hasMoved) {
+					let updatedPlacementMode = initial.element.placementMode;
+					if (updatedPlacementMode?.type === "binds") {
+						const currentConfig = { ...updatedPlacementMode.config };
+						if (initial.handle === "start") {
+							if (currentConfig.start?.targetId) {
+								const anchor = ENGINE.handler.identifyElement(currentConfig.start.targetId);
+								anchor?.clearBindsTo(initial.element);
+							}
+							delete currentConfig.start;
+						} else if (initial.handle === "end") {
+							if (currentConfig.end?.targetId) {
+								const anchor = ENGINE.handler.identifyElement(currentConfig.end.targetId);
+								anchor?.clearBindsTo(initial.element);
+							}
+							delete currentConfig.end;
+						}
+						if (currentConfig.start || currentConfig.end) {
+							updatedPlacementMode = { type: "binds", config: currentConfig };
+						} else {
+							updatedPlacementMode = { type: "free" };
+						}
+					}
+
 					const newLineState: ILineLike = {
 						...initial.element.state,
+						placementMode: updatedPlacementMode,
 						startX: finalResult.startX,
 						startY: finalResult.startY,
 						endX: finalResult.endX,

@@ -3,9 +3,11 @@ import { IToolConfig, Tool } from "../../app/App";
 import { DEFAULT_LINE } from "../../logic/default/line";
 import ENGINE from "../../logic/engine";
 import { HeadStyle, ILineStyle, ILine } from "../../logic/line";
+import { IBindEndpointConfig, PlacementConfiguration } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
+import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
 
 export interface IDrawArrowConfig extends IToolConfig {
 	thickness?: number;
@@ -29,6 +31,7 @@ const MARKER_LENGTHS: Record<HeadStyle, number> = {
 export function LineTool(props: IDrawArrowProps) {
 	const dispatch = useAppDispatch();
 	const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
+	const [startBinding, setStartBinding] = useState<IBindEndpointConfig | null>(null);
 	const [currentPoint, setCurrentPoint] = useState<{ x: number; y: number } | null>(null);
 
 	const rawPointRef = React.useRef<{ x: number; y: number } | null>(null);
@@ -66,6 +69,85 @@ export function LineTool(props: IDrawArrowProps) {
 		}
 	}, [startPoint, computeSnappedPoint]);
 
+	const commitLine = useCallback((endPoint: { x: number; y: number }, endBindingInfo: IBindEndpointConfig | null) => {
+		if (!startPoint) return;
+		const dist = Math.hypot(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
+		if (dist < 2 && !startBinding && !endBindingInfo) {
+			return;
+		}
+
+		const stroke = props.config?.lineStyle?.stroke ?? "#000000";
+		const dashing = props.config?.lineStyle?.dashing ?? [0, 0];
+		const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
+		const thickness = props.config?.thickness ?? 2;
+
+		const placementMode: PlacementConfiguration = (startBinding || endBindingInfo)
+			? {
+				type: "binds",
+				config: {
+					...(startBinding ? { start: startBinding } : {}),
+					...(endBindingInfo ? { end: endBindingInfo } : {})
+				}
+			}
+			: { type: "free" };
+
+		const newLine: ILine = {
+			...structuredClone(DEFAULT_LINE),
+			id: Math.random().toString(16).slice(2),
+			ref: `arrow-${Date.now()}`,
+			type: "line",
+			parentId: ENGINE.handler.diagram.id,
+			placementMode: placementMode,
+			placementControl: "user",
+			startX: startPoint.x,
+			startY: startPoint.y,
+			endX: endPoint.x,
+			endY: endPoint.y,
+			x: Math.min(startPoint.x, endPoint.x),
+			y: Math.min(startPoint.y, endPoint.y),
+			thickness: thickness,
+			adjustment: [0, 0],
+			padding: [0, 0, 0, 0],
+			offset: [0, 0],
+			lineStyle: {
+				stroke: stroke,
+				dashing: dashing,
+				headStyle: headStyle
+			}
+		};
+
+		ENGINE.handler.act({
+			type: "add",
+			input: {
+				child: newLine
+			}
+		});
+
+		dispatch(setSelectedElementId(newLine.id));
+		props.setTool({ type: "select", config: {} });
+		setStartPoint(null);
+		setStartBinding(null);
+		setCurrentPoint(null);
+		rawPointRef.current = null;
+	}, [startPoint, startBinding, props, dispatch]);
+
+	const handleSelectBind = (info: ISelectedBindingInfo) => {
+		const bindConfig: IBindEndpointConfig = {
+			targetId: info.anchorObject.id,
+			xAnchor: info.xAnchor,
+			yAnchor: info.yAnchor
+		};
+
+		if (!startPoint) {
+			setStartPoint(info.point);
+			setStartBinding(bindConfig);
+			setCurrentPoint(info.point);
+			rawPointRef.current = info.point;
+		} else {
+			commitLine(info.point, bindConfig);
+		}
+	};
+
 	const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
 		e.preventDefault();
@@ -75,58 +157,12 @@ export function LineTool(props: IDrawArrowProps) {
 
 		if (!startPoint) {
 			setStartPoint(rawCoords);
+			setStartBinding(null);
 			setCurrentPoint(rawCoords);
 		} else {
 			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
 			const coords = computeSnappedPoint(rawCoords, startPoint, isCtrl);
-
-			const dist = Math.hypot(coords.x - startPoint.x, coords.y - startPoint.y);
-			if (dist < 2) {
-				return;
-			}
-
-			const stroke = props.config?.lineStyle?.stroke ?? "#000000";
-			const dashing = props.config?.lineStyle?.dashing ?? [0, 0];
-			const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
-			const thickness = props.config?.thickness ?? 2;
-
-			const newLine: ILine = {
-				...structuredClone(DEFAULT_LINE),
-				id: Math.random().toString(16).slice(2),
-				ref: `arrow-${Date.now()}`,
-				type: "line",
-				parentId: ENGINE.handler.diagram.id,
-				placementMode: { type: "free" },
-				placementControl: "user",
-				startX: startPoint.x,
-				startY: startPoint.y,
-				endX: coords.x,
-				endY: coords.y,
-				x: Math.min(startPoint.x, coords.x),
-				y: Math.min(startPoint.y, coords.y),
-				thickness: thickness,
-				adjustment: [0, 0],
-				padding: [0, 0, 0, 0],
-				offset: [0, 0],
-				lineStyle: {
-					stroke: stroke,
-					dashing: dashing,
-					headStyle: headStyle
-				}
-			};
-
-			ENGINE.handler.act({
-				type: "add",
-				input: {
-					child: newLine
-				}
-			});
-
-			dispatch(setSelectedElementId(newLine.id));
-			props.setTool({ type: "select", config: {} });
-			setStartPoint(null);
-			setCurrentPoint(null);
-			rawPointRef.current = null;
+			commitLine(coords, null);
 		}
 	};
 
@@ -142,6 +178,7 @@ export function LineTool(props: IDrawArrowProps) {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				setStartPoint(null);
+				setStartBinding(null);
 				setCurrentPoint(null);
 				rawPointRef.current = null;
 				props.setTool({ type: "select", config: {} });
@@ -248,6 +285,14 @@ export function LineTool(props: IDrawArrowProps) {
 				onMouseMove={handleMouseMove}
 			/>
 
+			{/* Hovered Element Bindings Selector */}
+			{props.hoveredElement && props.hoveredElement.type !== "diagram" && (
+				<BindingsSelector
+					element={props.hoveredElement}
+					onSelectBind={handleSelectBind}
+				/>
+			)}
+
 			{/* Live Arrow Preview SVG */}
 			{startPoint && currentPoint && (
 				<svg
@@ -295,7 +340,6 @@ export function LineTool(props: IDrawArrowProps) {
 						markerStart={headStyle[0] !== "none" ? `url(#preview-marker-${headStyle[0]})` : undefined}
 						markerEnd={headStyle[1] !== "none" ? `url(#preview-marker-${headStyle[1]})` : undefined}
 					/>
-
 				</svg>
 			)}
 		</>

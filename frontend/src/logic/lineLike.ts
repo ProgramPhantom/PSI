@@ -55,6 +55,18 @@ export default abstract class LineLike extends Visual {
 		this.endY = params.endY ?? 0;
 
 		this.thickness = params.thickness ?? 2;
+
+		this.AnchorFunctions = {
+			...this.AnchorFunctions,
+			start: {
+				get: this.getStart.bind(this),
+				set: this.setStart.bind(this)
+			},
+			end: {
+				get: this.getEnd.bind(this),
+				set: this.setEnd.bind(this)
+			}
+		};
 	}
 
 
@@ -123,6 +135,7 @@ export default abstract class LineLike extends Visual {
 	}
 	public set startX(v: number) {
 		this._startX = v;
+		this.dirty = true;
 	}
 
 	public get startY(): number {
@@ -130,6 +143,7 @@ export default abstract class LineLike extends Visual {
 	}
 	public set startY(v: number) {
 		this._startY = v;
+		this.dirty = true;
 	}
 
 	public get endX(): number {
@@ -137,6 +151,7 @@ export default abstract class LineLike extends Visual {
 	}
 	public set endX(v: number) {
 		this._endX = v;
+		this.dirty = true;
 	}
 
 	public get endY(): number {
@@ -144,8 +159,32 @@ export default abstract class LineLike extends Visual {
 	}
 	public set endY(v: number) {
 		this._endY = v;
+		this.dirty = true;
 	}
 
+	public getStart(dimension: Dimensions): number {
+		return dimension === "x" ? this.startX : this.startY;
+	}
+	public setStart(dimension: Dimensions, v: number) {
+		if (dimension === "x") {
+			this.startX = v;
+		} else {
+			this.startY = v;
+		}
+
+	}
+
+	public getEnd(dimension: Dimensions): number {
+		return dimension === "x" ? this.endX : this.endY;
+	}
+	public setEnd(dimension: Dimensions, v: number) {
+		if (dimension === "x") {
+			this.endX = v;
+		} else {
+			this.endY = v;
+		}
+
+	}
 	public get centreX(): number {
 		return (this.startX + this.endX) / 2
 	}

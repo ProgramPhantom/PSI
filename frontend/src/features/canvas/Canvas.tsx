@@ -630,7 +630,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 											{selectedTool.type === "arrow" ? (
 												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
 													<LineTool
-														hoveredElement={hoveredElement}
+														hoveredElement={rawHoveredElement ?? hoveredElement}
 														config={selectedTool.config}
 														zoom={zoom}
 														setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
