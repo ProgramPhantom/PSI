@@ -45,12 +45,14 @@ export interface ApplicationState {
     toolConfigs: Record<CanvasToolType, any>;
     isMouseOverCanvas: boolean;
     canvasMousePosition: CanvasMousePosition | undefined;
+    isResizing: boolean;
 }
 
 const initialState: ApplicationState = {
     selectedElementId: undefined,
     debugSelectionTypes: DefaultDebugSelection,
     debugSelectedElement: false,
+    isResizing: false,
     selectedTool: {
         type: 'select',
         config: {}
@@ -119,6 +121,9 @@ export const applicationSlice = createSlice({
         ) => {
             state.isMouseOverCanvas = action.payload.isMouseOverCanvas;
             state.canvasMousePosition = action.payload.position;
+        },
+        setIsResizing: (state, action: PayloadAction<boolean>) => {
+            state.isResizing = action.payload;
         }
     },
 });
@@ -129,7 +134,8 @@ export const {
     toggleDebugSelectedElement,
     setDebugSelectedElement,
     setSelectedTool,
-    setCanvasMousePosition
+    setCanvasMousePosition,
+    setIsResizing
 } = applicationSlice.actions;
 
 export default applicationSlice.reducer;

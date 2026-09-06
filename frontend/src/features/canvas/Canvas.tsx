@@ -620,7 +620,8 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													x={el.x}
 													y={el.y}
 													scale={zoom}
-													isHidden={el.id === editingElementId}></CanvasDraggableElement>
+													isHidden={el.id === editingElementId}
+													hoveredElement={rawHoveredElement ?? hoveredElement}></CanvasDraggableElement>
 											))}
 
 

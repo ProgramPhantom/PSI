@@ -12,11 +12,12 @@ export interface ISelectedBindingInfo {
 interface IBindingsSelectorProps {
 	element: Visual;
 	onSelectBind: (info: ISelectedBindingInfo) => void;
+	activeAnchorKey?: string | null;
 }
 
 const AnchorLocations: SiteNames[] = ["here", "centre", "far"];
 
-export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, onSelectBind }) => {
+export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, onSelectBind, activeAnchorKey }) => {
 	const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
 	const left = element.cx;
@@ -59,7 +60,7 @@ export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, on
 					const x = element.AnchorFunctions[xAnchor].get("x", true);
 					const y = element.AnchorFunctions[yAnchor].get("y", true);
 					const key = `${xAnchor}-${yAnchor}`;
-					const isHovered = hoveredKey === key;
+					const isHovered = hoveredKey === key || activeAnchorKey === key;
 
 					return (
 						<div

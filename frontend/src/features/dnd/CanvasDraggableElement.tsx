@@ -29,6 +29,7 @@ interface IDraggableElementProps {
 	isHidden?: boolean;
 	offsetIndicatorThreshold?: number;
 	scale?: number;
+	hoveredElement?: Visual;
 }
 
 export interface CanvasDraggableElementPayload {
@@ -396,9 +397,19 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 				{props.visualState === "selected" && !isDragging && !props.isHidden && props.element.placementControl !== "auto" && (
 					props.element instanceof LineLike ? (
-						<CanvasLineResizeHandles element={props.element} scale={props.scale} onResize={setLineLivePreview} />
+						<CanvasLineResizeHandles
+							element={props.element}
+							scale={props.scale}
+							onResize={setLineLivePreview}
+							hoveredElement={props.hoveredElement}
+						/>
 					) : (
-						<CanvasResizeHandles element={props.element} scale={props.scale} onResize={setLivePreview} />
+						<CanvasResizeHandles
+							element={props.element}
+							scale={props.scale}
+							onResize={setLivePreview}
+							hoveredElement={props.hoveredElement}
+						/>
 					)
 				)}
 			</>

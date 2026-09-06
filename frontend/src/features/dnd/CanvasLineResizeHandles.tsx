@@ -2,6 +2,12 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import ENGINE from "../../logic/engine";
 import Line, { HeadStyle, ILine } from "../../logic/line";
 import LineLike, { ILineLike } from "../../logic/lineLike";
+import { IPlacementBindingRule, PlacementConfiguration, SiteNames } from "../../logic/spacial";
+import Visual from "../../logic/visual";
+import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
+import { isBindingAllowedForResizing } from "../canvas/bindingResizeConfig";
+import { useAppDispatch } from "../../redux/hooks";
+import { setIsResizing } from "../../redux/slices/applicationSlice";
 import styles from "./styles/CanvasResizeHandles.module.scss";
 
 export type LineHandleType = "start" | "end";
@@ -17,6 +23,7 @@ export interface CanvasLineResizeHandlesProps {
 	element: LineLike;
 	scale?: number;
 	onResize?: (preview: LinePreviewState | null) => void;
+	hoveredElement?: Visual;
 }
 
 interface DragInitialState {
@@ -38,7 +45,8 @@ const MARKER_LENGTHS: Record<HeadStyle, number> = {
 };
 
 export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = React.memo(
-	function CanvasLineResizeHandles({ element, scale = 1, onResize }: CanvasLineResizeHandlesProps) {
+	function CanvasLineResizeHandles({ element, scale = 1, onResize, hoveredElement }: CanvasLineResizeHandlesProps) {
+		const dispatch = useAppDispatch();
 		const [previewState, setPreviewState] = useState<LinePreviewState | null>(null);
 		const [activeHandle, setActiveHandle] = useState<LineHandleType | null>(null);
 
@@ -51,6 +59,106 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 		const onResizeRef = useRef(onResize);
 		onResizeRef.current = onResize;
 
+		const hoveredElementRef = useRef(hoveredElement);
+		hoveredElementRef.current = hoveredElement;
+
+		const [snappedAnchorKey, setSnappedAnchorKey] = useState<string | null>(null);
+		const snappedBindingRef = useRef<ISelectedBindingInfo | null>(null);
+
+		const isBindingAllowed = isBindingAllowedForResizing(element);
+
+		const activeAnchor = (
+			isBindingAllowed &&
+			activeHandle !== null &&
+			hoveredElement &&
+			hoveredElement.id !== element.id &&
+			hoveredElement.type !== "diagram" &&
+			Boolean(hoveredElement.AnchorFunctions)
+		) ? hoveredElement : null;
+
+		const applyBinding = useCallback(
+			(info: ISelectedBindingInfo, handle: LineHandleType) => {
+				const currentElement = elementRef.current;
+				const newRules: IPlacementBindingRule[] = [
+					{
+						targetId: info.anchorObject.id,
+						dimension: "x",
+						anchorSiteName: info.xAnchor,
+						targetSiteName: handle,
+						bindToContent: true
+					},
+					{
+						targetId: info.anchorObject.id,
+						dimension: "y",
+						anchorSiteName: info.yAnchor,
+						targetSiteName: handle,
+						bindToContent: true
+					}
+				];
+
+				const currentRules = (currentElement.placementMode?.type === "binds")
+					? currentElement.placementMode.config
+					: [];
+				const remainingRules = currentRules.filter((r) => r.targetSiteName !== handle);
+				for (const r of currentRules.filter((r) => r.targetSiteName === handle)) {
+					const anchorId = r.targetId || r.anchorId;
+					if (anchorId) {
+						const anchor = ENGINE.handler.identifyElement(anchorId);
+						anchor?.clearBindsTo(currentElement, r.dimension, handle);
+					}
+				}
+
+				for (const r of newRules) {
+					info.anchorObject.bind(
+						currentElement,
+						r.dimension,
+						r.anchorSiteName,
+						r.targetSiteName,
+						r.offset,
+						r.hint,
+						r.bindToContent
+					);
+				}
+
+				const updatedPlacementMode: PlacementConfiguration = {
+					type: "binds",
+					config: [...remainingRules, ...newRules]
+				};
+
+				const finalStartX = handle === "start" ? info.point.x : currentElement.startX;
+				const finalStartY = handle === "start" ? info.point.y : currentElement.startY;
+				const finalEndX = handle === "end" ? info.point.x : currentElement.endX;
+				const finalEndY = handle === "end" ? info.point.y : currentElement.endY;
+
+				const newLineState: ILineLike = {
+					...currentElement.state,
+					placementMode: updatedPlacementMode,
+					startX: finalStartX,
+					startY: finalStartY,
+					endX: finalEndX,
+					endY: finalEndY,
+					x: Math.min(finalStartX, finalEndX),
+					y: Math.min(finalStartY, finalEndY)
+				};
+
+				ENGINE.handler.act({
+					type: "modify",
+					input: {
+						target: currentElement,
+						child: newLineState
+					}
+				});
+
+				dispatch(setIsResizing(false));
+				setActiveHandle(null);
+				setPreviewState(null);
+				setSnappedAnchorKey(null);
+				snappedBindingRef.current = null;
+				onResizeRef.current?.(null);
+			},
+			[dispatch]
+		);
+
 		const dragCleanupRef = useRef<(() => void) | null>(null);
 		useEffect(() => {
 			return () => {
@@ -58,14 +166,16 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 					dragCleanupRef.current();
 					dragCleanupRef.current = null;
 				}
+				dispatch(setIsResizing(false));
 			};
-		}, []);
+		}, [dispatch]);
 
 		const startResize = useCallback((handle: LineHandleType, clientX: number, clientY: number) => {
 			const currentElement = elementRef.current;
 			const rawScale = scaleRef.current;
 			const effectiveScale = (rawScale && rawScale > 0) ? rawScale : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
 
+			dispatch(setIsResizing(true));
 			setActiveHandle(handle);
 
 			const isCtrlPressedRef = { current: false };
@@ -152,6 +262,62 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				const deltaDiagramX = deltaPixelsX / initial.effectiveScale;
 				const deltaDiagramY = deltaPixelsY / initial.effectiveScale;
 
+				if (isBindingAllowed) {
+					const cand = hoveredElementRef.current;
+					const foundAnchor = (
+						cand &&
+						cand.id !== initial.element.id &&
+						cand.type !== "diagram" &&
+						Boolean(cand.AnchorFunctions)
+					) ? cand : null;
+
+					let activeSnap: ISelectedBindingInfo | null = null;
+					let activeKey: string | null = null;
+
+					if (foundAnchor && foundAnchor.AnchorFunctions) {
+						const rawPointX = initial.handle === "start" ? (initial.startX + deltaDiagramX) : (initial.endX + deltaDiagramX);
+						const rawPointY = initial.handle === "start" ? (initial.startY + deltaDiagramY) : (initial.endY + deltaDiagramY);
+
+						const AnchorLocations: SiteNames[] = ["here", "centre", "far"];
+						let bestDist = Infinity;
+
+						for (const xA of AnchorLocations) {
+							for (const yA of AnchorLocations) {
+								const sx = foundAnchor.AnchorFunctions[xA].get("x", true);
+								const sy = foundAnchor.AnchorFunctions[yA].get("y", true);
+								const dist = Math.hypot(rawPointX - sx, rawPointY - sy) * initial.effectiveScale;
+								if (dist < bestDist) {
+									bestDist = dist;
+									if (dist <= 24) {
+										activeSnap = {
+											anchorObject: foundAnchor,
+											xAnchor: xA,
+											yAnchor: yA,
+											point: { x: sx, y: sy }
+										};
+										activeKey = `${xA}-${yA}`;
+									}
+								}
+							}
+						}
+					}
+
+					snappedBindingRef.current = activeSnap;
+					setSnappedAnchorKey(activeKey);
+
+					if (activeSnap) {
+						const snappedPreview: LinePreviewState = {
+							startX: initial.handle === "start" ? activeSnap.point.x : initial.startX,
+							startY: initial.handle === "start" ? activeSnap.point.y : initial.startY,
+							endX: initial.handle === "end" ? activeSnap.point.x : initial.endX,
+							endY: initial.handle === "end" ? activeSnap.point.y : initial.endY
+						};
+						setPreviewState(snappedPreview);
+						onResizeRef.current?.(snappedPreview);
+						return;
+					}
+				}
+
 				updatePreviewWithDelta(deltaDiagramX, deltaDiagramY, isCtrl);
 			};
 
@@ -187,6 +353,16 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				window.removeEventListener("keyup", handleKeyUp, true);
 				window.removeEventListener("blur", handleBlur, true);
 				dragCleanupRef.current = null;
+				dispatch(setIsResizing(false));
+
+				const snapped = snappedBindingRef.current;
+				snappedBindingRef.current = null;
+				setSnappedAnchorKey(null);
+
+				if (snapped) {
+					applyBinding(snapped, initial.handle);
+					return;
+				}
 
 				setActiveHandle(null);
 				setPreviewState(null);
@@ -264,11 +440,14 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				window.removeEventListener("keydown", handleKeyDown, true);
 				window.removeEventListener("keyup", handleKeyUp, true);
 				window.removeEventListener("blur", handleBlur, true);
+				dispatch(setIsResizing(false));
 				setActiveHandle(null);
 				setPreviewState(null);
+				setSnappedAnchorKey(null);
+				snappedBindingRef.current = null;
 				onResizeRef.current?.(null);
 			};
-		}, []);
+		}, [applyBinding, dispatch, isBindingAllowed]);
 
 		const handleMouseDown = useCallback(
 			(handle: LineHandleType, e: React.MouseEvent) => {
@@ -283,9 +462,6 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 			(handle: LineHandleType, e: React.PointerEvent) => {
 				e.stopPropagation();
 				e.preventDefault();
-				try {
-					(e.target as HTMLElement)?.setPointerCapture?.(e.pointerId);
-				} catch { }
 				startResize(handle, e.clientX, e.clientY);
 			},
 			[startResize]
@@ -374,7 +550,6 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 								e.preventDefault();
 							}}
 							onMouseMove={(e) => {
-								e.stopPropagation();
 								e.preventDefault();
 							}}
 							onMouseUp={(e) => {
@@ -497,6 +672,15 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 						)}
 					</div>
 				</div>
+
+				{/* Bindings Selector for hovered anchor element when resizing */}
+				{isBindingAllowed && activeHandle !== null && activeAnchor && (
+					<BindingsSelector
+						element={activeAnchor}
+						onSelectBind={(info) => applyBinding(info, activeHandle)}
+						activeAnchorKey={snappedAnchorKey}
+					/>
+				)}
 			</>
 		);
 	}

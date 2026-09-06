@@ -1,5 +1,6 @@
 import { Element, G, Rect, Svg, SVG } from "@svgdotjs/svg.js";
 import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useAppSelector } from "../../redux/hooks";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes, ID, UserComponentType } from "../../logic/point";
 import Visual from "../../logic/visual";
@@ -145,6 +146,11 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	const setHoveredElementRef = useRef(props.setHoveredElement);
 	setHoveredElementRef.current = props.setHoveredElement;
 
+	const lastRawTargetIdRef = useRef<string | undefined | null>(null);
+	useEffect(() => {
+		lastRawTargetIdRef.current = null;
+	}, [props.selectedElementId]);
+
 	useEffect(() => {
 		/** 
 		 * "X-Ray" Hover Detection:
@@ -152,9 +158,14 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		 * document.elementsFromPoint returns an array of ALL elements under the cursor, 
 		 * allowing us to see "through" the draggable layer to find hitboxes underneath.
 		 */
-		const handleGlobalMouseMove = (e: MouseEvent) => {
-			if (!hitboxSvgRef.current) return;
-			const elements = document.elementsFromPoint(e.clientX, e.clientY);
+		let rafId: number | null = null;
+		let lastCoords: { x: number; y: number } | null = null;
+
+		const processHitTest = () => {
+			rafId = null;
+			if (!hitboxSvgRef.current || !lastCoords) return;
+
+			const elements = document.elementsFromPoint(lastCoords.x, lastCoords.y);
 
 			let rawTargetId: string | undefined = undefined;
 			for (let i = 0; i < elements.length; i++) {
@@ -168,20 +179,36 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 				}
 			}
 
+			// Avoid re-calculating if the hovered target hasn't changed
+			if (rawTargetId === lastRawTargetIdRef.current) {
+				return;
+			}
+			lastRawTargetIdRef.current = rawTargetId;
+
 			if (rawTargetId === undefined) {
 				setHoveredElementRef.current(undefined);
 				return;
 			}
 
-			let parsedId: string = rawTargetId.split("-")[0];
+			let parsedId: string = rawTargetId.replace(/-hitbox$/, "");
 			let rawElement: Visual | undefined = ENGINE.handler.identifyElement(parsedId);
 			let element: Visual | undefined = getMouseElementFromIDRef.current(parsedId);
 			setHoveredElementRef.current(element, rawElement);
 		};
 
-		window.addEventListener("mousemove", handleGlobalMouseMove);
+		const handleGlobalPointerMove = (e: PointerEvent) => {
+			lastCoords = { x: e.clientX, y: e.clientY };
+			if (rafId === null) {
+				rafId = requestAnimationFrame(processHitTest);
+			}
+		};
+
+		window.addEventListener("pointermove", handleGlobalPointerMove, true);
 		return () => {
-			window.removeEventListener("mousemove", handleGlobalMouseMove);
+			if (rafId !== null) {
+				cancelAnimationFrame(rafId);
+			}
+			window.removeEventListener("pointermove", handleGlobalPointerMove, true);
 		};
 	}, []);
 

@@ -17,6 +17,7 @@ export interface CanvasResizeHandlesProps {
 	element: Visual;
 	scale?: number;
 	onResize?: (preview: PreviewState | null) => void;
+	hoveredElement?: Visual;
 }
 
 interface DragInitialState {
