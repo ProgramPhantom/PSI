@@ -46,11 +46,11 @@ export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, on
 					top,
 					width,
 					height,
-					border: "1.5px dashed #2b95d6",
-					backgroundColor: "rgba(43, 149, 214, 0.08)",
-					borderRadius: "3px",
-					boxShadow: "0 0 8px rgba(43, 149, 214, 0.2)",
-					pointerEvents: "none"
+					border: "1px dashed rgba(19, 124, 189, 0.5)",
+					backgroundColor: "rgba(19, 124, 189, 0.04)",
+					borderRadius: "2px",
+					pointerEvents: "none",
+					boxSizing: "border-box"
 				}}
 			/>
 
@@ -70,8 +70,8 @@ export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, on
 								position: "absolute",
 								left: x,
 								top: y,
-								width: "24px",
-								height: "24px",
+								width: "20px",
+								height: "20px",
 								transform: "translate(-50%, -50%)",
 								display: "flex",
 								alignItems: "center",
@@ -99,16 +99,18 @@ export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, on
 							<div
 								className="binding-anchor-node"
 								style={{
-									width: isHovered ? "12px" : "8px",
-									height: isHovered ? "12px" : "8px",
+									width: "8px",
+									height: "8px",
 									borderRadius: "50%",
-									backgroundColor: isHovered ? "#00c4ff" : "#137cbd",
-									border: "2px solid #ffffff",
+									backgroundColor: isHovered ? "#2b95d6" : "#137cbd",
+									border: "1px solid #ffffff",
 									boxShadow: isHovered
-										? "0 0 10px rgba(0, 196, 255, 0.9), 0 0 4px rgba(0, 0, 0, 0.5)"
-										: "0 0 4px rgba(0, 0, 0, 0.4)",
-									transition: "all 0.15s ease",
-									pointerEvents: "none"
+										? "0 1px 4px rgba(0, 0, 0, 0.35)"
+										: "0 1px 2px rgba(0, 0, 0, 0.25)",
+									transform: isHovered ? "scale(1.2)" : "scale(1)",
+									transition: "transform 0.1s ease, background-color 0.1s ease",
+									pointerEvents: "none",
+									boxSizing: "border-box"
 								}}
 							/>
 						</div>
