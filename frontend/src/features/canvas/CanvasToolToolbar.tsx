@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Popover, Position, Tooltip } from "@blueprintjs/core";
+import { Button, ButtonGroup, Classes, Popover, Position, Tooltip } from "@blueprintjs/core";
 import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { CanvasToolType, setSelectedTool } from "../../redux/slices/applicationSlice";
@@ -26,7 +26,12 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
     return (
         <div
             onClick={(e) => e.stopPropagation()}
-            onMouseUp={(e) => e.stopPropagation()}
+            onMouseUp={(e) => {
+                const target = e.target as HTMLElement;
+                if (!target.closest(`.${Classes.POPOVER}`)) {
+                    e.stopPropagation();
+                }
+            }}
             onMouseDown={(e) => e.stopPropagation()}
             className={styles["frosted-toolbar"]}
         >
