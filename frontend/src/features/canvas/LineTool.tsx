@@ -96,14 +96,14 @@ export function LineTool(props: IDrawArrowProps) {
 						dimension: "x",
 						anchorSiteName: startBindingInfo.xAnchor,
 						targetSiteName: "start",
-						bindToContent: true
+						bindToContent: startBindingInfo.bindToContent ?? false
 					},
 					{
 						targetId: startBindingInfo.anchorObject.id,
 						dimension: "y",
 						anchorSiteName: startBindingInfo.yAnchor,
 						targetSiteName: "start",
-						bindToContent: true
+						bindToContent: startBindingInfo.bindToContent ?? false
 					}
 				);
 			}
@@ -115,14 +115,14 @@ export function LineTool(props: IDrawArrowProps) {
 						dimension: "x",
 						anchorSiteName: endBindingInfo.xAnchor,
 						targetSiteName: "end",
-						bindToContent: true
+						bindToContent: endBindingInfo.bindToContent ?? false
 					},
 					{
 						targetId: endBindingInfo.anchorObject.id,
 						dimension: "y",
 						anchorSiteName: endBindingInfo.yAnchor,
 						targetSiteName: "end",
-						bindToContent: true
+						bindToContent: endBindingInfo.bindToContent ?? false
 					}
 				);
 			}

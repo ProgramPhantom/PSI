@@ -232,6 +232,7 @@ export const handlePasteElement = createAsyncThunk(
             newElementState.placementMode = {
                 type: "free"
             };
+            newElementState.placementControl = "user"
             newElementState.parentId = ENGINE.handler.diagram.id;
 
             ENGINE.handler.act({
@@ -285,7 +286,7 @@ export const handleDownloadState = createAsyncThunk(
 
 function unrollSVGUseElements(doc: Document) {
     const useElements = Array.from(doc.querySelectorAll("use"));
-    
+
     useElements.forEach((useEl) => {
         const href = useEl.getAttribute("href") || useEl.getAttribute("xlink:href");
         if (!href || !href.startsWith("#")) return;

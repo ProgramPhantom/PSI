@@ -256,7 +256,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 						dimension: "x",
 						anchorSiteName: info.xAnchor,
 						targetSiteName: sites.xSite,
-						bindToContent: true
+						bindToContent: info.bindToContent ?? false
 					});
 				}
 				if (sites.ySite) {
@@ -265,7 +265,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 						dimension: "y",
 						anchorSiteName: info.yAnchor,
 						targetSiteName: sites.ySite,
-						bindToContent: true
+						bindToContent: info.bindToContent ?? false
 					});
 				}
 

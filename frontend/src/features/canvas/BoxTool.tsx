@@ -109,14 +109,14 @@ export function BoxTool(props: IDrawBoxProps) {
 						dimension: "x",
 						anchorSiteName: startBindingInfo.xAnchor,
 						targetSiteName: startXSite,
-						bindToContent: true
+						bindToContent: startBindingInfo.bindToContent ?? false
 					},
 					{
 						targetId: startBindingInfo.anchorObject.id,
 						dimension: "y",
 						anchorSiteName: startBindingInfo.yAnchor,
 						targetSiteName: startYSite,
-						bindToContent: true
+						bindToContent: startBindingInfo.bindToContent ?? false
 					}
 				);
 			}
@@ -128,14 +128,14 @@ export function BoxTool(props: IDrawBoxProps) {
 						dimension: "x",
 						anchorSiteName: endBindingInfo.xAnchor,
 						targetSiteName: endXSite,
-						bindToContent: true
+						bindToContent: endBindingInfo.bindToContent ?? false
 					},
 					{
 						targetId: endBindingInfo.anchorObject.id,
 						dimension: "y",
 						anchorSiteName: endBindingInfo.yAnchor,
 						targetSiteName: endYSite,
-						bindToContent: true
+						bindToContent: endBindingInfo.bindToContent ?? false
 					}
 				);
 			}

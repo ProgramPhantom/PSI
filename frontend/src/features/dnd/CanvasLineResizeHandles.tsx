@@ -90,14 +90,14 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 						dimension: "x",
 						anchorSiteName: info.xAnchor,
 						targetSiteName: handle,
-						bindToContent: true
+						bindToContent: info.bindToContent ?? false
 					},
 					{
 						targetId: info.anchorObject.id,
 						dimension: "y",
 						anchorSiteName: info.yAnchor,
 						targetSiteName: handle,
-						bindToContent: true
+						bindToContent: info.bindToContent ?? false
 					}
 				];
 

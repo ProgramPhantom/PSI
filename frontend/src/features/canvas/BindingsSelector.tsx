@@ -7,6 +7,7 @@ export interface ISelectedBindingInfo {
 	xAnchor: SiteNames;
 	yAnchor: SiteNames;
 	point: { x: number; y: number };
+	bindToContent?: boolean;
 }
 
 interface IBindingsSelectorProps {
@@ -20,10 +21,10 @@ const AnchorLocations: SiteNames[] = ["here", "centre", "far"];
 export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, onSelectBind, activeAnchorKey }) => {
 	const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
-	const left = element.cx;
-	const top = element.cy;
-	const width = element.contentWidth;
-	const height = element.contentHeight;
+	const left = element.x;
+	const top = element.y;
+	const width = element.width;
+	const height = element.height;
 
 	return (
 		<div
@@ -57,8 +58,8 @@ export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, on
 			{/* 3x3 Binding Anchor Points */}
 			{AnchorLocations.map((xAnchor) =>
 				AnchorLocations.map((yAnchor) => {
-					const x = element.AnchorFunctions[xAnchor].get("x", true);
-					const y = element.AnchorFunctions[yAnchor].get("y", true);
+					const x = element.AnchorFunctions[xAnchor].get("x", false);
+					const y = element.AnchorFunctions[yAnchor].get("y", false);
 					const key = `${xAnchor}-${yAnchor}`;
 					const isHovered = hoveredKey === key || activeAnchorKey === key;
 
@@ -89,7 +90,8 @@ export const BindingsSelector: React.FC<IBindingsSelectorProps> = ({ element, on
 									anchorObject: element,
 									xAnchor,
 									yAnchor,
-									point: { x, y }
+									point: { x, y },
+									bindToContent: false
 								});
 							}}
 							onMouseDown={(e) => {

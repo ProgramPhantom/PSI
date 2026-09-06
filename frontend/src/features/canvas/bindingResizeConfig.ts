@@ -172,8 +172,8 @@ export function findClosestBindingAnchor(
 
 	for (const xA of ANCHOR_LOCATIONS) {
 		for (const yA of ANCHOR_LOCATIONS) {
-			const sx = candidate.AnchorFunctions[xA]?.get("x", true);
-			const sy = candidate.AnchorFunctions[yA]?.get("y", true);
+			const sx = candidate.AnchorFunctions[xA]?.get("x", false);
+			const sy = candidate.AnchorFunctions[yA]?.get("y", false);
 			if (sx === undefined || sy === undefined) continue;
 
 			const distPx = Math.hypot(targetPoint.x - sx, targetPoint.y - sy) * effectiveScale;
@@ -185,7 +185,8 @@ export function findClosestBindingAnchor(
 							anchorObject: candidate,
 							xAnchor: xA,
 							yAnchor: yA,
-							point: { x: sx, y: sy }
+							point: { x: sx, y: sy },
+							bindToContent: false
 						},
 						key: `${xA}-${yA}`
 					};
