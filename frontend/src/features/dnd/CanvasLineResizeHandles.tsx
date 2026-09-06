@@ -2,10 +2,15 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import ENGINE from "../../logic/engine";
 import Line, { HeadStyle, ILine } from "../../logic/line";
 import LineLike, { ILineLike } from "../../logic/lineLike";
-import { IPlacementBindingRule, PlacementConfiguration, SiteNames } from "../../logic/spacial";
+import {
+	filterPlacementBindingRules,
+	IPlacementBindingRule,
+	PlacementConfiguration,
+	updatePlacementModeBindingRules
+} from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
-import { isBindingAllowedForResizing } from "../canvas/bindingResizeConfig";
+import { findClosestBindingAnchor, isBindingAllowedForResizing } from "../canvas/bindingResizeConfig";
 import { useAppDispatch } from "../../redux/hooks";
 import { setIsResizing } from "../../redux/slices/applicationSlice";
 import styles from "./styles/CanvasResizeHandles.module.scss";
@@ -99,8 +104,11 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				const currentRules = (currentElement.placementMode?.type === "binds")
 					? currentElement.placementMode.config
 					: [];
-				const remainingRules = currentRules.filter((r) => r.targetSiteName !== handle);
-				for (const r of currentRules.filter((r) => r.targetSiteName === handle)) {
+				const { remaining: remainingRules, removed: removedRules } = filterPlacementBindingRules(
+					currentRules,
+					handle
+				);
+				for (const r of removedRules) {
 					const anchorId = r.targetId || r.anchorId;
 					if (anchorId) {
 						const anchor = ENGINE.handler.identifyElement(anchorId);
@@ -263,54 +271,25 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				const deltaDiagramY = deltaPixelsY / initial.effectiveScale;
 
 				if (isBindingAllowed) {
-					const cand = hoveredElementRef.current;
-					const foundAnchor = (
-						cand &&
-						cand.id !== initial.element.id &&
-						cand.type !== "diagram" &&
-						Boolean(cand.AnchorFunctions)
-					) ? cand : null;
+					const rawPointX = initial.handle === "start" ? (initial.startX + deltaDiagramX) : (initial.endX + deltaDiagramX);
+					const rawPointY = initial.handle === "start" ? (initial.startY + deltaDiagramY) : (initial.endY + deltaDiagramY);
 
-					let activeSnap: ISelectedBindingInfo | null = null;
-					let activeKey: string | null = null;
+					const snap = findClosestBindingAnchor(
+						hoveredElementRef.current,
+						initial.element.id,
+						{ x: rawPointX, y: rawPointY },
+						initial.effectiveScale
+					);
 
-					if (foundAnchor && foundAnchor.AnchorFunctions) {
-						const rawPointX = initial.handle === "start" ? (initial.startX + deltaDiagramX) : (initial.endX + deltaDiagramX);
-						const rawPointY = initial.handle === "start" ? (initial.startY + deltaDiagramY) : (initial.endY + deltaDiagramY);
+					snappedBindingRef.current = snap?.bindingInfo ?? null;
+					setSnappedAnchorKey(snap?.key ?? null);
 
-						const AnchorLocations: SiteNames[] = ["here", "centre", "far"];
-						let bestDist = Infinity;
-
-						for (const xA of AnchorLocations) {
-							for (const yA of AnchorLocations) {
-								const sx = foundAnchor.AnchorFunctions[xA].get("x", true);
-								const sy = foundAnchor.AnchorFunctions[yA].get("y", true);
-								const dist = Math.hypot(rawPointX - sx, rawPointY - sy) * initial.effectiveScale;
-								if (dist < bestDist) {
-									bestDist = dist;
-									if (dist <= 24) {
-										activeSnap = {
-											anchorObject: foundAnchor,
-											xAnchor: xA,
-											yAnchor: yA,
-											point: { x: sx, y: sy }
-										};
-										activeKey = `${xA}-${yA}`;
-									}
-								}
-							}
-						}
-					}
-
-					snappedBindingRef.current = activeSnap;
-					setSnappedAnchorKey(activeKey);
-
-					if (activeSnap) {
+					if (snap) {
 						const snappedPreview: LinePreviewState = {
-							startX: initial.handle === "start" ? activeSnap.point.x : initial.startX,
-							startY: initial.handle === "start" ? activeSnap.point.y : initial.startY,
-							endX: initial.handle === "end" ? activeSnap.point.x : initial.endX,
-							endY: initial.handle === "end" ? activeSnap.point.y : initial.endY
+							startX: initial.handle === "start" ? snap.bindingInfo.point.x : initial.startX,
+							startY: initial.handle === "start" ? snap.bindingInfo.point.y : initial.startY,
+							endX: initial.handle === "end" ? snap.bindingInfo.point.x : initial.endX,
+							endY: initial.handle === "end" ? snap.bindingInfo.point.y : initial.endY
 						};
 						setPreviewState(snappedPreview);
 						onResizeRef.current?.(snappedPreview);
@@ -381,26 +360,16 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 					finalResult.endX !== initial.endX || finalResult.endY !== initial.endY;
 
 				if (hasMoved) {
-					let updatedPlacementMode = initial.element.placementMode;
-					if (updatedPlacementMode?.type === "binds") {
-						const handle = initial.handle;
-
-						const currentRules = updatedPlacementMode.config;
-						const rulesToRemove = currentRules.filter((r) => r.targetSiteName === handle);
-						for (const r of rulesToRemove) {
-							const anchorId = r.targetId || r.anchorId;
-							if (anchorId) {
-								const anchor = ENGINE.handler.identifyElement(anchorId);
-								anchor?.clearBindsTo(initial.element, r.dimension, handle);
-							}
+					const { updatedPlacementMode, removedRules } = updatePlacementModeBindingRules(
+						initial.element.placementMode,
+						initial.handle
+					);
+					for (const r of removedRules) {
+						const anchorId = r.targetId || r.anchorId;
+						if (anchorId) {
+							const anchor = ENGINE.handler.identifyElement(anchorId);
+							anchor?.clearBindsTo(initial.element, r.dimension, initial.handle);
 						}
-						const remainingRules = currentRules.filter((r) => r.targetSiteName !== handle);
-						if (remainingRules.length > 0) {
-							updatedPlacementMode = { type: "binds", config: remainingRules };
-						} else {
-							updatedPlacementMode = { type: "free" };
-						}
-
 					}
 
 					const newLineState: ILineLike = {

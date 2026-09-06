@@ -1,10 +1,18 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import ENGINE from "../../logic/engine";
-import { SizeConfiguration } from "../../logic/spacial";
+import {
+	filterPlacementBindingRules,
+	IPlacementBindingRule,
+	PlacementConfiguration,
+	updatePlacementModeBindingRules,
+	SizeConfiguration
+} from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import styles from "./styles/CanvasResizeHandles.module.scss";
 import { useAppDispatch } from "../../redux/hooks";
 import { setIsResizing } from "../../redux/slices/applicationSlice";
+import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
+import { findClosestBindingAnchor, isBindingAllowedForResizing } from "../canvas/bindingResizeConfig";
 
 export type HandleDirection = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
@@ -74,6 +82,51 @@ const DIRECTION_CURSOR_MAP: Record<HandleDirection, string> = {
 	w: "ew-resize"
 };
 
+interface HandleBindingSites {
+	xSite?: "here" | "far";
+	ySite?: "here" | "far";
+}
+
+const HANDLE_SITE_MAP: Record<HandleDirection, HandleBindingSites> = {
+	nw: { xSite: "here", ySite: "here" },
+	n: { ySite: "here" },
+	ne: { xSite: "far", ySite: "here" },
+	e: { xSite: "far" },
+	se: { xSite: "far", ySite: "far" },
+	s: { ySite: "far" },
+	sw: { xSite: "here", ySite: "far" },
+	w: { xSite: "here" }
+};
+
+function computeHandleCoordinates(
+	direction: HandleDirection,
+	left: number,
+	top: number,
+	width: number,
+	height: number,
+	deltaDiagramX: number,
+	deltaDiagramY: number
+): { x: number; y: number } {
+	switch (direction) {
+		case "nw":
+			return { x: left + deltaDiagramX, y: top + deltaDiagramY };
+		case "n":
+			return { x: left + width / 2, y: top + deltaDiagramY };
+		case "ne":
+			return { x: left + width + deltaDiagramX, y: top + deltaDiagramY };
+		case "e":
+			return { x: left + width + deltaDiagramX, y: top + height / 2 };
+		case "se":
+			return { x: left + width + deltaDiagramX, y: top + height + deltaDiagramY };
+		case "s":
+			return { x: left + width / 2, y: top + height + deltaDiagramY };
+		case "sw":
+			return { x: left + deltaDiagramX, y: top + height + deltaDiagramY };
+		case "w":
+			return { x: left + deltaDiagramX, y: top + height / 2 };
+	}
+}
+
 function computeResizeGeometry(
 	direction: HandleDirection,
 	deltaX: number,
@@ -133,7 +186,7 @@ function computeResizeGeometry(
 }
 
 export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.memo(
-	function CanvasResizeHandles({ element, scale = 1, onResize }: CanvasResizeHandlesProps) {
+	function CanvasResizeHandles({ element, scale = 1, onResize, hoveredElement }: CanvasResizeHandlesProps) {
 		const dispatch = useAppDispatch();
 		const [previewState, setPreviewState] = useState<PreviewState | null>(null);
 		const [activeDirection, setActiveDirection] = useState<HandleDirection | null>(null);
@@ -147,6 +200,154 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 
 		const onResizeRef = useRef(onResize);
 		onResizeRef.current = onResize;
+
+		const hoveredElementRef = useRef(hoveredElement);
+		hoveredElementRef.current = hoveredElement;
+
+		const [snappedAnchorKey, setSnappedAnchorKey] = useState<string | null>(null);
+		const snappedBindingRef = useRef<ISelectedBindingInfo | null>(null);
+
+		const isBindingAllowed = isBindingAllowedForResizing(element);
+
+		const activeAnchor = (
+			isBindingAllowed &&
+			activeDirection !== null &&
+			hoveredElement &&
+			hoveredElement.id !== element.id &&
+			hoveredElement.type !== "diagram" &&
+			Boolean(hoveredElement.AnchorFunctions)
+		) ? hoveredElement : null;
+
+		const applyBinding = useCallback(
+			(info: ISelectedBindingInfo, direction: HandleDirection) => {
+				const currentElement = elementRef.current;
+				const sites = HANDLE_SITE_MAP[direction];
+				const currentRules: IPlacementBindingRule[] = (currentElement.placementMode?.type === "binds")
+					? currentElement.placementMode.config
+					: [];
+
+				// Remove existing rules matching the sites affected by this handle
+				let remainingRules = currentRules;
+				const removedRules: IPlacementBindingRule[] = [];
+
+				if (sites.xSite) {
+					const res = filterPlacementBindingRules(remainingRules, sites.xSite, "x");
+					remainingRules = res.remaining;
+					removedRules.push(...res.removed);
+				}
+				if (sites.ySite) {
+					const res = filterPlacementBindingRules(remainingRules, sites.ySite, "y");
+					remainingRules = res.remaining;
+					removedRules.push(...res.removed);
+				}
+
+				for (const r of removedRules) {
+					const anchorId = r.targetId || r.anchorId;
+					if (anchorId) {
+						const anchor = ENGINE.handler.identifyElement(anchorId);
+						anchor?.clearBindsTo(currentElement, r.dimension, r.targetSiteName);
+					}
+				}
+
+				const newRules: IPlacementBindingRule[] = [];
+				if (sites.xSite) {
+					newRules.push({
+						targetId: info.anchorObject.id,
+						dimension: "x",
+						anchorSiteName: info.xAnchor,
+						targetSiteName: sites.xSite,
+						bindToContent: true
+					});
+				}
+				if (sites.ySite) {
+					newRules.push({
+						targetId: info.anchorObject.id,
+						dimension: "y",
+						anchorSiteName: info.yAnchor,
+						targetSiteName: sites.ySite,
+						bindToContent: true
+					});
+				}
+
+				for (const r of newRules) {
+					info.anchorObject.bind(
+						currentElement,
+						r.dimension,
+						r.anchorSiteName,
+						r.targetSiteName,
+						r.offset,
+						r.hint,
+						r.bindToContent
+					);
+				}
+
+				const updatedPlacementMode: PlacementConfiguration = {
+					type: "binds",
+					config: [...remainingRules, ...newRules]
+				};
+
+				const padLeft = currentElement.padding?.[3] ?? 0;
+				const padRight = currentElement.padding?.[1] ?? 0;
+				const padTop = currentElement.padding?.[0] ?? 0;
+				const padBottom = currentElement.padding?.[2] ?? 0;
+
+				let finalDrawCX = currentElement.drawCX;
+				let finalDrawCY = currentElement.drawCY;
+				let finalContentWidth = currentElement.contentWidth;
+				let finalContentHeight = currentElement.contentHeight;
+
+				if (sites.xSite === "far") {
+					finalContentWidth = Math.max(MIN_SIZE, Math.round(info.point.x - finalDrawCX - padRight - padLeft));
+				} else if (sites.xSite === "here") {
+					const oldRight = finalDrawCX + currentElement.width;
+					finalDrawCX = Math.round(info.point.x);
+					finalContentWidth = Math.max(MIN_SIZE, Math.round(oldRight - info.point.x - padRight - padLeft));
+				}
+
+				if (sites.ySite === "far") {
+					finalContentHeight = Math.max(MIN_SIZE, Math.round(info.point.y - finalDrawCY - padTop - padBottom));
+				} else if (sites.ySite === "here") {
+					const oldBottom = finalDrawCY + currentElement.height;
+					finalDrawCY = Math.round(info.point.y);
+					finalContentHeight = Math.max(MIN_SIZE, Math.round(oldBottom - info.point.y - padTop - padBottom));
+				}
+
+				const targetX = finalDrawCX - padLeft;
+				const targetY = finalDrawCY - padTop;
+
+				const newState: IVisual = {
+					...currentElement.state,
+					placementMode: updatedPlacementMode,
+					contentWidth: finalContentWidth,
+					contentHeight: finalContentHeight,
+					sizeMode: {
+						x: "fixed",
+						y: "fixed"
+					}
+				};
+
+				if (currentElement.placementMode?.type === "free" || currentElement.placementMode?.type === "binds") {
+					newState.x = targetX;
+					newState.y = targetY;
+				}
+
+				ENGINE.handler.act({
+					type: "modify",
+					input: {
+						target: currentElement,
+						child: newState
+					}
+				});
+
+				dispatch(setIsResizing(false));
+				setActiveDirection(null);
+				setPreviewState(null);
+				setSnappedAnchorKey(null);
+				snappedBindingRef.current = null;
+				onResizeRef.current?.(null);
+			},
+			[dispatch]
+		);
 
 		// Clean up any ongoing drag on unmount
 		const dragCleanupRef = useRef<(() => void) | null>(null);
@@ -212,6 +413,63 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				const deltaDiagramX = deltaPixelsX / initial.effectiveScale;
 				const deltaDiagramY = deltaPixelsY / initial.effectiveScale;
 
+				if (isBindingAllowed) {
+					const handlePos = computeHandleCoordinates(
+						initial.direction,
+						initial.startDrawCX,
+						initial.startDrawCY,
+						initial.startContentWidth,
+						initial.startContentHeight,
+						deltaDiagramX,
+						deltaDiagramY
+					);
+
+					const snap = findClosestBindingAnchor(
+						hoveredElementRef.current,
+						initial.element.id,
+						handlePos,
+						initial.effectiveScale
+					);
+
+					snappedBindingRef.current = snap?.bindingInfo ?? null;
+					setSnappedAnchorKey(snap?.key ?? null);
+
+					if (snap) {
+						const sites = HANDLE_SITE_MAP[initial.direction];
+						let snappedDrawCX = initial.startDrawCX;
+						let snappedDrawCY = initial.startDrawCY;
+						let snappedWidth = initial.startContentWidth;
+						let snappedHeight = initial.startContentHeight;
+
+						if (sites.xSite === "far") {
+							snappedWidth = Math.max(initial.minDrawWidth, Math.round(snap.bindingInfo.point.x - snappedDrawCX));
+						} else if (sites.xSite === "here") {
+							const oldRight = initial.startDrawCX + initial.startContentWidth;
+							snappedWidth = Math.max(initial.minDrawWidth, Math.round(oldRight - snap.bindingInfo.point.x));
+							snappedDrawCX = Math.round(oldRight - snappedWidth);
+						}
+
+						if (sites.ySite === "far") {
+							snappedHeight = Math.max(initial.minDrawHeight, Math.round(snap.bindingInfo.point.y - snappedDrawCY));
+						} else if (sites.ySite === "here") {
+							const oldBottom = initial.startDrawCY + initial.startContentHeight;
+							snappedHeight = Math.max(initial.minDrawHeight, Math.round(oldBottom - snap.bindingInfo.point.y));
+							snappedDrawCY = Math.round(oldBottom - snappedHeight);
+						}
+
+						const snappedPreview: PreviewState = {
+							left: snappedDrawCX,
+							top: snappedDrawCY,
+							width: snappedWidth,
+							height: snappedHeight
+						};
+
+						setPreviewState(snappedPreview);
+						onResizeRef.current?.(snappedPreview);
+						return;
+					}
+				}
+
 				latestResult = computeResizeGeometry(
 					initial.direction,
 					deltaDiagramX,
@@ -251,6 +509,15 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				dragCleanupRef.current = null;
 				dispatch(setIsResizing(false));
 
+				const snapped = snappedBindingRef.current;
+				snappedBindingRef.current = null;
+				setSnappedAnchorKey(null);
+
+				if (snapped) {
+					applyBinding(snapped, initial.direction);
+					return;
+				}
+
 				setPreviewState(null);
 				setActiveDirection(null);
 				onResizeRef.current?.(null);
@@ -276,12 +543,36 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					initial.minDrawHeight
 				);
 
+				const sites = HANDLE_SITE_MAP[initial.direction];
+				let updatedPlacementMode = initial.element.placementMode;
+				const removedRules: IPlacementBindingRule[] = [];
+
+				if (sites.xSite) {
+					const res = updatePlacementModeBindingRules(updatedPlacementMode, sites.xSite, "x");
+					updatedPlacementMode = res.updatedPlacementMode;
+					removedRules.push(...res.removedRules);
+				}
+				if (sites.ySite) {
+					const res = updatePlacementModeBindingRules(updatedPlacementMode, sites.ySite, "y");
+					updatedPlacementMode = res.updatedPlacementMode;
+					removedRules.push(...res.removedRules);
+				}
+
+				for (const r of removedRules) {
+					const anchorId = r.targetId || r.anchorId;
+					if (anchorId) {
+						const anchor = ENGINE.handler.identifyElement(anchorId);
+						anchor?.clearBindsTo(initial.element, r.dimension, r.targetSiteName);
+					}
+				}
+
 				const widthChanged = finalResult.width !== initial.startContentWidth;
 				const heightChanged = finalResult.height !== initial.startContentHeight;
-				const xChanged = initial.isFree && finalResult.drawCX !== initial.startDrawCX;
-				const yChanged = initial.isFree && finalResult.drawCY !== initial.startDrawCY;
+				const xChanged = finalResult.drawCX !== initial.startDrawCX;
+				const yChanged = finalResult.drawCY !== initial.startDrawCY;
+				const unbindingNeeded = removedRules.length > 0;
 
-				if (widthChanged || heightChanged || xChanged || yChanged) {
+				if (widthChanged || heightChanged || xChanged || yChanged || unbindingNeeded) {
 					const newSizeMode: SizeConfiguration = {
 						x: widthChanged ? "fixed" : (initial.element.state.sizeMode?.x ?? "fixed"),
 						y: heightChanged ? "fixed" : (initial.element.state.sizeMode?.y ?? "fixed")
@@ -300,12 +591,13 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 
 					const newState: IVisual = {
 						...initial.element.state,
+						placementMode: updatedPlacementMode,
 						contentWidth: targetContentWidth,
 						contentHeight: targetContentHeight,
 						sizeMode: newSizeMode
 					};
 
-					if (initial.isFree) {
+					if (updatedPlacementMode.type === "free" || updatedPlacementMode.type === "binds") {
 						newState.x = targetX;
 						newState.y = targetY;
 					}
@@ -333,6 +625,9 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				window.removeEventListener("pointerup", handlePointerUp, true);
 				dispatch(setIsResizing(false));
 				setActiveDirection(null);
+				setPreviewState(null);
+				setSnappedAnchorKey(null);
+				snappedBindingRef.current = null;
 				onResizeRef.current?.(null);
 			};
 		}, [dispatch]);
@@ -386,6 +681,16 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 
 		const currentEffectiveScale = (scale && scale > 0) ? scale : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
 		const handleScale = 1 / (currentEffectiveScale > 0 ? currentEffectiveScale : 1);
+
+		const isHandleBound = (dir: HandleDirection): boolean => {
+			if (element.placementMode?.type !== "binds") return false;
+			const sites = HANDLE_SITE_MAP[dir];
+			const rules = element.placementMode.config;
+			return rules.some((r) =>
+				(sites.xSite && r.dimension === "x" && r.targetSiteName === sites.xSite) ||
+				(sites.ySite && r.dimension === "y" && r.targetSiteName === sites.ySite)
+			);
+		};
 
 		return (
 			<>
@@ -449,19 +754,47 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 
 					{element.isResizable && HANDLE_DIRECTIONS.map((dir) => {
 						const pos = getHandlePosition(dir);
+						const isBound = isHandleBound(dir);
+						const showBound = isBound && !previewState;
 						return (
 							<div
 								key={dir}
-								className={`${styles.handle} ${DIRECTION_CLASS_MAP[dir]}`}
+								className={`${styles.handle} ${DIRECTION_CLASS_MAP[dir]} ${showBound ? styles.boundHandle : ""}`}
 								style={{ left: pos.left, top: pos.top }}
 								onMouseDown={(e) => handleMouseDown(dir, e)}
 								onPointerDown={(e) => handlePointerDown(dir, e)}
 								onMouseUp={(e) => e.stopPropagation()}
 								onClick={(e) => e.stopPropagation()}
-							/>
+								title={isBound ? `${dir.toUpperCase()} (Bound - Drag to unbind)` : dir.toUpperCase()}
+							>
+								{showBound && (
+									<svg
+										className={styles.boundIcon}
+										viewBox="0 0 8 8"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<path
+											d="M 1.5 1.5 L 6.5 6.5 M 6.5 1.5 L 1.5 6.5"
+											stroke="grey"
+											strokeWidth="1.5"
+											strokeLinecap="round"
+										/>
+									</svg>
+								)}
+							</div>
 						);
 					})}
 				</div>
+
+				{/* Bindings Selector for hovered anchor element when resizing */}
+				{isBindingAllowed && activeDirection !== null && activeAnchor && (
+					<BindingsSelector
+						element={activeAnchor}
+						onSelectBind={(info) => applyBinding(info, activeDirection)}
+						activeAnchorKey={snappedAnchorKey}
+					/>
+				)}
 			</>
 		);
 	}

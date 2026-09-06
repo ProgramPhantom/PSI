@@ -92,6 +92,53 @@ export type PlacementConfiguration =
 	| { type: "subgrid"; config: ISubgridConfig }
 	| { type: "singleton" };
 
+/**
+ * Filters a list of placement binding rules into remaining and removed rules matching targetSiteName (and optional dimension).
+ */
+export function filterPlacementBindingRules(
+	rules: IPlacementBindingRule[],
+	targetSiteName: SiteNames,
+	dimension?: Dimensions
+): { remaining: IPlacementBindingRule[]; removed: IPlacementBindingRule[] } {
+	const remaining: IPlacementBindingRule[] = [];
+	const removed: IPlacementBindingRule[] = [];
+
+	for (const rule of rules) {
+		if (rule.targetSiteName === targetSiteName && (dimension === undefined || rule.dimension === dimension)) {
+			removed.push(rule);
+		} else {
+			remaining.push(rule);
+		}
+	}
+
+	return { remaining, removed };
+}
+
+/**
+ * Removes rules matching targetSiteName (and optional dimension) from a PlacementConfiguration.
+ * If 0 rules remain, reverts to `{ type: "free" }`.
+ */
+export function updatePlacementModeBindingRules(
+	placementMode: PlacementConfiguration | undefined,
+	targetSiteName: SiteNames,
+	dimension?: Dimensions
+): { updatedPlacementMode: PlacementConfiguration; removedRules: IPlacementBindingRule[] } {
+	if (placementMode?.type !== "binds" || !placementMode.config) {
+		return {
+			updatedPlacementMode: placementMode ?? { type: "free" },
+			removedRules: []
+		};
+	}
+
+	const { remaining, removed } = filterPlacementBindingRules(placementMode.config, targetSiteName, dimension);
+
+	const updatedPlacementMode: PlacementConfiguration = remaining.length > 0
+		? { type: "binds", config: remaining }
+		: { type: "free" };
+
+	return { updatedPlacementMode, removedRules: removed };
+}
+
 
 export type PlacementControl = "auto" | "user";
 
@@ -503,6 +550,23 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return getter(binding.dimension);
 	}
 
+	/**
+	 * Checks whether the opposing boundary on this element in the given dimension is also bound.
+	 */
+	public isOpposingSiteBound(dimension: Dimensions, targetSiteName: SiteNames): boolean {
+		const isNear = targetSiteName === "here" || targetSiteName === "start";
+		const isFar = targetSiteName === "far" || targetSiteName === "end";
+		if (!isNear && !isFar) return false;
+
+		const opposingNames: SiteNames[] = isNear ? ["far", "end"] : ["here", "start"];
+
+		if (this.bindingsToThis.some((b) => b.bindingRule.dimension === dimension && opposingNames.includes(b.bindingRule.targetSiteName))) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public enforceBindings() {
 		for (const binding of this.bindings) {
 			var targetElement: Spacial = binding.targetObject;
@@ -530,19 +594,69 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			// Apply offset:
 			anchorBindCoord = anchorBindCoord + (binding.offset ?? 0);
 
+			const targetSite = binding.bindingRule.targetSiteName;
+			const isNear = targetSite === "here";
+			const isFar = targetSite === "far";
+
+			// If target element is bound on both near and far boundaries in this dimension,
+			// stretch the target element rather than translating it.
+			if ((isNear || isFar) && targetElement.isOpposingSiteBound(dimension, targetSite)) {
+				const opposingSite: SiteNames = isNear ? "far" : "here";
+
+				// The binding on the other side of the object
+				const opposingBinding = targetElement.bindingsToThis.find(
+					(b) => b.bindingRule.dimension === dimension && b.bindingRule.targetSiteName === opposingSite
+				);
+
+				let opposingCoord: number | undefined;
+				if (opposingBinding) {
+					const opposingGetter = opposingBinding.anchorObject.AnchorFunctions[opposingBinding.bindingRule.anchorSiteName]?.get;
+					if (opposingGetter) {
+						opposingCoord = opposingGetter(dimension, opposingBinding.bindToContent) + (opposingBinding.offset ?? 0);
+					}
+				}
+
+				if (opposingCoord === undefined) {
+					opposingCoord = isNear
+						? targetElement.getFar(dimension)
+						: targetElement.getNear(dimension);
+				}
+
+				const hereCoord = isNear ? anchorBindCoord : opposingCoord;
+				const farCoord = isFar ? anchorBindCoord : opposingCoord;
+
+				const currentNearCoord = targetElement.getNear(dimension);
+				const currentFarCoord = targetElement.getFar(dimension);
+				if (currentNearCoord === hereCoord && currentFarCoord === farCoord) {
+					continue;
+				}
+
+				const minSize = dimension === "x"
+					? (targetElement.minWidth ?? 5)
+					: (targetElement.minHeight ?? 5);
+				const rawDiff = farCoord - hereCoord;
+				const newSize = Math.max(minSize, rawDiff);
+				targetElement.setSizeByDimension(newSize, dimension);
+
+				const targetNear = (rawDiff < minSize && isFar)
+					? (farCoord - minSize)
+					: hereCoord;
+				targetElement.setNear(dimension, targetNear);
+				continue;
+			}
+
 			// Current position of target:
 			var currentTargetPointPosition: number | undefined = targetPosChecker(
 				dimension,
 				binding.bindToContent
 			);
 
-
 			// Only go into the setter if it will change a value, massively reduces function calls.
 			// Alternative was doing the check inside the setter which still works but requires a function call
 			if (anchorBindCoord !== currentTargetPointPosition) {
 				// Use the correct setter on the target with this value
 
-				setter(dimension, anchorBindCoord!); // SETTER MAY NEED INTERNAL BINDING FLAG?
+				setter(dimension, anchorBindCoord!);
 			}
 		}
 	}
