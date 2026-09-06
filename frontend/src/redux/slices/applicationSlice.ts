@@ -68,7 +68,7 @@ const initialState: ApplicationState = {
         },
         box: {
             style: {
-                fill: "rgba(19, 124, 189, 0.1)",
+                fill: "#137cbd",
                 stroke: "#137cbd",
                 strokeWidth: 2,
                 dashing: [0, 0]

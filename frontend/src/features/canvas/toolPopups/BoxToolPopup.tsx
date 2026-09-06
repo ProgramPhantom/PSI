@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Checkbox, Menu, MenuDivider, MenuItem } from "@blueprintjs/core";
+import { Checkbox, Menu, MenuDivider, MenuItem, NumericInput } from "@blueprintjs/core";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import { setSelectedTool } from "../../../redux/slices/applicationSlice";
@@ -13,6 +13,8 @@ const COLOR_PRESETS = [
     "#7157d9",
     "#d13913"
 ];
+
+const DEFAULT_CUSTOM_COLOR = "#2962ff";
 
 const DASH_STYLES: { dashing: [number, number]; id: string }[] = [
     { dashing: [0, 0], id: "solid" },
@@ -31,19 +33,23 @@ function hexToRgba(hex: string, alpha: number): string {
     return hex;
 }
 
-function extractHexFromRgba(rgba: string): string {
-    const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+function parseRgba(rgbaOrHex: string): { hex: string; alpha: number } {
+    if (!rgbaOrHex || rgbaOrHex === "transparent" || rgbaOrHex === "none") {
+        return { hex: "#137cbd", alpha: 0 };
+    }
+    const match = rgbaOrHex.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
     if (match) {
         const r = parseInt(match[1], 10).toString(16).padStart(2, "0");
         const g = parseInt(match[2], 10).toString(16).padStart(2, "0");
         const b = parseInt(match[3], 10).toString(16).padStart(2, "0");
-        return `#${r}${g}${b}`;
+        const alpha = match[4] !== undefined ? parseFloat(match[4]) : 1;
+        return { hex: `#${r}${g}${b}`, alpha: Math.round(alpha * 100) };
     }
-    if (rgba.startsWith("#")) return rgba;
-    return "#137cbd";
+    if (rgbaOrHex.startsWith("#")) {
+        return { hex: rgbaOrHex, alpha: 100 };
+    }
+    return { hex: "#137cbd", alpha: 100 };
 }
-
-type FillMode = "none" | "tint" | "solid";
 
 export const BoxToolPopup: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
@@ -55,34 +61,40 @@ export const BoxToolPopup: React.FC = React.memo(() => {
     const strokeWidth = style.strokeWidth ?? 2;
     const stroke = style.stroke ?? "#137cbd";
     const dashing: [number, number] = style.dashing ?? [0, 0];
-    const rawFill: string = style.fill ?? "rgba(19, 124, 189, 0.1)";
+    const rawFill: string = style.fill ?? "#137cbd";
 
-    // Determine fill mode and base color
-    let initialFillMode: FillMode = "tint";
-    if (rawFill === "transparent" || rawFill === "none") {
-        initialFillMode = "none";
-    } else if (rawFill.startsWith("rgba")) {
-        initialFillMode = "tint";
-    } else {
-        initialFillMode = "solid";
-    }
+    // Parse fill details
+    const parsedFill = parseRgba(rawFill);
+    const isFillCurrentlyEnabled = rawFill !== "transparent" && rawFill !== "none" && parsedFill.alpha > 0;
 
-    const [fillMode, setFillMode] = useState<FillMode>(initialFillMode);
-    const baseFillColor = extractHexFromRgba(rawFill);
+    const [isFillEnabled, setIsFillEnabled] = useState(isFillCurrentlyEnabled);
+    const [baseFillColor, setBaseFillColor] = useState(parsedFill.hex);
+    const [fillOpacity, setFillOpacity] = useState(parsedFill.alpha > 0 ? parsedFill.alpha : 100);
 
-    const isCustomStroke = !COLOR_PRESETS.some(
+    // Custom colors state
+    const isCustomStroke = stroke !== "transparent" && !COLOR_PRESETS.some(
         (c) => c.toLowerCase() === stroke.toLowerCase()
     );
     const [customStrokeColor, setCustomStrokeColor] = useState(
-        isCustomStroke ? stroke : "#137cbd"
+        isCustomStroke ? stroke : DEFAULT_CUSTOM_COLOR
     );
 
-    const isCustomFill = !COLOR_PRESETS.some(
+    const isCustomFill = isFillEnabled && !COLOR_PRESETS.some(
         (c) => c.toLowerCase() === baseFillColor.toLowerCase()
     );
     const [customFillColor, setCustomFillColor] = useState(
-        isCustomFill ? baseFillColor : "#137cbd"
+        isCustomFill ? baseFillColor : DEFAULT_CUSTOM_COLOR
     );
+
+    useEffect(() => {
+        const p = parseRgba(rawFill);
+        const enabled = rawFill !== "transparent" && rawFill !== "none" && p.alpha > 0;
+        setIsFillEnabled(enabled);
+        if (enabled) {
+            setBaseFillColor(p.hex);
+            setFillOpacity(p.alpha);
+        }
+    }, [rawFill]);
 
     useEffect(() => {
         if (!COLOR_PRESETS.some((c) => c.toLowerCase() === stroke.toLowerCase())) {
@@ -117,36 +129,104 @@ export const BoxToolPopup: React.FC = React.memo(() => {
         updateBoxConfig({ stroke: color });
     };
 
+    const handleCustomStrokeCheckboxChange = (checked: boolean) => {
+        if (checked) {
+            const colorToApply = !COLOR_PRESETS.some(c => c.toLowerCase() === customStrokeColor.toLowerCase())
+                ? customStrokeColor
+                : DEFAULT_CUSTOM_COLOR;
+            setCustomStrokeColor(colorToApply);
+            handleStrokeSelect(colorToApply);
+        } else {
+            handleStrokeSelect(COLOR_PRESETS[0]);
+        }
+    };
+
+    const handleCustomStrokeBlur = (color: string) => {
+        setCustomStrokeColor(color);
+        handleStrokeSelect(color);
+    };
+
+    const handleCustomStrokePickerActivate = () => {
+        if (!isCustomStroke) {
+            handleCustomStrokeCheckboxChange(true);
+        }
+    };
+
     const handleDashingSelect = (dash: [number, number]) => {
         updateBoxConfig({ dashing: dash });
     };
 
-    const handleFillModeChange = (mode: FillMode) => {
-        setFillMode(mode);
-        if (mode === "none") {
+    const handleToggleFill = (enabled: boolean) => {
+        setIsFillEnabled(enabled);
+        if (!enabled) {
             updateBoxConfig({ fill: "transparent" });
-        } else if (mode === "tint") {
-            updateBoxConfig({ fill: hexToRgba(baseFillColor, 0.15) });
         } else {
-            updateBoxConfig({ fill: baseFillColor });
+            const opacity = fillOpacity > 0 ? fillOpacity : 100;
+            if (fillOpacity === 0) setFillOpacity(100);
+            if (opacity === 100) {
+                updateBoxConfig({ fill: baseFillColor });
+            } else {
+                updateBoxConfig({ fill: hexToRgba(baseFillColor, opacity / 100) });
+            }
+        }
+    };
+
+    const handleOpacityChange = (valueAsNumber: number) => {
+        if (isNaN(valueAsNumber)) return;
+        const clamped = Math.max(0, Math.min(100, Math.round(valueAsNumber)));
+        setFillOpacity(clamped);
+        if (clamped === 0) {
+            setIsFillEnabled(false);
+            updateBoxConfig({ fill: "transparent" });
+        } else {
+            if (!isFillEnabled) setIsFillEnabled(true);
+            if (clamped === 100) {
+                updateBoxConfig({ fill: baseFillColor });
+            } else {
+                updateBoxConfig({ fill: hexToRgba(baseFillColor, clamped / 100) });
+            }
         }
     };
 
     const handleFillColorSelect = (hexColor: string) => {
-        if (fillMode === "none") {
-            setFillMode("tint");
-            updateBoxConfig({ fill: hexToRgba(hexColor, 0.15) });
-        } else if (fillMode === "tint") {
-            updateBoxConfig({ fill: hexToRgba(hexColor, 0.15) });
-        } else {
+        setBaseFillColor(hexColor);
+        setIsFillEnabled(true);
+        const opacity = fillOpacity > 0 ? fillOpacity : 100;
+        if (fillOpacity === 0) setFillOpacity(100);
+        if (opacity === 100) {
             updateBoxConfig({ fill: hexColor });
+        } else {
+            updateBoxConfig({ fill: hexToRgba(hexColor, opacity / 100) });
+        }
+    };
+
+    const handleCustomFillCheckboxChange = (checked: boolean) => {
+        if (checked) {
+            const colorToApply = !COLOR_PRESETS.some(c => c.toLowerCase() === customFillColor.toLowerCase())
+                ? customFillColor
+                : DEFAULT_CUSTOM_COLOR;
+            setCustomFillColor(colorToApply);
+            handleFillColorSelect(colorToApply);
+        } else {
+            handleFillColorSelect(COLOR_PRESETS[0]);
+        }
+    };
+
+    const handleCustomFillBlur = (color: string) => {
+        setCustomFillColor(color);
+        handleFillColorSelect(color);
+    };
+
+    const handleCustomFillPickerActivate = () => {
+        if (!isCustomFill) {
+            handleCustomFillCheckboxChange(true);
         }
     };
 
     return (
         <div style={{ display: "flex", flexDirection: "row" }}>
-            {/* Column 1: Border Thickness & Dash Style */}
-            <Menu style={{ minWidth: 130 }}>
+            {/* Column 1: Border Thickness */}
+            <Menu style={{ minWidth: 120 }}>
                 <MenuDivider title="Border" />
                 {[0, 1, 2, 3, 4, 6].map((width) => {
                     const isActive = strokeWidth === width;
@@ -175,6 +255,57 @@ export const BoxToolPopup: React.FC = React.memo(() => {
                         />
                     );
                 })}
+            </Menu>
+
+            <div style={{ width: 1, backgroundColor: "rgba(200, 200, 200, 0.3)", margin: "4px 0" }} />
+
+            {/* Column 2: Border Colour & Dash Style */}
+            <Menu style={{ minWidth: 140 }}>
+                <MenuDivider title="Border Colour" />
+                <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 22px)", gap: "6px" }}>
+                        {COLOR_PRESETS.map((c) => (
+                            <div
+                                key={c}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStrokeSelect(c);
+                                }}
+                                style={{
+                                    width: 22,
+                                    height: 22,
+                                    borderRadius: "4px",
+                                    backgroundColor: c,
+                                    cursor: "pointer",
+                                    border: stroke.toLowerCase() === c.toLowerCase() ? "2px solid #106ba3" : "1px solid rgba(0,0,0,0.2)",
+                                    boxShadow: stroke.toLowerCase() === c.toLowerCase() ? "0 0 0 1px #fff inset" : "none"
+                                }}
+                            />
+                        ))}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                        <Checkbox
+                            checked={isCustomStroke}
+                            onChange={(e) => handleCustomStrokeCheckboxChange((e.target as HTMLInputElement).checked)}
+                            style={{ margin: 0 }}
+                        />
+                        <span
+                            style={{ fontSize: "12px", cursor: "pointer" }}
+                            onClick={() => handleCustomStrokeCheckboxChange(!isCustomStroke)}
+                        >
+                            Custom:
+                        </span>
+                        <input
+                            type="color"
+                            key={customStrokeColor}
+                            defaultValue={customStrokeColor}
+                            onPointerDown={handleCustomStrokePickerActivate}
+                            onClick={handleCustomStrokePickerActivate}
+                            onBlur={(e) => handleCustomStrokeBlur(e.target.value)}
+                            style={{ width: "28px", height: "24px", padding: 0, border: "none", background: "transparent", cursor: "pointer" }}
+                        />
+                    </div>
+                </div>
 
                 <MenuDivider title="Dash Style" />
                 {DASH_STYLES.map((dash) => {
@@ -208,17 +339,62 @@ export const BoxToolPopup: React.FC = React.memo(() => {
 
             <div style={{ width: 1, backgroundColor: "rgba(200, 200, 200, 0.3)", margin: "4px 0" }} />
 
-            {/* Column 2: Border Colour */}
-            <Menu style={{ minWidth: 140 }}>
-                <MenuDivider title="Border Colour" />
-                <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            {/* Column 3: Fill Heading with Checkbox + Opacity + Fill Colours */}
+            <Menu style={{ minWidth: 150 }}>
+                <MenuDivider
+                    title={
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                            <Checkbox
+                                checked={isFillEnabled}
+                                onChange={(e) => handleToggleFill((e.target as HTMLInputElement).checked)}
+                                style={{ margin: 0 }}
+                            />
+                            <span
+                                style={{ cursor: "pointer" }}
+                                onClick={() => handleToggleFill(!isFillEnabled)}
+                            >
+                                Fill
+                            </span>
+                        </span>
+                    }
+                />
+                <div
+                    style={{
+                        padding: "6px 8px 8px 8px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                        opacity: isFillEnabled ? 1 : 0.45,
+                        pointerEvents: isFillEnabled ? "auto" : "none"
+                    }}
+                >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 500, color: "#5f6b7c" }}>Opacity:</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+                            <NumericInput
+                                value={fillOpacity}
+                                onValueChange={(val) => handleOpacityChange(val)}
+                                min={0}
+                                max={100}
+                                clampValueOnBlur={true}
+                                minorStepSize={1}
+                                stepSize={5}
+                                majorStepSize={10}
+                                size="small"
+                                style={{ width: "55px" }}
+                                disabled={!isFillEnabled}
+                            />
+                            <span style={{ fontSize: "11px", color: "#5f6b7c" }}>%</span>
+                        </div>
+                    </div>
+
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 22px)", gap: "6px" }}>
                         {COLOR_PRESETS.map((c) => (
                             <div
                                 key={c}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleStrokeSelect(c);
+                                    handleFillColorSelect(c);
                                 }}
                                 style={{
                                     width: 22,
@@ -226,111 +402,41 @@ export const BoxToolPopup: React.FC = React.memo(() => {
                                     borderRadius: "4px",
                                     backgroundColor: c,
                                     cursor: "pointer",
-                                    border: stroke.toLowerCase() === c.toLowerCase() ? "2px solid #106ba3" : "1px solid rgba(0,0,0,0.2)",
-                                    boxShadow: stroke.toLowerCase() === c.toLowerCase() ? "0 0 0 1px #fff inset" : "none"
+                                    border: isFillEnabled && baseFillColor.toLowerCase() === c.toLowerCase()
+                                        ? "2px solid #106ba3"
+                                        : "1px solid rgba(0,0,0,0.2)",
+                                    boxShadow: isFillEnabled && baseFillColor.toLowerCase() === c.toLowerCase()
+                                        ? "0 0 0 1px #fff inset"
+                                        : "none"
                                 }}
                             />
                         ))}
                     </div>
+
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
                         <Checkbox
-                            checked={isCustomStroke}
-                            onChange={(e) => {
-                                const checked = (e.target as HTMLInputElement).checked;
-                                handleStrokeSelect(checked ? customStrokeColor : COLOR_PRESETS[0]);
-                            }}
+                            checked={isCustomFill}
+                            onChange={(e) => handleCustomFillCheckboxChange((e.target as HTMLInputElement).checked)}
                             style={{ margin: 0 }}
+                            disabled={!isFillEnabled}
                         />
-                        <span style={{ fontSize: "12px" }}>Custom:</span>
+                        <span
+                            style={{ fontSize: "12px", cursor: isFillEnabled ? "pointer" : "default" }}
+                            onClick={() => isFillEnabled && handleCustomFillCheckboxChange(!isCustomFill)}
+                        >
+                            Custom:
+                        </span>
                         <input
                             type="color"
-                            key={customStrokeColor}
-                            defaultValue={customStrokeColor}
-                            onBlur={(e) => {
-                                setCustomStrokeColor(e.target.value);
-                                handleStrokeSelect(e.target.value);
-                            }}
-                            style={{ width: "28px", height: "24px", padding: 0, border: "none", background: "transparent", cursor: "pointer" }}
+                            key={customFillColor}
+                            defaultValue={customFillColor}
+                            onPointerDown={handleCustomFillPickerActivate}
+                            onClick={handleCustomFillPickerActivate}
+                            onBlur={(e) => handleCustomFillBlur(e.target.value)}
+                            disabled={!isFillEnabled}
+                            style={{ width: "28px", height: "24px", padding: 0, border: "none", background: "transparent", cursor: isFillEnabled ? "pointer" : "default" }}
                         />
                     </div>
-                </div>
-            </Menu>
-
-            <div style={{ width: 1, backgroundColor: "rgba(200, 200, 200, 0.3)", margin: "4px 0" }} />
-
-            {/* Column 3: Fill Style & Colour */}
-            <Menu style={{ minWidth: 140 }}>
-                <MenuDivider title="Fill" />
-                <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <ButtonGroup fill={true} style={{ marginBottom: "2px" }}>
-                        <Button
-                            size="small"
-                            text="None"
-                            active={fillMode === "none"}
-                            intent={fillMode === "none" ? "primary" : "none"}
-                            onClick={() => handleFillModeChange("none")}
-                        />
-                        <Button
-                            size="small"
-                            text="Tint"
-                            active={fillMode === "tint"}
-                            intent={fillMode === "tint" ? "primary" : "none"}
-                            onClick={() => handleFillModeChange("tint")}
-                        />
-                        <Button
-                            size="small"
-                            text="Solid"
-                            active={fillMode === "solid"}
-                            intent={fillMode === "solid" ? "primary" : "none"}
-                            onClick={() => handleFillModeChange("solid")}
-                        />
-                    </ButtonGroup>
-
-                    {fillMode !== "none" && (
-                        <>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 22px)", gap: "6px" }}>
-                                {COLOR_PRESETS.map((c) => (
-                                    <div
-                                        key={c}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleFillColorSelect(c);
-                                        }}
-                                        style={{
-                                            width: 22,
-                                            height: 22,
-                                            borderRadius: "4px",
-                                            backgroundColor: c,
-                                            cursor: "pointer",
-                                            border: baseFillColor.toLowerCase() === c.toLowerCase() ? "2px solid #106ba3" : "1px solid rgba(0,0,0,0.2)",
-                                            boxShadow: baseFillColor.toLowerCase() === c.toLowerCase() ? "0 0 0 1px #fff inset" : "none"
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
-                                <Checkbox
-                                    checked={isCustomFill}
-                                    onChange={(e) => {
-                                        const checked = (e.target as HTMLInputElement).checked;
-                                        handleFillColorSelect(checked ? customFillColor : COLOR_PRESETS[0]);
-                                    }}
-                                    style={{ margin: 0 }}
-                                />
-                                <span style={{ fontSize: "12px" }}>Custom:</span>
-                                <input
-                                    type="color"
-                                    key={customFillColor}
-                                    defaultValue={customFillColor}
-                                    onBlur={(e) => {
-                                        setCustomFillColor(e.target.value);
-                                        handleFillColorSelect(e.target.value);
-                                    }}
-                                    style={{ width: "28px", height: "24px", padding: 0, border: "none", background: "transparent", cursor: "pointer" }}
-                                />
-                            </div>
-                        </>
-                    )}
                 </div>
             </Menu>
         </div>

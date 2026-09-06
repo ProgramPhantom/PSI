@@ -75,7 +75,7 @@ export function BoxTool(props: IDrawBoxProps) {
 			return;
 		}
 
-		const fill = props.config?.style?.fill ?? "rgba(19, 124, 189, 0.1)";
+		const fill = props.config?.style?.fill ?? "#137cbd";
 		const stroke = props.config?.style?.stroke ?? "#137cbd";
 		const strokeWidth = props.config?.style?.strokeWidth ?? 2;
 		const dashing = props.config?.style?.dashing ?? [0, 0];
@@ -251,7 +251,7 @@ export function BoxTool(props: IDrawBoxProps) {
 		};
 	}, [startPoint, getCanvasCoords, props, computeSnappedPoint, updateCurrentPosition]);
 
-	const fill = props.config?.style?.fill ?? "rgba(19, 124, 189, 0.1)";
+	const fill = props.config?.style?.fill ?? "#137cbd";
 	const stroke = props.config?.style?.stroke ?? "#137cbd";
 	const strokeWidth = props.config?.style?.strokeWidth ?? 2;
 	const dashing = props.config?.style?.dashing ?? [0, 0];
