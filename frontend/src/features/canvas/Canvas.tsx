@@ -30,6 +30,7 @@ import { ChannelAddToolbar } from "./ChannelAddToolbar";
 import { ChannelReorderButtons } from "./ChannelReorderButtons";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
+import { BoxTool } from "./BoxTool";
 import styles from "./styles/toolbars.module.scss"
 
 
@@ -636,6 +637,18 @@ const Canvas: React.FC<ICanvasProps> = () => {
 														config={selectedTool.config}
 														zoom={zoom}
 														setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
+												</div>
+											) : (
+												<></>
+											)}
+
+											{selectedTool.type === "box" ? (
+												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+													<BoxTool
+														hoveredElement={rawHoveredElement ?? hoveredElement}
+														config={selectedTool.config}
+														zoom={zoom}
+														setTool={(tool) => dispatch(setSelectedTool(tool))}></BoxTool>
 												</div>
 											) : (
 												<></>

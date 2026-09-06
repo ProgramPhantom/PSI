@@ -6,6 +6,7 @@ export interface IRectStyle {
 	fill: string;
 	stroke?: string;
 	strokeWidth?: number;
+	dashing?: [number, number];
 }
 
 export interface IRectElement extends IVisual {
@@ -28,12 +29,17 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 
 		this.style = params.style;
 
+		const dashingAttr = this.style.dashing && this.style.dashing[0] > 0
+			? { "stroke-dasharray": `${this.style.dashing[0]} ${this.style.dashing[1]}` }
+			: {};
+
 		this.svg = SVG()
 			.rect(this.contentWidth, this.contentHeight)
 			.attr({ fill: this.style.fill, stroke: this.style.stroke })
 			.attr({
 				"stroke-width": this.style.strokeWidth,
-				"shape-rendering": "crispEdges"
+				"shape-rendering": "crispEdges",
+				...dashingAttr
 			});
 	}
 
@@ -45,6 +51,10 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 			} catch { }
 		}
 
+		const dashingAttr = this.style.dashing && this.style.dashing[0] > 0
+			? { "stroke-dasharray": `${this.style.dashing[0]} ${this.style.dashing[1]}` }
+			: {};
+
 		this.svg = new Rect()
 			.size(this.contentWidth, this.contentHeight)
 			.attr({ fill: this.style.fill, stroke: this.style.stroke })
@@ -52,6 +62,7 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 			.attr({
 				"stroke-width": this.style.strokeWidth,
 				"shape-rendering": "crispEdges",
+				...dashingAttr
 			});
 		surface.add(this.svg);
 

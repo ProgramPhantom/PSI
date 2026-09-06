@@ -66,7 +66,14 @@ const initialState: ApplicationState = {
         latex: {
             fontSize: 35
         },
-        box: {},
+        box: {
+            style: {
+                fill: "rgba(19, 124, 189, 0.1)",
+                stroke: "#137cbd",
+                strokeWidth: 2,
+                dashing: [0, 0]
+            }
+        },
         arrow: {
             thickness: 2,
             lineStyle: {

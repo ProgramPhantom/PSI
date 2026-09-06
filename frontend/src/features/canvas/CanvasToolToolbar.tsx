@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { CanvasToolType, setSelectedTool } from "../../redux/slices/applicationSlice";
 import styles from "./styles/toolbars.module.scss";
 import ArrowToolPopup from "./toolPopups/ArrowToolPopup";
+import BoxToolPopup from "./toolPopups/BoxToolPopup";
 import LaTeXToolPopup from "./toolPopups/LaTeXToolPopup";
 import TextToolPopup from "./toolPopups/TextToolPopup";
 
@@ -102,15 +103,35 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                 </Popover>
             </ButtonGroup>
 
-            <Tooltip hoverOpenDelay={2000} content="Box Tool" position={Position.TOP}>
-                <Button disabled
-                    icon="square"
-                    active={selectedTool.type === 'box'}
-                    intent={selectedTool.type === 'box' ? 'primary' : 'none'}
-                    onClick={() => selectTool('box')}
-                    variant="minimal"
-                />
-            </Tooltip>
+            <ButtonGroup>
+                <Tooltip hoverOpenDelay={2000} content="Box Tool" position={Position.TOP}>
+                    <Button
+                        icon="square"
+                        active={selectedTool.type === 'box'}
+                        intent={selectedTool.type === 'box' ? 'primary' : 'none'}
+                        onClick={() => selectTool('box')}
+                        variant="minimal"
+                    />
+                </Tooltip>
+                <Popover
+                    isOpen={openPopup === 'box'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'box' : null)}
+                    content={<BoxToolPopup />}
+                    position="top"
+                    minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
+                >
+                    <Button
+                        icon="caret-up"
+                        active={openPopup === 'box'}
+                        intent={selectedTool.type === 'box' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('box')}
+                        variant="minimal"
+                        style={{ minWidth: "16px", padding: 0 }}
+                    />
+                </Popover>
+            </ButtonGroup>
 
             <ButtonGroup>
                 <Tooltip hoverOpenDelay={2000} content="Arrow Tool" position={Position.TOP}>

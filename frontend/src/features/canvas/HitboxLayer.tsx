@@ -22,6 +22,7 @@ export const FocusRules: IFocusRules = {
 		"channel",
 		"svg",
 		(element: Visual) => element.type === "line" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
+		(element: Visual) => element.type === "rect" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
 
 		"label-group",
 		"simple-label-group",
