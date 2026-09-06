@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { IToolConfig, Tool } from "../../app/App";
 import { DEFAULT_LINE } from "../../logic/default/line";
 import ENGINE from "../../logic/engine";
@@ -8,6 +8,7 @@ import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
+import { findClosestBindingAnchor } from "./bindingResizeConfig";
 
 export interface IDrawArrowConfig extends IToolConfig {
 	thickness?: number;
@@ -31,11 +32,17 @@ const MARKER_LENGTHS: Record<HeadStyle, number> = {
 export function LineTool(props: IDrawArrowProps) {
 	const dispatch = useAppDispatch();
 	const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
-	const [startBindingRules, setStartBindingRules] = useState<IPlacementBindingRule[] | null>(null);
 	const [currentPoint, setCurrentPoint] = useState<{ x: number; y: number } | null>(null);
+	const [snappedAnchorKey, setSnappedAnchorKey] = useState<string | null>(null);
 
-	const rawPointRef = React.useRef<{ x: number; y: number } | null>(null);
-	const isCtrlPressedRef = React.useRef<boolean>(false);
+	const startPointRef = useRef<{ x: number; y: number } | null>(null);
+	const startBindingRef = useRef<ISelectedBindingInfo | null>(null);
+	const snappedBindingRef = useRef<ISelectedBindingInfo | null>(null);
+	const rawPointRef = useRef<{ x: number; y: number } | null>(null);
+	const isCtrlPressedRef = useRef<boolean>(false);
+
+	const hoveredElementRef = useRef(props.hoveredElement);
+	hoveredElementRef.current = props.hoveredElement;
 
 	const getCanvasCoords = useCallback(
 		(e: React.MouseEvent | MouseEvent): { x: number; y: number } => {
@@ -61,120 +68,154 @@ export function LineTool(props: IDrawArrowProps) {
 			: { x: origin.x, y: raw.y };
 	}, []);
 
-	const updateCurrentPosition = useCallback((rawCoords: { x: number; y: number }, isCtrl: boolean) => {
-		rawPointRef.current = rawCoords;
-		if (startPoint) {
-			const finalCoords = computeSnappedPoint(rawCoords, startPoint, isCtrl);
-			setCurrentPoint(finalCoords);
-		}
-	}, [startPoint, computeSnappedPoint]);
+	const commitLine = useCallback(
+		(
+			startPt: { x: number; y: number },
+			endPt: { x: number; y: number },
+			startBindingInfo: ISelectedBindingInfo | null,
+			endBindingInfo: ISelectedBindingInfo | null
+		) => {
+			const dist = Math.hypot(endPt.x - startPt.x, endPt.y - startPt.y);
+			const hasBindings = Boolean(startBindingInfo || endBindingInfo);
 
-	const commitLine = useCallback((endPoint: { x: number; y: number }, endBindingRules: IPlacementBindingRule[] | null) => {
-		if (!startPoint) return;
-		const dist = Math.hypot(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
-		const allRules: IPlacementBindingRule[] = [
-			...(startBindingRules ?? []),
-			...(endBindingRules ?? [])
-		];
-
-		if (dist < 2 && allRules.length === 0) {
-			return;
-		}
-
-		const stroke = props.config?.lineStyle?.stroke ?? "#000000";
-		const dashing = props.config?.lineStyle?.dashing ?? [0, 0];
-		const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
-		const thickness = props.config?.thickness ?? 2;
-
-		const placementMode: PlacementConfiguration = allRules.length > 0
-			? {
-				type: "binds",
-				config: allRules
+			if (dist < 2 && !hasBindings) {
+				return;
 			}
-			: { type: "free" };
 
-		const newLine: ILine = {
-			...structuredClone(DEFAULT_LINE),
-			id: Math.random().toString(16).slice(2),
-			ref: `arrow-${Date.now()}`,
-			type: "line",
-			parentId: ENGINE.handler.diagram.id,
-			placementMode: placementMode,
-			placementControl: "user",
-			startX: startPoint.x,
-			startY: startPoint.y,
-			endX: endPoint.x,
-			endY: endPoint.y,
-			x: Math.min(startPoint.x, endPoint.x),
-			y: Math.min(startPoint.y, endPoint.y),
-			thickness: thickness,
-			adjustment: [0, 0],
-			padding: [0, 0, 0, 0],
-			offset: [0, 0],
-			lineStyle: {
-				stroke: stroke,
-				dashing: dashing,
-				headStyle: headStyle
+			const stroke = props.config?.lineStyle?.stroke ?? "#000000";
+			const dashing = props.config?.lineStyle?.dashing ?? [0, 0];
+			const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
+			const thickness = props.config?.thickness ?? 2;
+
+			const allRules: IPlacementBindingRule[] = [];
+
+			if (startBindingInfo) {
+				allRules.push(
+					{
+						targetId: startBindingInfo.anchorObject.id,
+						dimension: "x",
+						anchorSiteName: startBindingInfo.xAnchor,
+						targetSiteName: "start",
+						bindToContent: true
+					},
+					{
+						targetId: startBindingInfo.anchorObject.id,
+						dimension: "y",
+						anchorSiteName: startBindingInfo.yAnchor,
+						targetSiteName: "start",
+						bindToContent: true
+					}
+				);
 			}
-		};
 
-		ENGINE.handler.act({
-			type: "add",
-			input: {
-				child: newLine
+			if (endBindingInfo) {
+				allRules.push(
+					{
+						targetId: endBindingInfo.anchorObject.id,
+						dimension: "x",
+						anchorSiteName: endBindingInfo.xAnchor,
+						targetSiteName: "end",
+						bindToContent: true
+					},
+					{
+						targetId: endBindingInfo.anchorObject.id,
+						dimension: "y",
+						anchorSiteName: endBindingInfo.yAnchor,
+						targetSiteName: "end",
+						bindToContent: true
+					}
+				);
 			}
-		});
 
-		dispatch(setSelectedElementId(newLine.id));
-		props.setTool({ type: "select", config: {} });
-		setStartPoint(null);
-		setStartBindingRules(null);
-		setCurrentPoint(null);
-		rawPointRef.current = null;
-	}, [startPoint, startBindingRules, props, dispatch]);
-
-	const handleSelectBind = (info: ISelectedBindingInfo) => {
-		if (!startPoint) {
-			const startRules: IPlacementBindingRule[] = [
-				{
-					targetId: info.anchorObject.id,
-					dimension: "x",
-					anchorSiteName: info.xAnchor,
-					targetSiteName: "start",
-					bindToContent: true
-				},
-				{
-					targetId: info.anchorObject.id,
-					dimension: "y",
-					anchorSiteName: info.yAnchor,
-					targetSiteName: "start",
-					bindToContent: true
+			const placementMode: PlacementConfiguration = allRules.length > 0
+				? {
+					type: "binds",
+					config: allRules
 				}
-			];
-			setStartPoint(info.point);
-			setStartBindingRules(startRules);
-			setCurrentPoint(info.point);
-			rawPointRef.current = info.point;
-		} else {
-			const endRules: IPlacementBindingRule[] = [
-				{
-					targetId: info.anchorObject.id,
-					dimension: "x",
-					anchorSiteName: info.xAnchor,
-					targetSiteName: "end",
-					bindToContent: true
-				},
-				{
-					targetId: info.anchorObject.id,
-					dimension: "y",
-					anchorSiteName: info.yAnchor,
-					targetSiteName: "end",
-					bindToContent: true
+				: { type: "free" };
+
+			const newLine: ILine = {
+				...structuredClone(DEFAULT_LINE),
+				id: Math.random().toString(16).slice(2),
+				ref: `arrow-${Date.now()}`,
+				type: "line",
+				parentId: ENGINE.handler.diagram.id,
+				placementMode: placementMode,
+				placementControl: "user",
+				startX: startPt.x,
+				startY: startPt.y,
+				endX: endPt.x,
+				endY: endPt.y,
+				x: Math.min(startPt.x, endPt.x),
+				y: Math.min(startPt.y, endPt.y),
+				thickness: thickness,
+				adjustment: [0, 0],
+				padding: [0, 0, 0, 0],
+				offset: [0, 0],
+				lineStyle: {
+					stroke: stroke,
+					dashing: dashing,
+					headStyle: headStyle
 				}
-			];
-			commitLine(info.point, endRules);
-		}
-	};
+			};
+
+			ENGINE.handler.act({
+				type: "add",
+				input: {
+					child: newLine
+				}
+			});
+
+			dispatch(setSelectedElementId(newLine.id));
+			props.setTool({ type: "select", config: {} });
+
+			setStartPoint(null);
+			startPointRef.current = null;
+			startBindingRef.current = null;
+			setCurrentPoint(null);
+			rawPointRef.current = null;
+			setSnappedAnchorKey(null);
+			snappedBindingRef.current = null;
+		},
+		[props, dispatch]
+	);
+
+	const handleSelectBind = useCallback(
+		(info: ISelectedBindingInfo) => {
+			if (!startPointRef.current) {
+				setStartPoint(info.point);
+				startPointRef.current = info.point;
+				startBindingRef.current = info;
+				setCurrentPoint(info.point);
+				rawPointRef.current = info.point;
+			} else {
+				commitLine(startPointRef.current, info.point, startBindingRef.current, info);
+			}
+		},
+		[commitLine]
+	);
+
+	const updateCurrentPosition = useCallback(
+		(rawCoords: { x: number; y: number }, isCtrl: boolean) => {
+			rawPointRef.current = rawCoords;
+
+			const currentZoom = props.zoom && props.zoom > 0 ? props.zoom : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
+			const snap = findClosestBindingAnchor(hoveredElementRef.current, "", rawCoords, currentZoom);
+			snappedBindingRef.current = snap?.bindingInfo ?? null;
+			setSnappedAnchorKey(snap?.key ?? null);
+
+			if (startPointRef.current) {
+				let pt: { x: number; y: number };
+				if (snap) {
+					pt = snap.bindingInfo.point;
+				} else {
+					pt = computeSnappedPoint(rawCoords, startPointRef.current, isCtrl);
+				}
+				setCurrentPoint(pt);
+			}
+		},
+		[props.zoom, computeSnappedPoint]
+	);
 
 	const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
@@ -183,37 +224,46 @@ export function LineTool(props: IDrawArrowProps) {
 		const rawCoords = getCanvasCoords(e);
 		rawPointRef.current = rawCoords;
 
-		if (!startPoint) {
-			setStartPoint(rawCoords);
-			setStartBindingRules(null);
-			setCurrentPoint(rawCoords);
+		const currentZoom = props.zoom && props.zoom > 0 ? props.zoom : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
+		const snap = findClosestBindingAnchor(hoveredElementRef.current, "", rawCoords, currentZoom);
+		const effectiveSnap = snap?.bindingInfo ?? snappedBindingRef.current;
+
+		if (!startPointRef.current) {
+			const initialPt = effectiveSnap ? effectiveSnap.point : rawCoords;
+			setStartPoint(initialPt);
+			startPointRef.current = initialPt;
+			startBindingRef.current = effectiveSnap ?? null;
+			setCurrentPoint(initialPt);
 		} else {
 			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
-			const coords = computeSnappedPoint(rawCoords, startPoint, isCtrl);
-			commitLine(coords, null);
+			const endPt = effectiveSnap
+				? effectiveSnap.point
+				: computeSnappedPoint(rawCoords, startPointRef.current, isCtrl);
+			commitLine(startPointRef.current, endPt, startBindingRef.current, effectiveSnap ?? null);
 		}
 	};
 
 	const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (startPoint) {
-			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
-			const coords = getCanvasCoords(e);
-			updateCurrentPosition(coords, isCtrl);
-		}
+		const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
+		const coords = getCanvasCoords(e);
+		updateCurrentPosition(coords, isCtrl);
 	};
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				setStartPoint(null);
-				setStartBindingRules(null);
+				startPointRef.current = null;
+				startBindingRef.current = null;
 				setCurrentPoint(null);
 				rawPointRef.current = null;
+				setSnappedAnchorKey(null);
+				snappedBindingRef.current = null;
 				props.setTool({ type: "select", config: {} });
 			} else if (e.key === "Control") {
 				isCtrlPressedRef.current = true;
-				if (startPoint && rawPointRef.current) {
-					const snapped = computeSnappedPoint(rawPointRef.current, startPoint, true);
+				if (startPointRef.current && rawPointRef.current && !snappedBindingRef.current) {
+					const snapped = computeSnappedPoint(rawPointRef.current, startPointRef.current, true);
 					setCurrentPoint(snapped);
 				}
 			}
@@ -222,7 +272,7 @@ export function LineTool(props: IDrawArrowProps) {
 		const handleKeyUp = (e: KeyboardEvent) => {
 			if (e.key === "Control") {
 				isCtrlPressedRef.current = false;
-				if (startPoint && rawPointRef.current) {
+				if (startPointRef.current && rawPointRef.current && !snappedBindingRef.current) {
 					setCurrentPoint(rawPointRef.current);
 				}
 			}
@@ -230,17 +280,15 @@ export function LineTool(props: IDrawArrowProps) {
 
 		const handleBlur = () => {
 			isCtrlPressedRef.current = false;
-			if (startPoint && rawPointRef.current) {
+			if (startPointRef.current && rawPointRef.current && !snappedBindingRef.current) {
 				setCurrentPoint(rawPointRef.current);
 			}
 		};
 
 		const handleGlobalMouseMove = (e: MouseEvent) => {
-			if (startPoint) {
-				const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
-				const coords = getCanvasCoords(e);
-				updateCurrentPosition(coords, isCtrl);
-			}
+			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
+			const coords = getCanvasCoords(e);
+			updateCurrentPosition(coords, isCtrl);
 		};
 
 		window.addEventListener("keydown", handleKeyDown);
@@ -254,7 +302,7 @@ export function LineTool(props: IDrawArrowProps) {
 			window.removeEventListener("blur", handleBlur);
 			window.removeEventListener("mousemove", handleGlobalMouseMove);
 		};
-	}, [startPoint, getCanvasCoords, props, computeSnappedPoint, updateCurrentPosition]);
+	}, [props, getCanvasCoords, computeSnappedPoint, updateCurrentPosition]);
 
 	const stroke = props.config?.lineStyle?.stroke ?? "#000000";
 	const dashing = props.config?.lineStyle?.dashing ?? [0, 0];
@@ -318,6 +366,7 @@ export function LineTool(props: IDrawArrowProps) {
 				<BindingsSelector
 					element={props.hoveredElement}
 					onSelectBind={handleSelectBind}
+					activeAnchorKey={snappedAnchorKey}
 				/>
 			)}
 
