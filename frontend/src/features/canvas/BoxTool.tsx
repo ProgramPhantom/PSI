@@ -8,7 +8,7 @@ import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
-import { findClosestBindingAnchor } from "./bindingResizeConfig";
+import { findClosestBindingAnchor, isBindingAllowedAsTarget } from "./bindingResizeConfig";
 
 export interface IDrawBoxConfig extends IToolConfig {
 	style?: IRectStyle;
@@ -190,6 +190,7 @@ export function BoxTool(props: IDrawBoxProps) {
 
 	const handleSelectBind = useCallback(
 		(info: ISelectedBindingInfo) => {
+			if (!isBindingAllowedAsTarget(info.anchorObject)) return;
 			if (!startPointRef.current) {
 				setStartPoint(info.point);
 				startPointRef.current = info.point;
@@ -342,7 +343,7 @@ export function BoxTool(props: IDrawBoxProps) {
 			/>
 
 			{/* Hovered Element Bindings Selector */}
-			{props.hoveredElement && props.hoveredElement.type !== "diagram" && (
+			{isBindingAllowedAsTarget(props.hoveredElement) && props.hoveredElement && (
 				<BindingsSelector
 					element={props.hoveredElement}
 					onSelectBind={handleSelectBind}

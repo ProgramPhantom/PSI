@@ -12,7 +12,7 @@ import styles from "./styles/CanvasResizeHandles.module.scss";
 import { useAppDispatch } from "../../redux/hooks";
 import { setIsResizing } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
-import { findClosestBindingAnchor, isBindingAllowedForResizing } from "../canvas/bindingResizeConfig";
+import { findClosestBindingAnchor, isBindingAllowedForResizing, isBindingAllowedAsTarget } from "../canvas/bindingResizeConfig";
 
 export type HandleDirection = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
@@ -212,15 +212,15 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 		const activeAnchor = (
 			isBindingAllowed &&
 			activeDirection !== null &&
-			hoveredElement &&
-			hoveredElement.id !== element.id &&
-			hoveredElement.type !== "diagram" &&
-			Boolean(hoveredElement.AnchorFunctions)
+			isBindingAllowedAsTarget(hoveredElement, element.id)
 		) ? hoveredElement : null;
 
 		const applyBinding = useCallback(
 			(info: ISelectedBindingInfo, direction: HandleDirection) => {
 				const currentElement = elementRef.current;
+				if (!isBindingAllowedAsTarget(info.anchorObject, currentElement.id)) {
+					return;
+				}
 				const sites = HANDLE_SITE_MAP[direction];
 				const currentRules: IPlacementBindingRule[] = (currentElement.placementMode?.type === "binds")
 					? currentElement.placementMode.config

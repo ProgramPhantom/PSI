@@ -8,7 +8,7 @@ import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
-import { findClosestBindingAnchor } from "./bindingResizeConfig";
+import { findClosestBindingAnchor, isBindingAllowedAsTarget } from "./bindingResizeConfig";
 
 export interface IDrawArrowConfig extends IToolConfig {
 	thickness?: number;
@@ -182,6 +182,7 @@ export function LineTool(props: IDrawArrowProps) {
 
 	const handleSelectBind = useCallback(
 		(info: ISelectedBindingInfo) => {
+			if (!isBindingAllowedAsTarget(info.anchorObject)) return;
 			if (!startPointRef.current) {
 				setStartPoint(info.point);
 				startPointRef.current = info.point;
@@ -362,7 +363,7 @@ export function LineTool(props: IDrawArrowProps) {
 			/>
 
 			{/* Hovered Element Bindings Selector */}
-			{props.hoveredElement && props.hoveredElement.type !== "diagram" && (
+			{isBindingAllowedAsTarget(props.hoveredElement) && props.hoveredElement && (
 				<BindingsSelector
 					element={props.hoveredElement}
 					onSelectBind={handleSelectBind}

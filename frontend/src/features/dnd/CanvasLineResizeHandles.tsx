@@ -10,7 +10,7 @@ import {
 } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
-import { findClosestBindingAnchor, isBindingAllowedForResizing } from "../canvas/bindingResizeConfig";
+import { findClosestBindingAnchor, isBindingAllowedForResizing, isBindingAllowedAsTarget } from "../canvas/bindingResizeConfig";
 import { useAppDispatch } from "../../redux/hooks";
 import { setIsResizing } from "../../redux/slices/applicationSlice";
 import styles from "./styles/CanvasResizeHandles.module.scss";
@@ -75,15 +75,15 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 		const activeAnchor = (
 			isBindingAllowed &&
 			activeHandle !== null &&
-			hoveredElement &&
-			hoveredElement.id !== element.id &&
-			hoveredElement.type !== "diagram" &&
-			Boolean(hoveredElement.AnchorFunctions)
+			isBindingAllowedAsTarget(hoveredElement, element.id)
 		) ? hoveredElement : null;
 
 		const applyBinding = useCallback(
 			(info: ISelectedBindingInfo, handle: LineHandleType) => {
 				const currentElement = elementRef.current;
+				if (!isBindingAllowedAsTarget(info.anchorObject, currentElement.id)) {
+					return;
+				}
 				const newRules: IPlacementBindingRule[] = [
 					{
 						targetId: info.anchorObject.id,
