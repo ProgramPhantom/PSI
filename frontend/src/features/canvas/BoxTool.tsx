@@ -3,11 +3,12 @@ import { IToolConfig, Tool } from "../../app/App";
 import { DEFAULT_RECT_ELEMENT } from "../../logic/default/rectElement";
 import ENGINE from "../../logic/engine";
 import { IRectElement, IRectStyle } from "../../logic/rectElement";
-import { IPlacementBindingRule, PlacementConfiguration } from "../../logic/spacial";
+import { IPlacementBindingRule, PlacementConfiguration, SiteNames } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
+import { findClosestBindingAnchor } from "./bindingResizeConfig";
 
 export interface IDrawBoxConfig extends IToolConfig {
 	style?: IRectStyle;
@@ -23,11 +24,17 @@ interface IDrawBoxProps {
 export function BoxTool(props: IDrawBoxProps) {
 	const dispatch = useAppDispatch();
 	const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
-	const [startBindingRules, setStartBindingRules] = useState<IPlacementBindingRule[] | null>(null);
 	const [currentPoint, setCurrentPoint] = useState<{ x: number; y: number } | null>(null);
+	const [snappedAnchorKey, setSnappedAnchorKey] = useState<string | null>(null);
 
+	const startPointRef = useRef<{ x: number; y: number } | null>(null);
+	const startBindingRef = useRef<ISelectedBindingInfo | null>(null);
+	const snappedBindingRef = useRef<ISelectedBindingInfo | null>(null);
 	const rawPointRef = useRef<{ x: number; y: number } | null>(null);
 	const isCtrlPressedRef = useRef<boolean>(false);
+
+	const hoveredElementRef = useRef(props.hoveredElement);
+	hoveredElementRef.current = props.hoveredElement;
 
 	const getCanvasCoords = useCallback(
 		(e: React.MouseEvent | MouseEvent): { x: number; y: number } => {
@@ -55,121 +62,168 @@ export function BoxTool(props: IDrawBoxProps) {
 		};
 	}, []);
 
-	const updateCurrentPosition = useCallback((rawCoords: { x: number; y: number }, isCtrl: boolean) => {
-		rawPointRef.current = rawCoords;
-		if (startPoint) {
-			const finalCoords = computeSnappedPoint(rawCoords, startPoint, isCtrl);
-			setCurrentPoint(finalCoords);
-		}
-	}, [startPoint, computeSnappedPoint]);
+	const commitBox = useCallback(
+		(
+			startPt: { x: number; y: number },
+			endPt: { x: number; y: number },
+			startBindingInfo: ISelectedBindingInfo | null,
+			endBindingInfo: ISelectedBindingInfo | null
+		) => {
+			const dist = Math.hypot(endPt.x - startPt.x, endPt.y - startPt.y);
+			const hasBindings = Boolean(startBindingInfo || endBindingInfo);
 
-	const commitBox = useCallback((endPoint: { x: number; y: number }, endBindingRules: IPlacementBindingRule[] | null) => {
-		if (!startPoint) return;
-		const dist = Math.hypot(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
-		const allRules: IPlacementBindingRule[] = [
-			...(startBindingRules ?? []),
-			...(endBindingRules ?? [])
-		];
-
-		if (dist < 2 && allRules.length === 0) {
-			return;
-		}
-
-		const fill = props.config?.style?.fill ?? "#137cbd";
-		const stroke = props.config?.style?.stroke ?? "#137cbd";
-		const strokeWidth = props.config?.style?.strokeWidth ?? 2;
-		const dashing = props.config?.style?.dashing ?? [0, 0];
-
-		const minX = Math.min(startPoint.x, endPoint.x);
-		const minY = Math.min(startPoint.y, endPoint.y);
-		const width = Math.max(Math.abs(endPoint.x - startPoint.x), 5);
-		const height = Math.max(Math.abs(endPoint.y - startPoint.y), 5);
-
-		const placementMode: PlacementConfiguration = allRules.length > 0
-			? {
-				type: "binds",
-				config: allRules
+			if (dist < 2 && !hasBindings) {
+				return;
 			}
-			: { type: "free" };
 
-		const newRect: IRectElement = {
-			...structuredClone(DEFAULT_RECT_ELEMENT),
-			id: Math.random().toString(16).slice(2),
-			ref: `box-${Date.now()}`,
-			type: "rect",
-			parentId: ENGINE.handler.diagram.id,
-			placementMode: placementMode,
-			placementControl: "user",
-			x: minX,
-			y: minY,
-			contentWidth: width,
-			contentHeight: height,
-			sizeMode: { x: "fixed", y: "fixed" },
-			style: {
-				fill: fill,
-				stroke: stroke,
-				strokeWidth: strokeWidth,
-				...(dashing && dashing[0] > 0 ? { dashing } : {})
+			const fill = props.config?.style?.fill ?? "#137cbd";
+			const stroke = props.config?.style?.stroke ?? "#137cbd";
+			const strokeWidth = props.config?.style?.strokeWidth ?? 2;
+			const dashing = props.config?.style?.dashing ?? [0, 0];
+
+			const minX = Math.min(startPt.x, endPt.x);
+			const minY = Math.min(startPt.y, endPt.y);
+			const width = Math.max(Math.abs(endPt.x - startPt.x), 5);
+			const height = Math.max(Math.abs(endPt.y - startPt.y), 5);
+
+			// Smart selection of target site names based on drag direction:
+			// In X: the point with smaller X is the left boundary ("here"),
+			//       the point with larger X is the right boundary ("far").
+			// In Y: the point with smaller Y is the top boundary ("here"),
+			//       the point with larger Y is the bottom boundary ("far").
+			const isXStartNear = startPt.x <= endPt.x;
+			const isYStartNear = startPt.y <= endPt.y;
+
+			const startXSite: SiteNames = isXStartNear ? "here" : "far";
+			const startYSite: SiteNames = isYStartNear ? "here" : "far";
+			const endXSite: SiteNames = isXStartNear ? "far" : "here";
+			const endYSite: SiteNames = isYStartNear ? "far" : "here";
+
+			const allRules: IPlacementBindingRule[] = [];
+
+			if (startBindingInfo) {
+				allRules.push(
+					{
+						targetId: startBindingInfo.anchorObject.id,
+						dimension: "x",
+						anchorSiteName: startBindingInfo.xAnchor,
+						targetSiteName: startXSite,
+						bindToContent: true
+					},
+					{
+						targetId: startBindingInfo.anchorObject.id,
+						dimension: "y",
+						anchorSiteName: startBindingInfo.yAnchor,
+						targetSiteName: startYSite,
+						bindToContent: true
+					}
+				);
 			}
-		};
 
-		ENGINE.handler.act({
-			type: "add",
-			input: {
-				child: newRect
+			if (endBindingInfo) {
+				allRules.push(
+					{
+						targetId: endBindingInfo.anchorObject.id,
+						dimension: "x",
+						anchorSiteName: endBindingInfo.xAnchor,
+						targetSiteName: endXSite,
+						bindToContent: true
+					},
+					{
+						targetId: endBindingInfo.anchorObject.id,
+						dimension: "y",
+						anchorSiteName: endBindingInfo.yAnchor,
+						targetSiteName: endYSite,
+						bindToContent: true
+					}
+				);
 			}
-		});
 
-		dispatch(setSelectedElementId(newRect.id));
-		props.setTool({ type: "select", config: {} });
-		setStartPoint(null);
-		setStartBindingRules(null);
-		setCurrentPoint(null);
-		rawPointRef.current = null;
-	}, [startPoint, startBindingRules, props, dispatch]);
-
-	const handleSelectBind = (info: ISelectedBindingInfo) => {
-		if (!startPoint) {
-			const startRules: IPlacementBindingRule[] = [
-				{
-					targetId: info.anchorObject.id,
-					dimension: "x",
-					anchorSiteName: info.xAnchor,
-					targetSiteName: "here",
-					bindToContent: true
-				},
-				{
-					targetId: info.anchorObject.id,
-					dimension: "y",
-					anchorSiteName: info.yAnchor,
-					targetSiteName: "here",
-					bindToContent: true
+			const placementMode: PlacementConfiguration = allRules.length > 0
+				? {
+					type: "binds",
+					config: allRules
 				}
-			];
-			setStartPoint(info.point);
-			setStartBindingRules(startRules);
-			setCurrentPoint(info.point);
-			rawPointRef.current = info.point;
-		} else {
-			const endRules: IPlacementBindingRule[] = [
-				{
-					targetId: info.anchorObject.id,
-					dimension: "x",
-					anchorSiteName: info.xAnchor,
-					targetSiteName: "far",
-					bindToContent: true
-				},
-				{
-					targetId: info.anchorObject.id,
-					dimension: "y",
-					anchorSiteName: info.yAnchor,
-					targetSiteName: "far",
-					bindToContent: true
+				: { type: "free" };
+
+			const newRect: IRectElement = {
+				...structuredClone(DEFAULT_RECT_ELEMENT),
+				id: Math.random().toString(16).slice(2),
+				ref: `box-${Date.now()}`,
+				type: "rect",
+				parentId: ENGINE.handler.diagram.id,
+				placementMode: placementMode,
+				placementControl: "user",
+				x: minX,
+				y: minY,
+				contentWidth: width,
+				contentHeight: height,
+				sizeMode: { x: "fixed", y: "fixed" },
+				style: {
+					fill: fill,
+					stroke: stroke,
+					strokeWidth: strokeWidth,
+					...(dashing && dashing[0] > 0 ? { dashing } : {})
 				}
-			];
-			commitBox(info.point, endRules);
-		}
-	};
+			};
+
+			ENGINE.handler.act({
+				type: "add",
+				input: {
+					child: newRect
+				}
+			});
+
+			dispatch(setSelectedElementId(newRect.id));
+			props.setTool({ type: "select", config: {} });
+
+			setStartPoint(null);
+			startPointRef.current = null;
+			startBindingRef.current = null;
+			setCurrentPoint(null);
+			rawPointRef.current = null;
+			setSnappedAnchorKey(null);
+			snappedBindingRef.current = null;
+		},
+		[props, dispatch]
+	);
+
+	const handleSelectBind = useCallback(
+		(info: ISelectedBindingInfo) => {
+			if (!startPointRef.current) {
+				setStartPoint(info.point);
+				startPointRef.current = info.point;
+				startBindingRef.current = info;
+				setCurrentPoint(info.point);
+				rawPointRef.current = info.point;
+			} else {
+				commitBox(startPointRef.current, info.point, startBindingRef.current, info);
+			}
+		},
+		[commitBox]
+	);
+
+	const updateCurrentPosition = useCallback(
+		(rawCoords: { x: number; y: number }, isCtrl: boolean) => {
+			rawPointRef.current = rawCoords;
+
+			const currentZoom = props.zoom && props.zoom > 0 ? props.zoom : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
+			const snap = findClosestBindingAnchor(hoveredElementRef.current, "", rawCoords, currentZoom);
+			snappedBindingRef.current = snap?.bindingInfo ?? null;
+			setSnappedAnchorKey(snap?.key ?? null);
+
+			if (startPointRef.current) {
+				let pt: { x: number; y: number };
+				if (snap) {
+					pt = snap.bindingInfo.point;
+				} else {
+					pt = computeSnappedPoint(rawCoords, startPointRef.current, isCtrl);
+				}
+				setCurrentPoint(pt);
+			}
+		},
+		[props.zoom, computeSnappedPoint]
+	);
 
 	const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
@@ -178,37 +232,46 @@ export function BoxTool(props: IDrawBoxProps) {
 		const rawCoords = getCanvasCoords(e);
 		rawPointRef.current = rawCoords;
 
-		if (!startPoint) {
-			setStartPoint(rawCoords);
-			setStartBindingRules(null);
-			setCurrentPoint(rawCoords);
+		const currentZoom = props.zoom && props.zoom > 0 ? props.zoom : (ENGINE.surface?.node?.getScreenCTM()?.a || 1);
+		const snap = findClosestBindingAnchor(hoveredElementRef.current, "", rawCoords, currentZoom);
+		const effectiveSnap = snap?.bindingInfo ?? snappedBindingRef.current;
+
+		if (!startPointRef.current) {
+			const initialPt = effectiveSnap ? effectiveSnap.point : rawCoords;
+			setStartPoint(initialPt);
+			startPointRef.current = initialPt;
+			startBindingRef.current = effectiveSnap ?? null;
+			setCurrentPoint(initialPt);
 		} else {
 			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
-			const coords = computeSnappedPoint(rawCoords, startPoint, isCtrl);
-			commitBox(coords, null);
+			const endPt = effectiveSnap
+				? effectiveSnap.point
+				: computeSnappedPoint(rawCoords, startPointRef.current, isCtrl);
+			commitBox(startPointRef.current, endPt, startBindingRef.current, effectiveSnap ?? null);
 		}
 	};
 
 	const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (startPoint) {
-			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
-			const coords = getCanvasCoords(e);
-			updateCurrentPosition(coords, isCtrl);
-		}
+		const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
+		const coords = getCanvasCoords(e);
+		updateCurrentPosition(coords, isCtrl);
 	};
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				setStartPoint(null);
-				setStartBindingRules(null);
+				startPointRef.current = null;
+				startBindingRef.current = null;
 				setCurrentPoint(null);
 				rawPointRef.current = null;
+				setSnappedAnchorKey(null);
+				snappedBindingRef.current = null;
 				props.setTool({ type: "select", config: {} });
 			} else if (e.key === "Control") {
 				isCtrlPressedRef.current = true;
-				if (startPoint && rawPointRef.current) {
-					const snapped = computeSnappedPoint(rawPointRef.current, startPoint, true);
+				if (startPointRef.current && rawPointRef.current && !snappedBindingRef.current) {
+					const snapped = computeSnappedPoint(rawPointRef.current, startPointRef.current, true);
 					setCurrentPoint(snapped);
 				}
 			}
@@ -217,7 +280,7 @@ export function BoxTool(props: IDrawBoxProps) {
 		const handleKeyUp = (e: KeyboardEvent) => {
 			if (e.key === "Control") {
 				isCtrlPressedRef.current = false;
-				if (startPoint && rawPointRef.current) {
+				if (startPointRef.current && rawPointRef.current && !snappedBindingRef.current) {
 					setCurrentPoint(rawPointRef.current);
 				}
 			}
@@ -225,17 +288,15 @@ export function BoxTool(props: IDrawBoxProps) {
 
 		const handleBlur = () => {
 			isCtrlPressedRef.current = false;
-			if (startPoint && rawPointRef.current) {
+			if (startPointRef.current && rawPointRef.current && !snappedBindingRef.current) {
 				setCurrentPoint(rawPointRef.current);
 			}
 		};
 
 		const handleGlobalMouseMove = (e: MouseEvent) => {
-			if (startPoint) {
-				const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
-				const coords = getCanvasCoords(e);
-				updateCurrentPosition(coords, isCtrl);
-			}
+			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
+			const coords = getCanvasCoords(e);
+			updateCurrentPosition(coords, isCtrl);
 		};
 
 		window.addEventListener("keydown", handleKeyDown);
@@ -249,7 +310,7 @@ export function BoxTool(props: IDrawBoxProps) {
 			window.removeEventListener("blur", handleBlur);
 			window.removeEventListener("mousemove", handleGlobalMouseMove);
 		};
-	}, [startPoint, getCanvasCoords, props, computeSnappedPoint, updateCurrentPosition]);
+	}, [props, getCanvasCoords, computeSnappedPoint, updateCurrentPosition]);
 
 	const fill = props.config?.style?.fill ?? "#137cbd";
 	const stroke = props.config?.style?.stroke ?? "#137cbd";
@@ -285,6 +346,7 @@ export function BoxTool(props: IDrawBoxProps) {
 				<BindingsSelector
 					element={props.hoveredElement}
 					onSelectBind={handleSelectBind}
+					activeAnchorKey={snappedAnchorKey}
 				/>
 			)}
 
