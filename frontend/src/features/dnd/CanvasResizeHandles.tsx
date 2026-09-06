@@ -3,6 +3,8 @@ import ENGINE from "../../logic/engine";
 import { SizeConfiguration } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import styles from "./styles/CanvasResizeHandles.module.scss";
+import { useAppDispatch } from "../../redux/hooks";
+import { setIsResizing } from "../../redux/slices/applicationSlice";
 
 export type HandleDirection = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
@@ -132,6 +134,7 @@ function computeResizeGeometry(
 
 export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.memo(
 	function CanvasResizeHandles({ element, scale = 1, onResize }: CanvasResizeHandlesProps) {
+		const dispatch = useAppDispatch();
 		const [previewState, setPreviewState] = useState<PreviewState | null>(null);
 		const [activeDirection, setActiveDirection] = useState<HandleDirection | null>(null);
 
@@ -153,10 +156,12 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					dragCleanupRef.current();
 					dragCleanupRef.current = null;
 				}
+				dispatch(setIsResizing(false));
 			};
-		}, []);
+		}, [dispatch]);
 
 		const startResize = useCallback((direction: HandleDirection, clientX: number, clientY: number) => {
+			dispatch(setIsResizing(true));
 			const currentElement = elementRef.current;
 			const isFree = currentElement.placementMode.type === "free";
 			const rawScale = scaleRef.current;
@@ -244,6 +249,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				window.removeEventListener("pointermove", handlePointerMove, true);
 				window.removeEventListener("pointerup", handlePointerUp, true);
 				dragCleanupRef.current = null;
+				dispatch(setIsResizing(false));
 
 				setPreviewState(null);
 				setActiveDirection(null);
@@ -325,10 +331,11 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				window.removeEventListener("mouseup", handlePointerUp, true);
 				window.removeEventListener("pointermove", handlePointerMove, true);
 				window.removeEventListener("pointerup", handlePointerUp, true);
+				dispatch(setIsResizing(false));
 				setActiveDirection(null);
 				onResizeRef.current?.(null);
 			};
-		}, []);
+		}, [dispatch]);
 
 		const handleMouseDown = useCallback(
 			(direction: HandleDirection, e: React.MouseEvent) => {

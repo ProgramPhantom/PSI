@@ -111,6 +111,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
 	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
 	const selectedTool = useAppSelector((state) => state.application.selectedTool);
+	const isResizing = useAppSelector((state) => state.application.isResizing);
 
 	const lastCoordsRef = useRef<{ rx: number; ry: number } | null>(null);
 	const rafIdRef = useRef<number | null>(null);
@@ -144,7 +145,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	if (selectedElement) {
 		interactiveElements.push(selectedElement);
 	}
-	if (selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
+	if (!isResizing && !isDragging && selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
 		interactiveElements.push(hoveredElement);
 	}
 
