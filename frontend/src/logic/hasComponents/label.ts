@@ -60,6 +60,11 @@ export default class Label extends Aligner implements ILabel {
 			this.line.sizeMode = {
 				x: this.crossAxis === "x" ? "grow" : "fixed",
 				y: this.crossAxis === "y" ? "grow" : "fixed"
+			};
+			if (this.crossAxis === "y") {
+				this.line.endX = this.line.startX;
+			} else {
+				this.line.endY = this.line.startY;
 			}
 		}
 	}
@@ -105,6 +110,14 @@ export default class Label extends Aligner implements ILabel {
 		child.sizeMode = {
 			x: this.crossAxis === "x" ? "grow" : "fixed",
 			y: this.crossAxis === "y" ? "grow" : "fixed"
+		}
+
+		if (child instanceof Line) {
+			if (this.crossAxis === "y") {
+				child.endX = child.startX;
+			} else {
+				child.endY = child.startY;
+			}
 		}
 
 		if (this.labelConfig?.textPosition === "inline") {

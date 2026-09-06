@@ -6,9 +6,11 @@ import { getEmptyImage } from "react-dnd-html5-backend";
 import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import LabelGroup from "../../logic/hasComponents/labelGroup";
+import LineLike, { ILineLike } from "../../logic/lineLike";
 import { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
+import { CanvasLineResizeHandles, LinePreviewState } from "./CanvasLineResizeHandles";
 import { CanvasResizeHandles, PreviewState } from "./CanvasResizeHandles";
 
 
@@ -27,6 +29,7 @@ interface IDraggableElementProps {
 	isHidden?: boolean;
 	offsetIndicatorThreshold?: number;
 	scale?: number;
+	hoveredElement?: Visual;
 }
 
 export interface CanvasDraggableElementPayload {
@@ -39,6 +42,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
 		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
 		const [livePreview, setLivePreview] = useState<PreviewState | null>(null);
+		const [lineLivePreview, setLineLivePreview] = useState<LinePreviewState | null>(null);
 
 		const origContentWidth = props.element.drawContentWidth > 0 ? props.element.drawContentWidth : 1;
 		const origContentHeight = props.element.drawContentHeight > 0 ? props.element.drawContentHeight : 1;
@@ -91,9 +95,24 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							const offsetX = item.offset?.x ?? 0;
 							const offsetY = item.offset?.y ?? 0;
 
+							const targetX = dropResult.data.x - (offsetX / scale);
+							const targetY = dropResult.data.y - (offsetY / scale);
 
-							newState.x = dropResult.data.x - (offsetX / scale);
-							newState.y = dropResult.data.y - (offsetY / scale);
+							if (item.element instanceof LineLike) {
+								const line = item.element;
+								const dx = targetX - line.x;
+								const dy = targetY - line.y;
+								const lineState = newState as ILineLike;
+								lineState.startX = line.startX + dx;
+								lineState.startY = line.startY + dy;
+								lineState.endX = line.endX + dx;
+								lineState.endY = line.endY + dy;
+								lineState.x = targetX;
+								lineState.y = targetY;
+							} else {
+								newState.x = targetX;
+								newState.y = targetY;
+							}
 
 							newState.parentId = ENGINE.handler.diagram.id;
 							newState.placementMode = {
@@ -308,7 +327,10 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 					<g
 						transform={`translate(${visualX}, ${visualY}) scale(${visualScaleX}, ${visualScaleY})`}
-						style={{ transformOrigin: "0 0" }}>
+						style={{
+							transformOrigin: "0 0",
+							opacity: lineLivePreview !== null ? 0 : 1
+						}}>
 						<svg
 							ref={visualRef}
 							x={0}
@@ -374,7 +396,21 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 				</svg>
 
 				{props.visualState === "selected" && !isDragging && !props.isHidden && props.element.placementControl !== "auto" && (
-					<CanvasResizeHandles element={props.element} scale={props.scale} onResize={setLivePreview} />
+					props.element instanceof LineLike ? (
+						<CanvasLineResizeHandles
+							element={props.element}
+							scale={props.scale}
+							onResize={setLineLivePreview}
+							hoveredElement={props.hoveredElement}
+						/>
+					) : (
+						<CanvasResizeHandles
+							element={props.element}
+							scale={props.scale}
+							onResize={setLivePreview}
+							hoveredElement={props.hoveredElement}
+						/>
+					)
 				)}
 			</>
 		);

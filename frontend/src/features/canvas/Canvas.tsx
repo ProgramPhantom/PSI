@@ -111,6 +111,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
 	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
 	const selectedTool = useAppSelector((state) => state.application.selectedTool);
+	const isResizing = useAppSelector((state) => state.application.isResizing);
 
 	const lastCoordsRef = useRef<{ rx: number; ry: number } | null>(null);
 	const rafIdRef = useRef<number | null>(null);
@@ -144,7 +145,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	if (selectedElement) {
 		interactiveElements.push(selectedElement);
 	}
-	if (selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
+	if (!isResizing && !isDragging && selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
 		interactiveElements.push(hoveredElement);
 	}
 
@@ -620,7 +621,8 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													x={el.x}
 													y={el.y}
 													scale={zoom}
-													isHidden={el.id === editingElementId}></CanvasDraggableElement>
+													isHidden={el.id === editingElementId}
+													hoveredElement={rawHoveredElement ?? hoveredElement}></CanvasDraggableElement>
 											))}
 
 
@@ -630,8 +632,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 											{selectedTool.type === "arrow" ? (
 												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
 													<LineTool
-														hoveredElement={hoveredElement}
+														hoveredElement={rawHoveredElement ?? hoveredElement}
 														config={selectedTool.config}
+														zoom={zoom}
 														setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
 												</div>
 											) : (

@@ -6,7 +6,7 @@ export type CanvasToolType = 'select' | 'text' | 'latex' | 'box' | 'arrow';
 
 export interface CanvasTool {
     type: CanvasToolType;
-    config: any;
+    config?: any;
 }
 
 export const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
@@ -42,17 +42,39 @@ export interface ApplicationState {
     debugSelectionTypes: Record<AllComponentTypes, boolean>;
     debugSelectedElement: boolean;
     selectedTool: CanvasTool;
+    toolConfigs: Record<CanvasToolType, any>;
     isMouseOverCanvas: boolean;
     canvasMousePosition: CanvasMousePosition | undefined;
+    isResizing: boolean;
 }
 
 const initialState: ApplicationState = {
     selectedElementId: undefined,
     debugSelectionTypes: DefaultDebugSelection,
     debugSelectedElement: false,
+    isResizing: false,
     selectedTool: {
         type: 'select',
         config: {}
+    },
+    toolConfigs: {
+        select: {},
+        text: {
+            fontFamily: 'sans-serif',
+            fontSize: 20
+        },
+        latex: {
+            fontSize: 35
+        },
+        box: {},
+        arrow: {
+            thickness: 2,
+            lineStyle: {
+                stroke: "#000000",
+                dashing: [0, 0],
+                headStyle: ["none", "default"]
+            }
+        }
     },
     isMouseOverCanvas: false,
     canvasMousePosition: undefined
@@ -74,8 +96,24 @@ export const applicationSlice = createSlice({
         setDebugSelectedElement: (state, action: PayloadAction<boolean>) => {
             state.debugSelectedElement = action.payload;
         },
-        setSelectedTool: (state, action: PayloadAction<CanvasTool>) => {
-            state.selectedTool = action.payload;
+        setSelectedTool: (
+            state,
+            action: PayloadAction<{ type: CanvasToolType; config?: any } | CanvasTool>
+        ) => {
+            const { type, config } = action.payload;
+            if (config && Object.keys(config).length > 0) {
+                state.toolConfigs[type] = {
+                    ...(state.toolConfigs[type] ?? {}),
+                    ...config
+                };
+            }
+            state.selectedTool = {
+                type,
+                config: {
+                    ...(state.toolConfigs[type] ?? {}),
+                    ...(config ?? {})
+                }
+            };
         },
         setCanvasMousePosition: (
             state,
@@ -83,6 +121,9 @@ export const applicationSlice = createSlice({
         ) => {
             state.isMouseOverCanvas = action.payload.isMouseOverCanvas;
             state.canvasMousePosition = action.payload.position;
+        },
+        setIsResizing: (state, action: PayloadAction<boolean>) => {
+            state.isResizing = action.payload;
         }
     },
 });
@@ -93,7 +134,8 @@ export const {
     toggleDebugSelectedElement,
     setDebugSelectedElement,
     setSelectedTool,
-    setCanvasMousePosition
+    setCanvasMousePosition,
+    setIsResizing
 } = applicationSlice.actions;
 
 export default applicationSlice.reducer;

@@ -234,11 +234,20 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 			remainingMainAxisChange = 0;
 		}
 
-		while (remainingMainAxisChange > epsilon) {
-			let smallestLength: number = this.cells[0].getSizeByDimension(this.mainAxis);
+		const growableCells = this.cells.filter((cell, idx) => {
+			const child = this.children[idx];
+			return child && child.sizeMode?.[this.mainAxis] === "grow";
+		});
+
+		const candidateCells = growableCells.length > 0
+			? growableCells
+			: (this.sizeMode?.[this.mainAxis] === "grow" ? this.cells : []);
+
+		while (remainingMainAxisChange > epsilon && candidateCells.length > 0) {
+			let smallestLength: number = candidateCells[0].getSizeByDimension(this.mainAxis);
 			let secondSmallestLength: number = Infinity;
 
-			this.cells.forEach((cell) => {
+			candidateCells.forEach((cell) => {
 				let cellLength: number = cell.getSizeByDimension(this.mainAxis);
 				if (cellLength < smallestLength - epsilon) {  // New smallest length found
 					secondSmallestLength = smallestLength;
@@ -252,7 +261,7 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 				? remainingMainAxisChange
 				: (secondSmallestLength - smallestLength);
 
-			let smallestCells = this.cells.filter(cell =>
+			let smallestCells = candidateCells.filter(cell =>
 				Math.abs(cell.getSizeByDimension(this.mainAxis) - smallestLength) <= epsilon
 			);
 

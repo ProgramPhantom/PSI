@@ -20,7 +20,7 @@ function ArrowForm(props: IArrowFormProps) {
 				{/* Style */}
 				<Section
 					className={sectionStyles.minimalSection}
-					collapseProps={{ defaultIsOpen: false }}
+					collapseProps={{ defaultIsOpen: true }}
 					compact={true}
 					title={"Style"}
 					collapsible={true}>

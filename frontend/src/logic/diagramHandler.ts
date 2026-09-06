@@ -11,7 +11,7 @@ import Sequence from "./hasComponents/sequence.ts";
 import { AllComponentTypes, ID } from "./point.ts";
 import Visual, { IDraw, IVisual } from "./visual.ts";
 import RBush from "rbush";
-import { RBushItem } from "./spacial.ts";
+import { IBindsPlacementConfig, RBushItem } from "./spacial.ts";
 
 
 /**
@@ -199,9 +199,138 @@ export default class DiagramHandler implements IDraw {
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);
 		this.diagram.computePositions({ x: 0, y: 0 });
+		this.diagram.enforceBindings();
 		this.computeBoundaryTree();
 		const end = performance.now();
 		console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
+	}
+
+	/**
+	 * Inspects an element and all its descendants for `placementMode: { type: "binds" }` configurations.
+	 * For each binding rule in `config`, resolves the anchor object in the diagram
+	 * and registers the corresponding binding on that anchor.
+	 *
+	 * @param element The root visual element or collection subtree to register bindings for.
+	 */
+	public createElementBindings(element: Visual): void {
+		for (const el of Object.values(element.allElements)) {
+			if (el.placementMode?.type === "binds" && el.placementMode.config) {
+				const config: IBindsPlacementConfig = el.placementMode.config;
+
+				for (const rule of config) {
+					const anchorId = rule.targetId || rule.anchorId;
+					if (!anchorId) continue;
+					const anchor: Visual | undefined = this.identifyElement(anchorId);
+					if (anchor) {
+						anchor.bind(
+							el,
+							rule.dimension,
+							rule.anchorSiteName,
+							rule.targetSiteName,
+							rule.offset,
+							rule.hint,
+							rule.bindToContent ?? true
+						);
+					}
+
+				}
+			}
+		}
+	}
+
+	/**
+	 * Transfers active outgoing bindings from an existing visual element (or its descendants)
+	 * to a newly instantiated replacement element. Used during element modifications (e.g. dragging
+	 * or resizing an anchor object) so that attached bound elements (like arrows) seamlessly follow
+	 * the new anchor instance without requiring a full diagram re-scan.
+	 *
+	 * @param source The retired visual element instance holding active outgoing bindings.
+	 * @param destination The newly created visual element instance that will assume the anchor role.
+	 */
+	public transferAnchorBindings(source: Visual, destination: Visual): void {
+		const sourceElements = source.allElements;
+		const destinationElements = destination.allElements;
+
+		for (const [id, srcEl] of Object.entries(sourceElements)) {
+			const destEl = destinationElements[id];
+			if (!destEl) continue;
+
+			// Transfer outgoing bindings where this element acts as an anchor
+			for (const bind of srcEl.bindings) {
+				destEl.bind(
+					bind.targetObject,
+					bind.bindingRule.dimension,
+					bind.bindingRule.anchorSiteName,
+					bind.bindingRule.targetSiteName,
+					bind.offset,
+					bind.hint,
+					bind.bindToContent
+				);
+			}
+
+			// Clear old outgoing bindings from the retired source instance
+			for (const bind of [...srcEl.bindings]) {
+				srcEl.clearBindsTo(bind.targetObject);
+			}
+		}
+	}
+
+	/**
+	 * Cleans up incoming bindings for an element and its descendants where the element is the target of an anchor.
+	 * Used before modifying a bound element (e.g. an arrow) so that its previous anchor connections
+	 * are severed prior to re-registering its updated placement configuration.
+	 *
+	 * @param element The visual element whose incoming anchor bindings should be cleared.
+	 */
+	public unregisterIncomingBindings(element: Visual): void {
+		for (const el of Object.values(element.allElements)) {
+			for (const bind of [...el.bindingsToThis]) {
+				bind.anchorObject.clearBindsTo(el);
+			}
+		}
+	}
+
+	/**
+	 * Completely severs both incoming and outgoing bindings for an element and all its descendants.
+	 * Used when an element is removed from the diagram to prevent dangling references on anchors or targets.
+	 *
+	 * @param element The visual element to fully detach from the diagram binding graph.
+	 */
+	public unregisterElementBindings(element: Visual): void {
+		for (const el of Object.values(element.allElements)) {
+			// Remove bindings from this to other elements (where this element acts as an anchor)
+			for (const bind of [...el.bindings]) {
+				const target = bind.targetObject;
+				el.clearBindsTo(target);
+
+				// Remove binding rules referencing this deleted anchor from the target's placementMode
+				if (target && target.placementMode?.type === "binds") {
+					const remainingRules = target.placementMode.config.filter(
+						(rule) => rule.targetId !== el.id && rule.anchorId !== el.id
+					);
+
+					if (remainingRules.length > 0) {
+						target.placementMode = {
+							type: "binds",
+							config: remainingRules
+						};
+					} else {
+						target.placementMode = {
+							type: "free"
+						};
+					}
+				}
+			}
+
+			// Remove bindings from other elements to this (where this element is the target)
+			for (const bind of [...el.bindingsToThis]) {
+				bind.anchorObject.clearBindsTo(el);
+			}
+
+			if (el.placementMode?.type === "binds") {
+				el.placementMode = { type: "free" };
+			}
+		}
 	}
 
 	computeBoundaryTree() {
@@ -242,6 +371,7 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		this.diagram = newDiagram;
+		this.createElementBindings(this.diagram);
 		this.diagram.svg?.show();
 
 		this.computeDiagram();
@@ -396,10 +526,14 @@ export default class DiagramHandler implements IDraw {
 			return editResult
 		}
 
+		this.createElementBindings(childInstance);
+
 		return { ok: true, undo: { action: "remove", data: { child: childInstance } } }
 	}
 
 	protected remove({ child }: RemoveInput): ActionResult<"remove"> {
+		this.unregisterElementBindings(child);
+
 		let editResult: Result<Visual> = this.editDiagram({
 			type: "remove",
 			data: { child: child },
@@ -453,8 +587,11 @@ export default class DiagramHandler implements IDraw {
 			if (!(childInstance instanceof Diagram)) {
 				return { ok: false, error: `Invalid visual type for diagram modification` };
 			}
+			this.transferAnchorBindings(target, childInstance);
+			this.unregisterIncomingBindings(target);
 			target.erase();
 			this.diagram = childInstance;
+			this.createElementBindings(childInstance);
 			this.diagram.svg?.show();
 			return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } };
 		}
@@ -468,6 +605,9 @@ export default class DiagramHandler implements IDraw {
 		if (targetIndex === undefined) {
 			return { ok: false, error: `Child ${target.ref} does not exist on parent ${parent.ref}` }
 		}
+
+		this.transferAnchorBindings(target, childInstance);
+		this.unregisterIncomingBindings(target);
 
 		// Delete element
 		let deleteResult: Result<Visual> = this.editDiagram({
@@ -486,6 +626,8 @@ export default class DiagramHandler implements IDraw {
 		})
 
 		if (addResult.ok === false) { return addResult }
+
+		this.createElementBindings(childInstance);
 
 		return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } }
 	}

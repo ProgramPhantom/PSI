@@ -9,11 +9,11 @@ export interface ILineLike extends IVisual {
 	adjustment: [number, number];
 	thickness?: number;
 
-	sx?: number;
-	sy?: number;
+	startX?: number;
+	startY?: number;
 
-	ex?: number;
-	ey?: number;
+	endX?: number;
+	endY?: number;
 }
 
 export default abstract class LineLike extends Visual {
@@ -21,40 +21,52 @@ export default abstract class LineLike extends Visual {
 		return {
 			adjustment: this.adjustment,
 			thickness: this.thickness,
+			startX: this.startX,
+			startY: this.startY,
+			endX: this.endX,
+			endY: this.endY,
 			...super.state
 		};
 	}
+
+	public override get isResizable(): boolean {
+		return false;
+	}
+
 	static HitboxPadding: number = 0;
 
 	adjustment: [number, number];
 	thickness: number;
 
-	private _sy: number = 0;
-	private _sx: number = 0;
-	private _ex: number = 0;
-	private _ey: number = 0;
+	private _startY: number = 0;
+	private _startX: number = 0;
+	private _endX: number = 0;
+	private _endY: number = 0;
 
 	constructor(params: ILineLike) {
 		super(params);
 
-		this.adjustment = params.adjustment;
+		this.adjustment = params.adjustment ?? [0, 0];
 
-		// this.startX = params.sx ?? params.x ?? 0;
-		// this.startY = params.sy ?? params.y ?? 0;
-		this.startX = 0;
-		this.startY = 0;
+		this.startX = params.startX ?? params.x ?? 0;
+		this.startY = params.startY ?? params.y ?? 0;
 
-		// this.endX = params.ex ?? 0;
-		// this.endY = params.ey ?? 0;
+		this.endX = params.endX ?? 0;
+		this.endY = params.endY ?? 0;
 
-		this.endX = 0;
-		this.endY = 0;
+		this.thickness = params.thickness ?? 2;
 
-		// this._x = this.startX;
-		// this._y = this.startY;
-
-
-		this.thickness = params.thickness ?? 1;
+		this.AnchorFunctions = {
+			...this.AnchorFunctions,
+			start: {
+				get: this.getStart.bind(this),
+				set: this.setStart.bind(this)
+			},
+			end: {
+				get: this.getEnd.bind(this),
+				set: this.setEnd.bind(this)
+			}
+		};
 	}
 
 
@@ -119,33 +131,60 @@ export default abstract class LineLike extends Visual {
 
 
 	public get startX(): number {
-		return this._sx;
+		return this._startX;
 	}
 	public set startX(v: number) {
-		this._sx = v;
+		this._startX = v;
+		this.dirty = true;
 	}
 
 	public get startY(): number {
-		return this._sy;
+		return this._startY;
 	}
 	public set startY(v: number) {
-		this._sy = v;
+		this._startY = v;
+		this.dirty = true;
 	}
 
 	public get endX(): number {
-		return this._ex;
+		return this._endX;
 	}
 	public set endX(v: number) {
-		this._ex = v;
+		this._endX = v;
+		this.dirty = true;
 	}
 
 	public get endY(): number {
-		return this._ey;
+		return this._endY;
 	}
 	public set endY(v: number) {
-		this._ey = v;
+		this._endY = v;
+		this.dirty = true;
 	}
 
+	public getStart(dimension: Dimensions): number {
+		return dimension === "x" ? this.startX : this.startY;
+	}
+	public setStart(dimension: Dimensions, v: number) {
+		if (dimension === "x") {
+			this.startX = v;
+		} else {
+			this.startY = v;
+		}
+
+	}
+
+	public getEnd(dimension: Dimensions): number {
+		return dimension === "x" ? this.endX : this.endY;
+	}
+	public setEnd(dimension: Dimensions, v: number) {
+		if (dimension === "x") {
+			this.endX = v;
+		} else {
+			this.endY = v;
+		}
+
+	}
 	public get centreX(): number {
 		return (this.startX + this.endX) / 2
 	}
@@ -174,13 +213,15 @@ export default abstract class LineLike extends Visual {
 
 	public override get contentWidth(): number {
 		let val = this.computeBoundingBox().width;
-		this._contentWidth = val
+		this._contentWidth = val;
 		return val;
 	}
 	public override set contentWidth(v: number) {
-		// this.x2 = this.x + v;
-		// this._contentWidth = v;
-		//throw new Error("not possible")
+		if (this.sizeMode?.x === "fixed" && this.sizeMode?.y === "grow") {
+			// Vertical line growing along Y axis - keep X endpoints aligned
+			this.endX = this.startX;
+			return;
+		}
 
 		let quadrant = this.quadrant;
 
@@ -189,8 +230,6 @@ export default abstract class LineLike extends Visual {
 		} else {
 			this.startX = this.endX + v;
 		}
-
-
 	}
 
 	public override get contentHeight(): number {
@@ -199,18 +238,19 @@ export default abstract class LineLike extends Visual {
 		return val;
 	}
 	public override set contentHeight(v: number) {
-		// this.y2 = this.y + v;
-		//this._contentHeight = v;
+		if (this.sizeMode?.y === "fixed" && this.sizeMode?.x === "grow") {
+			// Horizontal line growing along X axis - keep Y endpoints aligned
+			this.endY = this.startY;
+			return;
+		}
 
-		// This needs investigating
 		let quadrant = this.quadrant;
 
-		if (quadrant === 2 || quadrant === 3) {
+		if (quadrant === 0 || quadrant === 1) {
 			this.endY = this.startY + v;
 		} else {
 			this.startY = this.endY + v;
 		}
-
 	}
 
 

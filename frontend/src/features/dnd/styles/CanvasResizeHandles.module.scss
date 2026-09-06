@@ -33,6 +33,17 @@
 	transform: translate(-50%, -50%) scale(var(--handle-scale, 1));
 	transition: background-color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 
+	&::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 14px;
+		height: 14px;
+		pointer-events: auto;
+	}
+
 	&:hover {
 		background-color: bp.$blue5;
 		border-color: bp.$blue2;
@@ -43,6 +54,48 @@
 		background-color: bp.$blue3;
 		border-color: bp.$blue1;
 		transform: translate(-50%, -50%) scale(calc(var(--handle-scale, 1) * 1.25));
+	}
+
+	&.boundHandle {
+		background-color: transparent;
+		border-color: transparent;
+		box-shadow: none;
+
+		.boundIcon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 8px;
+			height: 8px;
+			pointer-events: none;
+			color: bp.$blue3;
+			filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.9));
+			opacity: 1;
+			transition: opacity 0.15s ease, transform 0.15s ease;
+		}
+
+		&:hover {
+			background-color: bp.$blue5;
+			border-color: bp.$blue2;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+			.boundIcon {
+				opacity: 0;
+				transform: translate(-50%, -50%) scale(0.5);
+			}
+		}
+
+		&:active {
+			background-color: bp.$blue3;
+			border-color: bp.$blue1;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+			.boundIcon {
+				opacity: 0;
+				transform: translate(-50%, -50%) scale(0.5);
+			}
+		}
 	}
 }
 

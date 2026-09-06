@@ -21,6 +21,7 @@ export const FocusRules: IFocusRules = {
 	alwaysSelectable: [
 		"channel",
 		"svg",
+		(element: Visual) => element.type === "line" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
 
 		"label-group",
 		"simple-label-group",
@@ -39,6 +40,8 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	}
 	var hitboxSVG: G = new G();
 	var hitboxSvgRef = useRef<SVGSVGElement | null>(null);
+
+	const isAltHeldRef = useRef(false);
 
 	// Create hitboxes
 	const createHitboxDom = () => {
@@ -144,6 +147,11 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	const setHoveredElementRef = useRef(props.setHoveredElement);
 	setHoveredElementRef.current = props.setHoveredElement;
 
+	const lastRawTargetIdRef = useRef<string | undefined | null>(null);
+	useEffect(() => {
+		lastRawTargetIdRef.current = null;
+	}, [props.selectedElementId]);
+
 	useEffect(() => {
 		/** 
 		 * "X-Ray" Hover Detection:
@@ -151,9 +159,19 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		 * document.elementsFromPoint returns an array of ALL elements under the cursor, 
 		 * allowing us to see "through" the draggable layer to find hitboxes underneath.
 		 */
-		const handleGlobalMouseMove = (e: MouseEvent) => {
-			if (!hitboxSvgRef.current) return;
-			const elements = document.elementsFromPoint(e.clientX, e.clientY);
+		let rafId: number | null = null;
+		let lastCoords: { x: number; y: number } | null = null;
+
+		const processHitTest = () => {
+			rafId = null;
+			if (!hitboxSvgRef.current || !lastCoords) return;
+
+			// If the ALT key is held, do not report any change in hovered element
+			if (isAltHeldRef.current && lastRawTargetIdRef.current) {
+				return;
+			}
+
+			const elements = document.elementsFromPoint(lastCoords.x, lastCoords.y);
 
 			let rawTargetId: string | undefined = undefined;
 			for (let i = 0; i < elements.length; i++) {
@@ -167,20 +185,67 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 				}
 			}
 
+			// Avoid re-calculating if the hovered target hasn't changed
+			if (rawTargetId === lastRawTargetIdRef.current) {
+				return;
+			}
+			lastRawTargetIdRef.current = rawTargetId;
+
 			if (rawTargetId === undefined) {
 				setHoveredElementRef.current(undefined);
 				return;
 			}
 
-			let parsedId: string = rawTargetId.split("-")[0];
+			let parsedId: string = rawTargetId.replace(/-hitbox$/, "");
 			let rawElement: Visual | undefined = ENGINE.handler.identifyElement(parsedId);
 			let element: Visual | undefined = getMouseElementFromIDRef.current(parsedId);
 			setHoveredElementRef.current(element, rawElement);
 		};
 
-		window.addEventListener("mousemove", handleGlobalMouseMove);
+		const handleGlobalPointerMove = (e: PointerEvent) => {
+			lastCoords = { x: e.clientX, y: e.clientY };
+
+			if (isAltHeldRef.current && lastRawTargetIdRef.current) {
+				return;
+			}
+
+			if (rafId === null) {
+				rafId = requestAnimationFrame(processHitTest);
+			}
+		};
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Alt") {
+				e.preventDefault();
+				isAltHeldRef.current = true;
+			}
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.key === "Alt") {
+				isAltHeldRef.current = false;
+				if (lastCoords) {
+					processHitTest();
+				}
+			}
+		};
+
+		const handleBlur = () => {
+			isAltHeldRef.current = false;
+		};
+
+		window.addEventListener("pointermove", handleGlobalPointerMove, true);
+		window.addEventListener("keydown", handleKeyDown, true);
+		window.addEventListener("keyup", handleKeyUp, true);
+		window.addEventListener("blur", handleBlur);
 		return () => {
-			window.removeEventListener("mousemove", handleGlobalMouseMove);
+			if (rafId !== null) {
+				cancelAnimationFrame(rafId);
+			}
+			window.removeEventListener("pointermove", handleGlobalPointerMove, true);
+			window.removeEventListener("keydown", handleKeyDown, true);
+			window.removeEventListener("keyup", handleKeyUp, true);
+			window.removeEventListener("blur", handleBlur);
 		};
 	}, []);
 
