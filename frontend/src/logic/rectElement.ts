@@ -3,7 +3,8 @@ import { UserComponentType } from "./point";
 import Visual, { IDraw, IVisual } from "./visual";
 
 export interface IRectStyle {
-	fill: string;
+	fill?: string;
+	fillOpacity?: number;
 	stroke?: string;
 	strokeWidth?: number;
 	dashing?: [number, number];
@@ -33,9 +34,13 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 			? { "stroke-dasharray": `${this.style.dashing[0]} ${this.style.dashing[1]}` }
 			: {};
 
+		const fillOpacityAttr = typeof this.style.fillOpacity === "number"
+			? { "fill-opacity": Math.max(0, Math.min(100, this.style.fillOpacity)) / 100 }
+			: {};
+
 		this.svg = SVG()
 			.rect(this.contentWidth, this.contentHeight)
-			.attr({ fill: this.style.fill, stroke: this.style.stroke })
+			.attr({ fill: this.style.fill ?? "none", stroke: this.style.stroke, ...fillOpacityAttr })
 			.attr({
 				"stroke-width": this.style.strokeWidth,
 				"shape-rendering": "crispEdges",
@@ -44,7 +49,7 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 	}
 
 	draw(surface: Element) {
-		
+
 		if (this.svg) {
 			try {
 				this.svg.remove();
@@ -55,9 +60,13 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 			? { "stroke-dasharray": `${this.style.dashing[0]} ${this.style.dashing[1]}` }
 			: {};
 
+		const fillOpacityAttr = typeof this.style.fillOpacity === "number"
+			? { "fill-opacity": Math.max(0, Math.min(100, this.style.fillOpacity)) / 100 }
+			: {};
+
 		this.svg = new Rect()
 			.size(this.contentWidth, this.contentHeight)
-			.attr({ fill: this.style.fill, stroke: this.style.stroke })
+			.attr({ fill: this.style.fill ?? "none", stroke: this.style.stroke, ...fillOpacityAttr })
 			.move(this.drawCX, this.drawCY)
 			.attr({
 				"stroke-width": this.style.strokeWidth,
@@ -68,7 +77,7 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 
 		// Do we want elements to have our ID system or the SVGjs ID system?
 		this.svg.id(this.id);
-		
+
 
 		super.draw(surface)
 	}

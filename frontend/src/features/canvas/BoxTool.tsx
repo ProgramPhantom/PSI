@@ -77,6 +77,7 @@ export function BoxTool(props: IDrawBoxProps) {
 			}
 
 			const fill = props.config?.style?.fill ?? "#137cbd";
+			const fillOpacity = props.config?.style?.fillOpacity ?? 100;
 			const stroke = props.config?.style?.stroke ?? "#137cbd";
 			const strokeWidth = props.config?.style?.strokeWidth ?? 2;
 			const dashing = props.config?.style?.dashing ?? [0, 0];
@@ -161,6 +162,7 @@ export function BoxTool(props: IDrawBoxProps) {
 				sizeMode: { x: "fixed", y: "fixed" },
 				style: {
 					fill: fill,
+					fillOpacity: fillOpacity,
 					stroke: stroke,
 					strokeWidth: strokeWidth,
 					...(dashing && dashing[0] > 0 ? { dashing } : {})
@@ -314,6 +316,7 @@ export function BoxTool(props: IDrawBoxProps) {
 	}, [props, getCanvasCoords, computeSnappedPoint, updateCurrentPosition]);
 
 	const fill = props.config?.style?.fill ?? "#137cbd";
+	const fillOpacity = props.config?.style?.fillOpacity ?? 100;
 	const stroke = props.config?.style?.stroke ?? "#137cbd";
 	const strokeWidth = props.config?.style?.strokeWidth ?? 2;
 	const dashing = props.config?.style?.dashing ?? [0, 0];
@@ -371,6 +374,7 @@ export function BoxTool(props: IDrawBoxProps) {
 						width={previewWidth}
 						height={previewHeight}
 						fill={fill}
+						fillOpacity={fillOpacity / 100}
 						stroke={stroke}
 						strokeWidth={strokeWidth}
 						strokeDasharray={dashing && dashing[0] > 0 ? `${dashing[0]} ${dashing[1]}` : undefined}

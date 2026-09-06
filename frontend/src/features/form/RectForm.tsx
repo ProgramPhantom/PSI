@@ -33,7 +33,42 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 							control={formControls.control}
 							name={`${fullPrefix}style.fill` as any}
 							render={({ field }) => (
-								<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
+								<input
+									type={"color"}
+									className={fieldStyles.compactColorInput}
+									{...field}
+									value={field.value}></input>
+							)}></Controller>
+					</SimpleField>
+
+					<SimpleField label="Fill Opacity" labelFor="text-input">
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}style.fillOpacity` as any}
+							render={({ field }) => (
+								<NumericInput
+									{...field}
+									className={fieldStyles.compactNumericInput}
+									value={field.value !== undefined ? field.value : 100}
+									onValueChange={(valAsNumber, valAsString) => {
+										if (valAsString === "") {
+											field.onChange("");
+										} else if (!isNaN(valAsNumber)) {
+											field.onChange(Math.max(0, Math.min(100, Math.round(valAsNumber))));
+										}
+									}}
+									onBlur={() => {
+										field.onBlur();
+										if (field.value === "" || field.value === undefined) {
+											field.onChange(100);
+										}
+									}}
+									min={0}
+									max={100}
+									clampValueOnBlur={true}
+									stepSize={1}
+									majorStepSize={10}
+									size={"small"}></NumericInput>
 							)}></Controller>
 					</SimpleField>
 

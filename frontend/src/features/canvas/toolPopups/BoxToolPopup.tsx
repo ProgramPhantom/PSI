@@ -22,33 +22,21 @@ const DASH_STYLES: { dashing: [number, number]; id: string }[] = [
     { dashing: [2, 4], id: "dotted" }
 ];
 
-function hexToRgba(hex: string, alpha: number): string {
-    const cleanHex = hex.replace("#", "");
-    if (cleanHex.length === 6) {
-        const r = parseInt(cleanHex.substring(0, 2), 16);
-        const g = parseInt(cleanHex.substring(2, 4), 16);
-        const b = parseInt(cleanHex.substring(4, 6), 16);
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+function toHexColor(color?: string): string {
+    if (!color || color === "transparent" || color === "none") {
+        return "#137cbd";
     }
-    return hex;
-}
-
-function parseRgba(rgbaOrHex: string): { hex: string; alpha: number } {
-    if (!rgbaOrHex || rgbaOrHex === "transparent" || rgbaOrHex === "none") {
-        return { hex: "#137cbd", alpha: 0 };
+    if (color.startsWith("#") && (color.length === 7 || color.length === 4)) {
+        return color;
     }
-    const match = rgbaOrHex.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
     if (match) {
         const r = parseInt(match[1], 10).toString(16).padStart(2, "0");
         const g = parseInt(match[2], 10).toString(16).padStart(2, "0");
         const b = parseInt(match[3], 10).toString(16).padStart(2, "0");
-        const alpha = match[4] !== undefined ? parseFloat(match[4]) : 1;
-        return { hex: `#${r}${g}${b}`, alpha: Math.round(alpha * 100) };
+        return `#${r}${g}${b}`;
     }
-    if (rgbaOrHex.startsWith("#")) {
-        return { hex: rgbaOrHex, alpha: 100 };
-    }
-    return { hex: "#137cbd", alpha: 100 };
+    return "#137cbd";
 }
 
 export const BoxToolPopup: React.FC = React.memo(() => {
@@ -61,15 +49,14 @@ export const BoxToolPopup: React.FC = React.memo(() => {
     const strokeWidth = style.strokeWidth ?? 2;
     const stroke = style.stroke ?? "#137cbd";
     const dashing: [number, number] = style.dashing ?? [0, 0];
-    const rawFill: string = style.fill ?? "#137cbd";
+    const initialHex = toHexColor(style.fill);
+    const initialOpacity = style.fillOpacity !== undefined
+        ? style.fillOpacity
+        : (style.fill === "transparent" || style.fill === "none" ? 0 : 100);
 
-    // Parse fill details
-    const parsedFill = parseRgba(rawFill);
-    const isFillCurrentlyEnabled = rawFill !== "transparent" && rawFill !== "none" && parsedFill.alpha > 0;
-
-    const [isFillEnabled, setIsFillEnabled] = useState(isFillCurrentlyEnabled);
-    const [baseFillColor, setBaseFillColor] = useState(parsedFill.hex);
-    const [fillOpacity, setFillOpacity] = useState(parsedFill.alpha > 0 ? parsedFill.alpha : 100);
+    const [isFillEnabled, setIsFillEnabled] = useState(initialOpacity > 0);
+    const [baseFillColor, setBaseFillColor] = useState(initialHex);
+    const [fillOpacity, setFillOpacity] = useState(initialOpacity > 0 ? initialOpacity : 100);
 
     // Custom colors state
     const isCustomStroke = stroke !== "transparent" && !COLOR_PRESETS.some(
@@ -87,14 +74,16 @@ export const BoxToolPopup: React.FC = React.memo(() => {
     );
 
     useEffect(() => {
-        const p = parseRgba(rawFill);
-        const enabled = rawFill !== "transparent" && rawFill !== "none" && p.alpha > 0;
-        setIsFillEnabled(enabled);
-        if (enabled) {
-            setBaseFillColor(p.hex);
-            setFillOpacity(p.alpha);
+        const color = toHexColor(style.fill);
+        setBaseFillColor(color);
+        const op = style.fillOpacity !== undefined
+            ? style.fillOpacity
+            : (style.fill === "transparent" || style.fill === "none" ? 0 : 100);
+        setIsFillEnabled(op > 0);
+        if (op > 0) {
+            setFillOpacity(op);
         }
-    }, [rawFill]);
+    }, [style.fill, style.fillOpacity]);
 
     useEffect(() => {
         if (!COLOR_PRESETS.some((c) => c.toLowerCase() === stroke.toLowerCase())) {
@@ -107,7 +96,8 @@ export const BoxToolPopup: React.FC = React.memo(() => {
             strokeWidth,
             stroke,
             dashing,
-            fill: rawFill,
+            fill: baseFillColor,
+            fillOpacity: isFillEnabled ? fillOpacity : 0,
             ...style,
             ...partialStyle
         };
@@ -159,15 +149,11 @@ export const BoxToolPopup: React.FC = React.memo(() => {
     const handleToggleFill = (enabled: boolean) => {
         setIsFillEnabled(enabled);
         if (!enabled) {
-            updateBoxConfig({ fill: "transparent" });
+            updateBoxConfig({ fill: baseFillColor, fillOpacity: 0 });
         } else {
             const opacity = fillOpacity > 0 ? fillOpacity : 100;
             if (fillOpacity === 0) setFillOpacity(100);
-            if (opacity === 100) {
-                updateBoxConfig({ fill: baseFillColor });
-            } else {
-                updateBoxConfig({ fill: hexToRgba(baseFillColor, opacity / 100) });
-            }
+            updateBoxConfig({ fill: baseFillColor, fillOpacity: opacity });
         }
     };
 
@@ -175,17 +161,8 @@ export const BoxToolPopup: React.FC = React.memo(() => {
         if (isNaN(valueAsNumber)) return;
         const clamped = Math.max(0, Math.min(100, Math.round(valueAsNumber)));
         setFillOpacity(clamped);
-        if (clamped === 0) {
-            setIsFillEnabled(false);
-            updateBoxConfig({ fill: "transparent" });
-        } else {
-            if (!isFillEnabled) setIsFillEnabled(true);
-            if (clamped === 100) {
-                updateBoxConfig({ fill: baseFillColor });
-            } else {
-                updateBoxConfig({ fill: hexToRgba(baseFillColor, clamped / 100) });
-            }
-        }
+        setIsFillEnabled(clamped > 0);
+        updateBoxConfig({ fill: baseFillColor, fillOpacity: clamped });
     };
 
     const handleFillColorSelect = (hexColor: string) => {
@@ -193,11 +170,7 @@ export const BoxToolPopup: React.FC = React.memo(() => {
         setIsFillEnabled(true);
         const opacity = fillOpacity > 0 ? fillOpacity : 100;
         if (fillOpacity === 0) setFillOpacity(100);
-        if (opacity === 100) {
-            updateBoxConfig({ fill: hexColor });
-        } else {
-            updateBoxConfig({ fill: hexToRgba(hexColor, opacity / 100) });
-        }
+        updateBoxConfig({ fill: hexColor, fillOpacity: opacity });
     };
 
     const handleCustomFillCheckboxChange = (checked: boolean) => {
