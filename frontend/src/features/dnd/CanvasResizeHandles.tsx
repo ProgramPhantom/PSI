@@ -4,15 +4,25 @@ import {
 	filterPlacementBindingRules,
 	IPlacementBindingRule,
 	PlacementConfiguration,
+	ISequenceBindingRule,
 	updatePlacementModeBindingRules,
 	SizeConfiguration
 } from "../../logic/spacial";
+import Spacial from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import styles from "./styles/CanvasResizeHandles.module.scss";
 import { useAppDispatch } from "../../redux/hooks";
 import { setIsResizing } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
-import { findClosestBindingAnchor, isBindingAllowedForResizing, isBindingAllowedAsTarget } from "../canvas/bindingResizeConfig";
+import {
+	applyBindingRule,
+	clearBindingRuleFromAnchor,
+	createPlacementBindingRule,
+	determineBindingPlacementModeType,
+	findClosestBindingAnchor,
+	isBindingAllowedForResizing,
+	isBindingAllowedAsTarget
+} from "../canvas/bindingUtil";
 
 export type HandleDirection = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
@@ -27,7 +37,7 @@ export interface CanvasResizeHandlesProps {
 	element: Visual;
 	scale?: number;
 	onResize?: (preview: PreviewState | null) => void;
-	hoveredElement?: Visual;
+	hoveredElement?: Spacial;
 }
 
 interface DragInitialState {
@@ -222,13 +232,13 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					return;
 				}
 				const sites = HANDLE_SITE_MAP[direction];
-				const currentRules: IPlacementBindingRule[] = (currentElement.placementMode?.type === "binds")
-					? currentElement.placementMode.config
+				const currentRules = (currentElement.placementMode?.type === "binds" || currentElement.placementMode?.type === "sequenceBind")
+					? (currentElement.placementMode.config)
 					: [];
 
 				// Remove existing rules matching the sites affected by this handle
 				let remainingRules = currentRules;
-				const removedRules: IPlacementBindingRule[] = [];
+				const removedRules: (IPlacementBindingRule | ISequenceBindingRule)[] = [];
 
 				if (sites.xSite) {
 					const res = filterPlacementBindingRules(remainingRules, sites.xSite, "x");
@@ -242,49 +252,22 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				}
 
 				for (const r of removedRules) {
-					const anchorId = r.targetId || r.anchorId;
-					if (anchorId) {
-						const anchor = ENGINE.handler.identifyElement(anchorId);
-						anchor?.clearBindsTo(currentElement, r.dimension, r.targetSiteName);
-					}
+					clearBindingRuleFromAnchor(r, currentElement);
 				}
 
-				const newRules: IPlacementBindingRule[] = [];
+				const newRules: (IPlacementBindingRule | ISequenceBindingRule)[] = [];
 				if (sites.xSite) {
-					newRules.push({
-						targetId: info.anchorObject.id,
-						dimension: "x",
-						anchorSiteName: info.xAnchor,
-						targetSiteName: sites.xSite,
-						bindToContent: info.bindToContent ?? false
-					});
+					newRules.push(createPlacementBindingRule(info, "x", sites.xSite));
 				}
 				if (sites.ySite) {
-					newRules.push({
-						targetId: info.anchorObject.id,
-						dimension: "y",
-						anchorSiteName: info.yAnchor,
-						targetSiteName: sites.ySite,
-						bindToContent: info.bindToContent ?? false
-					});
+					newRules.push(createPlacementBindingRule(info, "y", sites.ySite));
 				}
 
 				for (const r of newRules) {
-					info.anchorObject.bind(
-						currentElement,
-						r.dimension,
-						r.anchorSiteName,
-						r.targetSiteName,
-						r.offset,
-						r.hint,
-						r.bindToContent
-					);
+					applyBindingRule(r, currentElement, info.anchorObject);
 				}
 
-				const updatedPlacementMode: PlacementConfiguration = {
-					type: "binds",
-					config: [...remainingRules, ...newRules]
-				};
+				const updatedPlacementMode: PlacementConfiguration = determineBindingPlacementModeType([...remainingRules, ...newRules]);
 
 				const padLeft = currentElement.padding?.[3] ?? 0;
 				const padRight = currentElement.padding?.[1] ?? 0;
@@ -545,7 +528,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 
 				const sites = HANDLE_SITE_MAP[initial.direction];
 				let updatedPlacementMode = initial.element.placementMode;
-				const removedRules: IPlacementBindingRule[] = [];
+				const removedRules: (IPlacementBindingRule | ISequenceBindingRule)[] = [];
 
 				if (sites.xSite) {
 					const res = updatePlacementModeBindingRules(updatedPlacementMode, sites.xSite, "x");
@@ -559,11 +542,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				}
 
 				for (const r of removedRules) {
-					const anchorId = r.targetId || r.anchorId;
-					if (anchorId) {
-						const anchor = ENGINE.handler.identifyElement(anchorId);
-						anchor?.clearBindsTo(initial.element, r.dimension, r.targetSiteName);
-					}
+					clearBindingRuleFromAnchor(r, initial.element);
 				}
 
 				const widthChanged = finalResult.width !== initial.startContentWidth;

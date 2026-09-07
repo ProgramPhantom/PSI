@@ -7,7 +7,7 @@ import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import LabelGroup from "../../logic/hasComponents/labelGroup";
 import LineLike, { ILineLike } from "../../logic/lineLike";
-import { isPulse } from "../../logic/spacial";
+import Spacial, { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { CanvasLineResizeHandles, LinePreviewState } from "./CanvasLineResizeHandles";
@@ -29,7 +29,7 @@ interface IDraggableElementProps {
 	isHidden?: boolean;
 	offsetIndicatorThreshold?: number;
 	scale?: number;
-	hoveredElement?: Visual;
+	hoveredElement?: Spacial;
 }
 
 export interface CanvasDraggableElementPayload {
@@ -161,7 +161,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							};
 
 							if (dropResult.data.insert === true) {
-								ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
+								ENGINE.handler.act({
+									type: "insertColumn",
+									input: {
+										sequenceId: dropResult.data.sequenceID ?? "",
+										index: dropResult.data.index
+									}
+								});
 							}
 
 							ENGINE.handler.act({

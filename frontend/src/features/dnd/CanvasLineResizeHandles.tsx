@@ -1,18 +1,26 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ENGINE from "../../logic/engine";
-import Line, { HeadStyle, ILine } from "../../logic/line";
+import Line, { HeadStyle } from "../../logic/line";
 import LineLike, { ILineLike } from "../../logic/lineLike";
-import {
+import Spacial, {
 	filterPlacementBindingRules,
 	IPlacementBindingRule,
+	ISequenceBindingRule,
 	PlacementConfiguration,
 	updatePlacementModeBindingRules
 } from "../../logic/spacial";
-import Visual from "../../logic/visual";
-import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
-import { findClosestBindingAnchor, isBindingAllowedForResizing, isBindingAllowedAsTarget } from "../canvas/bindingResizeConfig";
 import { useAppDispatch } from "../../redux/hooks";
 import { setIsResizing } from "../../redux/slices/applicationSlice";
+import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
+import {
+	applyBindingRule,
+	clearBindingRuleFromAnchor,
+	createPlacementBindingRule,
+	determineBindingPlacementModeType,
+	findClosestBindingAnchor,
+	isBindingAllowedAsTarget,
+	isBindingAllowedForResizing
+} from "../canvas/bindingUtil";
 import styles from "./styles/CanvasResizeHandles.module.scss";
 
 export type LineHandleType = "start" | "end";
@@ -28,7 +36,7 @@ export interface CanvasLineResizeHandlesProps {
 	element: LineLike;
 	scale?: number;
 	onResize?: (preview: LinePreviewState | null) => void;
-	hoveredElement?: Visual;
+	hoveredElement?: Spacial;
 }
 
 interface DragInitialState {
@@ -84,54 +92,27 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				if (!isBindingAllowedAsTarget(info.anchorObject, currentElement.id)) {
 					return;
 				}
-				const newRules: IPlacementBindingRule[] = [
-					{
-						targetId: info.anchorObject.id,
-						dimension: "x",
-						anchorSiteName: info.xAnchor,
-						targetSiteName: handle,
-						bindToContent: info.bindToContent ?? false
-					},
-					{
-						targetId: info.anchorObject.id,
-						dimension: "y",
-						anchorSiteName: info.yAnchor,
-						targetSiteName: handle,
-						bindToContent: info.bindToContent ?? false
-					}
-				];
-
-				const currentRules = (currentElement.placementMode?.type === "binds")
-					? currentElement.placementMode.config
+				const currentRules = (currentElement.placementMode?.type === "binds" || currentElement.placementMode?.type === "sequenceBind")
+					? (currentElement.placementMode.config)
 					: [];
 				const { remaining: remainingRules, removed: removedRules } = filterPlacementBindingRules(
 					currentRules,
 					handle
 				);
 				for (const r of removedRules) {
-					const anchorId = r.targetId || r.anchorId;
-					if (anchorId) {
-						const anchor = ENGINE.handler.identifyElement(anchorId);
-						anchor?.clearBindsTo(currentElement, r.dimension, handle);
-					}
+					clearBindingRuleFromAnchor(r, currentElement);
 				}
+
+				const newRules: (IPlacementBindingRule | ISequenceBindingRule)[] = [
+					createPlacementBindingRule(info, "x", handle),
+					createPlacementBindingRule(info, "y", handle)
+				];
 
 				for (const r of newRules) {
-					info.anchorObject.bind(
-						currentElement,
-						r.dimension,
-						r.anchorSiteName,
-						r.targetSiteName,
-						r.offset,
-						r.hint,
-						r.bindToContent
-					);
+					applyBindingRule(r, currentElement, info.anchorObject);
 				}
 
-				const updatedPlacementMode: PlacementConfiguration = {
-					type: "binds",
-					config: [...remainingRules, ...newRules]
-				};
+				const updatedPlacementMode: PlacementConfiguration = determineBindingPlacementModeType([...remainingRules, ...newRules]);
 
 				const finalStartX = handle === "start" ? info.point.x : currentElement.startX;
 				const finalStartY = handle === "start" ? info.point.y : currentElement.startY;
@@ -365,11 +346,7 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 						initial.handle
 					);
 					for (const r of removedRules) {
-						const anchorId = r.targetId || r.anchorId;
-						if (anchorId) {
-							const anchor = ENGINE.handler.identifyElement(anchorId);
-							anchor?.clearBindsTo(initial.element, r.dimension, initial.handle);
-						}
+						clearBindingRuleFromAnchor(r, initial.element);
 					}
 
 					const newLineState: ILineLike = {

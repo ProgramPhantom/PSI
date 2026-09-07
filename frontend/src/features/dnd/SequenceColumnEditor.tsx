@@ -96,7 +96,10 @@ export default function SequenceColumnEditor({ sequence, scale = 1 }: SequenceCo
 					if (sequence.colHasNonStructureElement(c)) {
 						setPendingDeleteCol(c);
 					} else {
-						ENGINE.handler.removeColumn(sequence.id, c);
+						ENGINE.handler.act({
+							type: "deleteColumn",
+							input: { sequenceId: sequence.id, index: c }
+						});
 					}
 				}}
 				style={{
@@ -127,7 +130,10 @@ export default function SequenceColumnEditor({ sequence, scale = 1 }: SequenceCo
 				onClick={(e) => {
 					e.stopPropagation();
 					setHoveredState(null);
-					ENGINE.handler.addColumn(sequence.id, c + 1);
+					ENGINE.handler.act({
+						type: "insertColumn",
+						input: { sequenceId: sequence.id, index: c + 1 }
+					});
 				}}
 				style={{
 					left: `${left}px`,
@@ -264,13 +270,19 @@ export default function SequenceColumnEditor({ sequence, scale = 1 }: SequenceCo
 				onCancel={() => setPendingDeleteCol(null)}
 				onConfirm={() => {
 					if (pendingDeleteCol !== null) {
-						ENGINE.handler.removeColumn(sequence.id, pendingDeleteCol);
+						ENGINE.handler.act({
+							type: "deleteColumn",
+							input: { sequenceId: sequence.id, index: pendingDeleteCol }
+						});
 						setPendingDeleteCol(null);
 					}
 				}}
 			>
 				<p style={{ margin: 0 }}>
 					This column contains pulses. Are you sure you want to delete it?
+				</p>
+				<p style={{ marginTop: 8, marginBottom: 0, fontWeight: 600, color: "var(--bp-intent-danger, #d9822b)" }}>
+					Warning: Deleted pulses cannot be restored via undo.
 				</p>
 			</Alert>
 		</>

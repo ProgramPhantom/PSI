@@ -74,7 +74,28 @@ export interface IPlacementBindingRule {
 	hint?: string;
 }
 
+export interface IGridBindingPlacementRule {
+	sequenceId: string;
+	column: number;
+	dimension: Dimensions;
+	anchorSiteName: SiteNames;
+	targetSiteName: SiteNames;
+	offset?: number;
+	bindToContent?: boolean;
+	hint?: string;
+}
+
+export type ISequenceBindingRule = IPlacementBindingRule | IGridBindingPlacementRule;
+
+/**
+ * Type guard to check if a binding rule targets a sequence grid column.
+ */
+export function isGridBindingRule(rule: ISequenceBindingRule): rule is IGridBindingPlacementRule {
+	return "sequenceId" in rule;
+}
+
 export type IBindsPlacementConfig = IPlacementBindingRule[];
+export type ISequenceBindPlacementConfig = ISequenceBindingRule[];
 
 /** @deprecated Kept for backwards compatibility; use IPlacementBindingRule instead */
 export interface IBindEndpointConfig {
@@ -87,6 +108,7 @@ export interface IBindEndpointConfig {
 export type PlacementConfiguration =
 	| { type: "free" }
 	| { type: "binds"; config: IBindsPlacementConfig }
+	| { type: "sequenceBind"; config: ISequenceBindPlacementConfig }
 	| { type: "grid"; config: IGridConfig }
 	| { type: "aligner"; config: IAlignerConfig }
 	| { type: "subgrid"; config: ISubgridConfig }
@@ -95,16 +117,18 @@ export type PlacementConfiguration =
 /**
  * Filters a list of placement binding rules into remaining and removed rules matching targetSiteName (and optional dimension).
  */
-export function filterPlacementBindingRules(
-	rules: IPlacementBindingRule[],
+export function filterPlacementBindingRules<T extends ISequenceBindingRule = ISequenceBindingRule>(
+	rules: T[],
 	targetSiteName: SiteNames,
 	dimension?: Dimensions
-): { remaining: IPlacementBindingRule[]; removed: IPlacementBindingRule[] } {
-	const remaining: IPlacementBindingRule[] = [];
-	const removed: IPlacementBindingRule[] = [];
+): { remaining: T[]; removed: T[] } {
+	const remaining: T[] = [];
+	const removed: T[] = [];
 
 	for (const rule of rules) {
-		if (rule.targetSiteName === targetSiteName && (dimension === undefined || rule.dimension === dimension)) {
+		const matchesSite = rule.targetSiteName === targetSiteName;
+		const matchesDim = dimension === undefined || rule.dimension === dimension;
+		if (matchesSite && matchesDim) {
 			removed.push(rule);
 		} else {
 			remaining.push(rule);
@@ -115,6 +139,19 @@ export function filterPlacementBindingRules(
 }
 
 /**
+ * Determines the appropriate PlacementConfiguration for a given list of binding rules.
+ */
+export function determineBindingPlacementModeType(rules: ISequenceBindingRule[]): PlacementConfiguration {
+	if (!rules || rules.length === 0) {
+		return { type: "free" };
+	}
+	if (rules.some(isGridBindingRule)) {
+		return { type: "sequenceBind", config: rules };
+	}
+	return { type: "binds", config: rules as IPlacementBindingRule[] };
+}
+
+/**
  * Removes rules matching targetSiteName (and optional dimension) from a PlacementConfiguration.
  * If 0 rules remain, reverts to `{ type: "free" }`.
  */
@@ -122,8 +159,8 @@ export function updatePlacementModeBindingRules(
 	placementMode: PlacementConfiguration | undefined,
 	targetSiteName: SiteNames,
 	dimension?: Dimensions
-): { updatedPlacementMode: PlacementConfiguration; removedRules: IPlacementBindingRule[] } {
-	if (placementMode?.type !== "binds" || !placementMode.config) {
+): { updatedPlacementMode: PlacementConfiguration; removedRules: ISequenceBindingRule[] } {
+	if ((placementMode?.type !== "binds" && placementMode?.type !== "sequenceBind") || !placementMode.config) {
 		return {
 			updatedPlacementMode: placementMode ?? { type: "free" },
 			removedRules: []
@@ -132,9 +169,7 @@ export function updatePlacementModeBindingRules(
 
 	const { remaining, removed } = filterPlacementBindingRules(placementMode.config, targetSiteName, dimension);
 
-	const updatedPlacementMode: PlacementConfiguration = remaining.length > 0
-		? { type: "binds", config: remaining }
-		: { type: "free" };
+	const updatedPlacementMode = determineBindingPlacementModeType(remaining);
 
 	return { updatedPlacementMode, removedRules: removed };
 }
@@ -274,7 +309,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public get isFree(): boolean {
-		return this._placementMode.type === "free" || this._placementMode.type === "binds";
+		return this._placementMode.type === "free" || this._placementMode.type === "binds" || this._placementMode.type === "sequenceBind";
 	}
 
 	public placementControl: PlacementControl;
@@ -311,7 +346,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ? { ...params.sizeMode } : { x: "fixed", y: "fixed" };
 
-		if (this._placementMode.type === "free" || this._placementMode.type === "binds") {
+		if (this._placementMode.type === "free" || this._placementMode.type === "binds" || this._placementMode.type === "sequenceBind") {
 			if (this.sizeMode.x === "grow") {
 				this.sizeMode.x = "fit";
 			}
@@ -339,7 +374,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public computePositions(root: { x: number, y: number }) {
-		if (this.placementMode.type !== "free" && this.placementMode.type !== "binds") {
+		if (this.placementMode.type !== "free" && this.placementMode.type !== "binds" && this.placementMode.type !== "sequenceBind") {
 			this.x = root.x;
 			this.y = root.y;
 		}

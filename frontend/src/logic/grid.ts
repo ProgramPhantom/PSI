@@ -36,6 +36,30 @@ export interface OccupiedCell<S extends Visual = Visual> {
 export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridConfig | undefined
 export type GridPlacementSetter = (element: Visual, value: IGridConfig) => void
 
+export class GridColumn extends Spacial {
+	public sequenceId: string;
+	public columnIndex: number;
+
+	constructor(columnIndex: number, sequenceId: string) {
+		super({
+			ref: `column-${columnIndex}`,
+			type: "lower-abstract",
+			placementMode: { type: "free" },
+			placementControl: "auto",
+			parentId: sequenceId
+		});
+		this.id = `${sequenceId}-col-${columnIndex}`;
+		this.columnIndex = columnIndex;
+		this.sequenceId = sequenceId;
+	}
+}
+
+/**
+ * Predicate to check if an object is a GridColumn.
+ */
+export const isGridColumn = (obj: any): obj is GridColumn => {
+	return obj instanceof GridColumn;
+};
 
 export default class Grid<C extends Visual = Visual> extends Collection<C | Subgrid<C>> implements IDraw {
 	public isCellChild = (e: Visual): e is GridCellElement<C> => e.placementMode.type === "grid"
@@ -185,7 +209,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	protected gridMatrix: GridCell<C>[][] = [];
 
-	public gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
+	public gridSizes: { columns: GridColumn[], rows: Spacial[] } = { columns: [], rows: [] };
 	public cells: PaddedBox[][];
 
 	public minRowHeights: number[] = [];
@@ -202,7 +226,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.minRowHeights = params.minRowHeights ?? [];
 		this.minColWidths = params.minColWidths ?? [];
 
-		this.setMatrixBottomRight({ row: params.numRows ? params.numRows - 1 : undefined, col: params.numColumns ? params.numColumns - 1 : undefined })
+		this.setMatrixBottomRight({ row: params.numRows ? params.numRows - 1 : undefined, col: params.numColumns ? params.numColumns - 1 : undefined });
 	}
 
 
@@ -226,7 +250,17 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var gridRows: GridCell<C>[][] = this.gridMatrix;
 
 		// Let's compute the width and height of each column
-		var columnRects: Spacial[] = Array.from({ length: gridColumns.length }, () => new Spacial())
+		var columnRects: GridColumn[] = Array.from({ length: gridColumns.length }, (_, col_index) => {
+			const existing = this.gridSizes.columns[col_index];
+			if (existing instanceof GridColumn) {
+				existing.sequenceId = this.id;
+				existing.columnIndex = col_index;
+				existing.id = `${this.id}-col-${col_index}`;
+				existing.ref = `column-${col_index}`;
+				return existing;
+			}
+			return new GridColumn(col_index, this.id);
+		});
 		var colMinWidths: number[] = Array.from({ length: gridColumns.length }, () => 0);
 		var colSpillingElements: GridElement<C>[][] = Array.from({ length: gridColumns.length }, () => []);
 		var colExtras: number[][] = Array.from({ length: gridColumns.length }, () => []);
@@ -815,6 +849,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return change;
 	}
 
+	public override enforceBindings(): void {
+		super.enforceBindings();
+		for (const col of this.gridSizes.columns) {
+			col.enforceBindings();
+		}
+		for (const row of this.gridSizes.rows) {
+			row.enforceBindings();
+		}
+	}
+
 
 	// ------ Helpers ---------
 	/**
@@ -863,6 +907,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			if (this.cells[0]?.[i]) {
 				col.x = this.cells[0][i].x;
 				col.y = this.cells[0][0].y;
+				col.width = this.gridSizes.columns[i].width;
+				col.height = this.height;
 			}
 		});
 		this.gridSizes.rows.forEach((row, i) => {
@@ -872,6 +918,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			}
 		});
 	}
+
+	public getColumnSpacial(colIndex: number): GridColumn | undefined {
+		return this.gridSizes.columns[colIndex];
+	}
+
+
 
 	protected positionConstituents() {
 		this.positionCells();
@@ -1193,7 +1245,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridMatrix[coords.row][coords.column] = gridEntry;
 	}
 
-	public setGrid(grid: GridCell<C>[][], sizes: { columns: Spacial[], rows: Spacial[] }, cells: PaddedBox[][]) {
+	public setGrid(grid: GridCell<C>[][], sizes: { columns: GridColumn[], rows: Spacial[] }, cells: PaddedBox[][]) {
 		this.gridMatrix = grid;
 		this.gridSizes = sizes;
 		this.cells = cells;
@@ -1492,7 +1544,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.minColWidths.splice(INDEX, 0, 0);
 		}
 
-		this.shiftElementColumnIndexes(INDEX + 1, 1);
+		this.gridSizes.columns.splice(INDEX, 0, new GridColumn(INDEX, this.id));
+
+		this.shiftColumnIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
 	}
@@ -1539,7 +1593,15 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.minRowHeights.splice(INDEX, 0, 0);
 		}
 
-		this.shiftElementRowIndexes(INDEX, 1);
+		this.gridSizes.rows.splice(INDEX, 0, new Spacial({
+			ref: `row-${INDEX}`,
+			type: "lower-abstract",
+			placementMode: { type: "singleton" },
+			placementControl: "auto",
+			parentId: this.id
+		}));
+
+		this.shiftRowIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
 	}
@@ -1568,7 +1630,17 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.minColWidths.splice(INDEX, 1);
 		}
 
-		this.shiftElementColumnIndexes(INDEX, -1);
+		if (this.gridSizes.columns.length > INDEX) {
+			const removedCol = this.gridSizes.columns[INDEX];
+			if (removedCol) {
+				for (const bind of [...removedCol.bindings]) {
+					removedCol.clearBindsTo(bind.targetObject);
+				}
+			}
+			this.gridSizes.columns.splice(INDEX, 1);
+		}
+
+		this.shiftColumnIndexes(INDEX, -1);
 
 		// Shrink split elements by either removing a col
 		// from subgrid or reducing grid-size;
@@ -1605,7 +1677,17 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.minRowHeights.splice(INDEX, 1);
 		}
 
-		this.shiftElementRowIndexes(INDEX, -1);
+		if (this.gridSizes.rows.length > INDEX) {
+			const removedRow = this.gridSizes.rows[INDEX];
+			if (removedRow) {
+				for (const bind of [...removedRow.bindings]) {
+					removedRow.clearBindsTo(bind.targetObject);
+				}
+			}
+			this.gridSizes.rows.splice(INDEX, 1);
+		}
+
+		this.shiftRowIndexes(INDEX, -1);
 	}
 
 	// --- Helpers ----
@@ -1704,7 +1786,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return elements;
 	}
 
-	protected shiftElementColumnIndexes(from: number, amount: number = 1) {
+	protected shiftColumnIndexes(from: number, amount: number = 1) {
 		// Update grid indexes
 		for (let col_index = from; col_index < this.numColumns; col_index++) {
 			let col: GridCell<C>[] = this.getColumn(col_index) ?? [];
@@ -1732,9 +1814,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				}
 			})
 		}
+
+		// Update grid column spacials
+		for (let c = from; c < this.gridSizes.columns.length; c++) {
+			const col = this.gridSizes.columns[c];
+			if (col instanceof GridColumn) {
+				col.columnIndex = c;
+				col.id = `${this.id}-col-${c}`;
+				col.ref = `column-${c}`;
+			}
+		}
 	}
 
-	protected shiftElementRowIndexes(from: number, amount: number = 1) {
+	protected shiftRowIndexes(from: number, amount: number = 1) {
 		// Update grid indexes
 		for (let row_index = from; row_index < this.numRows; row_index++) {
 			let row: GridCell<C>[] = this.getRow(row_index) ?? [];
@@ -1761,6 +1853,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 					})
 				}
 			})
+		}
+
+		// Update grid row spacials
+		for (let r = from; r < this.gridSizes.rows.length; r++) {
+			const row = this.gridSizes.rows[r];
+			if (row) {
+				row.ref = `row-${r}`;
+			}
 		}
 	}
 	//#endregion
@@ -2009,7 +2109,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				throw new Error(`Subgrid '${sg.ref}' region out of parent grid '${this.ref}' bounds`)
 			}
 
-			let columns: Spacial[] = this.gridSizes.columns.slice(topLeft.col, bottomRight.col);
+			let columns: GridColumn[] = this.gridSizes.columns.slice(topLeft.col, bottomRight.col);
 			let rows: Spacial[] = this.gridSizes.rows.slice(topLeft.row, bottomRight.row);
 
 			let totalWidth = columns.reduce((w, c) => w + c.width, 0);

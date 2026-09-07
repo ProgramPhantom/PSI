@@ -1,7 +1,7 @@
 import { Button, ButtonGroup, Classes, Popover, Position, Tooltip } from "@blueprintjs/core";
 import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { CanvasToolType, setSelectedTool } from "../../redux/slices/applicationSlice";
+import { CanvasToolType, setSelectedTool, toggleColumnMode } from "../../redux/slices/applicationSlice";
 import styles from "./styles/toolbars.module.scss";
 import ArrowToolPopup from "./toolPopups/ArrowToolPopup";
 import BoxToolPopup from "./toolPopups/BoxToolPopup";
@@ -11,6 +11,7 @@ import TextToolPopup from "./toolPopups/TextToolPopup";
 export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
+    const columnMode = useAppSelector((state) => state.application.columnMode);
     const [openPopup, setOpenPopup] = useState<CanvasToolType | null>(null);
 
     const selectTool = (toolType: CanvasToolType) => {
@@ -167,6 +168,16 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     />
                 </Popover>
             </ButtonGroup>
+
+            <Tooltip hoverOpenDelay={2000} content="Column Mode (Alt+C)" position={Position.TOP}>
+                <Button
+                    icon="column-layout"
+                    active={columnMode}
+                    intent={columnMode ? 'primary' : 'none'}
+                    onClick={() => dispatch(toggleColumnMode())}
+                    variant="minimal"
+                />
+            </Tooltip>
         </div>
     );
 });

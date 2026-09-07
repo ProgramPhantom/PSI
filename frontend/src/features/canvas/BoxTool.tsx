@@ -3,19 +3,20 @@ import { IToolConfig, Tool } from "../../app/App";
 import { DEFAULT_RECT_ELEMENT } from "../../logic/default/rectElement";
 import ENGINE from "../../logic/engine";
 import { IRectElement, IRectStyle } from "../../logic/rectElement";
-import { IPlacementBindingRule, PlacementConfiguration, SiteNames } from "../../logic/spacial";
+import { IPlacementBindingRule, PlacementConfiguration, ISequenceBindingRule, SiteNames } from "../../logic/spacial";
+import Spacial from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
-import { findClosestBindingAnchor, isBindingAllowedAsTarget } from "./bindingResizeConfig";
+import { createPlacementRulesForBinding, determineBindingPlacementModeType, findClosestBindingAnchor, isBindingAllowedAsTarget } from "./bindingUtil";
 
 export interface IDrawBoxConfig extends IToolConfig {
 	style?: IRectStyle;
 }
 
 interface IDrawBoxProps {
-	hoveredElement?: Visual | undefined;
+	hoveredElement?: Spacial | undefined;
 	config?: IDrawBoxConfig;
 	zoom?: number;
 	setTool: (tool: Tool) => void;
@@ -100,52 +101,17 @@ export function BoxTool(props: IDrawBoxProps) {
 			const endXSite: SiteNames = isXStartNear ? "far" : "here";
 			const endYSite: SiteNames = isYStartNear ? "far" : "here";
 
-			const allRules: IPlacementBindingRule[] = [];
+			const allRules: ISequenceBindingRule[] = [];
 
 			if (startBindingInfo) {
-				allRules.push(
-					{
-						targetId: startBindingInfo.anchorObject.id,
-						dimension: "x",
-						anchorSiteName: startBindingInfo.xAnchor,
-						targetSiteName: startXSite,
-						bindToContent: startBindingInfo.bindToContent ?? false
-					},
-					{
-						targetId: startBindingInfo.anchorObject.id,
-						dimension: "y",
-						anchorSiteName: startBindingInfo.yAnchor,
-						targetSiteName: startYSite,
-						bindToContent: startBindingInfo.bindToContent ?? false
-					}
-				);
+				allRules.push(...createPlacementRulesForBinding(startBindingInfo, startXSite, startYSite));
 			}
 
 			if (endBindingInfo) {
-				allRules.push(
-					{
-						targetId: endBindingInfo.anchorObject.id,
-						dimension: "x",
-						anchorSiteName: endBindingInfo.xAnchor,
-						targetSiteName: endXSite,
-						bindToContent: endBindingInfo.bindToContent ?? false
-					},
-					{
-						targetId: endBindingInfo.anchorObject.id,
-						dimension: "y",
-						anchorSiteName: endBindingInfo.yAnchor,
-						targetSiteName: endYSite,
-						bindToContent: endBindingInfo.bindToContent ?? false
-					}
-				);
+				allRules.push(...createPlacementRulesForBinding(endBindingInfo, endXSite, endYSite));
 			}
 
-			const placementMode: PlacementConfiguration = allRules.length > 0
-				? {
-					type: "binds",
-					config: allRules
-				}
-				: { type: "free" };
+			const placementMode: PlacementConfiguration = determineBindingPlacementModeType(allRules);
 
 			const newRect: IRectElement = {
 				...structuredClone(DEFAULT_RECT_ELEMENT),

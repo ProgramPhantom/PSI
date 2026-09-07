@@ -1,7 +1,18 @@
 import Visual from "../../logic/visual";
 import LineLike from "../../logic/lineLike";
 import RectElement from "../../logic/rectElement";
-import { SiteNames } from "../../logic/spacial";
+import Spacial, {
+	Dimensions,
+	IGridBindingPlacementRule,
+	IPlacementBindingRule,
+	PlacementConfiguration,
+	ISequenceBindingRule,
+	isGridBindingRule,
+	SiteNames
+} from "../../logic/spacial";
+import { GridColumn, isGridColumn } from "../../logic/grid";
+import ENGINE from "../../logic/engine";
+import Sequence from "../../logic/hasComponents/sequence";
 import { ISelectedBindingInfo } from "./BindingsSelector";
 
 /**
@@ -10,14 +21,14 @@ import { ISelectedBindingInfo } from "./BindingsSelector";
 export type BindingResizeAllowedCheck = (element: Visual) => boolean;
 
 /**
- * Predicate to identify annotation rects (non-pulse RectElements in free/binds mode).
+ * Predicate to identify annotation rects (non-pulse RectElements in free/binds/sequenceBind mode).
  */
 export const isAnnotationRect: BindingResizeAllowedCheck = (element: Visual): boolean => {
 	return (
 		(element.type === "rect" || element instanceof RectElement) &&
 		element.pulseData === undefined &&
 		element.pulseLayoutConfig === undefined &&
-		(element.placementMode?.type === "free" || element.placementMode?.type === "binds")
+		(element.placementMode?.type === "free" || element.placementMode?.type === "binds" || element.placementMode?.type === "sequenceBind")
 	);
 };
 
@@ -34,9 +45,6 @@ export const BINDING_ENABLED_RESIZING_ELEMENTS: Array<
 
 /**
  * Checks if the given resizing element is allowed to activate the BindingsSelector.
- *
- * @param element The visual element currently being resized.
- * @returns true if bindings should be enabled during its resize.
  */
 export const isBindingAllowedForResizing = (element: Visual | undefined): boolean => {
 	if (!element) return false;
@@ -46,15 +54,15 @@ export const isBindingAllowedForResizing = (element: Visual | undefined): boolea
 /**
  * Predicate function type to test if a candidate target element is allowed to receive bindings.
  */
-export type BindingTargetAllowedCheck = (target: Visual) => boolean;
+export type BindingTargetAllowedCheck = (target: Spacial) => boolean;
 
 /**
  * Predicate to check if an element is itself bound.
- * Any element that has placementMode of type "binds" (with rules) or has incoming bindings
+ * Any element that has placementMode of type "binds" or "sequenceBind" (with rules) or has incoming bindings
  * is considered bound. Disallowing bindings onto bound elements avoids binding loops/cycles.
  */
-export const isElementBound: BindingTargetAllowedCheck = (element: Visual): boolean => {
-	if (element.placementMode?.type === "binds") {
+export const isElementBound: BindingTargetAllowedCheck = (element: Spacial): boolean => {
+	if (element.placementMode?.type === "binds" || element.placementMode?.type === "sequenceBind") {
 		const rules = element.placementMode.config;
 		if (!rules || rules.length > 0) return true;
 	}
@@ -67,7 +75,7 @@ export const isElementBound: BindingTargetAllowedCheck = (element: Visual): bool
 /**
  * Predicate to identify LineLike elements (e.g. Line, Arrow) that should never receive bindings.
  */
-export const isLineLikeElement: BindingTargetAllowedCheck = (element: Visual): boolean => {
+export const isLineLikeElement: BindingTargetAllowedCheck = (element: Spacial): boolean => {
 	return element instanceof LineLike || element.type === "line";
 };
 
@@ -75,8 +83,8 @@ export const isLineLikeElement: BindingTargetAllowedCheck = (element: Visual): b
  * Helper to match an element against a class constructor or predicate check.
  */
 const matchesDescriptor = (
-	element: Visual,
-	descriptor: (abstract new (...args: any[]) => Visual) | ((element: Visual) => boolean)
+	element: Spacial,
+	descriptor: (abstract new (...args: any[]) => Spacial) | ((element: Visual) => boolean)
 ): boolean => {
 	if (typeof descriptor === "function") {
 		if (descriptor === Visual || (descriptor.prototype && descriptor.prototype instanceof Visual)) {
@@ -86,7 +94,10 @@ const matchesDescriptor = (
 			}
 			return false;
 		}
-		return (descriptor as (element: Visual) => boolean)(element);
+		if (descriptor === GridColumn && isGridColumn(element)) {
+			return true;
+		}
+		return (descriptor as (element: Spacial) => boolean)(element);
 	}
 	return false;
 };
@@ -97,7 +108,7 @@ const matchesDescriptor = (
  * - Elements that are themselves bound are blocked to prevent binding loops.
  */
 export const BINDING_DISALLOWED_TARGET_ELEMENTS: Array<
-	(abstract new (...args: any[]) => Visual) | BindingTargetAllowedCheck
+	(abstract new (...args: any[]) => Spacial) | BindingTargetAllowedCheck
 > = [
 		LineLike,
 		isElementBound
@@ -105,25 +116,22 @@ export const BINDING_DISALLOWED_TARGET_ELEMENTS: Array<
 
 /**
  * Registry of classes or predicate functions that are allowed to receive bindings.
- * By default, any Visual element (subject to BINDING_DISALLOWED_TARGET_ELEMENTS) is permitted.
+ * By default, Visual elements and GridColumn objects are permitted.
  */
 export const BINDING_ENABLED_TARGET_ELEMENTS: Array<
-	(abstract new (...args: any[]) => Visual) | BindingTargetAllowedCheck
+	(abstract new (...args: any[]) => Spacial) | BindingTargetAllowedCheck
 > = [
-		Visual
+		Visual,
+		GridColumn
 	];
 
 /**
  * Checks if a candidate element is allowed to be bound to (i.e. act as a target/anchor for bindings).
- *
- * @param candidate The visual element being evaluated as a potential binding target.
- * @param excludeElementId Optional element ID to exclude (e.g. self-binding prevention).
- * @returns true if candidate is allowed to receive bindings.
  */
 export const isBindingAllowedAsTarget = (
-	candidate: Visual | undefined,
+	candidate: Spacial | undefined,
 	excludeElementId?: string
-): candidate is Visual => {
+): candidate is Spacial => {
 	if (
 		!candidate ||
 		candidate.type === "diagram" ||
@@ -132,6 +140,8 @@ export const isBindingAllowedAsTarget = (
 	) {
 		return false;
 	}
+
+
 
 	// 1. Check disallowed registry - any match blocks the candidate
 	const isBlocked = BINDING_DISALLOWED_TARGET_ELEMENTS.some((target) =>
@@ -157,7 +167,7 @@ export interface AnchorSnapResult {
  * Finds the closest binding anchor point on candidate anchor within maxDistancePx screen pixels.
  */
 export function findClosestBindingAnchor(
-	candidate: Visual | undefined,
+	candidate: Spacial | undefined,
 	excludeElementId: string,
 	targetPoint: { x: number; y: number },
 	effectiveScale: number,
@@ -196,6 +206,96 @@ export function findClosestBindingAnchor(
 	}
 
 	return bestResult;
+}
+
+/**
+ * Creates a placement binding rule for a single dimension given an ISelectedBindingInfo.
+ */
+export function createPlacementBindingRule(
+	info: ISelectedBindingInfo,
+	dimension: Dimensions,
+	targetSiteName: SiteNames
+): ISequenceBindingRule {
+	const anchorSiteName = dimension === "x" ? info.xAnchor : info.yAnchor;
+	if (isGridColumn(info.anchorObject)) {
+		return {
+			sequenceId: info.anchorObject.sequenceId,
+			column: info.anchorObject.columnIndex,
+			dimension,
+			anchorSiteName,
+			targetSiteName,
+			bindToContent: info.bindToContent ?? false
+		};
+	}
+	return {
+		targetId: info.anchorObject.id,
+		dimension,
+		anchorSiteName,
+		targetSiteName,
+		bindToContent: info.bindToContent ?? false
+	};
+}
+
+/**
+ * Creates X and/or Y placement binding rules given an ISelectedBindingInfo and target site names.
+ */
+export function createPlacementRulesForBinding(
+	info: ISelectedBindingInfo,
+	targetSiteX?: SiteNames,
+	targetSiteY?: SiteNames
+): ISequenceBindingRule[] {
+	const rules: ISequenceBindingRule[] = [];
+	if (targetSiteX) {
+		rules.push(createPlacementBindingRule(info, "x", targetSiteX));
+	}
+	if (targetSiteY) {
+		rules.push(createPlacementBindingRule(info, "y", targetSiteY));
+	}
+	return rules;
+}
+
+export { determineBindingPlacementModeType } from "../../logic/spacial";
+
+/**
+ * Resolves the anchor object for a given rule (either from sequence columns or by element ID).
+ */
+export function resolveAnchorForRule(rule: ISequenceBindingRule): Spacial | undefined {
+	if (isGridBindingRule(rule)) {
+		const seq = ENGINE.handler.identifyElement(rule.sequenceId) as Sequence | undefined;
+		return seq?.gridSizes?.columns?.[rule.column];
+	}
+	const anchorId = rule.targetId || rule.anchorId;
+	return anchorId ? ENGINE.handler.identifyElement(anchorId) : undefined;
+}
+
+/**
+ * Clears an established binding from the anchor referenced in the rule.
+ */
+export function clearBindingRuleFromAnchor(rule: ISequenceBindingRule, targetElement: Spacial): void {
+	const anchor = resolveAnchorForRule(rule);
+	anchor?.clearBindsTo(targetElement, rule.dimension, rule.targetSiteName);
+}
+
+/**
+ * Registers an active runtime binding on the resolved anchor object.
+ */
+export function applyBindingRule(
+	rule: ISequenceBindingRule,
+	targetElement: Spacial,
+	anchorOverride?: Spacial
+): void {
+	const anchor = anchorOverride ?? resolveAnchorForRule(rule);
+	if (anchor) {
+		anchor.bind(
+			targetElement,
+			rule.dimension,
+			rule.anchorSiteName,
+			rule.targetSiteName,
+			rule.offset,
+			rule.hint,
+			rule.bindToContent ?? true
+		);
+	}
 }
 
 export default isBindingAllowedForResizing;

@@ -3,12 +3,17 @@ import { IToolConfig, Tool } from "../../app/App";
 import { DEFAULT_LINE } from "../../logic/default/line";
 import ENGINE from "../../logic/engine";
 import { HeadStyle, ILineStyle, ILine } from "../../logic/line";
-import { IPlacementBindingRule, PlacementConfiguration } from "../../logic/spacial";
+import Spacial, { PlacementConfiguration, ISequenceBindingRule } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
-import { findClosestBindingAnchor, isBindingAllowedAsTarget } from "./bindingResizeConfig";
+import {
+	createPlacementRulesForBinding,
+	determineBindingPlacementModeType,
+	findClosestBindingAnchor,
+	isBindingAllowedAsTarget
+} from "./bindingUtil";
 
 export interface IDrawArrowConfig extends IToolConfig {
 	thickness?: number;
@@ -17,7 +22,7 @@ export interface IDrawArrowConfig extends IToolConfig {
 }
 
 interface IDrawArrowProps {
-	hoveredElement?: Visual | undefined;
+	hoveredElement?: Spacial | undefined;
 	config: IDrawArrowConfig;
 	zoom?: number;
 	setTool: (tool: Tool) => void;
@@ -87,52 +92,17 @@ export function LineTool(props: IDrawArrowProps) {
 			const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
 			const thickness = props.config?.thickness ?? 2;
 
-			const allRules: IPlacementBindingRule[] = [];
+			const allRules: ISequenceBindingRule[] = [];
 
 			if (startBindingInfo) {
-				allRules.push(
-					{
-						targetId: startBindingInfo.anchorObject.id,
-						dimension: "x",
-						anchorSiteName: startBindingInfo.xAnchor,
-						targetSiteName: "start",
-						bindToContent: startBindingInfo.bindToContent ?? false
-					},
-					{
-						targetId: startBindingInfo.anchorObject.id,
-						dimension: "y",
-						anchorSiteName: startBindingInfo.yAnchor,
-						targetSiteName: "start",
-						bindToContent: startBindingInfo.bindToContent ?? false
-					}
-				);
+				allRules.push(...createPlacementRulesForBinding(startBindingInfo, "start", "start"));
 			}
 
 			if (endBindingInfo) {
-				allRules.push(
-					{
-						targetId: endBindingInfo.anchorObject.id,
-						dimension: "x",
-						anchorSiteName: endBindingInfo.xAnchor,
-						targetSiteName: "end",
-						bindToContent: endBindingInfo.bindToContent ?? false
-					},
-					{
-						targetId: endBindingInfo.anchorObject.id,
-						dimension: "y",
-						anchorSiteName: endBindingInfo.yAnchor,
-						targetSiteName: "end",
-						bindToContent: endBindingInfo.bindToContent ?? false
-					}
-				);
+				allRules.push(...createPlacementRulesForBinding(endBindingInfo, "end", "end"));
 			}
 
-			const placementMode: PlacementConfiguration = allRules.length > 0
-				? {
-					type: "binds",
-					config: allRules
-				}
-				: { type: "free" };
+			const placementMode: PlacementConfiguration = determineBindingPlacementModeType(allRules);
 
 			const newLine: ILine = {
 				...structuredClone(DEFAULT_LINE),

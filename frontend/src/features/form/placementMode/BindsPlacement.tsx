@@ -6,7 +6,7 @@ import {
 import React from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import ENGINE from "../../../logic/engine";
-import { IPlacementBindingRule } from "../../../logic/spacial";
+import { IPlacementBindingRule, ISequenceBindingRule, isGridBindingRule } from "../../../logic/spacial";
 
 const formatSite = (site: string, dimension?: string): string => {
 	if (site === "start") return "Start";
@@ -24,7 +24,7 @@ export const BindsPlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix })
 		name: `${fullPrefix}placementMode`
 	});
 
-	const rules: IPlacementBindingRule[] = Array.isArray(placementMode?.config)
+	const rules: (IPlacementBindingRule | ISequenceBindingRule)[] = Array.isArray(placementMode?.config)
 		? placementMode.config
 		: [];
 
@@ -65,10 +65,23 @@ export const BindsPlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix })
 				</Card>
 			) : (
 				rules.map((rule, idx) => {
-					const anchorId = rule.targetId || rule.anchorId || "";
-					const anchor = anchorId ? ENGINE.handler.identifyElement(anchorId) : undefined;
-					const anchorName = anchor?.ref || anchor?.type || (anchorId ? `#${anchorId.slice(0, 8)}` : "Unknown");
-					const anchorDesc = anchor ? `${anchor.ref} (${anchor.type})` : anchorId;
+					let anchorName = "Unknown";
+					let anchorDesc = "";
+					let anchorId = "";
+
+					if (isGridBindingRule(rule)) {
+						const seqId = rule.sequenceId;
+						anchorId = `${seqId}-col-${rule.column}`;
+						const seqElem = ENGINE.handler.identifyElement(seqId);
+						const seqRef = seqElem?.ref || seqElem?.type || `#${seqId.slice(0, 8)}`;
+						anchorName = `${seqRef} [Col ${rule.column}]`;
+						anchorDesc = `Sequence ${seqRef}, Column ${rule.column}`;
+					} else {
+						anchorId = rule.targetId || rule.anchorId || "";
+						const anchor = anchorId ? ENGINE.handler.identifyElement(anchorId) : undefined;
+						anchorName = anchor?.ref || anchor?.type || (anchorId ? `#${anchorId.slice(0, 8)}` : "Unknown");
+						anchorDesc = anchor ? `${anchor.ref} (${anchor.type})` : anchorId;
+					}
 					const hasOffset = rule.offset !== undefined && rule.offset !== 0;
 
 					return (

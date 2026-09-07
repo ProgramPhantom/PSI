@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import Visual from "../../logic/visual";
-import { SiteNames } from "../../logic/spacial";
+import Spacial, { SiteNames } from "../../logic/spacial";
 
 export interface ISelectedBindingInfo {
-	anchorObject: Visual;
+	anchorObject: Spacial;
 	xAnchor: SiteNames;
 	yAnchor: SiteNames;
 	point: { x: number; y: number };
@@ -11,7 +10,7 @@ export interface ISelectedBindingInfo {
 }
 
 interface IBindingsSelectorProps {
-	element: Visual;
+	element: Spacial;
 	onSelectBind: (info: ISelectedBindingInfo) => void;
 	activeAnchorKey?: string | null;
 }

@@ -31,6 +31,8 @@ import { ChannelReorderButtons } from "./ChannelReorderButtons";
 import { HitboxLayer } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import { BoxTool } from "./BoxTool";
+import { SequenceColumnsOverlay } from "./SequenceColumnsOverlay";
+import Spacial from "../../logic/spacial";
 import styles from "./styles/toolbars.module.scss"
 
 
@@ -117,8 +119,8 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const lastCoordsRef = useRef<{ rx: number; ry: number } | null>(null);
 	const rafIdRef = useRef<number | null>(null);
 
-	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
-	const [rawHoveredElement, setRawHoveredElement] = useState<Visual | undefined>(undefined);
+	const [hoveredElement, setHoveredElement] = useState<Spacial | undefined>(undefined);
+	const [rawHoveredElement, setRawHoveredElement] = useState<Spacial | undefined>(undefined);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [zoom, setZoom] = useState(2);
 	const [zoomString, setZoomString] = useState("2");
@@ -147,7 +149,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		interactiveElements.push(selectedElement);
 	}
 	if (!isResizing && !isDragging && selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
-		interactiveElements.push(hoveredElement);
+		if (hoveredElement instanceof Visual) {
+			interactiveElements.push(hoveredElement);
+		}
 	}
 
 	const interactiveElementIds = interactiveElements.map(e => e.id).join(",");
@@ -233,10 +237,10 @@ const Canvas: React.FC<ICanvasProps> = () => {
 				return {
 					cursor: "default",
 					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
-						const element: Visual | undefined = hoveredElement;
+						const element: Spacial | undefined = hoveredElement;
 						if (element === undefined) {
 							deselect();
-						} else {
+						} else if (element instanceof Visual) {
 							selectVisual(element);
 						}
 					},
@@ -293,7 +297,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
-		if (rawHoveredElement) {
+		if (rawHoveredElement && rawHoveredElement instanceof Visual) {
 			// Drill down logic
 			let path: Visual[] = [];
 			let curr: Visual | undefined = rawHoveredElement;
@@ -328,7 +332,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		}
 	};
 
-	const constOnHitboxHover = (element?: Visual, rawElement?: Visual) => {
+	const constOnHitboxHover = (element?: Spacial, rawElement?: Spacial) => {
 		setHoveredElement(element);
 		setRawHoveredElement(rawElement);
 	};
@@ -628,7 +632,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 
 
-
 											{/* Tools */}
 											{selectedTool.type === "arrow" ? (
 												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
@@ -674,6 +677,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 												<SequencesColumnEditor scale={zoom}></SequencesColumnEditor>
 												<SequencesChannelPaddingEditor scale={zoom}></SequencesChannelPaddingEditor>
 												<LabelGroupDropFields></LabelGroupDropFields>
+												<SequenceColumnsOverlay />
 											</div>
 
 											{/* Debug layers */}
