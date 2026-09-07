@@ -1,20 +1,21 @@
 import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon, Tooltip } from "@blueprintjs/core";
 import { useRef, useState, useSyncExternalStore, useDeferredValue, useCallback } from "react";
 import { ObjectInspector } from "react-inspector";
-import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { deleteSelectedElements } from "../../redux/thunks/actionThunks";
+import { useAppDispatch } from "../../redux/hooks";
+import { useSelectedElementId } from "../../hooks/useSelectedElements";
 import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
 import { ElementForm, SubmitButtonRef } from "./ElementForm";
 import DiagramForm from "./DiagramForm";
 
-type FormEffect = "submit" | "delete" | "modify";
+type FormEffect = "submit" | "modify";
 
 export function FormDiagramInterface() {
 	const dispatch = useAppDispatch();
-	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const selectedElementId = useSelectedElementId();
 	const deferredSelectedElementId = useDeferredValue(selectedElementId);
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	const target = ENGINE.handler.identifyElement(deferredSelectedElementId ?? "");
@@ -54,17 +55,6 @@ export function FormDiagramInterface() {
 					input: {
 						child: values,
 						target: target
-					}
-				})
-				break;
-			case "delete":
-				if (target === undefined) {
-					throw new Error(`Calling deletion function with no selected target`)
-				}
-				ENGINE.handler.act({
-					type: "remove",
-					input: {
-						child: target
 					}
 				})
 				break;
@@ -150,13 +140,7 @@ export function FormDiagramInterface() {
 									icon="trash"
 									intent="danger"
 									onClick={() => {
-										dispatchFormEffect(target!, "delete");
-										changeTarget(undefined);
-										appToaster.show({
-											message: `Deleted element '${target?.ref}'`,
-											intent: "danger",
-											timeout: 1000
-										});
+										dispatch(deleteSelectedElements());
 									}}></Button>
 							</>
 						) : (

@@ -14,6 +14,7 @@ import AlignerDebug from "./AlignerDebug";
 import PulseDebug from "./PulseDebug";
 import CollectionDebug from "./Collection";
 import { useAppSelector } from "../../redux/hooks";
+import { selectSelectedElementId } from "../../redux/slices/applicationSlice";
 import Sequence from "../../logic/hasComponents/sequence";
 
 export interface IDebug {
@@ -48,7 +49,7 @@ export function renderElementDebug(element: Visual, key?: string | number): JSX.
 const Debug: React.FC<IDebug> = (props) => {
 	const reduxDebugGroupSelection = useAppSelector((state) => state.application.debugSelectionTypes);
 	const reduxDebugSelectedElement = useAppSelector((state) => state.application.debugSelectedElement);
-	const reduxSelectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const reduxSelectedElementId = useAppSelector(selectSelectedElementId);
 
 	const debugGroupSelection = props.debugGroupSelection ?? reduxDebugGroupSelection;
 	const isDebugSelectedElement = props.debugSelectedElement ?? reduxDebugSelectedElement;

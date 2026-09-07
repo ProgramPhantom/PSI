@@ -2,18 +2,20 @@ import { HotkeyConfig, useHotkeys } from "@blueprintjs/core";
 import React, { useCallback, useMemo } from "react";
 import Collection from "../logic/collection";
 import ENGINE from "../logic/engine";
-import { IVisual } from "../logic/visual";
+import Visual, { IVisual } from "../logic/visual";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { setSelectedElementId, toggleColumnMode } from "../redux/slices/applicationSlice";
+import { clearSelection, setSelectedElementId, toggleColumnMode } from "../redux/slices/applicationSlice";
 import { setDebugLayerDialogOpen, setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen } from "../redux/slices/dialogSlice";
 import * as Actions from "../redux/thunks/actionThunks";
+import { useSelectedElement, useSelectedElements } from "../hooks/useSelectedElements";
 
 export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const dispatch = useAppDispatch();
-    const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
     const isDebugLayerDialogOpen = useAppSelector((state) => state.dialog.isDebugLayerDialogOpen);
 
-    const selectedElement = useMemo(() => ENGINE.handler.identifyElement(selectedElementId ?? ""), [selectedElementId]);
+    const selectedElements = useSelectedElements();
+    const selectedElement = useSelectedElement();
+    const selectedElementId = selectedElement?.id;
 
     const handleNudge = useCallback((e: KeyboardEvent, dx: number, dy: number) => {
         const target = e.target as HTMLElement | null;
@@ -21,45 +23,79 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
             return;
         }
 
-        if (!selectedElementId) return;
-        const element = ENGINE.handler.identifyElement(selectedElementId);
-        if (!element) return;
+        if (selectedElements.length === 0) return;
 
-        const isCollection = Collection.isCollection(element) || Collection.isICollection(element.state);
+        if (selectedElements.length === 1) {
+            const element = selectedElements[0];
+            const isCollection = Collection.isCollection(element) || Collection.isICollection(element.state);
 
-        if (element.placementMode.type === "free") {
-            const newState: IVisual = {
-                ...element.state,
-                x: element.x + dx,
-                y: element.y + dy
-            };
-            ENGINE.handler.act({
-                type: "modify",
-                input: {
-                    target: element,
-                    child: newState
+            if (element.placementMode.type === "free") {
+                const newState: IVisual = {
+                    ...element.state,
+                    x: element.x + dx,
+                    y: element.y + dy
+                };
+                ENGINE.handler.act({
+                    type: "modify",
+                    input: {
+                        target: element,
+                        child: newState
+                    }
+                });
+            } else {
+                // Collections do not support offset positioning when not in free placement mode
+                if (isCollection) {
+                    return;
                 }
-            });
-        } else {
-            // Collections do not support offset positioning when not in free placement mode
-            if (isCollection) {
-                return;
+
+                const [ox, oy] = element.offset ?? [0, 0];
+                const newState: IVisual = {
+                    ...element.state,
+                    offset: [ox + dx, oy + dy]
+                };
+                ENGINE.handler.act({
+                    type: "modify",
+                    input: {
+                        target: element,
+                        child: newState
+                    }
+                });
             }
+        } else {
+            // Multi-element batch nudge
+            const batchItems = selectedElements
+                .filter((el) => el.placementMode.type === "free")
+                .map((el) => {
+                    const newState: IVisual = {
+                        ...el.state,
+                        x: el.x + dx,
+                        y: el.y + dy
+                    };
+                    return {
+                        type: "modify" as const,
+                        input: {
+                            target: el,
+                            child: newState
+                        }
+                    };
+                });
 
-            const [ox, oy] = element.offset ?? [0, 0];
-            const newState: IVisual = {
-                ...element.state,
-                offset: [ox + dx, oy + dy]
-            };
-            ENGINE.handler.act({
-                type: "modify",
-                input: {
-                    target: element,
-                    child: newState
-                }
-            });
+            if (batchItems.length > 0) {
+                ENGINE.handler.act({
+                    type: "batch",
+                    input: batchItems
+                });
+            }
         }
-    }, [selectedElementId]);
+    }, [selectedElements]);
+
+    const handleDelete = useCallback((e?: KeyboardEvent) => {
+        const target = e?.target as HTMLElement | null;
+        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+            return;
+        }
+        dispatch(Actions.deleteSelectedElements());
+    }, [dispatch]);
 
     const handleResetOffset = useCallback((e: KeyboardEvent) => {
         const target = e.target as HTMLElement | null;
@@ -107,35 +143,22 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
             {
                 combo: "delete",
                 global: true,
-                label: "Delete selected element",
-                onKeyDown: () => {
-                    if (selectedElement) {
-                        ENGINE.handler.act({
-                            type: "remove",
-                            input: {
-                                child: selectedElement
-                            }
-                        });
-                        dispatch(setSelectedElementId(undefined));
-                    }
-                },
+                label: "Delete selected element(s)",
+                onKeyDown: (e) => handleDelete(e),
                 preventDefault: true
             },
             {
                 combo: "backspace",
                 global: true,
-                label: "Delete selected element",
-                onKeyDown: () => {
-                    if (selectedElement) {
-                        ENGINE.handler.act({
-                            type: "remove",
-                            input: {
-                                child: selectedElement
-                            }
-                        });
-                        dispatch(setSelectedElementId(undefined));
-                    }
-                },
+                label: "Delete selected element(s)",
+                onKeyDown: (e) => handleDelete(e),
+                preventDefault: true
+            },
+            {
+                combo: "escape",
+                global: true,
+                label: "Clear selection",
+                onKeyDown: () => dispatch(clearSelection()),
                 preventDefault: true
             },
             {
@@ -349,7 +372,7 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                 preventDefault: true
             },
         ],
-        [dispatch, handleNudge, handleResetOffset, isDebugLayerDialogOpen, selectedElement]
+        [dispatch, handleNudge, handleDelete, handleResetOffset, isDebugLayerDialogOpen, selectedElement]
     );
 
     useHotkeys(hotkeys);

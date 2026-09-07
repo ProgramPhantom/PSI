@@ -10,7 +10,7 @@ import Visual, { IVisual } from "../../logic/visual";
 import Channel from "../../logic/hasComponents/channel";
 import { RootState } from "../rootReducer";
 import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
-import { setSelectedElementId } from "../slices/applicationSlice";
+import { setSelectedElementId, selectSelectedElementId, clearSelection } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
 import { selectCurrentAuthor, selectCurrentFileName, selectCurrentInstitution } from "../selectors/diagramSelectors";
@@ -168,7 +168,7 @@ export const handleCopyElement = createAsyncThunk(
     'actions/handleCopyElement',
     async (_, { getState }) => {
         const state = getState() as RootState;
-        const selectedElementId = state.application.selectedElementId;
+        const selectedElementId = selectSelectedElementId(state);
         if (!selectedElementId) return;
 
         const element = ENGINE.handler.identifyElement(selectedElementId);
@@ -192,6 +192,54 @@ export const handleCopyElement = createAsyncThunk(
             message: "Element copied to clipboard",
             intent: "success"
         });
+    }
+);
+
+export const deleteSelectedElements = createAsyncThunk<void, string[] | void>(
+    'actions/deleteSelectedElements',
+    async (targetIds, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const ids = targetIds ?? state.application.selectedElementIds;
+        if (!ids || ids.length === 0) return;
+
+        const elements = ids
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined && el.parentId !== undefined);
+
+        if (elements.length === 0) return;
+
+        if (elements.length === 1) {
+            const el = elements[0];
+            ENGINE.handler.act({
+                type: "remove",
+                input: {
+                    child: el
+                }
+            });
+            appToaster.show({
+                message: `Deleted element '${el.ref || el.id}'`,
+                intent: "danger",
+                timeout: 1000
+            });
+        } else {
+            const batchItems = elements.map((el) => ({
+                type: "remove" as const,
+                input: {
+                    child: el
+                }
+            }));
+            ENGINE.handler.act({
+                type: "batch",
+                input: batchItems
+            });
+            appToaster.show({
+                message: `Deleted ${elements.length} elements`,
+                intent: "danger",
+                timeout: 1000
+            });
+        }
+
+        dispatch(clearSelection());
     }
 );
 

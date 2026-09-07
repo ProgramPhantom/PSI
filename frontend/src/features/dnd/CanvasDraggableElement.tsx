@@ -25,9 +25,11 @@ interface IDraggableElementProps {
 	x: number;
 	y: number;
 
-	reselect: (e: Visual) => void;
+	reselect: (e: Visual, event?: React.MouseEvent) => void;
 	visualState: "hovered" | "selected";
+	selectedElements?: Visual[];
 	isHidden?: boolean;
+	isSpacePressed?: boolean;
 	offsetIndicatorThreshold?: number;
 	scale?: number;
 	hoveredElement?: Spacial;
@@ -36,6 +38,7 @@ interface IDraggableElementProps {
 export interface CanvasDraggableElementPayload {
 	element: Visual;
 	offset?: { x: number, y: number };
+	allElements?: Visual[];
 }
 
 /* When an element on the canvas is selected, it is replaced by this, a draggable element */
@@ -44,6 +47,12 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
 		const [livePreview, setLivePreview] = useState<PreviewState | null>(null);
 		const [lineLivePreview, setLineLivePreview] = useState<LinePreviewState | null>(null);
+
+		const isMultiSelected = Boolean(
+			props.selectedElements &&
+			props.selectedElements.length > 1 &&
+			props.selectedElements.some((el) => el.id === props.element.id)
+		);
 
 		const origContentWidth = props.element.drawContentWidth > 0 ? props.element.drawContentWidth : 1;
 		const origContentHeight = props.element.drawContentHeight > 0 ? props.element.drawContentHeight : 1;
@@ -77,10 +86,16 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 			() => ({
 				type: dragElementType,
 				canDrag: () => props.element.placementControl !== "auto",
-				item: () => ({
-					element: props.element,
-					offset: offsetRef.current
-				} as CanvasDraggableElementPayload),
+				item: () => {
+					const allElements = isMultiSelected
+						? (props.selectedElements ?? [props.element])
+						: [props.element];
+					return {
+						element: props.element,
+						offset: offsetRef.current,
+						allElements: allElements
+					} as CanvasDraggableElementPayload;
+				},
 				end: (item, monitor) => {
 					SnapStore.clear();
 					const dropResult = monitor.getDropResult<AllDropResultTypes>();
@@ -100,34 +115,83 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							const targetX = dropResult.data.x - (offsetX / scale);
 							const targetY = dropResult.data.y - (offsetY / scale);
 
-							if (item.element instanceof LineLike) {
-								const line = item.element;
-								const dx = targetX - line.x;
-								const dy = targetY - line.y;
-								const lineState = newState as ILineLike;
-								lineState.startX = line.startX + dx;
-								lineState.startY = line.startY + dy;
-								lineState.endX = line.endX + dx;
-								lineState.endY = line.endY + dy;
-								lineState.x = targetX;
-								lineState.y = targetY;
-							} else {
-								newState.x = targetX;
-								newState.y = targetY;
-							}
+							const deltaX = targetX - item.element.x;
+							const deltaY = targetY - item.element.y;
 
-							newState.parentId = ENGINE.handler.diagram.id;
-							newState.placementMode = {
-								type: "free",
-							}
+							const allElementsToMove = (item.allElements && item.allElements.length > 0)
+								? item.allElements
+								: [item.element];
 
-							ENGINE.handler.act({
-								type: "modify",
-								input: {
-									child: newState,
-									target: props.element
+							if (allElementsToMove.length === 1) {
+								const targetEl = allElementsToMove[0];
+								const targetState: IVisual = { ...targetEl.state };
+
+								if (targetEl instanceof LineLike) {
+									const line = targetEl;
+									const dx = targetX - line.x;
+									const dy = targetY - line.y;
+									const lineState = targetState as ILineLike;
+									lineState.startX = line.startX + dx;
+									lineState.startY = line.startY + dy;
+									lineState.endX = line.endX + dx;
+									lineState.endY = line.endY + dy;
+									lineState.x = targetX;
+									lineState.y = targetY;
+								} else {
+									targetState.x = targetX;
+									targetState.y = targetY;
 								}
-							})
+
+								targetState.parentId = ENGINE.handler.diagram.id;
+								targetState.placementMode = {
+									type: "free",
+								};
+
+								ENGINE.handler.act({
+									type: "modify",
+									input: {
+										child: targetState,
+										target: targetEl
+									}
+								});
+							} else {
+								// Multi-element batch move
+								const batchItems = allElementsToMove.map((targetEl) => {
+									const targetState: IVisual = { ...targetEl.state };
+
+									if (targetEl instanceof LineLike) {
+										const line = targetEl;
+										const lineState = targetState as ILineLike;
+										lineState.startX = line.startX + deltaX;
+										lineState.startY = line.startY + deltaY;
+										lineState.endX = line.endX + deltaX;
+										lineState.endY = line.endY + deltaY;
+										lineState.x = line.x + deltaX;
+										lineState.y = line.y + deltaY;
+									} else {
+										targetState.x = targetEl.x + deltaX;
+										targetState.y = targetEl.y + deltaY;
+									}
+
+									targetState.parentId = ENGINE.handler.diagram.id;
+									targetState.placementMode = {
+										type: "free",
+									};
+
+									return {
+										type: "modify" as const,
+										input: {
+											child: targetState,
+											target: targetEl
+										}
+									};
+								});
+
+								ENGINE.handler.act({
+									type: "batch",
+									input: batchItems
+								});
+							}
 							break;
 						}
 						case "pulse": {
@@ -232,7 +296,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					handlerId: monitor.getHandlerId()
 				})
 			}),
-			[props.x, props.y, props.name, props.element]
+			[props.x, props.y, props.name, props.element, props.selectedElements, isMultiSelected]
 		);
 
 		const visualRef = useRef<SVGSVGElement | null>(null);
@@ -245,7 +309,11 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 		useEffect(() => {
 			if (isInteracting) {
-				props.element.svg?.hide();
+				const elementsToHide = (isDragging && isMultiSelected && props.selectedElements)
+					? props.selectedElements
+					: [props.element];
+
+				elementsToHide.forEach((el) => el.svg?.hide());
 				if (visualRef.current) {
 					const visual = props.element.getInternalRepresentation()?.show();
 					if (visual) {
@@ -253,11 +321,11 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					}
 				}
 				return () => {
-					props.element.svg?.show();
+					elementsToHide.forEach((el) => el.svg?.show());
 					visualRef.current?.replaceChildren();
 				};
 			}
-		}, [isInteracting, props.element]);
+		}, [isInteracting, isDragging, isMultiSelected, props.element, props.selectedElements]);
 
 
 
@@ -273,7 +341,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						top: props.element.drawY,
 						width: props.element.drawWidth,
 						height: props.element.drawHeight,
-						pointerEvents: props.isHidden ? "none" : "auto"
+						pointerEvents: (props.isHidden || props.isSpacePressed) ? "none" : "auto"
 					}}>
 					<div
 						ref={props.element.placementControl === "auto" ? undefined : drag}
@@ -289,7 +357,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							height: "100%",
 							width: "100%",
 							opacity: 0,
-							cursor: props.element.placementControl === "auto" ? "default" : "move"
+							cursor: props.isSpacePressed ? "inherit" : (props.element.placementControl === "auto" ? "default" : "move")
 						}}>
 					</div>
 
@@ -386,6 +454,20 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								strokeDasharray: "none"
 							}}></rect>
 					)}
+					{props.visualState === "selected" && isMultiSelected && (
+						<rect
+							x={props.element.drawCX}
+							y={props.element.drawCY}
+							width={props.element.drawContentWidth}
+							height={props.element.drawContentHeight}
+							style={{
+								stroke: isDragging ? `none` : `${Colors.BLUE3}`,
+								strokeWidth: "1.5px",
+								fill: `${Colors.BLUE5}`,
+								fillOpacity: "6%",
+								strokeDasharray: "none"
+							}}></rect>
+					)}
 
 					{showOffsetIndicator && (
 						<g className="offset-indicator">
@@ -412,7 +494,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					)}
 				</svg>
 
-				{props.visualState === "selected" && !isDragging && !props.isHidden && props.element.placementControl !== "auto" && (
+				{props.visualState === "selected" && !isMultiSelected && !isDragging && !props.isHidden && props.element.placementControl !== "auto" && (
 					props.element instanceof LineLike ? (
 						<CanvasLineResizeHandles
 							element={props.element}
