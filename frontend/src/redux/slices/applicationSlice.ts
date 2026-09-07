@@ -97,7 +97,12 @@ export const applicationSlice = createSlice({
             state.selectedElementIds = action.payload ? [action.payload] : [];
         },
         setSelectedElementIds: (state, action: PayloadAction<string[]>) => {
-            state.selectedElementIds = action.payload;
+            const next = action.payload;
+            const current = state.selectedElementIds;
+            if (current.length === next.length && current.every((id, i) => id === next[i])) {
+                return;
+            }
+            state.selectedElementIds = next;
         },
         toggleElementSelection: (state, action: PayloadAction<string>) => {
             const id = action.payload;
@@ -114,6 +119,9 @@ export const applicationSlice = createSlice({
             }
         },
         clearSelection: (state) => {
+            if (state.selectedElementIds.length === 0) {
+                return;
+            }
             state.selectedElementIds = [];
         },
         toggleDebugSelectionType: (state, action: PayloadAction<AllComponentTypes>) => {
