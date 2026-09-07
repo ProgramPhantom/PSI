@@ -11,6 +11,7 @@ import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
 import { findClosestBindingAnchor, isBindingAllowedAsTarget } from "./bindingUtil";
 import { createPlacementRulesForBinding, determineBindingPlacementModeType } from "../../logic/bindingUtil";
+import { snapPoint, SnapStore } from "../../logic/snapping";
 
 export interface IDrawBoxConfig extends IToolConfig {
 	style?: IRectStyle;
@@ -146,6 +147,7 @@ export function BoxTool(props: IDrawBoxProps) {
 			dispatch(setSelectedElementId(newRect.id));
 			props.setTool({ type: "select", config: {} });
 
+			SnapStore.clear();
 			setStartPoint(null);
 			startPointRef.current = null;
 			startBindingRef.current = null;
@@ -160,6 +162,7 @@ export function BoxTool(props: IDrawBoxProps) {
 	const handleSelectBind = useCallback(
 		(info: ISelectedBindingInfo) => {
 			if (!isBindingAllowedAsTarget(info.anchorObject)) return;
+			SnapStore.clear();
 			if (!startPointRef.current) {
 				setStartPoint(info.point);
 				startPointRef.current = info.point;
@@ -182,13 +185,52 @@ export function BoxTool(props: IDrawBoxProps) {
 			snappedBindingRef.current = snap?.bindingInfo ?? null;
 			setSnappedAnchorKey(snap?.key ?? null);
 
-			if (startPointRef.current) {
-				let pt: { x: number; y: number };
-				if (snap) {
-					pt = snap.bindingInfo.point;
-				} else {
-					pt = computeSnappedPoint(rawCoords, startPointRef.current, isCtrl);
+			if (snap) {
+				SnapStore.clear();
+				if (startPointRef.current) {
+					setCurrentPoint(snap.bindingInfo.point);
 				}
+				return;
+			}
+
+			const pointToSnap = startPointRef.current
+				? computeSnappedPoint(rawCoords, startPointRef.current, isCtrl)
+				: rawCoords;
+
+			const snapRes = snapPoint({
+				point: pointToSnap,
+				scale: currentZoom
+			});
+
+			let pt = pointToSnap;
+			if (snapRes.guides.length > 0) {
+				pt = { x: snapRes.x, y: snapRes.y };
+				if (startPointRef.current) {
+					const start = startPointRef.current;
+					const guides = snapRes.guides.map((g) => {
+						if (g.orientation === "vertical") {
+							return {
+								...g,
+								start: Math.min(g.start, start.y, pt.y) - 4,
+								end: Math.max(g.end, start.y, pt.y) + 4
+							};
+						} else {
+							return {
+								...g,
+								start: Math.min(g.start, start.x, pt.x) - 4,
+								end: Math.max(g.end, start.x, pt.x) + 4
+							};
+						}
+					});
+					SnapStore.setGuides(guides);
+				} else {
+					SnapStore.setGuides(snapRes.guides);
+				}
+			} else {
+				SnapStore.clear();
+			}
+
+			if (startPointRef.current) {
 				setCurrentPoint(pt);
 			}
 		},
@@ -207,16 +249,32 @@ export function BoxTool(props: IDrawBoxProps) {
 		const effectiveSnap = snap?.bindingInfo ?? snappedBindingRef.current;
 
 		if (!startPointRef.current) {
-			const initialPt = effectiveSnap ? effectiveSnap.point : rawCoords;
+			let initialPt = rawCoords;
+			if (effectiveSnap) {
+				initialPt = effectiveSnap.point;
+			} else {
+				const snapRes = snapPoint({ point: rawCoords, scale: currentZoom });
+				if (snapRes.guides.length > 0) {
+					initialPt = { x: snapRes.x, y: snapRes.y };
+				}
+			}
+			SnapStore.clear();
 			setStartPoint(initialPt);
 			startPointRef.current = initialPt;
 			startBindingRef.current = effectiveSnap ?? null;
 			setCurrentPoint(initialPt);
 		} else {
 			const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
-			const endPt = effectiveSnap
-				? effectiveSnap.point
-				: computeSnappedPoint(rawCoords, startPointRef.current, isCtrl);
+			let endPt = computeSnappedPoint(rawCoords, startPointRef.current, isCtrl);
+			if (effectiveSnap) {
+				endPt = effectiveSnap.point;
+			} else {
+				const snapRes = snapPoint({ point: endPt, scale: currentZoom });
+				if (snapRes.guides.length > 0) {
+					endPt = { x: snapRes.x, y: snapRes.y };
+				}
+			}
+			SnapStore.clear();
 			commitBox(startPointRef.current, endPt, startBindingRef.current, effectiveSnap ?? null);
 		}
 	};
@@ -230,6 +288,7 @@ export function BoxTool(props: IDrawBoxProps) {
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
+				SnapStore.clear();
 				setStartPoint(null);
 				startPointRef.current = null;
 				startBindingRef.current = null;
@@ -275,6 +334,7 @@ export function BoxTool(props: IDrawBoxProps) {
 		window.addEventListener("mousemove", handleGlobalMouseMove);
 
 		return () => {
+			SnapStore.clear();
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
 			window.removeEventListener("blur", handleBlur);
