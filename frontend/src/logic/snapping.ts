@@ -1,5 +1,86 @@
 import ENGINE from "./engine";
 import Visual from "./visual";
+import Channel from "./hasComponents/channel";
+import Sequence from "./hasComponents/sequence";
+
+/**
+ * =======================================================================
+ * Snapping Configuration & Tuning Constants
+ * =======================================================================
+ * Adjust these values to control the feel, reach ("depth"), and sensitivity
+ * of the snapping engine, especially in complex diagrams.
+ *
+ * Quick Presets:
+ * -----------------------------------------------------------------------
+ * 1. Dense / High-Complexity Diagram (Minimal clutter, local snap only):
+ *    - THRESHOLD_PIXELS: 4
+ *    - MAX_SEARCH_DISTANCE: 350
+ *    - SNAP_TO_CENTERS: false
+ *    - SNAP_TO_EDGES: true
+ *    - SNAP_TO_CONTAINERS: false
+ *    - PRIORITIZE_CLOSER_ELEMENTS: true
+ *
+ * 2. Balanced (Default):
+ *    - THRESHOLD_PIXELS: 6
+ *    - MAX_SEARCH_DISTANCE: 600
+ *    - SNAP_TO_CENTERS: true
+ *    - SNAP_TO_EDGES: true
+ *    - SNAP_TO_CONTAINERS: false
+ *    - PRIORITIZE_CLOSER_ELEMENTS: true
+ *
+ * 3. Infinite Global Alignment (Snaps to anything across the entire canvas):
+ *    - THRESHOLD_PIXELS: 8
+ *    - MAX_SEARCH_DISTANCE: Infinity
+ *    - SNAP_TO_CENTERS: true
+ *    - SNAP_TO_EDGES: true
+ *    - SNAP_TO_CONTAINERS: false
+ *    - PRIORITIZE_CLOSER_ELEMENTS: true
+ * =======================================================================
+ */
+export const SNAPPING_CONFIG = {
+	/**
+	 * Snap threshold in screen pixels.
+	 * Larger values make snapping more magnetic; smaller values require closer alignment.
+	 * Default: 6
+	 */
+	THRESHOLD_PIXELS: 6,
+
+	/**
+	 * Maximum search distance (in diagram coordinates) along the perpendicular axis.
+	 * E.g., when searching for horizontal alignment (Y), how far in X to look.
+	 * - Lower values (e.g. 300 - 500) limit snapping to immediate neighbors in dense diagrams.
+	 * - Set to Infinity to search the entire canvas regardless of distance.
+	 * Default: 600
+	 */
+	MAX_SEARCH_DISTANCE: 300,
+
+	/**
+	 * Whether to snap to the center/middle points of objects (centerX, centerY).
+	 * Setting this to false significantly reduces guide line clutter in dense diagrams.
+	 * Default: true
+	 */
+	SNAP_TO_CENTERS: true,
+
+	/**
+	 * Whether to snap to the edges of objects (left, right, top, bottom).
+	 * Default: true
+	 */
+	SNAP_TO_EDGES: true,
+
+	/**
+	 * Whether to snap to high-level container boundaries (Channels, Sequences).
+	 * Setting this to false prevents snapping to giant channel rows.
+	 * Default: false
+	 */
+	SNAP_TO_CONTAINERS: false,
+
+	/**
+	 * When multiple alignment lines are available within the threshold,
+	 * prioritize elements physically closer to the moving cursor/object over distant ones.
+	 * Default: true
+	 */
+	PRIORITIZE_CLOSER_ELEMENTS: true
+};
 
 export interface SnapGuide {
 	id: string;
@@ -136,6 +217,11 @@ function queryRTreeTargets(
 		if (excludeIds.has(item.id)) continue;
 		if (item.maxX - item.minX <= 0.5 && item.maxY - item.minY <= 0.5) continue;
 
+		if (!SNAPPING_CONFIG.SNAP_TO_CONTAINERS) {
+			const el = ENGINE.handler.identifyElement(item.id);
+			if (el instanceof Channel || el instanceof Sequence) continue;
+		}
+
 		targets.push({
 			id: item.id,
 			minX: item.minX,
@@ -170,7 +256,7 @@ export interface SnapBoxParams {
  * in the R-tree index. Used for dragging canvas elements and template prefabs.
  */
 export function snapBox(params: SnapBoxParams): SnapBoxResult {
-	const { left, top, width, height, element, scale = 1, thresholdPixels = 6 } = params;
+	const { left, top, width, height, element, scale = 1, thresholdPixels = SNAPPING_CONFIG.THRESHOLD_PIXELS } = params;
 	const effectiveScale = scale > 0 ? scale : 1;
 	const threshold = Math.max(1, thresholdPixels / effectiveScale);
 
@@ -185,32 +271,54 @@ export function snapBox(params: SnapBoxParams): SnapBoxResult {
 	let snappedDx = 0;
 	let snappedDy = 0;
 
+	const perpMargin = SNAPPING_CONFIG.MAX_SEARCH_DISTANCE;
+
 	// --- X Axis Snapping ---
-	const xCandidates = [
-		{ value: left, name: "left" },
-		{ value: boxCenterX, name: "center" },
-		{ value: boxRight, name: "right" }
-	];
+	const xCandidates: { value: number; name: string }[] = [];
+	if (SNAPPING_CONFIG.SNAP_TO_EDGES) {
+		xCandidates.push({ value: left, name: "left" }, { value: boxRight, name: "right" });
+	}
+	if (SNAPPING_CONFIG.SNAP_TO_CENTERS) {
+		xCandidates.push({ value: boxCenterX, name: "center" });
+	}
+
 	const minXSearch = left - threshold;
 	const maxXSearch = boxRight + threshold;
+	const minYSearchForX = perpMargin === Infinity ? -1e7 : top - perpMargin;
+	const maxYSearchForX = perpMargin === Infinity ? 1e7 : boxBottom + perpMargin;
 
-	const xTargets = queryRTreeTargets(minXSearch, maxXSearch, -1e7, 1e7, excludeIds);
+	const xTargets = queryRTreeTargets(minXSearch, maxXSearch, minYSearchForX, maxYSearchForX, excludeIds);
 
 	let bestDiffX: number | null = null;
 	let bestSnapXTarget: number | null = null;
+	let bestTargetDistanceX = Infinity;
 	let alignedTargetsX: InternalTargetCandidate[] = [];
 
 	for (const candidate of xCandidates) {
 		for (const target of xTargets) {
-			const targetPositions = [target.left, target.centerX, target.right];
+			const targetPositions: number[] = [];
+			if (SNAPPING_CONFIG.SNAP_TO_EDGES) {
+				targetPositions.push(target.left, target.right);
+			}
+			if (SNAPPING_CONFIG.SNAP_TO_CENTERS) {
+				targetPositions.push(target.centerX);
+			}
+
+			const targetDist = Math.hypot(target.centerX - boxCenterX, target.centerY - boxCenterY);
+
 			for (const tPos of targetPositions) {
 				const diff = tPos - candidate.value;
 				if (Math.abs(diff) <= threshold) {
-					if (bestDiffX === null || Math.abs(diff) < Math.abs(bestDiffX)) {
+					const isCloserDiff = bestDiffX === null || Math.abs(diff) < Math.abs(bestDiffX) - 0.001;
+					const isSimilarDiff = bestDiffX !== null && Math.abs(Math.abs(diff) - Math.abs(bestDiffX)) <= 0.001;
+					const isCloserTarget = SNAPPING_CONFIG.PRIORITIZE_CLOSER_ELEMENTS && targetDist < bestTargetDistanceX;
+
+					if (isCloserDiff || (isSimilarDiff && isCloserTarget)) {
 						bestDiffX = diff;
 						bestSnapXTarget = tPos;
+						bestTargetDistanceX = targetDist;
 						alignedTargetsX = [target];
-					} else if (bestDiffX !== null && Math.abs(diff - bestDiffX) < 0.001) {
+					} else if (isSimilarDiff && bestSnapXTarget !== null && Math.abs(tPos - bestSnapXTarget) < 0.001) {
 						if (!alignedTargetsX.some((t) => t.id === target.id)) {
 							alignedTargetsX.push(target);
 						}
@@ -236,31 +344,51 @@ export function snapBox(params: SnapBoxParams): SnapBoxResult {
 	}
 
 	// --- Y Axis Snapping ---
-	const yCandidates = [
-		{ value: top, name: "top" },
-		{ value: boxCenterY, name: "center" },
-		{ value: boxBottom, name: "bottom" }
-	];
+	const yCandidates: { value: number; name: string }[] = [];
+	if (SNAPPING_CONFIG.SNAP_TO_EDGES) {
+		yCandidates.push({ value: top, name: "top" }, { value: boxBottom, name: "bottom" });
+	}
+	if (SNAPPING_CONFIG.SNAP_TO_CENTERS) {
+		yCandidates.push({ value: boxCenterY, name: "center" });
+	}
+
 	const minYSearch = top - threshold;
 	const maxYSearch = boxBottom + threshold;
+	const minXSearchForY = perpMargin === Infinity ? -1e7 : left - perpMargin;
+	const maxXSearchForY = perpMargin === Infinity ? 1e7 : boxRight + perpMargin;
 
-	const yTargets = queryRTreeTargets(-1e7, 1e7, minYSearch, maxYSearch, excludeIds);
+	const yTargets = queryRTreeTargets(minXSearchForY, maxXSearchForY, minYSearch, maxYSearch, excludeIds);
 
 	let bestDiffY: number | null = null;
 	let bestSnapYTarget: number | null = null;
+	let bestTargetDistanceY = Infinity;
 	let alignedTargetsY: InternalTargetCandidate[] = [];
 
 	for (const candidate of yCandidates) {
 		for (const target of yTargets) {
-			const targetPositions = [target.top, target.centerY, target.bottom];
+			const targetPositions: number[] = [];
+			if (SNAPPING_CONFIG.SNAP_TO_EDGES) {
+				targetPositions.push(target.top, target.bottom);
+			}
+			if (SNAPPING_CONFIG.SNAP_TO_CENTERS) {
+				targetPositions.push(target.centerY);
+			}
+
+			const targetDist = Math.hypot(target.centerX - boxCenterX, target.centerY - boxCenterY);
+
 			for (const tPos of targetPositions) {
 				const diff = tPos - candidate.value;
 				if (Math.abs(diff) <= threshold) {
-					if (bestDiffY === null || Math.abs(diff) < Math.abs(bestDiffY)) {
+					const isCloserDiff = bestDiffY === null || Math.abs(diff) < Math.abs(bestDiffY) - 0.001;
+					const isSimilarDiff = bestDiffY !== null && Math.abs(Math.abs(diff) - Math.abs(bestDiffY)) <= 0.001;
+					const isCloserTarget = SNAPPING_CONFIG.PRIORITIZE_CLOSER_ELEMENTS && targetDist < bestTargetDistanceY;
+
+					if (isCloserDiff || (isSimilarDiff && isCloserTarget)) {
 						bestDiffY = diff;
 						bestSnapYTarget = tPos;
+						bestTargetDistanceY = targetDist;
 						alignedTargetsY = [target];
-					} else if (bestDiffY !== null && Math.abs(diff - bestDiffY) < 0.001) {
+					} else if (isSimilarDiff && bestSnapYTarget !== null && Math.abs(tPos - bestSnapYTarget) < 0.001) {
 						if (!alignedTargetsY.some((t) => t.id === target.id)) {
 							alignedTargetsY.push(target);
 						}
@@ -316,7 +444,7 @@ export interface SnapResizeBoxParams {
  * Snaps resizing geometry according to the active handle direction.
  */
 export function snapResizeBox(params: SnapResizeBoxParams): SnapResizeBoxResult {
-	const { direction, box, minWidth = 5, minHeight = 5, element, scale = 1, thresholdPixels = 6 } = params;
+	const { direction, box, minWidth = 5, minHeight = 5, element, scale = 1, thresholdPixels = SNAPPING_CONFIG.THRESHOLD_PIXELS } = params;
 	const effectiveScale = scale > 0 ? scale : 1;
 	const threshold = Math.max(1, thresholdPixels / effectiveScale);
 	const excludeIds = params.excludeIds ?? getElementExclusionIds(element);
@@ -324,8 +452,11 @@ export function snapResizeBox(params: SnapResizeBoxParams): SnapResizeBoxResult 
 	let { left, top, width, height } = box;
 	let right = left + width;
 	let bottom = top + height;
+	const centerX = left + width / 2;
+	const centerY = top + height / 2;
 
 	const guides: SnapGuide[] = [];
+	const perpMargin = SNAPPING_CONFIG.MAX_SEARCH_DISTANCE;
 
 	const movesLeft = direction === "w" || direction === "nw" || direction === "sw";
 	const movesRight = direction === "e" || direction === "ne" || direction === "se";
@@ -335,22 +466,36 @@ export function snapResizeBox(params: SnapResizeBoxParams): SnapResizeBoxResult 
 	// Handle X snapping
 	if (movesLeft || movesRight) {
 		const candidateX = movesLeft ? left : right;
-		const targets = queryRTreeTargets(candidateX - threshold, candidateX + threshold, -1e7, 1e7, excludeIds);
+		const minYSearch = perpMargin === Infinity ? -1e7 : top - perpMargin;
+		const maxYSearch = perpMargin === Infinity ? 1e7 : bottom + perpMargin;
+
+		const targets = queryRTreeTargets(candidateX - threshold, candidateX + threshold, minYSearch, maxYSearch, excludeIds);
 
 		let bestDiff: number | null = null;
 		let bestTargetPos: number | null = null;
+		let bestTargetDist = Infinity;
 		let alignedTargets: InternalTargetCandidate[] = [];
 
 		for (const target of targets) {
-			const positions = [target.left, target.centerX, target.right];
+			const positions: number[] = [];
+			if (SNAPPING_CONFIG.SNAP_TO_EDGES) positions.push(target.left, target.right);
+			if (SNAPPING_CONFIG.SNAP_TO_CENTERS) positions.push(target.centerX);
+
+			const targetDist = Math.hypot(target.centerX - centerX, target.centerY - centerY);
+
 			for (const tPos of positions) {
 				const diff = tPos - candidateX;
 				if (Math.abs(diff) <= threshold) {
-					if (bestDiff === null || Math.abs(diff) < Math.abs(bestDiff)) {
+					const isCloserDiff = bestDiff === null || Math.abs(diff) < Math.abs(bestDiff) - 0.001;
+					const isSimilarDiff = bestDiff !== null && Math.abs(Math.abs(diff) - Math.abs(bestDiff)) <= 0.001;
+					const isCloserTarget = SNAPPING_CONFIG.PRIORITIZE_CLOSER_ELEMENTS && targetDist < bestTargetDist;
+
+					if (isCloserDiff || (isSimilarDiff && isCloserTarget)) {
 						bestDiff = diff;
 						bestTargetPos = tPos;
+						bestTargetDist = targetDist;
 						alignedTargets = [target];
-					} else if (bestDiff !== null && Math.abs(diff - bestDiff) < 0.001) {
+					} else if (isSimilarDiff && bestTargetPos !== null && Math.abs(tPos - bestTargetPos) < 0.001) {
 						if (!alignedTargets.some((t) => t.id === target.id)) {
 							alignedTargets.push(target);
 						}
@@ -387,22 +532,36 @@ export function snapResizeBox(params: SnapResizeBoxParams): SnapResizeBoxResult 
 	// Handle Y snapping
 	if (movesTop || movesBottom) {
 		const candidateY = movesTop ? top : bottom;
-		const targets = queryRTreeTargets(-1e7, 1e7, candidateY - threshold, candidateY + threshold, excludeIds);
+		const minXSearch = perpMargin === Infinity ? -1e7 : left - perpMargin;
+		const maxXSearch = perpMargin === Infinity ? 1e7 : right + perpMargin;
+
+		const targets = queryRTreeTargets(minXSearch, maxXSearch, candidateY - threshold, candidateY + threshold, excludeIds);
 
 		let bestDiff: number | null = null;
 		let bestTargetPos: number | null = null;
+		let bestTargetDist = Infinity;
 		let alignedTargets: InternalTargetCandidate[] = [];
 
 		for (const target of targets) {
-			const positions = [target.top, target.centerY, target.bottom];
+			const positions: number[] = [];
+			if (SNAPPING_CONFIG.SNAP_TO_EDGES) positions.push(target.top, target.bottom);
+			if (SNAPPING_CONFIG.SNAP_TO_CENTERS) positions.push(target.centerY);
+
+			const targetDist = Math.hypot(target.centerX - centerX, target.centerY - centerY);
+
 			for (const tPos of positions) {
 				const diff = tPos - candidateY;
 				if (Math.abs(diff) <= threshold) {
-					if (bestDiff === null || Math.abs(diff) < Math.abs(bestDiff)) {
+					const isCloserDiff = bestDiff === null || Math.abs(diff) < Math.abs(bestDiff) - 0.001;
+					const isSimilarDiff = bestDiff !== null && Math.abs(Math.abs(diff) - Math.abs(bestDiff)) <= 0.001;
+					const isCloserTarget = SNAPPING_CONFIG.PRIORITIZE_CLOSER_ELEMENTS && targetDist < bestTargetDist;
+
+					if (isCloserDiff || (isSimilarDiff && isCloserTarget)) {
 						bestDiff = diff;
 						bestTargetPos = tPos;
+						bestTargetDist = targetDist;
 						alignedTargets = [target];
-					} else if (bestDiff !== null && Math.abs(diff - bestDiff) < 0.001) {
+					} else if (isSimilarDiff && bestTargetPos !== null && Math.abs(tPos - bestTargetPos) < 0.001) {
 						if (!alignedTargets.some((t) => t.id === target.id)) {
 							alignedTargets.push(target);
 						}
@@ -454,10 +613,10 @@ export interface SnapPointParams {
 }
 
 /**
- * Snaps a 1D/2D point (e.g., line endpoints) to other elements' edges or centers.
+ * Snaps a 1D/2D point (e.g., line endpoints, tool cursors) to other elements' edges or centers.
  */
 export function snapPoint(params: SnapPointParams): SnapPointResult {
-	const { point, element, scale = 1, thresholdPixels = 6 } = params;
+	const { point, element, scale = 1, thresholdPixels = SNAPPING_CONFIG.THRESHOLD_PIXELS } = params;
 	const effectiveScale = scale > 0 ? scale : 1;
 	const threshold = Math.max(1, thresholdPixels / effectiveScale);
 	const excludeIds = params.excludeIds ?? getElementExclusionIds(element);
@@ -467,23 +626,38 @@ export function snapPoint(params: SnapPointParams): SnapPointResult {
 	let dx = 0;
 	let dy = 0;
 	const guides: SnapGuide[] = [];
+	const perpMargin = SNAPPING_CONFIG.MAX_SEARCH_DISTANCE;
 
 	// X Snapping
-	const xTargets = queryRTreeTargets(point.x - threshold, point.x + threshold, -1e7, 1e7, excludeIds);
+	const minYSearchForX = perpMargin === Infinity ? -1e7 : point.y - perpMargin;
+	const maxYSearchForX = perpMargin === Infinity ? 1e7 : point.y + perpMargin;
+	const xTargets = queryRTreeTargets(point.x - threshold, point.x + threshold, minYSearchForX, maxYSearchForX, excludeIds);
+
 	let bestDiffX: number | null = null;
 	let bestSnapXTarget: number | null = null;
+	let bestTargetDistX = Infinity;
 	let alignedTargetsX: InternalTargetCandidate[] = [];
 
 	for (const target of xTargets) {
-		const positions = [target.left, target.centerX, target.right];
+		const positions: number[] = [];
+		if (SNAPPING_CONFIG.SNAP_TO_EDGES) positions.push(target.left, target.right);
+		if (SNAPPING_CONFIG.SNAP_TO_CENTERS) positions.push(target.centerX);
+
+		const targetDist = Math.hypot(target.centerX - point.x, target.centerY - point.y);
+
 		for (const tPos of positions) {
 			const diff = tPos - point.x;
 			if (Math.abs(diff) <= threshold) {
-				if (bestDiffX === null || Math.abs(diff) < Math.abs(bestDiffX)) {
+				const isCloserDiff = bestDiffX === null || Math.abs(diff) < Math.abs(bestDiffX) - 0.001;
+				const isSimilarDiff = bestDiffX !== null && Math.abs(Math.abs(diff) - Math.abs(bestDiffX)) <= 0.001;
+				const isCloserTarget = SNAPPING_CONFIG.PRIORITIZE_CLOSER_ELEMENTS && targetDist < bestTargetDistX;
+
+				if (isCloserDiff || (isSimilarDiff && isCloserTarget)) {
 					bestDiffX = diff;
 					bestSnapXTarget = tPos;
+					bestTargetDistX = targetDist;
 					alignedTargetsX = [target];
-				} else if (bestDiffX !== null && Math.abs(diff - bestDiffX) < 0.001) {
+				} else if (isSimilarDiff && bestSnapXTarget !== null && Math.abs(tPos - bestSnapXTarget) < 0.001) {
 					if (!alignedTargetsX.some((t) => t.id === target.id)) {
 						alignedTargetsX.push(target);
 					}
@@ -509,21 +683,35 @@ export function snapPoint(params: SnapPointParams): SnapPointResult {
 	}
 
 	// Y Snapping
-	const yTargets = queryRTreeTargets(-1e7, 1e7, point.y - threshold, point.y + threshold, excludeIds);
+	const minXSearchForY = perpMargin === Infinity ? -1e7 : point.x - perpMargin;
+	const maxXSearchForY = perpMargin === Infinity ? 1e7 : point.x + perpMargin;
+	const yTargets = queryRTreeTargets(minXSearchForY, maxXSearchForY, point.y - threshold, point.y + threshold, excludeIds);
+
 	let bestDiffY: number | null = null;
 	let bestSnapYTarget: number | null = null;
+	let bestTargetDistY = Infinity;
 	let alignedTargetsY: InternalTargetCandidate[] = [];
 
 	for (const target of yTargets) {
-		const positions = [target.top, target.centerY, target.bottom];
+		const positions: number[] = [];
+		if (SNAPPING_CONFIG.SNAP_TO_EDGES) positions.push(target.top, target.bottom);
+		if (SNAPPING_CONFIG.SNAP_TO_CENTERS) positions.push(target.centerY);
+
+		const targetDist = Math.hypot(target.centerX - point.x, target.centerY - point.y);
+
 		for (const tPos of positions) {
 			const diff = tPos - point.y;
 			if (Math.abs(diff) <= threshold) {
-				if (bestDiffY === null || Math.abs(diff) < Math.abs(bestDiffY)) {
+				const isCloserDiff = bestDiffY === null || Math.abs(diff) < Math.abs(bestDiffY) - 0.001;
+				const isSimilarDiff = bestDiffY !== null && Math.abs(Math.abs(diff) - Math.abs(bestDiffY)) <= 0.001;
+				const isCloserTarget = SNAPPING_CONFIG.PRIORITIZE_CLOSER_ELEMENTS && targetDist < bestTargetDistY;
+
+				if (isCloserDiff || (isSimilarDiff && isCloserTarget)) {
 					bestDiffY = diff;
 					bestSnapYTarget = tPos;
+					bestTargetDistY = targetDist;
 					alignedTargetsY = [target];
-				} else if (bestDiffY !== null && Math.abs(diff - bestDiffY) < 0.001) {
+				} else if (isSimilarDiff && bestSnapYTarget !== null && Math.abs(tPos - bestSnapYTarget) < 0.001) {
 					if (!alignedTargetsY.some((t) => t.id === target.id)) {
 						alignedTargetsY.push(target);
 					}
