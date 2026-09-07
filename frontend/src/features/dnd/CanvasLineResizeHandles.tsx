@@ -3,25 +3,20 @@ import ENGINE from "../../logic/engine";
 import Line, { HeadStyle } from "../../logic/line";
 import LineLike, { ILineLike } from "../../logic/lineLike";
 import Spacial, {
-	filterPlacementBindingRules,
 	IPlacementBindingRule,
 	ISequenceBindingRule,
 	PlacementConfiguration,
-	updatePlacementModeBindingRules
 } from "../../logic/spacial";
 import { useAppDispatch } from "../../redux/hooks";
 import { setIsResizing } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
 import {
-	applyBindingRule,
-	clearBindingRuleFromAnchor,
-	createPlacementBindingRule,
-	determineBindingPlacementModeType,
 	findClosestBindingAnchor,
 	isBindingAllowedAsTarget,
 	isBindingAllowedForResizing
 } from "../canvas/bindingUtil";
 import styles from "./styles/CanvasResizeHandles.module.scss";
+import { applyBindingRule, clearBindingRuleFromAnchor, createPlacementBindingRule, determineBindingPlacementModeType, filterPlacementBindingRules, updatePlacementModeBindingRules } from "../../logic/bindingUtil";
 
 export type LineHandleType = "start" | "end";
 

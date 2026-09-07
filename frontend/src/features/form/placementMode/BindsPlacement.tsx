@@ -6,7 +6,8 @@ import {
 import React from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import ENGINE from "../../../logic/engine";
-import { IPlacementBindingRule, ISequenceBindingRule, isGridBindingRule } from "../../../logic/spacial";
+import { IPlacementBindingRule, ISequenceBindingRule } from "../../../logic/spacial";
+import { isGridBindingRule } from "../../../logic/bindingUtil";
 
 const formatSite = (site: string, dimension?: string): string => {
 	if (site === "start") return "Start";

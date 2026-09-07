@@ -1,19 +1,10 @@
 import Visual from "../../logic/visual";
 import LineLike from "../../logic/lineLike";
 import RectElement from "../../logic/rectElement";
-import Spacial, {
-	Dimensions,
-	IGridBindingPlacementRule,
-	IPlacementBindingRule,
-	PlacementConfiguration,
-	ISequenceBindingRule,
-	isGridBindingRule,
-	SiteNames
-} from "../../logic/spacial";
+import Spacial, { SiteNames } from "../../logic/spacial";
 import { GridColumn, isGridColumn } from "../../logic/grid";
-import ENGINE from "../../logic/engine";
-import Sequence from "../../logic/hasComponents/sequence";
-import { ISelectedBindingInfo } from "./BindingsSelector";
+import { ISelectedBindingInfo } from "../../logic/bindingUtil";
+
 
 /**
  * Predicate function type to test if an element is allowed to show the BindingsSelector during resize.
@@ -141,8 +132,6 @@ export const isBindingAllowedAsTarget = (
 		return false;
 	}
 
-
-
 	// 1. Check disallowed registry - any match blocks the candidate
 	const isBlocked = BINDING_DISALLOWED_TARGET_ELEMENTS.some((target) =>
 		matchesDescriptor(candidate, target)
@@ -206,96 +195,6 @@ export function findClosestBindingAnchor(
 	}
 
 	return bestResult;
-}
-
-/**
- * Creates a placement binding rule for a single dimension given an ISelectedBindingInfo.
- */
-export function createPlacementBindingRule(
-	info: ISelectedBindingInfo,
-	dimension: Dimensions,
-	targetSiteName: SiteNames
-): ISequenceBindingRule {
-	const anchorSiteName = dimension === "x" ? info.xAnchor : info.yAnchor;
-	if (isGridColumn(info.anchorObject)) {
-		return {
-			sequenceId: info.anchorObject.sequenceId,
-			column: info.anchorObject.columnIndex,
-			dimension,
-			anchorSiteName,
-			targetSiteName,
-			bindToContent: info.bindToContent ?? false
-		};
-	}
-	return {
-		targetId: info.anchorObject.id,
-		dimension,
-		anchorSiteName,
-		targetSiteName,
-		bindToContent: info.bindToContent ?? false
-	};
-}
-
-/**
- * Creates X and/or Y placement binding rules given an ISelectedBindingInfo and target site names.
- */
-export function createPlacementRulesForBinding(
-	info: ISelectedBindingInfo,
-	targetSiteX?: SiteNames,
-	targetSiteY?: SiteNames
-): ISequenceBindingRule[] {
-	const rules: ISequenceBindingRule[] = [];
-	if (targetSiteX) {
-		rules.push(createPlacementBindingRule(info, "x", targetSiteX));
-	}
-	if (targetSiteY) {
-		rules.push(createPlacementBindingRule(info, "y", targetSiteY));
-	}
-	return rules;
-}
-
-export { determineBindingPlacementModeType } from "../../logic/spacial";
-
-/**
- * Resolves the anchor object for a given rule (either from sequence columns or by element ID).
- */
-export function resolveAnchorForRule(rule: ISequenceBindingRule): Spacial | undefined {
-	if (isGridBindingRule(rule)) {
-		const seq = ENGINE.handler.identifyElement(rule.sequenceId) as Sequence | undefined;
-		return seq?.gridSizes?.columns?.[rule.column];
-	}
-	const anchorId = rule.targetId || rule.anchorId;
-	return anchorId ? ENGINE.handler.identifyElement(anchorId) : undefined;
-}
-
-/**
- * Clears an established binding from the anchor referenced in the rule.
- */
-export function clearBindingRuleFromAnchor(rule: ISequenceBindingRule, targetElement: Spacial): void {
-	const anchor = resolveAnchorForRule(rule);
-	anchor?.clearBindsTo(targetElement, rule.dimension, rule.targetSiteName);
-}
-
-/**
- * Registers an active runtime binding on the resolved anchor object.
- */
-export function applyBindingRule(
-	rule: ISequenceBindingRule,
-	targetElement: Spacial,
-	anchorOverride?: Spacial
-): void {
-	const anchor = anchorOverride ?? resolveAnchorForRule(rule);
-	if (anchor) {
-		anchor.bind(
-			targetElement,
-			rule.dimension,
-			rule.anchorSiteName,
-			rule.targetSiteName,
-			rule.offset,
-			rule.hint,
-			rule.bindToContent ?? true
-		);
-	}
 }
 
 export default isBindingAllowedForResizing;

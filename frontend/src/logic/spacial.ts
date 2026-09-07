@@ -87,12 +87,7 @@ export interface IGridBindingPlacementRule {
 
 export type ISequenceBindingRule = IPlacementBindingRule | IGridBindingPlacementRule;
 
-/**
- * Type guard to check if a binding rule targets a sequence grid column.
- */
-export function isGridBindingRule(rule: ISequenceBindingRule): rule is IGridBindingPlacementRule {
-	return "sequenceId" in rule;
-}
+
 
 export type IBindsPlacementConfig = IPlacementBindingRule[];
 export type ISequenceBindPlacementConfig = ISequenceBindingRule[];
@@ -114,65 +109,7 @@ export type PlacementConfiguration =
 	| { type: "subgrid"; config: ISubgridConfig }
 	| { type: "singleton" };
 
-/**
- * Filters a list of placement binding rules into remaining and removed rules matching targetSiteName (and optional dimension).
- */
-export function filterPlacementBindingRules<T extends ISequenceBindingRule = ISequenceBindingRule>(
-	rules: T[],
-	targetSiteName: SiteNames,
-	dimension?: Dimensions
-): { remaining: T[]; removed: T[] } {
-	const remaining: T[] = [];
-	const removed: T[] = [];
 
-	for (const rule of rules) {
-		const matchesSite = rule.targetSiteName === targetSiteName;
-		const matchesDim = dimension === undefined || rule.dimension === dimension;
-		if (matchesSite && matchesDim) {
-			removed.push(rule);
-		} else {
-			remaining.push(rule);
-		}
-	}
-
-	return { remaining, removed };
-}
-
-/**
- * Determines the appropriate PlacementConfiguration for a given list of binding rules.
- */
-export function determineBindingPlacementModeType(rules: ISequenceBindingRule[]): PlacementConfiguration {
-	if (!rules || rules.length === 0) {
-		return { type: "free" };
-	}
-	if (rules.some(isGridBindingRule)) {
-		return { type: "sequenceBind", config: rules };
-	}
-	return { type: "binds", config: rules as IPlacementBindingRule[] };
-}
-
-/**
- * Removes rules matching targetSiteName (and optional dimension) from a PlacementConfiguration.
- * If 0 rules remain, reverts to `{ type: "free" }`.
- */
-export function updatePlacementModeBindingRules(
-	placementMode: PlacementConfiguration | undefined,
-	targetSiteName: SiteNames,
-	dimension?: Dimensions
-): { updatedPlacementMode: PlacementConfiguration; removedRules: ISequenceBindingRule[] } {
-	if ((placementMode?.type !== "binds" && placementMode?.type !== "sequenceBind") || !placementMode.config) {
-		return {
-			updatedPlacementMode: placementMode ?? { type: "free" },
-			removedRules: []
-		};
-	}
-
-	const { remaining, removed } = filterPlacementBindingRules(placementMode.config, targetSiteName, dimension);
-
-	const updatedPlacementMode = determineBindingPlacementModeType(remaining);
-
-	return { updatedPlacementMode, removedRules: removed };
-}
 
 
 export type PlacementControl = "auto" | "user";

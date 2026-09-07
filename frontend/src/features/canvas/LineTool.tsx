@@ -9,11 +9,10 @@ import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
 import {
-	createPlacementRulesForBinding,
-	determineBindingPlacementModeType,
 	findClosestBindingAnchor,
 	isBindingAllowedAsTarget
 } from "./bindingUtil";
+import { createPlacementRulesForBinding, determineBindingPlacementModeType } from "../../logic/bindingUtil";
 
 export interface IDrawArrowConfig extends IToolConfig {
 	thickness?: number;

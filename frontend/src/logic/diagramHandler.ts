@@ -12,8 +12,8 @@ import Sequence from "./hasComponents/sequence.ts";
 import { AllComponentTypes, ID } from "./point.ts";
 import Visual, { IDraw, IVisual } from "./visual.ts";
 import RBush from "rbush";
-import Spacial, { IBindsPlacementConfig, RBushItem, ISequenceBindingRule, isGridBindingRule } from "./spacial.ts";
-import { determineBindingPlacementModeType } from "../features/canvas/bindingUtil.ts";
+import Spacial, { IBindsPlacementConfig, RBushItem, ISequenceBindingRule, } from "./spacial.ts";
+import { determineBindingPlacementModeType, isGridBindingRule } from "./bindingUtil.ts";
 
 
 /**

@@ -2,9 +2,10 @@ import { Element } from "@svgdotjs/svg.js";
 import { AddDispatchData, RemoveDispatchData, StructuredChildEntry } from "../collection";
 import Grid, { GridCell, GridColumn, IGrid, Subgrid } from "../grid";
 import { ID, UserComponentType } from "../point";
-import { Size, isGridBindingRule, determineBindingPlacementModeType } from "../spacial";
+import { Size, } from "../spacial";
 import Visual from "../visual";
 import Channel from "./channel";
+import { determineBindingPlacementModeType, isGridBindingRule } from "../bindingUtil";
 
 
 

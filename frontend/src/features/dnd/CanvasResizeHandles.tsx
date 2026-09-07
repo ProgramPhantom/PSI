@@ -1,12 +1,10 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import ENGINE from "../../logic/engine";
 import {
-	filterPlacementBindingRules,
 	IPlacementBindingRule,
 	PlacementConfiguration,
 	ISequenceBindingRule,
-	updatePlacementModeBindingRules,
-	SizeConfiguration
+	SizeConfiguration,
 } from "../../logic/spacial";
 import Spacial from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
@@ -15,14 +13,11 @@ import { useAppDispatch } from "../../redux/hooks";
 import { setIsResizing } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "../canvas/BindingsSelector";
 import {
-	applyBindingRule,
-	clearBindingRuleFromAnchor,
-	createPlacementBindingRule,
-	determineBindingPlacementModeType,
 	findClosestBindingAnchor,
 	isBindingAllowedForResizing,
 	isBindingAllowedAsTarget
 } from "../canvas/bindingUtil";
+import { applyBindingRule, clearBindingRuleFromAnchor, createPlacementBindingRule, determineBindingPlacementModeType, filterPlacementBindingRules, updatePlacementModeBindingRules } from "../../logic/bindingUtil";
 
 export type HandleDirection = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 

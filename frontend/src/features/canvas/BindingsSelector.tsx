@@ -1,13 +1,9 @@
 import React, { useState } from "react";
 import Spacial, { SiteNames } from "../../logic/spacial";
 
-export interface ISelectedBindingInfo {
-	anchorObject: Spacial;
-	xAnchor: SiteNames;
-	yAnchor: SiteNames;
-	point: { x: number; y: number };
-	bindToContent?: boolean;
-}
+import { ISelectedBindingInfo } from "../../logic/bindingUtil";
+
+export type { ISelectedBindingInfo };
 
 interface IBindingsSelectorProps {
 	element: Spacial;
