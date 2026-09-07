@@ -18,6 +18,7 @@ import {
 	isBindingAllowedAsTarget
 } from "../canvas/bindingUtil";
 import { applyBindingRule, clearBindingRuleFromAnchor, createPlacementBindingRule, determineBindingPlacementModeType, filterPlacementBindingRules, updatePlacementModeBindingRules } from "../../logic/bindingUtil";
+import { snapResizeBox, SnapStore } from "../../logic/snapping";
 
 export type HandleDirection = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
@@ -335,6 +336,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					dragCleanupRef.current();
 					dragCleanupRef.current = null;
 				}
+				SnapStore.clear();
 				dispatch(setIsResizing(false));
 			};
 		}, [dispatch]);
@@ -435,6 +437,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 							snappedDrawCY = Math.round(oldBottom - snappedHeight);
 						}
 
+						SnapStore.clear();
 						const snappedPreview: PreviewState = {
 							left: snappedDrawCX,
 							top: snappedDrawCY,
@@ -463,6 +466,37 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					initial.minDrawHeight
 				);
 
+				const snapRes = snapResizeBox({
+					direction: initial.direction,
+					box: {
+						left: latestResult.drawCX,
+						top: latestResult.drawCY,
+						width: latestResult.width,
+						height: latestResult.height
+					},
+					minWidth: initial.minDrawWidth,
+					minHeight: initial.minDrawHeight,
+					element: initial.element,
+					scale: initial.effectiveScale
+				});
+
+				if (snapRes.guides.length > 0) {
+					const actualDeltaX = snapRes.left - initial.startDrawCX;
+					const actualDeltaY = snapRes.top - initial.startDrawCY;
+					latestResult = {
+						...latestResult,
+						drawCX: snapRes.left,
+						drawCY: snapRes.top,
+						width: snapRes.width,
+						height: snapRes.height,
+						elemX: initial.isFree ? Math.round(initial.startElemX + actualDeltaX) : initial.startElemX,
+						elemY: initial.isFree ? Math.round(initial.startElemY + actualDeltaY) : initial.startElemY
+					};
+					SnapStore.setGuides(snapRes.guides);
+				} else {
+					SnapStore.clear();
+				}
+
 				const updatedPreview: PreviewState = {
 					left: latestResult.drawCX,
 					top: latestResult.drawCY,
@@ -486,6 +520,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				window.removeEventListener("pointerup", handlePointerUp, true);
 				dragCleanupRef.current = null;
 				dispatch(setIsResizing(false));
+				SnapStore.clear();
 
 				const snapped = snappedBindingRef.current;
 				snappedBindingRef.current = null;
@@ -500,26 +535,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 				setActiveDirection(null);
 				onResizeRef.current?.(null);
 
-				const deltaPixelsX = e.clientX - initial.startX;
-				const deltaPixelsY = e.clientY - initial.startY;
-
-				const deltaDiagramX = deltaPixelsX / initial.effectiveScale;
-				const deltaDiagramY = deltaPixelsY / initial.effectiveScale;
-
-				const finalResult = computeResizeGeometry(
-					initial.direction,
-					deltaDiagramX,
-					deltaDiagramY,
-					initial.startContentWidth,
-					initial.startContentHeight,
-					initial.startElemX,
-					initial.startElemY,
-					initial.startDrawCX,
-					initial.startDrawCY,
-					initial.isFree,
-					initial.minDrawWidth,
-					initial.minDrawHeight
-				);
+				const finalResult = latestResult;
 
 				const sites = HANDLE_SITE_MAP[initial.direction];
 				let updatedPlacementMode = initial.element.placementMode;

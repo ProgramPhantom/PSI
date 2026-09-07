@@ -17,6 +17,7 @@ import {
 } from "../canvas/bindingUtil";
 import styles from "./styles/CanvasResizeHandles.module.scss";
 import { applyBindingRule, clearBindingRuleFromAnchor, createPlacementBindingRule, determineBindingPlacementModeType, filterPlacementBindingRules, updatePlacementModeBindingRules } from "../../logic/bindingUtil";
+import { snapPoint, SnapStore } from "../../logic/snapping";
 
 export type LineHandleType = "start" | "end";
 
@@ -133,6 +134,7 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 					}
 				});
 
+				SnapStore.clear();
 				dispatch(setIsResizing(false));
 				setActiveHandle(null);
 				setPreviewState(null);
@@ -150,6 +152,7 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 					dragCleanupRef.current();
 					dragCleanupRef.current = null;
 				}
+				SnapStore.clear();
 				dispatch(setIsResizing(false));
 			};
 		}, [dispatch]);
@@ -220,19 +223,46 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				}
 			};
 
-			const updatePreviewWithDelta = (deltaX: number, deltaY: number, isCtrl: boolean) => {
-				lastDeltaRef.current = { deltaX, deltaY };
-				const preview = computeSnappedEndpoints(deltaX, deltaY, isCtrl);
-				setPreviewState(preview);
-				onResizeRef.current?.(preview);
-				return preview;
-			};
-
 			const initialPreview: LinePreviewState = {
 				startX: initial.startX,
 				startY: initial.startY,
 				endX: initial.endX,
 				endY: initial.endY
+			};
+
+			const latestPreviewRef = { current: initialPreview };
+
+			const updatePreviewWithDelta = (deltaX: number, deltaY: number, isCtrl: boolean) => {
+				lastDeltaRef.current = { deltaX, deltaY };
+				const preview = computeSnappedEndpoints(deltaX, deltaY, isCtrl);
+
+				const activePoint = initial.handle === "start"
+					? { x: preview.startX, y: preview.startY }
+					: { x: preview.endX, y: preview.endY };
+
+				const snapRes = snapPoint({
+					point: activePoint,
+					element: initial.element,
+					scale: initial.effectiveScale
+				});
+
+				if (snapRes.guides.length > 0) {
+					if (initial.handle === "start") {
+						preview.startX = snapRes.x;
+						preview.startY = snapRes.y;
+					} else {
+						preview.endX = snapRes.x;
+						preview.endY = snapRes.y;
+					}
+					SnapStore.setGuides(snapRes.guides);
+				} else {
+					SnapStore.clear();
+				}
+
+				latestPreviewRef.current = preview;
+				setPreviewState(preview);
+				onResizeRef.current?.(preview);
+				return preview;
 			};
 
 			setPreviewState(initialPreview);
@@ -261,12 +291,14 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 					setSnappedAnchorKey(snap?.key ?? null);
 
 					if (snap) {
+						SnapStore.clear();
 						const snappedPreview: LinePreviewState = {
 							startX: initial.handle === "start" ? snap.bindingInfo.point.x : initial.startX,
 							startY: initial.handle === "start" ? snap.bindingInfo.point.y : initial.startY,
 							endX: initial.handle === "end" ? snap.bindingInfo.point.x : initial.endX,
 							endY: initial.handle === "end" ? snap.bindingInfo.point.y : initial.endY
 						};
+						latestPreviewRef.current = snappedPreview;
 						setPreviewState(snappedPreview);
 						onResizeRef.current?.(snappedPreview);
 						return;
@@ -309,6 +341,7 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				window.removeEventListener("blur", handleBlur, true);
 				dragCleanupRef.current = null;
 				dispatch(setIsResizing(false));
+				SnapStore.clear();
 
 				const snapped = snappedBindingRef.current;
 				snappedBindingRef.current = null;
@@ -323,14 +356,7 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				setPreviewState(null);
 				onResizeRef.current?.(null);
 
-				const isCtrl = e.ctrlKey || isCtrlPressedRef.current;
-				const deltaPixelsX = e.clientX - initial.clientX;
-				const deltaPixelsY = e.clientY - initial.clientY;
-
-				const deltaDiagramX = deltaPixelsX / initial.effectiveScale;
-				const deltaDiagramY = deltaPixelsY / initial.effectiveScale;
-
-				const finalResult = computeSnappedEndpoints(deltaDiagramX, deltaDiagramY, isCtrl);
+				const finalResult = latestPreviewRef.current;
 
 				const hasMoved = finalResult.startX !== initial.startX || finalResult.startY !== initial.startY ||
 					finalResult.endX !== initial.endX || finalResult.endY !== initial.endY;
@@ -381,6 +407,7 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				window.removeEventListener("keydown", handleKeyDown, true);
 				window.removeEventListener("keyup", handleKeyUp, true);
 				window.removeEventListener("blur", handleBlur, true);
+				SnapStore.clear();
 				dispatch(setIsResizing(false));
 				setActiveHandle(null);
 				setPreviewState(null);

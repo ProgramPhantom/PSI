@@ -14,6 +14,7 @@ import { useAppDispatch } from "../../redux/hooks";
 import { InternalSchemeId } from "../../redux/slices/schemesSlice";
 import { deleteComponentThunk } from "../../redux/thunks/schemeThunks";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
+import { SnapStore } from "../../logic/snapping";
 
 
 
@@ -47,6 +48,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 		type: dragElementType,
 		item: { element: props.element } as IDraggableElementDropItem,
 		end: (item, monitor) => {
+			SnapStore.clear();
 			const dropResult = monitor.getDropResult<AllDropResultTypes>();
 
 			if (dropResult === null) {

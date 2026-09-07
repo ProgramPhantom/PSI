@@ -12,6 +12,7 @@ import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { CanvasLineResizeHandles, LinePreviewState } from "./CanvasLineResizeHandles";
 import { CanvasResizeHandles, PreviewState } from "./CanvasResizeHandles";
+import { SnapStore } from "../../logic/snapping";
 
 
 
@@ -81,6 +82,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					offset: offsetRef.current
 				} as CanvasDraggableElementPayload),
 				end: (item, monitor) => {
+					SnapStore.clear();
 					const dropResult = monitor.getDropResult<AllDropResultTypes>();
 					if (dropResult === null) {
 						return;

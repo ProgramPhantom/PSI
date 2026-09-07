@@ -22,7 +22,7 @@ interface IFocusRules {
 }
 
 export const FocusRules: IFocusRules = {
-	neverSelectable: ["diagram", "sequence-aligner", "sequence", "channel"],
+	neverSelectable: ["diagram", "sequence-aligner", "sequence"],
 	alwaysSelectable: [
 		"channel",
 		"svg",

@@ -3,6 +3,7 @@ import { useDrop } from "react-dnd";
 import { PulseDropResultType } from "./PulseInsertArea";
 import { GridDropResultType } from "./GridInsertArea";
 import { LabelGroupDropResultType } from "./LabelGroupDropArea";
+import { SnapStore } from "../../logic/snapping";
 
 
 export interface IDirectCanvasDropResult {
@@ -59,8 +60,10 @@ export const CanvasDropContainer: FC<ICanvasContainerProps> = (props) => {
 				// Calculate coordinates relative to the diagram root
 				// The getBoundingClientRect() already accounts for transformations (scale, pan, etc.)
 				// So we subtract the root's position and then divide by scale to get diagram coordinates
-				const relativeX = (clientOffset.x - drawDivRect.left) / props.scale;
-				const relativeY = (clientOffset.y - drawDivRect.top) / props.scale;
+				const snapOffset = SnapStore.getActiveSnapOffset();
+				const relativeX = (clientOffset.x - drawDivRect.left) / props.scale + snapOffset.dx;
+				const relativeY = (clientOffset.y - drawDivRect.top) / props.scale + snapOffset.dy;
+				SnapStore.clear();
 
 				return { type: "canvas", data: {x: relativeX, y: relativeY }} as CanvasDropResultType;
 			}
