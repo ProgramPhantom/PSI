@@ -234,7 +234,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		);
 
 		const visualRef = useRef<SVGSVGElement | null>(null);
-		const visual = props.element.getInternalRepresentation()!.show();
+		const isInteracting = isDragging || livePreview !== null || lineLivePreview !== null;
 
 		// Removed the default preview?
 		useEffect(() => {
@@ -242,11 +242,20 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		}, [preview]);
 
 		useEffect(() => {
-			if (visualRef.current) {
-				visualRef.current.replaceChildren();
-				visualRef.current.appendChild(visual.node);
+			if (isInteracting) {
+				props.element.svg?.hide();
+				if (visualRef.current) {
+					const visual = props.element.getInternalRepresentation()?.show();
+					if (visual) {
+						visualRef.current.replaceChildren(visual.node);
+					}
+				}
+				return () => {
+					props.element.svg?.show();
+					visualRef.current?.replaceChildren();
+				};
 			}
-		}, [props.element, visual.node]);
+		}, [isInteracting, props.element]);
 
 
 
