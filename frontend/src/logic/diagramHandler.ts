@@ -57,6 +57,11 @@ type RemoveInput = RemoveDispatchData
 type AddSubgridInput = { subgrid: ISubgrid };
 
 export type ColumnActionInput = { sequenceId: ID; index: number };
+export type ReorderChildInput = {
+	elementId: ID;
+	toIndex: number;
+	fromIndex?: number;
+};
 
 export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -89,6 +94,10 @@ type Actions = {
 	"deleteColumn": {
 		inputData: ColumnActionInput,
 		undoAction: "insertColumn"
+	},
+	"reorderChild": {
+		inputData: ReorderChildInput,
+		undoAction: "reorderChild"
 	},
 }
 type ActionNames = keyof Actions;
@@ -157,6 +166,7 @@ export default class DiagramHandler implements IDraw {
 		"remove": this.remove.bind(this),
 		"insertColumn": this.insertColumn.bind(this),
 		"deleteColumn": this.deleteColumn.bind(this),
+		"reorderChild": this.reorderChild.bind(this),
 	}
 
 
@@ -742,6 +752,41 @@ export default class DiagramHandler implements IDraw {
 			undo: {
 				action: "insertColumn",
 				data: { sequenceId, index }
+			}
+		};
+	}
+
+	protected reorderChild({ elementId, toIndex, fromIndex }: ReorderChildInput): ActionResult<"reorderChild"> {
+		const element = this.identifyElement(elementId);
+		if (!element) {
+			return { ok: false, error: `Element ${elementId} not found` };
+		}
+
+		const parentId = element.parentId ?? this.diagram.id;
+		const parent = (this.diagram.id === parentId ? this.diagram : this.identifyElement(parentId)) as Collection | undefined;
+		if (!parent || !Collection.isCollection(parent)) {
+			return { ok: false, error: `Parent for element ${elementId} not found or not a collection` };
+		}
+
+		const actualFromIndex = fromIndex ?? parent.childIndexById(elementId) ?? -1;
+		if (actualFromIndex === -1 || actualFromIndex >= parent.children.length) {
+			return { ok: false, error: `Element ${elementId} not found in parent ${parent.ref}` };
+		}
+
+		const success = parent.changeChildIndex(actualFromIndex, toIndex);
+		if (!success) {
+			return { ok: false, error: `Failed to change child index from ${actualFromIndex} to ${toIndex}` };
+		}
+
+		return {
+			ok: true,
+			undo: {
+				action: "reorderChild",
+				data: {
+					elementId,
+					fromIndex: toIndex,
+					toIndex: actualFromIndex
+				}
 			}
 		};
 	}

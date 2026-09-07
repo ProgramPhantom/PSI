@@ -28,6 +28,7 @@ import { CanvasTextInput } from "./CanvasTextInput";
 import { CanvasToolToolbar } from "./CanvasToolToolbar";
 import { ChannelAddToolbar } from "./ChannelAddToolbar";
 import { ChannelReorderButtons } from "./ChannelReorderButtons";
+import { LayerButtons } from "./LayerButtons";
 import { HitboxLayer, FocusRules } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import { BoxTool } from "./BoxTool";
@@ -148,6 +149,11 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	if (selectedElement) {
 		interactiveElements.push(selectedElement);
 	}
+
+	const isLayerableElement = Boolean(
+		selectedElement?.placementMode.type === "free" || selectedElement?.placementMode.type === "binds" ||
+		selectedElement?.placementMode.type === "sequenceBind"
+	);
 	if (!isResizing && !isDragging && selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
 		if (hoveredElement instanceof Visual) {
 			interactiveElements.push(hoveredElement);
@@ -529,9 +535,21 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								position: "absolute",
 								bottom: "8px",
 								right: "8px",
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "flex-end",
+								gap: "6px",
 								zIndex: 10,
+								pointerEvents: "none",
 							}}>
-							<CanvasToolToolbar />
+							{isLayerableElement && (
+								<div style={{ pointerEvents: "auto" }}>
+									<LayerButtons element={selectedElement!} />
+								</div>
+							)}
+							<div style={{ pointerEvents: "auto" }}>
+								<CanvasToolToolbar />
+							</div>
 						</div>
 
 						{selectedElement instanceof Channel && (
