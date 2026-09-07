@@ -33,6 +33,7 @@ import { HitboxLayer, FocusRules } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import { BoxTool } from "./BoxTool";
 import { SequenceColumnsOverlay } from "./SequenceColumnsOverlay";
+import { SnapGuidesOverlay } from "./SnapGuidesOverlay";
 import Spacial from "../../logic/spacial";
 import styles from "./styles/toolbars.module.scss"
 
@@ -690,6 +691,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 											</div>
 
 											<SequenceColumnsOverlay hoveredElement={rawHoveredElement ?? hoveredElement} />
+											<SnapGuidesOverlay />
 
 											{/* Debug layers */}
 											<Debug
