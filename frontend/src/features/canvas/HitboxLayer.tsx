@@ -16,11 +16,13 @@ interface IHitboxLayerProps {
 const BASE_LAYER = 10000;
 
 interface IFocusRules {
+	neverSelectable: AllComponentTypes[];
 	alwaysSelectable: (AllComponentTypes | ((element: Visual) => boolean))[];
 	notSelectableIfChildOf: Partial<Record<AllComponentTypes, AllComponentTypes[]>>;
 }
 
 export const FocusRules: IFocusRules = {
+	neverSelectable: ["diagram", "sequence-aligner", "sequence", "channel"],
 	alwaysSelectable: [
 		"channel",
 		"svg",
@@ -53,7 +55,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		hitboxSVG = new G();
 
 		Object.values(ENGINE.handler.allElements).forEach((e) => {
-			if (e.type !== "diagram") {
+			if (!FocusRules.neverSelectable.includes(e.type)) {
 				hitboxSVG.add(e.getHitbox())
 			}
 		});
@@ -88,11 +90,19 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		let curr: Visual | undefined = initialElement;
 
 		while (curr) {
-			path.unshift(curr); // Start of array is topmost under root, end is initialElement  // emergency escape
+			if (!FocusRules.neverSelectable.includes(curr.type)) {
+				path.unshift(curr); // Start of array is topmost under root, end is initialElement  // emergency escape
+			}
 			if (curr.parentId === undefined || curr.parentId === ENGINE.handler.diagram.id || curr.parentId === curr.id) {
 				break;
 			}
-			curr = ENGINE.handler.identifyElement(curr.parentId);
+			const parent = ENGINE.handler.identifyElement(curr.parentId);
+			if (parent && FocusRules.neverSelectable.includes(parent.type)) {
+				if (parent.parentId === undefined || parent.parentId === ENGINE.handler.diagram.id) {
+					break;
+				}
+			}
+			curr = parent;
 		}
 
 		let selectedIndex: number = path.findIndex(el => el.id === props.selectedElementId);
@@ -127,7 +137,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 						}
 					}
 
-					if (ancestor.parentId === undefined || ancestor.parentId === ENGINE.handler.diagram.id) break;
+					if (ancestor.parentId === undefined || ancestor.parentId === ENGINE.handler.diagram.id || FocusRules.neverSelectable.includes(ancestor.type)) break;
 					ancestor = ENGINE.handler.identifyElement(ancestor.parentId);
 				}
 
@@ -142,6 +152,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			}
 			if (bottomUpCurr.parentId === undefined || bottomUpCurr.parentId === ENGINE.handler.diagram.id) break;
 			bottomUpCurr = ENGINE.handler.identifyElement(bottomUpCurr.parentId);
+			if (bottomUpCurr && FocusRules.neverSelectable.includes(bottomUpCurr.type)) break;
 		}
 
 		// 3. Group Depth Selection Logic

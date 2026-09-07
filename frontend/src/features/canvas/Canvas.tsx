@@ -28,7 +28,7 @@ import { CanvasTextInput } from "./CanvasTextInput";
 import { CanvasToolToolbar } from "./CanvasToolToolbar";
 import { ChannelAddToolbar } from "./ChannelAddToolbar";
 import { ChannelReorderButtons } from "./ChannelReorderButtons";
-import { HitboxLayer } from "./HitboxLayer";
+import { HitboxLayer, FocusRules } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import { BoxTool } from "./BoxTool";
 import { SequenceColumnsOverlay } from "./SequenceColumnsOverlay";
@@ -677,8 +677,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 												<SequencesColumnEditor scale={zoom}></SequencesColumnEditor>
 												<SequencesChannelPaddingEditor scale={zoom}></SequencesChannelPaddingEditor>
 												<LabelGroupDropFields></LabelGroupDropFields>
-												<SequenceColumnsOverlay />
 											</div>
+
+											<SequenceColumnsOverlay hoveredElement={rawHoveredElement ?? hoveredElement} />
 
 											{/* Debug layers */}
 											<Debug
