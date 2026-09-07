@@ -1,39 +1,29 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { IToolConfig, Tool } from "../../app/App";
-import { DEFAULT_LINE } from "../../logic/default/line";
+import { DEFAULT_RECT_ELEMENT } from "../../logic/default/rectElement";
 import ENGINE from "../../logic/engine";
-import { HeadStyle, ILineStyle, ILine } from "../../logic/line";
-import Spacial, { PlacementConfiguration, ISequenceBindingRule } from "../../logic/spacial";
+import { IRectElement, IRectStyle } from "../../logic/rectElement";
+import { IPlacementBindingRule, PlacementConfiguration, ISequenceBindingRule, SiteNames } from "../../logic/spacial";
+import Spacial from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import BindingsSelector, { ISelectedBindingInfo } from "./BindingsSelector";
-import {
-	findClosestBindingAnchor,
-	isBindingAllowedAsTarget
-} from "./bindingUtil";
+import { findClosestBindingAnchor, isBindingAllowedAsTarget } from "./bindingUtil";
 import { createPlacementRulesForBinding, determineBindingPlacementModeType } from "../../logic/bindingUtil";
 
-export interface IDrawArrowConfig extends IToolConfig {
-	thickness?: number;
-	lineStyle: ILineStyle;
-	mode?: "vertical" | "bind" | "free";
+export interface IDrawBoxConfig extends IToolConfig {
+	style?: IRectStyle;
 }
 
-interface IDrawArrowProps {
+interface IDrawBoxProps {
 	hoveredElement?: Spacial | undefined;
-	config: IDrawArrowConfig;
+	config?: IDrawBoxConfig;
 	zoom?: number;
 	setTool: (tool: Tool) => void;
 }
 
-const MARKER_LENGTHS: Record<HeadStyle, number> = {
-	default: 3,
-	thin: 4,
-	none: 0
-};
-
-export function LineTool(props: IDrawArrowProps) {
+export function BoxTool(props: IDrawBoxProps) {
 	const dispatch = useAppDispatch();
 	const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
 	const [currentPoint, setCurrentPoint] = useState<{ x: number; y: number } | null>(null);
@@ -67,12 +57,14 @@ export function LineTool(props: IDrawArrowProps) {
 		if (!isCtrl) return raw;
 		const dx = raw.x - origin.x;
 		const dy = raw.y - origin.y;
-		return Math.abs(dx) >= Math.abs(dy)
-			? { x: raw.x, y: origin.y }
-			: { x: origin.x, y: raw.y };
+		const side = Math.max(Math.abs(dx), Math.abs(dy));
+		return {
+			x: origin.x + Math.sign(dx || 1) * side,
+			y: origin.y + Math.sign(dy || 1) * side
+		};
 	}, []);
 
-	const commitLine = useCallback(
+	const commitBox = useCallback(
 		(
 			startPt: { x: number; y: number },
 			endPt: { x: number; y: number },
@@ -86,56 +78,72 @@ export function LineTool(props: IDrawArrowProps) {
 				return;
 			}
 
-			const stroke = props.config?.lineStyle?.stroke ?? "#000000";
-			const dashing = props.config?.lineStyle?.dashing ?? [0, 0];
-			const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
-			const thickness = props.config?.thickness ?? 2;
+			const fill = props.config?.style?.fill ?? "#137cbd";
+			const fillOpacity = props.config?.style?.fillOpacity ?? 100;
+			const stroke = props.config?.style?.stroke ?? "#137cbd";
+			const strokeWidth = props.config?.style?.strokeWidth ?? 2;
+			const dashing = props.config?.style?.dashing ?? [0, 0];
+
+			const minX = Math.min(startPt.x, endPt.x);
+			const minY = Math.min(startPt.y, endPt.y);
+			const width = Math.max(Math.abs(endPt.x - startPt.x), 5);
+			const height = Math.max(Math.abs(endPt.y - startPt.y), 5);
+
+			// Smart selection of target site names based on drag direction:
+			// In X: the point with smaller X is the left boundary ("here"),
+			//       the point with larger X is the right boundary ("far").
+			// In Y: the point with smaller Y is the top boundary ("here"),
+			//       the point with larger Y is the bottom boundary ("far").
+			const isXStartNear = startPt.x <= endPt.x;
+			const isYStartNear = startPt.y <= endPt.y;
+
+			const startXSite: SiteNames = isXStartNear ? "here" : "far";
+			const startYSite: SiteNames = isYStartNear ? "here" : "far";
+			const endXSite: SiteNames = isXStartNear ? "far" : "here";
+			const endYSite: SiteNames = isYStartNear ? "far" : "here";
 
 			const allRules: ISequenceBindingRule[] = [];
 
 			if (startBindingInfo) {
-				allRules.push(...createPlacementRulesForBinding(startBindingInfo, "start", "start"));
+				allRules.push(...createPlacementRulesForBinding(startBindingInfo, startXSite, startYSite));
 			}
 
 			if (endBindingInfo) {
-				allRules.push(...createPlacementRulesForBinding(endBindingInfo, "end", "end"));
+				allRules.push(...createPlacementRulesForBinding(endBindingInfo, endXSite, endYSite));
 			}
 
 			const placementMode: PlacementConfiguration = determineBindingPlacementModeType(allRules);
 
-			const newLine: ILine = {
-				...structuredClone(DEFAULT_LINE),
+			const newRect: IRectElement = {
+				...structuredClone(DEFAULT_RECT_ELEMENT),
 				id: Math.random().toString(16).slice(2),
-				ref: `arrow-${Date.now()}`,
-				type: "line",
+				ref: `box-${Date.now()}`,
+				type: "rect",
 				parentId: ENGINE.handler.diagram.id,
 				placementMode: placementMode,
 				placementControl: "user",
-				startX: startPt.x,
-				startY: startPt.y,
-				endX: endPt.x,
-				endY: endPt.y,
-				x: Math.min(startPt.x, endPt.x),
-				y: Math.min(startPt.y, endPt.y),
-				thickness: thickness,
-				adjustment: [0, 0],
-				padding: [0, 0, 0, 0],
-				offset: [0, 0],
-				lineStyle: {
+				x: minX,
+				y: minY,
+				contentWidth: width,
+				contentHeight: height,
+				sizeMode: { x: "fixed", y: "fixed" },
+				style: {
+					fill: fill,
+					fillOpacity: fillOpacity,
 					stroke: stroke,
-					dashing: dashing,
-					headStyle: headStyle
+					strokeWidth: strokeWidth,
+					...(dashing && dashing[0] > 0 ? { dashing } : {})
 				}
 			};
 
 			ENGINE.handler.act({
 				type: "add",
 				input: {
-					child: newLine
+					child: newRect
 				}
 			});
 
-			dispatch(setSelectedElementId(newLine.id));
+			dispatch(setSelectedElementId(newRect.id));
 			props.setTool({ type: "select", config: {} });
 
 			setStartPoint(null);
@@ -159,10 +167,10 @@ export function LineTool(props: IDrawArrowProps) {
 				setCurrentPoint(info.point);
 				rawPointRef.current = info.point;
 			} else {
-				commitLine(startPointRef.current, info.point, startBindingRef.current, info);
+				commitBox(startPointRef.current, info.point, startBindingRef.current, info);
 			}
 		},
-		[commitLine]
+		[commitBox]
 	);
 
 	const updateCurrentPosition = useCallback(
@@ -209,7 +217,7 @@ export function LineTool(props: IDrawArrowProps) {
 			const endPt = effectiveSnap
 				? effectiveSnap.point
 				: computeSnappedPoint(rawCoords, startPointRef.current, isCtrl);
-			commitLine(startPointRef.current, endPt, startBindingRef.current, effectiveSnap ?? null);
+			commitBox(startPointRef.current, endPt, startBindingRef.current, effectiveSnap ?? null);
 		}
 	};
 
@@ -274,43 +282,16 @@ export function LineTool(props: IDrawArrowProps) {
 		};
 	}, [props, getCanvasCoords, computeSnappedPoint, updateCurrentPosition]);
 
-	const stroke = props.config?.lineStyle?.stroke ?? "#000000";
-	const dashing = props.config?.lineStyle?.dashing ?? [0, 0];
-	const headStyle = props.config?.lineStyle?.headStyle ?? ["none", "default"];
-	const thickness = props.config?.thickness ?? 2;
+	const fill = props.config?.style?.fill ?? "#137cbd";
+	const fillOpacity = props.config?.style?.fillOpacity ?? 100;
+	const stroke = props.config?.style?.stroke ?? "#137cbd";
+	const strokeWidth = props.config?.style?.strokeWidth ?? 2;
+	const dashing = props.config?.style?.dashing ?? [0, 0];
 
-	let adjStartX = startPoint?.x ?? 0;
-	let adjStartY = startPoint?.y ?? 0;
-	let adjEndX = currentPoint?.x ?? 0;
-	let adjEndY = currentPoint?.y ?? 0;
-
-	if (startPoint && currentPoint) {
-		const dx = currentPoint.x - startPoint.x;
-		const dy = currentPoint.y - startPoint.y;
-		const length = Math.hypot(dx, dy);
-
-		const startMarkerLength = MARKER_LENGTHS[headStyle[0]] ?? 0;
-		const endMarkerLength = MARKER_LENGTHS[headStyle[1]] ?? 0;
-
-		const startOffset = thickness * startMarkerLength;
-		const endOffset = thickness * endMarkerLength;
-
-		if (length > (startOffset + endOffset)) {
-			const angle = Math.atan2(dy, dx);
-			const cos = Math.cos(angle);
-			const sin = Math.sin(angle);
-
-			adjStartX = startPoint.x + cos * startOffset;
-			adjStartY = startPoint.y + sin * startOffset;
-			adjEndX = currentPoint.x - cos * endOffset;
-			adjEndY = currentPoint.y - sin * endOffset;
-		} else {
-			adjStartX = startPoint.x;
-			adjStartY = startPoint.y;
-			adjEndX = currentPoint.x;
-			adjEndY = currentPoint.y;
-		}
-	}
+	const previewX = startPoint && currentPoint ? Math.min(startPoint.x, currentPoint.x) : 0;
+	const previewY = startPoint && currentPoint ? Math.min(startPoint.y, currentPoint.y) : 0;
+	const previewWidth = startPoint && currentPoint ? Math.abs(currentPoint.x - startPoint.x) : 0;
+	const previewHeight = startPoint && currentPoint ? Math.abs(currentPoint.y - startPoint.y) : 0;
 
 	return (
 		<>
@@ -340,7 +321,7 @@ export function LineTool(props: IDrawArrowProps) {
 				/>
 			)}
 
-			{/* Live Arrow Preview SVG */}
+			{/* Live Box Preview SVG */}
 			{startPoint && currentPoint && (
 				<svg
 					style={{
@@ -354,38 +335,17 @@ export function LineTool(props: IDrawArrowProps) {
 						zIndex: 10003
 					}}
 				>
-					<defs>
-						<marker
-							id="preview-marker-default"
-							refX={0}
-							refY={1.5}
-							markerWidth={3}
-							markerHeight={3}
-							orient="auto-start-reverse"
-						>
-							<path d="M 0 0 L 3 1.5 L 0 3 z" fill={stroke} />
-						</marker>
-						<marker
-							id="preview-marker-thin"
-							refX={0}
-							refY={1}
-							markerWidth={4}
-							markerHeight={2}
-							orient="auto-start-reverse"
-						>
-							<path d="M 0 0 L 4 1 L 0 2 z" fill={stroke} />
-						</marker>
-					</defs>
-
-					{/* Arrow path */}
-					<path
-						d={`M ${adjStartX} ${adjStartY} L ${adjEndX} ${adjEndY}`}
+					<rect
+						x={previewX}
+						y={previewY}
+						width={previewWidth}
+						height={previewHeight}
+						fill={fill}
+						fillOpacity={fillOpacity / 100}
 						stroke={stroke}
-						strokeWidth={thickness}
-						strokeLinecap="butt"
-						strokeDasharray={dashing[0] > 0 ? `${dashing[0]} ${dashing[1]}` : undefined}
-						markerStart={headStyle[0] !== "none" ? `url(#preview-marker-${headStyle[0]})` : undefined}
-						markerEnd={headStyle[1] !== "none" ? `url(#preview-marker-${headStyle[1]})` : undefined}
+						strokeWidth={strokeWidth}
+						strokeDasharray={dashing && dashing[0] > 0 ? `${dashing[0]} ${dashing[1]}` : undefined}
+						shapeRendering="crispEdges"
 					/>
 				</svg>
 			)}
@@ -393,4 +353,4 @@ export function LineTool(props: IDrawArrowProps) {
 	);
 }
 
-export default LineTool;
+export default BoxTool;

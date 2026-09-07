@@ -3,25 +3,31 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes, ID, UserComponentType } from "../../logic/point";
 import Visual from "../../logic/visual";
+import Spacial from "../../logic/spacial";
+import { useAppSelector } from "../../redux/hooks";
+import { isGridColumn } from "../../logic/grid";
 
 interface IHitboxLayerProps {
 	selectedElementId: string | undefined;
 
-	setHoveredElement: (element?: Visual, rawElement?: Visual) => void;
+	setHoveredElement: (element?: Spacial, rawElement?: Spacial) => void;
 }
 
 const BASE_LAYER = 10000;
 
 interface IFocusRules {
+	neverSelectable: AllComponentTypes[];
 	alwaysSelectable: (AllComponentTypes | ((element: Visual) => boolean))[];
 	notSelectableIfChildOf: Partial<Record<AllComponentTypes, AllComponentTypes[]>>;
 }
 
 export const FocusRules: IFocusRules = {
+	neverSelectable: ["diagram", "sequence-aligner", "sequence", "channel"],
 	alwaysSelectable: [
 		"channel",
 		"svg",
 		(element: Visual) => element.type === "line" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
+		(element: Visual) => element.type === "rect" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
 
 		"label-group",
 		"simple-label-group",
@@ -42,25 +48,41 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	var hitboxSvgRef = useRef<SVGSVGElement | null>(null);
 
 	const isAltHeldRef = useRef(false);
+	const columnMode = useAppSelector((state) => state.application.columnMode);
 
 	// Create hitboxes
 	const createHitboxDom = () => {
 		hitboxSVG = new G();
 
 		Object.values(ENGINE.handler.allElements).forEach((e) => {
-			if (e.type !== "diagram") {
+			if (!FocusRules.neverSelectable.includes(e.type)) {
 				hitboxSVG.add(e.getHitbox())
 			}
-		})
+		});
+
+		if (columnMode) {
+			for (const seq of ENGINE.handler.sequences) {
+				if (seq.gridSizes?.columns) {
+					for (const col of seq.gridSizes.columns) {
+						hitboxSVG.add(col.getHitbox());
+					}
+				}
+			}
+		}
 	};
 
-	const getMouseElementFromID = (id: ID | undefined): Visual | undefined => {
+	const getMouseElementFromID = (id: ID | undefined): Spacial | undefined => {
 		if (id === undefined) {
 			return undefined;
 		}
-		var initialElement: Visual | undefined = ENGINE.handler.identifyElement(id);
+		var initialElement: Spacial | undefined = ENGINE.handler.identifyElementOrStructure(id);
 		if (initialElement === undefined) {
 			return undefined;
+		}
+
+		// If initialElement is a sequence column or not a full Visual, return it directly
+		if (isGridColumn(initialElement) || !(initialElement instanceof Visual)) {
+			return initialElement;
 		}
 
 		// 1. Build the path of elements from initialElement up to the root diagram
@@ -68,11 +90,19 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		let curr: Visual | undefined = initialElement;
 
 		while (curr) {
-			path.unshift(curr); // Start of array is topmost under root, end is initialElement  // emergency escape
+			if (!FocusRules.neverSelectable.includes(curr.type)) {
+				path.unshift(curr); // Start of array is topmost under root, end is initialElement  // emergency escape
+			}
 			if (curr.parentId === undefined || curr.parentId === ENGINE.handler.diagram.id || curr.parentId === curr.id) {
 				break;
 			}
-			curr = ENGINE.handler.identifyElement(curr.parentId);
+			const parent = ENGINE.handler.identifyElement(curr.parentId);
+			if (parent && FocusRules.neverSelectable.includes(parent.type)) {
+				if (parent.parentId === undefined || parent.parentId === ENGINE.handler.diagram.id) {
+					break;
+				}
+			}
+			curr = parent;
 		}
 
 		let selectedIndex: number = path.findIndex(el => el.id === props.selectedElementId);
@@ -107,7 +137,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 						}
 					}
 
-					if (ancestor.parentId === undefined || ancestor.parentId === ENGINE.handler.diagram.id) break;
+					if (ancestor.parentId === undefined || ancestor.parentId === ENGINE.handler.diagram.id || FocusRules.neverSelectable.includes(ancestor.type)) break;
 					ancestor = ENGINE.handler.identifyElement(ancestor.parentId);
 				}
 
@@ -122,6 +152,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			}
 			if (bottomUpCurr.parentId === undefined || bottomUpCurr.parentId === ENGINE.handler.diagram.id) break;
 			bottomUpCurr = ENGINE.handler.identifyElement(bottomUpCurr.parentId);
+			if (bottomUpCurr && FocusRules.neverSelectable.includes(bottomUpCurr.type)) break;
 		}
 
 		// 3. Group Depth Selection Logic
@@ -197,8 +228,8 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			}
 
 			let parsedId: string = rawTargetId.replace(/-hitbox$/, "");
-			let rawElement: Visual | undefined = ENGINE.handler.identifyElement(parsedId);
-			let element: Visual | undefined = getMouseElementFromIDRef.current(parsedId);
+			let rawElement: Spacial | undefined = ENGINE.handler.identifyElementOrStructure(parsedId);
+			let element: Spacial | undefined = getMouseElementFromIDRef.current(parsedId);
 			setHoveredElementRef.current(element, rawElement);
 		};
 
@@ -258,7 +289,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			hitboxSvgRef.current.replaceChildren();
 			hitboxSvgRef.current.appendChild(hitboxSVG.node);
 		}
-	}, [store]);
+	}, [store, columnMode]);
 
 
 	return (

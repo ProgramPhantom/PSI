@@ -108,7 +108,13 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					};
 
 					if (dropResult.data.insert === true) {
-						ENGINE.handler.addColumn(dropResult.data.sequenceID ?? "", dropResult.data.index);
+						ENGINE.handler.act({
+							type: "insertColumn",
+							input: {
+								sequenceId: dropResult.data.sequenceID ?? "",
+								index: dropResult.data.index
+							}
+						});
 					}
 
 					ENGINE.handler.act({

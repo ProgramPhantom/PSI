@@ -8,6 +8,7 @@ export const DEFAULT_RECT_ELEMENT: IRectElement = {
 
 	"style": {
 		"fill": "#000000",
+		"fillOpacity": 100
 	},
 	"sizeMode": { x: "fit", y: "fit" },
 	"ref": "rect-element",

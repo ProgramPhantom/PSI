@@ -46,6 +46,7 @@ export interface ApplicationState {
     isMouseOverCanvas: boolean;
     canvasMousePosition: CanvasMousePosition | undefined;
     isResizing: boolean;
+    columnMode: boolean;
 }
 
 const initialState: ApplicationState = {
@@ -53,6 +54,7 @@ const initialState: ApplicationState = {
     debugSelectionTypes: DefaultDebugSelection,
     debugSelectedElement: false,
     isResizing: false,
+    columnMode: false,
     selectedTool: {
         type: 'select',
         config: {}
@@ -66,7 +68,14 @@ const initialState: ApplicationState = {
         latex: {
             fontSize: 35
         },
-        box: {},
+        box: {
+            style: {
+                fill: "#137cbd",
+                stroke: "#137cbd",
+                strokeWidth: 2,
+                dashing: [0, 0]
+            }
+        },
         arrow: {
             thickness: 2,
             lineStyle: {
@@ -124,6 +133,12 @@ export const applicationSlice = createSlice({
         },
         setIsResizing: (state, action: PayloadAction<boolean>) => {
             state.isResizing = action.payload;
+        },
+        setColumnMode: (state, action: PayloadAction<boolean>) => {
+            state.columnMode = action.payload;
+        },
+        toggleColumnMode: (state) => {
+            state.columnMode = !state.columnMode;
         }
     },
 });
@@ -135,7 +150,9 @@ export const {
     setDebugSelectedElement,
     setSelectedTool,
     setCanvasMousePosition,
-    setIsResizing
+    setIsResizing,
+    setColumnMode,
+    toggleColumnMode
 } = applicationSlice.actions;
 
 export default applicationSlice.reducer;

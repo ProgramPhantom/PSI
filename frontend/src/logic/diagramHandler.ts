@@ -5,13 +5,15 @@ import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } fr
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
 import { ISubgrid } from "./grid.ts";
+import Grid from "./grid.ts";
 import Channel, { IChannel } from "./hasComponents/channel.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram.ts";
 import Sequence from "./hasComponents/sequence.ts";
 import { AllComponentTypes, ID } from "./point.ts";
 import Visual, { IDraw, IVisual } from "./visual.ts";
 import RBush from "rbush";
-import { IBindsPlacementConfig, RBushItem } from "./spacial.ts";
+import Spacial, { IBindsPlacementConfig, RBushItem, ISequenceBindingRule, } from "./spacial.ts";
+import { determineBindingPlacementModeType, isGridBindingRule } from "./bindingUtil.ts";
 
 
 /**
@@ -54,6 +56,8 @@ type AddInput = { child: IVisual, index?: number }
 type RemoveInput = RemoveDispatchData
 type AddSubgridInput = { subgrid: ISubgrid };
 
+export type ColumnActionInput = { sequenceId: ID; index: number };
+
 export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
 
 export type ActionResult<T extends keyof Actions> =
@@ -77,6 +81,14 @@ type Actions = {
 	"remove": {
 		inputData: RemoveInput,
 		undoAction: "add"
+	},
+	"insertColumn": {
+		inputData: ColumnActionInput,
+		undoAction: "deleteColumn"
+	},
+	"deleteColumn": {
+		inputData: ColumnActionInput,
+		undoAction: "insertColumn"
 	},
 }
 type ActionNames = keyof Actions;
@@ -143,6 +155,8 @@ export default class DiagramHandler implements IDraw {
 		"add": this.add.bind(this),
 		"modify": this.modify.bind(this),
 		"remove": this.remove.bind(this),
+		"insertColumn": this.insertColumn.bind(this),
+		"deleteColumn": this.deleteColumn.bind(this),
 	}
 
 
@@ -214,13 +228,23 @@ export default class DiagramHandler implements IDraw {
 	 */
 	public createElementBindings(element: Visual): void {
 		for (const el of Object.values(element.allElements)) {
-			if (el.placementMode?.type === "binds" && el.placementMode.config) {
-				const config: IBindsPlacementConfig = el.placementMode.config;
+			if ((el.placementMode?.type === "binds" || el.placementMode?.type === "sequenceBind") && el.placementMode.config) {
+				const config: ISequenceBindingRule[] = el.placementMode.config;
 
 				for (const rule of config) {
-					const anchorId = rule.targetId || rule.anchorId;
-					if (!anchorId) continue;
-					const anchor: Visual | undefined = this.identifyElement(anchorId);
+					let anchor: Spacial | undefined;
+					if (isGridBindingRule(rule)) {
+						const seq = this.identifyElement(rule.sequenceId) as Sequence | undefined;
+						if (seq) {
+							anchor = seq.gridSizes?.columns?.[rule.column] ?? seq.getColumnSpacial(rule.column);
+						}
+					} else {
+						const anchorId = rule.targetId || rule.anchorId;
+						if (anchorId) {
+							anchor = this.identifyElement(anchorId);
+						}
+					}
+
 					if (anchor) {
 						anchor.bind(
 							el,
@@ -232,7 +256,6 @@ export default class DiagramHandler implements IDraw {
 							rule.bindToContent ?? true
 						);
 					}
-
 				}
 			}
 		}
@@ -273,6 +296,39 @@ export default class DiagramHandler implements IDraw {
 				srcEl.clearBindsTo(bind.targetObject);
 			}
 		}
+
+		// Also transfer column bindings if source and destination are Grids (e.g. Sequences)
+		if (source instanceof Grid && destination instanceof Grid) {
+			if (source.gridSizes.columns.length === destination.gridSizes.columns.length) {
+				source.gridSizes.columns.forEach((srcCol, colIdx) => {
+					const destCol = destination.gridSizes.columns[colIdx];
+					if (destCol) {
+						for (const bind of srcCol.bindings) {
+							destCol.bind(
+								bind.targetObject,
+								bind.bindingRule.dimension,
+								bind.bindingRule.anchorSiteName,
+								bind.bindingRule.targetSiteName,
+								bind.offset,
+								bind.hint,
+								bind.bindToContent
+							);
+						}
+						for (const bind of [...srcCol.bindings]) {
+							srcCol.clearBindsTo(bind.targetObject);
+						}
+					}
+				});
+			} else {
+				// Column count changed (e.g. column add/remove):
+				// Clear old source column bindings so bound elements do not retain stale references
+				source.gridSizes.columns.forEach((srcCol) => {
+					for (const bind of [...srcCol.bindings]) {
+						srcCol.clearBindsTo(bind.targetObject);
+					}
+				});
+			}
+		}
 	}
 
 	/**
@@ -304,20 +360,39 @@ export default class DiagramHandler implements IDraw {
 				el.clearBindsTo(target);
 
 				// Remove binding rules referencing this deleted anchor from the target's placementMode
-				if (target && target.placementMode?.type === "binds") {
-					const remainingRules = target.placementMode.config.filter(
-						(rule) => rule.targetId !== el.id && rule.anchorId !== el.id
+				if (target && (target.placementMode?.type === "binds" || target.placementMode?.type === "sequenceBind")) {
+					const remainingRules = (target.placementMode.config as ISequenceBindingRule[]).filter(
+						(rule) => {
+							if (isGridBindingRule(rule)) {
+								return rule.sequenceId !== el.id;
+							}
+							return rule.targetId !== el.id && rule.anchorId !== el.id;
+						}
 					);
 
-					if (remainingRules.length > 0) {
-						target.placementMode = {
-							type: "binds",
-							config: remainingRules
-						};
-					} else {
-						target.placementMode = {
-							type: "free"
-						};
+					target.placementMode = determineBindingPlacementModeType(remainingRules);
+				}
+			}
+
+			// If el is a Grid (such as Sequence), also clear column bindings
+			if (el instanceof Grid) {
+				for (const col of el.gridSizes.columns) {
+					for (const bind of [...col.bindings]) {
+						const target = bind.targetObject;
+						col.clearBindsTo(target);
+
+						if (target && (target.placementMode?.type === "binds" || target.placementMode?.type === "sequenceBind")) {
+							const remainingRules = (target.placementMode.config as ISequenceBindingRule[]).filter(
+								(rule) => {
+									if (isGridBindingRule(rule)) {
+										return rule.sequenceId !== el.id;
+									}
+									return rule.targetId !== el.id && rule.anchorId !== el.id;
+								}
+							);
+
+							target.placementMode = determineBindingPlacementModeType(remainingRules);
+						}
 					}
 				}
 			}
@@ -327,7 +402,7 @@ export default class DiagramHandler implements IDraw {
 				bind.anchorObject.clearBindsTo(el);
 			}
 
-			if (el.placementMode?.type === "binds") {
+			if (el.placementMode?.type === "binds" || el.placementMode?.type === "sequenceBind") {
 				el.placementMode = { type: "free" };
 			}
 		}
@@ -340,16 +415,24 @@ export default class DiagramHandler implements IDraw {
 
 	// ---------- Element identification ----------
 	public identifyElement(id: ID): Visual | undefined {
-		var element: Visual | undefined = undefined;
+		return this.allElements[id];
+	}
 
-		element = this.allElements[id];
-
-
-		if (element === undefined) {
-			return undefined;
-		} else {
+	public identifyElementOrStructure(id: ID): Spacial | undefined {
+		const element = this.allElements[id];
+		if (element !== undefined) {
 			return element;
 		}
+
+		// Check sequence columns
+		for (const seq of this.sequences) {
+			if (seq.gridSizes?.columns) {
+				const col = seq.gridSizes.columns.find((c) => c.id === id);
+				if (col) return col;
+			}
+		}
+
+		return undefined;
 	}
 
 	@draws
@@ -371,6 +454,7 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		this.diagram = newDiagram;
+		this.diagram.computeSize();
 		this.createElementBindings(this.diagram);
 		this.diagram.svg?.show();
 
@@ -449,7 +533,7 @@ export default class DiagramHandler implements IDraw {
 		if (action?.result.ok === true) {
 			this.dispatchAction(
 				action.type,
-				action.result.undo.data
+				action.input
 			);
 			this.undoStack.push(action);
 
@@ -631,62 +715,38 @@ export default class DiagramHandler implements IDraw {
 
 		return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } }
 	}
+
+	protected insertColumn({ sequenceId, index }: ColumnActionInput): ActionResult<"insertColumn"> {
+		const sequence = this.diagram.sequenceDict[sequenceId];
+		if (!sequence) {
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
+		}
+		sequence.insertEmptyColumn(index);
+		return {
+			ok: true,
+			undo: {
+				action: "deleteColumn",
+				data: { sequenceId, index }
+			}
+		};
+	}
+
+	protected deleteColumn({ sequenceId, index }: ColumnActionInput): ActionResult<"deleteColumn"> {
+		const sequence = this.diagram.sequenceDict[sequenceId];
+		if (!sequence) {
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
+		}
+		sequence.removeColumn(index);
+		return {
+			ok: true,
+			undo: {
+				action: "insertColumn",
+				data: { sequenceId, index }
+			}
+		};
+	}
 	//#endregion
 	// ------------------------------------------
-
-
-	public addColumn(sequenceId: ID, index: number): Result {
-		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
-
-		if (sequence === undefined) {
-			console.warn(`Cannot insert column in sequence with id ${sequenceId}`);
-			return { ok: false, error: `Sequence ${sequenceId} not found` };
-		}
-
-		let tempResult = this.createVisual<Sequence>(structuredClone(sequence.state), "sequence");
-		if (tempResult.ok === false) {
-			return { ok: false, error: tempResult.error };
-		}
-		let updatedSeq = tempResult.value;
-		updatedSeq.insertEmptyColumn(index);
-
-		this.act({
-			type: "modify",
-			input: {
-				child: updatedSeq,
-				target: sequence
-			}
-		});
-
-		return { ok: true, value: {} };
-	}
-
-	public removeColumn(sequenceId: ID, index: number): Result {
-		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
-
-		if (sequence === undefined) {
-			console.warn(`Cannot remove column in sequence with id ${sequenceId}`);
-			return { ok: false, error: `Sequence ${sequenceId} not found` };
-		}
-
-		// Inefficient. Fix later
-		let tempResult = this.createVisual<Sequence>(structuredClone(sequence.state), "sequence");
-		if (tempResult.ok === false) {
-			return { ok: false, error: tempResult.error };
-		}
-		let updatedSeq = tempResult.value;
-		updatedSeq.removeColumn(index);
-
-		this.act({
-			type: "modify",
-			input: {
-				child: updatedSeq,
-				target: sequence
-			}
-		});
-
-		return { ok: true, value: {} };
-	}
 
 	public setColumnWidth(sequenceId: ID, colIndex: number, width: number): Result {
 		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];

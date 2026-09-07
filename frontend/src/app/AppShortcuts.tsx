@@ -4,7 +4,7 @@ import Collection from "../logic/collection";
 import ENGINE from "../logic/engine";
 import { IVisual } from "../logic/visual";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { setSelectedElementId } from "../redux/slices/applicationSlice";
+import { setSelectedElementId, toggleColumnMode } from "../redux/slices/applicationSlice";
 import { setDebugLayerDialogOpen, setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen } from "../redux/slices/dialogSlice";
 import * as Actions from "../redux/thunks/actionThunks";
 
@@ -336,6 +336,15 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                 label: "Report bug (Email)",
                 onKeyDown: () => {
                     dispatch(Actions.handleReportBugEmail());
+                },
+                preventDefault: true
+            },
+            {
+                combo: "alt+c",
+                global: true,
+                label: "Toggle column mode",
+                onKeyDown: () => {
+                    dispatch(toggleColumnMode());
                 },
                 preventDefault: true
             },

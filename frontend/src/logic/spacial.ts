@@ -74,7 +74,23 @@ export interface IPlacementBindingRule {
 	hint?: string;
 }
 
+export interface IGridBindingPlacementRule {
+	sequenceId: string;
+	column: number;
+	dimension: Dimensions;
+	anchorSiteName: SiteNames;
+	targetSiteName: SiteNames;
+	offset?: number;
+	bindToContent?: boolean;
+	hint?: string;
+}
+
+export type ISequenceBindingRule = IPlacementBindingRule | IGridBindingPlacementRule;
+
+
+
 export type IBindsPlacementConfig = IPlacementBindingRule[];
+export type ISequenceBindPlacementConfig = ISequenceBindingRule[];
 
 /** @deprecated Kept for backwards compatibility; use IPlacementBindingRule instead */
 export interface IBindEndpointConfig {
@@ -87,10 +103,13 @@ export interface IBindEndpointConfig {
 export type PlacementConfiguration =
 	| { type: "free" }
 	| { type: "binds"; config: IBindsPlacementConfig }
+	| { type: "sequenceBind"; config: ISequenceBindPlacementConfig }
 	| { type: "grid"; config: IGridConfig }
 	| { type: "aligner"; config: IAlignerConfig }
 	| { type: "subgrid"; config: ISubgridConfig }
 	| { type: "singleton" };
+
+
 
 
 export type PlacementControl = "auto" | "user";
@@ -227,7 +246,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public get isFree(): boolean {
-		return this._placementMode.type === "free" || this._placementMode.type === "binds";
+		return this._placementMode.type === "free" || this._placementMode.type === "binds" || this._placementMode.type === "sequenceBind";
 	}
 
 	public placementControl: PlacementControl;
@@ -264,7 +283,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ? { ...params.sizeMode } : { x: "fixed", y: "fixed" };
 
-		if (this._placementMode.type === "free" || this._placementMode.type === "binds") {
+		if (this._placementMode.type === "free" || this._placementMode.type === "binds" || this._placementMode.type === "sequenceBind") {
 			if (this.sizeMode.x === "grow") {
 				this.sizeMode.x = "fit";
 			}
@@ -292,7 +311,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public computePositions(root: { x: number, y: number }) {
-		if (this.placementMode.type !== "free" && this.placementMode.type !== "binds") {
+		if (this.placementMode.type !== "free" && this.placementMode.type !== "binds" && this.placementMode.type !== "sequenceBind") {
 			this.x = root.x;
 			this.y = root.y;
 		}
@@ -503,6 +522,23 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return getter(binding.dimension);
 	}
 
+	/**
+	 * Checks whether the opposing boundary on this element in the given dimension is also bound.
+	 */
+	public isOpposingSiteBound(dimension: Dimensions, targetSiteName: SiteNames): boolean {
+		const isNear = targetSiteName === "here" || targetSiteName === "start";
+		const isFar = targetSiteName === "far" || targetSiteName === "end";
+		if (!isNear && !isFar) return false;
+
+		const opposingNames: SiteNames[] = isNear ? ["far", "end"] : ["here", "start"];
+
+		if (this.bindingsToThis.some((b) => b.bindingRule.dimension === dimension && opposingNames.includes(b.bindingRule.targetSiteName))) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public enforceBindings() {
 		for (const binding of this.bindings) {
 			var targetElement: Spacial = binding.targetObject;
@@ -530,19 +566,69 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			// Apply offset:
 			anchorBindCoord = anchorBindCoord + (binding.offset ?? 0);
 
+			const targetSite = binding.bindingRule.targetSiteName;
+			const isNear = targetSite === "here";
+			const isFar = targetSite === "far";
+
+			// If target element is bound on both near and far boundaries in this dimension,
+			// stretch the target element rather than translating it.
+			if ((isNear || isFar) && targetElement.isOpposingSiteBound(dimension, targetSite)) {
+				const opposingSite: SiteNames = isNear ? "far" : "here";
+
+				// The binding on the other side of the object
+				const opposingBinding = targetElement.bindingsToThis.find(
+					(b) => b.bindingRule.dimension === dimension && b.bindingRule.targetSiteName === opposingSite
+				);
+
+				let opposingCoord: number | undefined;
+				if (opposingBinding) {
+					const opposingGetter = opposingBinding.anchorObject.AnchorFunctions[opposingBinding.bindingRule.anchorSiteName]?.get;
+					if (opposingGetter) {
+						opposingCoord = opposingGetter(dimension, opposingBinding.bindToContent) + (opposingBinding.offset ?? 0);
+					}
+				}
+
+				if (opposingCoord === undefined) {
+					opposingCoord = isNear
+						? targetElement.getFar(dimension)
+						: targetElement.getNear(dimension);
+				}
+
+				const hereCoord = isNear ? anchorBindCoord : opposingCoord;
+				const farCoord = isFar ? anchorBindCoord : opposingCoord;
+
+				const currentNearCoord = targetElement.getNear(dimension);
+				const currentFarCoord = targetElement.getFar(dimension);
+				if (currentNearCoord === hereCoord && currentFarCoord === farCoord) {
+					continue;
+				}
+
+				const minSize = dimension === "x"
+					? (targetElement.minWidth ?? 5)
+					: (targetElement.minHeight ?? 5);
+				const rawDiff = farCoord - hereCoord;
+				const newSize = Math.max(minSize, rawDiff);
+				targetElement.setSizeByDimension(newSize, dimension);
+
+				const targetNear = (rawDiff < minSize && isFar)
+					? (farCoord - minSize)
+					: hereCoord;
+				targetElement.setNear(dimension, targetNear);
+				continue;
+			}
+
 			// Current position of target:
 			var currentTargetPointPosition: number | undefined = targetPosChecker(
 				dimension,
 				binding.bindToContent
 			);
 
-
 			// Only go into the setter if it will change a value, massively reduces function calls.
 			// Alternative was doing the check inside the setter which still works but requires a function call
 			if (anchorBindCoord !== currentTargetPointPosition) {
 				// Use the correct setter on the target with this value
 
-				setter(dimension, anchorBindCoord!); // SETTER MAY NEED INTERNAL BINDING FLAG?
+				setter(dimension, anchorBindCoord!);
 			}
 		}
 	}

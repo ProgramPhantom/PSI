@@ -1,10 +1,11 @@
 import { Element } from "@svgdotjs/svg.js";
 import { AddDispatchData, RemoveDispatchData, StructuredChildEntry } from "../collection";
-import Grid, { GridCell, IGrid, Subgrid } from "../grid";
+import Grid, { GridCell, GridColumn, IGrid, Subgrid } from "../grid";
 import { ID, UserComponentType } from "../point";
-import { Size } from "../spacial";
+import { Size, } from "../spacial";
 import Visual from "../visual";
 import Channel from "./channel";
+import { determineBindingPlacementModeType, isGridBindingRule } from "../bindingUtil";
 
 
 
@@ -189,8 +190,79 @@ export default class Sequence extends Grid implements ISequence {
 					}
 				}
 			}
+
+			// Clean up placement rules on elements bound to this deleted column
+			const removedCol = this.gridSizes.columns[index];
+			if (removedCol) {
+				for (const bind of removedCol.bindings) {
+					const target = bind.targetObject;
+					if (target && target.placementMode) {
+						const pm = target.placementMode;
+						if ((pm.type === "sequenceBind" || pm.type === "binds") && Array.isArray(pm.config)) {
+							const remaining = pm.config.filter(
+								(rule) => !(isGridBindingRule(rule) && rule.sequenceId === this.id && rule.column === index)
+							);
+							target.placementMode = determineBindingPlacementModeType(remaining);
+						}
+					}
+				}
+			}
 		}
 		super.removeColumn(index, remove);
+	}
+
+	protected override shiftColumnIndexes(from: number, amount: number = 1): void {
+		super.shiftColumnIndexes(from, amount);
+		this.shiftSequenceColumnBindings(from, amount);
+	}
+
+	protected shiftSequenceColumnBindings(from: number, amount: number): void {
+		const updatedRules = new Set<any>();
+
+		if (amount > 0) {
+			for (let c = this.gridSizes.columns.length - 1; c >= from; c--) {
+				const col = this.gridSizes.columns[c];
+				if (col instanceof GridColumn) {
+					const oldIndex = c - amount;
+					this.updateBoundElementsForColumnShift(col, oldIndex, c, updatedRules);
+				}
+			}
+		} else if (amount < 0) {
+			for (let c = from; c < this.gridSizes.columns.length; c++) {
+				const col = this.gridSizes.columns[c];
+				if (col instanceof GridColumn) {
+					const oldIndex = c - amount;
+					this.updateBoundElementsForColumnShift(col, oldIndex, c, updatedRules);
+				}
+			}
+		}
+	}
+
+	private updateBoundElementsForColumnShift(
+		col: GridColumn,
+		oldIndex: number,
+		newIndex: number,
+		updatedRules: Set<any>
+	): void {
+		for (const bind of col.bindings) {
+			const target = bind.targetObject;
+			if (target && target.placementMode) {
+				const pm = target.placementMode;
+				if ((pm.type === "sequenceBind" || pm.type === "binds") && Array.isArray(pm.config)) {
+					for (const rule of pm.config) {
+						if (
+							!updatedRules.has(rule) &&
+							isGridBindingRule(rule) &&
+							rule.sequenceId === this.id &&
+							rule.column === oldIndex
+						) {
+							rule.column = newIndex;
+							updatedRules.add(rule);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public cellHasNonStructureElement(coords: { row: number, col: number }): boolean {

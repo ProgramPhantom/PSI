@@ -30,7 +30,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 		details = <GridPlacement fullPrefix={fullPrefix} />;
 	} else if (type === "aligner") {
 		details = <AlignerPlacement fullPrefix={fullPrefix} />;
-	} else if (type === "binds") {
+	} else if (type === "binds" || type === "sequenceBind") {
 		details = <BindsPlacement fullPrefix={fullPrefix} />;
 	}
 
@@ -48,7 +48,7 @@ export const PlacementModeConfig: React.FC<{ fullPrefix: string }> = ({ fullPref
 	return (
 		<ControlGroup vertical={true} className={styles.formGroupContainer}>
 			{coreRow}
-			{placementControl === "auto" && type !== "binds" ? null : details}
+			{placementControl === "auto" && type !== "binds" && type !== "sequenceBind" ? null : details}
 		</ControlGroup>
 	);
 };

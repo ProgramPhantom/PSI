@@ -1,15 +1,17 @@
-import { Button, ButtonGroup, Popover, Position, Tooltip } from "@blueprintjs/core";
+import { Button, ButtonGroup, Classes, Popover, Position, Tooltip } from "@blueprintjs/core";
 import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { CanvasToolType, setSelectedTool } from "../../redux/slices/applicationSlice";
+import { CanvasToolType, setSelectedTool, toggleColumnMode } from "../../redux/slices/applicationSlice";
 import styles from "./styles/toolbars.module.scss";
 import ArrowToolPopup from "./toolPopups/ArrowToolPopup";
+import BoxToolPopup from "./toolPopups/BoxToolPopup";
 import LaTeXToolPopup from "./toolPopups/LaTeXToolPopup";
 import TextToolPopup from "./toolPopups/TextToolPopup";
 
 export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
+    const columnMode = useAppSelector((state) => state.application.columnMode);
     const [openPopup, setOpenPopup] = useState<CanvasToolType | null>(null);
 
     const selectTool = (toolType: CanvasToolType) => {
@@ -25,7 +27,12 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
     return (
         <div
             onClick={(e) => e.stopPropagation()}
-            onMouseUp={(e) => e.stopPropagation()}
+            onMouseUp={(e) => {
+                const target = e.target as HTMLElement;
+                if (!target.closest(`.${Classes.POPOVER}`)) {
+                    e.stopPropagation();
+                }
+            }}
             onMouseDown={(e) => e.stopPropagation()}
             className={styles["frosted-toolbar"]}
         >
@@ -102,15 +109,35 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                 </Popover>
             </ButtonGroup>
 
-            <Tooltip hoverOpenDelay={2000} content="Box Tool" position={Position.TOP}>
-                <Button disabled
-                    icon="square"
-                    active={selectedTool.type === 'box'}
-                    intent={selectedTool.type === 'box' ? 'primary' : 'none'}
-                    onClick={() => selectTool('box')}
-                    variant="minimal"
-                />
-            </Tooltip>
+            <ButtonGroup>
+                <Tooltip hoverOpenDelay={2000} content="Box Tool" position={Position.TOP}>
+                    <Button
+                        icon="square"
+                        active={selectedTool.type === 'box'}
+                        intent={selectedTool.type === 'box' ? 'primary' : 'none'}
+                        onClick={() => selectTool('box')}
+                        variant="minimal"
+                    />
+                </Tooltip>
+                <Popover
+                    isOpen={openPopup === 'box'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'box' : null)}
+                    content={<BoxToolPopup />}
+                    position="top"
+                    minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
+                >
+                    <Button
+                        icon="caret-up"
+                        active={openPopup === 'box'}
+                        intent={selectedTool.type === 'box' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('box')}
+                        variant="minimal"
+                        style={{ minWidth: "16px", padding: 0 }}
+                    />
+                </Popover>
+            </ButtonGroup>
 
             <ButtonGroup>
                 <Tooltip hoverOpenDelay={2000} content="Arrow Tool" position={Position.TOP}>
@@ -141,6 +168,16 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     />
                 </Popover>
             </ButtonGroup>
+
+            <Tooltip hoverOpenDelay={2000} content="Column Mode (Alt+C)" position={Position.TOP}>
+                <Button
+                    icon="column-layout"
+                    active={columnMode}
+                    intent={columnMode ? 'primary' : 'none'}
+                    onClick={() => dispatch(toggleColumnMode())}
+                    variant="minimal"
+                />
+            </Tooltip>
         </div>
     );
 });
