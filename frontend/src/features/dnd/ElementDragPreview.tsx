@@ -1,6 +1,7 @@
 import { Colors } from "@blueprintjs/core";
 import type { FC } from "react";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
+import Spacial from "../../logic/spacial";
 import Visual from "../../logic/visual";
 
 export interface IElementDragPreviewProps {
@@ -62,10 +63,10 @@ const SingleElementPreview: FC<ISingleElementPreviewProps> = ({ element, relX, r
 						stroke: `${Colors.BLUE3}`,
 						width: "100%",
 						height: "100%",
-						strokeWidth: "1px",
+						strokeWidth: "1.5px",
 						fill: `${Colors.BLUE5}`,
-						fillOpacity: "10%",
-						strokeDasharray: "1 1"
+						fillOpacity: "6%",
+						strokeDasharray: "none"
 					}}
 				/>
 			</svg>
@@ -85,6 +86,11 @@ export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(function El
 
 	const lead = props.element;
 
+	const union = useMemo(() => {
+		if (elements.length <= 1) return null;
+		return Spacial.CreateUnion(...elements);
+	}, [elements]);
+
 	return (
 		<div
 			style={{
@@ -95,6 +101,31 @@ export const ElementDragPreview: FC<IElementDragPreviewProps> = memo(function El
 				height: lead.drawHeight
 			}}
 		>
+			{union && (
+				<svg
+					style={{
+						position: "absolute",
+						left: union.x - lead.drawX,
+						top: union.y - lead.drawY,
+						width: union.width,
+						height: union.height,
+						pointerEvents: "none",
+						overflow: "visible"
+					}}
+				>
+					<rect
+						width={union.width}
+						height={union.height}
+						style={{
+							stroke: `${Colors.BLUE3}`,
+							strokeWidth: "1.5px",
+							fill: "none",
+							strokeDasharray: "none"
+						}}
+					/>
+				</svg>
+			)}
+
 			{elements.map((el) => {
 				const relX = el.drawX - lead.drawX;
 				const relY = el.drawY - lead.drawY;

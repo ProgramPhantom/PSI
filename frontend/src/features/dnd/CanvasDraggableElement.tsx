@@ -1,7 +1,7 @@
 import { Colors, Icon, Tooltip } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
 import React, { memo, useEffect, useMemo, useRef, useState } from "react";
-import { useDrag } from "react-dnd";
+import { useDrag, useDragLayer } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
@@ -312,8 +312,19 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 			[props.x, props.y, props.name, props.element, props.selectedElements, isMultiSelected]
 		);
 
+		const { isAnyDragging, draggedItem } = useDragLayer((monitor) => ({
+			isAnyDragging: monitor.isDragging(),
+			draggedItem: monitor.getItem() as CanvasDraggableElementPayload | null
+		}));
+
+		const isDraggingThisOrPeer = isDragging || Boolean(
+			isAnyDragging &&
+			draggedItem?.allElements &&
+			draggedItem.allElements.some((el) => el.id === props.element.id)
+		);
+
 		const visualRef = useRef<SVGSVGElement | null>(null);
-		const isInteracting = isDragging || livePreview !== null || lineLivePreview !== null;
+		const isInteracting = isDraggingThisOrPeer || livePreview !== null || lineLivePreview !== null;
 
 		// Removed the default preview?
 		useEffect(() => {
@@ -322,7 +333,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 		useEffect(() => {
 			if (isInteracting) {
-				const elementsToHide = (isDragging && isMultiSelected && props.selectedElements)
+				const elementsToHide = (isDraggingThisOrPeer && isMultiSelected && props.selectedElements)
 					? props.selectedElements
 					: [props.element];
 
@@ -338,7 +349,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					visualRef.current?.replaceChildren();
 				};
 			}
-		}, [isInteracting, isDragging, isMultiSelected, props.element, props.selectedElements]);
+		}, [isInteracting, isDraggingThisOrPeer, isMultiSelected, props.element, props.selectedElements]);
 
 
 
@@ -348,7 +359,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					className="nopan"
 					style={{
 						zIndex: 30000,
-						opacity: (isDragging || props.isHidden) ? 0 : 1,
+						opacity: (isDraggingThisOrPeer || props.isHidden) ? 0 : 1,
 						position: "absolute",
 						left: props.element.drawX,
 						top: props.element.drawY,
@@ -400,7 +411,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						pointerEvents: "none",
 						zIndex: 2000,
 						overflow: "visible",
-						opacity: (isDragging || props.isHidden) ? 0 : 1,
+						opacity: (isDraggingThisOrPeer || props.isHidden) ? 0 : 1,
 
 					}}>
 
@@ -413,7 +424,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							width={props.element.drawWidth}
 							height={props.element.drawHeight}
 							style={{
-								stroke: isDragging ? `none` : `${Colors.GRAY3}`,
+								stroke: isDraggingThisOrPeer ? `none` : `${Colors.GRAY3}`,
 								strokeWidth: "1px",
 								fill: `${Colors.GRAY5}`,
 								fillOpacity: "10%",
@@ -447,7 +458,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							width={props.element.drawContentWidth}
 							height={props.element.drawContentHeight}
 							style={{
-								stroke: isDragging ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
+								stroke: isDraggingThisOrPeer ? `none` : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
 								strokeWidth: "1px",
 								fill: "transparent",
 								strokeDasharray: "2 2",
@@ -460,7 +471,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							width={props.element.drawContentWidth}
 							height={props.element.drawContentHeight}
 							style={{
-								stroke: isDragging ? `none` : `${Colors.BLUE5}`,
+								stroke: isDraggingThisOrPeer ? `none` : `${Colors.BLUE5}`,
 								strokeWidth: "1px",
 								fill: `${Colors.BLUE5}`,
 								fillOpacity: "10%",
@@ -475,7 +486,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							width={unionBoundingBox.width}
 							height={unionBoundingBox.height}
 							style={{
-								stroke: isDragging ? `none` : `${Colors.BLUE3}`,
+								stroke: isDraggingThisOrPeer ? `none` : `${Colors.BLUE3}`,
 								strokeWidth: "1.5px",
 								fill: "none",
 								strokeDasharray: "none"
@@ -489,7 +500,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							width={props.element.drawContentWidth}
 							height={props.element.drawContentHeight}
 							style={{
-								stroke: isDragging ? `none` : `${Colors.BLUE3}`,
+								stroke: isDraggingThisOrPeer ? `none` : `${Colors.BLUE3}`,
 								strokeWidth: "1.5px",
 								fill: `${Colors.BLUE5}`,
 								fillOpacity: "6%",
@@ -522,7 +533,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					)}
 				</svg>
 
-				{props.visualState === "selected" && !isMultiSelected && !isDragging && !props.isHidden && props.element.placementControl !== "auto" && (
+				{props.visualState === "selected" && !isMultiSelected && !isDraggingThisOrPeer && !props.isHidden && props.element.placementControl !== "auto" && (
 					props.element instanceof LineLike ? (
 						<CanvasLineResizeHandles
 							element={props.element}
