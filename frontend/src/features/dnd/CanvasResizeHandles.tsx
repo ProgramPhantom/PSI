@@ -304,7 +304,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					}
 				};
 
-				if (currentElement.placementMode?.type === "free" || currentElement.placementMode?.type === "binds") {
+				if (currentElement.placementMode?.type === "free" || currentElement.placementMode?.type === "binds" || currentElement.placementMode?.type === "sequenceBind") {
 					newState.x = targetX;
 					newState.y = targetY;
 				}
@@ -571,7 +571,7 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 						sizeMode: newSizeMode
 					};
 
-					if (updatedPlacementMode.type === "free" || updatedPlacementMode.type === "binds") {
+					if (updatedPlacementMode.type === "free" || updatedPlacementMode.type === "binds" || updatedPlacementMode.type === "sequenceBind") {
 						newState.x = targetX;
 						newState.y = targetY;
 					}
@@ -657,13 +657,23 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 		const handleScale = 1 / (currentEffectiveScale > 0 ? currentEffectiveScale : 1);
 
 		const isHandleBound = (dir: HandleDirection): boolean => {
-			if (element.placementMode?.type !== "binds") return false;
 			const sites = HANDLE_SITE_MAP[dir];
-			const rules = element.placementMode.config;
-			return rules.some((r) =>
-				(sites.xSite && r.dimension === "x" && r.targetSiteName === sites.xSite) ||
-				(sites.ySite && r.dimension === "y" && r.targetSiteName === sites.ySite)
-			);
+			if (element.placementMode?.type === "binds" || element.placementMode?.type === "sequenceBind") {
+				const rules = element.placementMode.config;
+				if (rules && rules.some((r) =>
+					(sites.xSite && r.dimension === "x" && r.targetSiteName === sites.xSite) ||
+					(sites.ySite && r.dimension === "y" && r.targetSiteName === sites.ySite)
+				)) {
+					return true;
+				}
+			}
+			if (element.bindingsToThis && element.bindingsToThis.some((b) =>
+				(sites.xSite && b.bindingRule.dimension === "x" && b.bindingRule.targetSiteName === sites.xSite) ||
+				(sites.ySite && b.bindingRule.dimension === "y" && b.bindingRule.targetSiteName === sites.ySite)
+			)) {
+				return true;
+			}
+			return false;
 		};
 
 		return (

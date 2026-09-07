@@ -415,7 +415,7 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 
 		const isHandleBound = useCallback(
 			(handle: LineHandleType): boolean => {
-				if (element.placementMode?.type === "binds") {
+				if (element.placementMode?.type === "binds" || element.placementMode?.type === "sequenceBind") {
 					if (element.placementMode.config.some((r) => r.targetSiteName === handle)) {
 						return true;
 					}
