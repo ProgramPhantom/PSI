@@ -4,14 +4,13 @@ import LineLike from "../../logic/lineLike";
 
 /**
  * Checks whether an element is eligible for multi-selection.
- * Only elements that are descendants of Diagram with placementMode 'free'
- * (excluding diagram itself and sequence-aligner) are eligible.
+ * Any selectable Visual element (excluding diagram, sequence-aligner, and sequence) is eligible.
  */
 export function isEligibleForMultiSelect(element?: Spacial | null): element is Visual {
 	if (!element || !(element instanceof Visual)) {
 		return false;
 	}
-	if (element.type === "diagram" || element.type === "sequence-aligner") {
+	if (element.type === "diagram" || element.type === "sequence-aligner" || element.type === "sequence") {
 		return false;
 	}
 	return element.placementMode?.type === "free";

@@ -45,6 +45,7 @@ export interface CanvasDraggableElementPayload {
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
 		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
+		const mouseDownPosRef = useRef<{ x: number, y: number } | null>(null);
 		const [livePreview, setLivePreview] = useState<PreviewState | null>(null);
 		const [lineLivePreview, setLineLivePreview] = useState<LinePreviewState | null>(null);
 
@@ -370,12 +371,44 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					<div
 						ref={props.element.placementControl === "auto" ? undefined : drag}
 						onMouseDown={(e) => {
-							props.reselect(props.element);
+							if (e.button !== 0 || props.isSpacePressed) return;
+
+							const isCtrl = e.ctrlKey || e.metaKey;
+							mouseDownPosRef.current = { x: e.clientX, y: e.clientY };
+
+							if (isCtrl) {
+								props.reselect(props.element, e);
+							} else {
+								// If the element is not already selected, select it immediately so drag works.
+								// If it is already selected (e.g. part of a multi-selection), don't deselect others yet,
+								// so the user can drag the entire multi-selection together!
+								if (!props.selectedElements?.some((el) => el.id === props.element.id)) {
+									props.reselect(props.element, e);
+								}
+							}
+
 							const rect = e.currentTarget.getBoundingClientRect();
 							offsetRef.current = {
 								x: e.clientX - rect.left,
 								y: e.clientY - rect.top
 							};
+						}}
+						onClick={(e) => {
+							e.stopPropagation();
+							if (props.isSpacePressed) return;
+
+							if (mouseDownPosRef.current) {
+								const dx = e.clientX - mouseDownPosRef.current.x;
+								const dy = e.clientY - mouseDownPosRef.current.y;
+								mouseDownPosRef.current = null;
+								if (Math.hypot(dx, dy) > 5) {
+									return;
+								}
+							}
+
+							if (!e.ctrlKey && !e.metaKey && isMultiSelected) {
+								props.reselect(props.element);
+							}
 						}}
 						style={{
 							height: "100%",
