@@ -2115,15 +2115,29 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			let totalWidth = columns.reduce((w, c) => w + c.width, 0);
 			let totalHeight = rows.reduce((h, r) => h + r.height, 0);
 
-			rows.forEach((row) => {
-				row.width = totalWidth
-			})
-			columns.forEach((col) => {
-				col.height = totalHeight
-			})
+			let subgridColumns: GridColumn[] = columns.map((parentCol, idx) => {
+				const existing = sg.gridSizes.columns[idx];
+				const subCol = (existing instanceof GridColumn) ? existing : new GridColumn(idx, sg.id);
+				subCol.width = parentCol.width;
+				subCol.height = totalHeight;
+				return subCol;
+			});
+			let subgridRows: Spacial[] = rows.map((parentRow, idx) => {
+				const existing = sg.gridSizes.rows[idx];
+				const subRow = (existing instanceof Spacial) ? existing : new Spacial({
+					ref: `row-${idx}`,
+					type: "lower-abstract",
+					placementMode: { type: "free" },
+					placementControl: "auto",
+					parentId: sg.id
+				});
+				subRow.width = totalWidth;
+				subRow.height = parentRow.height;
+				return subRow;
+			});
 
-			sg.gridSizes.columns = columns;
-			sg.gridSizes.rows = rows;
+			sg.gridSizes.columns = subgridColumns;
+			sg.gridSizes.rows = subgridRows;
 
 			sg.width = totalWidth;
 			sg.height = totalHeight;
