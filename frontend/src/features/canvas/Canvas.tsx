@@ -160,7 +160,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		}
 	}
 
-	const interactiveElementIds = interactiveElements.map(e => e.id).join(",");
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	const deselect = () => {
@@ -175,7 +174,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	const selectVisual = (e: Visual) => {
 		dispatch(setSelectedElementId(e.id));
-		e.svg?.hide();
 	};
 
 	const reselect = (e: Visual) => {
@@ -391,13 +389,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		}
 	}, [zoom, isZoomEditing]);
 
-	useEffect(() => {
-		interactiveElements.forEach(el => el.svg?.hide());
 
-		return () => {
-			interactiveElements.forEach(el => el.svg?.show());
-		};
-	}, [interactiveElementIds, store]);
 
 	// Refresh canvas
 	useEffect(() => {
