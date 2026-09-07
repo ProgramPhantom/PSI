@@ -1,6 +1,6 @@
 import { Colors, Icon, Tooltip } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
-import React, { memo, useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { ClearIDs } from "../../logic/collection";
@@ -53,6 +53,19 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 			props.selectedElements.length > 1 &&
 			props.selectedElements.some((el) => el.id === props.element.id)
 		);
+
+		const isFirstSelectedElement = Boolean(
+			props.selectedElements &&
+			props.selectedElements.length > 1 &&
+			props.selectedElements[0]?.id === props.element.id
+		);
+
+		const unionBoundingBox = useMemo(() => {
+			if (!props.selectedElements || props.selectedElements.length <= 1) {
+				return null;
+			}
+			return Spacial.CreateUnion(...props.selectedElements);
+		}, [props.selectedElements]);
 
 		const origContentWidth = props.element.drawContentWidth > 0 ? props.element.drawContentWidth : 1;
 		const origContentHeight = props.element.drawContentHeight > 0 ? props.element.drawContentHeight : 1;
@@ -454,8 +467,23 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								strokeDasharray: "none"
 							}}></rect>
 					)}
+					{props.visualState === "selected" && isMultiSelected && isFirstSelectedElement && unionBoundingBox && (
+						<rect
+							className="selection-union-box"
+							x={unionBoundingBox.x}
+							y={unionBoundingBox.y}
+							width={unionBoundingBox.width}
+							height={unionBoundingBox.height}
+							style={{
+								stroke: isDragging ? `none` : `${Colors.BLUE3}`,
+								strokeWidth: "1.5px",
+								fill: "none",
+								strokeDasharray: "none"
+							}}></rect>
+					)}
 					{props.visualState === "selected" && isMultiSelected && (
 						<rect
+							className="selection-element-box"
 							x={props.element.drawCX}
 							y={props.element.drawCY}
 							width={props.element.drawContentWidth}
