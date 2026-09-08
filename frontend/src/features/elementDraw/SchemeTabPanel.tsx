@@ -110,7 +110,6 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 									<TemplateDraggableElement
 										key={template_id}
 										element={visual}
-										onDoubleClick={handleElementDoubleClick}
 										schemeId={schemeId}
 										templateId={template_id}
 									/>

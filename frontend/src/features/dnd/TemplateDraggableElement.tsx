@@ -24,7 +24,6 @@ import { SnapStore } from "../../logic/snapping";
 
 interface ITemplateDraggableElementProps {
 	element: Visual;
-	onDoubleClick?: (element: Visual) => void;
 	schemeId: string;
 	templateId: string;
 }
@@ -239,12 +238,6 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 		preview(getEmptyImage(), { captureDraggingState: true });
 	}, [preview]);
 
-	const handleDoubleClick = () => {
-		if (props.onDoubleClick) {
-			props.onDoubleClick(props.element);
-		}
-	};
-
 	const deleteTemplate = () => {
 		dispatch(deleteComponentThunk({ schemeId: props.schemeId, templateId: props.templateId }));
 
@@ -285,7 +278,6 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				e.currentTarget.style.transform = "translateY(0)";
 				setShowBin(false);
 			}}
-			onDoubleClick={handleDoubleClick}
 			title={`Drag ${props.element.ref} to canvas`}>
 			{props.schemeId !== InternalSchemeId ? (
 				<Button
