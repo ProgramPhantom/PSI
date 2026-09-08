@@ -2,7 +2,7 @@ import { Tab, Tabs } from "@blueprintjs/core";
 import React, { useImperativeHandle, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import Collection from "../../logic/collection";
-import { UserComponentType } from "../../logic/point";
+import { AllComponentTypes } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
 import { CollectionChildrenList } from "./CollectionChildrenList";
@@ -20,7 +20,7 @@ import styles from "./styles/ElementForm.module.scss"
 
 export interface ElementFormProps {
 	target?: Visual;
-	objectType: UserComponentType;
+	objectType: AllComponentTypes;
 	callback: (val: IVisual) => void;
 
 	ref?: React.RefObject<SubmitButtonRef>;
@@ -167,7 +167,7 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 									<></>
 								)}
 
-								{isCollection ? (
+								{isCollection && props.objectType !== "collection" ? (
 									<Tab
 										style={{ userSelect: "none" }}
 										id={"children"}

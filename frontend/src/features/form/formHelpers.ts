@@ -17,7 +17,7 @@ export interface ResolvedFormTargets {
 		Form: React.FC<FormRequirements>;
 		defaults: IVisual;
 		target?: Visual;
-		elementType: UserComponentType;
+		elementType: AllComponentTypes;
 	};
 	/** Form component + defaults for the core child (only when target is a LabelGroup) */
 	coreChild?: {
@@ -31,6 +31,7 @@ export interface ResolvedFormTargets {
 	allowLabels: boolean;
 	isLabelGroup: boolean;
 	isCollection: boolean;
+	hideApplyButton?: boolean;
 	/** Roles from the label-group schema (for the Labels tab) */
 	labelRoles: EditableRole[];
 	/** Roles from the element's own schema (for role child buttons/modals) */
@@ -70,7 +71,7 @@ export function getRoleIcon(role: { roleName: string; elementType: AllComponentT
  */
 export function resolveFormDataFromTarget(
 	target: Visual | undefined,
-	objectType: UserComponentType
+	objectType: AllComponentTypes
 ): ResolvedFormTargets {
 	const formBundle: FormBundle | undefined = FORM_DEFAULTS[objectType];
 	if (!formBundle) {
@@ -149,6 +150,7 @@ export function resolveFormDataFromTarget(
 			allowLabels: formBundle.allowLabels,
 			isLabelGroup: false,
 			isCollection: false,
+			hideApplyButton: formBundle.hideApplyButton,
 			labelRoles: creatingLabelRoles,
 			componentRoles: creatingComponentRoles,
 		};
@@ -245,6 +247,7 @@ export function resolveFormDataFromTarget(
 		allowLabels,
 		isLabelGroup,
 		isCollection,
+		hideApplyButton: formBundle.hideApplyButton,
 		labelRoles,
 		componentRoles,
 	};
@@ -268,7 +271,7 @@ export function formDataAssembler(
 	roleData: Record<string, IVisual>,
 	context: {
 		isLabelGroup: boolean;
-		objectType: UserComponentType;
+		objectType: AllComponentTypes;
 		originalTarget?: Visual;
 		editableRoles: EditableRole[];
 	}

@@ -10,6 +10,7 @@ import { AllComponentTypes, UserComponentType } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
 import { ElementForm, SubmitButtonRef } from "./ElementForm";
 import DiagramForm from "./DiagramForm";
+import { FORM_DEFAULTS } from "./formDataRegistry";
 
 type FormEffect = "submit" | "modify";
 
@@ -168,34 +169,36 @@ export function FormDiagramInterface() {
 						<ElementForm
 							key={targetType}
 							ref={submitRef}
-							objectType={targetType as UserComponentType}
+							objectType={targetType}
 							target={target}
 							callback={handleFormSubmit}></ElementForm>
 
-						<div
-							id="submit-area"
-							style={{
-								width: "100%",
-								alignSelf: "center",
-								margin: "4px 2px 4px 2px",
-								padding: "0px 4px 0px 4px",
-								flexShrink: 0,
-								display: "flex",
-								flexDirection: "column"
-							}}>
-							<Divider></Divider>
+						{!FORM_DEFAULTS[targetType]?.hideApplyButton && (
+							<div
+								id="submit-area"
+								style={{
+									width: "100%",
+									alignSelf: "center",
+									margin: "4px 2px 4px 2px",
+									padding: "0px 4px 0px 4px",
+									flexShrink: 0,
+									display: "flex",
+									flexDirection: "column"
+								}}>
+								<Divider></Divider>
 
-							<Tooltip
-								content={`Modification for ${targetType} is not yet implemented`}
-								disabled={submissionValid} position="top">
-								<AnchorButton
-									style={{ width: "100%" }}
-									disabled={!submissionValid}
-									onClick={() => submitRef.current?.submit()}
-									text="Apply"
-									icon="tick"></AnchorButton>
-							</Tooltip>
-						</div>
+								<Tooltip
+									content={`Modification for ${targetType} is not yet implemented`}
+									disabled={submissionValid} position="top">
+									<AnchorButton
+										style={{ width: "100%" }}
+										disabled={!submissionValid}
+										onClick={() => submitRef.current?.submit()}
+										text="Apply"
+										icon="tick"></AnchorButton>
+								</Tooltip>
+							</div>
+						)}
 					</>
 				)}
 			</div>
