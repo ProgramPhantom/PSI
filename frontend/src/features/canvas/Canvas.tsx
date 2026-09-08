@@ -227,7 +227,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	const reselect = (e: Visual, event?: React.MouseEvent) => {
 		if (event?.ctrlKey || event?.metaKey) {
-			if (isEligibleForMultiSelect(e)) {
+			if (isEligibleForMultiSelect(e, selectedElementIds)) {
 				dispatch(toggleElementSelection(e.id));
 			}
 			return;
@@ -306,7 +306,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 							}
 						} else if (element instanceof Visual) {
 							if (e.ctrlKey || e.metaKey) {
-								if (isEligibleForMultiSelect(element)) {
+								if (isEligibleForMultiSelect(element, selectedElementIds)) {
 									dispatch(toggleElementSelection(element.id));
 								}
 							} else {

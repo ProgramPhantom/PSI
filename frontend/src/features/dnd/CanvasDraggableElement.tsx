@@ -95,6 +95,15 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 			return Boolean(parent && parent.type === "collection" && parent instanceof Collection);
 		}, [props.element.parentId]);
 
+		const canGroup = useMemo(() => {
+			if (!props.selectedElements || props.selectedElements.length < 2) {
+				return false;
+			}
+			const diagramId = ENGINE.handler?.diagram?.id ?? "";
+			const firstParentId = props.selectedElements[0].parentId || diagramId;
+			return props.selectedElements.every((el) => (el.parentId || diagramId) === firstParentId);
+		}, [props.selectedElements]);
+
 		const origContentWidth = props.element.drawContentWidth > 0 ? props.element.drawContentWidth : 1;
 		const origContentHeight = props.element.drawContentHeight > 0 ? props.element.drawContentHeight : 1;
 		const visualX = livePreview ? livePreview.left : props.element.drawCX;
@@ -581,7 +590,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					)
 				)}
 
-				{props.visualState === "selected" && isMultiSelected && isFirstSelectedElement && unionBoundingBox && !isDraggingThisOrPeer && !props.isHidden && (
+				{props.visualState === "selected" && isMultiSelected && isFirstSelectedElement && unionBoundingBox && !isDraggingThisOrPeer && !props.isHidden && canGroup && (
 					<div
 						className="nopan"
 						style={{

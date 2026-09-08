@@ -285,9 +285,21 @@ export const handleGroupSelectedElements = createAsyncThunk(
 
         const elements = ids
             .map((id) => ENGINE.handler.identifyElement(id))
-            .filter((el): el is Visual => el !== undefined && el.parentId !== undefined);
+            .filter((el): el is Visual => el !== undefined);
 
         if (elements.length < 2) return;
+
+        const diagramId = ENGINE.handler.diagram.id;
+        const firstParentId = elements[0].parentId || diagramId;
+        const allSameParent = elements.every((el) => (el.parentId || diagramId) === firstParentId);
+        if (!allSameParent) {
+            appToaster.show({
+                message: "Cannot group elements from different levels",
+                intent: "danger",
+                timeout: 1000
+            });
+            return;
+        }
 
         const union = Spacial.CreateUnion(...elements);
         const collectionId = Math.random().toString(16).slice(2);
@@ -306,7 +318,7 @@ export const handleGroupSelectedElements = createAsyncThunk(
             id: collectionId,
             ref: collectionRef,
             type: "collection",
-            parentId: ENGINE.handler.diagram.id,
+            parentId: firstParentId,
             placementMode: { type: "free" },
             placementControl: "user",
             sizeMode: { x: "fit", y: "fit" },

@@ -69,7 +69,7 @@ export const SelectionMarqueeOverlay: React.FC<SelectionMarqueeOverlayProps> = (
 		// Pre-compute eligible candidates and their centers once on mouse down
 		const diagram = ENGINE.handler.diagram;
 		candidateElementsRef.current = diagram.children
-			.filter((el): el is Visual => isEligibleForMultiSelect(el))
+			.filter((el): el is Visual => isEligibleForMultiSelect(el, isAdditiveRef.current ? initialSelectionRef.current : undefined))
 			.map((el) => ({
 				id: el.id,
 				center: getElementCenter(el)

@@ -5,9 +5,18 @@ import ENGINE from "../../logic/engine";
 
 /**
  * Checks whether an element is eligible for multi-selection.
- * Any selectable Visual element on the base diagram layer (layer 1) is eligible.
+ * 
+ * Requirements:
+ * 1. Must be an instance of Visual.
+ * 2. Cannot be structural containers like diagram, sequence-aligner, sequence, channel, subgrid.
+ * 3. Must have a supported placement mode ("free", "binds", "sequenceBind").
+ * 4. If currentSelection is non-empty, the candidate element MUST belong to the exact same
+ *    parent container (same level / layer) as the elements in the active selection.
  */
-export function isEligibleForMultiSelect(element?: Spacial | null): element is Visual {
+export function isEligibleForMultiSelect(
+	element?: Spacial | null,
+	currentSelection?: Array<string | Visual>
+): element is Visual {
 	if (!element || !(element instanceof Visual)) {
 		return false;
 	}
@@ -20,11 +29,40 @@ export function isEligibleForMultiSelect(element?: Spacial | null): element is V
 	) {
 		return false;
 	}
-	const diagram = ENGINE.handler?.diagram;
-	if (!diagram || !diagram.isDiagramChild(element)) {
+	if (
+		element.placementMode?.type !== "free" &&
+		element.placementMode?.type !== "binds" &&
+		element.placementMode?.type !== "sequenceBind"
+	) {
 		return false;
 	}
-	return element.placementMode?.type === "free" || element.placementMode.type === "binds" || element.placementMode.type === "sequenceBind";
+
+	const diagramId = ENGINE.handler?.diagram?.id ?? "";
+	const elementParentId = element.parentId || diagramId;
+
+	if (currentSelection && currentSelection.length > 0) {
+		const isAlreadySelected = currentSelection.some((item) =>
+			typeof item === "string" ? item === element.id : item.id === element.id
+		);
+		if (isAlreadySelected) {
+			return true;
+		}
+
+		let activeParentId: string | null = null;
+		for (const item of currentSelection) {
+			const selectedVisual = typeof item === "string" ? ENGINE.handler?.identifyElement(item) : item;
+			if (selectedVisual) {
+				activeParentId = selectedVisual.parentId || diagramId;
+				break;
+			}
+		}
+
+		if (activeParentId !== null && elementParentId !== activeParentId) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /**
