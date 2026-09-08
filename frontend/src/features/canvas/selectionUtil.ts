@@ -4,16 +4,22 @@ import LineLike from "../../logic/lineLike";
 
 /**
  * Checks whether an element is eligible for multi-selection.
- * Any selectable Visual element (excluding diagram, sequence-aligner, and sequence) is eligible.
+ * Any selectable Visual element (excluding container/structure types diagram, sequence-aligner, sequence, channel, and subgrid) is eligible.
  */
 export function isEligibleForMultiSelect(element?: Spacial | null): element is Visual {
 	if (!element || !(element instanceof Visual)) {
 		return false;
 	}
-	if (element.type === "diagram" || element.type === "sequence-aligner" || element.type === "sequence") {
+	if (
+		element.type === "diagram" ||
+		element.type === "sequence-aligner" ||
+		element.type === "sequence" ||
+		element.type === "channel" ||
+		element.type === "subgrid"
+	) {
 		return false;
 	}
-	return element.placementMode?.type === "free";
+	return element.placementMode?.type === "free" || element.placementMode.type === "binds" || element.placementMode.type === "sequenceBind";
 }
 
 /**
@@ -21,16 +27,22 @@ export function isEligibleForMultiSelect(element?: Spacial | null): element is V
  */
 export function getElementCenter(element: Visual): { x: number; y: number } {
 	if (element instanceof LineLike) {
+		const sx = element.startX ?? element.x ?? 0;
+		const sy = element.startY ?? element.y ?? 0;
+		const ex = element.endX ?? sx;
+		const ey = element.endY ?? sy;
 		return {
-			x: (element.startX + element.endX) / 2,
-			y: (element.startY + element.endY) / 2
+			x: (sx + ex) / 2,
+			y: (sy + ey) / 2
 		};
 	}
 	const width = element.drawContentWidth > 0 ? element.drawContentWidth : (element.width || 0);
 	const height = element.drawContentHeight > 0 ? element.drawContentHeight : (element.height || 0);
+	const cx = typeof element.drawCX === "number" && !isNaN(element.drawCX) ? element.drawCX : (element.x || 0);
+	const cy = typeof element.drawCY === "number" && !isNaN(element.drawCY) ? element.drawCY : (element.y || 0);
 	return {
-		x: element.drawCX + width / 2,
-		y: element.drawCY + height / 2
+		x: cx + width / 2,
+		y: cy + height / 2
 	};
 }
 

@@ -89,11 +89,11 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		// Compute drag element type:
 		let dragElementType = DragElementTypes.OTHER;
 		if (isPulse(props.element)) {
-			dragElementType = DragElementTypes.PULSE
+			dragElementType = DragElementTypes.PULSE;
 		} else if (props.element.placementControl === "auto") {
 			dragElementType = DragElementTypes.FIXED;
-		} else if (props.element.placementMode.type === "free") {
-			dragElementType = DragElementTypes.FREE
+		} else {
+			dragElementType = DragElementTypes.FREE;
 		}
 
 		const [{ isDragging }, drag, preview] = useDrag(
