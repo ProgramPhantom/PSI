@@ -126,7 +126,7 @@ export class LaTeX extends TextBase implements ILaTeX {
 
 		var structureGroup: SVGElement = crudeSvg.children()[1];
 
-		function replace(svg: SVGElement) {
+		const replace = (svg: SVGElement): void => {
 			var children: SVGElement[] = svg.children();
 
 			children.forEach((c) => {
@@ -146,12 +146,18 @@ export class LaTeX extends TextBase implements ILaTeX {
 								pathToReplace.attr({ transform: childTransform });
 							}
 
+							// Apply colour directly as SVG presentation attributes to ensure SVG editors (e.g. Figma) pick it up
+							pathToReplace.attr({
+								fill: this.style.colour,
+								stroke: this.style.colour
+							});
+
 							c.replace(pathToReplace);
 						}
 					}
 				}
 			});
-		}
+		};
 
 		replace(structureGroup);
 
@@ -166,8 +172,9 @@ export class LaTeX extends TextBase implements ILaTeX {
 			width: this.contentWidth,
 			height: this.contentHeight,
 			preserveAspectRatio: "xMinYMin",
-			style: `color:${this.style.colour}; overflow: visible; fill:${this.style.colour};`,
-
+			fill: this.style.colour,
+			stroke: this.style.colour,
+			style: `color:${this.style.colour}; overflow: visible; fill:${this.style.colour}; stroke:${this.style.colour};`,
 		});
 
 		if (this.style.background) {
