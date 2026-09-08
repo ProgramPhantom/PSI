@@ -1,16 +1,16 @@
 import { Button, Icon, Navbar, Position, Tooltip } from "@blueprintjs/core";
-import React from "react";
+import React, { useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
-import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
+import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setSVGDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import logoUrl from "../../assets/app/Logo1.svg";
 
 export default function Banner() {
 	const { data: user } = useGetMeQuery();
 	const dispatch = useAppDispatch();
-
+	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	return (
 		<Navbar>
@@ -89,8 +89,8 @@ export default function Banner() {
 						<Button
 							size="medium"
 							variant="minimal"
-							icon="cloud-download"
-							onClick={() => dispatch(Actions.handleSaveSVG())}
+							icon="flow-linear"
+							onClick={() => dispatch(setSVGDialogOpen(true))}
 						/>
 					</Tooltip>
 					<Navbar.Divider />

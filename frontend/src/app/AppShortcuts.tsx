@@ -5,7 +5,7 @@ import ENGINE from "../logic/engine";
 import Visual, { IVisual } from "../logic/visual";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { clearSelection, setSelectedElementId, toggleColumnMode } from "../redux/slices/applicationSlice";
-import { setDebugLayerDialogOpen, setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen } from "../redux/slices/dialogSlice";
+import { setDebugLayerDialogOpen, setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setSVGDialogOpen } from "../redux/slices/dialogSlice";
 import * as Actions from "../redux/thunks/actionThunks";
 import { useSelectedElement, useSelectedElements } from "../hooks/useSelectedElements";
 
@@ -315,7 +315,7 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                 global: true,
                 label: "Export SVG",
                 onKeyDown: () => {
-                    dispatch(Actions.handleSaveSVG());
+                    dispatch(setSVGDialogOpen(true))
                 },
                 preventDefault: true
             },
