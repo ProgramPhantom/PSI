@@ -3,7 +3,7 @@ import React from "react";
 import ENGINE from "../../logic/engine";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
-import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
+import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setCiteDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import logoUrl from "../../assets/app/Logo1.svg";
 
@@ -106,6 +106,17 @@ export default function Banner() {
 			</Navbar.Group>
 
 			<Navbar.Group align={"right"}>
+				<Tooltip content="Cite this project" position={Position.BOTTOM}>
+					<Button
+						variant="minimal"
+						icon="citation"
+						text="Cite Me"
+						onClick={() => dispatch(setCiteDialogOpen(true))}
+						style={{ marginRight: "10px" }}
+					/>
+				</Tooltip>
+				{/* Folder / Diagrams button commented out */}
+				{/*
 				<Tooltip content="Diagrams" position={Position.BOTTOM}>
 					<Button
 						variant="minimal"
@@ -114,6 +125,9 @@ export default function Banner() {
 						style={{ marginRight: "10px" }}
 					/>
 				</Tooltip>
+				*/}
+				{/* Sign in / User button commented out */}
+				{/*
 				{user ? (
 					<Tooltip content="Account Settings" position={Position.BOTTOM}>
 						<Button
@@ -134,6 +148,7 @@ export default function Banner() {
 						/>
 					</Tooltip>
 				)}
+				*/}
 			</Navbar.Group>
 
 		</Navbar>
