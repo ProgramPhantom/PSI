@@ -9,7 +9,8 @@ import {
     setUserDialogOpen,
     setDiagramsDialogOpen,
     setAssetStoreDialogOpen,
-    setAboutDialogOpen
+    setAboutDialogOpen,
+    setCiteDialogOpen
 } from "../../redux/slices/dialogSlice";
 import { PNGExportDialog } from "./PNGExportDialog";
 import { SVGExportDialog } from "./SVGExportDialog";
@@ -23,6 +24,7 @@ import { WelcomeDialog } from "./WelcomeDialog";
 import { UnsavedDiagramAlert } from "./UnsavedDiagramAlert";
 import { UnsavedDiagramLogoutAlert } from "./UnsavedDiagramLogoutAlert";
 import { AboutDialog } from "./AboutDialog";
+import { CiteDialog } from "./CiteDialog";
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -35,7 +37,8 @@ export const GlobalDialogs: React.FC = () => {
         isUserDialogOpen,
         isDiagramsDialogOpen,
         isAssetStoreDialogOpen,
-        isAboutDialogOpen
+        isAboutDialogOpen,
+        isCiteDialogOpen
     } = useAppSelector((state) => state.dialog);
 
     return (
@@ -85,6 +88,11 @@ export const GlobalDialogs: React.FC = () => {
             <AboutDialog
                 isOpen={isAboutDialogOpen}
                 onClose={() => dispatch(setAboutDialogOpen(false))}
+            />
+
+            <CiteDialog
+                isOpen={isCiteDialogOpen}
+                onClose={() => dispatch(setCiteDialogOpen(false))}
             />
 
             <UnsavedDiagramAlert />
