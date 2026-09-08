@@ -1,7 +1,7 @@
 import { Element, Mask, Rect, SVG } from "@svgdotjs/svg.js";
 import RBush from "rbush";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
-import { BAR_MASK_ID, ID, UserComponentType } from "./point";
+import Point, { BAR_MASK_ID, ID, UserComponentType, AllComponentTypes } from "./point";
 import { Bounds, IAlignerConfig, IBindsPlacementConfig, IGridConfig, IPulseConfig, isPulse, RBushItem, Size } from "./spacial";
 
 
@@ -32,13 +32,17 @@ export type FreeElement<T extends Visual = Visual> = T & { placementMode: { type
 export type BoundElement<T extends Visual = Visual> = T & { placementMode: { type: "binds"; config: IBindsPlacementConfig } };
 
 export default abstract class Visual extends PaddedBox implements IVisual {
-	static ElementType: UserComponentType = "rect";
+	static override ElementType: AllComponentTypes = "rect";
 	get state(): IVisual {
 		return {
 			offset: this.offset,
 			flipped: this.flipped,
 			...super.state
 		};
+	}
+
+	public override getShiftedState(deltaX: number, deltaY: number): IVisual {
+		return Point.shiftPointState({ ...this.state }, deltaX, deltaY);
 	}
 	get allElements(): Record<ID, Visual> {
 		return { [this.id]: this };

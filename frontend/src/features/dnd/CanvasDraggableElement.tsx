@@ -1,18 +1,21 @@
-import { Colors, Icon, Tooltip } from "@blueprintjs/core";
+import { Button, Colors, Icon, Tooltip } from "@blueprintjs/core";
 import "@svgdotjs/svg.draggable.js";
 import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useDrag, useDragLayer } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
-import { ClearIDs } from "../../logic/collection";
+import Collection, { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import LabelGroup from "../../logic/hasComponents/labelGroup";
-import LineLike, { ILineLike } from "../../logic/lineLike";
+import LineLike, { ILineLike, isLineLike } from "../../logic/lineLike";
+import Point from "../../logic/point";
 import Spacial, { isPulse } from "../../logic/spacial";
 import Visual, { IVisual } from "../../logic/visual";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { CanvasLineResizeHandles, LinePreviewState } from "./CanvasLineResizeHandles";
 import { CanvasResizeHandles, PreviewState } from "./CanvasResizeHandles";
 import { SnapStore } from "../../logic/snapping";
+import { useAppDispatch } from "../../redux/hooks";
+import { handleGroupSelectedElements } from "../../redux/thunks/actionThunks";
 
 
 
@@ -44,6 +47,7 @@ export interface CanvasDraggableElementPayload {
 /* When an element on the canvas is selected, it is replaced by this, a draggable element */
 const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 	function CanvasDraggableElement(props: IDraggableElementProps) {
+		const dispatch = useAppDispatch();
 		const offsetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
 		const mouseDownPosRef = useRef<{ x: number, y: number } | null>(null);
 		const [livePreview, setLivePreview] = useState<PreviewState | null>(null);
@@ -138,23 +142,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 							if (allElementsToMove.length === 1) {
 								const targetEl = allElementsToMove[0];
-								const targetState: IVisual = { ...targetEl.state };
-
-								if (targetEl instanceof LineLike) {
-									const line = targetEl;
-									const dx = targetX - line.x;
-									const dy = targetY - line.y;
-									const lineState = targetState as ILineLike;
-									lineState.startX = line.startX + dx;
-									lineState.startY = line.startY + dy;
-									lineState.endX = line.endX + dx;
-									lineState.endY = line.endY + dy;
-									lineState.x = targetX;
-									lineState.y = targetY;
-								} else {
-									targetState.x = targetX;
-									targetState.y = targetY;
-								}
+								const targetState = targetEl.getShiftedState(deltaX, deltaY);
 
 								targetState.parentId = ENGINE.handler.diagram.id;
 								targetState.placementMode = {
@@ -171,21 +159,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							} else {
 								// Multi-element batch move
 								const batchItems = allElementsToMove.map((targetEl) => {
-									const targetState: IVisual = { ...targetEl.state };
-
-									if (targetEl instanceof LineLike) {
-										const line = targetEl;
-										const lineState = targetState as ILineLike;
-										lineState.startX = line.startX + deltaX;
-										lineState.startY = line.startY + deltaY;
-										lineState.endX = line.endX + deltaX;
-										lineState.endY = line.endY + deltaY;
-										lineState.x = line.x + deltaX;
-										lineState.y = line.y + deltaY;
-									} else {
-										targetState.x = targetEl.x + deltaX;
-										targetState.y = targetEl.y + deltaY;
-									}
+									const targetState = targetEl.getShiftedState(deltaX, deltaY);
 
 									targetState.parentId = ENGINE.handler.diagram.id;
 									targetState.placementMode = {
@@ -582,6 +556,46 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							hoveredElement={props.hoveredElement}
 						/>
 					)
+				)}
+
+				{props.visualState === "selected" && isMultiSelected && isFirstSelectedElement && unionBoundingBox && !isDraggingThisOrPeer && !props.isHidden && (
+					<div
+						className="nopan"
+						style={{
+							position: "absolute",
+							left: unionBoundingBox.x + unionBoundingBox.width,
+							top: unionBoundingBox.y,
+							transform: "translate(6px, -12px)",
+							zIndex: 31000,
+							pointerEvents: "auto"
+						}}
+						onMouseDown={(e) => {
+							e.stopPropagation();
+						}}
+						onClick={(e) => {
+							e.stopPropagation();
+						}}
+					>
+						<Tooltip content="Group selection into a collection" placement="top">
+							<Button
+								icon="layers"
+								text="Group"
+								small
+								intent="primary"
+								onClick={(e) => {
+									e.stopPropagation();
+									dispatch(handleGroupSelectedElements());
+								}}
+								style={{
+									boxShadow: "0 2px 6px rgba(0, 0, 0, 0.25)",
+									fontSize: "11px",
+									fontWeight: 600,
+									height: "22px",
+									padding: "0 8px"
+								}}
+							/>
+						</Tooltip>
+					</div>
 				)}
 			</>
 		);

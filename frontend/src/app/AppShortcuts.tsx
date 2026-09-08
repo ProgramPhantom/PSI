@@ -30,11 +30,8 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
             const isCollection = Collection.isCollection(element) || Collection.isICollection(element.state);
 
             if (element.placementMode.type === "free") {
-                const newState: IVisual = {
-                    ...element.state,
-                    x: element.x + dx,
-                    y: element.y + dy
-                };
+                const newState = element.getShiftedState(dx, dy);
+
                 ENGINE.handler.act({
                     type: "modify",
                     input: {
@@ -66,11 +63,7 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
             const batchItems = selectedElements
                 .filter((el) => el.placementMode.type === "free")
                 .map((el) => {
-                    const newState: IVisual = {
-                        ...el.state,
-                        x: el.x + dx,
-                        y: el.y + dy
-                    };
+                    const newState = el.getShiftedState(dx, dy);
                     return {
                         type: "modify" as const,
                         input: {

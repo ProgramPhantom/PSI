@@ -25,6 +25,7 @@ export const FocusRules: IFocusRules = {
 	neverSelectable: ["diagram", "sequence-aligner", "sequence"],
 	alwaysSelectable: [
 		"channel",
+		"collection",
 		"svg",
 		(element: Visual) => element.type === "line" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
 		(element: Visual) => element.type === "rect" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
@@ -34,8 +35,15 @@ export const FocusRules: IFocusRules = {
 		(element: Visual) => element.pulseLayoutConfig !== undefined && element.placementMode?.type === "grid"
 	],
 	notSelectableIfChildOf: {
-		"svg": ["label-group", "simple-label-group"],
-		"rect": ["label-group", "simple-label-group"]
+		"svg": ["label-group", "simple-label-group", "collection"],
+		"rect": ["label-group", "simple-label-group", "collection"],
+		"line": ["label-group", "simple-label-group", "collection"],
+		"latex": ["collection"],
+		"text": ["collection"],
+		"label": ["collection"],
+		"label-group": ["collection"],
+		"simple-label-group": ["collection"],
+		"collection": ["collection"]
 	}
 };
 
@@ -110,7 +118,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		// 2. Bottom-up fine tuning for always selectable elements
 		let bottomUpCurr: Visual | undefined = initialElement;
 		while (bottomUpCurr) {
-			const type: UserComponentType = (bottomUpCurr.constructor as typeof Visual).ElementType;
+			const type: AllComponentTypes = bottomUpCurr.type ?? (bottomUpCurr.constructor as typeof Visual).ElementType;
 			const exceptions: AllComponentTypes[] = FocusRules.notSelectableIfChildOf[type] || [];
 
 			const isAlwaysSelectable = FocusRules.alwaysSelectable.some((rule) => {
@@ -125,7 +133,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 				let ancestor: Visual | undefined = ENGINE.handler.identifyElement(bottomUpCurr.parentId ?? "");
 
 				while (ancestor !== undefined) {
-					const ancestorType: UserComponentType = (ancestor.constructor as typeof Visual).ElementType;
+					const ancestorType: AllComponentTypes = ancestor.type ?? (ancestor.constructor as typeof Visual).ElementType;
 
 					if (exceptions.includes(ancestorType)) {
 						let bottomUpCurrIndex: number = path.findIndex(el => el.id === bottomUpCurr?.id);

@@ -5,7 +5,7 @@ import { appToaster } from "../../app/Toaster";
 import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
-import { ClearIDs } from "../../logic/collection";
+import { ClearIDs, ICollection, shiftVisualState } from "../../logic/collection";
 import Visual, { IVisual } from "../../logic/visual";
 import LineLike, { ILineLike, isLineLike } from "../../logic/lineLike";
 import Channel from "../../logic/hasComponents/channel";
@@ -16,7 +16,7 @@ import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
 import { selectCurrentAuthor, selectCurrentFileName, selectCurrentInstitution } from "../selectors/diagramSelectors";
 import { determineBindingPlacementModeType, isGridBindingRule } from "../../logic/bindingUtil";
-import { IPlacementBindingRule, ISequenceBindingRule } from "../../logic/spacial";
+import Spacial, { IPlacementBindingRule, ISequenceBindingRule } from "../../logic/spacial";
 
 export interface CopiedElementsPayload {
     version: 1;
@@ -276,6 +276,75 @@ export const deleteSelectedElements = createAsyncThunk<void, string[] | void>(
     }
 );
 
+export const handleGroupSelectedElements = createAsyncThunk(
+    'actions/handleGroupSelectedElements',
+    async (_, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const ids = state.application.selectedElementIds;
+        if (!ids || ids.length < 2) return;
+
+        const elements = ids
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined && el.parentId !== undefined);
+
+        if (elements.length < 2) return;
+
+        const union = Spacial.CreateUnion(...elements);
+        const collectionId = Math.random().toString(16).slice(2);
+        const collectionRef = `group-${Date.now().toString(36)}`;
+
+        const childrenStates: IVisual[] = elements.map((el) => {
+            const cloned = structuredClone(el.state);
+            cloned.parentId = collectionId;
+            if (cloned.placementMode?.type === "grid") {
+                cloned.placementMode = { type: "free" };
+            }
+            return cloned;
+        });
+
+        const newCollection: ICollection = {
+            id: collectionId,
+            ref: collectionRef,
+            type: "collection",
+            parentId: ENGINE.handler.diagram.id,
+            placementMode: { type: "free" },
+            placementControl: "user",
+            sizeMode: { x: "fit", y: "fit" },
+            padding: [0, 0, 0, 0],
+            offset: [0, 0],
+            x: union.x,
+            y: union.y,
+            contentWidth: union.contentWidth,
+            contentHeight: union.contentHeight,
+            children: childrenStates
+        };
+
+        const batchItems = [
+            ...elements.map((el) => ({
+                type: "remove" as const,
+                input: { child: el }
+            })),
+            {
+                type: "add" as const,
+                input: { child: newCollection }
+            }
+        ];
+
+        ENGINE.handler.act({
+            type: "batch",
+            input: batchItems
+        });
+
+        dispatch(setSelectedElementId(collectionId));
+
+        appToaster.show({
+            message: `Grouped ${elements.length} elements`,
+            intent: "success",
+            timeout: 1000
+        });
+    }
+);
+
 export const handlePasteElement = createAsyncThunk(
     'actions/handlePasteElement',
     async (_, { dispatch, getState }) => {
@@ -351,17 +420,7 @@ export const handlePasteElement = createAsyncThunk(
                 cloned.parentId = ENGINE.handler.diagram.id;
                 cloned.placementControl = "user";
 
-                if (isLineLike(cloned)) {
-                    cloned.startX = (cloned.startX ?? 0) + deltaX;
-                    cloned.startY = (cloned.startY ?? 0) + deltaY;
-                    cloned.endX = (cloned.endX ?? 0) + deltaX;
-                    cloned.endY = (cloned.endY ?? 0) + deltaY;
-                    cloned.x = (cloned.x ?? 0) + deltaX;
-                    cloned.y = (cloned.y ?? 0) + deltaY;
-                } else {
-                    cloned.x = (cloned.x ?? 0) + deltaX;
-                    cloned.y = (cloned.y ?? 0) + deltaY;
-                }
+                shiftVisualState(cloned, deltaX, deltaY);
                 return cloned;
             });
 

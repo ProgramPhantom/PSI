@@ -1,6 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
 import { Dimensions, Size } from "./spacial";
 import Visual, { IVisual } from "./visual";
+import Point from "./point";
 
 
 type Direction = "along" | "cross";
@@ -292,5 +293,27 @@ export default abstract class LineLike extends Visual {
 	public override set y(v: number) {
 		this.cy = v + this.padding[0];
 		this._y = v;
+	}
+
+	public override shiftCoordinates(deltaX: number, deltaY: number): void {
+		this.startX += deltaX;
+		this.startY += deltaY;
+		this.endX += deltaX;
+		this.endY += deltaY;
+		this._x += deltaX;
+		this._y += deltaY;
+	}
+
+	public static shiftLineState<T extends ILineLike = ILineLike>(state: T, deltaX: number, deltaY: number): T {
+		Point.shiftPointState(state, deltaX, deltaY);
+		state.startX = (state.startX ?? 0) + deltaX;
+		state.startY = (state.startY ?? 0) + deltaY;
+		state.endX = (state.endX ?? 0) + deltaX;
+		state.endY = (state.endY ?? 0) + deltaY;
+		return state;
+	}
+
+	public override getShiftedState(deltaX: number, deltaY: number): ILineLike {
+		return LineLike.shiftLineState({ ...this.state }, deltaX, deltaY);
 	}
 }
