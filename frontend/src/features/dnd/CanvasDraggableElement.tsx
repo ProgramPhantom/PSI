@@ -108,6 +108,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		const origContentHeight = props.element.drawContentHeight > 0 ? props.element.drawContentHeight : 1;
 		const visualX = livePreview ? livePreview.left : props.element.drawCX;
 		const visualY = livePreview ? livePreview.top : props.element.drawCY;
+		const visualWidth = livePreview ? livePreview.width : props.element.drawContentWidth;
+		const visualHeight = livePreview ? livePreview.height : props.element.drawContentHeight;
 		const visualScaleX = livePreview ? livePreview.width / origContentWidth : 1;
 		const visualScaleY = livePreview ? livePreview.height / origContentHeight : 1;
 
@@ -176,7 +178,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								const targetEl = allElementsToMove[0];
 								const targetState = targetEl.getShiftedState(deltaX, deltaY);
 
-								targetState.parentId = ENGINE.handler.diagram.id;
+								targetState.parentId = targetEl.parentId || ENGINE.handler.diagram.id;
 								targetState.placementMode = {
 									type: "free",
 								};
@@ -193,7 +195,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								const batchItems = allElementsToMove.map((targetEl) => {
 									const targetState = targetEl.getShiftedState(deltaX, deltaY);
 
-									targetState.parentId = ENGINE.handler.diagram.id;
+									targetState.parentId = targetEl.parentId || ENGINE.handler.diagram.id;
 									targetState.placementMode = {
 										type: "free",
 									};
@@ -503,18 +505,20 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								strokeDasharray: "2 2",
 							}}></rect>
 					)}
-					{props.visualState === "selected" && props.element.placementControl === "auto" && (
+					{props.visualState === "selected" && !isMultiSelected && !(props.element instanceof LineLike) && (
 						<rect
-							x={props.element.drawCX}
-							y={props.element.drawCY}
-							width={props.element.drawContentWidth}
-							height={props.element.drawContentHeight}
+							className="selection-single-box"
+							x={visualX}
+							y={visualY}
+							width={visualWidth}
+							height={visualHeight}
 							style={{
-								stroke: isDraggingThisOrPeer ? `none` : `${Colors.BLUE5}`,
+								stroke: isDraggingThisOrPeer ? "none" : (props.element.placementControl === "auto" ? `${Colors.BLUE5}` : `${Colors.BLUE3}`),
 								strokeWidth: "1px",
 								fill: `${Colors.BLUE5}`,
 								fillOpacity: "10%",
-								strokeDasharray: "none"
+								strokeDasharray: "none",
+								pointerEvents: "none"
 							}}></rect>
 					)}
 					{props.visualState === "selected" && isMultiSelected && isFirstSelectedElement && unionBoundingBox && (
@@ -580,14 +584,14 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 							onResize={setLineLivePreview}
 							hoveredElement={props.hoveredElement}
 						/>
-					) : (
+					) : props.element.isResizable ? (
 						<CanvasResizeHandles
 							element={props.element}
 							scale={props.scale}
 							onResize={setLivePreview}
 							hoveredElement={props.hoveredElement}
 						/>
-					)
+					) : null
 				)}
 
 				{props.visualState === "selected" && isMultiSelected && isFirstSelectedElement && unionBoundingBox && !isDraggingThisOrPeer && !props.isHidden && canGroup && (

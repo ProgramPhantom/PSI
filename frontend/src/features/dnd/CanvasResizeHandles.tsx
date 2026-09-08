@@ -193,6 +193,10 @@ function computeResizeGeometry(
 
 export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.memo(
 	function CanvasResizeHandles({ element, scale = 1, onResize, hoveredElement }: CanvasResizeHandlesProps) {
+		if (!element.isResizable) {
+			return null;
+		}
+
 		const dispatch = useAppDispatch();
 		const [previewState, setPreviewState] = useState<PreviewState | null>(null);
 		const [activeDirection, setActiveDirection] = useState<HandleDirection | null>(null);
@@ -742,16 +746,6 @@ export const CanvasResizeHandles: React.FC<CanvasResizeHandlesProps> = React.mem
 					style={{ "--handle-scale": handleScale } as React.CSSProperties}
 					onMouseUp={(e) => e.stopPropagation()}
 					onClick={(e) => e.stopPropagation()}>
-					<div
-						className={styles.selectionBox}
-						style={{
-							left: currentLeft,
-							top: currentTop,
-							width: currentWidth,
-							height: currentHeight
-						}}
-					/>
-
 					{element.isResizable && HANDLE_DIRECTIONS.map((dir) => {
 						const pos = getHandlePosition(dir);
 						const isBound = isHandleBound(dir);

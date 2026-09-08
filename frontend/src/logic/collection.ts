@@ -87,6 +87,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		return (v as any).children !== undefined
 	}
 
+	public override get isResizable(): boolean {
+		return false;
+	}
+
 	get state(): ICollection {
 		return {
 			children: this.children.map((c) => c.state),
