@@ -1596,7 +1596,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridSizes.rows.splice(INDEX, 0, new Spacial({
 			ref: `row-${INDEX}`,
 			type: "lower-abstract",
-			placementMode: { type: "singleton" },
+			placementMode: { type: "prefab" },
 			placementControl: "auto",
 			parentId: this.id
 		}));

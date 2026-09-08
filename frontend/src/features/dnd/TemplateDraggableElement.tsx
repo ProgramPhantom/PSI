@@ -11,7 +11,7 @@ import { Subgrid } from "../../logic/grid";
 import Visual, { IVisual } from "../../logic/visual";
 import LabelGroup from "../../logic/hasComponents/labelGroup";
 import { useAppDispatch } from "../../redux/hooks";
-import { InternalSchemeId } from "../../redux/slices/schemesSlice";
+import { InternalSchemeId, updateComponent } from "../../redux/slices/schemesSlice";
 import { deleteComponentThunk } from "../../redux/thunks/schemeThunks";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { SnapStore } from "../../logic/snapping";
@@ -24,7 +24,6 @@ import { SnapStore } from "../../logic/snapping";
 
 interface ITemplateDraggableElementProps {
 	element: Visual;
-	onDoubleClick?: (element: Visual) => void;
 	schemeId: string;
 	templateId: string;
 }
@@ -60,22 +59,26 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 			ClearIDs(singletonState)  // Required
 
 			switch (dropResult.type) {
-				case "canvas":
-					singletonState.x = dropResult.data.x;
-					singletonState.y = dropResult.data.y;
+				case "canvas": {
+					const deltaX = dropResult.data.x - (props.element.x ?? 0);
+					const deltaY = dropResult.data.y - (props.element.y ?? 0);
+					const targetState: IVisual = props.element.getShiftedState(deltaX, deltaY);
 
-					singletonState.placementMode = {
+					ClearIDs(targetState);
+
+					targetState.placementMode = {
 						type: "free"
-					}
-					singletonState.parentId = ENGINE.handler.diagram.id;
+					};
+					targetState.parentId = ENGINE.handler.diagram.id;
 
 					ENGINE.handler.act({
-						"type": "add",
+						type: "add",
 						input: {
-							child: singletonState,
+							child: targetState,
 						}
-					})
+					});
 					break;
+				}
 				case "pulse": {
 					const orientation = singletonState.pulseLayoutConfig?.orientation !== "both" ? dropResult.data.orientation : "both";
 					let yAlign: "here" | "centre" | "far" = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";
@@ -235,10 +238,29 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 		preview(getEmptyImage(), { captureDraggingState: true });
 	}, [preview]);
 
-	const handleDoubleClick = () => {
-		if (props.onDoubleClick) {
-			props.onDoubleClick(props.element);
+	const [refValue, setRefValue] = useState(props.element.ref ?? "");
+
+	useEffect(() => {
+		setRefValue(props.element.ref ?? "");
+	}, [props.element.ref]);
+
+	const commitRefChange = (newRef: string) => {
+		const trimmed = newRef.trim();
+		if (!trimmed || trimmed === props.element.ref) {
+			setRefValue(props.element.ref ?? "");
+			return;
 		}
+
+		const updatedComponent: IVisual = structuredClone(props.element.state);
+		updatedComponent.ref = trimmed;
+
+		dispatch(updateComponent({
+			schemeId: props.schemeId,
+			componentId: props.templateId,
+			component: updatedComponent
+		}));
+
+		props.element.ref = trimmed;
 	};
 
 	const deleteTemplate = () => {
@@ -257,7 +279,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				position: "relative",
 				width: "120px",
 				height: "120px",
-				padding: "12px 8px",
+				padding: "4px 8px",
 				border: "1px solid #d3d8de",
 				borderRadius: "4px",
 				backgroundColor: "white",
@@ -281,7 +303,6 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				e.currentTarget.style.transform = "translateY(0)";
 				setShowBin(false);
 			}}
-			onDoubleClick={handleDoubleClick}
 			title={`Drag ${props.element.ref} to canvas`}>
 			{props.schemeId !== InternalSchemeId ? (
 				<Button
@@ -310,22 +331,73 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 					width: "100%",
 					height: "100%",
 					overflow: "hidden",
-					padding: "4px"
+					padding: "0px 4px 0px 4px"
 				}}
 			/>
 
 
-			<span
+			<input
+				type="text"
+				value={refValue}
+				onChange={(e) => setRefValue(e.target.value)}
+				onBlur={() => commitRefChange(refValue)}
+				onKeyDown={(e) => {
+					if (e.key === "Enter") {
+						e.currentTarget.blur();
+					} else if (e.key === "Escape") {
+						setRefValue(props.element.ref ?? "");
+						e.currentTarget.blur();
+					}
+				}}
+				onMouseDown={(e) => {
+					e.stopPropagation();
+				}}
+				onClick={(e) => {
+					e.stopPropagation();
+				}}
 				style={{
+					fontFamily: "inherit",
 					fontSize: "12px",
 					color: "#5c7080",
 					fontWeight: "600",
 					textAlign: "center",
 					lineHeight: "1.4",
-					marginTop: "auto"
-				}}>
-				{props.element.ref}
-			</span>
+					marginTop: "auto",
+					width: "100%",
+					maxWidth: "100%",
+					border: "1px solid transparent",
+					borderRadius: "3px",
+					backgroundColor: "transparent",
+					outline: "none",
+					padding: "0px 4px",
+					cursor: "text",
+					userSelect: "text",
+					boxSizing: "border-box"
+				}}
+				onMouseEnter={(e) => {
+					if (document.activeElement !== e.currentTarget) {
+						e.currentTarget.style.borderColor = "#d3d8de";
+						e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.02)";
+					}
+				}}
+				onMouseLeave={(e) => {
+					if (document.activeElement !== e.currentTarget) {
+						e.currentTarget.style.borderColor = "transparent";
+						e.currentTarget.style.backgroundColor = "transparent";
+					}
+				}}
+				onFocus={(e) => {
+					e.currentTarget.style.borderColor = "#137cbd";
+					e.currentTarget.style.backgroundColor = "white";
+					e.currentTarget.style.boxShadow = "0 0 0 1px #137cbd";
+				}}
+				onBlurCapture={(e) => {
+					e.currentTarget.style.borderColor = "transparent";
+					e.currentTarget.style.backgroundColor = "transparent";
+					e.currentTarget.style.boxShadow = "none";
+				}}
+				title="Click to rename template"
+			/>
 		</div>
 	);
 };
