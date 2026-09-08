@@ -178,10 +178,18 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								const targetEl = allElementsToMove[0];
 								const targetState = targetEl.getShiftedState(deltaX, deltaY);
 
-								targetState.parentId = targetEl.parentId || ENGINE.handler.diagram.id;
+								const isTargetInsideGroup = targetEl.parentId && targetEl.parentId !== ENGINE.handler?.diagram?.id && (() => {
+									const p = ENGINE.handler.identifyElement(targetEl.parentId);
+									return Boolean(p && p.type === "collection" && p instanceof Collection);
+								})();
+
+								targetState.parentId = isTargetInsideGroup ? targetEl.parentId : ENGINE.handler.diagram.id;
 								targetState.placementMode = {
 									type: "free",
 								};
+								if (!isTargetInsideGroup) {
+									delete targetState.pulseLayoutConfig;
+								}
 
 								ENGINE.handler.act({
 									type: "modify",
@@ -195,10 +203,18 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								const batchItems = allElementsToMove.map((targetEl) => {
 									const targetState = targetEl.getShiftedState(deltaX, deltaY);
 
-									targetState.parentId = targetEl.parentId || ENGINE.handler.diagram.id;
+									const isTargetInsideGroup = targetEl.parentId && targetEl.parentId !== ENGINE.handler?.diagram?.id && (() => {
+										const p = ENGINE.handler.identifyElement(targetEl.parentId);
+										return Boolean(p && p.type === "collection" && p instanceof Collection);
+									})();
+
+									targetState.parentId = isTargetInsideGroup ? targetEl.parentId : ENGINE.handler.diagram.id;
 									targetState.placementMode = {
 										type: "free",
 									};
+									if (!isTargetInsideGroup) {
+										delete targetState.pulseLayoutConfig;
+									}
 
 									return {
 										type: "modify" as const,
@@ -245,7 +261,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 							newState.flipped = {
 								x: false,
-								y: newState.pulseLayoutConfig?.orientation === "bottom"
+								y: newState.type !== "collection" && newState.pulseLayoutConfig?.orientation === "bottom"
 							};
 
 							if (dropResult.data.insert === true) {

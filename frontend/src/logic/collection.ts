@@ -159,6 +159,18 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	// ---------------- Compute -------------------------
 	//#region 
 	public computeSize(): Size {
+		if (this.children.length === 0) {
+			this.minContentWidth = 0;
+			this.minContentHeight = 0;
+			if (this.sizeMode?.x !== "fixed") {
+				this.contentWidth = 0;
+			}
+			if (this.sizeMode?.y !== "fixed") {
+				this.contentHeight = 0;
+			}
+			return { width: this.width, height: this.height };
+		}
+
 		var size: Size = { width: 0, height: 0 }
 
 		var top = Infinity;
@@ -204,13 +216,24 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		super.computePositions(root);
 
 		this.children.forEach((c) => {
-			c.computePositions({ x: this.cx, y: this.cy })
-		})
+			c.computePositions({ x: this.cx, y: this.cy });
+		});
 
 		if (this.placementMode.type === "free") {
 			let topLeft: { x: number, y: number } = this.getTopLeft();
-			this.cx = topLeft.x;
-			this.cy = topLeft.y;
+			if (Number.isFinite(topLeft.x) && Number.isFinite(topLeft.y)) {
+				this.cx = topLeft.x;
+				this.cy = topLeft.y;
+			}
+		} else {
+			const currentTopLeft = this.getTopLeft();
+			if (Number.isFinite(currentTopLeft.x) && Number.isFinite(currentTopLeft.y)) {
+				const deltaX = this.cx - currentTopLeft.x;
+				const deltaY = this.cy - currentTopLeft.y;
+				if (deltaX !== 0 || deltaY !== 0) {
+					this.children.forEach((c) => c.shiftCoordinates(deltaX, deltaY));
+				}
+			}
 		}
 	}
 
@@ -447,6 +470,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	}
 
 	public getTopLeft(): { x: number, y: number } {
+		if (this.children.length === 0) {
+			return { x: this.cx, y: this.cy };
+		}
+
 		let top: number = Infinity
 		let left: number = Infinity
 
