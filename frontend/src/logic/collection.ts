@@ -1,6 +1,6 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
 import Point, { AllComponentTypes, ID } from "./point";
-import { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
+import Spacial, { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 import { showSVGRecursively } from "./util2";
 import RBush from "rbush";
@@ -404,6 +404,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 	// ----------------- Collection helpers -------------
 	//#region 
+	public isChild(element: Spacial): boolean {
+		return element.id !== undefined && this.has(element.id);
+	}
+
 	public has(id: ID): boolean {
 		return this.children.filter((c) => c.id === id).length > 0;
 	}

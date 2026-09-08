@@ -1,10 +1,11 @@
 import Spacial from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import LineLike from "../../logic/lineLike";
+import ENGINE from "../../logic/engine";
 
 /**
  * Checks whether an element is eligible for multi-selection.
- * Any selectable Visual element (excluding container/structure types diagram, sequence-aligner, sequence, channel, and subgrid) is eligible.
+ * Any selectable Visual element on the base diagram layer (layer 1) is eligible.
  */
 export function isEligibleForMultiSelect(element?: Spacial | null): element is Visual {
 	if (!element || !(element instanceof Visual)) {
@@ -17,6 +18,10 @@ export function isEligibleForMultiSelect(element?: Spacial | null): element is V
 		element.type === "channel" ||
 		element.type === "subgrid"
 	) {
+		return false;
+	}
+	const diagram = ENGINE.handler?.diagram;
+	if (!diagram || !diagram.isDiagramChild(element)) {
 		return false;
 	}
 	return element.placementMode?.type === "free" || element.placementMode.type === "binds" || element.placementMode.type === "sequenceBind";
