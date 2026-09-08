@@ -237,42 +237,111 @@ export const deleteSelectedElements = createAsyncThunk<void, string[] | void>(
 
         const elements = ids
             .map((id) => ENGINE.handler.identifyElement(id))
-            .filter((el): el is Visual => el !== undefined && el.parentId !== undefined);
+            .filter((el): el is Visual => el !== undefined);
 
         if (elements.length === 0) return;
 
-        if (elements.length === 1) {
-            const el = elements[0];
-            ENGINE.handler.act({
-                type: "remove",
-                input: {
-                    child: el
+        const batchItems: Array<{ type: "add" | "remove" | "modify"; input: any }> = [];
+        const handledElementIds = new Set<string>();
+
+        // Identify any parent collections that contain elements being deleted
+        const parentCollectionIds = new Set<string>();
+        for (const el of elements) {
+            if (el.parentId && el.parentId !== ENGINE.handler.diagram.id) {
+                parentCollectionIds.add(el.parentId);
+            }
+        }
+
+        for (const parentId of parentCollectionIds) {
+            // If the parent collection itself is also being deleted, skip processing its children individually
+            if (elements.some((el) => el.id === parentId)) {
+                continue;
+            }
+
+            const parentCollection = ENGINE.handler.identifyElement(parentId);
+            if (!parentCollection || !(parentCollection instanceof Collection) || parentCollection.type !== "collection") {
+                continue;
+            }
+
+            const deletedChildren = parentCollection.children.filter((child) =>
+                elements.some((el) => el.id === child.id)
+            );
+            const remainingChildren = parentCollection.children.filter((child) =>
+                !elements.some((el) => el.id === child.id)
+            );
+
+            // Mark these deleted children as handled
+            deletedChildren.forEach((child) => handledElementIds.add(child.id));
+
+            const targetParentId = parentCollection.parentId ?? ENGINE.handler.diagram.id;
+            const container = (ENGINE.handler.diagram.id === targetParentId
+                ? ENGINE.handler.diagram
+                : ENGINE.handler.identifyElement(targetParentId)) as Collection | undefined;
+            const collectionIndex = container?.childIndex(parentCollection);
+
+            if (remainingChildren.length === 0) {
+                // All children in this collection deleted: remove collection container
+                batchItems.push({
+                    type: "remove",
+                    input: { child: parentCollection }
+                });
+            } else if (remainingChildren.length === 1) {
+                // Exactly 1 child remains: destroy the collection and extract lone child to targetParentId
+                const loneChild = remainingChildren[0];
+                const loneChildState = structuredClone(loneChild.state);
+                loneChildState.parentId = targetParentId;
+                if (loneChildState.placementMode?.type === "grid") {
+                    loneChildState.placementMode = { type: "free" };
                 }
-            });
-            appToaster.show({
-                message: `Deleted element '${el.ref || el.id}'`,
-                intent: "danger",
-                timeout: 1000
-            });
-        } else {
-            const batchItems = elements.map((el) => ({
-                type: "remove" as const,
-                input: {
-                    child: el
+
+                batchItems.push({
+                    type: "remove",
+                    input: { child: parentCollection }
+                });
+                batchItems.push({
+                    type: "add",
+                    input: {
+                        child: loneChildState,
+                        index: collectionIndex
+                    }
+                });
+            } else {
+                // 2 or more children remain: remove deleted children from collection
+                for (const child of deletedChildren) {
+                    batchItems.push({
+                        type: "remove",
+                        input: { child }
+                    });
                 }
-            }));
+            }
+        }
+
+        // Process remaining elements (those directly on diagram or whole collections)
+        for (const el of elements) {
+            if (!handledElementIds.has(el.id)) {
+                batchItems.push({
+                    type: "remove",
+                    input: { child: el }
+                });
+            }
+        }
+
+        if (batchItems.length === 1) {
+            ENGINE.handler.act(batchItems[0]);
+        } else if (batchItems.length > 1) {
             ENGINE.handler.act({
                 type: "batch",
                 input: batchItems
             });
-            appToaster.show({
-                message: `Deleted ${elements.length} elements`,
-                intent: "danger",
-                timeout: 1000
-            });
         }
 
         dispatch(clearSelection());
+
+        appToaster.show({
+            message: elements.length === 1 ? `Deleted element '${elements[0].ref || elements[0].id}'` : `Deleted ${elements.length} elements`,
+            intent: "danger",
+            timeout: 1000
+        });
     }
 );
 
