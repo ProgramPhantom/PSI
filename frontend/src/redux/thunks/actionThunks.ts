@@ -5,7 +5,7 @@ import { appToaster } from "../../app/Toaster";
 import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
-import { ClearIDs, ICollection, shiftVisualState } from "../../logic/collection";
+import Collection, { ClearIDs, ICollection, shiftVisualState } from "../../logic/collection";
 import Visual, { IVisual } from "../../logic/visual";
 import LineLike, { ILineLike, isLineLike } from "../../logic/lineLike";
 import Channel from "../../logic/hasComponents/channel";
@@ -339,6 +339,118 @@ export const handleGroupSelectedElements = createAsyncThunk(
 
         appToaster.show({
             message: `Grouped ${elements.length} elements`,
+            intent: "success",
+            timeout: 1000
+        });
+    }
+);
+
+export const handleUngroupElement = createAsyncThunk(
+    'actions/handleUngroupElement',
+    async (payload: { elementId?: string } | undefined, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const targetId = payload?.elementId ?? selectSelectedElementId(state);
+        if (!targetId) return;
+
+        const element = ENGINE.handler.identifyElement(targetId);
+        if (!element || !element.parentId) return;
+
+        const parentCollection = ENGINE.handler.identifyElement(element.parentId);
+        if (!parentCollection || !(parentCollection instanceof Collection) || parentCollection.type !== "collection") {
+            return;
+        }
+
+        // Target parent is the container of parentCollection (an outer Collection, or the Diagram)
+        const targetParentId = parentCollection.parentId ?? ENGINE.handler.diagram.id;
+        const container = (ENGINE.handler.diagram.id === targetParentId
+            ? ENGINE.handler.diagram
+            : ENGINE.handler.identifyElement(targetParentId)) as Collection | undefined;
+        const collectionIndex = container?.childIndex(parentCollection);
+
+        // Prepare standalone state for the selected element, parented to targetParentId
+        const standaloneState = structuredClone(element.state);
+        standaloneState.parentId = targetParentId;
+        if (standaloneState.placementMode?.type === "grid") {
+            standaloneState.placementMode = { type: "free" };
+        }
+
+        const remainingChildren = parentCollection.children.filter((child) => child.id !== targetId);
+
+        let batchItems: Array<{ type: "add" | "remove" | "modify"; input: any }>;
+
+        if (remainingChildren.length <= 1) {
+            // Destroy the collection container.
+            // If 1 element remains, convert it into a standalone element in targetParentId too.
+            const otherAddItems = remainingChildren.map((other, idx) => {
+                const otherState = structuredClone(other.state);
+                otherState.parentId = targetParentId;
+                if (otherState.placementMode?.type === "grid") {
+                    otherState.placementMode = { type: "free" };
+                }
+                return {
+                    type: "add" as const,
+                    input: {
+                        child: otherState,
+                        index: collectionIndex !== undefined ? collectionIndex + idx : undefined
+                    }
+                };
+            });
+
+            batchItems = [
+                {
+                    type: "remove" as const,
+                    input: { child: parentCollection }
+                },
+                ...otherAddItems,
+                {
+                    type: "add" as const,
+                    input: {
+                        child: standaloneState,
+                        index: collectionIndex !== undefined ? collectionIndex + otherAddItems.length : undefined
+                    }
+                }
+            ];
+        } else {
+            // 2 or more elements remain: update the collection with recomputed bounding box
+            const remainingUnion = Spacial.CreateUnion(...remainingChildren);  // TODO: perf
+            const updatedCollectionState: ICollection = {
+                ...parentCollection.state,
+                parentId: targetParentId,
+                x: remainingUnion.x,
+                y: remainingUnion.y,
+                contentWidth: remainingUnion.contentWidth,
+                contentHeight: remainingUnion.contentHeight,
+                children: remainingChildren.map((child) => {
+                    const cloned = structuredClone(child.state);
+                    cloned.parentId = parentCollection.id;
+                    return cloned;
+                })
+            };
+
+            batchItems = [
+                {
+                    type: "modify" as const,
+                    input: { target: parentCollection, child: updatedCollectionState }
+                },
+                {
+                    type: "add" as const,
+                    input: {
+                        child: standaloneState,
+                        index: collectionIndex !== undefined ? collectionIndex + 1 : undefined
+                    }
+                }
+            ];
+        }
+
+        ENGINE.handler.act({
+            type: "batch",
+            input: batchItems
+        });
+
+        dispatch(setSelectedElementId(targetId));
+
+        appToaster.show({
+            message: `Removed element from group`,
             intent: "success",
             timeout: 1000
         });

@@ -15,12 +15,27 @@ import { CanvasLineResizeHandles, LinePreviewState } from "./CanvasLineResizeHan
 import { CanvasResizeHandles, PreviewState } from "./CanvasResizeHandles";
 import { SnapStore } from "../../logic/snapping";
 import { useAppDispatch } from "../../redux/hooks";
-import { handleGroupSelectedElements } from "../../redux/thunks/actionThunks";
+import { handleGroupSelectedElements, handleUngroupElement } from "../../redux/thunks/actionThunks";
 
 
 
 
 export const OFFSET_INDICATOR_THRESHOLD = 3;
+
+const FLOATING_ACTION_CONTAINER_STYLE: React.CSSProperties = {
+	position: "absolute",
+	transform: "translate(6px, -12px)",
+	zIndex: 31000,
+	pointerEvents: "auto"
+};
+
+const FLOATING_ACTION_BUTTON_STYLE: React.CSSProperties = {
+	boxShadow: "0 2px 6px rgba(0, 0, 0, 0.25)",
+	fontSize: "11px",
+	fontWeight: 600,
+	height: "22px",
+	padding: "0 8px"
+};
 
 interface IDraggableElementProps {
 	name: string;
@@ -71,6 +86,14 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 			}
 			return Spacial.CreateUnion(...props.selectedElements);
 		}, [props.selectedElements]);
+
+		const isInsideGroup = useMemo(() => {
+			if (!props.element.parentId || props.element.parentId === ENGINE.handler?.diagram?.id) {
+				return false;
+			}
+			const parent = ENGINE.handler.identifyElement(props.element.parentId);
+			return Boolean(parent && parent.type === "collection" && parent instanceof Collection);
+		}, [props.element.parentId]);
 
 		const origContentWidth = props.element.drawContentWidth > 0 ? props.element.drawContentWidth : 1;
 		const origContentHeight = props.element.drawContentHeight > 0 ? props.element.drawContentHeight : 1;
@@ -562,12 +585,9 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 					<div
 						className="nopan"
 						style={{
-							position: "absolute",
+							...FLOATING_ACTION_CONTAINER_STYLE,
 							left: unionBoundingBox.x + unionBoundingBox.width,
-							top: unionBoundingBox.y,
-							transform: "translate(6px, -12px)",
-							zIndex: 31000,
-							pointerEvents: "auto"
+							top: unionBoundingBox.y
 						}}
 						onMouseDown={(e) => {
 							e.stopPropagation();
@@ -586,13 +606,38 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 									e.stopPropagation();
 									dispatch(handleGroupSelectedElements());
 								}}
-								style={{
-									boxShadow: "0 2px 6px rgba(0, 0, 0, 0.25)",
-									fontSize: "11px",
-									fontWeight: 600,
-									height: "22px",
-									padding: "0 8px"
+								style={FLOATING_ACTION_BUTTON_STYLE}
+							/>
+						</Tooltip>
+					</div>
+				)}
+
+				{props.visualState === "selected" && !isMultiSelected && !isDraggingThisOrPeer && !props.isHidden && isInsideGroup && (
+					<div
+						className="nopan"
+						style={{
+							...FLOATING_ACTION_CONTAINER_STYLE,
+							left: props.element.drawBound.right,
+							top: props.element.drawBound.top
+						}}
+						onMouseDown={(e) => {
+							e.stopPropagation();
+						}}
+						onClick={(e) => {
+							e.stopPropagation();
+						}}
+					>
+						<Tooltip content="Remove element from group" placement="top">
+							<Button
+								icon="ungroup-objects"
+								text="Ungroup"
+								small
+								intent="primary"
+								onClick={(e) => {
+									e.stopPropagation();
+									dispatch(handleUngroupElement({ elementId: props.element.id }));
 								}}
+								style={FLOATING_ACTION_BUTTON_STYLE}
 							/>
 						</Tooltip>
 					</div>
