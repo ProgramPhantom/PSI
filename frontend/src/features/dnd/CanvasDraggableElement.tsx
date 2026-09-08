@@ -337,7 +337,8 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 
 								dispatch(addElementsToSchemeThunk({
 									schemeId: targetSchemeId,
-									elements: elementsToAdd
+									elements: elementsToAdd,
+									pulseData: dropResult.data.pulseData
 								}));
 							}
 							break;

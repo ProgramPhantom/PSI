@@ -4,6 +4,7 @@ import { PulseDropResultType } from "./PulseInsertArea";
 import { GridDropResultType } from "./GridInsertArea";
 import { LabelGroupDropResultType } from "./LabelGroupDropArea";
 import { SnapStore } from "../../logic/snapping";
+import { IPulseData } from "../../logic/pulseData";
 
 
 export interface IDirectCanvasDropResult {
@@ -14,6 +15,8 @@ type CanvasDropResultType = {type: "canvas", data: IDirectCanvasDropResult}
 
 export interface ISchemeDropResult {
 	schemeId: string;
+	filter?: string;
+	pulseData?: IPulseData;
 }
 export type SchemeDropResultType = { type: "scheme", data: ISchemeDropResult };
 

@@ -13,6 +13,7 @@ import { RootState } from "../rootReducer";
 import { addComponent, addScheme, deleteComponent, removeScheme, selectAssociatedAssetsBySchemeId, setSchemeLocation } from "../slices/schemesSlice";
 import { loadAsset, removeDependencyAndCheckDeload } from "./assetThunks";
 import { selectAssetSourceById } from "../slices/assetSlice";
+import { IPulseData } from "../../logic/pulseData";
 
 
 export const uploadSchemeServer = createAsyncThunk<void, string>(
@@ -116,7 +117,7 @@ export const deleteComponentThunk = createAsyncThunk<void, { schemeId: string, t
     }
 );
 
-export function cleanElementForTemplate(element: Visual): IVisual {
+export function cleanElementForTemplate(element: Visual, pulseData?: IPulseData): IVisual {
 	const shifted = (element.drawX || element.drawY)
 		? element.getShiftedState(-element.drawX, -element.drawY)
 		: structuredClone(element.state);
@@ -137,14 +138,29 @@ export function cleanElementForTemplate(element: Visual): IVisual {
 	templateState.placementMode = { type: "prefab" };
 	templateState.ref = element.ref || element.type;
 
+	if (pulseData) {
+		templateState.pulseData = {
+			...templateState.pulseData,
+			...pulseData,
+			pulseType: pulseData.pulseType
+		};
+		if (!templateState.pulseLayoutConfig) {
+			templateState.pulseLayoutConfig = {
+				alignment: { x: "centre", y: "far" },
+				orientation: "top",
+				noSections: 1
+			};
+		}
+	}
+
 	return templateState;
 }
 
-export const addElementsToSchemeThunk = createAsyncThunk<void, { schemeId: string, elements: Visual[] }>(
+export const addElementsToSchemeThunk = createAsyncThunk<void, { schemeId: string, elements: Visual[], pulseData?: IPulseData }>(
 	'schemes/addElementsToScheme',
-	async ({ schemeId, elements }, thunkAPI) => {
+	async ({ schemeId, elements, pulseData }, thunkAPI) => {
 		elements.forEach((el) => {
-			const templateState = cleanElementForTemplate(el);
+			const templateState = cleanElementForTemplate(el, pulseData);
 			thunkAPI.dispatch(addComponent({
 				schemeId,
 				component: templateState

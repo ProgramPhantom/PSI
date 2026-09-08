@@ -1,6 +1,6 @@
 import { Divider, Tab, Tabs } from "@blueprintjs/core";
 import React, { useState } from "react";
-import { useDrop } from "react-dnd";
+import { useDrop, useDragLayer } from "react-dnd";
 import { isPulse } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { DragElementTypes, SchemeDropResultType } from "../dnd/CanvasDropContainer";
@@ -8,6 +8,7 @@ import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import DiagramElementList from "./DiagramElementList";
 import Diagram from "../../logic/hasComponents/diagram";
 import styles from "./styles/SchemeTabPanel.module.scss";
+import { IPulseData } from "../../logic/pulseData";
 
 interface SchemeTabPanelProps {
 	schemeId: string;
@@ -16,6 +17,23 @@ interface SchemeTabPanelProps {
 	setIsNewElementDialogOpen: (open: boolean) => void;
 	handleElementDoubleClick: (element: Visual) => void;
 }
+
+export const getPulseDataForFilter = (filter: string): IPulseData | undefined => {
+	switch (filter) {
+		case "Hard":
+			return { pulseType: { category: "shape", type: "Hard" } };
+		case "Soft":
+			return { pulseType: { category: "shape", type: "Soft" } };
+		case "Composite":
+			return { pulseType: { category: "shape", type: "Composite" } };
+		case "Adiabatic":
+			return { pulseType: { category: "shape", type: "Adiabatic" } };
+		case "PFGs":
+			return { pulseType: { category: "PFG" } };
+		default:
+			return undefined;
+	}
+};
 
 const filterElement = (element: Visual, filter: string) => {
 	if (filter === "All") return element.type !== "diagram";
@@ -48,19 +66,25 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 }) => {
 	const [filter, setFilter] = useState<string>("All");
 
+	const { isAnyDragging } = useDragLayer((monitor) => ({
+		isAnyDragging: monitor.isDragging()
+	}));
+
 	const [{ isOver }, dropRef] = useDrop(() => ({
 		accept: [DragElementTypes.PULSE, DragElementTypes.FREE, DragElementTypes.OTHER],
 		drop: () =>
 			({
 				type: "scheme",
 				data: {
-					schemeId
+					schemeId,
+					filter,
+					pulseData: getPulseDataForFilter(filter)
 				}
 			}) as SchemeDropResultType,
 		collect: (monitor) => ({
 			isOver: monitor.isOver()
 		})
-	}), [schemeId]);
+	}), [schemeId, filter]);
 
 	return (
 		<div
@@ -77,14 +101,14 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 						selectedTabId={filter}
 						renderActiveTabPanelOnly={false}
 					>
-						<Tab id="All" title="All" />
-						<Tab id="Hard" title="Hard" />
-						<Tab id="Soft" title="Soft" />
-						<Tab id="Composite" title="Composite" />
-						<Tab id="Adiabatic" title="Adiabatic" />
-						<Tab id="PFGs" title="PFGs" />
-						<Tab id="Annotation" title="Annotation" />
-						<Tab id="diagrams" title="Diagrams" style={{ marginLeft: "auto" }} />
+						<Tab id="All" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "All") setFilter("All"); }}>All</span>} />
+						<Tab id="Hard" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "Hard") setFilter("Hard"); }}>Hard</span>} />
+						<Tab id="Soft" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "Soft") setFilter("Soft"); }}>Soft</span>} />
+						<Tab id="Composite" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "Composite") setFilter("Composite"); }}>Composite</span>} />
+						<Tab id="Adiabatic" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "Adiabatic") setFilter("Adiabatic"); }}>Adiabatic</span>} />
+						<Tab id="PFGs" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "PFGs") setFilter("PFGs"); }}>PFGs</span>} />
+						<Tab id="Annotation" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "Annotation") setFilter("Annotation"); }}>Annotation</span>} />
+						<Tab id="diagrams" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "diagrams") setFilter("diagrams"); }}>Diagrams</span>} style={{ marginLeft: "auto" }} />
 					</Tabs>
 				</div>
 
