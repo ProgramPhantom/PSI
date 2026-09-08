@@ -16,6 +16,10 @@ export interface ILineLike extends IVisual {
 	endY?: number;
 }
 
+export function isLineLike(element: IVisual): element is IVisual & ILineLike {
+	return element.type === "line" || ("startX" in element && "endX" in element);
+}
+
 export default abstract class LineLike extends Visual {
 	get state(): ILineLike {
 		return {

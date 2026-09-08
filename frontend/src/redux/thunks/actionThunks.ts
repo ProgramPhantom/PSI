@@ -7,26 +7,36 @@ import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
 import { ClearIDs } from "../../logic/collection";
 import Visual, { IVisual } from "../../logic/visual";
+import LineLike, { ILineLike, isLineLike } from "../../logic/lineLike";
 import Channel from "../../logic/hasComponents/channel";
 import { RootState } from "../rootReducer";
 import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
-import { setSelectedElementId, selectSelectedElementId, clearSelection } from "../slices/applicationSlice";
+import { setSelectedElementId, setSelectedElementIds, selectSelectedElementId, clearSelection } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
 import { selectCurrentAuthor, selectCurrentFileName, selectCurrentInstitution } from "../selectors/diagramSelectors";
+import { determineBindingPlacementModeType, isGridBindingRule } from "../../logic/bindingUtil";
+import { IPlacementBindingRule, ISequenceBindingRule } from "../../logic/spacial";
 
+export interface CopiedElementsPayload {
+    version: 1;
+    type: "psi/elements";
+    elements: IVisual[];
+}
+
+let inMemoryCopiedElements: IVisual[] | null = null;
 let inMemoryCopiedElementState: IVisual | null = null;
 
 function canCopyElement(element: Visual): boolean {
     if (element.type === "channel" || element instanceof Channel) {
-        appToaster.show({
-            message: "Channels cannot be copied",
-            intent: "warning"
-        });
+        return false;
+    }
+    if (element.type === "diagram" || element.type === "sequence-aligner" || element.type === "sequence") {
         return false;
     }
     return true;
 }
+
 
 
 
@@ -168,29 +178,52 @@ export const handleCopyElement = createAsyncThunk(
     'actions/handleCopyElement',
     async (_, { getState }) => {
         const state = getState() as RootState;
-        const selectedElementId = selectSelectedElementId(state);
-        if (!selectedElementId) return;
+        const selectedElementIds = state.application.selectedElementIds;
+        if (!selectedElementIds || selectedElementIds.length === 0) return;
 
-        const element = ENGINE.handler.identifyElement(selectedElementId);
-        if (!element) return;
+        const rawElements = selectedElementIds
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined);
 
-        if (!canCopyElement(element)) {
+        if (rawElements.length === 0) return;
+
+        const copyableElements = rawElements.filter(canCopyElement);
+        if (copyableElements.length === 0) {
+            if (rawElements.some((el) => el.type === "channel" || el instanceof Channel)) {
+                appToaster.show({
+                    message: "Channels cannot be copied",
+                    intent: "warning"
+                });
+            }
             return;
         }
 
-        const stateObject: IVisual = element.state;
-        inMemoryCopiedElementState = structuredClone(stateObject);
+        const stateObjects: IVisual[] = copyableElements.map((el) => structuredClone(el.state));
+        inMemoryCopiedElements = stateObjects;
+        inMemoryCopiedElementState = stateObjects[0] ?? null;
 
-        const stateString = JSON.stringify(stateObject, undefined, 4);
+        let stateString: string;
+        if (stateObjects.length === 1) {
+            stateString = JSON.stringify(stateObjects[0], undefined, 4);
+        } else {
+            const payload: CopiedElementsPayload = {
+                version: 1,
+                type: "psi/elements",
+                elements: stateObjects
+            };
+            stateString = JSON.stringify(payload, undefined, 4);
+        }
+
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(stateString).catch((err) => {
-                console.warn("Could not write element to navigator.clipboard", err);
+                console.warn("Could not write element(s) to navigator.clipboard", err);
             });
         }
 
         appToaster.show({
-            message: "Element copied to clipboard",
-            intent: "success"
+            message: stateObjects.length === 1 ? "Element copied to clipboard" : `${stateObjects.length} elements copied to clipboard`,
+            intent: "success",
+            timeout: 1000
         });
     }
 );
@@ -250,44 +283,144 @@ export const handlePasteElement = createAsyncThunk(
         const isOverCanvas = state.application.isMouseOverCanvas;
         const mousePos = state.application.canvasMousePosition;
 
-        const doPaste = (stateObject: IVisual) => {
-            if (stateObject.type === "channel") {
-                appToaster.show({
-                    message: "Channels cannot be copied",
-                    intent: "warning"
-                });
-                return;
+        const parseClipboardText = (text: string): IVisual[] | null => {
+            try {
+                const parsed = JSON.parse(text);
+                if (!parsed || typeof parsed !== "object") return null;
+
+                if (parsed.type === "psi/elements" && Array.isArray(parsed.elements)) {
+                    return parsed.elements.filter(
+                        (el: any) => el && typeof el === "object" && el.type !== "channel" && el.type !== "diagram"
+                    );
+                }
+                if (Array.isArray(parsed)) {
+                    return parsed.filter(
+                        (el: any) => el && typeof el === "object" && el.type !== "channel" && el.type !== "diagram"
+                    );
+                }
+                if (parsed.type && parsed.type !== "channel" && parsed.type !== "diagram") {
+                    return [parsed];
+                }
+            } catch {
+                return null;
             }
+            return null;
+        };
 
-            const newElementState: IVisual = structuredClone(stateObject);
-            ClearIDs(newElementState);
+        const doPaste = (elementsToPaste: IVisual[]) => {
+            if (!elementsToPaste || elementsToPaste.length === 0) return;
 
-            let targetX: number;
-            let targetY: number;
+            // Compute collective bounding box origin (minX, minY)
+            let minX = Infinity;
+            let minY = Infinity;
+            for (const el of elementsToPaste) {
+                if (isLineLike(el)) {
+                    minX = Math.min(minX, el.x ?? 0, el.startX ?? 0, el.endX ?? 0);
+                    minY = Math.min(minY, el.y ?? 0, el.startY ?? 0, el.endY ?? 0);
+                } else {
+                    minX = Math.min(minX, el.x ?? 0);
+                    minY = Math.min(minY, el.y ?? 0);
+                }
+            }
+            if (!isFinite(minX)) minX = 0;
+            if (!isFinite(minY)) minY = 0;
+
+            let deltaX: number;
+            let deltaY: number;
 
             if (isOverCanvas && mousePos) {
-                targetX = mousePos.x;
-                targetY = mousePos.y;
+                deltaX = mousePos.x - minX;
+                deltaY = mousePos.y - minY;
             } else {
-                const baseX = typeof newElementState.x === "number" ? newElementState.x : 0;
-                const baseY = typeof newElementState.y === "number" ? newElementState.y : 0;
-                targetX = baseX + 20;
-                targetY = baseY + 20;
+                deltaX = 20;
+                deltaY = 20;
             }
 
-            newElementState.x = targetX;
-            newElementState.y = targetY;
-            newElementState.placementMode = {
-                type: "free"
-            };
-            newElementState.placementControl = "user"
-            newElementState.parentId = ENGINE.handler.diagram.id;
-
-            ENGINE.handler.act({
-                type: "add",
-                input: {
-                    child: newElementState
+            // Deep clone, assign new IDs, shift positions, and prepare idMap for peer bindings
+            const idMap = new Map<string, string>();
+            const preparedElements: IVisual[] = elementsToPaste.map((el) => {
+                const cloned = structuredClone(el);
+                const oldId = cloned.id;
+                ClearIDs(cloned);
+                const newId = Math.random().toString(16).slice(2);
+                cloned.id = newId;
+                if (oldId) {
+                    idMap.set(oldId, newId);
                 }
+                cloned.ref = `${cloned.type || "element"}-${Date.now().toString(36)}-${newId.slice(0, 4)}`;
+                cloned.parentId = ENGINE.handler.diagram.id;
+                cloned.placementControl = "user";
+
+                if (isLineLike(cloned)) {
+                    cloned.startX = (cloned.startX ?? 0) + deltaX;
+                    cloned.startY = (cloned.startY ?? 0) + deltaY;
+                    cloned.endX = (cloned.endX ?? 0) + deltaX;
+                    cloned.endY = (cloned.endY ?? 0) + deltaY;
+                    cloned.x = (cloned.x ?? 0) + deltaX;
+                    cloned.y = (cloned.y ?? 0) + deltaY;
+                } else {
+                    cloned.x = (cloned.x ?? 0) + deltaX;
+                    cloned.y = (cloned.y ?? 0) + deltaY;
+                }
+                return cloned;
+            });
+
+            // Remap peer bindings within the copied group, reset external bindings to free
+            for (const el of preparedElements) {
+                if (el.placementMode?.type === "binds" || el.placementMode?.type === "sequenceBind") {
+                    const rules = el.placementMode.config as ISequenceBindingRule[] | undefined;
+                    if (rules && Array.isArray(rules)) {
+                        const updatedRules: ISequenceBindingRule[] = [];
+                        for (const rule of rules) {
+                            if (isGridBindingRule(rule)) {
+                                updatedRules.push(rule);
+                            } else {
+                                const anchorId = rule.targetId || rule.anchorId;
+                                if (anchorId && idMap.has(anchorId)) {
+                                    const remappedRule: IPlacementBindingRule = {
+                                        ...rule,
+                                        targetId: idMap.get(rule.targetId) ?? rule.targetId,
+                                        ...(rule.anchorId && idMap.has(rule.anchorId)
+                                            ? { anchorId: idMap.get(rule.anchorId) }
+                                            : {})
+                                    };
+                                    updatedRules.push(remappedRule);
+                                }
+                            }
+                        }
+                        el.placementMode = determineBindingPlacementModeType(updatedRules);
+                    } else {
+                        el.placementMode = { type: "free" };
+                    }
+                } else {
+                    el.placementMode = { type: "free" };
+                }
+            }
+
+            if (preparedElements.length === 1) {
+                ENGINE.handler.act({
+                    type: "add",
+                    input: {
+                        child: preparedElements[0]
+                    }
+                });
+            } else {
+                ENGINE.handler.act({
+                    type: "batch",
+                    input: preparedElements.map((child) => ({
+                        type: "add",
+                        input: { child }
+                    }))
+                });
+            }
+
+            const newIds = preparedElements.map((el) => el.id).filter((id): id is string => Boolean(id));
+            dispatch(setSelectedElementIds(newIds));
+
+            appToaster.show({
+                message: preparedElements.length === 1 ? "Element pasted" : `Pasted ${preparedElements.length} elements`,
+                intent: "success",
+                timeout: 1000
             });
         };
 
@@ -295,9 +428,9 @@ export const handlePasteElement = createAsyncThunk(
             try {
                 const text = await navigator.clipboard.readText();
                 if (text) {
-                    const parsed = JSON.parse(text);
-                    if (parsed && typeof parsed === "object" && parsed.type && parsed.type !== "diagram" && parsed.type !== "channel") {
-                        doPaste(parsed);
+                    const parsedElements = parseClipboardText(text);
+                    if (parsedElements && parsedElements.length > 0) {
+                        doPaste(parsedElements);
                         return;
                     }
                 }
@@ -306,8 +439,10 @@ export const handlePasteElement = createAsyncThunk(
             }
         }
 
-        if (inMemoryCopiedElementState && inMemoryCopiedElementState.type !== "channel") {
-            doPaste(inMemoryCopiedElementState);
+        if (inMemoryCopiedElements && inMemoryCopiedElements.length > 0) {
+            doPaste(inMemoryCopiedElements);
+        } else if (inMemoryCopiedElementState && inMemoryCopiedElementState.type !== "channel") {
+            doPaste([inMemoryCopiedElementState]);
         }
     }
 );
