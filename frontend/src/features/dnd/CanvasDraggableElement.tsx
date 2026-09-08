@@ -16,7 +16,6 @@ import { CanvasResizeHandles, PreviewState } from "./CanvasResizeHandles";
 import { SnapStore } from "../../logic/snapping";
 import { useAppDispatch } from "../../redux/hooks";
 import { handleGroupSelectedElements, handleUngroupElement } from "../../redux/thunks/actionThunks";
-import { InternalSchemeId } from "../../redux/slices/schemesSlice";
 import { addElementsToSchemeThunk } from "../../redux/thunks/schemeThunks";
 
 
@@ -331,7 +330,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 						}
 						case "scheme": {
 							const targetSchemeId = dropResult.data.schemeId;
-							if (targetSchemeId && targetSchemeId !== InternalSchemeId) {
+							if (targetSchemeId) {
 								const elementsToAdd = (item.allElements && item.allElements.length > 0)
 									? item.allElements
 									: [item.element];

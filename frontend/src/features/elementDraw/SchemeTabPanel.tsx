@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useDrop } from "react-dnd";
 import { isPulse } from "../../logic/spacial";
 import Visual from "../../logic/visual";
-import { InternalSchemeId } from "../../redux/slices/schemesSlice";
 import { DragElementTypes, SchemeDropResultType } from "../dnd/CanvasDropContainer";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import DiagramElementList from "./DiagramElementList";
@@ -49,11 +48,8 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 }) => {
 	const [filter, setFilter] = useState<string>("All");
 
-	const isInternal = schemeId === InternalSchemeId || schemeName === InternalSchemeId;
-
-	const [{ canDrop, isOver }, dropRef] = useDrop(() => ({
+	const [{ isOver }, dropRef] = useDrop(() => ({
 		accept: [DragElementTypes.PULSE, DragElementTypes.FREE, DragElementTypes.OTHER],
-		canDrop: () => !isInternal,
 		drop: () =>
 			({
 				type: "scheme",
@@ -62,15 +58,14 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 				}
 			}) as SchemeDropResultType,
 		collect: (monitor) => ({
-			isOver: monitor.isOver(),
-			canDrop: monitor.canDrop()
+			isOver: monitor.isOver()
 		})
-	}), [schemeId, isInternal]);
+	}), [schemeId]);
 
 	return (
 		<div
 			ref={dropRef}
-			className={`${styles.tabPanelRow} ${canDrop && isOver ? styles.dropTargetActive : ""}`}
+			className={`${styles.tabPanelRow} ${isOver ? styles.dropTargetActive : ""}`}
 		>
 			<Divider />
 			<div className={styles.tabPanelColumn}>
