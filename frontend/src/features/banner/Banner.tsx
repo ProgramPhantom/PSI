@@ -3,8 +3,7 @@ import React, { useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
-import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setSVGDialogOpen } from "../../redux/slices/dialogSlice";
-import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setCiteDialogOpen } from "../../redux/slices/dialogSlice";
+import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setCiteDialogOpen, setSVGDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import logoUrl from "../../assets/app/Logo1.svg";
 
