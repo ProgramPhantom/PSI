@@ -16,6 +16,7 @@ import {
 	Tooltip
 } from "@blueprintjs/core";
 import React, { useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useDragLayer } from "react-dnd";
 import { ObjectInspector } from "react-inspector";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
@@ -55,6 +56,10 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const { data: me } = useGetMeQuery();
 	const isLoggedIn = Boolean(me);
 	const dispatch = useAppDispatch();
+
+	const { isAnyDragging } = useDragLayer((monitor) => ({
+		isAnyDragging: monitor.isDragging()
+	}));
 
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
@@ -225,7 +230,13 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 									return (
 										<Tab key={schemeId}
 											title={
-												<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+												<span
+													onMouseEnter={() => {
+														if (isAnyDragging && selectedSchemeId !== schemeId) {
+															setSelectedSchemeId(schemeId);
+														}
+													}}
+													style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
 													{schemeName}
 													{schemeLocations[schemeId] === "server" && (
 														<Tooltip hoverOpenDelay={500} content="Uploaded">

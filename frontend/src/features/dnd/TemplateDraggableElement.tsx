@@ -60,22 +60,26 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 			ClearIDs(singletonState)  // Required
 
 			switch (dropResult.type) {
-				case "canvas":
-					singletonState.x = dropResult.data.x;
-					singletonState.y = dropResult.data.y;
+				case "canvas": {
+					const deltaX = dropResult.data.x - (props.element.x ?? 0);
+					const deltaY = dropResult.data.y - (props.element.y ?? 0);
+					const targetState: IVisual = props.element.getShiftedState(deltaX, deltaY);
 
-					singletonState.placementMode = {
+					ClearIDs(targetState);
+
+					targetState.placementMode = {
 						type: "free"
-					}
-					singletonState.parentId = ENGINE.handler.diagram.id;
+					};
+					targetState.parentId = ENGINE.handler.diagram.id;
 
 					ENGINE.handler.act({
-						"type": "add",
+						type: "add",
 						input: {
-							child: singletonState,
+							child: targetState,
 						}
-					})
+					});
 					break;
+				}
 				case "pulse": {
 					const orientation = singletonState.pulseLayoutConfig?.orientation !== "both" ? dropResult.data.orientation : "both";
 					let yAlign: "here" | "centre" | "far" = orientation === "bottom" ? "here" : orientation === "both" ? "centre" : "far";

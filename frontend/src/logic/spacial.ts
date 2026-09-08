@@ -107,7 +107,7 @@ export type PlacementConfiguration =
 	| { type: "grid"; config: IGridConfig }
 	| { type: "aligner"; config: IAlignerConfig }
 	| { type: "subgrid"; config: ISubgridConfig }
-	| { type: "singleton" };
+	| { type: "prefab" };
 
 
 
@@ -279,7 +279,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	) {
 		super(params);
 
-		this._placementMode = params.placementMode ?? { type: "singleton" }
+		this._placementMode = params.placementMode ?? { type: "prefab" }
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ? { ...params.sizeMode } : { x: "fixed", y: "fixed" };
 

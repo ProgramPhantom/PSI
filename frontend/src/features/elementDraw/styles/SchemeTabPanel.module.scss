@@ -1,9 +1,16 @@
-/* ── Tab panel content: row with divider + column ── */
 .tabPanelRow {
 	width: 100%;
 	display: flex;
 	flex-direction: row;
 	height: 100%;
+	transition: background-color 0.15s ease, outline 0.15s ease;
+}
+
+.dropTargetActive {
+	background-color: rgba(19, 124, 189, 0.06);
+	outline: 2px dashed #137cbd;
+	outline-offset: -5px;
+	border-radius: 4px;
 }
 
 .tabPanelColumn {

@@ -1,8 +1,10 @@
 import { Divider, Tab, Tabs } from "@blueprintjs/core";
 import React, { useState } from "react";
+import { useDrop } from "react-dnd";
 import { isPulse } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { InternalSchemeId } from "../../redux/slices/schemesSlice";
+import { DragElementTypes, SchemeDropResultType } from "../dnd/CanvasDropContainer";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
 import DiagramElementList from "./DiagramElementList";
 import Diagram from "../../logic/hasComponents/diagram";
@@ -47,8 +49,29 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 }) => {
 	const [filter, setFilter] = useState<string>("All");
 
+	const isInternal = schemeId === InternalSchemeId || schemeName === InternalSchemeId;
+
+	const [{ canDrop, isOver }, dropRef] = useDrop(() => ({
+		accept: [DragElementTypes.PULSE, DragElementTypes.FREE, DragElementTypes.OTHER],
+		canDrop: () => !isInternal,
+		drop: () =>
+			({
+				type: "scheme",
+				data: {
+					schemeId
+				}
+			}) as SchemeDropResultType,
+		collect: (monitor) => ({
+			isOver: monitor.isOver(),
+			canDrop: monitor.canDrop()
+		})
+	}), [schemeId, isInternal]);
+
 	return (
-		<div className={styles.tabPanelRow}>
+		<div
+			ref={dropRef}
+			className={`${styles.tabPanelRow} ${canDrop && isOver ? styles.dropTargetActive : ""}`}
+		>
 			<Divider />
 			<div className={styles.tabPanelColumn}>
 				{/* Filter Tabs */}
@@ -78,23 +101,7 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 					/>
 				) : (
 					<div className={`${styles.elementGrid} custom-scrollbar`}>
-						{/* Plus button for adding new elements */}
-						{schemeName !== InternalSchemeId ? (
-							<div
-								className={styles.addNewCard}
-								onClick={() => setIsNewElementDialogOpen(true)}
-								title="Add new template element"
-							>
-								<div style={{ fontSize: "32px", color: "#5c7080", marginBottom: "8px" }}>
-									+
-								</div>
-								<span style={{ fontSize: "12px", color: "#5c7080", fontWeight: "600", textAlign: "center", lineHeight: "1.4" }}>
-									Add New
-								</span>
-							</div>
-						) : (
-							<></>
-						)}
+
 
 						{Object.entries(schemeSingletons)
 							.filter(([id, com]) => filterElement(com, filter))

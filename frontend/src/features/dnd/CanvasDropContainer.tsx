@@ -12,8 +12,12 @@ export interface IDirectCanvasDropResult {
 }
 type CanvasDropResultType = {type: "canvas", data: IDirectCanvasDropResult}
 
+export interface ISchemeDropResult {
+	schemeId: string;
+}
+export type SchemeDropResultType = { type: "scheme", data: ISchemeDropResult };
 
-export type AllDropResultTypes = CanvasDropResultType | PulseDropResultType | GridDropResultType | LabelGroupDropResultType
+export type AllDropResultTypes = CanvasDropResultType | PulseDropResultType | GridDropResultType | LabelGroupDropResultType | SchemeDropResultType
 
 export const DragElementTypes = {
 	ATOMIC_PREFAB: "prefab",

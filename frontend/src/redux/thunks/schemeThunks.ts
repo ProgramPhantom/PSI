@@ -5,11 +5,12 @@ import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
 import { createSchemeFile } from "../../fileCreation/createSchemeFile";
 import { downloadBlob } from "../../logic/util2";
-import { IVisual } from "../../logic/visual";
+import Collection, { ClearIDs } from "../../logic/collection";
+import Visual, { IVisual } from "../../logic/visual";
 import { IScheme, SchemeSource } from "../../types/schemes";
 import { api } from "../api/api";
 import { RootState } from "../rootReducer";
-import { addScheme, deleteComponent, removeScheme, selectAssociatedAssetsBySchemeId, setSchemeLocation } from "../slices/schemesSlice";
+import { addComponent, addScheme, deleteComponent, removeScheme, selectAssociatedAssetsBySchemeId, setSchemeLocation } from "../slices/schemesSlice";
 import { loadAsset, removeDependencyAndCheckDeload } from "./assetThunks";
 import { selectAssetSourceById } from "../slices/assetSlice";
 
@@ -113,6 +114,50 @@ export const deleteComponentThunk = createAsyncThunk<void, { schemeId: string, t
             thunkAPI.dispatch(removeDependencyAndCheckDeload({ assetId, dependencyId: schemeId }));
         }
     }
+);
+
+export function cleanElementForTemplate(element: Visual): IVisual {
+	const shifted = (element.drawX || element.drawY)
+		? element.getShiftedState(-element.drawX, -element.drawY)
+		: structuredClone(element.state);
+
+	const templateState: IVisual = structuredClone(shifted);
+	ClearIDs(templateState);
+
+	const cleanHierarchy = (item: IVisual) => {
+		delete item.parentId;
+		if (Collection.isICollection(item)) {
+			item.children.forEach(cleanHierarchy);
+		}
+	};
+
+	cleanHierarchy(templateState);
+	delete templateState.x;
+	delete templateState.y;
+	templateState.placementMode = { type: "prefab" };
+	templateState.ref = element.ref || element.type;
+
+	return templateState;
+}
+
+export const addElementsToSchemeThunk = createAsyncThunk<void, { schemeId: string, elements: Visual[] }>(
+	'schemes/addElementsToScheme',
+	async ({ schemeId, elements }, thunkAPI) => {
+		elements.forEach((el) => {
+			const templateState = cleanElementForTemplate(el);
+			thunkAPI.dispatch(addComponent({
+				schemeId,
+				component: templateState
+			}));
+		});
+
+		appToaster.show({
+			message: elements.length === 1
+				? `Added ${elements[0].ref || elements[0].type} to scheme`
+				: `Added ${elements.length} templates to scheme`,
+			intent: "success"
+		});
+	}
 );
 
 export const saveSchemeByID = createAsyncThunk<void, string>(
