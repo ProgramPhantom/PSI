@@ -901,13 +901,16 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			}
 		}
 
-		this.placementMode.config = {
-			"alignment": alignment,
-			"coords": coords,
-			"gridSize": { noRows: 1, noCols: pulseLayoutConfig?.noSections ?? 1 },
+		this.placementMode = {
+			...this.placementMode,
+			config: {
+				"alignment": alignment,
+				"coords": coords,
+				"gridSize": { noRows: 1, noCols: pulseLayoutConfig?.noSections ?? 1 },
 
-			"contribution": contribution,
-		}
+				"contribution": contribution,
+			}
+		};
 
 	}
 }

@@ -81,6 +81,9 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 				// Only rebuild the diff: reuse if state is unchanged
 				if (existing) {
+					if (compData.ref !== undefined && existing.ref !== compData.ref) {
+						existing.ref = compData.ref;
+					}
 					nextCache[template_id] = existing;
 					return existing;
 				} else {
