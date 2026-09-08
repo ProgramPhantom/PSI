@@ -1,9 +1,20 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
-import { AllComponentTypes, ID } from "./point";
-import { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
+import Point, { AllComponentTypes, ID } from "./point";
+import Spacial, { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 import { showSVGRecursively } from "./util2";
 import RBush from "rbush";
+import LineLike, { ILineLike } from "./lineLike";
+
+export function shiftVisualState(state: IVisual, deltaX: number, deltaY: number): IVisual {
+	if (state.type === "line" || ("startX" in state && "endX" in state)) {
+		return LineLike.shiftLineState(state as ILineLike, deltaX, deltaY);
+	}
+	if (Collection.isICollection(state)) {
+		return Collection.shiftCollectionState(state, deltaX, deltaY);
+	}
+	return Point.shiftPointState(state, deltaX, deltaY) as IVisual;
+}
 
 // Add
 export type AddDispatchData<C extends Visual = Visual> = { child: C, index?: number }
@@ -68,11 +79,16 @@ export type StructuredChildEntry<C extends Visual = Visual> = {
 
 
 export default class Collection<C extends Visual = Visual> extends Visual implements IDraw, ICollection<C>, ICanAdd<C>, ICanRemove<C> {
+	static override ElementType: AllComponentTypes = "collection";
 	static isCollection(v: IVisual): v is Collection {
 		return (v as any).children !== undefined;
 	}
 	static isICollection(v: IVisual): v is ICollection {
 		return (v as any).children !== undefined
+	}
+
+	public override get isResizable(): boolean {
+		return false;
 	}
 
 	get state(): ICollection {
@@ -118,9 +134,43 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		});
 	}
 
+	public override shiftCoordinates(deltaX: number, deltaY: number): void {
+		super.shiftCoordinates(deltaX, deltaY);
+		this.children.forEach((child) => child.shiftCoordinates(deltaX, deltaY));
+	}
+
+	public static shiftCollectionState<T extends ICollection = ICollection>(state: T, deltaX: number, deltaY: number): T {
+		Point.shiftPointState(state, deltaX, deltaY);
+		if (Array.isArray(state.children)) {
+			state.children.forEach((child) => shiftVisualState(child, deltaX, deltaY));
+		}
+		return state;
+	}
+
+	public override getShiftedState(deltaX: number, deltaY: number): ICollection {
+		const state: ICollection = {
+			...this.state,
+			children: this.children.map((child) => child.getShiftedState(deltaX, deltaY))
+		};
+		Point.shiftPointState(state, deltaX, deltaY);
+		return state;
+	}
+
 	// ---------------- Compute -------------------------
 	//#region 
 	public computeSize(): Size {
+		if (this.children.length === 0) {
+			this.minContentWidth = 0;
+			this.minContentHeight = 0;
+			if (this.sizeMode?.x !== "fixed") {
+				this.contentWidth = 0;
+			}
+			if (this.sizeMode?.y !== "fixed") {
+				this.contentHeight = 0;
+			}
+			return { width: this.width, height: this.height };
+		}
+
 		var size: Size = { width: 0, height: 0 }
 
 		var top = Infinity;
@@ -166,13 +216,24 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		super.computePositions(root);
 
 		this.children.forEach((c) => {
-			c.computePositions({ x: this.cx, y: this.cy })
-		})
+			c.computePositions({ x: this.cx, y: this.cy });
+		});
 
 		if (this.placementMode.type === "free") {
 			let topLeft: { x: number, y: number } = this.getTopLeft();
-			this.cx = topLeft.x;
-			this.cy = topLeft.y;
+			if (Number.isFinite(topLeft.x) && Number.isFinite(topLeft.y)) {
+				this.cx = topLeft.x;
+				this.cy = topLeft.y;
+			}
+		} else {
+			const currentTopLeft = this.getTopLeft();
+			if (Number.isFinite(currentTopLeft.x) && Number.isFinite(currentTopLeft.y)) {
+				const deltaX = this.cx - currentTopLeft.x;
+				const deltaY = this.cy - currentTopLeft.y;
+				if (deltaX !== 0 || deltaY !== 0) {
+					this.children.forEach((c) => c.shiftCoordinates(deltaX, deltaY));
+				}
+			}
 		}
 	}
 
@@ -370,6 +431,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 	// ----------------- Collection helpers -------------
 	//#region 
+	public isChild(element: Spacial): boolean {
+		return element.id !== undefined && this.has(element.id);
+	}
+
 	public has(id: ID): boolean {
 		return this.children.filter((c) => c.id === id).length > 0;
 	}
@@ -405,6 +470,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	}
 
 	public getTopLeft(): { x: number, y: number } {
+		if (this.children.length === 0) {
+			return { x: this.cx, y: this.cy };
+		}
+
 		let top: number = Infinity
 		let left: number = Infinity
 

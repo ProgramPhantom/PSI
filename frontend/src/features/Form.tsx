@@ -1,24 +1,12 @@
 import { Card } from "@blueprintjs/core";
 import React from "react";
-import ENGINE from "../logic/engine";
-import { AllComponentTypes } from "../logic/point";
-import Visual from "../logic/visual";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { FormDiagramInterface } from "./form/FormDiagramInterface";
 
 
 interface IFormProps {
 }
 
-const Form: React.FC<IFormProps> = (props) => {
-	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
-	const dispatch = useAppDispatch();
-	const target = ENGINE.handler.identifyElement(selectedElementId ?? "");
-
-	var targetType: AllComponentTypes = target
-		? (target.constructor as typeof Visual).ElementType
-		: "channel";
-
+const Form: React.FC<IFormProps> = () => {
 	return (
 		<>
 			<Card

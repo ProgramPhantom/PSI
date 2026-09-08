@@ -38,7 +38,7 @@ export interface CanvasMousePosition {
 }
 
 export interface ApplicationState {
-    selectedElementId: string | undefined;
+    selectedElementIds: string[];
     debugSelectionTypes: Record<AllComponentTypes, boolean>;
     debugSelectedElement: boolean;
     selectedTool: CanvasTool;
@@ -50,7 +50,7 @@ export interface ApplicationState {
 }
 
 const initialState: ApplicationState = {
-    selectedElementId: undefined,
+    selectedElementIds: [],
     debugSelectionTypes: DefaultDebugSelection,
     debugSelectedElement: false,
     isResizing: false,
@@ -94,7 +94,35 @@ export const applicationSlice = createSlice({
     initialState,
     reducers: {
         setSelectedElementId: (state, action: PayloadAction<string | undefined>) => {
-            state.selectedElementId = action.payload;
+            state.selectedElementIds = action.payload ? [action.payload] : [];
+        },
+        setSelectedElementIds: (state, action: PayloadAction<string[]>) => {
+            const next = action.payload;
+            const current = state.selectedElementIds;
+            if (current.length === next.length && current.every((id, i) => id === next[i])) {
+                return;
+            }
+            state.selectedElementIds = next;
+        },
+        toggleElementSelection: (state, action: PayloadAction<string>) => {
+            const id = action.payload;
+            if (state.selectedElementIds.includes(id)) {
+                state.selectedElementIds = state.selectedElementIds.filter(item => item !== id);
+            } else {
+                state.selectedElementIds.push(id);
+            }
+        },
+        addElementToSelection: (state, action: PayloadAction<string>) => {
+            const id = action.payload;
+            if (!state.selectedElementIds.includes(id)) {
+                state.selectedElementIds.push(id);
+            }
+        },
+        clearSelection: (state) => {
+            if (state.selectedElementIds.length === 0) {
+                return;
+            }
+            state.selectedElementIds = [];
         },
         toggleDebugSelectionType: (state, action: PayloadAction<AllComponentTypes>) => {
             state.debugSelectionTypes[action.payload] = !state.debugSelectionTypes[action.payload];
@@ -145,6 +173,10 @@ export const applicationSlice = createSlice({
 
 export const {
     setSelectedElementId,
+    setSelectedElementIds,
+    toggleElementSelection,
+    addElementToSelection,
+    clearSelection,
     toggleDebugSelectionType,
     toggleDebugSelectedElement,
     setDebugSelectedElement,
@@ -154,6 +186,10 @@ export const {
     setColumnMode,
     toggleColumnMode
 } = applicationSlice.actions;
+
+export const selectSelectedElementId = (state: { application: ApplicationState }): string | undefined => {
+    return state.application.selectedElementIds.length === 1 ? state.application.selectedElementIds[0] : undefined;
+};
 
 export default applicationSlice.reducer;
 

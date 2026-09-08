@@ -1,7 +1,7 @@
 import { IconName } from "@blueprintjs/core";
 import { DEFAULT_BAR } from "../../logic/default/bar";
 import { DEFAULT_CHANNEL_TEXT } from "../../logic/default/defaultChannelLabel";
-import { defaultChannel, defaultDiagram, defaultLabel, defaultLaTeX, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
+import { defaultChannel, defaultCollection, defaultDiagram, defaultLabel, defaultLaTeX, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
 import { DEFAULT_180S } from "../../logic/default/svgPulse/180Soft";
 import { ILabel } from "../../logic/hasComponents/label";
@@ -13,6 +13,7 @@ import { IText } from "../../logic/text";
 import { IVisual } from "../../logic/visual";
 import ArrowForm from "./ArrowForm";
 import ChannelForm from "./ChannelForm";
+import CollectionForm from "./CollectionForm";
 import { GridForm } from "./GridForm";
 import LabelForm from "./LabelForm";
 import LaTeXForm from "./LaTeXForm";
@@ -37,6 +38,7 @@ export interface FormBundle<T extends IVisual = IVisual> {
 	form: React.FC<FormRequirements>;
 	defaults: T;
 	allowLabels: boolean;
+	hideApplyButton?: boolean;
 	/** When role children are added, wrap this element in this container type */
 	roles?: Record<string, RoleSchema>;
 }
@@ -162,5 +164,11 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		form: VisualForm,
 		defaults: DEFAULT_SEQUENCE,
 		allowLabels: false
+	},
+	"collection": {
+		form: CollectionForm,
+		defaults: defaultCollection,
+		allowLabels: false,
+		hideApplyButton: true
 	}
 }

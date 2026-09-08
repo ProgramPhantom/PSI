@@ -1,14 +1,21 @@
 import {
 	Button, Colors, EditableText
 } from "@blueprintjs/core";
-import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig } from "../../app/App";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setCanvasMousePosition, setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
+import {
+	setCanvasMousePosition,
+	setSelectedElementId,
+	setSelectedElementIds,
+	toggleElementSelection,
+	clearSelection,
+	setSelectedTool
+} from "../../redux/slices/applicationSlice";
 import { setSaveState } from "../../redux/slices/diagramSlice";
 import { openDiagram } from "../../redux/thunks/diagramThunks";
 import Toolbar from "../banner/Toolbar";
@@ -34,6 +41,9 @@ import { LineTool } from "./LineTool";
 import { BoxTool } from "./BoxTool";
 import { SequenceColumnsOverlay } from "./SequenceColumnsOverlay";
 import { SnapGuidesOverlay } from "./SnapGuidesOverlay";
+import { SelectionMarqueeOverlay } from "./SelectionMarqueeOverlay";
+import { isEligibleForMultiSelect } from "./selectionUtil";
+import { useSelectedElement, useSelectedElements } from "../../hooks/useSelectedElements";
 import Spacial from "../../logic/spacial";
 import styles from "./styles/toolbars.module.scss"
 
@@ -114,9 +124,48 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const dispatch = useAppDispatch();
 
 	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
-	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
+	const selectedElementIds = useAppSelector((state) => state.application.selectedElementIds);
 	const selectedTool = useAppSelector((state) => state.application.selectedTool);
 	const isResizing = useAppSelector((state) => state.application.isResizing);
+
+	const [isSpacePressed, setIsSpacePressed] = useState(false);
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.code === "Space") {
+				const active = document.activeElement;
+				if (
+					active instanceof HTMLInputElement ||
+					active instanceof HTMLTextAreaElement ||
+					active?.getAttribute("contenteditable") === "true"
+				) {
+					return;
+				}
+				e.preventDefault();
+				setIsSpacePressed(true);
+			}
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.code === "Space") {
+				setIsSpacePressed(false);
+			}
+		};
+
+		const handleWindowBlur = () => {
+			setIsSpacePressed(false);
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("keyup", handleKeyUp);
+		window.addEventListener("blur", handleWindowBlur);
+
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("blur", handleWindowBlur);
+		};
+	}, []);
 
 	const lastCoordsRef = useRef<{ rx: number; ry: number } | null>(null);
 	const rafIdRef = useRef<number | null>(null);
@@ -141,31 +190,30 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 	const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
-	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
+	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+
+	const selectedElements = useSelectedElements();
+	const selectedElement = useSelectedElement();
+	const selectedElementId = selectedElement?.id;
 	const { isDragging } = useDragLayer((monitor) => ({
 		isDragging: monitor.isDragging()
 	}));
 
-	const interactiveElements: Visual[] = [];
-	if (selectedElement) {
-		interactiveElements.push(selectedElement);
+	const interactiveElements: Visual[] = [...selectedElements];
+	if (!isResizing && !isDragging && selectedTool.type === "select" && hoveredElement && !selectedElementIds.includes(hoveredElement.id)) {
+		if (hoveredElement instanceof Visual) {
+			interactiveElements.push(hoveredElement);
+		}
 	}
 
 	const isLayerableElement = Boolean(
 		selectedElement?.placementMode.type === "free" || selectedElement?.placementMode.type === "binds" ||
 		selectedElement?.placementMode.type === "sequenceBind"
 	);
-	if (!isResizing && !isDragging && selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
-		if (hoveredElement instanceof Visual) {
-			interactiveElements.push(hoveredElement);
-		}
-	}
-
-	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	const deselect = () => {
-		selectedElement?.svg?.show();
-		dispatch(setSelectedElementId(undefined));
+		selectedElements.forEach(el => el.svg?.show());
+		dispatch(clearSelection());
 	};
 
 	const stopHover = () => {
@@ -177,10 +225,19 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		dispatch(setSelectedElementId(e.id));
 	};
 
-	const reselect = (e: Visual) => {
+	const reselect = (e: Visual, event?: React.MouseEvent) => {
+		if (event?.ctrlKey || event?.metaKey) {
+			if (isEligibleForMultiSelect(e, selectedElementIds)) {
+				dispatch(toggleElementSelection(e.id));
+			}
+			return;
+		}
+		if (selectedElementIds.includes(e.id)) {
+			return;
+		}
 		deselect();
 		selectVisual(e);
-	}
+	};
 
 	const getCoordinates = (e: React.MouseEvent<HTMLDivElement> | MouseEvent): { x: number; y: number } => {
 		const drawDiv = document.getElementById("diagram-root") as HTMLElement;
@@ -240,13 +297,25 @@ const Canvas: React.FC<ICanvasProps> = () => {
 			case "select":
 			default:
 				return {
-					cursor: "default",
+					cursor: isSpacePressed ? "grab" : "default",
 					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
 						const element: Spacial | undefined = hoveredElement;
 						if (element === undefined) {
-							deselect();
+							if (!e.ctrlKey && !e.metaKey) {
+								deselect();
+							}
 						} else if (element instanceof Visual) {
-							selectVisual(element);
+							if (e.ctrlKey || e.metaKey) {
+								if (isEligibleForMultiSelect(element, selectedElementIds)) {
+									dispatch(toggleElementSelection(element.id));
+								}
+							} else {
+								if (selectedElementIds.length > 1 && selectedElementIds.includes(element.id)) {
+									dispatch(setSelectedElementId(element.id));
+								} else {
+									selectVisual(element);
+								}
+							}
 						}
 					},
 					onDoubleClick: (e: React.MouseEvent<HTMLDivElement>) => {
@@ -256,10 +325,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						if (editingElementId) {
 							return;
 						}
-						if (selectedElement && hoveredElement !== selectedElement) {
-							deselect();
-						}
-						deselect();
 					}
 				};
 		}
@@ -412,7 +477,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						display: "flex",
 						flexDirection: "column",
 						position: "relative",
-						cursor: activeToolBehavior.cursor
+						cursor: isSpacePressed ? "grab" : activeToolBehavior.cursor
 					}}
 					onMouseMove={(e) => {
 						const coords = getCoordinates(e);
@@ -574,7 +639,12 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 								maxScale={5}
 								minScale={0.5}
-								panning={{ excluded: ["nopan"] }}
+								panning={{
+									allowLeftClickPan: isSpacePressed,
+									allowMiddleClickPan: true,
+									allowRightClickPan: false,
+									excluded: []
+								}}
 								doubleClick={{ disabled: true }}>
 
 
@@ -612,7 +682,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 										onMouseLeave={() => stopHover()}>
 
 										{/* Transformed Overlay Layer */}
-										<div className="nopan"
+										<div
 											style={{
 												position: "absolute",
 												top: 0,
@@ -633,10 +703,12 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													reselect={reselect}
 													name={el.ref}
 													element={el}
-													visualState={el.id === selectedElement?.id ? "selected" : "hovered"}
+													visualState={selectedElementIds.includes(el.id) ? "selected" : "hovered"}
+													selectedElements={selectedElements}
 													x={el.x}
 													y={el.y}
 													scale={zoom}
+													isSpacePressed={isSpacePressed}
 													isHidden={el.id === editingElementId}
 													hoveredElement={rawHoveredElement ?? hoveredElement}></CanvasDraggableElement>
 											))}
@@ -644,8 +716,15 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 
 											{/* Tools */}
+											{selectedTool.type === "select" ? (
+												<SelectionMarqueeOverlay
+													zoom={zoom}
+													isSpacePressed={isSpacePressed}
+												/>
+											) : null}
+
 											{selectedTool.type === "arrow" ? (
-												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+												<div style={{ pointerEvents: isSpacePressed ? "none" : "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
 													<LineTool
 														hoveredElement={rawHoveredElement ?? hoveredElement}
 														config={selectedTool.config}
@@ -657,7 +736,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 											)}
 
 											{selectedTool.type === "box" ? (
-												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+												<div style={{ pointerEvents: isSpacePressed ? "none" : "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
 													<BoxTool
 														hoveredElement={rawHoveredElement ?? hoveredElement}
 														config={selectedTool.config}

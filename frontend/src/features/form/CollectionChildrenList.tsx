@@ -61,12 +61,16 @@ export const CollectionChildrenList: React.FC<CollectionChildrenListProps> = ({ 
 
     return (
         <ControlGroup vertical={true} className={styles.formGroupContainer}>
-            <FormDivider title={"Components"} topMargin={0} />
-            {roleElements}
+            {roleElements.length > 0 && (
+                <>
+                    <FormDivider title={"Components"} topMargin={0} />
+                    {roleElements}
+                </>
+            )}
 
             {remainingChildren.length > 0 && (
                 <>
-                    <FormDivider title="Children" />
+                    <FormDivider title="Children" topMargin={roleElements.length > 0 ? 16 : 0} />
                     {remainingChildren.map((child, index) => (
                         <Button
                             alignText="left"
@@ -79,8 +83,12 @@ export const CollectionChildrenList: React.FC<CollectionChildrenListProps> = ({ 
                     ))}
                 </>
             )}
+
+            {roleElements.length === 0 && remainingChildren.length === 0 && (
+                <div style={{ color: "#5C7080", fontSize: "12px", fontStyle: "italic", padding: "8px 0" }}>
+                    No children
+                </div>
+            )}
         </ControlGroup>
-
-
     );
 };

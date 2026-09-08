@@ -74,6 +74,18 @@ type DispatchAction<Type extends keyof Actions> = (parameters: InputData<Type>) 
 type InputData<T extends keyof Actions> = Actions[T]["inputData"]
 type UndoData<T extends keyof Actions> = Actions[Actions[T]["undoAction"]]["inputData"];
 
+export type SingleActionNames = "modify" | "add" | "remove" | "insertColumn" | "deleteColumn" | "reorderChild";
+
+export type BatchActionItem =
+	| { type: "modify"; input: ModifyInput }
+	| { type: "add"; input: AddInput }
+	| { type: "remove"; input: RemoveInput }
+	| { type: "insertColumn"; input: ColumnActionInput }
+	| { type: "deleteColumn"; input: ColumnActionInput }
+	| { type: "reorderChild"; input: ReorderChildInput };
+
+export type BatchInput = BatchActionItem[];
+
 type Actions = {
 	"modify": {
 		inputData: ModifyInput,
@@ -98,6 +110,10 @@ type Actions = {
 	"reorderChild": {
 		inputData: ReorderChildInput,
 		undoAction: "reorderChild"
+	},
+	"batch": {
+		inputData: BatchInput,
+		undoAction: "batch"
 	},
 }
 type ActionNames = keyof Actions;
@@ -167,6 +183,7 @@ export default class DiagramHandler implements IDraw {
 		"insertColumn": this.insertColumn.bind(this),
 		"deleteColumn": this.deleteColumn.bind(this),
 		"reorderChild": this.reorderChild.bind(this),
+		"batch": this.dispatchBatch.bind(this),
 	}
 
 
@@ -787,6 +804,33 @@ export default class DiagramHandler implements IDraw {
 					fromIndex: toIndex,
 					toIndex: actualFromIndex
 				}
+			}
+		};
+	}
+
+	protected dispatchBatch(actions: BatchInput): ActionResult<"batch"> {
+		const undos: BatchActionItem[] = [];
+
+		for (const action of actions) {
+			const handler = this.ActionRegistry[action.type] as DispatchAction<any> | undefined;
+			if (!handler) {
+				return { ok: false, error: `Action handler for ${action.type} not found in batch` };
+			}
+			const result = handler(action.input);
+			if (result.ok === false) {
+				return { ok: false, error: `Batch action failed on ${action.type}: ${result.error}` };
+			}
+			undos.unshift({
+				type: result.undo.action,
+				input: result.undo.data
+			});
+		}
+
+		return {
+			ok: true,
+			undo: {
+				action: "batch",
+				data: undos
 			}
 		};
 	}

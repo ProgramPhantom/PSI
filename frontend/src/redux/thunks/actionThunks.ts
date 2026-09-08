@@ -5,28 +5,38 @@ import { appToaster } from "../../app/Toaster";
 import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
-import { ClearIDs } from "../../logic/collection";
+import Collection, { ClearIDs, ICollection, shiftVisualState } from "../../logic/collection";
 import Visual, { IVisual } from "../../logic/visual";
+import LineLike, { ILineLike, isLineLike } from "../../logic/lineLike";
 import Channel from "../../logic/hasComponents/channel";
 import { RootState } from "../rootReducer";
 import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
-import { setSelectedElementId } from "../slices/applicationSlice";
+import { setSelectedElementId, setSelectedElementIds, selectSelectedElementId, clearSelection } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
 import { selectCurrentAuthor, selectCurrentFileName, selectCurrentInstitution } from "../selectors/diagramSelectors";
+import { determineBindingPlacementModeType, isGridBindingRule } from "../../logic/bindingUtil";
+import Spacial, { IPlacementBindingRule, ISequenceBindingRule } from "../../logic/spacial";
 
+export interface CopiedElementsPayload {
+    version: 1;
+    type: "psi/elements";
+    elements: IVisual[];
+}
+
+let inMemoryCopiedElements: IVisual[] | null = null;
 let inMemoryCopiedElementState: IVisual | null = null;
 
 function canCopyElement(element: Visual): boolean {
     if (element.type === "channel" || element instanceof Channel) {
-        appToaster.show({
-            message: "Channels cannot be copied",
-            intent: "warning"
-        });
+        return false;
+    }
+    if (element.type === "diagram" || element.type === "sequence-aligner" || element.type === "sequence") {
         return false;
     }
     return true;
 }
+
 
 
 
@@ -168,29 +178,362 @@ export const handleCopyElement = createAsyncThunk(
     'actions/handleCopyElement',
     async (_, { getState }) => {
         const state = getState() as RootState;
-        const selectedElementId = state.application.selectedElementId;
-        if (!selectedElementId) return;
+        const selectedElementIds = state.application.selectedElementIds;
+        if (!selectedElementIds || selectedElementIds.length === 0) return;
 
-        const element = ENGINE.handler.identifyElement(selectedElementId);
-        if (!element) return;
+        const rawElements = selectedElementIds
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined);
 
-        if (!canCopyElement(element)) {
+        if (rawElements.length === 0) return;
+
+        const copyableElements = rawElements.filter(canCopyElement);
+        if (copyableElements.length === 0) {
+            if (rawElements.some((el) => el.type === "channel" || el instanceof Channel)) {
+                appToaster.show({
+                    message: "Channels cannot be copied",
+                    intent: "warning"
+                });
+            }
             return;
         }
 
-        const stateObject: IVisual = element.state;
-        inMemoryCopiedElementState = structuredClone(stateObject);
+        const stateObjects: IVisual[] = copyableElements.map((el) => structuredClone(el.state));
+        inMemoryCopiedElements = stateObjects;
+        inMemoryCopiedElementState = stateObjects[0] ?? null;
 
-        const stateString = JSON.stringify(stateObject, undefined, 4);
+        let stateString: string;
+        if (stateObjects.length === 1) {
+            stateString = JSON.stringify(stateObjects[0], undefined, 4);
+        } else {
+            const payload: CopiedElementsPayload = {
+                version: 1,
+                type: "psi/elements",
+                elements: stateObjects
+            };
+            stateString = JSON.stringify(payload, undefined, 4);
+        }
+
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(stateString).catch((err) => {
-                console.warn("Could not write element to navigator.clipboard", err);
+                console.warn("Could not write element(s) to navigator.clipboard", err);
             });
         }
 
         appToaster.show({
-            message: "Element copied to clipboard",
-            intent: "success"
+            message: stateObjects.length === 1 ? "Element copied to clipboard" : `${stateObjects.length} elements copied to clipboard`,
+            intent: "success",
+            timeout: 1000
+        });
+    }
+);
+
+export const deleteSelectedElements = createAsyncThunk<void, string[] | void>(
+    'actions/deleteSelectedElements',
+    async (targetIds, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const ids = targetIds ?? state.application.selectedElementIds;
+        if (!ids || ids.length === 0) return;
+
+        const elements = ids
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined);
+
+        if (elements.length === 0) return;
+
+        const batchItems: Array<{ type: "add" | "remove" | "modify"; input: any }> = [];
+        const handledElementIds = new Set<string>();
+
+        // Identify any parent collections that contain elements being deleted
+        const parentCollectionIds = new Set<string>();
+        for (const el of elements) {
+            if (el.parentId && el.parentId !== ENGINE.handler.diagram.id) {
+                parentCollectionIds.add(el.parentId);
+            }
+        }
+
+        for (const parentId of parentCollectionIds) {
+            // If the parent collection itself is also being deleted, skip processing its children individually
+            if (elements.some((el) => el.id === parentId)) {
+                continue;
+            }
+
+            const parentCollection = ENGINE.handler.identifyElement(parentId);
+            if (!parentCollection || !(parentCollection instanceof Collection) || parentCollection.type !== "collection") {
+                continue;
+            }
+
+            const deletedChildren = parentCollection.children.filter((child) =>
+                elements.some((el) => el.id === child.id)
+            );
+            const remainingChildren = parentCollection.children.filter((child) =>
+                !elements.some((el) => el.id === child.id)
+            );
+
+            // Mark these deleted children as handled
+            deletedChildren.forEach((child) => handledElementIds.add(child.id));
+
+            const targetParentId = parentCollection.parentId ?? ENGINE.handler.diagram.id;
+            const container = (ENGINE.handler.diagram.id === targetParentId
+                ? ENGINE.handler.diagram
+                : ENGINE.handler.identifyElement(targetParentId)) as Collection | undefined;
+            const collectionIndex = container?.childIndex(parentCollection);
+
+            if (remainingChildren.length === 0) {
+                // All children in this collection deleted: remove collection container
+                batchItems.push({
+                    type: "remove",
+                    input: { child: parentCollection }
+                });
+            } else if (remainingChildren.length === 1) {
+                // Exactly 1 child remains: destroy the collection and extract lone child to targetParentId
+                const loneChild = remainingChildren[0];
+                const loneChildState = structuredClone(loneChild.state);
+                loneChildState.parentId = targetParentId;
+                if (loneChildState.placementMode?.type === "grid") {
+                    loneChildState.placementMode = { type: "free" };
+                }
+
+                batchItems.push({
+                    type: "remove",
+                    input: { child: parentCollection }
+                });
+                batchItems.push({
+                    type: "add",
+                    input: {
+                        child: loneChildState,
+                        index: collectionIndex
+                    }
+                });
+            } else {
+                // 2 or more children remain: remove deleted children from collection
+                for (const child of deletedChildren) {
+                    batchItems.push({
+                        type: "remove",
+                        input: { child }
+                    });
+                }
+            }
+        }
+
+        // Process remaining elements (those directly on diagram or whole collections)
+        for (const el of elements) {
+            if (!handledElementIds.has(el.id)) {
+                batchItems.push({
+                    type: "remove",
+                    input: { child: el }
+                });
+            }
+        }
+
+        if (batchItems.length === 1) {
+            ENGINE.handler.act(batchItems[0]);
+        } else if (batchItems.length > 1) {
+            ENGINE.handler.act({
+                type: "batch",
+                input: batchItems
+            });
+        }
+
+        dispatch(clearSelection());
+
+        appToaster.show({
+            message: elements.length === 1 ? `Deleted element '${elements[0].ref || elements[0].id}'` : `Deleted ${elements.length} elements`,
+            intent: "danger",
+            timeout: 1000
+        });
+    }
+);
+
+export const handleGroupSelectedElements = createAsyncThunk(
+    'actions/handleGroupSelectedElements',
+    async (_, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const ids = state.application.selectedElementIds;
+        if (!ids || ids.length < 2) return;
+
+        const elements = ids
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined);
+
+        if (elements.length < 2) return;
+
+        const diagramId = ENGINE.handler.diagram.id;
+        const firstParentId = elements[0].parentId || diagramId;
+        const allSameParent = elements.every((el) => (el.parentId || diagramId) === firstParentId);
+        if (!allSameParent) {
+            appToaster.show({
+                message: "Cannot group elements from different levels",
+                intent: "danger",
+                timeout: 1000
+            });
+            return;
+        }
+
+        const union = Spacial.CreateUnion(...elements);
+        const collectionId = Math.random().toString(16).slice(2);
+        const collectionRef = `group-${Date.now().toString(36)}`;
+
+        const childrenStates: IVisual[] = elements.map((el) => {
+            const cloned = structuredClone(el.state);
+            cloned.parentId = collectionId;
+            if (cloned.placementMode?.type === "grid") {
+                cloned.placementMode = { type: "free" };
+            }
+            return cloned;
+        });
+
+        const newCollection: ICollection = {
+            id: collectionId,
+            ref: collectionRef,
+            type: "collection",
+            parentId: firstParentId,
+            placementMode: { type: "free" },
+            placementControl: "user",
+            sizeMode: { x: "fit", y: "fit" },
+            padding: [0, 0, 0, 0],
+            offset: [0, 0],
+            x: union.x,
+            y: union.y,
+            contentWidth: union.contentWidth,
+            contentHeight: union.contentHeight,
+            children: childrenStates
+        };
+
+        const batchItems = [
+            ...elements.map((el) => ({
+                type: "remove" as const,
+                input: { child: el }
+            })),
+            {
+                type: "add" as const,
+                input: { child: newCollection }
+            }
+        ];
+
+        ENGINE.handler.act({
+            type: "batch",
+            input: batchItems
+        });
+
+        dispatch(setSelectedElementId(collectionId));
+
+        appToaster.show({
+            message: `Grouped ${elements.length} elements`,
+            intent: "success",
+            timeout: 1000
+        });
+    }
+);
+
+export const handleUngroupElement = createAsyncThunk(
+    'actions/handleUngroupElement',
+    async (payload: { elementId?: string } | undefined, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const targetId = payload?.elementId ?? selectSelectedElementId(state);
+        if (!targetId) return;
+
+        const element = ENGINE.handler.identifyElement(targetId);
+        if (!element || !element.parentId) return;
+
+        const parentCollection = ENGINE.handler.identifyElement(element.parentId);
+        if (!parentCollection || !(parentCollection instanceof Collection) || parentCollection.type !== "collection") {
+            return;
+        }
+
+        // Target parent is the container of parentCollection (an outer Collection, or the Diagram)
+        const targetParentId = parentCollection.parentId ?? ENGINE.handler.diagram.id;
+        const container = (ENGINE.handler.diagram.id === targetParentId
+            ? ENGINE.handler.diagram
+            : ENGINE.handler.identifyElement(targetParentId)) as Collection | undefined;
+        const collectionIndex = container?.childIndex(parentCollection);
+
+        // Prepare standalone state for the selected element, parented to targetParentId
+        const standaloneState = structuredClone(element.state);
+        standaloneState.parentId = targetParentId;
+        if (standaloneState.placementMode?.type === "grid") {
+            standaloneState.placementMode = { type: "free" };
+        }
+
+        const remainingChildren = parentCollection.children.filter((child) => child.id !== targetId);
+
+        let batchItems: Array<{ type: "add" | "remove" | "modify"; input: any }>;
+
+        if (remainingChildren.length <= 1) {
+            // Destroy the collection container.
+            // If 1 element remains, convert it into a standalone element in targetParentId too.
+            const otherAddItems = remainingChildren.map((other, idx) => {
+                const otherState = structuredClone(other.state);
+                otherState.parentId = targetParentId;
+                if (otherState.placementMode?.type === "grid") {
+                    otherState.placementMode = { type: "free" };
+                }
+                return {
+                    type: "add" as const,
+                    input: {
+                        child: otherState,
+                        index: collectionIndex !== undefined ? collectionIndex + idx : undefined
+                    }
+                };
+            });
+
+            batchItems = [
+                {
+                    type: "remove" as const,
+                    input: { child: parentCollection }
+                },
+                ...otherAddItems,
+                {
+                    type: "add" as const,
+                    input: {
+                        child: standaloneState,
+                        index: collectionIndex !== undefined ? collectionIndex + otherAddItems.length : undefined
+                    }
+                }
+            ];
+        } else {
+            // 2 or more elements remain: update the collection with recomputed bounding box
+            const remainingUnion = Spacial.CreateUnion(...remainingChildren);  // TODO: perf
+            const updatedCollectionState: ICollection = {
+                ...parentCollection.state,
+                parentId: targetParentId,
+                x: remainingUnion.x,
+                y: remainingUnion.y,
+                contentWidth: remainingUnion.contentWidth,
+                contentHeight: remainingUnion.contentHeight,
+                children: remainingChildren.map((child) => {
+                    const cloned = structuredClone(child.state);
+                    cloned.parentId = parentCollection.id;
+                    return cloned;
+                })
+            };
+
+            batchItems = [
+                {
+                    type: "modify" as const,
+                    input: { target: parentCollection, child: updatedCollectionState }
+                },
+                {
+                    type: "add" as const,
+                    input: {
+                        child: standaloneState,
+                        index: collectionIndex !== undefined ? collectionIndex + 1 : undefined
+                    }
+                }
+            ];
+        }
+
+        ENGINE.handler.act({
+            type: "batch",
+            input: batchItems
+        });
+
+        dispatch(setSelectedElementId(targetId));
+
+        appToaster.show({
+            message: `Removed element from group`,
+            intent: "success",
+            timeout: 1000
         });
     }
 );
@@ -202,44 +545,134 @@ export const handlePasteElement = createAsyncThunk(
         const isOverCanvas = state.application.isMouseOverCanvas;
         const mousePos = state.application.canvasMousePosition;
 
-        const doPaste = (stateObject: IVisual) => {
-            if (stateObject.type === "channel") {
-                appToaster.show({
-                    message: "Channels cannot be copied",
-                    intent: "warning"
-                });
-                return;
+        const parseClipboardText = (text: string): IVisual[] | null => {
+            try {
+                const parsed = JSON.parse(text);
+                if (!parsed || typeof parsed !== "object") return null;
+
+                if (parsed.type === "psi/elements" && Array.isArray(parsed.elements)) {
+                    return parsed.elements.filter(
+                        (el: any) => el && typeof el === "object" && el.type !== "channel" && el.type !== "diagram"
+                    );
+                }
+                if (Array.isArray(parsed)) {
+                    return parsed.filter(
+                        (el: any) => el && typeof el === "object" && el.type !== "channel" && el.type !== "diagram"
+                    );
+                }
+                if (parsed.type && parsed.type !== "channel" && parsed.type !== "diagram") {
+                    return [parsed];
+                }
+            } catch {
+                return null;
             }
+            return null;
+        };
 
-            const newElementState: IVisual = structuredClone(stateObject);
-            ClearIDs(newElementState);
+        const doPaste = (elementsToPaste: IVisual[]) => {
+            if (!elementsToPaste || elementsToPaste.length === 0) return;
 
-            let targetX: number;
-            let targetY: number;
+            // Compute collective bounding box origin (minX, minY)
+            let minX = Infinity;
+            let minY = Infinity;
+            for (const el of elementsToPaste) {
+                if (isLineLike(el)) {
+                    minX = Math.min(minX, el.x ?? 0, el.startX ?? 0, el.endX ?? 0);
+                    minY = Math.min(minY, el.y ?? 0, el.startY ?? 0, el.endY ?? 0);
+                } else {
+                    minX = Math.min(minX, el.x ?? 0);
+                    minY = Math.min(minY, el.y ?? 0);
+                }
+            }
+            if (!isFinite(minX)) minX = 0;
+            if (!isFinite(minY)) minY = 0;
+
+            let deltaX: number;
+            let deltaY: number;
 
             if (isOverCanvas && mousePos) {
-                targetX = mousePos.x;
-                targetY = mousePos.y;
+                deltaX = mousePos.x - minX;
+                deltaY = mousePos.y - minY;
             } else {
-                const baseX = typeof newElementState.x === "number" ? newElementState.x : 0;
-                const baseY = typeof newElementState.y === "number" ? newElementState.y : 0;
-                targetX = baseX + 20;
-                targetY = baseY + 20;
+                deltaX = 20;
+                deltaY = 20;
             }
 
-            newElementState.x = targetX;
-            newElementState.y = targetY;
-            newElementState.placementMode = {
-                type: "free"
-            };
-            newElementState.placementControl = "user"
-            newElementState.parentId = ENGINE.handler.diagram.id;
-
-            ENGINE.handler.act({
-                type: "add",
-                input: {
-                    child: newElementState
+            // Deep clone, assign new IDs, shift positions, and prepare idMap for peer bindings
+            const idMap = new Map<string, string>();
+            const preparedElements: IVisual[] = elementsToPaste.map((el) => {
+                const cloned = structuredClone(el);
+                const oldId = cloned.id;
+                ClearIDs(cloned);
+                const newId = Math.random().toString(16).slice(2);
+                cloned.id = newId;
+                if (oldId) {
+                    idMap.set(oldId, newId);
                 }
+                cloned.ref = `${cloned.type || "element"}-${Date.now().toString(36)}-${newId.slice(0, 4)}`;
+                cloned.parentId = ENGINE.handler.diagram.id;
+                cloned.placementControl = "user";
+
+                shiftVisualState(cloned, deltaX, deltaY);
+                return cloned;
+            });
+
+            // Remap peer bindings within the copied group, reset external bindings to free
+            for (const el of preparedElements) {
+                if (el.placementMode?.type === "binds" || el.placementMode?.type === "sequenceBind") {
+                    const rules = el.placementMode.config as ISequenceBindingRule[] | undefined;
+                    if (rules && Array.isArray(rules)) {
+                        const updatedRules: ISequenceBindingRule[] = [];
+                        for (const rule of rules) {
+                            if (isGridBindingRule(rule)) {
+                                updatedRules.push(rule);
+                            } else {
+                                const anchorId = rule.targetId || rule.anchorId;
+                                if (anchorId && idMap.has(anchorId)) {
+                                    const remappedRule: IPlacementBindingRule = {
+                                        ...rule,
+                                        targetId: idMap.get(rule.targetId) ?? rule.targetId,
+                                        ...(rule.anchorId && idMap.has(rule.anchorId)
+                                            ? { anchorId: idMap.get(rule.anchorId) }
+                                            : {})
+                                    };
+                                    updatedRules.push(remappedRule);
+                                }
+                            }
+                        }
+                        el.placementMode = determineBindingPlacementModeType(updatedRules);
+                    } else {
+                        el.placementMode = { type: "free" };
+                    }
+                } else {
+                    el.placementMode = { type: "free" };
+                }
+            }
+
+            if (preparedElements.length === 1) {
+                ENGINE.handler.act({
+                    type: "add",
+                    input: {
+                        child: preparedElements[0]
+                    }
+                });
+            } else {
+                ENGINE.handler.act({
+                    type: "batch",
+                    input: preparedElements.map((child) => ({
+                        type: "add",
+                        input: { child }
+                    }))
+                });
+            }
+
+            const newIds = preparedElements.map((el) => el.id).filter((id): id is string => Boolean(id));
+            dispatch(setSelectedElementIds(newIds));
+
+            appToaster.show({
+                message: preparedElements.length === 1 ? "Element pasted" : `Pasted ${preparedElements.length} elements`,
+                intent: "success",
+                timeout: 1000
             });
         };
 
@@ -247,9 +680,9 @@ export const handlePasteElement = createAsyncThunk(
             try {
                 const text = await navigator.clipboard.readText();
                 if (text) {
-                    const parsed = JSON.parse(text);
-                    if (parsed && typeof parsed === "object" && parsed.type && parsed.type !== "diagram" && parsed.type !== "channel") {
-                        doPaste(parsed);
+                    const parsedElements = parseClipboardText(text);
+                    if (parsedElements && parsedElements.length > 0) {
+                        doPaste(parsedElements);
                         return;
                     }
                 }
@@ -258,8 +691,10 @@ export const handlePasteElement = createAsyncThunk(
             }
         }
 
-        if (inMemoryCopiedElementState && inMemoryCopiedElementState.type !== "channel") {
-            doPaste(inMemoryCopiedElementState);
+        if (inMemoryCopiedElements && inMemoryCopiedElements.length > 0) {
+            doPaste(inMemoryCopiedElements);
+        } else if (inMemoryCopiedElementState && inMemoryCopiedElementState.type !== "channel") {
+            doPaste([inMemoryCopiedElementState]);
         }
     }
 );

@@ -166,7 +166,8 @@ export class LaTeX extends TextBase implements ILaTeX {
 			width: this.contentWidth,
 			height: this.contentHeight,
 			preserveAspectRatio: "xMinYMin",
-			style: `color:${this.style.colour}; overflow: visible;`
+			style: `color:${this.style.colour}; overflow: visible; fill:${this.style.colour};`,
+
 		});
 
 		if (this.style.background) {

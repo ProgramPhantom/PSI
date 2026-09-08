@@ -58,6 +58,11 @@ export default class LabelGroup
 		};
 	}
 
+	public override get isResizable(): boolean {
+		return true;
+	}
+
+
 	get coreChild(): GridCellElement<Visual> | undefined {
 		let coreChild: GridCellElement<Visual> | undefined = this.roles["coreChild"].object as GridCellElement<Visual> | undefined;
 		return coreChild

@@ -126,4 +126,19 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		x !== undefined ? (this.x = x) : {};
 		y !== undefined ? (this.y = y) : {};
 	}
+
+	public shiftCoordinates(deltaX: number, deltaY: number): void {
+		this.x += deltaX;
+		this.y += deltaY;
+	}
+
+	public static shiftPointState<T extends IPoint = IPoint>(state: T, deltaX: number, deltaY: number): T {
+		state.x = (state.x ?? 0) + deltaX;
+		state.y = (state.y ?? 0) + deltaY;
+		return state;
+	}
+
+	public getShiftedState(deltaX: number, deltaY: number): IPoint {
+		return Point.shiftPointState({ ...this.state }, deltaX, deltaY);
+	}
 }

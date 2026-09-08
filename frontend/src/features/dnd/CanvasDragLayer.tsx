@@ -95,7 +95,7 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
 	}
 
 	function renderItem() {
-		return <ElementDragPreview element={item.element} />;
+		return <ElementDragPreview element={item.element} allElements={item.allElements} />;
 	}
 
 	let css;
