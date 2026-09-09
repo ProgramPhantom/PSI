@@ -865,7 +865,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	 * Computes the positions and sizes of cells in a grid layout.
 	 * Initializes the cells array with PaddedBox objects representing each cell's geometry.
 	 * Each cell's position is calculated based on cumulative widths (x-axis) and heights (y-axis)
-	 * from the grid's origin point (x, y).
+	 * from the grid's content origin point (contentX, contentY).
 	 * 
 	 * The computation uses:
 	 * - gridSizes.rows[].height for row heights
@@ -878,8 +878,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var xCount: number = 0;
 		var yCount: number = 0;
 
-		var startX = this.x;
-		var startY = this.y;
+		var startX = this instanceof Subgrid ? this.x : this.cx;
+		var startY = this instanceof Subgrid ? this.y : this.cy;
 
 		for (var row = 0; row < this.numRows; row++) {
 			xCount = 0;
@@ -908,7 +908,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				col.x = this.cells[0][i].x;
 				col.y = this.cells[0][0].y;
 				col.width = this.gridSizes.columns[i].width;
-				col.height = this.height;
+				col.height = this.contentHeight;
 			}
 		});
 		this.gridSizes.rows.forEach((row, i) => {
@@ -941,22 +941,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			ref: "grid-cell",
 			type: "lower-abstract"
 		})));
-
-		this.cells.forEach((row, row_index) => {
-			const isFirstRow = row_index === 0;
-			const isLastRow = row_index === this.numRows - 1;
-			row.forEach((targetCell, column_index) => {
-				const isFirstCol = column_index === 0;
-				const isLastCol = column_index === this.numColumns - 1;
-
-				targetCell.padding = [
-					isFirstRow ? this.padding[0] : 0,
-					isLastCol ? this.padding[1] : 0,
-					isLastRow ? this.padding[2] : 0,
-					isFirstCol ? this.padding[3] : 0
-				];
-			});
-		});
 
 		// Apply subgrid padding to cells within subgrids
 		this.subgridChildren.forEach((sg) => {
