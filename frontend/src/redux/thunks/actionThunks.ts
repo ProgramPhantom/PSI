@@ -14,7 +14,7 @@ import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../sli
 import { setSelectedElementId, setSelectedElementIds, selectSelectedElementId, clearSelection } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
-import { selectCurrentAuthor, selectCurrentFileName, selectCurrentInstitution } from "../selectors/diagramSelectors";
+import { selectCurrentAuthor, selectCurrentFileName, selectCurrentTitle, selectCurrentInstitution } from "../selectors/diagramSelectors";
 import { determineBindingPlacementModeType, isGridBindingRule } from "../../logic/bindingUtil";
 import Spacial, { IPlacementBindingRule, ISequenceBindingRule } from "../../logic/spacial";
 
@@ -103,6 +103,7 @@ export const handleExportDiagramFile = createAsyncThunk(
     'actions/handleExportDiagramFile',
     async (_, { getState }) => {
         const state = getState() as RootState;
+        const title = selectCurrentTitle(state);
         const fileName = selectCurrentFileName(state);
         const author = selectCurrentAuthor(state);
         const institution = selectCurrentInstitution(state);
@@ -119,7 +120,9 @@ export const handleExportDiagramFile = createAsyncThunk(
         saveDiagramFile(fileName, {
             UUID: UUID,
             source: "local",
-            diagramName: fileName,
+            title: title,
+            fileName: fileName,
+            diagramName: title,
             originalAuthor: author || undefined,
             institution: institution || undefined,
             dateCreated: new Date().toISOString()
@@ -862,7 +865,7 @@ export const handleSaveSVG = createAsyncThunk<void, SaveSVGOptions | void>(
     async (options, { getState }) => {
         try {
             const state = getState() as RootState;
-            const defaultName = selectCurrentFileName(state);
+            const defaultName = selectCurrentTitle(state);
             const rawName = options?.fileName?.trim() || defaultName || "pulse-diagram";
             const fileName = rawName.endsWith(".svg") ? rawName : `${rawName}.svg`;
 
@@ -1060,7 +1063,7 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number, f
             const height = dimensions.height;
 
             const state = getState() as RootState;
-            const defaultName = selectCurrentFileName(state);
+            const defaultName = selectCurrentTitle(state);
             const rawFileName = dimensions.fileName?.trim() || defaultName || "pulse-diagram";
             const exportFileName = rawFileName.endsWith(".png") ? rawFileName : `${rawFileName}.png`;
 
