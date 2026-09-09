@@ -134,10 +134,47 @@ export function AssetStoreDialog(props: IAssetStoreDialogProps) {
         props.onSelect({ id: selectedId, ref });
     };
 
-    // Get SVG markup for preview
-    const previewSvgMarkup = selectedId && ENGINE.svgDict[selectedId]
-        ? ENGINE.svgDict[selectedId].object.svg()
-        : null;
+    // Get SVG markup for preview, ensuring it scales and fits properly
+    const previewSvgMarkup = React.useMemo(() => {
+        if (!selectedId || !ENGINE.svgDict[selectedId]) return null;
+        try {
+            const rawSvg = ENGINE.svgDict[selectedId].object.svg();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(rawSvg, "image/svg+xml");
+            const svgEl = doc.querySelector("svg");
+            if (!svgEl) return rawSvg;
+
+            // If viewBox is missing, infer it from width and height
+            const widthAttr = svgEl.getAttribute("width");
+            const heightAttr = svgEl.getAttribute("height");
+            const viewBoxAttr = svgEl.getAttribute("viewBox");
+
+            if (!viewBoxAttr && widthAttr && heightAttr) {
+                const w = parseFloat(widthAttr);
+                const h = parseFloat(heightAttr);
+                if (!isNaN(w) && !isNaN(h)) {
+                    svgEl.setAttribute("viewBox", `0 0 ${w} ${h}`);
+                }
+            }
+
+            // Ensure preserveAspectRatio maintains centering and containment
+            if (!svgEl.getAttribute("preserveAspectRatio")) {
+                svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
+            }
+
+            // Make SVG responsive within its container
+            svgEl.setAttribute("width", "100%");
+            svgEl.setAttribute("height", "100%");
+            svgEl.style.maxWidth = "100%";
+            svgEl.style.maxHeight = "100%";
+            svgEl.style.display = "block";
+
+            return svgEl.outerHTML;
+        } catch (e) {
+            console.error("Failed to process preview SVG", e);
+            return ENGINE.svgDict[selectedId]?.object.svg() ?? null;
+        }
+    }, [selectedId]);
 
     return (
         <Dialog
@@ -263,7 +300,7 @@ export function AssetStoreDialog(props: IAssetStoreDialogProps) {
 
                     {/* SVG Upload Area Section */}
                     <div style={{ display: "flex", flexDirection: "column", flex: "1 1 0", minHeight: 0, border: "1px solid var(--pt-divider-black, rgba(16, 22, 26, 0.15))", borderRadius: "6px", padding: "10px", background: "var(--pt-app-background-color, #fff)" }}>
-                        <div style={{ fontWeight: 600, fontSize: "0.9em" }}>Upload SVG</div>
+                        <div style={{ fontWeight: 600, fontSize: "0.9em", marginBottom: "8px" }}>Upload SVG</div>
 
                         <SimpleField style={{ margin: "4px 0 6px 0" }}
                             labelFor="reference-input"
