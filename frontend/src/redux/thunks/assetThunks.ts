@@ -17,7 +17,7 @@ const CLIENT_SVGS: SVGDict = import.meta.glob("../../assets/svg/*.svg", {
 
 
 
-export const loadAsset = createAsyncThunk<void, {
+export const loadAsset = createAsyncThunk<string | undefined, {
     file: Blob | File, reference: string,
     source: AssetSource,
     dependants?: string[],
@@ -47,7 +47,7 @@ export const loadAsset = createAsyncThunk<void, {
             const state = thunkAPI.getState() as RootState;
             if (state.assets.assets[id]) {
                 console.log(`Skipping ${reference}`)
-                return;
+                return id;
             }
 
             await ENGINE.assetStore.addSVGData(processedFile, reference, source);
@@ -63,9 +63,11 @@ export const loadAsset = createAsyncThunk<void, {
                     source: source ?? "local"
                 }
             }));
+
+            return id;
         } else {
             console.warn(`Unsupported file type: ${fileType} for asset ${reference}`);
-            return;
+            return undefined;
         }
 
 

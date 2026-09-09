@@ -17,7 +17,7 @@ import {
 	setSelectedTool
 } from "../../redux/slices/applicationSlice";
 import { setSaveState } from "../../redux/slices/diagramSlice";
-import { openDiagram } from "../../redux/thunks/diagramThunks";
+import { addSvgElementFromDrop } from "../../redux/thunks/actionThunks";
 import Toolbar from "../banner/Toolbar";
 import Debug from "../debug/Debug";
 import { DebugLayerDialog } from "../dialog/DebugLayerDialog";
@@ -29,7 +29,6 @@ import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
 import SequencesColumnEditor from "../dnd/SequencesColumnEditor";
 import SequencesChannelPaddingEditor from "../dnd/SequencesChannelPaddingEditor";
 import LabelGroupDropFields from "../dnd/LabelGroupDropFields";
-import QuietUploadArea from "../QuietUploadArea";
 import Channel from "../../logic/hasComponents/channel";
 import { CanvasTextInput } from "./CanvasTextInput";
 import { CanvasToolToolbar } from "./CanvasToolToolbar";
@@ -239,7 +238,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		selectVisual(e);
 	};
 
-	const getCoordinates = (e: React.MouseEvent<HTMLDivElement> | MouseEvent): { x: number; y: number } => {
+	const getCoordinates = (e: React.MouseEvent<HTMLDivElement> | MouseEvent | React.DragEvent): { x: number; y: number } => {
 		const drawDiv = document.getElementById("diagram-root") as HTMLElement;
 		if (!drawDiv) {
 			return { x: e.clientX, y: e.clientY };
@@ -331,8 +330,13 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	};
 	const activeToolBehavior = getToolBehavior(selectedTool.type);
 
-	const handleDiagramDrop = async (file: File) => {
-		dispatch(openDiagram(file));
+	const handleSvgFileDrop = (file: File, coords?: { x: number; y: number }) => {
+		if (coords) {
+			dispatch(addSvgElementFromDrop({ file, x: coords.x, y: coords.y }));
+		} else {
+			// Dropped on QuietUploadArea container
+			dispatch(addSvgElementFromDrop({ file, x: 0, y: 0 }));
+		}
 	};
 
 	const handleDoubleClickElement = (element: Visual) => {
@@ -469,7 +473,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	return (
 		<>
-			<QuietUploadArea onDrop={handleDiagramDrop} acceptExtension=".nmrd">
 				<div
 					style={{
 						width: "100%",
@@ -624,7 +627,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						)}
 
 
-						<CanvasDropContainer scale={zoom}>
+						<CanvasDropContainer scale={zoom} onFileDrop={handleSvgFileDrop}>
 							<TransformWrapper
 								ref={transformComponentRef}
 								initialScale={zoom}
@@ -820,13 +823,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 
 										{/* Hitbox layer */}
-										{!isDragging ? (
-											<HitboxLayer
-												selectedElementId={selectedElementId}
-												setHoveredElement={constOnHitboxHover}></HitboxLayer>
-										) : (
-											<></>
-										)}
+										<HitboxLayer
+											selectedElementId={selectedElementId}
+											setHoveredElement={constOnHitboxHover}></HitboxLayer>
 
 										{/* Image */}
 										<div id="drawDiv" ref={diagramSvgRef}></div>
@@ -840,7 +839,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						</CanvasDropContainer>
 					</div>
 				</div>
-			</QuietUploadArea>
 
 			<DebugLayerDialog />
 		</>

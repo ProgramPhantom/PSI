@@ -177,7 +177,11 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	};
 
 	return (
-		<QuietUploadArea onDrop={handleSchemeDrop} acceptExtension=".nmrs">
+		<QuietUploadArea
+			onDrop={handleSchemeDrop}
+			acceptExtension=".nmrs"
+
+		>
 			<div style={{ height: "100%", overflow: "hidden" }}>
 				<Section
 					style={{
