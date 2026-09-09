@@ -215,9 +215,9 @@ export function AssetStoreDialog(props: IAssetStoreDialogProps) {
                 </div>
 
                 {/* Right Column: Preview & Upload Area */}
-                <div style={{ flex: "1 1 45%", display: "flex", flexDirection: "column", gap: "12px", minWidth: 0, height: "100%", overflowY: "auto" }}>
+                <div style={{ flex: "1 1 45%", display: "flex", flexDirection: "column", gap: "10px", minWidth: 0, height: "100%", overflow: "hidden" }}>
                     {/* SVG Preview Section */}
-                    <div style={{ display: "flex", flexDirection: "column", border: "1px solid var(--pt-divider-black, rgba(16, 22, 26, 0.15))", borderRadius: "6px", padding: "8px", background: "var(--pt-app-background-color, #fff)" }}>
+                    <div style={{ display: "flex", flexDirection: "column", flexShrink: 0, border: "1px solid var(--pt-divider-black, rgba(16, 22, 26, 0.15))", borderRadius: "6px", padding: "8px", background: "var(--pt-app-background-color, #fff)" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                             <span style={{ fontWeight: 600, fontSize: "0.9em" }}>Preview</span>
                             {selectedId && assets[selectedId] && (
@@ -229,7 +229,7 @@ export function AssetStoreDialog(props: IAssetStoreDialogProps) {
                         <div
                             style={{
                                 width: "100%",
-                                height: "170px",
+                                height: "160px",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -262,10 +262,10 @@ export function AssetStoreDialog(props: IAssetStoreDialogProps) {
                     </div>
 
                     {/* SVG Upload Area Section */}
-                    <div style={{ display: "flex", flexDirection: "column", border: "1px solid var(--pt-divider-black, rgba(16, 22, 26, 0.15))", borderRadius: "6px", padding: "10px", background: "var(--pt-app-background-color, #fff)" }}>
-                        <div style={{ fontWeight: 600, fontSize: "0.9em", }}>Upload SVG</div>
+                    <div style={{ display: "flex", flexDirection: "column", flex: "1 1 0", minHeight: 0, border: "1px solid var(--pt-divider-black, rgba(16, 22, 26, 0.15))", borderRadius: "6px", padding: "10px", background: "var(--pt-app-background-color, #fff)" }}>
+                        <div style={{ fontWeight: 600, fontSize: "0.9em" }}>Upload SVG</div>
 
-                        <SimpleField style={{ padding: "8px 0px" }}
+                        <SimpleField style={{ margin: "4px 0 6px 0" }}
                             labelFor="reference-input"
                             intent={selectedFile && svgReference.trim() === "" ? "danger" : "none"}
                             helperText={selectedFile && svgReference.trim() === "" ? "Enter reference" : ""}
@@ -290,10 +290,10 @@ export function AssetStoreDialog(props: IAssetStoreDialogProps) {
                             setInputRef={(el) => {
                                 if (fileInputRef) (fileInputRef as any).current = el;
                             }}
-                            style={{ minHeight: "90px", padding: "px 8px", height: "100%" }}
+                            style={{ flex: "1 1 0", minHeight: "60px", height: "100%", padding: "12px 8px" }}
                         />
 
-                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px", flexShrink: 0 }}>
                             <Button
                                 text="Upload"
                                 intent="primary"
