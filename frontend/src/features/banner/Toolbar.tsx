@@ -3,13 +3,13 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import * as Actions from "../../redux/thunks/actionThunks";
 import { setLoadDialogOpen, setPNGDialogOpen, setSVGDialogOpen, setSaveAsDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
-import { setFileName } from "../../redux/slices/diagramSlice";
-import { selectCurrentDiagramSource, selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
+import { setTitle } from "../../redux/slices/diagramSlice";
+import { selectCurrentDiagramSource, selectCurrentTitle } from "../../redux/selectors/diagramSelectors";
 
 const Toolbar: React.FC = () => {
 	const dispatch = useAppDispatch();
 	const { diagramUUID, saveState, loadStatus } = useAppSelector((state) => state.diagram);
-	const fileName = useAppSelector(selectCurrentFileName);
+	const title = useAppSelector(selectCurrentTitle);
 	const diagramSource = useAppSelector(selectCurrentDiagramSource);
 
 	const getLoadStatusIcon = () => {
@@ -97,21 +97,21 @@ const Toolbar: React.FC = () => {
 
 			<div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", fontSize: "14px", color: Colors.GRAY1 }}>
 				<div style={{ display: "flex", alignItems: "center" }}>
-					<span style={{ marginRight: "4px" }}>File name:</span>
-					<EditableText defaultValue="untitled"
-						value={fileName}
-						onChange={(v) => dispatch(setFileName(v.trim()))}
+					<span style={{ marginRight: "4px" }}>Title:</span>
+					<EditableText defaultValue="Untitled"
+						value={title}
+						onChange={(v) => dispatch(setTitle(v.trim()))}
 						onConfirm={(v) => {
 							if (v.trim() === "") {
-								dispatch(setFileName("untitled"));
+								dispatch(setTitle("Untitled"));
 							}
 						}}
 						onCancel={(v) => {
 							if (v.trim() === "") {
-								dispatch(setFileName("untitled"));
+								dispatch(setTitle("Untitled"));
 							}
 						}}
-						placeholder="Diagram Name"
+						placeholder="Diagram Title"
 						selectAllOnFocus={true}
 					/>
 					{saveState !== 'saved' && <span style={{ marginLeft: "2px" }}>*</span>}

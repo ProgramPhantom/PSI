@@ -26,12 +26,17 @@ export async function createDiagramFile(metadata: IDiagramMetadata): Promise<JSZ
         assetsFolder.file(`${id}.json`, JSON.stringify({ ref: refObj.ref }));
     }
 
+    const title = metadata.title || "Untitled";
+    const fileName = metadata.fileName || (title.endsWith(".nmrd") ? title : `${title}.nmrd`);
+
     const manifest: IDiagramMetadata = {
         format: "nmr-pulse-diagram",
         version: 1,
         UUID: metadata.UUID,
         source: metadata.source,
-        diagramName: metadata.diagramName,
+        title: title,
+        fileName: fileName,
+        diagramName: title,
         institution: metadata.institution,
         originalAuthor: metadata.originalAuthor,
         dateCreated: metadata.dateCreated

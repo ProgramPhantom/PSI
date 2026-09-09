@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import ENGINE from "../../logic/engine";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
+import { selectCurrentTitle } from "../../redux/selectors/diagramSelectors";
 import * as Actions from "../../redux/thunks/actionThunks";
 import styles from "./PNGExportDialog.module.scss";
 
@@ -29,26 +29,26 @@ const CM_TO_PX = 37.795;
 
 export function SVGExportDialog(props: ISVGExportDialogProps) {
 	const dispatch = useAppDispatch();
-	const currentFileName = useAppSelector(selectCurrentFileName);
+	const currentTitle = useAppSelector(selectCurrentTitle);
 
 	const baseWidth = Math.max(1, Math.round(ENGINE.handler.diagram?.width || 800));
 	const baseHeight = Math.max(1, Math.round(ENGINE.handler.diagram?.height || 600));
 	const originalRatio = baseWidth / baseHeight;
 
-	const [svgFilename, setSvgFilename] = useState(currentFileName || "pulse-diagram");
+	const [svgFilename, setSvgFilename] = useState(currentTitle || "pulse-diagram");
 	const [preset, setPreset] = useState<ColumnPreset>("original");
 	const [bgOption, setBgOption] = useState<BackgroundOption>("transparent");
 	const [targetWidth, setTargetWidth] = useState<number>(baseWidth);
 
 	useEffect(() => {
 		if (props.isOpen) {
-			const initialName = currentFileName && currentFileName !== "unnamed" ? currentFileName : "pulse-diagram";
+			const initialName = currentTitle && currentTitle !== "Untitled" ? currentTitle : "pulse-diagram";
 			setSvgFilename(initialName);
 			setPreset("original");
 			setBgOption("transparent");
 			setTargetWidth(baseWidth);
 		}
-	}, [props.isOpen, baseWidth, currentFileName]);
+	}, [props.isOpen, baseWidth, currentTitle]);
 
 	const handlePresetChange = (p: ColumnPreset) => {
 		setPreset(p);

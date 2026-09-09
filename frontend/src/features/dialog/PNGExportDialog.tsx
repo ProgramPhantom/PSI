@@ -16,7 +16,7 @@ import {
 import { useEffect, useState } from "react";
 import ENGINE from "../../logic/engine";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
+import { selectCurrentTitle } from "../../redux/selectors/diagramSelectors";
 import * as Actions from "../../redux/thunks/actionThunks";
 import styles from "./PNGExportDialog.module.scss";
 
@@ -55,13 +55,13 @@ const unitToPx = (val: number, unit: SizeUnit, dpi: number): number => {
 
 export function PNGExportDialog(props: IPNGExportDialogProps) {
 	const dispatch = useAppDispatch();
-	const currentFileName = useAppSelector(selectCurrentFileName);
+	const currentTitle = useAppSelector(selectCurrentTitle);
 
 	const baseWidth = Math.max(1, Math.round(ENGINE.handler.diagram?.width || 800));
 	const baseHeight = Math.max(1, Math.round(ENGINE.handler.diagram?.height || 600));
 	const originalRatio = baseWidth / baseHeight;
 
-	const [pngFilename, setPngFilename] = useState(currentFileName || "pulse-diagram");
+	const [pngFilename, setPngFilename] = useState(currentTitle || "pulse-diagram");
 	const [selectedDpi, setSelectedDpi] = useState<number>(300);
 	const [unit, setUnit] = useState<SizeUnit>("px");
 	const [isAspectLocked, setIsAspectLocked] = useState<boolean>(true);
@@ -74,7 +74,7 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 	// Reset values when dialog opens
 	useEffect(() => {
 		if (props.isOpen) {
-			const initialName = currentFileName && currentFileName !== "unnamed" ? currentFileName : "pulse-diagram";
+			const initialName = currentTitle && currentTitle !== "Untitled" ? currentTitle : "pulse-diagram";
 			setPngFilename(initialName);
 			setSelectedDpi(300);
 			setUnit("px");
@@ -86,7 +86,7 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 			setPngWidth(defaultW);
 			setPngHeight(defaultH);
 		}
-	}, [props.isOpen, baseWidth, baseHeight, originalRatio, currentFileName]);
+	}, [props.isOpen, baseWidth, baseHeight, originalRatio, currentTitle]);
 
 	const handleDpiChange = (dpi: number) => {
 		setSelectedDpi(dpi);

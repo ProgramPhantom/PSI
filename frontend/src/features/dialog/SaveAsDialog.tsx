@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup } from "@blueprintjs/core";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { selectCurrentFileName } from "../../redux/selectors/diagramSelectors";
+import { selectCurrentTitle } from "../../redux/selectors/diagramSelectors";
 import { saveDiagram } from "../../redux/thunks/diagramThunks";
 
 export interface ISaveAsDialogProps {
@@ -10,15 +10,15 @@ export interface ISaveAsDialogProps {
 }
 
 export function SaveAsDialog(props: ISaveAsDialogProps) {
-    const fileName = useAppSelector(selectCurrentFileName);
-    const [name, setName] = useState(fileName);
+    const title = useAppSelector(selectCurrentTitle);
+    const [name, setName] = useState(title);
     const dispatch = useAppDispatch()
 
     useEffect(() => {
         if (props.isOpen) {
-            setName(fileName);
+            setName(title);
         }
-    }, [props.isOpen, fileName]);
+    }, [props.isOpen, title]);
 
     const handleSave = () => {
         dispatch(saveDiagram({fileName: name}))
@@ -34,12 +34,12 @@ export function SaveAsDialog(props: ISaveAsDialogProps) {
         >
             <DialogBody>
                 <FormGroup
-                    label="Diagram Name"
-                    labelFor="diagram-name"
-                    helperText="Enter a name for this diagram"
+                    label="Title"
+                    labelFor="diagram-title"
+                    helperText="Enter a title for this diagram"
                 >
                     <InputGroup
-                        id="diagram-name"
+                        id="diagram-title"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. My Diagram"

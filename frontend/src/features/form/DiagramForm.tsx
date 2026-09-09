@@ -17,10 +17,10 @@ import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
 	selectCurrentAuthor,
 	selectCurrentDiagramSource,
-	selectCurrentFileName,
+	selectCurrentTitle,
 	selectCurrentInstitution
 } from "../../redux/selectors/diagramSelectors";
-import { setAuthor, setFileName, setInstitution } from "../../redux/slices/diagramSlice";
+import { setAuthor, setTitle, setInstitution } from "../../redux/slices/diagramSlice";
 import { setPNGDialogOpen, setSVGDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import { DoubleField } from "./fields/DoubleField";
@@ -33,7 +33,7 @@ export const DiagramForm: React.FC = () => {
 	const dispatch = useAppDispatch();
 
 	// Redux state
-	const fileName = useAppSelector(selectCurrentFileName);
+	const title = useAppSelector(selectCurrentTitle);
 	const author = useAppSelector(selectCurrentAuthor);
 	const institution = useAppSelector(selectCurrentInstitution);
 	const { diagramUUID, saveState, loadStatus } = useAppSelector((state) => state.diagram);
@@ -71,15 +71,15 @@ export const DiagramForm: React.FC = () => {
 		<div className="custom-scrollbar" style={{ flex: "1 1 0", minHeight: 0, overflowY: "auto" }}>
 			{/* File & Author Identity */}
 			<ControlGroup vertical={true} className={styles.formGroupContainer} style={{ paddingTop: "8px" }}>
-				<FormGroup label="File Name" labelFor="diagram-file-name">
+				<FormGroup label="Title" labelFor="diagram-title">
 					<InputGroup
-						id="diagram-file-name"
-						placeholder="Diagram Name..."
-						value={fileName}
-						onChange={(e) => dispatch(setFileName(e.target.value))}
+						id="diagram-title"
+						placeholder="Diagram Title..."
+						value={title}
+						onChange={(e) => dispatch(setTitle(e.target.value))}
 						onBlur={(e) => {
 							if (e.target.value.trim() === "") {
-								dispatch(setFileName("untitled"));
+								dispatch(setTitle("Untitled"));
 							}
 						}}
 						size="small"

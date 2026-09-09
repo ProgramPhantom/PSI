@@ -497,7 +497,8 @@ export default class DiagramHandler implements IDraw {
 
 	@draws
 	public emptyDiagram(): Diagram {
-		return new Diagram(BLANK_DIAGRAM)
+		const newDiagram = this.EngineConstructor(structuredClone(BLANK_DIAGRAM), "diagram") as Diagram | undefined;
+		return newDiagram ?? new Diagram(BLANK_DIAGRAM);
 	}
 
 	@draws

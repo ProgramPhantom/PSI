@@ -5,8 +5,6 @@ import { isPulse } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { DragElementTypes, SchemeDropResultType } from "../dnd/CanvasDropContainer";
 import TemplateDraggableElement from "../dnd/TemplateDraggableElement";
-import DiagramElementList from "./DiagramElementList";
-import Diagram from "../../logic/hasComponents/diagram";
 import styles from "./styles/SchemeTabPanel.module.scss";
 import { IPulseData } from "../../logic/pulseData";
 
@@ -36,8 +34,7 @@ export const getPulseDataForFilter = (filter: string): IPulseData | undefined =>
 };
 
 const filterElement = (element: Visual, filter: string) => {
-	if (filter === "All") return element.type !== "diagram";
-	if (filter === "diagrams") return element.type === "diagram";
+	if (filter === "All") return true;
 	if (filter === "Hard") {
 		return isPulse(element) && element.pulseData?.pulseType?.category === "shape" && element.pulseData.pulseType.type === "Hard";
 	}
@@ -108,34 +105,23 @@ export const SchemeTabPanel: React.FC<SchemeTabPanelProps> = ({
 						<Tab id="Adiabatic" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "Adiabatic") setFilter("Adiabatic"); }}>Adiabatic</span>} />
 						<Tab id="PFGs" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "PFGs") setFilter("PFGs"); }}>PFGs</span>} />
 						<Tab id="Annotation" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "Annotation") setFilter("Annotation"); }}>Annotation</span>} />
-						<Tab id="diagrams" title={<span onMouseEnter={() => { if (isAnyDragging && filter !== "diagrams") setFilter("diagrams"); }}>Diagrams</span>} style={{ marginLeft: "auto" }} />
 					</Tabs>
 				</div>
 
-				{filter === "diagrams" ? (
-					<DiagramElementList
-						diagramElements={Object.entries(schemeSingletons)
-							.filter(([id, com]) => filterElement(com, filter))
-							.map(([id, com]) => com as Diagram)}
-					/>
-				) : (
-					<div className={`${styles.elementGrid} custom-scrollbar`}>
-
-
-						{Object.entries(schemeSingletons)
-							.filter(([id, com]) => filterElement(com, filter))
-							.map(([template_id, visual]) => {
-								return (
-									<TemplateDraggableElement
-										key={template_id}
-										element={visual}
-										schemeId={schemeId}
-										templateId={template_id}
-									/>
-								);
-							})}
-					</div>
-				)}
+				<div className={`${styles.elementGrid} custom-scrollbar`}>
+					{Object.entries(schemeSingletons)
+						.filter(([id, com]) => filterElement(com, filter))
+						.map(([template_id, visual]) => {
+							return (
+								<TemplateDraggableElement
+									key={template_id}
+									element={visual}
+									schemeId={schemeId}
+									templateId={template_id}
+								/>
+							);
+						})}
+				</div>
 			</div>
 		</div>
 	);
