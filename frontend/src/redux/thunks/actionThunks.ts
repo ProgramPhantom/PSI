@@ -14,9 +14,12 @@ import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../sli
 import { setSelectedElementId, setSelectedElementIds, selectSelectedElementId, clearSelection } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
+import { loadAsset } from "./assetThunks";
+import { sha256 } from "js-sha256";
 import { selectCurrentAuthor, selectCurrentFileName, selectCurrentTitle, selectCurrentInstitution } from "../selectors/diagramSelectors";
 import { determineBindingPlacementModeType, isGridBindingRule } from "../../logic/bindingUtil";
 import Spacial, { IPlacementBindingRule, ISequenceBindingRule } from "../../logic/spacial";
+import { ISVGElement } from "../../logic/svgElement";
 
 export interface CopiedElementsPayload {
     version: 1;
@@ -1151,6 +1154,120 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number, f
                 message: `Failed to save PNG: ${error instanceof Error ? error.message : "Unknown error"}`,
                 intent: "danger",
                 icon: "error"
+            });
+        }
+    }
+);
+
+export const addSvgElementFromDrop = createAsyncThunk(
+    'actions/addSvgElementFromDrop',
+    async (
+        payload: { file: File; x: number; y: number },
+        { dispatch }
+    ) => {
+        const { file, x, y } = payload;
+        try {
+            const rawSvg = await file.text();
+            const id = sha256(rawSvg);
+            const reference = file.name.replace(/\.[^/.]+$/, "") || "svg";
+
+            // Load asset into store and engine
+            const loadResult = await dispatch(loadAsset({
+                file,
+                reference,
+                source: "local"
+            }));
+
+            const assetId = loadAsset.fulfilled.match(loadResult) && loadResult.payload
+                ? loadResult.payload
+                : sha256(rawSvg);
+
+            // Determine dimensions from SVG if available, or default to 100x100
+            let contentWidth = 100;
+            let contentHeight = 100;
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(rawSvg, "image/svg+xml");
+                const svgEl = doc.querySelector("svg");
+                if (svgEl) {
+                    const wAttr = svgEl.getAttribute("width");
+                    const hAttr = svgEl.getAttribute("height");
+                    const vbAttr = svgEl.getAttribute("viewBox");
+                    if (wAttr && hAttr) {
+                        const w = parseFloat(wAttr);
+                        const h = parseFloat(hAttr);
+                        if (!isNaN(w) && !isNaN(h) && w > 0 && h > 0) {
+                            contentWidth = w;
+                            contentHeight = h;
+                        }
+                    } else if (vbAttr) {
+                        const parts = vbAttr.trim().split(/[\s,]+/);
+                        if (parts.length === 4) {
+                            const w = parseFloat(parts[2]);
+                            const h = parseFloat(parts[3]);
+                            if (!isNaN(w) && !isNaN(h) && w > 0 && h > 0) {
+                                contentWidth = w;
+                                contentHeight = h;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not determine SVG dimensions", e);
+            }
+
+            // Scale down by approximately one-fifth (0.2x) so dropped SVGs are not enormous
+            const scaledWidth = Math.max(10, Math.round(contentWidth * 0.2));
+            const scaledHeight = Math.max(10, Math.round(contentHeight * 0.2));
+
+            const newId = Math.random().toString(16).slice(2);
+
+            const elementState: ISVGElement = {
+                id: newId,
+                type: "svg",
+                asset: {
+                    id: assetId,
+                    ref: reference
+                },
+                placementMode: {
+                    type: "free"
+                },
+                offset: [0, 0],
+                padding: [0, 0, 0, 0],
+                ref: reference,
+                parentId: ENGINE.handler.diagram.id,
+                x: Math.round(x),
+                y: Math.round(y),
+                contentWidth: scaledWidth,
+                contentHeight: scaledHeight,
+                style: {},
+                flipped: {
+                    x: false,
+                    y: false
+                }
+            };
+
+            ENGINE.handler.act({
+                type: "add",
+                input: {
+                    child: elementState
+                }
+            });
+
+            ENGINE.emitChange();
+
+            dispatch(setSelectedElementId(newId));
+
+            appToaster.show({
+                message: `Added SVG element '${reference}'`,
+                intent: "success",
+                timeout: 1500
+            });
+        } catch (error) {
+            console.error("Error adding SVG element from drop:", error);
+            appToaster.show({
+                message: `Failed to add SVG: ${error instanceof Error ? error.message : "Unknown error"}`,
+                intent: "danger"
             });
         }
     }
