@@ -34,8 +34,6 @@ export default class LabelGroup
 				sizeMode: { x: "fit", y: "fit" },
 				padding: targetState.padding ?? [0, 0, 0, 0],
 				offset: [0, 0],
-				contentWidth: targetState.contentWidth ?? 0,
-				contentHeight: targetState.contentHeight ?? 0,
 				x: targetState.x,
 				y: targetState.y,
 				children: [
@@ -59,6 +57,11 @@ export default class LabelGroup
 			...super.state,
 		};
 	}
+
+	public override get isResizable(): boolean {
+		return true;
+	}
+
 
 	get coreChild(): GridCellElement<Visual> | undefined {
 		let coreChild: GridCellElement<Visual> | undefined = this.roles["coreChild"].object as GridCellElement<Visual> | undefined;
@@ -137,8 +140,11 @@ export default class LabelGroup
 		}
 		child.placementControl = "auto"
 
-		if (this.sizeMode.x === "grow") {
+		if (this.sizeMode?.x === "grow" || this.sizeMode?.x === "fixed") {
 			child.sizeMode.x = "grow"
+		}
+		if (this.sizeMode?.y === "grow" || this.sizeMode?.y === "fixed") {
+			child.sizeMode.y = "grow"
 		}
 
 		this.ref = child.ref;

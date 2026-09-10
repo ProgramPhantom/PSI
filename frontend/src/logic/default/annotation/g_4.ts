@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_G4: ILaTeX = {
-	"ref": "annotation-g4",
+	"ref": "g4",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "G_4",
@@ -9,7 +9,7 @@ export const DEFAULT_ANNOTATION_G4: ILaTeX = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 35,
+		"fontSize": 10,
 		"colour": "black",
 		"background": null,
 		"display": "block"

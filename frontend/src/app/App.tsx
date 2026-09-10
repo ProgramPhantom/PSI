@@ -73,7 +73,12 @@ function App() {
 					}
 				} else if (diagramSource === "server") {
 					if (diagramUUID !== undefined) {
-						dispatch(loadDiagram(diagramUUID))
+						try {
+							await dispatch(loadDiagram(diagramUUID)).unwrap();
+						} catch (e) {
+							console.warn("Failed to load server diagram", e);
+							await dispatch(newDiagram());
+						}
 					} else {
 						console.warn(`No UUID for diagram server load`)
 						await dispatch(newDiagram())

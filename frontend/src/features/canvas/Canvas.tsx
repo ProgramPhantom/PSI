@@ -1,16 +1,23 @@
 import {
 	Button, Colors, EditableText
 } from "@blueprintjs/core";
-import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useDragLayer } from "react-dnd";
 import { ReactZoomPanPinchContentRef, TransformComponent, TransformWrapper, useControls } from "react-zoom-pan-pinch";
 import { IToolConfig } from "../../app/App";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedElementId, setSelectedTool } from "../../redux/slices/applicationSlice";
+import {
+	setCanvasMousePosition,
+	setSelectedElementId,
+	setSelectedElementIds,
+	toggleElementSelection,
+	clearSelection,
+	setSelectedTool
+} from "../../redux/slices/applicationSlice";
 import { setSaveState } from "../../redux/slices/diagramSlice";
-import { openDiagram } from "../../redux/thunks/diagramThunks";
+import { addSvgElementFromDrop } from "../../redux/thunks/actionThunks";
 import Toolbar from "../banner/Toolbar";
 import Debug from "../debug/Debug";
 import { DebugLayerDialog } from "../dialog/DebugLayerDialog";
@@ -19,13 +26,24 @@ import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
 import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
 import GridDropField from "../dnd/GridDropField";
 import SequencesPulseDropField from "../dnd/SequencesPulseDropField";
+import SequencesColumnEditor from "../dnd/SequencesColumnEditor";
+import SequencesChannelPaddingEditor from "../dnd/SequencesChannelPaddingEditor";
 import LabelGroupDropFields from "../dnd/LabelGroupDropFields";
-import QuietUploadArea from "../QuietUploadArea";
+import Channel from "../../logic/hasComponents/channel";
 import { CanvasTextInput } from "./CanvasTextInput";
 import { CanvasToolToolbar } from "./CanvasToolToolbar";
 import { ChannelAddToolbar } from "./ChannelAddToolbar";
-import { HitboxLayer } from "./HitboxLayer";
+import { ChannelReorderButtons } from "./ChannelReorderButtons";
+import { LayerButtons } from "./LayerButtons";
+import { HitboxLayer, FocusRules } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
+import { BoxTool } from "./BoxTool";
+import { SequenceColumnsOverlay } from "./SequenceColumnsOverlay";
+import { SnapGuidesOverlay } from "./SnapGuidesOverlay";
+import { SelectionMarqueeOverlay } from "./SelectionMarqueeOverlay";
+import { isEligibleForMultiSelect } from "./selectionUtil";
+import { useSelectedElement, useSelectedElements } from "../../hooks/useSelectedElements";
+import Spacial from "../../logic/spacial";
 import styles from "./styles/toolbars.module.scss"
 
 
@@ -76,15 +94,83 @@ const SeamlessPanner = () => {
 	return null;
 };
 
+const CanvasMouseCoordinates: React.FC = React.memo(function CanvasMouseCoordinates() {
+	const isMouseOverCanvas = useAppSelector((state) => state.application.isMouseOverCanvas);
+	const canvasMousePosition = useAppSelector((state) => state.application.canvasMousePosition);
+
+	if (!isMouseOverCanvas || !canvasMousePosition) {
+		return null;
+	}
+
+	return (
+		<span
+			style={{
+				fontSize: "10px",
+				fontFamily: "monospace",
+				color: Colors.GRAY2,
+				opacity: 0.9,
+				userSelect: "none",
+				pointerEvents: "none",
+				whiteSpace: "nowrap",
+				paddingLeft: "2px"
+			}}>
+			{Math.round(canvasMousePosition.x)}x{Math.round(canvasMousePosition.y)}
+		</span>
+	);
+});
+
 const Canvas: React.FC<ICanvasProps> = () => {
 	const dispatch = useAppDispatch();
 
 	const debugSelectionTypes = useAppSelector((state) => state.application.debugSelectionTypes);
-	const selectedElementId: string | undefined = useAppSelector((state) => state.application.selectedElementId);
+	const selectedElementIds = useAppSelector((state) => state.application.selectedElementIds);
 	const selectedTool = useAppSelector((state) => state.application.selectedTool);
+	const isResizing = useAppSelector((state) => state.application.isResizing);
 
-	const [hoveredElement, setHoveredElement] = useState<Visual | undefined>(undefined);
-	const [rawHoveredElement, setRawHoveredElement] = useState<Visual | undefined>(undefined);
+	const [isSpacePressed, setIsSpacePressed] = useState(false);
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.code === "Space") {
+				const active = document.activeElement;
+				if (
+					active instanceof HTMLInputElement ||
+					active instanceof HTMLTextAreaElement ||
+					active?.getAttribute("contenteditable") === "true"
+				) {
+					return;
+				}
+				e.preventDefault();
+				setIsSpacePressed(true);
+			}
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.code === "Space") {
+				setIsSpacePressed(false);
+			}
+		};
+
+		const handleWindowBlur = () => {
+			setIsSpacePressed(false);
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("keyup", handleKeyUp);
+		window.addEventListener("blur", handleWindowBlur);
+
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("blur", handleWindowBlur);
+		};
+	}, []);
+
+	const lastCoordsRef = useRef<{ rx: number; ry: number } | null>(null);
+	const rafIdRef = useRef<number | null>(null);
+
+	const [hoveredElement, setHoveredElement] = useState<Spacial | undefined>(undefined);
+	const [rawHoveredElement, setRawHoveredElement] = useState<Spacial | undefined>(undefined);
 	const [debugElements, setDebugElements] = useState<Visual[]>([]);
 	const [zoom, setZoom] = useState(2);
 	const [zoomString, setZoomString] = useState("2");
@@ -103,25 +189,30 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
 	const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
-	const selectedElement = ENGINE.handler.identifyElement(selectedElementId ?? "")
+	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+
+	const selectedElements = useSelectedElements();
+	const selectedElement = useSelectedElement();
+	const selectedElementId = selectedElement?.id;
 	const { isDragging } = useDragLayer((monitor) => ({
 		isDragging: monitor.isDragging()
 	}));
 
-	const interactiveElements: Visual[] = [];
-	if (selectedElement) {
-		interactiveElements.push(selectedElement);
-	}
-	if (selectedTool.type === "select" && hoveredElement && hoveredElement.id !== selectedElement?.id) {
-		interactiveElements.push(hoveredElement);
+	const interactiveElements: Visual[] = [...selectedElements];
+	if (!isResizing && !isDragging && selectedTool.type === "select" && hoveredElement && !selectedElementIds.includes(hoveredElement.id)) {
+		if (hoveredElement instanceof Visual) {
+			interactiveElements.push(hoveredElement);
+		}
 	}
 
-	const interactiveElementIds = interactiveElements.map(e => e.id).join(",");
-	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
+	const isLayerableElement = Boolean(
+		selectedElement?.placementMode.type === "free" || selectedElement?.placementMode.type === "binds" ||
+		selectedElement?.placementMode.type === "sequenceBind"
+	);
 
 	const deselect = () => {
-		selectedElement?.svg?.show();
-		dispatch(setSelectedElementId(undefined));
+		selectedElements.forEach(el => el.svg?.show());
+		dispatch(clearSelection());
 	};
 
 	const stopHover = () => {
@@ -131,15 +222,23 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	const selectVisual = (e: Visual) => {
 		dispatch(setSelectedElementId(e.id));
-		e.svg?.hide();
 	};
 
-	const reselect = (e: Visual) => {
+	const reselect = (e: Visual, event?: React.MouseEvent) => {
+		if (event?.ctrlKey || event?.metaKey) {
+			if (isEligibleForMultiSelect(e, selectedElementIds)) {
+				dispatch(toggleElementSelection(e.id));
+			}
+			return;
+		}
+		if (selectedElementIds.includes(e.id)) {
+			return;
+		}
 		deselect();
 		selectVisual(e);
-	}
+	};
 
-	const getCoordinates = (e: React.MouseEvent<HTMLDivElement>): { x: number; y: number } => {
+	const getCoordinates = (e: React.MouseEvent<HTMLDivElement> | MouseEvent | React.DragEvent): { x: number; y: number } => {
 		const drawDiv = document.getElementById("diagram-root") as HTMLElement;
 		if (!drawDiv) {
 			return { x: e.clientX, y: e.clientY };
@@ -197,13 +296,25 @@ const Canvas: React.FC<ICanvasProps> = () => {
 			case "select":
 			default:
 				return {
-					cursor: "default",
+					cursor: isSpacePressed ? "grab" : "default",
 					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
-						const element: Visual | undefined = hoveredElement;
+						const element: Spacial | undefined = hoveredElement;
 						if (element === undefined) {
-							deselect();
-						} else {
-							selectVisual(element);
+							if (!e.ctrlKey && !e.metaKey) {
+								deselect();
+							}
+						} else if (element instanceof Visual) {
+							if (e.ctrlKey || e.metaKey) {
+								if (isEligibleForMultiSelect(element, selectedElementIds)) {
+									dispatch(toggleElementSelection(element.id));
+								}
+							} else {
+								if (selectedElementIds.length > 1 && selectedElementIds.includes(element.id)) {
+									dispatch(setSelectedElementId(element.id));
+								} else {
+									selectVisual(element);
+								}
+							}
 						}
 					},
 					onDoubleClick: (e: React.MouseEvent<HTMLDivElement>) => {
@@ -213,18 +324,19 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						if (editingElementId) {
 							return;
 						}
-						if (selectedElement && hoveredElement !== selectedElement) {
-							deselect();
-						}
-						deselect();
 					}
 				};
 		}
 	};
 	const activeToolBehavior = getToolBehavior(selectedTool.type);
 
-	const handleDiagramDrop = async (file: File) => {
-		dispatch(openDiagram(file));
+	const handleSvgFileDrop = (file: File, coords?: { x: number; y: number }) => {
+		if (coords) {
+			dispatch(addSvgElementFromDrop({ file, x: coords.x, y: coords.y }));
+		} else {
+			// Dropped on QuietUploadArea container
+			dispatch(addSvgElementFromDrop({ file, x: 0, y: 0 }));
+		}
 	};
 
 	const handleDoubleClickElement = (element: Visual) => {
@@ -259,7 +371,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
-		if (rawHoveredElement) {
+		if (rawHoveredElement && rawHoveredElement instanceof Visual) {
 			// Drill down logic
 			let path: Visual[] = [];
 			let curr: Visual | undefined = rawHoveredElement;
@@ -294,7 +406,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		}
 	};
 
-	const constOnHitboxHover = (element?: Visual, rawElement?: Visual) => {
+	const constOnHitboxHover = (element?: Spacial, rawElement?: Spacial) => {
 		setHoveredElement(element);
 		setRawHoveredElement(rawElement);
 	};
@@ -347,13 +459,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		}
 	}, [zoom, isZoomEditing]);
 
-	useEffect(() => {
-		interactiveElements.forEach(el => el.svg?.hide());
 
-		return () => {
-			interactiveElements.forEach(el => el.svg?.show());
-		};
-	}, [interactiveElementIds]);
 
 	// Refresh canvas
 	useEffect(() => {
@@ -367,7 +473,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	return (
 		<>
-			<QuietUploadArea onDrop={handleDiagramDrop} acceptExtension=".nmrd">
 				<div
 					style={{
 						width: "100%",
@@ -375,7 +480,33 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						display: "flex",
 						flexDirection: "column",
 						position: "relative",
-						cursor: activeToolBehavior.cursor
+						cursor: isSpacePressed ? "grab" : activeToolBehavior.cursor
+					}}
+					onMouseMove={(e) => {
+						const coords = getCoordinates(e);
+						const rx = Math.round(coords.x);
+						const ry = Math.round(coords.y);
+
+						if (lastCoordsRef.current?.rx === rx && lastCoordsRef.current?.ry === ry) {
+							return;
+						}
+						lastCoordsRef.current = { rx, ry };
+
+						if (rafIdRef.current === null) {
+							rafIdRef.current = requestAnimationFrame(() => {
+								dispatch(setCanvasMousePosition({ isMouseOverCanvas: true, position: coords }));
+								rafIdRef.current = null;
+							});
+						}
+					}}
+					onMouseLeave={() => {
+						stopHover();
+						if (rafIdRef.current !== null) {
+							cancelAnimationFrame(rafIdRef.current);
+							rafIdRef.current = null;
+						}
+						lastCoordsRef.current = null;
+						dispatch(setCanvasMousePosition({ isMouseOverCanvas: false, position: undefined }));
 					}}
 					onMouseDown={(e) => {
 						dragStartRef.current = { x: e.clientX, y: e.clientY };
@@ -411,9 +542,13 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								top: "6px",
 								left: "6px",
 								zIndex: 10,
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "flex-start",
+								gap: "4px"
 							}}>
 							<div
-								className={`${styles["frosted-toolbar"]} ${styles.vertical}`}
+								className={styles["frosted-toolbar"]}
 								onClick={(e) => e.stopPropagation()}
 								onMouseUp={(e) => e.stopPropagation()}
 								onMouseDown={(e) => e.stopPropagation()}
@@ -442,6 +577,8 @@ const Canvas: React.FC<ICanvasProps> = () => {
 									<span className={styles["zoom-suffix"]}>x</span>
 								</div>
 							</div>
+
+							<CanvasMouseCoordinates />
 						</div>
 
 						<div
@@ -459,13 +596,38 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								position: "absolute",
 								bottom: "8px",
 								right: "8px",
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "flex-end",
+								gap: "6px",
 								zIndex: 10,
+								pointerEvents: "none",
 							}}>
-							<CanvasToolToolbar />
+							{isLayerableElement && (
+								<div style={{ pointerEvents: "auto" }}>
+									<LayerButtons element={selectedElement!} />
+								</div>
+							)}
+							<div style={{ pointerEvents: "auto" }}>
+								<CanvasToolToolbar />
+							</div>
 						</div>
 
+						{selectedElement instanceof Channel && (
+							<div
+								style={{
+									position: "absolute",
+									top: "50%",
+									right: "8px",
+									transform: "translateY(-50%)",
+									zIndex: 10,
+								}}>
+								<ChannelReorderButtons channel={selectedElement} />
+							</div>
+						)}
 
-						<CanvasDropContainer scale={zoom}>
+
+						<CanvasDropContainer scale={zoom} onFileDrop={handleSvgFileDrop}>
 							<TransformWrapper
 								ref={transformComponentRef}
 								initialScale={zoom}
@@ -480,7 +642,12 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 								maxScale={5}
 								minScale={0.5}
-								panning={{ excluded: ["nopan"] }}
+								panning={{
+									allowLeftClickPan: isSpacePressed,
+									allowMiddleClickPan: true,
+									allowRightClickPan: false,
+									excluded: []
+								}}
 								doubleClick={{ disabled: true }}>
 
 
@@ -518,7 +685,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 										onMouseLeave={() => stopHover()}>
 
 										{/* Transformed Overlay Layer */}
-										<div className="nopan"
+										<div
 											style={{
 												position: "absolute",
 												top: 0,
@@ -539,20 +706,45 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													reselect={reselect}
 													name={el.ref}
 													element={el}
-													visualState={el.id === selectedElement?.id ? "selected" : "hovered"}
+													visualState={selectedElementIds.includes(el.id) ? "selected" : "hovered"}
+													selectedElements={selectedElements}
 													x={el.x}
 													y={el.y}
-													isHidden={el.id === editingElementId}></CanvasDraggableElement>
+													scale={zoom}
+													isSpacePressed={isSpacePressed}
+													isHidden={el.id === editingElementId}
+													hoveredElement={rawHoveredElement ?? hoveredElement}></CanvasDraggableElement>
 											))}
 
 
+
 											{/* Tools */}
+											{selectedTool.type === "select" ? (
+												<SelectionMarqueeOverlay
+													zoom={zoom}
+													isSpacePressed={isSpacePressed}
+												/>
+											) : null}
+
 											{selectedTool.type === "arrow" ? (
-												<div className="nopan" style={{ pointerEvents: "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+												<div style={{ pointerEvents: isSpacePressed ? "none" : "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
 													<LineTool
-														hoveredElement={hoveredElement}
+														hoveredElement={rawHoveredElement ?? hoveredElement}
 														config={selectedTool.config}
+														zoom={zoom}
 														setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
+												</div>
+											) : (
+												<></>
+											)}
+
+											{selectedTool.type === "box" ? (
+												<div style={{ pointerEvents: isSpacePressed ? "none" : "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+													<BoxTool
+														hoveredElement={rawHoveredElement ?? hoveredElement}
+														config={selectedTool.config}
+														zoom={zoom}
+														setTool={(tool) => dispatch(setSelectedTool(tool))}></BoxTool>
 												</div>
 											) : (
 												<></>
@@ -575,8 +767,13 @@ const Canvas: React.FC<ICanvasProps> = () => {
 													<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
 												}
 												<SequencesPulseDropField></SequencesPulseDropField>
+												<SequencesColumnEditor scale={zoom}></SequencesColumnEditor>
+												<SequencesChannelPaddingEditor scale={zoom}></SequencesChannelPaddingEditor>
 												<LabelGroupDropFields></LabelGroupDropFields>
 											</div>
+
+											<SequenceColumnsOverlay hoveredElement={rawHoveredElement ?? hoveredElement} />
+											<SnapGuidesOverlay />
 
 											{/* Debug layers */}
 											<Debug
@@ -626,13 +823,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 
 										{/* Hitbox layer */}
-										{!isDragging ? (
-											<HitboxLayer
-												selectedElementId={selectedElementId}
-												setHoveredElement={constOnHitboxHover}></HitboxLayer>
-										) : (
-											<></>
-										)}
+										<HitboxLayer
+											selectedElementId={selectedElementId}
+											setHoveredElement={constOnHitboxHover}></HitboxLayer>
 
 										{/* Image */}
 										<div id="drawDiv" ref={diagramSvgRef}></div>
@@ -646,7 +839,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 						</CanvasDropContainer>
 					</div>
 				</div>
-			</QuietUploadArea>
 
 			<DebugLayerDialog />
 		</>

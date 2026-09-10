@@ -5,12 +5,15 @@ import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } fr
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
 import { ISubgrid } from "./grid.ts";
+import Grid from "./grid.ts";
+import Channel, { IChannel } from "./hasComponents/channel.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram.ts";
 import Sequence from "./hasComponents/sequence.ts";
 import { AllComponentTypes, ID } from "./point.ts";
 import Visual, { IDraw, IVisual } from "./visual.ts";
 import RBush from "rbush";
-import { RBushItem } from "./spacial.ts";
+import Spacial, { IBindsPlacementConfig, RBushItem, ISequenceBindingRule, } from "./spacial.ts";
+import { determineBindingPlacementModeType, isGridBindingRule } from "./bindingUtil.ts";
 
 
 /**
@@ -53,6 +56,13 @@ type AddInput = { child: IVisual, index?: number }
 type RemoveInput = RemoveDispatchData
 type AddSubgridInput = { subgrid: ISubgrid };
 
+export type ColumnActionInput = { sequenceId: ID; index: number };
+export type ReorderChildInput = {
+	elementId: ID;
+	toIndex: number;
+	fromIndex?: number;
+};
+
 export type Result<T = {}> = { ok: true; value: T } | { ok: false; error: string };
 
 export type ActionResult<T extends keyof Actions> =
@@ -63,6 +73,18 @@ export type ActionResult<T extends keyof Actions> =
 type DispatchAction<Type extends keyof Actions> = (parameters: InputData<Type>) => ActionResult<Type>;
 type InputData<T extends keyof Actions> = Actions[T]["inputData"]
 type UndoData<T extends keyof Actions> = Actions[Actions[T]["undoAction"]]["inputData"];
+
+export type SingleActionNames = "modify" | "add" | "remove" | "insertColumn" | "deleteColumn" | "reorderChild";
+
+export type BatchActionItem =
+	| { type: "modify"; input: ModifyInput }
+	| { type: "add"; input: AddInput }
+	| { type: "remove"; input: RemoveInput }
+	| { type: "insertColumn"; input: ColumnActionInput }
+	| { type: "deleteColumn"; input: ColumnActionInput }
+	| { type: "reorderChild"; input: ReorderChildInput };
+
+export type BatchInput = BatchActionItem[];
 
 type Actions = {
 	"modify": {
@@ -76,6 +98,22 @@ type Actions = {
 	"remove": {
 		inputData: RemoveInput,
 		undoAction: "add"
+	},
+	"insertColumn": {
+		inputData: ColumnActionInput,
+		undoAction: "deleteColumn"
+	},
+	"deleteColumn": {
+		inputData: ColumnActionInput,
+		undoAction: "insertColumn"
+	},
+	"reorderChild": {
+		inputData: ReorderChildInput,
+		undoAction: "reorderChild"
+	},
+	"batch": {
+		inputData: BatchInput,
+		undoAction: "batch"
 	},
 }
 type ActionNames = keyof Actions;
@@ -142,6 +180,10 @@ export default class DiagramHandler implements IDraw {
 		"add": this.add.bind(this),
 		"modify": this.modify.bind(this),
 		"remove": this.remove.bind(this),
+		"insertColumn": this.insertColumn.bind(this),
+		"deleteColumn": this.deleteColumn.bind(this),
+		"reorderChild": this.reorderChild.bind(this),
+		"batch": this.dispatchBatch.bind(this),
 	}
 
 
@@ -174,8 +216,6 @@ export default class DiagramHandler implements IDraw {
 		}
 
 
-		this.surface.add(new Rect().move(0, 0).id("diagram-root"));
-
 		this.surface.viewbox(this.diagram.x, this.diagram.y, this.diagram.width, this.diagram.height);
 		this.surface.size(`${this.diagram.width}px`, `${this.diagram.height}px`);
 
@@ -196,10 +236,203 @@ export default class DiagramHandler implements IDraw {
 	}
 
 	computeDiagram() {
+		const start = performance.now();
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);
 		this.diagram.computePositions({ x: 0, y: 0 });
-		this.computeBoundaryTree()
+		this.diagram.enforceBindings();
+		this.computeBoundaryTree();
+		const end = performance.now();
+		console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
+	}
+
+	/**
+	 * Inspects an element and all its descendants for `placementMode: { type: "binds" }` configurations.
+	 * For each binding rule in `config`, resolves the anchor object in the diagram
+	 * and registers the corresponding binding on that anchor.
+	 *
+	 * @param element The root visual element or collection subtree to register bindings for.
+	 */
+	public createElementBindings(element: Visual): void {
+		for (const el of Object.values(element.allElements)) {
+			if ((el.placementMode?.type === "binds" || el.placementMode?.type === "sequenceBind") && el.placementMode.config) {
+				const config: ISequenceBindingRule[] = el.placementMode.config;
+
+				for (const rule of config) {
+					let anchor: Spacial | undefined;
+					if (isGridBindingRule(rule)) {
+						const seq = this.identifyElement(rule.sequenceId) as Sequence | undefined;
+						if (seq) {
+							anchor = seq.gridSizes?.columns?.[rule.column] ?? seq.getColumnSpacial(rule.column);
+						}
+					} else {
+						const anchorId = rule.targetId || rule.anchorId;
+						if (anchorId) {
+							anchor = this.identifyElement(anchorId);
+						}
+					}
+
+					if (anchor) {
+						anchor.bind(
+							el,
+							rule.dimension,
+							rule.anchorSiteName,
+							rule.targetSiteName,
+							rule.offset,
+							rule.hint,
+							rule.bindToContent ?? true
+						);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Transfers active outgoing bindings from an existing visual element (or its descendants)
+	 * to a newly instantiated replacement element. Used during element modifications (e.g. dragging
+	 * or resizing an anchor object) so that attached bound elements (like arrows) seamlessly follow
+	 * the new anchor instance without requiring a full diagram re-scan.
+	 *
+	 * @param source The retired visual element instance holding active outgoing bindings.
+	 * @param destination The newly created visual element instance that will assume the anchor role.
+	 */
+	public transferAnchorBindings(source: Visual, destination: Visual): void {
+		const sourceElements = source.allElements;
+		const destinationElements = destination.allElements;
+
+		for (const [id, srcEl] of Object.entries(sourceElements)) {
+			const destEl = destinationElements[id];
+			if (!destEl) continue;
+
+			// Transfer outgoing bindings where this element acts as an anchor
+			for (const bind of srcEl.bindings) {
+				destEl.bind(
+					bind.targetObject,
+					bind.bindingRule.dimension,
+					bind.bindingRule.anchorSiteName,
+					bind.bindingRule.targetSiteName,
+					bind.offset,
+					bind.hint,
+					bind.bindToContent
+				);
+			}
+
+			// Clear old outgoing bindings from the retired source instance
+			for (const bind of [...srcEl.bindings]) {
+				srcEl.clearBindsTo(bind.targetObject);
+			}
+		}
+
+		// Also transfer column bindings if source and destination are Grids (e.g. Sequences)
+		if (source instanceof Grid && destination instanceof Grid) {
+			if (source.gridSizes.columns.length === destination.gridSizes.columns.length) {
+				source.gridSizes.columns.forEach((srcCol, colIdx) => {
+					const destCol = destination.gridSizes.columns[colIdx];
+					if (destCol) {
+						for (const bind of srcCol.bindings) {
+							destCol.bind(
+								bind.targetObject,
+								bind.bindingRule.dimension,
+								bind.bindingRule.anchorSiteName,
+								bind.bindingRule.targetSiteName,
+								bind.offset,
+								bind.hint,
+								bind.bindToContent
+							);
+						}
+						for (const bind of [...srcCol.bindings]) {
+							srcCol.clearBindsTo(bind.targetObject);
+						}
+					}
+				});
+			} else {
+				// Column count changed (e.g. column add/remove):
+				// Clear old source column bindings so bound elements do not retain stale references
+				source.gridSizes.columns.forEach((srcCol) => {
+					for (const bind of [...srcCol.bindings]) {
+						srcCol.clearBindsTo(bind.targetObject);
+					}
+				});
+			}
+		}
+	}
+
+	/**
+	 * Cleans up incoming bindings for an element and its descendants where the element is the target of an anchor.
+	 * Used before modifying a bound element (e.g. an arrow) so that its previous anchor connections
+	 * are severed prior to re-registering its updated placement configuration.
+	 *
+	 * @param element The visual element whose incoming anchor bindings should be cleared.
+	 */
+	public unregisterIncomingBindings(element: Visual): void {
+		for (const el of Object.values(element.allElements)) {
+			for (const bind of [...el.bindingsToThis]) {
+				bind.anchorObject.clearBindsTo(el);
+			}
+		}
+	}
+
+	/**
+	 * Completely severs both incoming and outgoing bindings for an element and all its descendants.
+	 * Used when an element is removed from the diagram to prevent dangling references on anchors or targets.
+	 *
+	 * @param element The visual element to fully detach from the diagram binding graph.
+	 */
+	public unregisterElementBindings(element: Visual): void {
+		for (const el of Object.values(element.allElements)) {
+			// Remove bindings from this to other elements (where this element acts as an anchor)
+			for (const bind of [...el.bindings]) {
+				const target = bind.targetObject;
+				el.clearBindsTo(target);
+
+				// Remove binding rules referencing this deleted anchor from the target's placementMode
+				if (target && (target.placementMode?.type === "binds" || target.placementMode?.type === "sequenceBind")) {
+					const remainingRules = (target.placementMode.config as ISequenceBindingRule[]).filter(
+						(rule) => {
+							if (isGridBindingRule(rule)) {
+								return rule.sequenceId !== el.id;
+							}
+							return rule.targetId !== el.id && rule.anchorId !== el.id;
+						}
+					);
+
+					target.placementMode = determineBindingPlacementModeType(remainingRules);
+				}
+			}
+
+			// If el is a Grid (such as Sequence), also clear column bindings
+			if (el instanceof Grid) {
+				for (const col of el.gridSizes.columns) {
+					for (const bind of [...col.bindings]) {
+						const target = bind.targetObject;
+						col.clearBindsTo(target);
+
+						if (target && (target.placementMode?.type === "binds" || target.placementMode?.type === "sequenceBind")) {
+							const remainingRules = (target.placementMode.config as ISequenceBindingRule[]).filter(
+								(rule) => {
+									if (isGridBindingRule(rule)) {
+										return rule.sequenceId !== el.id;
+									}
+									return rule.targetId !== el.id && rule.anchorId !== el.id;
+								}
+							);
+
+							target.placementMode = determineBindingPlacementModeType(remainingRules);
+						}
+					}
+				}
+			}
+
+			// Remove bindings from other elements to this (where this element is the target)
+			for (const bind of [...el.bindingsToThis]) {
+				bind.anchorObject.clearBindsTo(el);
+			}
+
+			if (el.placementMode?.type === "binds" || el.placementMode?.type === "sequenceBind") {
+				el.placementMode = { type: "free" };
+			}
+		}
 	}
 
 	computeBoundaryTree() {
@@ -209,16 +442,24 @@ export default class DiagramHandler implements IDraw {
 
 	// ---------- Element identification ----------
 	public identifyElement(id: ID): Visual | undefined {
-		var element: Visual | undefined = undefined;
+		return this.allElements[id];
+	}
 
-		element = this.allElements[id];
-
-
-		if (element === undefined) {
-			return undefined;
-		} else {
+	public identifyElementOrStructure(id: ID): Spacial | undefined {
+		const element = this.allElements[id];
+		if (element !== undefined) {
 			return element;
 		}
+
+		// Check sequence columns
+		for (const seq of this.sequences) {
+			if (seq.gridSizes?.columns) {
+				const col = seq.gridSizes.columns.find((c) => c.id === id);
+				if (col) return col;
+			}
+		}
+
+		return undefined;
 	}
 
 	@draws
@@ -240,6 +481,8 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		this.diagram = newDiagram;
+		this.diagram.computeSize();
+		this.createElementBindings(this.diagram);
 		this.diagram.svg?.show();
 
 		this.computeDiagram();
@@ -254,7 +497,8 @@ export default class DiagramHandler implements IDraw {
 
 	@draws
 	public emptyDiagram(): Diagram {
-		return new Diagram(BLANK_DIAGRAM)
+		const newDiagram = this.EngineConstructor(structuredClone(BLANK_DIAGRAM), "diagram") as Diagram | undefined;
+		return newDiagram ?? new Diagram(BLANK_DIAGRAM);
 	}
 
 	@draws
@@ -265,6 +509,7 @@ export default class DiagramHandler implements IDraw {
 
 
 	public act<T extends ActionNames>(action: IDispatchAction<T>) {
+		const start = performance.now();
 		let actionResult: ActionResult<T> = this.dispatchAction(
 			action.type,
 			action.input
@@ -288,6 +533,8 @@ export default class DiagramHandler implements IDraw {
 			this.undoStack.push(dispatchedAction as AnyCompletedAction);
 			this.redoStack = [];
 		}
+		const end = performance.now();
+		console.log(`act (${action.type}) took ${(end - start).toFixed(2)} ms`);
 	}
 
 	public undo() {
@@ -314,7 +561,7 @@ export default class DiagramHandler implements IDraw {
 		if (action?.result.ok === true) {
 			this.dispatchAction(
 				action.type,
-				action.result.undo.data
+				action.input
 			);
 			this.undoStack.push(action);
 
@@ -391,10 +638,14 @@ export default class DiagramHandler implements IDraw {
 			return editResult
 		}
 
+		this.createElementBindings(childInstance);
+
 		return { ok: true, undo: { action: "remove", data: { child: childInstance } } }
 	}
 
 	protected remove({ child }: RemoveInput): ActionResult<"remove"> {
+		this.unregisterElementBindings(child);
+
 		let editResult: Result<Visual> = this.editDiagram({
 			type: "remove",
 			data: { child: child },
@@ -443,6 +694,20 @@ export default class DiagramHandler implements IDraw {
 			}
 		}
 
+		// Handle edge case for modifying the root diagram (which has no parent)
+		if (target.id === this.diagram.id) {
+			if (!(childInstance instanceof Diagram)) {
+				return { ok: false, error: `Invalid visual type for diagram modification` };
+			}
+			this.transferAnchorBindings(target, childInstance);
+			this.unregisterIncomingBindings(target);
+			target.erase();
+			this.diagram = childInstance;
+			this.createElementBindings(childInstance);
+			this.diagram.svg?.show();
+			return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } };
+		}
+
 		let parent: Collection | undefined = this.diagram.allElements[target.parentId ?? ""] as Collection | undefined;
 		if (parent === undefined) {
 			return { ok: false, error: `Cannot find parent of visual ${target.ref}` }
@@ -452,6 +717,9 @@ export default class DiagramHandler implements IDraw {
 		if (targetIndex === undefined) {
 			return { ok: false, error: `Child ${target.ref} does not exist on parent ${parent.ref}` }
 		}
+
+		this.transferAnchorBindings(target, childInstance);
+		this.unregisterIncomingBindings(target);
 
 		// Delete element
 		let deleteResult: Result<Visual> = this.editDiagram({
@@ -471,22 +739,250 @@ export default class DiagramHandler implements IDraw {
 
 		if (addResult.ok === false) { return addResult }
 
+		this.createElementBindings(childInstance);
+
 		return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } }
+	}
+
+	protected insertColumn({ sequenceId, index }: ColumnActionInput): ActionResult<"insertColumn"> {
+		const sequence = this.diagram.sequenceDict[sequenceId];
+		if (!sequence) {
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
+		}
+		sequence.insertEmptyColumn(index);
+		return {
+			ok: true,
+			undo: {
+				action: "deleteColumn",
+				data: { sequenceId, index }
+			}
+		};
+	}
+
+	protected deleteColumn({ sequenceId, index }: ColumnActionInput): ActionResult<"deleteColumn"> {
+		const sequence = this.diagram.sequenceDict[sequenceId];
+		if (!sequence) {
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
+		}
+		sequence.removeColumn(index);
+		return {
+			ok: true,
+			undo: {
+				action: "insertColumn",
+				data: { sequenceId, index }
+			}
+		};
+	}
+
+	protected reorderChild({ elementId, toIndex, fromIndex }: ReorderChildInput): ActionResult<"reorderChild"> {
+		const element = this.identifyElement(elementId);
+		if (!element) {
+			return { ok: false, error: `Element ${elementId} not found` };
+		}
+
+		const parentId = element.parentId ?? this.diagram.id;
+		const parent = (this.diagram.id === parentId ? this.diagram : this.identifyElement(parentId)) as Collection | undefined;
+		if (!parent || !Collection.isCollection(parent)) {
+			return { ok: false, error: `Parent for element ${elementId} not found or not a collection` };
+		}
+
+		const actualFromIndex = fromIndex ?? parent.childIndexById(elementId) ?? -1;
+		if (actualFromIndex === -1 || actualFromIndex >= parent.children.length) {
+			return { ok: false, error: `Element ${elementId} not found in parent ${parent.ref}` };
+		}
+
+		const success = parent.changeChildIndex(actualFromIndex, toIndex);
+		if (!success) {
+			return { ok: false, error: `Failed to change child index from ${actualFromIndex} to ${toIndex}` };
+		}
+
+		return {
+			ok: true,
+			undo: {
+				action: "reorderChild",
+				data: {
+					elementId,
+					fromIndex: toIndex,
+					toIndex: actualFromIndex
+				}
+			}
+		};
+	}
+
+	protected dispatchBatch(actions: BatchInput): ActionResult<"batch"> {
+		const undos: BatchActionItem[] = [];
+
+		for (const action of actions) {
+			const handler = this.ActionRegistry[action.type] as DispatchAction<any> | undefined;
+			if (!handler) {
+				return { ok: false, error: `Action handler for ${action.type} not found in batch` };
+			}
+			const result = handler(action.input);
+			if (result.ok === false) {
+				return { ok: false, error: `Batch action failed on ${action.type}: ${result.error}` };
+			}
+			undos.unshift({
+				type: result.undo.action,
+				input: result.undo.data
+			});
+		}
+
+		return {
+			ok: true,
+			undo: {
+				action: "batch",
+				data: undos
+			}
+		};
 	}
 	//#endregion
 	// ------------------------------------------
 
-
-	public addColumn(sequenceId: ID, index: number) {
-		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId]
+	public setColumnWidth(sequenceId: ID, colIndex: number, width: number): Result {
+		let sequence: Sequence | undefined = this.diagram.sequenceDict[sequenceId];
 
 		if (sequence === undefined) {
-			console.warn(`Cannot insert column in sequence with id ${sequenceId}`)
-			return
+			console.warn(`Cannot set column width in sequence with id ${sequenceId}`);
+			return { ok: false, error: `Sequence ${sequenceId} not found` };
 		}
 
-		sequence.insertEmptyColumn(index);
+		if (sequence.numRows === 0 || colIndex < 0 || colIndex >= sequence.numColumns) {
+			return { ok: false, error: `Column index ${colIndex} out of bounds or no rows` };
+		}
+
+		let tempResult = this.createVisual<Sequence>(structuredClone(sequence.state), "sequence");
+		if (tempResult.ok === false) {
+			return { ok: false, error: tempResult.error };
+		}
+		let updatedSeq = tempResult.value;
+		updatedSeq.setMinColumnWidth(colIndex, width);
+
+		this.act({
+			type: "modify",
+			input: {
+				child: updatedSeq,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
 	}
+
+	public reorderChannel(channelId: ID, direction: "up" | "down"): Result {
+		let channel = this.diagram.channelsDict[channelId] || this.allElements[channelId];
+		if (!channel) {
+			console.warn(`Cannot reorder channel with id ${channelId}: channel not found`);
+			return { ok: false, error: `Channel ${channelId} not found` };
+		}
+
+		let sequence: Sequence | undefined;
+		if (channel.parentId) {
+			sequence = this.diagram.sequenceDict[channel.parentId];
+		}
+
+		if (!sequence) {
+			console.warn(`Cannot reorder channel ${channelId}: parent sequence not found`);
+			return { ok: false, error: `Sequence for channel ${channelId} not found` };
+		}
+
+		let seqState = structuredClone(sequence.state);
+		if (!seqState.children) {
+			return { ok: false, error: `Sequence ${sequence.id} has no children` };
+		}
+
+		let index = seqState.children.findIndex((c) => c.id === channelId);
+		if (index === -1) {
+			return { ok: false, error: `Channel ${channelId} not found in sequence children` };
+		}
+
+		let targetIndex = direction === "up" ? index - 1 : index + 1;
+		if (targetIndex < 0 || targetIndex >= seqState.children.length) {
+			return { ok: true, value: {} };
+		}
+
+		let temp = seqState.children[index];
+		seqState.children[index] = seqState.children[targetIndex];
+		seqState.children[targetIndex] = temp;
+
+		let tempResult = this.createVisual<Sequence>(seqState, "sequence");
+		if (tempResult.ok === false) {
+			return { ok: false, error: tempResult.error };
+		}
+		let updatedSeq = tempResult.value;
+
+		this.act({
+			type: "modify",
+			input: {
+				child: updatedSeq,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
+	}
+
+	public setChannelPadding(
+		channelId: ID,
+		padding: { top?: number; bottom?: number } | [number, number, number, number]
+	): Result {
+		let channel = this.diagram.channelsDict[channelId] || (this.allElements[channelId] as Channel | undefined);
+		if (!channel || !(channel instanceof Channel)) {
+			console.warn(`Cannot set padding for channel with id ${channelId}: channel not found`);
+			return { ok: false, error: `Channel ${channelId} not found` };
+		}
+
+		let sequence: Sequence | undefined;
+		if (channel.parentId) {
+			sequence = this.diagram.sequenceDict[channel.parentId];
+		}
+
+		if (!sequence) {
+			console.warn(`Cannot set padding for channel ${channelId}: parent sequence not found`);
+			return { ok: false, error: `Sequence for channel ${channelId} not found` };
+		}
+
+		let newPadding: [number, number, number, number] = [...channel.padding];
+		if (Array.isArray(padding)) {
+			newPadding = [
+				Math.max(0, padding[0] ?? 0),
+				Math.max(0, padding[1] ?? 0),
+				Math.max(0, padding[2] ?? 0),
+				Math.max(0, padding[3] ?? 0)
+			];
+		} else {
+			if (padding.top !== undefined) newPadding[0] = Math.max(0, padding.top);
+			if (padding.bottom !== undefined) newPadding[2] = Math.max(0, padding.bottom);
+		}
+
+		let seqState = structuredClone(sequence.state);
+		if (!seqState.children) {
+			return { ok: false, error: `Sequence ${sequence.id} has no children` };
+		}
+
+		let channelIndex = seqState.children.findIndex((c) => c.id === channelId);
+		if (channelIndex === -1) {
+			return { ok: false, error: `Channel ${channelId} not found in sequence children` };
+		}
+
+		(seqState.children[channelIndex] as IChannel).padding = newPadding;
+
+		let tempResult = this.createVisual<Sequence>(seqState, "sequence");
+		if (tempResult.ok === false) {
+			return { ok: false, error: tempResult.error };
+		}
+		let updatedSeq = tempResult.value;
+
+		this.act({
+			type: "modify",
+			input: {
+				child: updatedSeq,
+				target: sequence
+			}
+		});
+
+		return { ok: true, value: {} };
+	}
+
 
 	public createVisual<T extends Visual = Visual>(parameters: IVisual, type: AllComponentTypes): Result<T> {
 		try {

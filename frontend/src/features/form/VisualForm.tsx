@@ -2,9 +2,18 @@ import {
 	ControlGroup,
 	HTMLSelect,
 	InputGroup,
-	NumericInput,
 	Section
 } from "@blueprintjs/core";
+import {
+	MAX_HEIGHT,
+	MAX_OFFSET_SIZE,
+	MAX_PADDING,
+	MAX_WIDTH,
+	MIN_HEIGHT,
+	MIN_OFFSET_SIZE,
+	MIN_PADDING,
+	MIN_WIDTH
+} from "../../appSettings";
 import React from "react";
 import { Controller, FieldErrors, useFormContext, useWatch } from "react-hook-form";
 import Collection from "../../logic/collection";
@@ -12,6 +21,7 @@ import { getByPath } from "../../logic/util2";
 import { IVisual } from "../../logic/visual";
 import { FormRequirements } from "./FormBase";
 import { PlacementModeConfig } from "./PlacementModeConfigForm";
+import { CustomNumericInput } from "./fields/CustomNumericInput";
 import { DoubleField } from "./fields/DoubleField";
 import { QuadField } from "./fields/QuadField";
 import { SimpleField } from "./fields/SimpleField";
@@ -70,7 +80,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 	const heightActive = currentY === "fixed";
 	const placementModeType = watchedPlacementModeType ?? theseVals?.placementMode?.type ?? props.target?.placementMode?.type ?? "free";
 	const placementControl = watchedPlacementControl ?? theseVals?.placementControl ?? props.target?.placementControl ?? "user";
-	let sizeOptions = isCollection ? ["fit", "grow"] : ["fixed", "fit", "grow"];
+	let sizeOptions = ["fixed", "fit", "grow"];
 	if (placementModeType === "free") {
 		sizeOptions = sizeOptions.filter((opt) => opt !== "grow");
 	}
@@ -80,63 +90,67 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 		<>
 			<ControlGroup vertical={true} className={styles.formGroupContainer}>
 				{/* Width and height */}
-				{(props.widthDisplay !== false || props.heightDisplay !== false) && (
-					<DoubleField
-						label={(!widthActive || !heightActive) ? "Content Size (inherited)" : "Content Size"}
-						intent={(errors?.contentWidth || errors?.contentHeight) ? "danger" : "none"}
-						helperText={(errors?.contentWidth?.message || errors?.contentHeight?.message)?.toString()}
-						leftLabel={props.widthDisplay !== false ? "W" : undefined}
-						leftField={
-							props.widthDisplay !== false ? (
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}contentWidth`}
-									render={({ field }) => (
-										<NumericInput fill
-											{...field}
-											id="width-input"
-											className={fieldStyles.compactNumericInput}
-											onValueChange={field.onChange}
-											size="small"
-											disabled={!widthActive}
-											title={!widthActive ? "Width inherited" : ""}
-											intent={errors?.contentWidth ? "danger" : "none"}
-											allowNumericCharactersOnly={true}></NumericInput>
-									)}
-									rules={{
-										required: { value: widthActive, message: "Width required" },
-										min: { value: widthActive ? 1 : 0, message: "Width must be at least 1" },
-										max: { value: 10000, message: "Width cannot exceed 10000" },
-									}}></Controller>
-							) : undefined
-						}
-						rightLabel={props.heightDisplay !== false ? "H" : undefined}
-						rightField={
-							props.heightDisplay !== false ? (
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}contentHeight`}
-									render={({ field }) => (
-										<NumericInput fill
-											{...field}
-											id="height-input"
-											className={fieldStyles.compactNumericInput}
-											onValueChange={field.onChange}
-											size="small"
-											disabled={!heightActive}
-											title={!heightActive ? "Height inherited" : ""}
-											intent={errors?.contentHeight ? "danger" : "none"}
-										></NumericInput>
-									)}
-									rules={{
-										required: { value: heightActive, message: "Height required" },
-										min: { value: heightActive ? 1 : 0, message: "Height must be at least 1" },
-										max: { value: 10000, message: "Height cannot exceed 10000" },
-									}}></Controller>
-							) : undefined
-						}
-					/>
-				)}
+				{(props.widthDisplay !== false || props.heightDisplay !== false) && (() => {
+					const minWidthVal = props.target?.minContentWidth ?? (widthActive ? MIN_WIDTH : 0);
+					const minHeightVal = props.target?.minContentHeight ?? (heightActive ? MIN_HEIGHT : 0);
+					return (
+						<DoubleField
+							label={(!widthActive || !heightActive) ? "Content Size (inherited)" : "Content Size"}
+							intent={(errors?.contentWidth || errors?.contentHeight) ? "danger" : "none"}
+							helperText={(errors?.contentWidth?.message || errors?.contentHeight?.message)?.toString()}
+							leftLabel={props.widthDisplay !== false ? "W" : undefined}
+							leftField={
+								props.widthDisplay !== false ? (
+									<Controller
+										control={formControls.control}
+										name={`${fullPrefix}contentWidth`}
+										render={({ field }) => (
+											<CustomNumericInput fill
+												{...field}
+												id="width-input"
+												size="small"
+												min={widthActive ? minWidthVal : 0}
+												max={MAX_WIDTH}
+												disabled={!widthActive}
+												title={!widthActive ? "Width inherited" : ""}
+												intent={errors?.contentWidth ? "danger" : "none"}
+												allowNumericCharactersOnly={true}></CustomNumericInput>
+										)}
+										rules={{
+											required: { value: widthActive, message: "Width required" },
+											min: { value: minWidthVal, message: `Width must be at least ${minWidthVal}` },
+											max: { value: MAX_WIDTH, message: `Width cannot exceed ${MAX_WIDTH}` },
+										}}></Controller>
+								) : undefined
+							}
+							rightLabel={props.heightDisplay !== false ? "H" : undefined}
+							rightField={
+								props.heightDisplay !== false ? (
+									<Controller
+										control={formControls.control}
+										name={`${fullPrefix}contentHeight`}
+										render={({ field }) => (
+											<CustomNumericInput fill
+												{...field}
+												id="height-input"
+												size="small"
+												min={heightActive ? minHeightVal : 0}
+												max={MAX_HEIGHT}
+												disabled={!heightActive}
+												title={!heightActive ? "Height inherited" : ""}
+												intent={errors?.contentHeight ? "danger" : "none"}
+											></CustomNumericInput>
+										)}
+										rules={{
+											required: { value: heightActive, message: "Height required" },
+											min: { value: minHeightVal, message: `Height must be at least ${minHeightVal}` },
+											max: { value: MAX_HEIGHT, message: `Height cannot exceed ${MAX_HEIGHT}` },
+										}}></Controller>
+								) : undefined
+							}
+						/>
+					);
+				})()}
 
 			</ControlGroup>
 
@@ -149,12 +163,11 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 					transitionDuration: 0,
 				}}
 				compact={true}
-				title={(<InformationLabel text="Placement" helpType="placementMode" />)}
+				title={"Placement"}
 				collapsible={true}>
-
-				{/* Dynamic Sub-forms */}
-				<PlacementModeConfig fullPrefix={fullPrefix} />
-
+				<ControlGroup vertical={true} className={styles.formGroupContainer}>
+					<PlacementModeConfig fullPrefix={fullPrefix}></PlacementModeConfig>
+				</ControlGroup>
 			</Section>
 
 			{/* Padding */}
@@ -177,18 +190,19 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 								control={formControls.control}
 								name={`${fullPrefix}padding.0`}
 								render={({ field }) => (
-									<NumericInput
+									<CustomNumericInput
 										{...field}
 										id="padding-top-input"
-										className={fieldStyles.compactNumericInput}
-										onValueChange={field.onChange}
+										allowNegative={false}
 										size="small"
 										fill
-										allowNumericCharactersOnly={true}
+										min={MIN_PADDING}
+										max={MAX_PADDING}
 									/>
 								)}
 								rules={{
-									min: { value: 0, message: "Padding cannot be negative" }
+									min: { value: MIN_PADDING, message: "Padding cannot be negative" },
+									max: { value: MAX_PADDING, message: `Padding cannot exceed ${MAX_PADDING}` }
 								}}
 							/>
 						}
@@ -198,18 +212,19 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 								control={formControls.control}
 								name={`${fullPrefix}padding.1`}
 								render={({ field }) => (
-									<NumericInput
+									<CustomNumericInput
 										{...field}
 										id="padding-right-input"
-										className={fieldStyles.compactNumericInput}
-										onValueChange={field.onChange}
+										allowNegative={false}
 										size="small"
 										fill
-										allowNumericCharactersOnly={true}
+										min={MIN_PADDING}
+										max={MAX_PADDING}
 									/>
 								)}
 								rules={{
-									min: { value: 0, message: "Padding cannot be negative" }
+									min: { value: MIN_PADDING, message: "Padding cannot be negative" },
+									max: { value: MAX_PADDING, message: `Padding cannot exceed ${MAX_PADDING}` }
 								}}
 							/>
 						}
@@ -219,18 +234,19 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 								control={formControls.control}
 								name={`${fullPrefix}padding.2`}
 								render={({ field }) => (
-									<NumericInput
+									<CustomNumericInput
 										{...field}
 										id="padding-bottom-input"
-										className={fieldStyles.compactNumericInput}
-										onValueChange={field.onChange}
+										allowNegative={false}
 										size="small"
 										fill
-										allowNumericCharactersOnly={true}
+										min={MIN_PADDING}
+										max={MAX_PADDING}
 									/>
 								)}
 								rules={{
-									min: { value: 0, message: "Padding cannot be negative" }
+									min: { value: MIN_PADDING, message: "Padding cannot be negative" },
+									max: { value: MAX_PADDING, message: `Padding cannot exceed ${MAX_PADDING}` }
 								}}
 							/>
 						}
@@ -240,18 +256,19 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 								control={formControls.control}
 								name={`${fullPrefix}padding.3`}
 								render={({ field }) => (
-									<NumericInput
+									<CustomNumericInput
 										{...field}
 										id="padding-left-input"
-										className={fieldStyles.compactNumericInput}
-										onValueChange={field.onChange}
+										allowNegative={false}
 										size="small"
 										fill
-										allowNumericCharactersOnly={true}
+										min={MIN_PADDING}
+										max={MAX_PADDING}
 									/>
 								)}
 								rules={{
-									min: { value: 0, message: "Padding cannot be negative" }
+									min: { value: MIN_PADDING, message: "Padding cannot be negative" },
+									max: { value: MAX_PADDING, message: `Padding cannot exceed ${MAX_PADDING}` }
 								}}
 							/>
 						}
@@ -283,25 +300,24 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									control={formControls.control}
 									name={`${fullPrefix}offset.0`}
 									render={({ field }) => (
-										<NumericInput
+										<CustomNumericInput
 											{...field}
 											id="offset0"
-											className={fieldStyles.compactNumericInput}
-											onBlur={field.onChange}
-											onValueChange={field.onChange}
+											allowNegative={true}
+											min={MIN_OFFSET_SIZE}
+											max={MAX_OFFSET_SIZE}
 											size="small"
 											fill
 											intent={errors?.offset?.[0] ? "danger" : "none"}
-											allowNumericCharactersOnly={true}
 										/>
 									)}
 									rules={{
 										required: "Offset is required",
 										min: {
-											value: -2000,
-											message: "Offset must be greater than -2000"
+											value: MIN_OFFSET_SIZE,
+											message: `Offset must be at least ${MIN_OFFSET_SIZE}`
 										},
-										max: { value: 2000, message: "Offset cannot exceed 2000" }
+										max: { value: MAX_OFFSET_SIZE, message: `Offset cannot exceed ${MAX_OFFSET_SIZE}` }
 									}}
 								/>
 							}
@@ -311,25 +327,24 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									control={formControls.control}
 									name={`${fullPrefix}offset.1`}
 									render={({ field }) => (
-										<NumericInput
+										<CustomNumericInput
 											{...field}
 											id="offset1"
-											className={fieldStyles.compactNumericInput}
-											onBlur={field.onChange}
-											onValueChange={field.onChange}
+											allowNegative={true}
+											min={MIN_OFFSET_SIZE}
+											max={MAX_OFFSET_SIZE}
 											size="small"
 											fill
 											intent={errors?.offset?.[1] ? "danger" : "none"}
-											allowNumericCharactersOnly={true}
 										/>
 									)}
 									rules={{
 										required: "Offset is required",
 										min: {
-											value: -2000,
-											message: "Offset must be greater than -2000"
+											value: MIN_OFFSET_SIZE,
+											message: `Offset must be at least ${MIN_OFFSET_SIZE}`
 										},
-										max: { value: 2000, message: "Offset cannot exceed 2000" }
+										max: { value: MAX_OFFSET_SIZE, message: `Offset cannot exceed ${MAX_OFFSET_SIZE}` }
 									}}
 								/>
 							}

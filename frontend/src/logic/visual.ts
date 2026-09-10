@@ -1,8 +1,8 @@
 import { Element, Mask, Rect, SVG } from "@svgdotjs/svg.js";
 import RBush from "rbush";
 import PaddedBox, { IPaddedBox } from "./paddedBox";
-import { BAR_MASK_ID, ID, UserComponentType } from "./point";
-import { Bounds, IAlignerConfig, IGridConfig, IPulseConfig, isPulse, RBushItem, Size } from "./spacial";
+import Point, { BAR_MASK_ID, ID, UserComponentType, AllComponentTypes } from "./point";
+import { Bounds, IAlignerConfig, IBindsPlacementConfig, IGridConfig, IPulseConfig, isPulse, RBushItem, Size } from "./spacial";
 
 
 export type Offset = [number, number];
@@ -11,7 +11,7 @@ export type Display = "none" | "block";
 
 export interface IVisual extends IPaddedBox {
 	offset: [number, number];
-	flipped?: boolean;
+	flipped?: { x: boolean; y: boolean };
 }
 
 export interface IDraw {
@@ -29,10 +29,10 @@ export type GridCellElement<T extends Visual = Visual> = T & { placementMode: { 
 
 export type AlignerElement<T extends Visual = Visual> = T & { placementMode: { type: "aligner"; config: IAlignerConfig } };
 export type FreeElement<T extends Visual = Visual> = T & { placementMode: { type: "free" } };
-export type BindsElement<T extends Visual = Visual> = T & { placementMode: { type: "binds"; bindings: undefined } };
+export type BoundElement<T extends Visual = Visual> = T & { placementMode: { type: "binds"; config: IBindsPlacementConfig } };
 
 export default abstract class Visual extends PaddedBox implements IVisual {
-	static ElementType: UserComponentType = "rect";
+	static override ElementType: AllComponentTypes = "rect";
 	get state(): IVisual {
 		return {
 			offset: this.offset,
@@ -40,8 +40,16 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 			...super.state
 		};
 	}
+
+	public override getShiftedState(deltaX: number, deltaY: number): IVisual {
+		return Point.shiftPointState({ ...this.state }, deltaX, deltaY);
+	}
 	get allElements(): Record<ID, Visual> {
 		return { [this.id]: this };
+	}
+
+	public get isResizable(): boolean {
+		return true;
 	}
 
 	private _dirty: boolean = true;
@@ -57,17 +65,24 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	maskId?: string;
 	maskBlock?: Rect;
 
-	flipped: boolean = false;
+	flipped: { x: boolean; y: boolean } = { x: false, y: false };
 
 	constructor(params: IVisual) {
 		super(params);
 
 		this.offset = params.offset;
-		this.flipped = params.flipped ?? (isPulse(this) && this.pulseLayoutConfig?.orientation === "bottom");
+		this.flipped = params.flipped ?? {
+			x: false,
+			y: isPulse(this) && this.pulseLayoutConfig?.orientation === "bottom"
+		};
 
-		if (this.flipped) {
+		if (this.flipped.y) {
 			this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
 			this.offset = [this.offset[0], -Math.abs(this.offset[1])];
+		}
+		if (this.flipped.x) {
+			this.padding = [this.padding[0], this.padding[3], this.padding[2], this.padding[1]];
+			this.offset = [-Math.abs(this.offset[0]), this.offset[1]];
 		}
 	}
 
@@ -136,19 +151,22 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return
 	}
 
-	protected computeSelf() {
+	protected computeSelf(containerSize?: Size) {
 		this.computeSize();
-		this.growElement(this.size);
+		this.growElement(containerSize ?? this.size);
 		this.computePositions({ x: 0, y: 0 });
 	}
 
-
-
 	// Construct and SVG with children positioned relative to (0, 0)
-	public getInternalRepresentation(): Element | undefined {
+	public getInternalRepresentation(containerSize?: Size): Element | undefined {
+		if (this.svg === undefined || containerSize !== undefined) {
+			this.computeSelf(containerSize);
+			let temporaryCanvas: Element = SVG();
+			this.draw(temporaryCanvas);
+		}
 		if (this.svg === undefined) { return undefined }
 
-		var cloned: Element = this.svg.clone(true, true);
+		var cloned: Element = this.svg.clone(true, false);
 		cloned.move(0, 0);
 
 		cloned.show()
@@ -179,31 +197,64 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 	public get drawWidth(): number {
 		return this.width;
 	}
+	public set drawWidth(val: number) {
+		this.width = val;
+	}
 
 	public get drawHeight(): number {
 		return this.height;
+	}
+	public set drawHeight(val: number) {
+		this.height = val;
 	}
 
 	public get drawContentWidth(): number {
 		return this.contentWidth;
 	}
+	public set drawContentWidth(val: number) {
+		this.contentWidth = val;
+	}
 
 	public get drawContentHeight(): number {
 		return this.contentHeight;
+	}
+	public set drawContentHeight(val: number) {
+		this.contentHeight = val;
+	}
+
+	public get minDrawContentWidth(): number {
+		return this.minContentWidth;
+	}
+	public get minDrawContentHeight(): number {
+		return this.minContentHeight;
 	}
 
 	public get drawCX(): number {
 		return this.cx + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
 	}
+	public set drawCX(val: number) {
+		this.cx = val - (this.placementMode?.type === "free" ? 0 : this.offset[0]);
+	}
+
 	public get drawCY(): number {
 		return this.cy + (this.placementMode?.type === "free" ? 0 : this.offset[1]);
+	}
+	public set drawCY(val: number) {
+		this.cy = val - (this.placementMode?.type === "free" ? 0 : this.offset[1]);
 	}
 
 	public get drawX(): number {
 		return this.x + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
 	}
+	public set drawX(val: number) {
+		this.x = val - (this.placementMode?.type === "free" ? 0 : this.offset[0]);
+	}
+
 	public get drawY(): number {
 		return this.y + (this.placementMode?.type === "free" ? 0 : this.offset[1]);
+	}
+	public set drawY(val: number) {
+		this.y = val - (this.placementMode?.type === "free" ? 0 : this.offset[1]);
 	}
 
 	public getHitbox(): Rect {

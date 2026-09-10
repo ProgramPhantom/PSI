@@ -1,7 +1,7 @@
 import { AddDispatchData, Components } from "../collection";
 import Grid, { IGrid } from "../grid";
 import { UserComponentType } from "../point";
-import { isPulse } from "../spacial";
+import { isPulse, Size } from "../spacial";
 import Visual, { GridCellElement } from "../visual";
 import Label from "./label";
 
@@ -58,6 +58,22 @@ export default class SimpleLabelGroup extends Grid {
 		this.squeeze = false;
 	}
 
+	public override computeSize(): Size {
+		if (this.coreChild) {
+			if (this.sizeMode?.x === "grow" || this.sizeMode?.x === "fixed") {
+				this.coreChild.sizeMode.x = "grow";
+			} else if (this.coreChild.sizeMode.x === "grow") {
+				this.coreChild.sizeMode.x = "fixed";
+			}
+			if (this.sizeMode?.y === "grow" || this.sizeMode?.y === "fixed") {
+				this.coreChild.sizeMode.y = "grow";
+			} else if (this.coreChild.sizeMode.y === "grow") {
+				this.coreChild.sizeMode.y = "fixed";
+			}
+		}
+		return super.computeSize();
+	}
+
 	private setCoreChild({ child, index }: AddDispatchData<Visual>) {
 		child.placementMode = {
 			type: "grid",
@@ -66,6 +82,13 @@ export default class SimpleLabelGroup extends Grid {
 			}
 		};
 		child.placementControl = "auto";
+
+		if (this.sizeMode?.x === "grow" || this.sizeMode?.x === "fixed") {
+			child.sizeMode.x = "grow";
+		}
+		if (this.sizeMode?.y === "grow" || this.sizeMode?.y === "fixed") {
+			child.sizeMode.y = "grow";
+		}
 
 		this.ref = child.ref + "-simpleLabelGroup";
 	}

@@ -4,7 +4,7 @@ import localforage from "localforage";
 import UploadArea from "../UploadArea";
 import { appToaster } from "../../app/Toaster";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { openDiagram } from "../../redux/thunks/diagramThunks";
+import { openDiagram as openDiagramFile, openExampleDiagram } from "../../redux/thunks/diagramThunks";
 import { RecentDiagram } from "../../redux/slices/diagramSlice";
 import { selectLocalRecentDiagrams } from "../../redux/selectors/diagramSelectors";
 
@@ -12,6 +12,26 @@ export interface ILoadStateDialogProps {
 	close: () => void;
 	isOpen: boolean;
 }
+
+const exampleFiles = import.meta.glob("/src/exampleSequences/*.nmrd", {
+	eager: true,
+	query: "?url",
+	import: "default"
+}) as Record<string, string>;
+
+interface ExampleSequenceItem {
+	name: string;
+	fileName: string;
+	url: string;
+}
+
+const exampleSequences: ExampleSequenceItem[] = Object.entries(exampleFiles)
+	.map(([filePath, url]) => {
+		const fileName = filePath.split("/").pop() || "";
+		const name = fileName.replace(/\.nmrd$/, "");
+		return { name, fileName, url };
+	})
+	.sort((a, b) => a.name.localeCompare(b.name));
 
 export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -23,8 +43,9 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 		try {
 			const blob = await localforage.getItem<Blob>(`diagram-${uuid}`);
 			if (blob) {
-				const file = new File([blob], `${name}.nmrd`);
-				dispatch(openDiagram(file)).then(() => {
+				const safeName = name && name !== "undefined" ? name : "diagram";
+				const file = new File([blob], `${safeName}.nmrd`);
+				dispatch(openDiagramFile(file)).then(() => {
 					props.close();
 					setSelectedFile(null);
 				});
@@ -34,6 +55,22 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 		} catch (error) {
 			console.error("Failed to load recent diagram", error);
 			appToaster.show({ message: "Error loading recent diagram", intent: "danger" });
+		}
+	};
+
+	const handleOpenExample = async (name: string, url: string) => {
+		try {
+			const response = await fetch(url);
+			if (!response.ok) throw new Error(`Failed to fetch example: ${response.statusText}`);
+			const blob = await response.blob();
+			const safeName = name && name !== "undefined" ? name : "example";
+			const file = new File([blob], `${safeName}.nmrd`, { type: "application/zip" });
+			await dispatch(openExampleDiagram(file)).unwrap();
+			props.close();
+			setSelectedFile(null);
+		} catch (error) {
+			console.error("Failed to load example diagram", error);
+			appToaster.show({ message: "Error loading example diagram", intent: "danger" });
 		}
 	};
 
@@ -57,9 +94,9 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 
 	const handleLoadFile = () => {
 		if (selectedFile) {
-			dispatch(openDiagram(selectedFile)).then(() => {
-			    props.close();
-			    setSelectedFile(null);
+			dispatch(openDiagramFile(selectedFile)).then(() => {
+				props.close();
+				setSelectedFile(null);
 			});
 		}
 	};
@@ -87,7 +124,40 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 						}}
 					/>
 					<div style={{ marginTop: "24px" }}>
-						<Section icon="download" 
+						<Section icon="book"
+							title="Example Sequences"
+							collapsible={false}
+						>
+							<SectionCard style={{ padding: 0 }}>
+								{exampleSequences.length === 0 ? (
+									<div style={{ padding: "16px" }}>
+										<NonIdealState description="No example sequences found" icon="document" />
+									</div>
+								) : (
+									<HTMLTable bordered striped interactive style={{ width: "100%", margin: 0 }}>
+
+										<tbody>
+											{exampleSequences.map((example) => (
+												<tr
+													key={example.name}
+													onClick={() => handleOpenExample(example.name, example.url)}
+													style={{ cursor: "pointer" }}
+													title="Click to open example sequence"
+												>
+													<td style={{ paddingTop: 6, paddingBottom: 6 }}>
+														<span style={{ fontWeight: 600 }}>{example.name}</span>
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</HTMLTable>
+								)}
+							</SectionCard>
+						</Section>
+					</div>
+
+					<div style={{ marginTop: "24px" }}>
+						<Section icon="download"
 							title="Local Diagrams"
 							collapsible={false}
 						>
@@ -100,20 +170,21 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 									<HTMLTable bordered striped interactive style={{ width: "100%", margin: 0 }}>
 										<thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
 											<tr>
-												<th>Name</th>
+												<th>Title</th>
 												<th>Last Opened</th>
 											</tr>
 										</thead>
 										<tbody>
 											{recentDiagrams.map((entry: RecentDiagram, i: number) => {
 												const date = new Date(entry.opened);
+												const displayName = entry.title || "Untitled";
 												return (
 													<tr
 														key={entry.diagramUUID || i}
-														onClick={() => handleOpenRecent(entry.diagramUUID, entry.name)}
+														onClick={() => handleOpenRecent(entry.diagramUUID, displayName)}
 														style={{ cursor: "pointer" }}
 													>
-														<td style={{ paddingTop: 4, paddingBottom: 4 }}>{entry.name || "Untitled"}</td>
+														<td style={{ paddingTop: 4, paddingBottom: 4 }}>{displayName}</td>
 														<td style={{ paddingTop: 4, paddingBottom: 4 }}>{date.toLocaleString()}</td>
 													</tr>
 												);

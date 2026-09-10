@@ -1,6 +1,6 @@
-import {CSSProperties} from "react";
+import { CSSProperties } from "react";
 import Grid from "../../logic/grid";
-import {Colors} from "@blueprintjs/core";
+import { Colors } from "@blueprintjs/core";
 import CollectionDebug from "./Collection";
 import PaddedBox from "../../logic/paddedBox";
 import PaddedBoxDebug from "./PaddedBoxDebug";
@@ -37,15 +37,17 @@ const GridDebug: React.FC<IGridDebug> = (props) => {
 
 	return (
 		<>
-			
+
 			<div
-				style={{ 	position: "absolute",
+				style={{
+					position: "absolute",
 					left: cx,
-					top: cy-3,
+					top: cy - 3,
 				}}>
-				<p style={{fontSize: 2,
+				<p style={{
+					fontSize: 2,
 				}}>
-						{`(${x1}, ${y1})`}
+					{`(${x1}, ${y1})`}
 				</p>
 			</div>
 
@@ -53,7 +55,7 @@ const GridDebug: React.FC<IGridDebug> = (props) => {
 				if (c.width === 0 || c.height === 0) {
 					return <></>
 				}
-				
+
 				return (
 					<div key={cell_index}
 						style={{

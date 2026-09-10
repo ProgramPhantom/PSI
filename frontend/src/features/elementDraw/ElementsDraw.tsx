@@ -16,6 +16,7 @@ import {
 	Tooltip
 } from "@blueprintjs/core";
 import React, { useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useDragLayer } from "react-dnd";
 import { ObjectInspector } from "react-inspector";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
@@ -56,6 +57,10 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	const isLoggedIn = Boolean(me);
 	const dispatch = useAppDispatch();
 
+	const { isAnyDragging } = useDragLayer((monitor) => ({
+		isAnyDragging: monitor.isDragging()
+	}));
+
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	const singletonsCache = useRef<Record<string, Record<ID, Visual>>>({});
@@ -76,6 +81,9 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 
 				// Only rebuild the diff: reuse if state is unchanged
 				if (existing) {
+					if (compData.ref !== undefined && existing.ref !== compData.ref) {
+						existing.ref = compData.ref;
+					}
 					nextCache[template_id] = existing;
 					return existing;
 				} else {
@@ -169,7 +177,11 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 	};
 
 	return (
-		<QuietUploadArea onDrop={handleSchemeDrop} acceptExtension=".nmrs">
+		<QuietUploadArea
+			onDrop={handleSchemeDrop}
+			acceptExtension=".nmrs"
+
+		>
 			<div style={{ height: "100%", overflow: "hidden" }}>
 				<Section
 					style={{
@@ -225,7 +237,13 @@ const ElementsDraw: React.FC<IElementDrawProps> = () => {
 									return (
 										<Tab key={schemeId}
 											title={
-												<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+												<span
+													onMouseEnter={() => {
+														if (isAnyDragging && selectedSchemeId !== schemeId) {
+															setSelectedSchemeId(schemeId);
+														}
+													}}
+													style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
 													{schemeName}
 													{schemeLocations[schemeId] === "server" && (
 														<Tooltip hoverOpenDelay={500} content="Uploaded">

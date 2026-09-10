@@ -4,13 +4,17 @@ import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./
 import { ID } from "./point";
 import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { GridCellElement, IDraw, IVisual } from "./visual";
+import PaddedBox from "./paddedBox";
 
 export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 	minHeight?: number,
 	minWidth?: number,
 
 	numRows?: number,
-	numColumns?: number
+	numColumns?: number,
+
+	minRowHeights?: number[],
+	minColWidths?: number[]
 }
 
 type GridElement<S extends Visual = Visual> = GridCellElement<S> | Subgrid<S>;
@@ -32,6 +36,30 @@ export interface OccupiedCell<S extends Visual = Visual> {
 export type GridPlacementPredicate = (mode: PlacementConfiguration) => IGridConfig | undefined
 export type GridPlacementSetter = (element: Visual, value: IGridConfig) => void
 
+export class GridColumn extends Spacial {
+	public sequenceId: string;
+	public columnIndex: number;
+
+	constructor(columnIndex: number, sequenceId: string) {
+		super({
+			ref: `column-${columnIndex}`,
+			type: "lower-abstract",
+			placementMode: { type: "free" },
+			placementControl: "auto",
+			parentId: sequenceId
+		});
+		this.id = `${sequenceId}-col-${columnIndex}`;
+		this.columnIndex = columnIndex;
+		this.sequenceId = sequenceId;
+	}
+}
+
+/**
+ * Predicate to check if an object is a GridColumn.
+ */
+export const isGridColumn = (obj: any): obj is GridColumn => {
+	return obj instanceof GridColumn;
+};
 
 export default class Grid<C extends Visual = Visual> extends Collection<C | Subgrid<C>> implements IDraw {
 	public isCellChild = (e: Visual): e is GridCellElement<C> => e.placementMode.type === "grid"
@@ -44,6 +72,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			minWidth: this.min.width,
 			numRows: this.numRows,
 			numColumns: this.numColumns,
+			minRowHeights: [...this.minRowHeights],
+			minColWidths: [...this.minColWidths],
 			...super.state
 		};
 	}
@@ -51,35 +81,72 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	public override get drawWidth(): number {
 		return this.width + this.spill.left + this.spill.right;
 	}
+	public override set drawWidth(val: number) {
+		this.width = Math.max(0, val - (this.spill.left + this.spill.right));
+	}
 
 	public override get drawHeight(): number {
 		return this.height + this.spill.top + this.spill.bottom;
+	}
+	public override set drawHeight(val: number) {
+		this.height = Math.max(0, val - (this.spill.top + this.spill.bottom));
 	}
 
 	public override get drawContentWidth(): number {
 		return this.contentWidth + this.spill.left + this.spill.right;
 	}
+	public override set drawContentWidth(val: number) {
+		this.contentWidth = Math.max(0, val - (this.spill.left + this.spill.right));
+	}
 
 	public override get drawContentHeight(): number {
 		return this.contentHeight + this.spill.top + this.spill.bottom;
 	}
+	public override set drawContentHeight(val: number) {
+		this.contentHeight = Math.max(0, val - (this.spill.top + this.spill.bottom));
+	}
 
-	public get drawCX(): number {
+	public override get minDrawContentWidth(): number {
+		return this.minContentWidth + this.spill.left + this.spill.right;
+	}
+	public override get minDrawContentHeight(): number {
+		return this.minContentHeight + this.spill.top + this.spill.bottom;
+	}
+
+	public override get drawCX(): number {
 		const offset = this.isFree ? 0 : this.offset[0];
 		return this.cx + offset - this.spill.left;
 	}
-	public get drawCY(): number {
+	public override set drawCX(val: number) {
+		const offset = this.isFree ? 0 : this.offset[0];
+		this.cx = val - offset + this.spill.left;
+	}
+
+	public override get drawCY(): number {
 		const offset = this.isFree ? 0 : this.offset[1];
 		return this.cy + offset - this.spill.top;
 	}
+	public override set drawCY(val: number) {
+		const offset = this.isFree ? 0 : this.offset[1];
+		this.cy = val - offset + this.spill.top;
+	}
 
-	public get drawX(): number {
+	public override get drawX(): number {
 		const offset = this.isFree ? 0 : this.offset[0];
 		return this.x + offset - this.spill.left;
 	}
-	public get drawY(): number {
+	public override set drawX(val: number) {
+		const offset = this.isFree ? 0 : this.offset[0];
+		this.x = val - offset + this.spill.left;
+	}
+
+	public override get drawY(): number {
 		const offset = this.isFree ? 0 : this.offset[1];
 		return this.y + offset - this.spill.top;
+	}
+	public override set drawY(val: number) {
+		const offset = this.isFree ? 0 : this.offset[1];
+		this.y = val - offset + this.spill.top;
 	}
 
 	public override get x(): number {
@@ -142,8 +209,11 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	protected gridMatrix: GridCell<C>[][] = [];
 
-	public gridSizes: { columns: Spacial[], rows: Spacial[] } = { columns: [], rows: [] };
-	public cells: Spacial[][];
+	public gridSizes: { columns: GridColumn[], rows: Spacial[] } = { columns: [], rows: [] };
+	public cells: PaddedBox[][];
+
+	public minRowHeights: number[] = [];
+	public minColWidths: number[] = [];
 
 	constructor(params: IGrid) {
 		super(params);
@@ -153,14 +223,20 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.min = { width: params.minWidth ?? 0, height: params.minHeight ?? 0 };
 
 
+		this.minRowHeights = params.minRowHeights ?? [];
+		this.minColWidths = params.minColWidths ?? [];
+
+		this.setMatrixBottomRight({ row: params.numRows ? params.numRows - 1 : undefined, col: params.numColumns ? params.numColumns - 1 : undefined });
 	}
 
 
 	// ---------------- Compute Methods ----------------
 	//#region 
 	public override computeSize(): Size {
+		this.spill = { top: 0, bottom: 0, left: 0, right: 0 };
 		this.refreshSubgrids();
 		this.growSubgrids();
+		this.constructCells();
 
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
@@ -174,7 +250,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var gridRows: GridCell<C>[][] = this.gridMatrix;
 
 		// Let's compute the width and height of each column
-		var columnRects: Spacial[] = Array.from({ length: gridColumns.length }, () => new Spacial())
+		var columnRects: GridColumn[] = Array.from({ length: gridColumns.length }, (_, col_index) => {
+			const existing = this.gridSizes.columns[col_index];
+			if (existing instanceof GridColumn) {
+				existing.sequenceId = this.id;
+				existing.columnIndex = col_index;
+				existing.id = `${this.id}-col-${col_index}`;
+				existing.ref = `column-${col_index}`;
+				return existing;
+			}
+			return new GridColumn(col_index, this.id);
+		});
+		var colMinWidths: number[] = Array.from({ length: gridColumns.length }, () => 0);
 		var colSpillingElements: GridElement<C>[][] = Array.from({ length: gridColumns.length }, () => []);
 		var colExtras: number[][] = Array.from({ length: gridColumns.length }, () => []);
 
@@ -183,11 +270,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			var colEntries: GridCell<C>[] = col.filter((cell) => cell !== undefined);
 
 			// Find width of column
-			var widths: number[] = [];
+			var minColW = this.minColWidths[col_index] ?? 0;
+			var widths: number[] = [minColW];
+			var minWidths: number[] = [minColW];
 			for (let cell of colEntries) {
 
 				if (cell?.ghosts !== undefined) {
 					widths.push(...cell.ghosts.map((g) => g.size.width));
+					minWidths.push(...cell.ghosts.map((g) => g.size.width));
 				}
 
 				if (cell?.extra !== undefined) {
@@ -211,13 +301,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						// Compute partial width contribution (distribute evenly):
 						let width: number = child.width;
+						let minW: number = child.minContentWidth ?? child.minWidth ?? child.width ?? 5;
 
 						if ((placementMode?.gridSize?.noCols ?? 0) > 1) {
 							width = 0;
+							minW = 0;
 						}
 
 						if (this.isSubgridChild(child)) {
 							width = child.gridSizes.columns[col_index - child.placementMode.config.coords.col].width;
+							minW = child.minContentWidth;
 
 							// Spilling to left
 							if (col_index === child.placementMode.config.coords.col &&
@@ -235,7 +328,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						}
 
 						if (contributing === true) {
-							widths.push(width)
+							widths.push(width);
+							minWidths.push(minW);
+						} else if (child.sizeMode.x === "grow") {
+							minWidths.push(minW);
 						}
 						if (spilling === true) {
 							colSpillingElements[col_index].push(child);
@@ -247,8 +343,27 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 			// Set the width of this column
 			var maxWidth = Math.max(...widths, this.min.width);
+			var maxMinW = Math.max(...minWidths, this.min.width);
 			columnRects[col_index].width = maxWidth;
+			colMinWidths[col_index] = maxMinW;
 		})
+
+		this.minContentWidth = colMinWidths.reduce((w, c) => w + c, 0);
+
+		// Allocate fixed container width to grow columns before computing spills
+		if (this.sizeMode?.x === "fixed") {
+			const fixedWidth = columnRects.reduce((w, c) => w + c.width, 0);
+			const diffX = this.contentWidth - fixedWidth;
+			if (diffX > 0) {
+				const growCols = columnRects.filter((_, col_index) =>
+					this.gridMatrix.some(row => row[col_index]?.elements?.some(el => el.sizeMode.x === "grow"))
+				);
+				if (growCols.length > 0) {
+					const share = diffX / growCols.length;
+					growCols.forEach(col => col.width += share);
+				}
+			}
+		}
 
 		// Second pass, apply spills.
 		colSpillingElements.forEach((col, col_index) => {
@@ -294,18 +409,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			let leftRow: Spacial | undefined = columnRects[col_index - 1];
 			let rightRow: Spacial | undefined = columnRects[col_index + 1];
 
+
 			if (leftRow !== undefined) {
 				leftRow.width = Math.max(maxLeftSpill, leftRow.width);
 			} else if (maxLeftSpill > 0) {
 				console.warn(`Element spilling to left of grid ${this.ref}`);
-				this.spill.left = Math.max(this.spill.left, maxLeftSpill)
+				this.spill.left = Math.max(this.spill.left, maxLeftSpill);
 			}
 
 			if (rightRow !== undefined) {
-				rightRow.width = Math.max(maxRightSpill, rightRow.width)
+				rightRow.width = Math.max(maxRightSpill, rightRow.width);
 			} else if (maxRightSpill > 0) {
-				console.warn(`Element spilling to right of grid ${this.ref}`)
-				this.spill.right = Math.max(this.spill.right, maxRightSpill)
+				console.warn(`Element spilling to right of grid ${this.ref}`);
+				this.spill.right = Math.max(this.spill.right, maxRightSpill);
 			}
 		})
 
@@ -320,6 +436,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		// Now lets compute the width and height of each row
 		var rowRects: Spacial[] = Array.from({ length: gridRows.length }, () => new Spacial())
+		var rowMinHeights: number[] = Array.from({ length: gridRows.length }, () => 0);
 		var rowSpillingElements: GridElement<C>[][] = Array.from({ length: gridRows.length }, () => []);
 		var rowExtras: number[][] = Array.from({ length: gridRows.length }, () => []);
 
@@ -328,11 +445,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			var rowEntries: OccupiedCell<C>[] = row.filter((cell) => cell !== undefined);
 
 			// Find height of the row
-			var heights: number[] = [];
+			var minRowH = this.minRowHeights[row_index] ?? 0;
+			var heights: number[] = [minRowH];
+			var minHeights: number[] = [minRowH];
 			for (let cell of rowEntries) {
 
 				if (cell?.ghosts !== undefined) {
 					heights.push(...cell?.ghosts.map(g => g.size.height));
+					minHeights.push(...cell?.ghosts.map(g => g.size.height));
 				}
 
 				if (cell?.extra !== undefined) {
@@ -356,13 +476,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						// Compute partial width contribution (distribute evenly):
 						let height: number = child.height;
+						let minH: number = child.minContentHeight ?? child.minHeight ?? child.height ?? 5;
 
 						if (placementMode !== undefined && (placementMode.gridSize?.noRows ?? 0) > 1) {
 							height = 0;
+							minH = 0;
 						}
 
 						if (this.isSubgridChild(child)) {
 							height = child.gridSizes.rows[row_index - child.placementMode.config.coords.row].height;
+							minH = child.minContentHeight;
 
 							// Given this is the top or bottom row of the subgrid, check if the subgrid is spilling
 							// vertically and add to spilling elements if so.
@@ -385,7 +508,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						}
 
 						if (contributing === true) {
-							heights.push(height)
+							heights.push(height);
+							minHeights.push(minH);
+						} else if (child.sizeMode.y === "grow") {
+							minHeights.push(minH);
 						}
 						if (spilling === true) {
 							rowSpillingElements[row_index].push(child);
@@ -396,9 +522,28 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			}
 
 			// Set the width of this column
-			var maxHeight = Math.max(...heights, this.min.height)
+			var maxHeight = Math.max(...heights, this.min.height);
+			var maxMinH = Math.max(...minHeights, this.min.height);
 			rowRects[row_index].height = maxHeight;
+			rowMinHeights[row_index] = maxMinH;
 		})
+
+		this.minContentHeight = rowMinHeights.reduce((h, r) => h + r, 0);
+
+		// Allocate fixed container height to grow rows before computing spills
+		if (this.sizeMode?.y === "fixed") {
+			const fixedHeight = rowRects.reduce((h, r) => h + r.height, 0);
+			const diffY = this.contentHeight - fixedHeight;
+			if (diffY > 0) {
+				const growRows = rowRects.filter((_, row_index) =>
+					this.gridMatrix[row_index]?.some(cell => cell?.elements?.some(el => el.sizeMode.y === "grow"))
+				);
+				if (growRows.length > 0) {
+					const share = diffY / growRows.length;
+					growRows.forEach(row => row.height += share);
+				}
+			}
+		}
 
 		// Second pass, apply spills.
 		rowSpillingElements.forEach((row, row_index) => {
@@ -445,18 +590,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			let aboveRow: Spacial | undefined = rowRects[row_index - 1];
 			let belowRow: Spacial | undefined = rowRects[row_index + 1];
 
+
 			if (aboveRow !== undefined) {
 				aboveRow.height = Math.max(maxAboveSpill, aboveRow.height);
 			} else if (maxAboveSpill > 0) {
 				console.warn(`Element spilling above grid ${this.ref}`);
-				this.spill.top = Math.max(this.spill.top, maxAboveSpill)
+				this.spill.top = Math.max(this.spill.top, maxAboveSpill);
 			}
 
 			if (belowRow !== undefined) {
-				belowRow.height = Math.max(maxBelowSpill, belowRow.height)
+				belowRow.height = Math.max(maxBelowSpill, belowRow.height);
 			} else if (maxBelowSpill > 0) {
-				console.warn(`Element spilling below grid ${this.ref}`)
-				this.spill.bottom = Math.max(this.spill.bottom, maxBelowSpill)
+				console.warn(`Element spilling below grid ${this.ref}`);
+				this.spill.bottom = Math.max(this.spill.bottom, maxBelowSpill);
 			}
 		})
 
@@ -472,24 +618,35 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var totalWidth = this.gridSizes.columns.reduce((w, c) => w + c.width, 0);
 		var totalHeight = this.gridSizes.rows.reduce((h, r) => h + r.height, 0);
 
+		if (this.sizeMode?.x === "fixed") {
+			this.contentWidth = Math.max(this.minContentWidth, this.contentWidth);
+			totalWidth = Math.max(totalWidth, this.contentWidth);
+		}
+		if (this.sizeMode?.y === "fixed") {
+			this.contentHeight = Math.max(this.minContentHeight, this.contentHeight);
+			totalHeight = Math.max(totalHeight, this.contentHeight);
+		}
+
 		// Normalise width and height of columns/rows:
 		rowRects.forEach((row) => {
-			row.width = totalWidth
-		})
+			row.width = totalWidth;
+		});
 		columnRects.forEach((col) => {
-			col.height = totalHeight
-		})
-
-		this.applyCellSizes();
+			col.height = totalHeight;
+		});
 
 		this.gridSizes.rows = rowRects;
 		this.gridSizes.columns = columnRects;
 
 		// Set via content...
-		this.contentWidth = totalWidth;
-		this.contentHeight = totalHeight;
+		if (this.sizeMode?.x !== "fixed") {
+			this.contentWidth = totalWidth;
+		}
+		if (this.sizeMode?.y !== "fixed") {
+			this.contentHeight = totalHeight;
+		}
 
-
+		this.propogateCellDimensions();
 		this.applySizesToSubgrids();
 
 		// ...so we can use padding
@@ -499,23 +656,27 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	public computePositions(root: { x: number, y: number }): void {
 		super.computePositions(root);
 
-
-
 		// Find dimension and positions of the cells.
-		this.computeCells();
+		this.positionConstituents();
 
-		// this.applyPositionsToSubgrids();
+		this.applyPositionsToSubgrids();
 
 		// Now iterate through the gridMatrix and set the position of children
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
 				if (cell !== undefined) {
-					var cellRect: Spacial = this.cells[row_index][column_index];
+					var cellRect: PaddedBox = this.cells[row_index][column_index];
 
 					for (let element of cell.elements ?? []) {
-						// If this is a reference cell then we don't set the position:
+						// Skip if not element source (so we don't compute position multiple times)
 						if (!this.isCellElementSource(element, { row: row_index, col: column_index })) {
 							continue
+						}
+
+						// Don't do this for subgrid this for subgrid children, they are already positioned.
+						if (this.isSubgridChild(element)) {
+							element.computePositions({ x: element.x, y: element.y });
+							continue;
 						}
 
 						let gridConfig: IGridConfig = element.placementMode.config;
@@ -529,8 +690,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						var alignment: { x: SiteNames, y: SiteNames } = gridConfig.alignment ?? { x: "here", y: "here" }
 
-						cellRect.internalImmediateBind(element, "x", alignment.x)
-						cellRect.internalImmediateBind(element, "y", alignment.y)
+						cellRect.internalImmediateBind(element, "x", alignment.x, true)
+						cellRect.internalImmediateBind(element, "y", alignment.y, true)
 
 						element.computePositions({ x: element.x, y: element.y });
 					}
@@ -547,89 +708,117 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		// Resize columns (x axis)
 		let remainingXChange: number = change.x;
-		const activeColumns = this.gridSizes.columns.filter(col => col.getSizeByDimension("x") > epsilon);
-		if (activeColumns.length === 0) {
-			remainingXChange = 0;
-		}
-		while (remainingXChange > epsilon) {
-			let smallestLength: number = activeColumns[0].getSizeByDimension("x");
-			let secondSmallestLength: number = Infinity;
-
-			activeColumns.forEach((col) => {
-				let colLength: number = col.getSizeByDimension("x");
-				if (colLength < smallestLength - epsilon) {  // New smallest length found
-					secondSmallestLength = smallestLength;
-					smallestLength = colLength;
-				} else if (colLength > smallestLength + epsilon) {
-					secondSmallestLength = Math.min(secondSmallestLength, colLength);
-				}
-			});
-
-			let sizeToAdd: number = secondSmallestLength === Infinity
-				? remainingXChange
-				: (secondSmallestLength - smallestLength);
-
-			let smallestCols = activeColumns.filter(col =>
-				Math.abs(col.getSizeByDimension("x") - smallestLength) <= epsilon
+		if (remainingXChange > epsilon) {
+			const growCols = this.gridSizes.columns.filter((_, col_index) =>
+				this.gridMatrix.some(row => row[col_index]?.elements?.some(el => el.sizeMode.x === "grow"))
 			);
 
-			sizeToAdd = Math.min(sizeToAdd, remainingXChange / smallestCols.length);
+			if (growCols.length > 0) {
+				const share = remainingXChange / growCols.length;
+				growCols.forEach(col => {
+					col.setContentSizeByDimension(col.getSizeByDimension("x") + share, "x");
+				});
+				remainingXChange = 0;
+			} else {
+				const activeColumns = this.gridSizes.columns.filter(col => col.getSizeByDimension("x") > epsilon);
+				if (activeColumns.length === 0) {
+					remainingXChange = 0;
+				}
+				while (remainingXChange > epsilon) {
+					let smallestLength: number = activeColumns[0].getSizeByDimension("x");
+					let secondSmallestLength: number = Infinity;
 
-			smallestCols.forEach((col) => {
-				col.setSizeByDimension(col.getSizeByDimension("x") + sizeToAdd, "x");
-				remainingXChange -= sizeToAdd;
-			});
+					activeColumns.forEach((col) => {
+						let colLength: number = col.getSizeByDimension("x");
+						if (colLength < smallestLength - epsilon) {  // New smallest length found
+							secondSmallestLength = smallestLength;
+							smallestLength = colLength;
+						} else if (colLength > smallestLength + epsilon) {
+							secondSmallestLength = Math.min(secondSmallestLength, colLength);
+						}
+					});
+
+					let sizeToAdd: number = secondSmallestLength === Infinity
+						? remainingXChange
+						: (secondSmallestLength - smallestLength);
+
+					let smallestCols = activeColumns.filter(col =>
+						Math.abs(col.getSizeByDimension("x") - smallestLength) <= epsilon
+					);
+
+					sizeToAdd = Math.min(sizeToAdd, remainingXChange / smallestCols.length);
+
+					smallestCols.forEach((col) => {
+						col.setContentSizeByDimension(col.getSizeByDimension("x") + sizeToAdd, "x");
+						remainingXChange -= sizeToAdd;
+					});
+				}
+			}
 		}
 
 		// Resize rows (y axis)
 		let remainingYChange: number = change.y;
-		const activeRows = this.gridSizes.rows.filter(row => row.getSizeByDimension("y") > epsilon);
-		if (activeRows.length === 0) {
-			remainingYChange = 0;
-		}
-		while (remainingYChange > epsilon) {
-			let smallestLength: number = activeRows[0].getSizeByDimension("y");
-			let secondSmallestLength: number = Infinity;
-
-			activeRows.forEach((row) => {
-				let rowLength: number = row.getSizeByDimension("y");
-				if (rowLength < smallestLength - epsilon) {  // New smallest length found
-					secondSmallestLength = smallestLength;
-					smallestLength = rowLength;
-				} else if (rowLength > smallestLength + epsilon) {
-					secondSmallestLength = Math.min(secondSmallestLength, rowLength);
-				}
-			});
-
-			let sizeToAdd: number = secondSmallestLength === Infinity
-				? remainingYChange
-				: (secondSmallestLength - smallestLength);
-
-			let smallestRows = activeRows.filter(row =>
-				Math.abs(row.getSizeByDimension("y") - smallestLength) <= epsilon
+		if (remainingYChange > epsilon) {
+			const growRows = this.gridSizes.rows.filter((_, row_index) =>
+				this.gridMatrix[row_index]?.some(cell => cell?.elements?.some(el => el.sizeMode.y === "grow"))
 			);
 
-			sizeToAdd = Math.min(sizeToAdd, remainingYChange / smallestRows.length);
+			if (growRows.length > 0) {
+				const share = remainingYChange / growRows.length;
+				growRows.forEach(row => {
+					row.setContentSizeByDimension(row.getSizeByDimension("y") + share, "y");
+				});
+				remainingYChange = 0;
+			} else {
+				const activeRows = this.gridSizes.rows.filter(row => row.getSizeByDimension("y") > epsilon);
+				if (activeRows.length === 0) {
+					remainingYChange = 0;
+				}
+				while (remainingYChange > epsilon) {
+					let smallestLength: number = activeRows[0].getSizeByDimension("y");
+					let secondSmallestLength: number = Infinity;
 
-			smallestRows.forEach((row) => {
-				row.setSizeByDimension(row.getSizeByDimension("y") + sizeToAdd, "y");
-				remainingYChange -= sizeToAdd;
-			});
+					activeRows.forEach((row) => {
+						let rowLength: number = row.getSizeByDimension("y");
+						if (rowLength < smallestLength - epsilon) {  // New smallest length found
+							secondSmallestLength = smallestLength;
+							smallestLength = rowLength;
+						} else if (rowLength > smallestLength + epsilon) {
+							secondSmallestLength = Math.min(secondSmallestLength, rowLength);
+						}
+					});
+
+					let sizeToAdd: number = secondSmallestLength === Infinity
+						? remainingYChange
+						: (secondSmallestLength - smallestLength);
+
+					let smallestRows = activeRows.filter(row =>
+						Math.abs(row.getSizeByDimension("y") - smallestLength) <= epsilon
+					);
+
+					sizeToAdd = Math.min(sizeToAdd, remainingYChange / smallestRows.length);
+
+					smallestRows.forEach((row) => {
+						row.setContentSizeByDimension(row.getSizeByDimension("y") + sizeToAdd, "y");
+						remainingYChange -= sizeToAdd;
+					});
+				}
+			}
 		}
 
-		// // Apply the grown column and row sizes to cells:
-		// this.applyCellSizes();
+		// Apply the grown column and row sizes to cells:
+		this.propogateCellDimensions();
 
-		// // Apply the grown sizes to subgrids:
+		// Apply the grown sizes to subgrids:
 		// this.applySizesToSubgrids();
 
 		// Iterate over cells and grow each
 		this.gridMatrix.forEach((row, row_index) => {
 			row.forEach((cell, column_index) => {
 				if (cell?.elements !== undefined) {
-					let cellRect: Size = this.cells[row_index][column_index];
+					let targetCell: PaddedBox = this.cells[row_index][column_index];
 
-					if (cellRect === undefined) {
+					if (targetCell === undefined) {
 						throw new Error(`Index out of bounds row ${row_index}, col: ${column_index}`)
 					}
 
@@ -639,12 +828,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						let childBottomRight: { row: number, col: number } | undefined = this.getElementBottomRight(child);
 
-						// Create a rect union if the child is in multiple cells
-						if (childBottomRight !== undefined && (childBottomRight?.col !== column_index || childBottomRight?.row !== row_index)) {
-							cellRect = this.getCellUnionSize({ row: row_index, col: column_index }, childBottomRight);
+						let cellContentSize: Size;
+						if (this.isSubgridChild(child)) {
+							cellContentSize = (childBottomRight !== undefined && (childBottomRight.col !== column_index || childBottomRight.row !== row_index))
+								? this.getCellUnionSize({ row: row_index, col: column_index }, childBottomRight)
+								: { width: targetCell.width, height: targetCell.height };
+						} else {
+							cellContentSize = (childBottomRight !== undefined && (childBottomRight.col !== column_index || childBottomRight.row !== row_index))
+								? this.getCellUnionContentSize({ row: row_index, col: column_index }, childBottomRight)
+								: { width: targetCell.contentWidth, height: targetCell.contentHeight };
 						}
 
-						child.growElement(cellRect);
+						child.growElement(cellContentSize);
 					}
 
 				}
@@ -654,11 +849,21 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return change;
 	}
 
+	public override enforceBindings(): void {
+		super.enforceBindings();
+		for (const col of this.gridSizes.columns) {
+			col.enforceBindings();
+		}
+		for (const row of this.gridSizes.rows) {
+			row.enforceBindings();
+		}
+	}
+
 
 	// ------ Helpers ---------
 	/**
 	 * Computes the positions and sizes of cells in a grid layout.
-	 * Initializes the cells array with Spacial objects representing each cell's geometry.
+	 * Initializes the cells array with PaddedBox objects representing each cell's geometry.
 	 * Each cell's position is calculated based on cumulative widths (x-axis) and heights (y-axis)
 	 * from the grid's content origin point (contentX, contentY).
 	 * 
@@ -669,69 +874,125 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	 * @protected
 	 * @returns {void}
 	 */
-	protected computeCells() {
-		// First let's generate the sizes and positions of each cell
-
-		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new Spacial()));
-
+	protected positionCells() {
 		var xCount: number = 0;
 		var yCount: number = 0;
 
-		// Adjusts for the "fake" padding that subgrids can have (using the extra mechanic)
 		var startX = this instanceof Subgrid ? this.x : this.cx;
 		var startY = this instanceof Subgrid ? this.y : this.cy;
 
 		for (var row = 0; row < this.numRows; row++) {
 			xCount = 0;
-			var rowHeight: number = this.gridSizes.rows[row].height;
+			var rowHeight: number = this.gridSizes.rows[row]?.height ?? 0;
 
 			for (var col = 0; col < this.numColumns; col++) {
-				var colWidth: number = this.gridSizes.columns[col].width;
+				var colWidth: number = this.gridSizes.columns[col]?.width ?? 0;
 
-				this.cells[row][col] = new Spacial({
-					contentWidth: colWidth,
-					contentHeight: rowHeight,
-					x: startX + xCount,
-					y: startY + yCount,
-					ref: "grid-cell",
-					type: "lower-abstract"
-				})
+				let targetCell = this.cells[row]?.[col];
+				if (targetCell) {
+					targetCell.x = startX + xCount;
+					targetCell.y = startY + yCount;
+				}
 
 				xCount += colWidth;
 			}
 
 			yCount += rowHeight;
 		}
-
-
-		// Set positions of columns and rows
-		this.gridSizes.columns.forEach((col, i) => {
-			col.x = this.cells[0][i].x;
-			col.y = this.cells[0][0].y;
-		})
-		this.gridSizes.rows.forEach((row, i) => {
-			row.y = this.cells[i][0].y;
-			row.x = this.cells[0][0].x;
-		})
 	}
 
-	protected applyCellSizes() {
-		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new Spacial()));
+	protected positionColRows() {
+		// Set positions of columns and rows
+		this.gridSizes.columns.forEach((col, i) => {
+			if (this.cells[0]?.[i]) {
+				col.x = this.cells[0][i].x;
+				col.y = this.cells[0][0].y;
+				col.width = this.gridSizes.columns[i].width;
+				col.height = this.contentHeight;
+			}
+		});
+		this.gridSizes.rows.forEach((row, i) => {
+			if (this.cells[i]?.[0]) {
+				row.y = this.cells[i][0].y;
+				row.x = this.cells[0][0].x;
+			}
+		});
+	}
 
-		this.gridSizes.rows.forEach((row, row_index) => {
-			this.gridSizes.columns.forEach((column, column_index) => {
-				let targetCell = this.cells[row_index][column_index];
+	public getColumnSpacial(colIndex: number): GridColumn | undefined {
+		return this.gridSizes.columns[colIndex];
+	}
 
-				targetCell.width = column.width;
-				targetCell.height = row.height;
-			})
-		})
+
+
+	protected positionConstituents() {
+		this.positionCells();
+		this.positionColRows();
+	}
+
+	protected constructCells() {
+		this.cells = Array.from({ length: this.numRows }, () => Array.from({ length: this.numColumns }, () => new PaddedBox({
+			padding: [0, 0, 0, 0],
+			contentWidth: 0,
+			contentHeight: 0,
+			placementMode: { type: "free" },
+			placementControl: "user",
+			sizeMode: { x: "fixed", y: "fixed" },
+			ref: "grid-cell",
+			type: "lower-abstract"
+		})));
+
+		// Apply subgrid padding to cells within subgrids
+		this.subgridChildren.forEach((sg) => {
+			let topLeft: { row: number, col: number } = sg.placementMode.config.coords;
+			for (let r = 0; r < sg.numRows; r++) {
+				let gridRow = topLeft.row + r;
+				if (gridRow >= this.numRows) continue;
+
+				const isSgFirstRow = r === 0;
+				const isSgLastRow = r === sg.numRows - 1;
+
+				for (let c = 0; c < sg.numColumns; c++) {
+					let gridCol = topLeft.col + c;
+					if (gridCol >= this.numColumns) continue;
+
+					const isSgFirstCol = c === 0;
+					const isSgLastCol = c === sg.numColumns - 1;
+
+					let targetCell = this.cells[gridRow]?.[gridCol];
+					if (!targetCell) continue;
+
+					targetCell.padding = [
+						(isSgFirstRow ? sg.padding[0] : 0) + targetCell.padding[0],
+						(isSgLastCol ? sg.padding[1] : 0) + targetCell.padding[1],
+						(isSgLastRow ? sg.padding[2] : 0) + targetCell.padding[2],
+						(isSgFirstCol ? sg.padding[3] : 0) + targetCell.padding[3]
+					];
+				}
+			}
+		});
+	}
+
+	protected propogateCellDimensions() {
+		this.cells.forEach((row, row_index) => {
+			let rowSize = this.gridSizes.rows[row_index];
+			row.forEach((targetCell, column_index) => {
+				let column = this.gridSizes.columns[column_index];
+
+				if (column) {
+					targetCell.width = column.width;
+				}
+				if (rowSize) {
+					targetCell.height = rowSize.height;
+				}
+			});
+		});
 	}
 
 	/**
-	 * Returns a positioned Spacial that is the geometric union of the
+	 * Returns a positioned PaddedBox that is the geometric union of the
 	 * cells contained in the rectangle defined by topLeft and bottomRight
-	 * (inclusive). The returned Spacial carries x/y coordinates taken
+	 * (inclusive). The returned PaddedBox carries x/y coordinates taken
 	 * from the component cells, so computePositions must have been run
 	 * before calling this method for meaningful absolute positions.
 	 *
@@ -739,14 +1000,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	 * @param bottomRight - bottom-right cell coordinate (inclusive)
 	 * @throws Error if the provided coordinates are not in the expected order
 	 */
-	public getPositionedCellUnion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial {
+	public getPositionedCellUnion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): PaddedBox {
 		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
 			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
 		}
 
-		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+		let cells: PaddedBox[] = this.getCellsInRegion(topLeft, bottomRight);
 
-		let union: Spacial = Spacial.CreateUnion(...cells);
+		let union: PaddedBox = PaddedBox.CreateUnion(...cells);
 
 		// Returns a positioned union of the cells in the region specified. Will
 		// not return an expected result if cells have not been positioned
@@ -772,14 +1033,34 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			throw new Error(`Erroneous coordinate input topLeft: {row: ${topLeft.row}, col: ${topLeft.col}}, bottomRight: {row: ${bottomRight.row}, col: ${bottomRight.col}}`)
 		}
 
-		let cells: Spacial[] = this.getCellsInRegion(topLeft, bottomRight);
+		let width: number = 0;
+		for (let c = topLeft.col; c <= bottomRight.col; c++) {
+			if (this.cells[topLeft.row] && this.cells[topLeft.row][c]) {
+				width += this.cells[topLeft.row][c].width;
+			}
+		}
 
-		let width: number = cells.reduce((w, c) => w + c.width, 0);
-		let height: number = cells.reduce((h, c) => h + c.height, 0);
+		let height: number = 0;
+		for (let r = topLeft.row; r <= bottomRight.row; r++) {
+			if (this.cells[r] && this.cells[r][topLeft.col]) {
+				height += this.cells[r][topLeft.col].height;
+			}
+		}
 
-		// Returns *size* of cell union. Works only for adjacent cells, and can be used before
-		// computePositions has been run.
 		return { width: width, height: height };
+	}
+
+	public getCellUnionContentSize(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Size {
+		let totalSize = this.getCellUnionSize(topLeft, bottomRight);
+		let padTop = this.cells[topLeft.row]?.[topLeft.col]?.padding[0] ?? 0;
+		let padRight = this.cells[topLeft.row]?.[bottomRight.col]?.padding[1] ?? 0;
+		let padBottom = this.cells[bottomRight.row]?.[topLeft.col]?.padding[2] ?? 0;
+		let padLeft = this.cells[topLeft.row]?.[topLeft.col]?.padding[3] ?? 0;
+
+		return {
+			width: Math.max(0, totalSize.width - padLeft - padRight),
+			height: Math.max(0, totalSize.height - padTop - padBottom)
+		};
 	}
 
 	private growSubgrids() {
@@ -948,7 +1229,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridMatrix[coords.row][coords.column] = gridEntry;
 	}
 
-	public setGrid(grid: GridCell<C>[][], sizes: { columns: Spacial[], rows: Spacial[] }, cells: Spacial[][]) {
+	public setGrid(grid: GridCell<C>[][], sizes: { columns: GridColumn[], rows: Spacial[] }, cells: PaddedBox[][]) {
 		this.gridMatrix = grid;
 		this.gridSizes = sizes;
 		this.cells = cells;
@@ -1027,7 +1308,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				let row = r + topLeft.row;
 				let col = c + topLeft.col;
 
-				let cell = this.gridMatrix[row][col]
+				let cell: GridCell<C> = this.gridMatrix[row]?.[col]
 				if (cell?.elements === undefined) {
 					console.warn(`Erroneous form for element ${child.ref}`)
 					continue
@@ -1243,7 +1524,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.gridMatrix[i].splice(INDEX, 0, newColumn[i]);
 		}
 
-		this.shiftElementColumnIndexes(INDEX + 1, 1);
+		if (this.minColWidths.length < this.numColumns) {
+			this.minColWidths.splice(INDEX, 0, 0);
+		}
+
+		this.gridSizes.columns.splice(INDEX, 0, new GridColumn(INDEX, this.id));
+
+		this.shiftColumnIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
 	}
@@ -1286,7 +1573,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		this.gridMatrix.splice(INDEX, 0, newRow);
 
-		this.shiftElementRowIndexes(INDEX, 1);
+		if (this.minRowHeights.length < this.numRows) {
+			this.minRowHeights.splice(INDEX, 0, 0);
+		}
+
+		this.gridSizes.rows.splice(INDEX, 0, new Spacial({
+			ref: `row-${INDEX}`,
+			type: "lower-abstract",
+			placementMode: { type: "prefab" },
+			placementControl: "auto",
+			parentId: this.id
+		}));
+
+		this.shiftRowIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
 	}
@@ -1311,7 +1610,21 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			this.gridMatrix[i].splice(INDEX, 1);
 		}
 
-		this.shiftElementColumnIndexes(INDEX, -1);
+		if (INDEX < this.minColWidths.length) {
+			this.minColWidths.splice(INDEX, 1);
+		}
+
+		if (this.gridSizes.columns.length > INDEX) {
+			const removedCol = this.gridSizes.columns[INDEX];
+			if (removedCol) {
+				for (const bind of [...removedCol.bindings]) {
+					removedCol.clearBindsTo(bind.targetObject);
+				}
+			}
+			this.gridSizes.columns.splice(INDEX, 1);
+		}
+
+		this.shiftColumnIndexes(INDEX, -1);
 
 		// Shrink split elements by either removing a col
 		// from subgrid or reducing grid-size;
@@ -1344,7 +1657,21 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		this.gridMatrix.splice(INDEX, 1);
 
-		this.shiftElementRowIndexes(INDEX, -1);
+		if (INDEX < this.minRowHeights.length) {
+			this.minRowHeights.splice(INDEX, 1);
+		}
+
+		if (this.gridSizes.rows.length > INDEX) {
+			const removedRow = this.gridSizes.rows[INDEX];
+			if (removedRow) {
+				for (const bind of [...removedRow.bindings]) {
+					removedRow.clearBindsTo(bind.targetObject);
+				}
+			}
+			this.gridSizes.rows.splice(INDEX, 1);
+		}
+
+		this.shiftRowIndexes(INDEX, -1);
 	}
 
 	// --- Helpers ----
@@ -1443,7 +1770,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return elements;
 	}
 
-	protected shiftElementColumnIndexes(from: number, amount: number = 1) {
+	protected shiftColumnIndexes(from: number, amount: number = 1) {
 		// Update grid indexes
 		for (let col_index = from; col_index < this.numColumns; col_index++) {
 			let col: GridCell<C>[] = this.getColumn(col_index) ?? [];
@@ -1471,9 +1798,19 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				}
 			})
 		}
+
+		// Update grid column spacials
+		for (let c = from; c < this.gridSizes.columns.length; c++) {
+			const col = this.gridSizes.columns[c];
+			if (col instanceof GridColumn) {
+				col.columnIndex = c;
+				col.id = `${this.id}-col-${c}`;
+				col.ref = `column-${c}`;
+			}
+		}
 	}
 
-	protected shiftElementRowIndexes(from: number, amount: number = 1) {
+	protected shiftRowIndexes(from: number, amount: number = 1) {
 		// Update grid indexes
 		for (let row_index = from; row_index < this.numRows; row_index++) {
 			let row: GridCell<C>[] = this.getRow(row_index) ?? [];
@@ -1500,6 +1837,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 					})
 				}
 			})
+		}
+
+		// Update grid row spacials
+		for (let r = from; r < this.gridSizes.rows.length; r++) {
+			const row = this.gridSizes.rows[r];
+			if (row) {
+				row.ref = `row-${r}`;
+			}
 		}
 	}
 	//#endregion
@@ -1541,7 +1886,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return this.gridMatrix[coords.row]?.[coords.col];
 	}
 
-	public getCells(): Spacial[] {
+	public getCells(): PaddedBox[] {
 		return this.cells.flat();
 	}
 
@@ -1627,13 +1972,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return subMatrix;
 	}
 
-	public getCellsInRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial[] {
+	public getCellsInRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): PaddedBox[] {
 		// Check valid input:
 		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
 			return []
 		}
 
-		let result: Spacial[] = [];
+		let result: PaddedBox[] = [];
 
 		for (let r = topLeft.row; r <= bottomRight.row; r++) {
 			if (this.cells[r] === undefined) { continue }
@@ -1675,6 +2020,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	//#region 
 	public setChildSize(child: GridElement<C>, size: { noRows: number, noCols: number }) {
 		let location: { row: number, col: number } | undefined = this.locateElement(child)
+		// let location: { row: number, col: number } | undefined = child.placementMode.config.coords
 
 		if (location === undefined) {
 			console.warn(`Cannot locate child for size change ${child.ref}`)
@@ -1747,27 +2093,41 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				throw new Error(`Subgrid '${sg.ref}' region out of parent grid '${this.ref}' bounds`)
 			}
 
-			let columns: Spacial[] = this.gridSizes.columns.slice(topLeft.col, bottomRight.col);
+			let columns: GridColumn[] = this.gridSizes.columns.slice(topLeft.col, bottomRight.col);
 			let rows: Spacial[] = this.gridSizes.rows.slice(topLeft.row, bottomRight.row);
 
 			let totalWidth = columns.reduce((w, c) => w + c.width, 0);
 			let totalHeight = rows.reduce((h, r) => h + r.height, 0);
 
-			rows.forEach((row) => {
-				row.width = totalWidth
-			})
-			columns.forEach((col) => {
-				col.height = totalHeight
-			})
+			let subgridColumns: GridColumn[] = columns.map((parentCol, idx) => {
+				const existing = sg.gridSizes.columns[idx];
+				const subCol = (existing instanceof GridColumn) ? existing : new GridColumn(idx, sg.id);
+				subCol.width = parentCol.width;
+				subCol.height = totalHeight;
+				return subCol;
+			});
+			let subgridRows: Spacial[] = rows.map((parentRow, idx) => {
+				const existing = sg.gridSizes.rows[idx];
+				const subRow = (existing instanceof Spacial) ? existing : new Spacial({
+					ref: `row-${idx}`,
+					type: "lower-abstract",
+					placementMode: { type: "free" },
+					placementControl: "auto",
+					parentId: sg.id
+				});
+				subRow.width = totalWidth;
+				subRow.height = parentRow.height;
+				return subRow;
+			});
 
-			sg.gridSizes.columns = columns;
-			sg.gridSizes.rows = rows;
+			sg.gridSizes.columns = subgridColumns;
+			sg.gridSizes.rows = subgridRows;
 
 			sg.width = totalWidth;
 			sg.height = totalHeight;
 
 			// Set cells;
-			let cellSubregion: Spacial[][] = this.getCellRegion(topLeft, bottomRight);
+			let cellSubregion: PaddedBox[][] = this.getCellRegion(topLeft, bottomRight);
 			sg.cells = cellSubregion;
 		})
 	}
@@ -1775,13 +2135,29 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	private applyPositionsToSubgrids() {
 		this.subgridChildren.forEach((sg) => {
 			let topLeft: { row: number, col: number } = sg.placementMode.config.coords;
-			let topLeftCell: Spacial = this.cells[topLeft.row][topLeft.col];
+			let topLeftCell: PaddedBox = this.cells[topLeft.row][topLeft.col];
 
 			sg.x = topLeftCell.x;
 			sg.y = topLeftCell.y;
 
-			sg.computeCells();
+			sg.positionConstituents();
 		})
+	}
+
+	public setMinColumnWidth(colIndex: number, width: number) {
+		if (colIndex < 0 || colIndex >= this.numColumns) {
+			console.warn(`Column index ${colIndex} out of bounds (numColumns: ${this.numColumns})`);
+			return;
+		}
+		this.minColWidths[colIndex] = width;
+	}
+
+	public setMinRowHeight(rowIndex: number, height: number) {
+		if (rowIndex < 0 || rowIndex >= this.numRows) {
+			console.warn(`Row index ${rowIndex} out of bounds (numRows: ${this.numRows})`);
+			return;
+		}
+		this.minRowHeights[rowIndex] = height;
 	}
 	//#endregion
 	// -----------------------------------------------
@@ -1789,6 +2165,13 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	// ---------------- Helpers ---------------------
 	//#region 
+	protected doesCellHaveChild(cell: GridCell<C>): boolean {
+		if (cell === undefined) { return true; }
+		let hasElements = cell.elements !== undefined && cell.elements.length > 0;
+		let hasSources = cell.sources !== undefined && Object.keys(cell.sources).length > 0;
+		return !hasElements && !hasSources;
+	}
+
 	protected isCellArrayEmpty(target: GridCell<C>[]): boolean {
 		return !target.some((c) => c !== undefined)
 	}
@@ -1868,18 +2251,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 	}
 
-	private getCellRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): Spacial[][] {
+	private getCellRegion(topLeft: { row: number, col: number }, bottomRight: { row: number, col: number }): PaddedBox[][] {
 		if (topLeft.row > bottomRight.row || topLeft.col > bottomRight.col) {
 			throw new Error(`Invalid input topLeft: (${topLeft.row}, ${topLeft.col})-(${bottomRight.row}, ${bottomRight.col})`)
 		}
 
-		let cells: Spacial[][] = [];
+		let cells: PaddedBox[][] = [];
 
 		for (let r = topLeft.row; r <= bottomRight.row; r++) {
-			let row: Spacial[] = this.cells[r];
+			let row: PaddedBox[] = this.cells[r];
 			if (row === undefined) { continue }
 
-			let rowSlice: Spacial[] = row.slice(topLeft.col, bottomRight.col);
+			let rowSlice: PaddedBox[] = row.slice(topLeft.col, bottomRight.col);
 			cells.push(rowSlice);
 		}
 

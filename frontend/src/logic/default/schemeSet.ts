@@ -28,7 +28,6 @@ import { DIPSI2 } from "./composite/DIPSI2";
 import { MLEV } from "./composite/MLEV";
 import { SPIN_LOCK } from "./composite/SPIN_LOCK";
 import { WALTZ } from "./composite/WALTZ";
-import { TEMPLATE_DIAGRAM } from "./diagrams/templateDiagram";
 
 import { DEFAULT_ANNOTATION_DELTA } from "./annotation/delta";
 import { DEFAULT_ANNOTATION_DELTA_CAP } from "./annotation/Delta_cap";
@@ -50,8 +49,6 @@ import { DEFAULT_ANNOTATION_LABEL_DELTA_CAP } from "./annotation/label_Delta_cap
 import { DEFAULT_ANNOTATION_LABEL_TAU } from "./annotation/label_tau";
 import { DEFAULT_ANNOTATION_LABEL_T1 } from "./annotation/label_t1";
 import { DEFAULT_ANNOTATION_LABEL_T1_HALF } from "./annotation/label_t1_half";
-import { D1PSYCHE } from "./diagrams/1DPSYCHE";
-import { D1SAPPHIRE } from "./diagrams/1DSAPPHIRE";
 
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
@@ -64,7 +61,6 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 			},
 			components: {
 				"e9530b12-6b62-48e0-89de-60b61c7b87d8": DEFAULT_LATEX,
-				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e7f": DEFAULT_LABEL,
 				"f1a91a92-6d27-46ef-bc96-107077a5ef01": DEFAULT_TEXT,
 				"260710ef-5d40-4ada-bde2-044b17ab271a": DEFAULT_180S,
 				"74d4af8c-e981-4f12-afa0-62a6ddff9d5b": DEFAULT_ACQUIRE,
@@ -108,9 +104,7 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e82": DEFAULT_ANNOTATION_LABEL_DELTA_CAP,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e83": DEFAULT_ANNOTATION_LABEL_TAU,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e84": DEFAULT_ANNOTATION_LABEL_T1,
-				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e85": DEFAULT_ANNOTATION_LABEL_T1_HALF,
-				"c8014d42-f304-4e2e-a076-a6a425131ad4": D1PSYCHE,
-				"c4014e43-f304-4e2e-a076-a6a425131ad4": D1SAPPHIRE
+				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e85": DEFAULT_ANNOTATION_LABEL_T1_HALF
 			}
 		}
 	}

@@ -3,32 +3,47 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { AllComponentTypes, ID, UserComponentType } from "../../logic/point";
 import Visual from "../../logic/visual";
+import Spacial from "../../logic/spacial";
+import { useAppSelector } from "../../redux/hooks";
+import { isGridColumn } from "../../logic/grid";
 
 interface IHitboxLayerProps {
 	selectedElementId: string | undefined;
 
-	setHoveredElement: (element?: Visual, rawElement?: Visual) => void;
+	setHoveredElement: (element?: Spacial, rawElement?: Spacial) => void;
 }
 
 const BASE_LAYER = 10000;
 
 interface IFocusRules {
+	neverSelectable: AllComponentTypes[];
 	alwaysSelectable: (AllComponentTypes | ((element: Visual) => boolean))[];
 	notSelectableIfChildOf: Partial<Record<AllComponentTypes, AllComponentTypes[]>>;
 }
 
 export const FocusRules: IFocusRules = {
+	neverSelectable: ["diagram", "sequence-aligner", "sequence"],
 	alwaysSelectable: [
 		"channel",
+		"collection",
 		"svg",
+		(element: Visual) => element.type === "line" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
+		(element: Visual) => element.type === "rect" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
 
 		"label-group",
 		"simple-label-group",
 		(element: Visual) => element.pulseLayoutConfig !== undefined && element.placementMode?.type === "grid"
 	],
 	notSelectableIfChildOf: {
-		"svg": ["label-group", "simple-label-group"],
-		"rect": ["label-group", "simple-label-group"]
+		"svg": ["label-group", "simple-label-group", "collection"],
+		"rect": ["label-group", "simple-label-group", "collection"],
+		"line": ["label-group", "simple-label-group", "collection"],
+		"latex": ["collection"],
+		"text": ["collection"],
+		"label": ["collection"],
+		"label-group": ["collection"],
+		"simple-label-group": ["collection"],
+		"collection": ["collection"]
 	}
 };
 
@@ -40,24 +55,42 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	var hitboxSVG: G = new G();
 	var hitboxSvgRef = useRef<SVGSVGElement | null>(null);
 
+	const isAltHeldRef = useRef(false);
+	const columnMode = useAppSelector((state) => state.application.columnMode);
+
 	// Create hitboxes
 	const createHitboxDom = () => {
 		hitboxSVG = new G();
 
 		Object.values(ENGINE.handler.allElements).forEach((e) => {
-			if (e.type !== "diagram") {
+			if (!FocusRules.neverSelectable.includes(e.type)) {
 				hitboxSVG.add(e.getHitbox())
 			}
-		})
+		});
+
+		if (columnMode) {
+			for (const seq of ENGINE.handler.sequences) {
+				if (seq.gridSizes?.columns) {
+					for (const col of seq.gridSizes.columns) {
+						hitboxSVG.add(col.getHitbox());
+					}
+				}
+			}
+		}
 	};
 
-	const getMouseElementFromID = (id: ID | undefined): Visual | undefined => {
+	const getMouseElementFromID = (id: ID | undefined): Spacial | undefined => {
 		if (id === undefined) {
 			return undefined;
 		}
-		var initialElement: Visual | undefined = ENGINE.handler.identifyElement(id);
+		var initialElement: Spacial | undefined = ENGINE.handler.identifyElementOrStructure(id);
 		if (initialElement === undefined) {
 			return undefined;
+		}
+
+		// If initialElement is a sequence column or not a full Visual, return it directly
+		if (isGridColumn(initialElement) || !(initialElement instanceof Visual)) {
+			return initialElement;
 		}
 
 		// 1. Build the path of elements from initialElement up to the root diagram
@@ -65,11 +98,19 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		let curr: Visual | undefined = initialElement;
 
 		while (curr) {
-			path.unshift(curr); // Start of array is topmost under root, end is initialElement  // emergency escape
+			if (!FocusRules.neverSelectable.includes(curr.type)) {
+				path.unshift(curr); // Start of array is topmost under root, end is initialElement  // emergency escape
+			}
 			if (curr.parentId === undefined || curr.parentId === ENGINE.handler.diagram.id || curr.parentId === curr.id) {
 				break;
 			}
-			curr = ENGINE.handler.identifyElement(curr.parentId);
+			const parent = ENGINE.handler.identifyElement(curr.parentId);
+			if (parent && FocusRules.neverSelectable.includes(parent.type)) {
+				if (parent.parentId === undefined || parent.parentId === ENGINE.handler.diagram.id) {
+					break;
+				}
+			}
+			curr = parent;
 		}
 
 		let selectedIndex: number = path.findIndex(el => el.id === props.selectedElementId);
@@ -77,7 +118,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		// 2. Bottom-up fine tuning for always selectable elements
 		let bottomUpCurr: Visual | undefined = initialElement;
 		while (bottomUpCurr) {
-			const type: UserComponentType = (bottomUpCurr.constructor as typeof Visual).ElementType;
+			const type: AllComponentTypes = bottomUpCurr.type ?? (bottomUpCurr.constructor as typeof Visual).ElementType;
 			const exceptions: AllComponentTypes[] = FocusRules.notSelectableIfChildOf[type] || [];
 
 			const isAlwaysSelectable = FocusRules.alwaysSelectable.some((rule) => {
@@ -92,7 +133,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 				let ancestor: Visual | undefined = ENGINE.handler.identifyElement(bottomUpCurr.parentId ?? "");
 
 				while (ancestor !== undefined) {
-					const ancestorType: UserComponentType = (ancestor.constructor as typeof Visual).ElementType;
+					const ancestorType: AllComponentTypes = ancestor.type ?? (ancestor.constructor as typeof Visual).ElementType;
 
 					if (exceptions.includes(ancestorType)) {
 						let bottomUpCurrIndex: number = path.findIndex(el => el.id === bottomUpCurr?.id);
@@ -104,7 +145,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 						}
 					}
 
-					if (ancestor.parentId === undefined || ancestor.parentId === ENGINE.handler.diagram.id) break;
+					if (ancestor.parentId === undefined || ancestor.parentId === ENGINE.handler.diagram.id || FocusRules.neverSelectable.includes(ancestor.type)) break;
 					ancestor = ENGINE.handler.identifyElement(ancestor.parentId);
 				}
 
@@ -119,6 +160,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			}
 			if (bottomUpCurr.parentId === undefined || bottomUpCurr.parentId === ENGINE.handler.diagram.id) break;
 			bottomUpCurr = ENGINE.handler.identifyElement(bottomUpCurr.parentId);
+			if (bottomUpCurr && FocusRules.neverSelectable.includes(bottomUpCurr.type)) break;
 		}
 
 		// 3. Group Depth Selection Logic
@@ -144,6 +186,11 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	const setHoveredElementRef = useRef(props.setHoveredElement);
 	setHoveredElementRef.current = props.setHoveredElement;
 
+	const lastRawTargetIdRef = useRef<string | undefined | null>(null);
+	useEffect(() => {
+		lastRawTargetIdRef.current = null;
+	}, [props.selectedElementId]);
+
 	useEffect(() => {
 		/** 
 		 * "X-Ray" Hover Detection:
@@ -151,9 +198,19 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 		 * document.elementsFromPoint returns an array of ALL elements under the cursor, 
 		 * allowing us to see "through" the draggable layer to find hitboxes underneath.
 		 */
-		const handleGlobalMouseMove = (e: MouseEvent) => {
-			if (!hitboxSvgRef.current) return;
-			const elements = document.elementsFromPoint(e.clientX, e.clientY);
+		let rafId: number | null = null;
+		let lastCoords: { x: number; y: number } | null = null;
+
+		const processHitTest = () => {
+			rafId = null;
+			if (!hitboxSvgRef.current || !lastCoords) return;
+
+			// If the ALT key is held, do not report any change in hovered element
+			if (isAltHeldRef.current && lastRawTargetIdRef.current) {
+				return;
+			}
+
+			const elements = document.elementsFromPoint(lastCoords.x, lastCoords.y);
 
 			let rawTargetId: string | undefined = undefined;
 			for (let i = 0; i < elements.length; i++) {
@@ -167,33 +224,81 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 				}
 			}
 
+			// Avoid re-calculating if the hovered target hasn't changed
+			if (rawTargetId === lastRawTargetIdRef.current) {
+				return;
+			}
+			lastRawTargetIdRef.current = rawTargetId;
+
 			if (rawTargetId === undefined) {
 				setHoveredElementRef.current(undefined);
 				return;
 			}
 
-			let parsedId: string = rawTargetId.split("-")[0];
-			let rawElement: Visual | undefined = ENGINE.handler.identifyElement(parsedId);
-			let element: Visual | undefined = getMouseElementFromIDRef.current(parsedId);
+			let parsedId: string = rawTargetId.replace(/-hitbox$/, "");
+			let rawElement: Spacial | undefined = ENGINE.handler.identifyElementOrStructure(parsedId);
+			let element: Spacial | undefined = getMouseElementFromIDRef.current(parsedId);
 			setHoveredElementRef.current(element, rawElement);
 		};
 
-		window.addEventListener("mousemove", handleGlobalMouseMove);
+		const handleGlobalPointerMove = (e: MouseEvent | PointerEvent) => {
+			lastCoords = { x: e.clientX, y: e.clientY };
+
+			if (isAltHeldRef.current && lastRawTargetIdRef.current) {
+				return;
+			}
+
+			if (rafId === null) {
+				rafId = requestAnimationFrame(processHitTest);
+			}
+		};
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Alt") {
+				e.preventDefault();
+				isAltHeldRef.current = true;
+			}
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.key === "Alt") {
+				isAltHeldRef.current = false;
+				if (lastCoords) {
+					processHitTest();
+				}
+			}
+		};
+
+		const handleBlur = () => {
+			isAltHeldRef.current = false;
+		};
+
+		window.addEventListener("pointermove", handleGlobalPointerMove, true);
+		window.addEventListener("keydown", handleKeyDown, true);
+		window.addEventListener("keyup", handleKeyUp, true);
+		window.addEventListener("blur", handleBlur);
 		return () => {
-			window.removeEventListener("mousemove", handleGlobalMouseMove);
+			if (rafId !== null) {
+				cancelAnimationFrame(rafId);
+			}
+			window.removeEventListener("pointermove", handleGlobalPointerMove, true);
+			window.removeEventListener("keydown", handleKeyDown, true);
+			window.removeEventListener("keyup", handleKeyUp, true);
+			window.removeEventListener("blur", handleBlur);
 		};
 	}, []);
 
 
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	useEffect(() => {
+		lastRawTargetIdRef.current = null;
 		createHitboxDom();
 
 		if (hitboxSvgRef.current && hitboxSVG) {
 			hitboxSvgRef.current.replaceChildren();
 			hitboxSvgRef.current.appendChild(hitboxSVG.node);
 		}
-	}, [store]);
+	}, [store, columnMode]);
 
 
 	return (

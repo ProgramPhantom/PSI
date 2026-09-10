@@ -8,14 +8,26 @@ export const recentDiagramsSelectors = recentDiagramsAdapter.getSelectors(select
 
 export const selectCurrentDiagramUUID = (state: RootState) => selectDiagramState(state).diagramUUID;
 
+export const selectCurrentTitle = createSelector(
+    [recentDiagramsSelectors.selectEntities, selectCurrentDiagramUUID],
+    (entities, uuid) => {
+        if (uuid) {
+            const diagram = entities[uuid];
+            if (diagram?.title) return diagram.title;
+        }
+        return "Untitled";
+    }
+);
+
 export const selectCurrentFileName = createSelector(
     [recentDiagramsSelectors.selectEntities, selectCurrentDiagramUUID],
     (entities, uuid) => {
         if (uuid) {
             const diagram = entities[uuid];
-            if (diagram) return diagram.name;
+            if (diagram?.fileName) return diagram.fileName;
+            if (diagram?.title) return diagram.title;
         }
-        return "unnamed";
+        return "Untitled";
     }
 );
 
@@ -27,6 +39,28 @@ export const selectCurrentDiagramSource = createSelector(
             if (diagram) return diagram.diagramSource;
         }
         return "local";
+    }
+);
+
+export const selectCurrentAuthor = createSelector(
+    [recentDiagramsSelectors.selectEntities, selectCurrentDiagramUUID],
+    (entities, uuid) => {
+        if (uuid) {
+            const diagram = entities[uuid];
+            if (diagram) return diagram.author ?? "";
+        }
+        return "";
+    }
+);
+
+export const selectCurrentInstitution = createSelector(
+    [recentDiagramsSelectors.selectEntities, selectCurrentDiagramUUID],
+    (entities, uuid) => {
+        if (uuid) {
+            const diagram = entities[uuid];
+            if (diagram) return diagram.institution ?? "";
+        }
+        return "";
     }
 );
 

@@ -9,46 +9,15 @@ import { IDiagram } from "../../logic/hasComponents/diagram";
 import { IDiagramMetadata } from "../../types/diagram";
 import { api } from "../api/api";
 import { RootState } from "../rootReducer";
-import { selectCurrentDiagramSource, selectCurrentFileName } from "../selectors/diagramSelectors";
-import { addRecentDiagram, setDiagramLoadStatus, setDiagramSource, setDiagramUUID, setFileName, setSaveState } from "../slices/diagramSlice";
+import { selectCurrentAuthor, selectCurrentDiagramSource, selectCurrentTitle, selectCurrentInstitution } from "../selectors/diagramSelectors";
+import { addRecentDiagram, setAuthor, setDiagramLoadStatus, setDiagramSource, setDiagramUUID, setTitle, setFileName, setInstitution, setSaveState } from "../slices/diagramSlice";
 import { loadAsset } from "./assetThunks";
 
 
 // -------------- Pure thunks ------------------
 export const getDiagramThunk = createAsyncThunk<File, string>(
     'diagrams/getDiagram',
-    async (diagramId, thunkAPI) => {
-        const state = thunkAPI.getState() as RootState;
-
-        let foundDiagram: any = null;
-        if (state.schemes?.schemes) {
-            for (const schemeInfo of Object.values(state.schemes.schemes)) {
-                const comp = schemeInfo.scheme?.components?.[diagramId];
-                if (comp && comp.type === "diagram") {
-                    foundDiagram = comp;
-                    break;
-                }
-            }
-        }
-
-        if (foundDiagram) {
-            const zip = new JSZip();
-            zip.file("diagram.json", JSON.stringify(foundDiagram, null, 2));
-
-            const manifest = {
-                format: "nmr-pulse-diagram",
-                version: 1,
-                UUID: diagramId,
-                source: "local",
-                diagramName: foundDiagram.ref || "unnamed",
-                dateCreated: new Date().toISOString()
-            };
-            zip.file("manifest.json", JSON.stringify(manifest));
-
-            const blob = await zip.generateAsync({ type: "blob" });
-            return new File([blob], `${foundDiagram.ref || "diagram"}.nmrd`, { type: "application/zip" }) as unknown as File;
-        }
-
+    async (diagramId) => {
         const response = await fetch(`/api/diagrams/${diagramId}`, { credentials: 'include', cache: "reload" });
         if (!response.ok) throw new Error('Failed to fetch diagram');
         return response.blob() as unknown as File;
@@ -94,13 +63,16 @@ export const newDiagram = createAsyncThunk<void, void>(
         ENGINE.resetDiagram();
         const currentUUID = uuidv7();
         thunkAPI.dispatch(setDiagramUUID(currentUUID));
+        thunkAPI.dispatch(setTitle("Untitled"));
+        thunkAPI.dispatch(setFileName("Untitled.nmrd"));
         thunkAPI.dispatch(addRecentDiagram({
-            name: "new-diagram",
+            title: "Untitled",
+            fileName: "Untitled.nmrd",
             diagramUUID: currentUUID,
             diagramSource: isLoggedIn ? "server" : "local",
             opened: new Date().toISOString()
         }));
-        
+
 
         thunkAPI.dispatch(saveDiagram({}))
 
@@ -129,12 +101,15 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
                 return
             }
 
+            const title = selectCurrentTitle(state);
             const metadataToUpload: IDiagramMetadata = {
                 UUID: currentUUID,
                 source: "server",
-                diagramName: selectCurrentFileName(state),
-                institution: undefined,
-                originalAuthor: isLoggedIn ? `${userState.data.firstname} ${userState.data.surname}`.trim() : undefined,
+                title: title,
+                fileName: `${title}.nmrd`,
+                diagramName: title,
+                institution: selectCurrentInstitution(state) || undefined,
+                originalAuthor: selectCurrentAuthor(state) || (isLoggedIn ? `${userState.data.firstname} ${userState.data.surname}`.trim() : undefined),
                 dateCreated: new Date().toISOString()
             };
 
@@ -176,9 +151,9 @@ export const uploadDiagram = createAsyncThunk<void, { stateObject: IDiagram, asN
     }
 );
 
-export const saveDiagram = createAsyncThunk<void, {fileName?: string}>(
+export const saveDiagram = createAsyncThunk<void, { fileName?: string }>(
     'application/saveDiagram',
-    async ({fileName}, thunkAPI) => {
+    async ({ fileName }, thunkAPI) => {
         const diagramStateObject: IDiagram = ENGINE.handler.diagram.state;
         const state = thunkAPI.getState() as RootState;
         const userState = api.endpoints.getMe.select()(state);
@@ -187,12 +162,19 @@ export const saveDiagram = createAsyncThunk<void, {fileName?: string}>(
         let currentUUID: string | undefined = state.diagram.diagramUUID;
 
         const saveAs = fileName !== undefined ? true : false
+        const currentTitle = selectCurrentTitle(state);
+        const resolvedFileName = fileName || (currentTitle.endsWith(".nmrd") ? currentTitle : `${currentTitle}.nmrd`);
+
         if (fileName !== undefined) {
             currentUUID = uuidv7();
             thunkAPI.dispatch(setDiagramUUID(currentUUID));
+            const newTitle = fileName.replace(/\.nmrd$/, "");
+            thunkAPI.dispatch(setTitle(newTitle));
+            thunkAPI.dispatch(setFileName(resolvedFileName));
 
             thunkAPI.dispatch(addRecentDiagram({
-                name: fileName,
+                title: newTitle,
+                fileName: resolvedFileName,
                 diagramUUID: currentUUID,
                 diagramSource: selectCurrentDiagramSource(state),
                 opened: new Date().toISOString()
@@ -222,17 +204,30 @@ export const saveDiagram = createAsyncThunk<void, {fileName?: string}>(
         } else if (source === "local") {
 
             try {
+                const titleToSave = selectCurrentTitle(state);
+                const fileToSave = resolvedFileName;
                 const file = await createDiagramFile({
                     "UUID": currentUUID,
                     "source": "local",
-                    diagramName: selectCurrentFileName(state),
-                    institution: undefined,
-                    originalAuthor: undefined,
+                    title: titleToSave,
+                    fileName: fileToSave,
+                    institution: selectCurrentInstitution(state) || undefined,
+                    originalAuthor: selectCurrentAuthor(state) || undefined,
                     dateCreated: new Date().toISOString()
                 });
                 const blob = await file.generateAsync({ type: "blob" });
 
                 await localforage.setItem(`diagram-${currentUUID}`, blob);
+
+                thunkAPI.dispatch(addRecentDiagram({
+                    title: titleToSave,
+                    fileName: fileToSave,
+                    diagramUUID: currentUUID,
+                    diagramSource: "local",
+                    author: selectCurrentAuthor(state) || undefined,
+                    institution: selectCurrentInstitution(state) || undefined,
+                    opened: new Date().toISOString()
+                }));
 
                 thunkAPI.dispatch(setSaveState("saved"))
             } catch (error) {
@@ -300,37 +295,41 @@ export const openDiagram = createAsyncThunk<void, File>(
 
             // Read the manifest.json file
             const manifestFile = zip.file("manifest.json");
+            let manifestData: IDiagramMetadata | undefined = undefined;
             if (manifestFile) {
                 try {
                     const manifestString = await manifestFile.async("string");
-                    const manifestData: IDiagramMetadata = JSON.parse(manifestString);
-                    if (manifestData.UUID) {
-                        thunkAPI.dispatch(setDiagramUUID(manifestData.UUID));
-                        thunkAPI.dispatch(setDiagramSource(manifestData.source || "local"));
-
-                        const diagramName = manifestData.diagramName || file.name.replace(".nmrd", "") || "unnamed";
-
-                        thunkAPI.dispatch(setFileName(diagramName));
-
-                        
-                        thunkAPI.dispatch(addRecentDiagram({
-                            name: diagramName,
-                            diagramUUID: manifestData.UUID,
-                            diagramSource: manifestData.source ?? "local",
-                            opened: new Date().toISOString()
-                        }));
-                        
-
-                    } else {
-                        console.error(`Diagram does not contain ID`)
-                    }
+                    manifestData = JSON.parse(manifestString);
                 } catch (e) {
                     console.warn("Failed to parse manifest.json", e);
                 }
             }
 
+            const diagramUUID = manifestData?.UUID || uuidv7();
+            const title = manifestData?.title || "Untitled";
+            const fileName = manifestData?.fileName || (file.name ? file.name.replace(/\.nmrd$/, "") : title);
+            const author = manifestData?.originalAuthor;
+            const institution = manifestData?.institution;
+
+            thunkAPI.dispatch(setDiagramUUID(diagramUUID));
+            thunkAPI.dispatch(setDiagramSource(manifestData?.source || "local"));
+            thunkAPI.dispatch(setTitle(title));
+            thunkAPI.dispatch(setFileName(fileName));
+            if (author) thunkAPI.dispatch(setAuthor(author));
+            if (institution) thunkAPI.dispatch(setInstitution(institution));
+
+            thunkAPI.dispatch(addRecentDiagram({
+                title: title,
+                fileName: fileName,
+                diagramUUID: diagramUUID,
+                diagramSource: manifestData?.source ?? "local",
+                author: author,
+                institution: institution,
+                opened: new Date().toISOString()
+            }));
+
             ENGINE.loadDiagramState(stateData);
-            
+
             thunkAPI.dispatch(saveDiagram({}))
 
             appToaster.show({
@@ -348,14 +347,117 @@ export const openDiagram = createAsyncThunk<void, File>(
     }
 );
 
+export const openExampleDiagram = createAsyncThunk<void, File>(
+    'application/openExampleDiagram',
+    async (file, thunkAPI) => {
+        try {
+            const zip = await JSZip.loadAsync(file);
+
+            // Read the diagram.json file
+            const diagramFile = zip.file("diagram.json");
+            if (!diagramFile) {
+                throw new Error("Missing diagram.json in the example file.");
+            }
+
+            const diagramString = await diagramFile.async("string");
+            const stateData = JSON.parse(diagramString) as IDiagram;
+
+            // Extract all SVGs in the assets folder if any
+            const assetsFolder = zip.folder("assets");
+            if (assetsFolder) {
+                const svgFiles = Object.values(assetsFolder.files).filter((f) => !f.dir && f.name.endsWith(".svg"));
+
+                for (const fileObj of svgFiles) {
+                    const blob = await fileObj.async("blob");
+                    const assetId = fileObj.name.split("/").pop()!.replace(".svg", "");
+
+                    let reference = assetId;
+
+                    const sidecarFile = assetsFolder.file(`${assetId}.json`);
+                    if (sidecarFile) {
+                        try {
+                            const sidecarText = await sidecarFile.async("string");
+                            const sidecarMetadata = JSON.parse(sidecarText);
+                            if (sidecarMetadata.ref) {
+                                reference = sidecarMetadata.ref;
+                            }
+                        } catch (e) {
+                            console.warn(`Failed to parse sidecar file for asset ${assetId}`, e);
+                        }
+                    }
+
+                    await thunkAPI.dispatch(loadAsset({
+                        file: blob,
+                        reference: reference,
+                        source: "diagram",
+                    })).unwrap();
+                }
+            }
+
+            // Read the manifest.json file if present
+            const manifestFile = zip.file("manifest.json");
+            let manifestData: IDiagramMetadata | undefined = undefined;
+            if (manifestFile) {
+                try {
+                    const manifestString = await manifestFile.async("string");
+                    manifestData = JSON.parse(manifestString);
+                } catch (e) {
+                    console.warn("Failed to parse manifest.json", e);
+                }
+            }
+
+            const title = manifestData?.title || "Untitled";
+            const fileName = manifestData?.fileName || (file.name ? file.name.replace(/\.nmrd$/, "") : title);
+            const author = manifestData?.originalAuthor;
+            const institution = manifestData?.institution;
+
+            // Create a working copy: generate a fresh UUID and set source to local
+            const newUUID = uuidv7();
+            thunkAPI.dispatch(setDiagramUUID(newUUID));
+            thunkAPI.dispatch(setDiagramSource("local"));
+            thunkAPI.dispatch(setTitle(title));
+            thunkAPI.dispatch(setFileName(fileName));
+            if (author) thunkAPI.dispatch(setAuthor(author));
+            if (institution) thunkAPI.dispatch(setInstitution(institution));
+
+            thunkAPI.dispatch(addRecentDiagram({
+                title: title,
+                fileName: fileName,
+                diagramUUID: newUUID,
+                diagramSource: "local",
+                author: author,
+                institution: institution,
+                opened: new Date().toISOString()
+            }));
+
+            ENGINE.loadDiagramState(stateData);
+
+            // Mark as unsaved so user knows it's a working copy; saving will store it in localforage
+            thunkAPI.dispatch(setSaveState("unsaved"));
+
+            appToaster.show({
+                message: `Opened "${title}".`,
+                intent: "primary"
+            });
+
+        } catch (error) {
+            console.error("Failed to load example diagram:", error);
+            appToaster.show({
+                message: "Failed to load example diagram file.",
+                intent: "danger"
+            });
+            throw error;
+        }
+    }
+);
+
 export const loadDiagram = createAsyncThunk<void, string>(
     'application/loadDiagram',
     async (diagramId, thunkAPI) => {
         try {
             const file = await thunkAPI.dispatch(getDiagramThunk(diagramId)).unwrap();
             await thunkAPI.dispatch(openDiagram(file)).unwrap();
-            thunkAPI.dispatch(setDiagramSource("server"))
-
+            thunkAPI.dispatch(setDiagramSource("server"));
         } catch (error) {
             console.error(`Failed to fetch and load diagram ${diagramId} from server`, error);
             appToaster.show({

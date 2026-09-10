@@ -61,22 +61,63 @@ export interface IAlignerConfig {
 	contribution?: { mainAxis: boolean, crossAxis: boolean }
 }
 
-export type PlacementConfiguration = { type: "free" } |
-{ type: "binds"; bindings: undefined } |
-{ type: "grid"; config: IGridConfig } |
-{ type: "aligner", config: IAlignerConfig } |
-{ type: "subgrid", config: ISubgridConfig } |
-{ type: "static" }
+export type SiteNames = "here" | "centre" | "far" | "start" | "end";
+
+export interface IPlacementBindingRule {
+	targetId: string;
+	anchorId?: string;
+	dimension: Dimensions;
+	anchorSiteName: SiteNames;
+	targetSiteName: SiteNames;
+	offset?: number;
+	bindToContent?: boolean;
+	hint?: string;
+}
+
+export interface IGridBindingPlacementRule {
+	sequenceId: string;
+	column: number;
+	dimension: Dimensions;
+	anchorSiteName: SiteNames;
+	targetSiteName: SiteNames;
+	offset?: number;
+	bindToContent?: boolean;
+	hint?: string;
+}
+
+export type ISequenceBindingRule = IPlacementBindingRule | IGridBindingPlacementRule;
+
+
+
+export type IBindsPlacementConfig = IPlacementBindingRule[];
+export type ISequenceBindPlacementConfig = ISequenceBindingRule[];
+
+/** @deprecated Kept for backwards compatibility; use IPlacementBindingRule instead */
+export interface IBindEndpointConfig {
+	targetId: string;
+	xAnchor: SiteNames;
+	yAnchor: SiteNames;
+	offset?: [number, number];
+}
+
+export type PlacementConfiguration =
+	| { type: "free" }
+	| { type: "binds"; config: IBindsPlacementConfig }
+	| { type: "sequenceBind"; config: ISequenceBindPlacementConfig }
+	| { type: "grid"; config: IGridConfig }
+	| { type: "aligner"; config: IAlignerConfig }
+	| { type: "subgrid"; config: ISubgridConfig }
+	| { type: "prefab" };
+
+
 
 
 export type PlacementControl = "auto" | "user";
 
-export type ContainerSizeMethod = "fit" | "grow"
-export type SizeMethod = "fixed" | ContainerSizeMethod
+export type ContainerSizeMethod = "fixed" | "fit" | "grow"
+export type SizeMethod = ContainerSizeMethod
 export type SizeConfiguration = Record<Dimensions, SizeMethod>
 
-
-export type SiteNames = "here" | "centre" | "far";
 
 export type BinderSetFunction = (dimension: Dimensions, v: number) => void;
 export type BinderGetFunction = (dimension: Dimensions, onContent?: boolean) => number;
@@ -111,9 +152,12 @@ export interface IHaveSize {
 	computeSize: () => Size
 }
 
+
 export interface ISpacial extends IPoint {
 	contentWidth?: number;
 	contentHeight?: number;
+	minContentWidth?: number;
+	minContentHeight?: number;
 
 	placementMode?: PlacementConfiguration
 	placementControl?: PlacementControl
@@ -158,6 +202,8 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return {
 			contentWidth: this._contentWidth,
 			contentHeight: this._contentHeight,
+			minContentWidth: this.minContentWidth,
+			minContentHeight: this.minContentHeight,
 			placementMode: this._placementMode,
 			placementControl: this.placementControl,
 			sizeMode: this.sizeMode,
@@ -165,7 +211,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			...super.state
 		};
 	}
-	public AnchorFunctions = {
+	public AnchorFunctions: Record<SiteNames, { get: BinderGetFunction; set: BinderSetFunction }> = {
 		here: {
 			get: this.getNear.bind(this),
 			set: this.setNear.bind(this)
@@ -175,6 +221,14 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			set: this.setCentre.bind(this)
 		},
 		far: {
+			get: this.getFar.bind(this),
+			set: this.setFar.bind(this)
+		},
+		start: {
+			get: this.getNear.bind(this),
+			set: this.setNear.bind(this)
+		},
+		end: {
 			get: this.getFar.bind(this),
 			set: this.setFar.bind(this)
 		}
@@ -192,7 +246,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public get isFree(): boolean {
-		return this._placementMode.type === "free";
+		return this._placementMode.type === "free" || this._placementMode.type === "binds" || this._placementMode.type === "sequenceBind";
 	}
 
 	public placementControl: PlacementControl;
@@ -225,16 +279,16 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	) {
 		super(params);
 
-		this._placementMode = params.placementMode ?? { type: "free" }
+		this._placementMode = params.placementMode ?? { type: "prefab" }
 		this.placementControl = params.placementControl ?? "user";
 		this.sizeMode = params.sizeMode ? { ...params.sizeMode } : { x: "fixed", y: "fixed" };
 
-		if (this._placementMode.type === "free") {
+		if (this._placementMode.type === "free" || this._placementMode.type === "binds" || this._placementMode.type === "sequenceBind") {
 			if (this.sizeMode.x === "grow") {
-				this.sizeMode.x = "fixed";
+				this.sizeMode.x = "fit";
 			}
 			if (this.sizeMode.y === "grow") {
-				this.sizeMode.y = "fixed";
+				this.sizeMode.y = "fit";
 			}
 		}
 
@@ -257,7 +311,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	public computePositions(root: { x: number, y: number }) {
-		if (this.placementMode.type !== "free") {
+		if (this.placementMode.type !== "free" && this.placementMode.type !== "binds" && this.placementMode.type !== "sequenceBind") {
 			this.x = root.x;
 			this.y = root.y;
 		}
@@ -317,6 +371,37 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	// ----------- Size --------------
+	protected _minContentWidth: number = 5;
+	protected _minContentHeight: number = 5;
+
+	get minContentWidth(): number {
+		return this._minContentWidth;
+	}
+	set minContentWidth(v: number) {
+		this._minContentWidth = v;
+	}
+
+	get minContentHeight(): number {
+		return this._minContentHeight;
+	}
+	set minContentHeight(v: number) {
+		this._minContentHeight = v;
+	}
+
+	get minWidth(): number {
+		return this.minContentWidth;
+	}
+	set minWidth(v: number) {
+		this.minContentWidth = v;
+	}
+
+	get minHeight(): number {
+		return this.minContentHeight;
+	}
+	set minHeight(v: number) {
+		this.minContentHeight = v;
+	}
+
 	get contentWidth(): number {
 		return this._contentWidth;
 	}
@@ -362,12 +447,13 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		this.bindings = this.bindings.filter((b) => !toRemove.includes(b));
 	}
 
-	public clearBindsTo(target: Spacial, dimension?: Dimensions) {
+	public clearBindsTo(target: Spacial, dimension?: Dimensions, targetSiteName?: SiteNames) {
 		var toRemove: IBinding[] = [];
 		for (var bind of this.bindings) {
 			if (
 				bind.targetObject === target
 				&& (bind.bindingRule.dimension === dimension || dimension === undefined)
+				&& (bind.bindingRule.targetSiteName === targetSiteName || targetSiteName === undefined)
 			) {
 				toRemove.push(bind);
 				console.warn(`Removing binding ${bind.hint}`);
@@ -393,40 +479,18 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 		var found = false;
 		this.bindings.forEach((b) => {
-			if (b.targetObject === target && b.bindingRule.dimension === dimension) {
+			if (
+				b.targetObject === target &&
+				b.bindingRule.dimension === dimension &&
+				b.bindingRule.targetSiteName === targetBindSide
+			) {
 				found = true;
 
-				if (b.targetObject) {
-					// Not stretchy so this gets overridden
-					console.warn(
-						`Warning: overriding binding on dimension ${b.bindingRule.dimension} for anchor ${this.ref} to target ${target.ref}`
-					);
-
-					b.bindingRule.anchorSiteName = anchorBindSide;
-					b.bindingRule.targetSiteName = targetBindSide;
-					b.bindingRule.dimension = dimension;
-					b.bindToContent = bindToContent;
-					b.offset = offset;
-				} else {
-					// Stretchy === true
-					var newBindingRule: IBindingRule = {
-						anchorSiteName: anchorBindSide,
-						targetSiteName: targetBindSide,
-						dimension: dimension
-					};
-					hint += " (stretch)";
-
-					var newBinding: IBinding = {
-						targetObject: target,
-						anchorObject: this,
-						bindingRule: newBindingRule,
-						offset: offset,
-						bindToContent: bindToContent,
-						hint: hint
-					};
-					this.bindings.push(newBinding);
-					target.bindingsToThis.push(newBinding);
-				}
+				b.bindingRule.anchorSiteName = anchorBindSide;
+				b.bindingRule.targetSiteName = targetBindSide;
+				b.bindingRule.dimension = dimension;
+				b.bindToContent = bindToContent;
+				b.offset = offset;
 			}
 		});
 
@@ -458,7 +522,24 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return getter(binding.dimension);
 	}
 
-	public enforceBinding() {
+	/**
+	 * Checks whether the opposing boundary on this element in the given dimension is also bound.
+	 */
+	public isOpposingSiteBound(dimension: Dimensions, targetSiteName: SiteNames): boolean {
+		const isNear = targetSiteName === "here" || targetSiteName === "start";
+		const isFar = targetSiteName === "far" || targetSiteName === "end";
+		if (!isNear && !isFar) return false;
+
+		const opposingNames: SiteNames[] = isNear ? ["far", "end"] : ["here", "start"];
+
+		if (this.bindingsToThis.some((b) => b.bindingRule.dimension === dimension && opposingNames.includes(b.bindingRule.targetSiteName))) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public enforceBindings() {
 		for (const binding of this.bindings) {
 			var targetElement: Spacial = binding.targetObject;
 			var getter: BinderGetFunction =
@@ -485,19 +566,69 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			// Apply offset:
 			anchorBindCoord = anchorBindCoord + (binding.offset ?? 0);
 
+			const targetSite = binding.bindingRule.targetSiteName;
+			const isNear = targetSite === "here";
+			const isFar = targetSite === "far";
+
+			// If target element is bound on both near and far boundaries in this dimension,
+			// stretch the target element rather than translating it.
+			if ((isNear || isFar) && targetElement.isOpposingSiteBound(dimension, targetSite)) {
+				const opposingSite: SiteNames = isNear ? "far" : "here";
+
+				// The binding on the other side of the object
+				const opposingBinding = targetElement.bindingsToThis.find(
+					(b) => b.bindingRule.dimension === dimension && b.bindingRule.targetSiteName === opposingSite
+				);
+
+				let opposingCoord: number | undefined;
+				if (opposingBinding) {
+					const opposingGetter = opposingBinding.anchorObject.AnchorFunctions[opposingBinding.bindingRule.anchorSiteName]?.get;
+					if (opposingGetter) {
+						opposingCoord = opposingGetter(dimension, opposingBinding.bindToContent) + (opposingBinding.offset ?? 0);
+					}
+				}
+
+				if (opposingCoord === undefined) {
+					opposingCoord = isNear
+						? targetElement.getFar(dimension)
+						: targetElement.getNear(dimension);
+				}
+
+				const hereCoord = isNear ? anchorBindCoord : opposingCoord;
+				const farCoord = isFar ? anchorBindCoord : opposingCoord;
+
+				const currentNearCoord = targetElement.getNear(dimension);
+				const currentFarCoord = targetElement.getFar(dimension);
+				if (currentNearCoord === hereCoord && currentFarCoord === farCoord) {
+					continue;
+				}
+
+				const minSize = dimension === "x"
+					? (targetElement.minWidth ?? 5)
+					: (targetElement.minHeight ?? 5);
+				const rawDiff = farCoord - hereCoord;
+				const newSize = Math.max(minSize, rawDiff);
+				targetElement.setSizeByDimension(newSize, dimension);
+
+				const targetNear = (rawDiff < minSize && isFar)
+					? (farCoord - minSize)
+					: hereCoord;
+				targetElement.setNear(dimension, targetNear);
+				continue;
+			}
+
 			// Current position of target:
 			var currentTargetPointPosition: number | undefined = targetPosChecker(
 				dimension,
 				binding.bindToContent
 			);
 
-
 			// Only go into the setter if it will change a value, massively reduces function calls.
 			// Alternative was doing the check inside the setter which still works but requires a function call
 			if (anchorBindCoord !== currentTargetPointPosition) {
 				// Use the correct setter on the target with this value
 
-				setter(dimension, anchorBindCoord!); // SETTER MAY NEED INTERNAL BINDING FLAG?
+				setter(dimension, anchorBindCoord!);
 			}
 		}
 	}
@@ -505,14 +636,12 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	public immediateBind(
 		target: Spacial,
 		dimension: Dimensions,
-		anchorBindSide: keyof typeof this.AnchorFunctions,
-		targetBindSide: keyof typeof this.AnchorFunctions,
+		anchorBindSide: SiteNames,
+		targetBindSide: SiteNames,
 		bindToContent: boolean = true) {
 
-		var getter: BinderGetFunction =
-			this.AnchorFunctions[anchorBindSide].get;
-		var setter: BinderSetFunction =
-			target.AnchorFunctions[targetBindSide].set;
+		var getter: BinderGetFunction = this.AnchorFunctions[anchorBindSide].get;
+		var setter: BinderSetFunction = target.AnchorFunctions[targetBindSide].set;
 
 		var anchorValue: number = getter(dimension, bindToContent);
 
@@ -522,26 +651,11 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	public internalImmediateBind(
 		target: Spacial,
 		dimension: Dimensions,
-		alignment: keyof typeof this.AnchorFunctions,
+		alignment: SiteNames,
 		bindToContent: boolean = true) {
 
-		var getter: BinderGetFunction;
-		var setter: BinderSetFunction;
-
-		switch (alignment) {
-			case "here":
-				getter = this.AnchorFunctions["here"].get;
-				setter = target.AnchorFunctions["here"].set;
-				break;
-			case "centre":
-				getter = this.AnchorFunctions["centre"].get;
-				setter = target.AnchorFunctions["centre"].set;
-				break;
-			case "far":
-				getter = this.AnchorFunctions["far"].get;
-				setter = target.AnchorFunctions["far"].set;
-				break;
-		}
+		var getter: BinderGetFunction = this.AnchorFunctions[alignment].get;
+		var setter: BinderSetFunction = target.AnchorFunctions[alignment].set;
 
 		var anchorValue: number = getter(dimension, bindToContent);
 
@@ -556,12 +670,12 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 				if (ofContent) {
 					return this.cx;
 				}
-				return this._x;
+				return this.x;
 			case "y":
 				if (ofContent) {
 					return this.cy;
 				}
-				return this._y;
+				return this.y;
 		}
 	}
 	public setNear(dimension: Dimensions, v: number) {
@@ -646,7 +760,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 
-	setSizeByDimension(v: number, dim: Dimensions) {
+	setContentSizeByDimension(v: number, dim: Dimensions) {
 		switch (dim) {
 			case "x":
 				this.contentWidth = v;
@@ -657,12 +771,32 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		}
 	}
 
+	setSizeByDimension(v: number, dim: Dimensions) {
+		switch (dim) {
+			case "x":
+				this.width = v;
+				break;
+			case "y":
+				this.height = v;
+				break;
+		}
+	}
+
 	getSizeByDimension(dim: Dimensions): number {
 		switch (dim) {
 			case "x":
 				return this.width;
 			case "y":
 				return this.height;
+		}
+	}
+
+	getContentSizeByDimension(dim: Dimensions): number {
+		switch (dim) {
+			case "x":
+				return this.contentWidth;
+			case "y":
+				return this.contentHeight;
 		}
 	}
 
@@ -767,13 +901,16 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 			}
 		}
 
-		this.placementMode.config = {
-			"alignment": alignment,
-			"coords": coords,
-			"gridSize": { noRows: 1, noCols: pulseLayoutConfig?.noSections ?? 1 },
+		this.placementMode = {
+			...this.placementMode,
+			config: {
+				"alignment": alignment,
+				"coords": coords,
+				"gridSize": { noRows: 1, noCols: pulseLayoutConfig?.noSections ?? 1 },
 
-			"contribution": contribution,
-		}
+				"contribution": contribution,
+			}
+		};
 
 	}
 }

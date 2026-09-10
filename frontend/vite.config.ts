@@ -57,6 +57,7 @@ function serveStaticWikiPlugin() {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+	assetsInclude: ["**/*.nmrd"],
 	appType: "mpa",
 	esbuild: {
 		sourcemap: true,

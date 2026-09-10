@@ -1,7 +1,7 @@
-
+import { IconName } from "@blueprintjs/core";
 import { DEFAULT_BAR } from "../../logic/default/bar";
 import { DEFAULT_CHANNEL_TEXT } from "../../logic/default/defaultChannelLabel";
-import { defaultChannel, defaultDiagram, defaultLabel, defaultLaTeX, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
+import { defaultChannel, defaultCollection, defaultDiagram, defaultLabel, defaultLaTeX, defaultLine, defaultRectElement, defaultSpace, defaultText, defaultVisual } from "../../logic/default/index";
 import { DEFAULT_SEQUENCE } from "../../logic/default/sequence";
 import { DEFAULT_180S } from "../../logic/default/svgPulse/180Soft";
 import { ILabel } from "../../logic/hasComponents/label";
@@ -13,6 +13,7 @@ import { IText } from "../../logic/text";
 import { IVisual } from "../../logic/visual";
 import ArrowForm from "./ArrowForm";
 import ChannelForm from "./ChannelForm";
+import CollectionForm from "./CollectionForm";
 import { GridForm } from "./GridForm";
 import LabelForm from "./LabelForm";
 import LaTeXForm from "./LaTeXForm";
@@ -23,17 +24,21 @@ import VisualForm from "./VisualForm";
 
 
 
+import { FormRequirements } from "./FormBase";
+
 export interface RoleSchema {
 	displayName: string;
 	elementType: AllComponentTypes;
+	icon?: IconName;
 	mandatory?: boolean;
 	defaultValues?: Partial<IVisual>;
 }
 
 export interface FormBundle<T extends IVisual = IVisual> {
-	form: React.FC;
+	form: React.FC<FormRequirements>;
 	defaults: T;
 	allowLabels: boolean;
+	hideApplyButton?: boolean;
 	/** When role children are added, wrap this element in this container type */
 	roles?: Record<string, RoleSchema>;
 }
@@ -74,11 +79,11 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		defaults: defaultVisual,
 		allowLabels: false,
 		roles: {
-			"labelTop": { displayName: "Top", elementType: "label" },
-			"labelBottom": { displayName: "Bottom", elementType: "label" },
-			"labelRight": { displayName: "Right", elementType: "label" },
-			"labelLeft": { displayName: "Left", elementType: "label" },
-			"labelCentre": { displayName: "Centre", elementType: "label" }
+			"labelTop": { displayName: "Top", elementType: "label", icon: "tag" },
+			"labelBottom": { displayName: "Bottom", elementType: "label", icon: "tag" },
+			"labelRight": { displayName: "Right", elementType: "label", icon: "tag" },
+			"labelLeft": { displayName: "Left", elementType: "label", icon: "tag" },
+			"labelCentre": { displayName: "Centre", elementType: "label", icon: "tag" }
 		}
 	},
 	"simple-label-group": {
@@ -86,8 +91,8 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		defaults: defaultVisual,
 		allowLabels: false,
 		roles: {
-			"labelTop": { displayName: "Top", elementType: "label" },
-			"labelBottom": { displayName: "Bottom", elementType: "label" }
+			"labelTop": { displayName: "Top", elementType: "label", icon: "tag" },
+			"labelBottom": { displayName: "Bottom", elementType: "label", icon: "tag" }
 		}
 	},
 	"line": {
@@ -98,7 +103,23 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 	"label": {
 		form: LabelForm,
 		defaults: defaultLabel as ILabel,
-		allowLabels: false
+		allowLabels: false,
+		roles: {
+			"text": {
+				displayName: "Text",
+				elementType: "latex",
+				icon: "function",
+				mandatory: true,
+				defaultValues: (defaultLabel.children?.find(c => c.role === "text")) ?? defaultLaTeX
+			},
+			"line": {
+				displayName: "Arrow",
+				elementType: "line",
+				icon: "arrows-horizontal",
+				mandatory: true,
+				defaultValues: (defaultLabel.children?.find(c => c.role === "line")) ?? defaultLine
+			}
+		}
 	},
 	// "diagram": {
 	// 	form: Diagram
@@ -109,12 +130,16 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		allowLabels: false,
 		roles: {
 			"label": {
-				displayName: "Label", elementType: "latex",
+				displayName: "Label",
+				elementType: "latex",
+				icon: "function",
 				mandatory: true,
 				defaultValues: DEFAULT_CHANNEL_TEXT
 			},
 			"bar": {
-				displayName: "Bar", elementType: "rect",
+				displayName: "Bar",
+				elementType: "rect",
+				icon: "square",
 				mandatory: true,
 				defaultValues: DEFAULT_BAR
 			}
@@ -139,5 +164,11 @@ export const FORM_DEFAULTS: Partial<Record<AllComponentTypes, FormBundle>> = {
 		form: VisualForm,
 		defaults: DEFAULT_SEQUENCE,
 		allowLabels: false
+	},
+	"collection": {
+		form: CollectionForm,
+		defaults: defaultCollection,
+		allowLabels: false,
+		hideApplyButton: true
 	}
 }

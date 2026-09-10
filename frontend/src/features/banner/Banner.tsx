@@ -1,22 +1,22 @@
 import { Button, Icon, Navbar, Position, Tooltip } from "@blueprintjs/core";
-import React from "react";
+import React, { useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
-import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
+import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setCiteDialogOpen, setSVGDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import logoUrl from "../../assets/app/Logo1.svg";
 
 export default function Banner() {
 	const { data: user } = useGetMeQuery();
 	const dispatch = useAppDispatch();
-
+	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	return (
 		<Navbar>
 			<Navbar.Group>
 				<img src={logoUrl} width={30} height={20} style={{ marginRight: "10px", cursor: "help" }} alt="Pulse Logo" onClick={() => dispatch(setAboutDialogOpen(true))} />
-				<Navbar.Heading>Pulse Planner v0.7.5 (BETA)</Navbar.Heading>
+				<Navbar.Heading>Pulse Planner v0.9.2 (Pre-release)</Navbar.Heading>
 				<Tooltip content="Open (Ctrl+O)" position={Position.BOTTOM}>
 					<Button
 						size="medium"
@@ -89,8 +89,8 @@ export default function Banner() {
 						<Button
 							size="medium"
 							variant="minimal"
-							icon="cloud-download"
-							onClick={() => dispatch(Actions.handleSaveSVG())}
+							icon="flow-linear"
+							onClick={() => dispatch(setSVGDialogOpen(true))}
 						/>
 					</Tooltip>
 					<Navbar.Divider />
@@ -106,6 +106,17 @@ export default function Banner() {
 			</Navbar.Group>
 
 			<Navbar.Group align={"right"}>
+				<Tooltip content="Cite this project" position={Position.BOTTOM}>
+					<Button
+						variant="minimal"
+						icon="citation"
+						text="Cite Me"
+						onClick={() => dispatch(setCiteDialogOpen(true))}
+						style={{ marginRight: "10px" }}
+					/>
+				</Tooltip>
+				{/* Folder / Diagrams button commented out */}
+				{/*
 				<Tooltip content="Diagrams" position={Position.BOTTOM}>
 					<Button
 						variant="minimal"
@@ -114,6 +125,9 @@ export default function Banner() {
 						style={{ marginRight: "10px" }}
 					/>
 				</Tooltip>
+				*/}
+				{/* Sign in / User button commented out */}
+				{/*
 				{user ? (
 					<Tooltip content="Account Settings" position={Position.BOTTOM}>
 						<Button
@@ -134,6 +148,7 @@ export default function Banner() {
 						/>
 					</Tooltip>
 				)}
+				*/}
 			</Navbar.Group>
 
 		</Navbar>

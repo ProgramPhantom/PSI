@@ -3,8 +3,9 @@ import { Controller, useFormContext } from "react-hook-form";
 import { IRectElement } from "../../logic/rectElement";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
-import { ControlGroup, NumericInput, Section } from "@blueprintjs/core";
+import { ControlGroup, Section } from "@blueprintjs/core";
 import { SimpleField } from "./fields/SimpleField";
+import { CustomNumericInput } from "./fields/CustomNumericInput";
 import sectionStyles from "./styles/FormSection.module.scss";
 import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
@@ -33,7 +34,42 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 							control={formControls.control}
 							name={`${fullPrefix}style.fill` as any}
 							render={({ field }) => (
-								<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
+								<input
+									type={"color"}
+									className={fieldStyles.compactColorInput}
+									{...field}
+									value={field.value}></input>
+							)}></Controller>
+					</SimpleField>
+
+					<SimpleField label="Fill Opacity" labelFor="text-input">
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}style.fillOpacity` as any}
+							render={({ field }) => (
+								<CustomNumericInput
+									{...field}
+									allowNegative={false}
+									value={field.value !== undefined ? field.value : 100}
+									onValueChange={(valAsNumber, valAsString) => {
+										if (valAsString === "") {
+											field.onChange("");
+										} else if (!isNaN(valAsNumber)) {
+											field.onChange(Math.max(0, Math.min(100, Math.round(valAsNumber))));
+										}
+									}}
+									onBlur={() => {
+										field.onBlur();
+										if (field.value === "" || field.value === undefined) {
+											field.onChange(100);
+										}
+									}}
+									min={0}
+									max={100}
+									clampValueOnBlur={true}
+									stepSize={1}
+									majorStepSize={10}
+									size={"small"}></CustomNumericInput>
 							)}></Controller>
 					</SimpleField>
 
@@ -51,12 +87,12 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 							control={formControls.control}
 							name={`${fullPrefix}style.strokeWidth` as any}
 							render={({ field }) => (
-								<NumericInput
+								<CustomNumericInput
 									{...field}
-									className={fieldStyles.compactNumericInput}
+									allowNegative={false}
 									onValueChange={field.onChange}
 									min={0}
-									size={"small"}></NumericInput>
+									size={"small"}></CustomNumericInput>
 							)}></Controller>
 					</SimpleField>
 				</ControlGroup>

@@ -1,4 +1,4 @@
-import { Defs, Element, Marker, Path, Rect, SVG } from "@svgdotjs/svg.js";
+import { Defs, Element, G, Marker, Path, Rect, SVG } from "@svgdotjs/svg.js";
 import LineLike, { ILineLike } from "./lineLike";
 import { UserComponentType } from "./point";
 import { Svg } from "@svgdotjs/svg.js";
@@ -16,8 +16,6 @@ export interface ILineStyle {
 
 export interface ILine extends ILineLike {
 	lineStyle: ILineStyle;
-	x2?: number;
-	y2?: number;
 }
 
 export default class Line extends LineLike implements ILine {
@@ -38,8 +36,6 @@ export default class Line extends LineLike implements ILine {
 	get state(): ILine {
 		return {
 			lineStyle: this.lineStyle,
-			x2: this.x2,
-			y2: this.y2,
 			...super.state
 		};
 	}
@@ -97,22 +93,27 @@ export default class Line extends LineLike implements ILine {
 		return rect;
 	}
 
-	public getInternalRepresentation(): Element | undefined {
-		if (this.svg === undefined) {
+	public getInternalRepresentation(containerSize?: Size): Element | undefined {
+		if (this.svg === undefined || containerSize !== undefined) {
 			this.svg = new Svg();  // TODO: fix this
 			this.dirty = true;
-			this.computeSelf();
+			this.computeSelf(containerSize);
 			let temporaryCanvas: Element = SVG();
 			this.draw(temporaryCanvas);
 		}
 		if (this.svg === undefined) {
 			return undefined;
 		}
-		var internal: Element = this.svg.clone(true, true);
+		var group = new G().id(this.id);
+		if (this.markerDefs) {
+			group.add(this.markerDefs.clone(true, false));
+		}
+		var internal: Element = this.svg.clone(true, false);
 		internal.attr({ transform: `translate(${-this.drawCX}, ${-this.drawCY})` });
-		showSVGRecursively(internal);
+		group.add(internal);
+		showSVGRecursively(group);
 
-		return internal;
+		return group;
 	}
 
 	private createMarkerDefs(): Defs {
@@ -185,7 +186,7 @@ export default class Line extends LineLike implements ILine {
 			var adjustedEndX = this.endX - cos * endOffset;
 			var adjustedEndY = this.endY - sin * endOffset;
 
-			var pathData: string = `M${adjustedStartX}, ${adjustedStartY}, ${adjustedEndX} ${adjustedEndY}`;
+			var pathData: string = `M ${adjustedStartX} ${adjustedStartY} L ${adjustedEndX} ${adjustedEndY}`;
 
 			var startStyle = this.lineStyle.headStyle[0];
 			var endStyle = this.lineStyle.headStyle[1];

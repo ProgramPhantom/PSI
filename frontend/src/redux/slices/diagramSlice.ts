@@ -2,10 +2,13 @@ import { createSlice, PayloadAction, createEntityAdapter, EntityState, createSel
 import { DiagramSource } from '../../types/diagram';
 
 export interface RecentDiagram {
-    name: string;
+    title: string;
+    fileName?: string;
     diagramUUID: string;
     opened: string;
     diagramSource: DiagramSource;
+    author?: string;
+    institution?: string;
 }
 
 export type LoadStatus = "unloaded" | "fetchServer" | "opening" | "open";
@@ -31,20 +34,89 @@ export const diagramSlice = createSlice({
     name: 'diagram',
     initialState,
     reducers: {
+        setTitle: (state, action: PayloadAction<string>) => {
+            if (state.diagramUUID) {
+                const existing = state.entities[state.diagramUUID];
+                if (existing) {
+                    recentDiagramsAdapter.updateOne(state, {
+                        id: state.diagramUUID,
+                        changes: { title: action.payload }
+                    });
+                } else {
+                    recentDiagramsAdapter.addOne(state, {
+                        diagramUUID: state.diagramUUID,
+                        title: action.payload,
+                        diagramSource: "local",
+                        opened: new Date().toISOString()
+                    });
+                }
+            }
+        },
         setFileName: (state, action: PayloadAction<string>) => {
             if (state.diagramUUID) {
-                recentDiagramsAdapter.updateOne(state, {
-                    id: state.diagramUUID,
-                    changes: { name: action.payload }
-                });
+                const existing = state.entities[state.diagramUUID];
+                if (existing) {
+                    recentDiagramsAdapter.updateOne(state, {
+                        id: state.diagramUUID,
+                        changes: { fileName: action.payload }
+                    });
+                }
+            }
+        },
+        setAuthor: (state, action: PayloadAction<string>) => {
+            if (state.diagramUUID) {
+                const existing = state.entities[state.diagramUUID];
+                if (existing) {
+                    recentDiagramsAdapter.updateOne(state, {
+                        id: state.diagramUUID,
+                        changes: { author: action.payload }
+                    });
+                } else {
+                    recentDiagramsAdapter.addOne(state, {
+                        diagramUUID: state.diagramUUID,
+                        title: "Untitled",
+                        author: action.payload,
+                        diagramSource: "local",
+                        opened: new Date().toISOString()
+                    });
+                }
+            }
+        },
+        setInstitution: (state, action: PayloadAction<string>) => {
+            if (state.diagramUUID) {
+                const existing = state.entities[state.diagramUUID];
+                if (existing) {
+                    recentDiagramsAdapter.updateOne(state, {
+                        id: state.diagramUUID,
+                        changes: { institution: action.payload }
+                    });
+                } else {
+                    recentDiagramsAdapter.addOne(state, {
+                        diagramUUID: state.diagramUUID,
+                        title: "Untitled",
+                        institution: action.payload,
+                        diagramSource: "local",
+                        opened: new Date().toISOString()
+                    });
+                }
             }
         },
         setDiagramSource: (state, action: PayloadAction<DiagramSource>) => {
             if (state.diagramUUID) {
-                recentDiagramsAdapter.updateOne(state, {
-                    id: state.diagramUUID,
-                    changes: { diagramSource: action.payload }
-                });
+                const existing = state.entities[state.diagramUUID];
+                if (existing) {
+                    recentDiagramsAdapter.updateOne(state, {
+                        id: state.diagramUUID,
+                        changes: { diagramSource: action.payload }
+                    });
+                } else {
+                    recentDiagramsAdapter.addOne(state, {
+                        diagramUUID: state.diagramUUID,
+                        title: "Untitled",
+                        diagramSource: action.payload,
+                        opened: new Date().toISOString()
+                    });
+                }
             }
         },
         setDiagramUUID: (state, action: PayloadAction<string | undefined>) => {
@@ -80,7 +152,10 @@ export const diagramSlice = createSlice({
 });
 
 export const { 
-    setFileName, 
+    setTitle,
+    setFileName,
+    setAuthor,
+    setInstitution,
     setDiagramUUID, 
     setSaveState, 
     addRecentDiagram, 

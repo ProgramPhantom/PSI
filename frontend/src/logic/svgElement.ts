@@ -1,5 +1,6 @@
 import { Element, G, SVG, Svg } from "@svgdotjs/svg.js";
 import { UserComponentType } from "./point";
+import { Size } from "./spacial";
 import { cascadeID, showSVGRecursively } from "./util2";
 import Visual, { IDraw, IVisual } from "./visual";
 
@@ -66,12 +67,17 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		cascadeID(this.svg, this.id);
 	}
 
-	override getInternalRepresentation(): Element | undefined {
+	override getInternalRepresentation(containerSize?: Size): Element | undefined {
+		if (this.svg === undefined || containerSize !== undefined) {
+			this.computeSelf(containerSize);
+			let temporaryCanvas: Element = SVG();
+			this.draw(temporaryCanvas);
+		}
 		if (this.svg === undefined) {
 			this.svg = SVG(MISSING_ASSET_SVG_DATA);
 		}
 
-		var internalSVG = this.svg?.clone(true, true);
+		var internalSVG = this.svg?.clone(true, false);
 		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
 
 		internalSVG.show()
@@ -89,7 +95,11 @@ export default class SVGElement extends Visual implements ISVGElement, IDraw {
 		}
 
 		// Apply flip based on this.flipped
-		if (this.flipped) {
+		if (this.flipped?.x && this.flipped?.y) {
+			this.elementGroup.transform({ flip: "both", origin: "center" });
+		} else if (this.flipped?.x) {
+			this.elementGroup.transform({ flip: "x", origin: "center" });
+		} else if (this.flipped?.y) {
 			this.elementGroup.transform({ flip: "y", origin: "center" });
 		} else {
 			this.elementGroup.transform({});

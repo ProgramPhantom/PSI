@@ -6,7 +6,6 @@ import {
 	FormGroup,
 	Menu,
 	MenuItem,
-	NumericInput,
 	Popover,
 	SegmentedControl
 } from "@blueprintjs/core";
@@ -16,6 +15,7 @@ import { Tool } from "../../app/App";
 import { defaultLine } from "../../logic/default/index";
 import { ILineStyle } from "../../logic/line";
 import { IDrawArrowConfig } from "../canvas/LineTool";
+import { CustomNumericInput } from "../form/fields/CustomNumericInput";
 
 interface IAnnotateDropdownProps {
 	selectedTool: Tool;
@@ -201,8 +201,9 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 									name="lineStyle.dashing.0"
 									control={control}
 									render={({ field }) => (
-										<NumericInput
+										<CustomNumericInput
 											{...field}
+											allowNegative={false}
 											min={0}
 											placeholder="dash"
 											buttonPosition="none"
@@ -214,13 +215,13 @@ export function AnnotateDropdown(props: IAnnotateDropdownProps) {
 									name="lineStyle.dashing.1"
 									control={control}
 									render={({ field }) => (
-										<NumericInput
+										<CustomNumericInput
 											{...field}
+											allowNegative={false}
 											min={0}
 											placeholder="gap"
 											buttonPosition="none"
 											style={{ width: 70 }}
-											allowNumericCharactersOnly={true}
 										/>
 									)}
 								/>

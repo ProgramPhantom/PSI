@@ -1,0 +1,79 @@
+$field-left-pad: 8px;
+
+.dialogBody {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+}
+
+.formGroupContainer {
+	width: 100%;
+	margin-bottom: 8px;
+
+	> :global(.bp5-form-group) {
+		margin-bottom: 8px;
+	}
+}
+
+.inlineContainer {
+	display: flex;
+	gap: 8px;
+	align-items: flex-end;
+	margin-bottom: 8px;
+	width: 100%;
+
+	> :global(.bp5-form-group),
+	> div {
+		flex: 1;
+		margin: 0;
+	}
+}
+
+.fieldLabel {
+	font-size: 11px;
+	font-weight: 600;
+	color: #5c7080;
+	margin-bottom: 4px;
+}
+
+.sectionHeader {
+	font-size: 12px;
+	font-weight: 600;
+	color: #293742;
+	margin-bottom: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.summaryCard {
+	background-color: #f5f8fa;
+	border: 1px solid #e1e8ed;
+	border-radius: 4px;
+	padding: 10px 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 12px;
+}
+
+.summaryMetrics {
+	display: flex;
+	gap: 16px;
+	color: #5c7080;
+
+	strong {
+		color: #182026;
+		font-family: monospace;
+	}
+}
+
+.lockButton {
+	align-self: flex-end;
+	margin-bottom: 0px;
+}
+
+.presetGroup {
+	margin-bottom: 8px;
+}

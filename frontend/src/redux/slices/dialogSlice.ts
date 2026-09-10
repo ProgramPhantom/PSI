@@ -1,7 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { IconName } from '@blueprintjs/core';
+import { AllComponentTypes } from '../../logic/point';
+
+export interface RoleSubformLevel {
+    roleName: string;
+    prefix: string;
+    displayName: string;
+    elementType: AllComponentTypes;
+    icon?: IconName;
+}
 
 export interface DialogState {
     isPNGDialogOpen: boolean;
+    isSVGDialogOpen: boolean;
     isLoadDialogOpen: boolean;
     isSaveAsDialogOpen: boolean;
     isLoginDialogOpen: boolean;
@@ -12,10 +23,13 @@ export interface DialogState {
     isNewDiagramAlertOpen: boolean;
     isUnsavedDiagramLogoutAlertOpen: boolean;
     isAboutDialogOpen: boolean;
+    isCiteDialogOpen: boolean;
+    roleSubformStack: RoleSubformLevel[];
 }
 
 const initialState: DialogState = {
     isPNGDialogOpen: false,
+    isSVGDialogOpen: false,
     isLoadDialogOpen: false,
     isSaveAsDialogOpen: false,
     isLoginDialogOpen: false,
@@ -25,7 +39,9 @@ const initialState: DialogState = {
     isAssetStoreDialogOpen: false,
     isNewDiagramAlertOpen: false,
     isUnsavedDiagramLogoutAlertOpen: false,
-    isAboutDialogOpen: false
+    isAboutDialogOpen: false,
+    isCiteDialogOpen: false,
+    roleSubformStack: []
 };
 
 export const dialogSlice = createSlice({
@@ -34,6 +50,9 @@ export const dialogSlice = createSlice({
     reducers: {
         setPNGDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isPNGDialogOpen = action.payload;
+        },
+        setSVGDialogOpen: (state, action: PayloadAction<boolean>) => {
+            state.isSVGDialogOpen = action.payload;
         },
         setLoadDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isLoadDialogOpen = action.payload;
@@ -64,12 +83,25 @@ export const dialogSlice = createSlice({
         },
         setAboutDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isAboutDialogOpen = action.payload;
+        },
+        setCiteDialogOpen: (state, action: PayloadAction<boolean>) => {
+            state.isCiteDialogOpen = action.payload;
+        },
+        pushRoleSubform: (state, action: PayloadAction<RoleSubformLevel>) => {
+            state.roleSubformStack.push(action.payload);
+        },
+        popRoleSubform: (state) => {
+            state.roleSubformStack.pop();
+        },
+        closeAllRoleSubforms: (state) => {
+            state.roleSubformStack = [];
         }
     },
 });
 
 export const {
     setPNGDialogOpen,
+    setSVGDialogOpen,
     setLoadDialogOpen,
     setSaveAsDialogOpen,
     setLoginDialogOpen,
@@ -79,7 +111,11 @@ export const {
     setAssetStoreDialogOpen,
     setNewDiagramAlertOpen,
     setUnsavedDiagramLogoutAlertOpen,
-    setAboutDialogOpen
+    setAboutDialogOpen,
+    setCiteDialogOpen,
+    pushRoleSubform,
+    popRoleSubform,
+    closeAllRoleSubforms
 } = dialogSlice.actions;
 
 export default dialogSlice.reducer;

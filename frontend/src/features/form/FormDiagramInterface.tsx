@@ -1,19 +1,21 @@
-import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon, Tooltip } from "@blueprintjs/core";
-import { useRef, useState, useSyncExternalStore, useDeferredValue, useCallback } from "react";
+import { Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon } from "@blueprintjs/core";
+import { useState, useSyncExternalStore, useDeferredValue, useCallback } from "react";
 import { ObjectInspector } from "react-inspector";
-import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { AllComponentTypes, UserComponentType } from "../../logic/point";
+import { deleteSelectedElements } from "../../redux/thunks/actionThunks";
+import { useAppDispatch } from "../../redux/hooks";
+import { useSelectedElementId } from "../../hooks/useSelectedElements";
+import { AllComponentTypes } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
-import { ElementForm, SubmitButtonRef } from "./ElementForm";
+import { ElementForm } from "./ElementForm";
+import DiagramForm from "./DiagramForm";
 
-type FormEffect = "submit" | "delete" | "modify";
+type FormEffect = "submit" | "modify";
 
 export function FormDiagramInterface() {
 	const dispatch = useAppDispatch();
-	const selectedElementId = useAppSelector((state) => state.application.selectedElementId);
+	const selectedElementId = useSelectedElementId();
 	const deferredSelectedElementId = useDeferredValue(selectedElementId);
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	const target = ENGINE.handler.identifyElement(deferredSelectedElementId ?? "");
@@ -22,12 +24,10 @@ export function FormDiagramInterface() {
 		dispatch(setSelectedElementId(val?.id));
 	}, [dispatch]);
 
-	var targetType: AllComponentTypes = target
+	const targetType: AllComponentTypes = target
 		? (target.constructor as typeof Visual).ElementType
 		: "channel";
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const submitRef = useRef<SubmitButtonRef>(null);
-	var [submissionValid, setSubmissionValid] = useState<boolean>(true);
 
 	// Submit function
 	const dispatchFormEffect = useCallback((
@@ -53,17 +53,6 @@ export function FormDiagramInterface() {
 					input: {
 						child: values,
 						target: target
-					}
-				})
-				break;
-			case "delete":
-				if (target === undefined) {
-					throw new Error(`Calling deletion function with no selected target`)
-				}
-				ENGINE.handler.act({
-					type: "remove",
-					input: {
-						child: target
 					}
 				})
 				break;
@@ -101,10 +90,10 @@ export function FormDiagramInterface() {
 						{target === undefined ? (
 							<>
 								<EntityTitle
-									title={"Create Channel"}
+									title={"Pulse Sequence"}
 									icon={
 										<Icon
-											icon="cube-add"
+											icon="pulse"
 											onClick={() => {
 												setIsDialogOpen(true);
 											}}
@@ -130,32 +119,17 @@ export function FormDiagramInterface() {
 
 						{target !== undefined ? (
 							<>
+
 								<Button
 									style={{
 										height: "100%",
 										alignSelf: "center",
 										marginLeft: "auto"
 									}} size="small"
-									icon="export"
-									variant="minimal"
-									onClick={() => { }/* ENGINE.saveComponentFile(target.state) */}
-									title="Export component"></Button>
-								<Button
-									style={{
-										height: "100%",
-										alignSelf: "center",
-										marginLeft: "8px"
-									}} size="small"
 									icon="trash"
 									intent="danger"
 									onClick={() => {
-										dispatchFormEffect(target!, "delete");
-										changeTarget(undefined);
-										appToaster.show({
-											message: `Deleted element '${target?.ref}'`,
-											intent: "danger",
-											timeout: 1000
-										});
+										dispatch(deleteSelectedElements());
 									}}></Button>
 							</>
 						) : (
@@ -176,38 +150,15 @@ export function FormDiagramInterface() {
 					overflow: "hidden",
 					padding: "0px"
 				}}>
-				<ElementForm
-					key={targetType}
-					ref={submitRef}
-					objectType={targetType as UserComponentType}
-					target={target}
-					callback={handleFormSubmit}></ElementForm>
-
-				<div
-					id="submit-area"
-					style={{
-						width: "100%",
-						alignSelf: "center",
-						margin: "4px 2px 4px 2px",
-						padding: "0px 4px 0px 4px",
-						flexShrink: 0,
-						display: "flex",
-						flexDirection: "column"
-					}}>
-					<Divider></Divider>
-
-
-					<Tooltip
-						content={`Modification for ${targetType} is not yet implemented`}
-						disabled={submissionValid} position="top">
-						<AnchorButton
-							style={{ width: "100%" }}
-							disabled={!submissionValid}
-							onClick={() => submitRef.current?.submit()}
-							text={target !== undefined ? "Apply" : "Add"}
-							icon={target !== undefined ? "tick" : "add"}></AnchorButton>
-					</Tooltip>
-				</div>
+				{target === undefined ? (
+					<DiagramForm />
+				) : (
+					<ElementForm
+						key={targetType}
+						objectType={targetType}
+						target={target}
+						callback={handleFormSubmit}></ElementForm>
+				)}
 			</div>
 
 			{/* DEBUG: Inspect object dialog */}

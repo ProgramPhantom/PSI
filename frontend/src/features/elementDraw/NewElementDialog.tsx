@@ -65,7 +65,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 									callback={addNewTemplate}></ElementForm>
 							}
 						/>
-						{/* <Tab
+						<Tab
 							id="label"
 							title="Label"
 							panelClassName={styles.dialogTabPanel}
@@ -75,7 +75,7 @@ export default function NewElementDialog(props: INewElementDialog) {
 									objectType="label"
 									callback={addNewTemplate}></ElementForm>
 							}
-						/> */}
+						/>
 					</Tabs>
 				</DialogBody>
 

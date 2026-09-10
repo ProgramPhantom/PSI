@@ -1,80 +1,38 @@
-import { Button, ButtonGroup, Position, Tooltip, Popover, Menu, MenuItem, MenuDivider } from "@blueprintjs/core";
-import React from "react";
-import { defaultLine } from "../../logic/default/index";
+import { Button, ButtonGroup, Classes, Popover, Position, Tooltip } from "@blueprintjs/core";
+import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { setSelectedTool, CanvasToolType } from "../../redux/slices/applicationSlice";
+import { CanvasToolType, setSelectedTool, toggleColumnMode } from "../../redux/slices/applicationSlice";
 import styles from "./styles/toolbars.module.scss";
+import ArrowToolPopup from "./toolPopups/ArrowToolPopup";
+import BoxToolPopup from "./toolPopups/BoxToolPopup";
+import LaTeXToolPopup from "./toolPopups/LaTeXToolPopup";
+import TextToolPopup from "./toolPopups/TextToolPopup";
 
 export const CanvasToolToolbar: React.FC = React.memo(() => {
     const dispatch = useAppDispatch();
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
-    const textToolConfig = React.useRef({ fontFamily: 'sans-serif', fontSize: 20 });
-    const latexToolConfig = React.useRef({ fontSize: 35 });
-
-    const selectedFont = selectedTool.type === 'text'
-        ? (selectedTool.config?.fontFamily ?? 'sans-serif')
-        : textToolConfig.current.fontFamily;
-
-    const selectedFontSize = selectedTool.type === 'text'
-        ? (selectedTool.config?.fontSize ?? 20)
-        : textToolConfig.current.fontSize;
-
-    const selectedLaTeXFontSize = selectedTool.type === 'latex'
-        ? (selectedTool.config?.fontSize ?? 35)
-        : latexToolConfig.current.fontSize;
-
-    const handleFontSelect = (fontFamily: string) => {
-        textToolConfig.current = { ...textToolConfig.current, fontFamily };
-        dispatch(setSelectedTool({
-            type: 'text',
-            config: textToolConfig.current
-        }));
-    };
-
-    const handleFontSizeSelect = (fontSize: number) => {
-        textToolConfig.current = { ...textToolConfig.current, fontSize };
-        dispatch(setSelectedTool({
-            type: 'text',
-            config: textToolConfig.current
-        }));
-    };
-
-    const handleLaTeXFontSizeSelect = (fontSize: number) => {
-        latexToolConfig.current = { fontSize };
-        dispatch(setSelectedTool({
-            type: 'latex',
-            config: { fontSize }
-        }));
-    };
+    const columnMode = useAppSelector((state) => state.application.columnMode);
+    const [openPopup, setOpenPopup] = useState<CanvasToolType | null>(null);
 
     const selectTool = (toolType: CanvasToolType) => {
-        if (toolType === 'arrow') {
-            dispatch(setSelectedTool({
-                type: 'arrow',
-                config: { lineStyle: defaultLine.lineStyle, mode: 'bind' }
-            }));
-        } else if (toolType === 'text') {
-            dispatch(setSelectedTool({
-                type: 'text',
-                config: textToolConfig.current
-            }));
-        } else if (toolType === 'latex') {
-            dispatch(setSelectedTool({
-                type: 'latex',
-                config: latexToolConfig.current
-            }));
-        } else {
-            dispatch(setSelectedTool({
-                type: toolType,
-                config: {}
-            }));
-        }
+        dispatch(setSelectedTool({
+            type: toolType
+        }));
+    };
+
+    const togglePopup = (toolType: CanvasToolType) => {
+        setOpenPopup((prev) => (prev === toolType ? null : toolType));
     };
 
     return (
         <div
             onClick={(e) => e.stopPropagation()}
-            onMouseUp={(e) => e.stopPropagation()}
+            onMouseUp={(e) => {
+                const target = e.target as HTMLElement;
+                if (!target.closest(`.${Classes.POPOVER}`)) {
+                    e.stopPropagation();
+                }
+            }}
             onMouseDown={(e) => e.stopPropagation()}
             className={styles["frosted-toolbar"]}
         >
@@ -83,7 +41,10 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     icon="move"
                     active={selectedTool.type === 'select'}
                     intent={selectedTool.type === 'select' ? 'primary' : 'none'}
-                    onClick={() => selectTool('select')}
+                    onClick={() => {
+                        setOpenPopup(null);
+                        selectTool('select');
+                    }}
                     variant="minimal"
                 />
             </Tooltip>
@@ -99,90 +60,19 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     />
                 </Tooltip>
                 <Popover
-                    content={
-                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                            <Menu style={{ minWidth: 130 }}>
-                                <MenuDivider title="Font Family" />
-                                <MenuItem
-                                    text="Sans Serif"
-                                    active={selectedFont === 'sans-serif'}
-                                    onClick={() => handleFontSelect('sans-serif')}
-                                    style={{ fontFamily: 'sans-serif' }}
-                                />
-                                <MenuItem
-                                    text="Serif"
-                                    active={selectedFont === 'serif'}
-                                    onClick={() => handleFontSelect('serif')}
-                                    style={{ fontFamily: 'serif' }}
-                                />
-                                <MenuItem
-                                    text="Monospace"
-                                    active={selectedFont === 'monospace'}
-                                    onClick={() => handleFontSelect('monospace')}
-                                    style={{ fontFamily: 'monospace' }}
-                                />
-                                <MenuItem
-                                    text="Georgia"
-                                    active={selectedFont === 'Georgia, serif'}
-                                    onClick={() => handleFontSelect('Georgia, serif')}
-                                    style={{ fontFamily: 'Georgia, serif' }}
-                                />
-                                <MenuItem
-                                    text="Arial"
-                                    active={selectedFont === 'Arial, sans-serif'}
-                                    onClick={() => handleFontSelect('Arial, sans-serif')}
-                                    style={{ fontFamily: 'Arial, sans-serif' }}
-                                />
-                                <MenuItem
-                                    text="Times New Roman"
-                                    active={selectedFont === 'Times New Roman, serif'}
-                                    onClick={() => handleFontSelect('Times New Roman, serif')}
-                                    style={{ fontFamily: 'Times New Roman, serif' }}
-                                />
-                            </Menu>
-                            <div style={{ width: 1, backgroundColor: 'rgba(200, 200, 200, 0.3)', margin: '4px 0' }} />
-                            <Menu style={{ minWidth: 110 }}>
-                                <MenuDivider title="Font Size" />
-                                <MenuItem
-                                    text="XS (12)"
-                                    active={selectedFontSize === 12}
-                                    onClick={() => handleFontSizeSelect(12)}
-                                />
-                                <MenuItem
-                                    text="S (16)"
-                                    active={selectedFontSize === 16}
-                                    onClick={() => handleFontSizeSelect(16)}
-                                />
-                                <MenuItem
-                                    text="M (20)"
-                                    active={selectedFontSize === 20}
-                                    onClick={() => handleFontSizeSelect(20)}
-                                />
-                                <MenuItem
-                                    text="L (28)"
-                                    active={selectedFontSize === 28}
-                                    onClick={() => handleFontSizeSelect(28)}
-                                />
-                                <MenuItem
-                                    text="XL (36)"
-                                    active={selectedFontSize === 36}
-                                    onClick={() => handleFontSizeSelect(36)}
-                                />
-                                <MenuItem
-                                    text="XXL (48)"
-                                    active={selectedFontSize === 48}
-                                    onClick={() => handleFontSizeSelect(48)}
-                                />
-                            </Menu>
-                        </div>
-                    }
+                    isOpen={openPopup === 'text'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'text' : null)}
+                    content={<TextToolPopup />}
                     position="top"
                     minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
                 >
                     <Button
                         icon="caret-up"
-                        active={selectedTool.type === 'text'}
+                        active={openPopup === 'text'}
                         intent={selectedTool.type === 'text' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('text')}
                         variant="minimal"
                         style={{ minWidth: "16px", padding: 0 }}
                     />
@@ -200,70 +90,91 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
                     />
                 </Tooltip>
                 <Popover
-                    content={
-                        <Menu style={{ minWidth: 110 }}>
-                            <MenuDivider title="Font Size" />
-                            <MenuItem
-                                text="XS (15)"
-                                active={selectedLaTeXFontSize === 15}
-                                onClick={() => handleLaTeXFontSizeSelect(15)}
-                            />
-                            <MenuItem
-                                text="S (25)"
-                                active={selectedLaTeXFontSize === 25}
-                                onClick={() => handleLaTeXFontSizeSelect(25)}
-                            />
-                            <MenuItem
-                                text="M (35)"
-                                active={selectedLaTeXFontSize === 35}
-                                onClick={() => handleLaTeXFontSizeSelect(35)}
-                            />
-                            <MenuItem
-                                text="L (45)"
-                                active={selectedLaTeXFontSize === 45}
-                                onClick={() => handleLaTeXFontSizeSelect(45)}
-                            />
-                            <MenuItem
-                                text="XL (55)"
-                                active={selectedLaTeXFontSize === 55}
-                                onClick={() => handleLaTeXFontSizeSelect(55)}
-                            />
-                            <MenuItem
-                                text="XXL (70)"
-                                active={selectedLaTeXFontSize === 70}
-                                onClick={() => handleLaTeXFontSizeSelect(70)}
-                            />
-                        </Menu>
-                    }
+                    isOpen={openPopup === 'latex'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'latex' : null)}
+                    content={<LaTeXToolPopup />}
                     position="top"
                     minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
                 >
                     <Button
                         icon="caret-up"
-                        active={selectedTool.type === 'latex'}
+                        active={openPopup === 'latex'}
                         intent={selectedTool.type === 'latex' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('latex')}
                         variant="minimal"
                         style={{ minWidth: "16px", padding: 0 }}
                     />
                 </Popover>
             </ButtonGroup>
 
-            <Tooltip hoverOpenDelay={2000} content="Box Tool" position={Position.TOP}>
-                <Button disabled
-                    icon="square"
-                    active={selectedTool.type === 'box'}
-                    intent={selectedTool.type === 'box' ? 'primary' : 'none'}
-                    onClick={() => selectTool('box')}
-                    variant="minimal"
-                />
-            </Tooltip>
+            <ButtonGroup>
+                <Tooltip hoverOpenDelay={2000} content="Box Tool" position={Position.TOP}>
+                    <Button
+                        icon="square"
+                        active={selectedTool.type === 'box'}
+                        intent={selectedTool.type === 'box' ? 'primary' : 'none'}
+                        onClick={() => selectTool('box')}
+                        variant="minimal"
+                    />
+                </Tooltip>
+                <Popover
+                    isOpen={openPopup === 'box'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'box' : null)}
+                    content={<BoxToolPopup />}
+                    position="top"
+                    minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
+                >
+                    <Button
+                        icon="caret-up"
+                        active={openPopup === 'box'}
+                        intent={selectedTool.type === 'box' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('box')}
+                        variant="minimal"
+                        style={{ minWidth: "16px", padding: 0 }}
+                    />
+                </Popover>
+            </ButtonGroup>
 
-            <Tooltip hoverOpenDelay={2000} content="Arrow Tool" position={Position.TOP}>
-                <Button disabled
-                    icon="arrow-top-right"
-                    active={selectedTool.type === 'arrow'}
-                    intent={selectedTool.type === 'arrow' ? 'primary' : 'none'}
-                    onClick={() => selectTool('arrow')}
+            <ButtonGroup>
+                <Tooltip hoverOpenDelay={2000} content="Arrow Tool" position={Position.TOP}>
+                    <Button
+                        icon="arrow-top-right"
+                        active={selectedTool.type === 'arrow'}
+                        intent={selectedTool.type === 'arrow' ? 'primary' : 'none'}
+                        onClick={() => selectTool('arrow')}
+                        variant="minimal"
+                    />
+                </Tooltip>
+                <Popover
+                    isOpen={openPopup === 'arrow'}
+                    onInteraction={(nextOpenState) => setOpenPopup(nextOpenState ? 'arrow' : null)}
+                    content={<ArrowToolPopup />}
+                    position="top"
+                    minimal={true}
+                    autoFocus={false}
+                    enforceFocus={false}
+                >
+                    <Button
+                        icon="caret-up"
+                        active={openPopup === 'arrow'}
+                        intent={selectedTool.type === 'arrow' ? 'primary' : 'none'}
+                        onClick={() => togglePopup('arrow')}
+                        variant="minimal"
+                        style={{ minWidth: "16px", padding: 0 }}
+                    />
+                </Popover>
+            </ButtonGroup>
+
+            <Tooltip hoverOpenDelay={2000} content="Column Mode (Alt+C)" position={Position.TOP}>
+                <Button
+                    icon="column-layout"
+                    active={columnMode}
+                    intent={columnMode ? 'primary' : 'none'}
+                    onClick={() => dispatch(toggleColumnMode())}
                     variant="minimal"
                 />
             </Tooltip>
@@ -272,3 +183,4 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
 });
 
 export default CanvasToolToolbar;
+

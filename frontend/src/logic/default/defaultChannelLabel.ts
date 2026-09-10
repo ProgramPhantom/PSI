@@ -10,7 +10,7 @@ export const DEFAULT_CHANNEL_TEXT: ILaTeX = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 55,
+		"fontSize": 30,
 		"colour": "black",
 		"background": null,
 		"display": "block"

@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_PHI_4: ILaTeX = {
-	"ref": "annotation-phi-4",
+	"ref": "phi-4",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "\\Phi_4",
@@ -9,7 +9,7 @@ export const DEFAULT_ANNOTATION_PHI_4: ILaTeX = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 35,
+		"fontSize": 10,
 		"colour": "black",
 		"background": null,
 		"display": "block"

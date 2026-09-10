@@ -1,8 +1,9 @@
-import { Element } from "@svgdotjs/svg.js";
+import { Element, SVG } from "@svgdotjs/svg.js";
 import Visual, { Display, IVisual } from "./visual";
+import { Size } from "./spacial";
 
-export const EXTOPX = 38.314;
-export const SCALER = 5;
+export const PT_TO_PX = 96 / 72;
+export const TEX_EX_TO_EM = 0.438;
 
 export interface ITextStyle {
 	fontSize: number;
@@ -23,6 +24,10 @@ export abstract class TextBase extends Visual implements ITextBase {
 	style: ITextStyle;
 	intrinsicSize!: { width: number; height: number };
 	wHRatio!: number;
+
+	public override get isResizable(): boolean {
+		return false;
+	}
 
 	get state(): ITextBase {
 		return {
@@ -47,7 +52,7 @@ export abstract class TextBase extends Visual implements ITextBase {
 				this.svg.remove();
 			}
 
-			this.svg?.move(this.cx, this.cy);
+			this.svg?.move(this.drawCX, this.drawCY);
 
 			if (this.svg) {
 				surface.add(this.svg);
@@ -57,13 +62,18 @@ export abstract class TextBase extends Visual implements ITextBase {
 		super.draw(surface);
 	}
 
-	override getInternalRepresentation(): Element | undefined {
+	override getInternalRepresentation(containerSize?: Size): Element | undefined {
+		if (this.svg === undefined || containerSize !== undefined) {
+			this.computeSelf(containerSize);
+			let temporaryCanvas: Element = SVG();
+			this.draw(temporaryCanvas);
+		}
 		if (this.svg === undefined) {
 			return undefined;
 		}
 
-		var internalSVG = this.svg?.clone(true, true);
-		internalSVG?.attr({ style: "display: block;" }).move(0, 0);
+		var internalSVG = this.svg?.clone(true, false);
+		internalSVG?.css({ display: "block", overflow: "visible" }).move(0, 0);
 		internalSVG.show();
 
 		return internalSVG;

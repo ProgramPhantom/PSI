@@ -1,6 +1,6 @@
 import Collection, { ICollection, Components } from "../collection";
 import { ID, UserComponentType } from "../point";
-import { Size } from "../spacial";
+import Spacial, { Size } from "../spacial";
 import Visual, { IVisual, PulseElement } from "../visual";
 import Channel from "./channel";
 import Sequence from "./sequence";
@@ -121,5 +121,10 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 		this.contentHeight = size.height;
 
 		return { width: this.width, height: this.height }
+	}
+
+
+	public isDiagramChild(element: Spacial): boolean {
+		return this.isChild(element);
 	}
 }

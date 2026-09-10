@@ -1,9 +1,10 @@
-import type { CSSProperties, FC } from "react";
+import { useEffect, type CSSProperties, type FC } from "react";
 import type { XYCoord } from "react-dnd";
 import { useDragLayer } from "react-dnd";
 import { CanvasDraggableElementPayload } from "./CanvasDraggableElement";
 import { ElementDragPreview } from "./ElementDragPreview";
 import { DragElementTypes } from "./CanvasDropContainer";
+import { snapBox, SnapStore } from "../../logic/snapping";
 
 const layerStyles: CSSProperties = {
 	position: "fixed",
@@ -18,7 +19,8 @@ const layerStyles: CSSProperties = {
 function getItemStyles(
 	initialOffset: XYCoord | null,
 	currentOffset: XYCoord | null,
-	scale: number
+	scale: number,
+	snapOffset: { dx: number; dy: number } = { dx: 0, dy: 0 }
 ) {
 	if (!initialOffset || !currentOffset) {
 		// If not dragging don't show
@@ -27,7 +29,8 @@ function getItemStyles(
 		};
 	}
 
-	let { x, y } = currentOffset;
+	const x = currentOffset.x + snapOffset.dx * scale;
+	const y = currentOffset.y + snapOffset.dy * scale;
 
 	const transform = `translate(${x}px, ${y}px) `;
 	const s = `scale(${scale})`;
@@ -52,16 +55,54 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
 		isDragging: monitor.isDragging()
 	}));
 
-	function renderItem() {
-		return <ElementDragPreview element={item.element} />;
+	useEffect(() => {
+		if (!isDragging) {
+			SnapStore.clear();
+		}
+	}, [isDragging]);
+
+	useEffect(() => {
+		return () => {
+			SnapStore.clear();
+		};
+	}, []);
+
+	let snapOffset = { dx: 0, dy: 0 };
+	if (isDragging && item?.element) {
+		const drawDiv = document.getElementById("diagram-root") as HTMLElement | null;
+		if (drawDiv) {
+			const drawDivRect = drawDiv.getBoundingClientRect();
+			const activeOffset = itemType === DragElementTypes.ATOMIC_PREFAB ? clientOffset : currentOffset;
+			if (activeOffset) {
+				const elemX = (activeOffset.x - drawDivRect.left) / props.scale;
+				const elemY = (activeOffset.y - drawDivRect.top) / props.scale;
+				const elemWidth = item.element.drawWidth || item.element.width || item.element.contentWidth || 20;
+				const elemHeight = item.element.drawHeight || item.element.height || item.element.contentHeight || 20;
+
+				const res = snapBox({
+					left: elemX,
+					top: elemY,
+					width: elemWidth,
+					height: elemHeight,
+					element: item.element,
+					scale: props.scale
+				});
+
+				snapOffset = { dx: res.dx, dy: res.dy };
+				SnapStore.setGuides(res.guides, snapOffset);
+			}
+		}
 	}
 
-	var css;
+	function renderItem() {
+		return <ElementDragPreview element={item.element} allElements={item.allElements} />;
+	}
 
+	let css;
 	if (itemType === DragElementTypes.ATOMIC_PREFAB) {
-		css = getItemStyles(initialOffset, clientOffset, props.scale);
+		css = getItemStyles(initialOffset, clientOffset, props.scale, snapOffset);
 	} else {
-		css = getItemStyles(initialOffset, currentOffset, props.scale);
+		css = getItemStyles(initialOffset, currentOffset, props.scale, snapOffset);
 	}
 
 	if (!isDragging) {
@@ -73,3 +114,4 @@ export const CanvasDragLayer: FC<CustomDragLayerProps> = (props) => {
 		</div>
 	);
 };
+

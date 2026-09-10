@@ -2,7 +2,9 @@ import { CSSProperties } from "react";
 import { isPulse } from "../../logic/spacial";
 import Grid from "../../logic/grid";
 import Visual from "../../logic/visual";
+import Aligner from "../../logic/aligner";
 import GridDebug from "./GridDebug";
+import AlignerDebug from "./AlignerDebug";
 import PaddedBoxDebug from "./PaddedBoxDebug";
 
 export interface IPulseDebug {
@@ -67,6 +69,9 @@ const PulseDebug: React.FC<IPulseDebug> = (props) => {
 		case "label-group":
 		case "simple-label-group":
 			debugElement = <GridDebug element={props.element as Grid} />;
+			break;
+		case "label":
+			debugElement = <AlignerDebug element={props.element as Aligner} />;
 			break;
 		default:
 			debugElement = <></>;

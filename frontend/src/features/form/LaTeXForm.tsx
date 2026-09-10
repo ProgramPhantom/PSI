@@ -1,9 +1,10 @@
-import { ControlGroup, InputGroup, NumericInput, Section } from "@blueprintjs/core";
+import { ControlGroup, InputGroup, Section } from "@blueprintjs/core";
 import { Controller, useFormContext } from "react-hook-form";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import { MathJax } from "better-react-mathjax";
 import { SimpleField } from "./fields/SimpleField";
+import { CustomNumericInput } from "./fields/CustomNumericInput";
 import sectionStyles from "./styles/FormSection.module.scss";
 import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
@@ -52,15 +53,15 @@ function LaTeXForm(props: ILaTeXFormProps) {
 					collapsible={true}>
 					<ControlGroup vertical={true} className={styles.formGroupContainer}>
 						<SimpleField
-							label="Font Size"
+							label="Font Size (pt)"
 							labelFor="text-input">
 							<Controller
 								control={formControls.control}
 								name={`${fullPrefix}style.fontSize`}
 								render={({ field }) => (
-									<NumericInput
+									<CustomNumericInput
 										{...field}
-										className={fieldStyles.compactNumericInput}
+										allowNegative={false}
 										onValueChange={field.onChange}
 										min={0}
 										max={120}

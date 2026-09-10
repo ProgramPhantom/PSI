@@ -9,7 +9,7 @@ export const DEFAULT_TEXT: IText = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 20,
+		"fontSize": 12,
 		"colour": "black",
 		"background": null,
 		"display": "block"

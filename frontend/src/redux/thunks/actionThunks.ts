@@ -5,11 +5,42 @@ import { appToaster } from "../../app/Toaster";
 import { saveDiagramFile } from "../../fileCreation/createDiagramFile";
 import ENGINE from "../../logic/engine";
 import { IDiagram } from "../../logic/hasComponents/diagram";
+import Collection, { ClearIDs, ICollection, shiftVisualState } from "../../logic/collection";
+import Visual, { IVisual } from "../../logic/visual";
+import LineLike, { ILineLike, isLineLike } from "../../logic/lineLike";
+import Channel from "../../logic/hasComponents/channel";
 import { RootState } from "../rootReducer";
 import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
+import { setSelectedElementId, setSelectedElementIds, selectSelectedElementId, clearSelection } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
-import { selectCurrentFileName } from "../selectors/diagramSelectors";
+import { loadAsset } from "./assetThunks";
+import { sha256 } from "js-sha256";
+import { selectCurrentAuthor, selectCurrentFileName, selectCurrentTitle, selectCurrentInstitution } from "../selectors/diagramSelectors";
+import { determineBindingPlacementModeType, isGridBindingRule } from "../../logic/bindingUtil";
+import Spacial, { IPlacementBindingRule, ISequenceBindingRule } from "../../logic/spacial";
+import { ISVGElement } from "../../logic/svgElement";
+
+export interface CopiedElementsPayload {
+    version: 1;
+    type: "psi/elements";
+    elements: IVisual[];
+}
+
+let inMemoryCopiedElements: IVisual[] | null = null;
+let inMemoryCopiedElementState: IVisual | null = null;
+
+function canCopyElement(element: Visual): boolean {
+    if (element.type === "channel" || element instanceof Channel) {
+        return false;
+    }
+    if (element.type === "diagram" || element.type === "sequence-aligner" || element.type === "sequence") {
+        return false;
+    }
+    return true;
+}
+
+
 
 
 // --- Logic Handlers ---
@@ -75,7 +106,10 @@ export const handleExportDiagramFile = createAsyncThunk(
     'actions/handleExportDiagramFile',
     async (_, { getState }) => {
         const state = getState() as RootState;
+        const title = selectCurrentTitle(state);
         const fileName = selectCurrentFileName(state);
+        const author = selectCurrentAuthor(state);
+        const institution = selectCurrentInstitution(state);
         const UUID = state.diagram.diagramUUID
 
         if (UUID === undefined) {
@@ -89,7 +123,11 @@ export const handleExportDiagramFile = createAsyncThunk(
         saveDiagramFile(fileName, {
             UUID: UUID,
             source: "local",
-            diagramName: fileName,
+            title: title,
+            fileName: fileName,
+            diagramName: title,
+            originalAuthor: author || undefined,
+            institution: institution || undefined,
             dateCreated: new Date().toISOString()
         });
 
@@ -142,6 +180,531 @@ export const handleCopyState = createAsyncThunk(
     }
 );
 
+export const handleCopyElement = createAsyncThunk(
+    'actions/handleCopyElement',
+    async (_, { getState }) => {
+        const state = getState() as RootState;
+        const selectedElementIds = state.application.selectedElementIds;
+        if (!selectedElementIds || selectedElementIds.length === 0) return;
+
+        const rawElements = selectedElementIds
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined);
+
+        if (rawElements.length === 0) return;
+
+        const copyableElements = rawElements.filter(canCopyElement);
+        if (copyableElements.length === 0) {
+            if (rawElements.some((el) => el.type === "channel" || el instanceof Channel)) {
+                appToaster.show({
+                    message: "Channels cannot be copied",
+                    intent: "warning"
+                });
+            }
+            return;
+        }
+
+        const stateObjects: IVisual[] = copyableElements.map((el) => structuredClone(el.state));
+        inMemoryCopiedElements = stateObjects;
+        inMemoryCopiedElementState = stateObjects[0] ?? null;
+
+        let stateString: string;
+        if (stateObjects.length === 1) {
+            stateString = JSON.stringify(stateObjects[0], undefined, 4);
+        } else {
+            const payload: CopiedElementsPayload = {
+                version: 1,
+                type: "psi/elements",
+                elements: stateObjects
+            };
+            stateString = JSON.stringify(payload, undefined, 4);
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(stateString).catch((err) => {
+                console.warn("Could not write element(s) to navigator.clipboard", err);
+            });
+        }
+
+        appToaster.show({
+            message: stateObjects.length === 1 ? "Element copied to clipboard" : `${stateObjects.length} elements copied to clipboard`,
+            intent: "success",
+            timeout: 1000
+        });
+    }
+);
+
+export const deleteSelectedElements = createAsyncThunk<void, string[] | void>(
+    'actions/deleteSelectedElements',
+    async (targetIds, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const ids = targetIds ?? state.application.selectedElementIds;
+        if (!ids || ids.length === 0) return;
+
+        const elements = ids
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined);
+
+        if (elements.length === 0) return;
+
+        const batchItems: Array<{ type: "add" | "remove" | "modify"; input: any }> = [];
+        const handledElementIds = new Set<string>();
+
+        // Identify any parent collections that contain elements being deleted
+        const parentCollectionIds = new Set<string>();
+        for (const el of elements) {
+            if (el.parentId && el.parentId !== ENGINE.handler.diagram.id) {
+                parentCollectionIds.add(el.parentId);
+            }
+        }
+
+        for (const parentId of parentCollectionIds) {
+            // If the parent collection itself is also being deleted, skip processing its children individually
+            if (elements.some((el) => el.id === parentId)) {
+                continue;
+            }
+
+            const parentCollection = ENGINE.handler.identifyElement(parentId);
+            if (!parentCollection || !(parentCollection instanceof Collection) || parentCollection.type !== "collection") {
+                continue;
+            }
+
+            const deletedChildren = parentCollection.children.filter((child) =>
+                elements.some((el) => el.id === child.id)
+            );
+            const remainingChildren = parentCollection.children.filter((child) =>
+                !elements.some((el) => el.id === child.id)
+            );
+
+            // Mark these deleted children as handled
+            deletedChildren.forEach((child) => handledElementIds.add(child.id));
+
+            const targetParentId = parentCollection.parentId ?? ENGINE.handler.diagram.id;
+            const container = (ENGINE.handler.diagram.id === targetParentId
+                ? ENGINE.handler.diagram
+                : ENGINE.handler.identifyElement(targetParentId)) as Collection | undefined;
+            const collectionIndex = container?.childIndex(parentCollection);
+
+            if (remainingChildren.length === 0) {
+                // All children in this collection deleted: remove collection container
+                batchItems.push({
+                    type: "remove",
+                    input: { child: parentCollection }
+                });
+            } else if (remainingChildren.length === 1) {
+                // Exactly 1 child remains: destroy the collection and extract lone child to targetParentId
+                const loneChild = remainingChildren[0];
+                const loneChildState = structuredClone(loneChild.state);
+                loneChildState.parentId = targetParentId;
+                if (loneChildState.placementMode?.type === "grid") {
+                    loneChildState.placementMode = { type: "free" };
+                }
+
+                batchItems.push({
+                    type: "remove",
+                    input: { child: parentCollection }
+                });
+                batchItems.push({
+                    type: "add",
+                    input: {
+                        child: loneChildState,
+                        index: collectionIndex
+                    }
+                });
+            } else {
+                // 2 or more children remain: remove deleted children from collection
+                for (const child of deletedChildren) {
+                    batchItems.push({
+                        type: "remove",
+                        input: { child }
+                    });
+                }
+            }
+        }
+
+        // Process remaining elements (those directly on diagram or whole collections)
+        for (const el of elements) {
+            if (!handledElementIds.has(el.id)) {
+                batchItems.push({
+                    type: "remove",
+                    input: { child: el }
+                });
+            }
+        }
+
+        if (batchItems.length === 1) {
+            ENGINE.handler.act(batchItems[0]);
+        } else if (batchItems.length > 1) {
+            ENGINE.handler.act({
+                type: "batch",
+                input: batchItems
+            });
+        }
+
+        dispatch(clearSelection());
+
+        appToaster.show({
+            message: elements.length === 1 ? `Deleted element '${elements[0].ref || elements[0].id}'` : `Deleted ${elements.length} elements`,
+            intent: "danger",
+            timeout: 1000
+        });
+    }
+);
+
+export const handleGroupSelectedElements = createAsyncThunk(
+    'actions/handleGroupSelectedElements',
+    async (_, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const ids = state.application.selectedElementIds;
+        if (!ids || ids.length < 2) return;
+
+        const elements = ids
+            .map((id) => ENGINE.handler.identifyElement(id))
+            .filter((el): el is Visual => el !== undefined);
+
+        if (elements.length < 2) return;
+
+        const diagramId = ENGINE.handler.diagram.id;
+        const firstParentId = elements[0].parentId || diagramId;
+        const allSameParent = elements.every((el) => (el.parentId || diagramId) === firstParentId);
+        if (!allSameParent) {
+            appToaster.show({
+                message: "Cannot group elements from different levels",
+                intent: "danger",
+                timeout: 1000
+            });
+            return;
+        }
+
+        const union = Spacial.CreateUnion(...elements);
+        const collectionId = Math.random().toString(16).slice(2);
+        const collectionRef = `group-${Date.now().toString(36)}`;
+
+        const childrenStates: IVisual[] = elements.map((el) => {
+            const cloned = structuredClone(el.state);
+            cloned.parentId = collectionId;
+            if (cloned.placementMode?.type === "grid") {
+                cloned.placementMode = { type: "free" };
+            }
+            return cloned;
+        });
+
+        const newCollection: ICollection = {
+            id: collectionId,
+            ref: collectionRef,
+            type: "collection",
+            parentId: firstParentId,
+            placementMode: { type: "free" },
+            placementControl: "user",
+            sizeMode: { x: "fit", y: "fit" },
+            padding: [0, 0, 0, 0],
+            offset: [0, 0],
+            x: union.x,
+            y: union.y,
+            contentWidth: union.contentWidth,
+            contentHeight: union.contentHeight,
+            children: childrenStates
+        };
+
+        const batchItems = [
+            ...elements.map((el) => ({
+                type: "remove" as const,
+                input: { child: el }
+            })),
+            {
+                type: "add" as const,
+                input: { child: newCollection }
+            }
+        ];
+
+        ENGINE.handler.act({
+            type: "batch",
+            input: batchItems
+        });
+
+        dispatch(setSelectedElementId(collectionId));
+
+        appToaster.show({
+            message: `Grouped ${elements.length} elements`,
+            intent: "success",
+            timeout: 1000
+        });
+    }
+);
+
+export const handleUngroupElement = createAsyncThunk(
+    'actions/handleUngroupElement',
+    async (payload: { elementId?: string } | undefined, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const targetId = payload?.elementId ?? selectSelectedElementId(state);
+        if (!targetId) return;
+
+        const element = ENGINE.handler.identifyElement(targetId);
+        if (!element || !element.parentId) return;
+
+        const parentCollection = ENGINE.handler.identifyElement(element.parentId);
+        if (!parentCollection || !(parentCollection instanceof Collection) || parentCollection.type !== "collection") {
+            return;
+        }
+
+        // Target parent is the container of parentCollection (an outer Collection, or the Diagram)
+        const targetParentId = parentCollection.parentId ?? ENGINE.handler.diagram.id;
+        const container = (ENGINE.handler.diagram.id === targetParentId
+            ? ENGINE.handler.diagram
+            : ENGINE.handler.identifyElement(targetParentId)) as Collection | undefined;
+        const collectionIndex = container?.childIndex(parentCollection);
+
+        // Prepare standalone state for the selected element, parented to targetParentId
+        const standaloneState = structuredClone(element.state);
+        standaloneState.parentId = targetParentId;
+        if (standaloneState.placementMode?.type === "grid") {
+            standaloneState.placementMode = { type: "free" };
+        }
+
+        const remainingChildren = parentCollection.children.filter((child) => child.id !== targetId);
+
+        let batchItems: Array<{ type: "add" | "remove" | "modify"; input: any }>;
+
+        if (remainingChildren.length <= 1) {
+            // Destroy the collection container.
+            // If 1 element remains, convert it into a standalone element in targetParentId too.
+            const otherAddItems = remainingChildren.map((other, idx) => {
+                const otherState = structuredClone(other.state);
+                otherState.parentId = targetParentId;
+                if (otherState.placementMode?.type === "grid") {
+                    otherState.placementMode = { type: "free" };
+                }
+                return {
+                    type: "add" as const,
+                    input: {
+                        child: otherState,
+                        index: collectionIndex !== undefined ? collectionIndex + idx : undefined
+                    }
+                };
+            });
+
+            batchItems = [
+                {
+                    type: "remove" as const,
+                    input: { child: parentCollection }
+                },
+                ...otherAddItems,
+                {
+                    type: "add" as const,
+                    input: {
+                        child: standaloneState,
+                        index: collectionIndex !== undefined ? collectionIndex + otherAddItems.length : undefined
+                    }
+                }
+            ];
+        } else {
+            // 2 or more elements remain: update the collection with recomputed bounding box
+            const remainingUnion = Spacial.CreateUnion(...remainingChildren);  // TODO: perf
+            const updatedCollectionState: ICollection = {
+                ...parentCollection.state,
+                parentId: targetParentId,
+                x: remainingUnion.x,
+                y: remainingUnion.y,
+                contentWidth: remainingUnion.contentWidth,
+                contentHeight: remainingUnion.contentHeight,
+                children: remainingChildren.map((child) => {
+                    const cloned = structuredClone(child.state);
+                    cloned.parentId = parentCollection.id;
+                    return cloned;
+                })
+            };
+
+            batchItems = [
+                {
+                    type: "modify" as const,
+                    input: { target: parentCollection, child: updatedCollectionState }
+                },
+                {
+                    type: "add" as const,
+                    input: {
+                        child: standaloneState,
+                        index: collectionIndex !== undefined ? collectionIndex + 1 : undefined
+                    }
+                }
+            ];
+        }
+
+        ENGINE.handler.act({
+            type: "batch",
+            input: batchItems
+        });
+
+        dispatch(setSelectedElementId(targetId));
+
+        appToaster.show({
+            message: `Removed element from group`,
+            intent: "success",
+            timeout: 1000
+        });
+    }
+);
+
+export const handlePasteElement = createAsyncThunk(
+    'actions/handlePasteElement',
+    async (_, { dispatch, getState }) => {
+        const state = getState() as RootState;
+        const isOverCanvas = state.application.isMouseOverCanvas;
+        const mousePos = state.application.canvasMousePosition;
+
+        const parseClipboardText = (text: string): IVisual[] | null => {
+            try {
+                const parsed = JSON.parse(text);
+                if (!parsed || typeof parsed !== "object") return null;
+
+                if (parsed.type === "psi/elements" && Array.isArray(parsed.elements)) {
+                    return parsed.elements.filter(
+                        (el: any) => el && typeof el === "object" && el.type !== "channel" && el.type !== "diagram"
+                    );
+                }
+                if (Array.isArray(parsed)) {
+                    return parsed.filter(
+                        (el: any) => el && typeof el === "object" && el.type !== "channel" && el.type !== "diagram"
+                    );
+                }
+                if (parsed.type && parsed.type !== "channel" && parsed.type !== "diagram") {
+                    return [parsed];
+                }
+            } catch {
+                return null;
+            }
+            return null;
+        };
+
+        const doPaste = (elementsToPaste: IVisual[]) => {
+            if (!elementsToPaste || elementsToPaste.length === 0) return;
+
+            // Compute collective bounding box origin (minX, minY)
+            let minX = Infinity;
+            let minY = Infinity;
+            for (const el of elementsToPaste) {
+                if (isLineLike(el)) {
+                    minX = Math.min(minX, el.x ?? 0, el.startX ?? 0, el.endX ?? 0);
+                    minY = Math.min(minY, el.y ?? 0, el.startY ?? 0, el.endY ?? 0);
+                } else {
+                    minX = Math.min(minX, el.x ?? 0);
+                    minY = Math.min(minY, el.y ?? 0);
+                }
+            }
+            if (!isFinite(minX)) minX = 0;
+            if (!isFinite(minY)) minY = 0;
+
+            let deltaX: number;
+            let deltaY: number;
+
+            if (isOverCanvas && mousePos) {
+                deltaX = mousePos.x - minX;
+                deltaY = mousePos.y - minY;
+            } else {
+                deltaX = 20;
+                deltaY = 20;
+            }
+
+            // Deep clone, assign new IDs, shift positions, and prepare idMap for peer bindings
+            const idMap = new Map<string, string>();
+            const preparedElements: IVisual[] = elementsToPaste.map((el) => {
+                const cloned = structuredClone(el);
+                const oldId = cloned.id;
+                ClearIDs(cloned);
+                const newId = Math.random().toString(16).slice(2);
+                cloned.id = newId;
+                if (oldId) {
+                    idMap.set(oldId, newId);
+                }
+                cloned.ref = `${cloned.type || "element"}-${Date.now().toString(36)}-${newId.slice(0, 4)}`;
+                cloned.parentId = ENGINE.handler.diagram.id;
+                cloned.placementControl = "user";
+
+                shiftVisualState(cloned, deltaX, deltaY);
+                return cloned;
+            });
+
+            // Remap peer bindings within the copied group, reset external bindings to free
+            for (const el of preparedElements) {
+                if (el.placementMode?.type === "binds" || el.placementMode?.type === "sequenceBind") {
+                    const rules = el.placementMode.config as ISequenceBindingRule[] | undefined;
+                    if (rules && Array.isArray(rules)) {
+                        const updatedRules: ISequenceBindingRule[] = [];
+                        for (const rule of rules) {
+                            if (isGridBindingRule(rule)) {
+                                updatedRules.push(rule);
+                            } else {
+                                const anchorId = rule.targetId || rule.anchorId;
+                                if (anchorId && idMap.has(anchorId)) {
+                                    const remappedRule: IPlacementBindingRule = {
+                                        ...rule,
+                                        targetId: idMap.get(rule.targetId) ?? rule.targetId,
+                                        ...(rule.anchorId && idMap.has(rule.anchorId)
+                                            ? { anchorId: idMap.get(rule.anchorId) }
+                                            : {})
+                                    };
+                                    updatedRules.push(remappedRule);
+                                }
+                            }
+                        }
+                        el.placementMode = determineBindingPlacementModeType(updatedRules);
+                    } else {
+                        el.placementMode = { type: "free" };
+                    }
+                } else {
+                    el.placementMode = { type: "free" };
+                }
+            }
+
+            if (preparedElements.length === 1) {
+                ENGINE.handler.act({
+                    type: "add",
+                    input: {
+                        child: preparedElements[0]
+                    }
+                });
+            } else {
+                ENGINE.handler.act({
+                    type: "batch",
+                    input: preparedElements.map((child) => ({
+                        type: "add",
+                        input: { child }
+                    }))
+                });
+            }
+
+            const newIds = preparedElements.map((el) => el.id).filter((id): id is string => Boolean(id));
+            dispatch(setSelectedElementIds(newIds));
+
+            appToaster.show({
+                message: preparedElements.length === 1 ? "Element pasted" : `Pasted ${preparedElements.length} elements`,
+                intent: "success",
+                timeout: 1000
+            });
+        };
+
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    const parsedElements = parseClipboardText(text);
+                    if (parsedElements && parsedElements.length > 0) {
+                        doPaste(parsedElements);
+                        return;
+                    }
+                }
+            } catch {
+                // Ignore reading clipboard error, fall back below
+            }
+        }
+
+        if (inMemoryCopiedElements && inMemoryCopiedElements.length > 0) {
+            doPaste(inMemoryCopiedElements);
+        } else if (inMemoryCopiedElementState && inMemoryCopiedElementState.type !== "channel") {
+            doPaste([inMemoryCopiedElementState]);
+        }
+    }
+);
+
 export const handleDownloadState = createAsyncThunk(
     'actions/handleDownloadState',
     async () => {
@@ -162,12 +725,152 @@ export const handleDownloadState = createAsyncThunk(
     }
 );
 
-export const handleSaveSVG = createAsyncThunk(
+function unrollSVGUseElements(doc: Document) {
+    const useElements = Array.from(doc.querySelectorAll("use"));
+
+    useElements.forEach((useEl) => {
+        const href = useEl.getAttribute("href") || useEl.getAttribute("xlink:href");
+        if (!href || !href.startsWith("#")) return;
+
+        const targetId = href.slice(1);
+        const targetEl = doc.getElementById(targetId);
+        if (!targetEl) return;
+
+        // Clone target element
+        const clone = targetEl.cloneNode(true) as Element;
+        clone.removeAttribute("id"); // Avoid ID conflicts
+
+        // Extract positional and transform attributes from <use>
+        const x = parseFloat(useEl.getAttribute("x") || "0");
+        const y = parseFloat(useEl.getAttribute("y") || "0");
+        const useTransform = useEl.getAttribute("transform");
+        const targetTransform = clone.getAttribute("transform");
+
+        // Build combined transform list
+        const transforms: string[] = [];
+        if (x !== 0 || y !== 0) {
+            transforms.push(`translate(${x}, ${y})`);
+        }
+        if (useTransform) {
+            transforms.push(useTransform);
+        }
+        if (targetTransform) {
+            transforms.push(targetTransform);
+        }
+
+        if (transforms.length > 0) {
+            clone.setAttribute("transform", transforms.join(" "));
+        }
+
+        // Copy fill/stroke/style if present on <use>
+        ["fill", "stroke", "style", "class"].forEach((attr) => {
+            if (useEl.hasAttribute(attr) && !clone.hasAttribute(attr)) {
+                clone.setAttribute(attr, useEl.getAttribute(attr)!);
+            }
+        });
+
+        // Replace <use> with clone
+        useEl.parentNode?.replaceChild(clone, useEl);
+    });
+}
+
+function flattenNestedSVGElements(doc: Document) {
+    const rootSvg = doc.querySelector("svg");
+    if (!rootSvg) return;
+
+    // Get all nested <svg> elements (excluding the root document <svg>)
+    const allSvgs = Array.from(doc.querySelectorAll("svg"));
+    const nestedSvgs = allSvgs.filter((el) => el !== rootSvg);
+
+    nestedSvgs.forEach((svgEl) => {
+        const xStr = svgEl.getAttribute("x") || "0";
+        const yStr = svgEl.getAttribute("y") || "0";
+        const x = parseFloat(xStr) || 0;
+        const y = parseFloat(yStr) || 0;
+
+        const wStr = svgEl.getAttribute("width");
+        const hStr = svgEl.getAttribute("height");
+        const width = wStr ? parseFloat(wStr) : NaN;
+        const height = hStr ? parseFloat(hStr) : NaN;
+
+        const viewBox = svgEl.getAttribute("viewBox");
+
+        const gEl = doc.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        // Copy all attributes except positioning/viewBox attributes
+        Array.from(svgEl.attributes).forEach((attr) => {
+            const attrName = attr.name.toLowerCase();
+            if (!["x", "y", "width", "height", "viewbox", "xmlns", "xmlns:xlink", "version"].includes(attrName)) {
+                gEl.setAttribute(attr.name, attr.value);
+            }
+        });
+
+        const transforms: string[] = [];
+
+        if (viewBox) {
+            const vbParts = viewBox.trim().split(/[\s,]+/).map(parseFloat);
+            if (vbParts.length === 4 && !vbParts.some(isNaN)) {
+                const [vbX, vbY, vbW, vbH] = vbParts;
+                let scaleX = 1;
+                let scaleY = 1;
+
+                if (!isNaN(width) && vbW > 0) {
+                    scaleX = width / vbW;
+                }
+                if (!isNaN(height) && vbH > 0) {
+                    scaleY = height / vbH;
+                } else if (!isNaN(width) && vbW > 0) {
+                    scaleY = scaleX;
+                } else if (!isNaN(height) && vbH > 0 && isNaN(width)) {
+                    scaleX = scaleY;
+                }
+
+                transforms.push(`translate(${x}, ${y})`);
+                transforms.push(`scale(${scaleX}, ${scaleY})`);
+                if (vbX !== 0 || vbY !== 0) {
+                    transforms.push(`translate(${-vbX}, ${-vbY})`);
+                }
+            } else if (x !== 0 || y !== 0) {
+                transforms.push(`translate(${x}, ${y})`);
+            }
+        } else if (x !== 0 || y !== 0) {
+            transforms.push(`translate(${x}, ${y})`);
+        }
+
+        const existingTransform = gEl.getAttribute("transform");
+        if (existingTransform) {
+            transforms.push(existingTransform);
+        }
+
+        if (transforms.length > 0) {
+            gEl.setAttribute("transform", transforms.join(" "));
+        }
+
+        // Move all children from svgEl to gEl
+        while (svgEl.firstChild) {
+            gEl.appendChild(svgEl.firstChild);
+        }
+
+        // Replace nested <svg> with <g>
+        svgEl.parentNode?.replaceChild(gEl, svgEl);
+    });
+}
+
+export interface SaveSVGOptions {
+    width?: number;
+    height?: number;
+    backgroundColor?: string;
+    fileName?: string;
+}
+
+export const handleSaveSVG = createAsyncThunk<void, SaveSVGOptions | void>(
     'actions/handleSaveSVG',
-    async (_, { getState }) => {
+    async (options, { getState }) => {
         try {
             const state = getState() as RootState;
-            const fileNameFromRedux = selectCurrentFileName(state);
+            const defaultName = selectCurrentTitle(state);
+            const rawName = options?.fileName?.trim() || defaultName || "pulse-diagram";
+            const fileName = rawName.endsWith(".svg") ? rawName : `${rawName}.svg`;
 
             const surface = ENGINE.surface;
             const svgClone = surface.clone(true, false);
@@ -175,9 +878,67 @@ export const handleSaveSVG = createAsyncThunk(
             hitboxElements.forEach((element) => {
                 element.remove();
             });
+
             const svgString = svgClone.svg();
-            const blob = new Blob([svgString], { type: "image/svg+xml" });
-            const fileName = fileNameFromRedux || `pulse-diagram-${Date.now()}.svg`;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgString, "image/svg+xml");
+            const svgEl = doc.querySelector("svg");
+
+            if (svgEl) {
+                // 1. Dereference / unroll all <use> tags for vector editor compatibility
+                unrollSVGUseElements(doc);
+
+                // 2. Flatten nested <svg> elements into <g transform="..."> for Figma / Illustrator / Inkscape compatibility
+                flattenNestedSVGElements(doc);
+
+                // 3. Add background fill if requested
+                if (options?.backgroundColor && options.backgroundColor !== "transparent") {
+                    const viewBoxAttr = svgEl.getAttribute("viewBox");
+                    let bgX = ENGINE.handler.diagram?.x ?? 0;
+                    let bgY = ENGINE.handler.diagram?.y ?? 0;
+                    let bgW = ENGINE.handler.diagram?.width ?? 800;
+                    let bgH = ENGINE.handler.diagram?.height ?? 600;
+
+                    if (viewBoxAttr) {
+                        const vbParts = viewBoxAttr.trim().split(/[\s,]+/).map(parseFloat);
+                        if (vbParts.length === 4 && !vbParts.some(isNaN)) {
+                            bgX = vbParts[0];
+                            bgY = vbParts[1];
+                            bgW = vbParts[2];
+                            bgH = vbParts[3];
+                        }
+                    }
+
+                    const bgRect = doc.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    bgRect.setAttribute("x", `${bgX}`);
+                    bgRect.setAttribute("y", `${bgY}`);
+                    bgRect.setAttribute("width", `${bgW}`);
+                    bgRect.setAttribute("height", `${bgH}`);
+                    bgRect.setAttribute("fill", options.backgroundColor);
+                    if (svgEl.firstChild) {
+                        svgEl.insertBefore(bgRect, svgEl.firstChild);
+                    } else {
+                        svgEl.appendChild(bgRect);
+                    }
+                }
+
+                // Adjust dimensions if specified
+                if (options?.width && options.width > 0) {
+                    const currentW = ENGINE.handler.diagram?.width || 800;
+                    const currentH = ENGINE.handler.diagram?.height || 600;
+                    const ratio = currentW / currentH;
+                    const targetW = options.width;
+                    const targetH = options.height || Math.round(targetW / ratio);
+
+                    svgEl.setAttribute("width", `${targetW}px`);
+                    svgEl.setAttribute("height", `${targetH}px`);
+                }
+            }
+
+            const serializer = new XMLSerializer();
+            const finalSvgString = svgEl ? serializer.serializeToString(doc) : svgString;
+            const blob = new Blob([finalSvgString], { type: "image/svg+xml;charset=utf-8" });
+
             saveAs(blob, fileName);
             appToaster.show({
                 message: `SVG saved successfully as ${fileName}`,
@@ -297,7 +1058,7 @@ Steps to reproduce the behavior :
     }
 );
 
-export const SavePNG = createAsyncThunk<void, { width: number, height: number }>(
+export const SavePNG = createAsyncThunk<void, { width: number, height: number, fileName?: string }>(
     'actions/SavePNG',
     async (dimensions, { getState }) => {
         try {
@@ -305,7 +1066,9 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
             const height = dimensions.height;
 
             const state = getState() as RootState;
-            const fileName = selectCurrentFileName(state);
+            const defaultName = selectCurrentTitle(state);
+            const rawFileName = dimensions.fileName?.trim() || defaultName || "pulse-diagram";
+            const exportFileName = rawFileName.endsWith(".png") ? rawFileName : `${rawFileName}.png`;
 
             // Get the current SVG surface from the ENGINE
             const surface = ENGINE.surface;
@@ -350,11 +1113,11 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
                     // Convert canvas to blob and save
                     canvas.toBlob((blob) => {
                         if (blob) {
-                            saveAs(blob, fileName);
+                            saveAs(blob, exportFileName);
 
                             // Show success message
                             appToaster.show({
-                                message: `PNG saved successfully as ${fileName}`,
+                                message: `PNG saved successfully as ${exportFileName}`,
                                 intent: "success",
                                 icon: "tick-circle"
                             });
@@ -391,6 +1154,120 @@ export const SavePNG = createAsyncThunk<void, { width: number, height: number }>
                 message: `Failed to save PNG: ${error instanceof Error ? error.message : "Unknown error"}`,
                 intent: "danger",
                 icon: "error"
+            });
+        }
+    }
+);
+
+export const addSvgElementFromDrop = createAsyncThunk(
+    'actions/addSvgElementFromDrop',
+    async (
+        payload: { file: File; x: number; y: number },
+        { dispatch }
+    ) => {
+        const { file, x, y } = payload;
+        try {
+            const rawSvg = await file.text();
+            const id = sha256(rawSvg);
+            const reference = file.name.replace(/\.[^/.]+$/, "") || "svg";
+
+            // Load asset into store and engine
+            const loadResult = await dispatch(loadAsset({
+                file,
+                reference,
+                source: "local"
+            }));
+
+            const assetId = loadAsset.fulfilled.match(loadResult) && loadResult.payload
+                ? loadResult.payload
+                : sha256(rawSvg);
+
+            // Determine dimensions from SVG if available, or default to 100x100
+            let contentWidth = 100;
+            let contentHeight = 100;
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(rawSvg, "image/svg+xml");
+                const svgEl = doc.querySelector("svg");
+                if (svgEl) {
+                    const wAttr = svgEl.getAttribute("width");
+                    const hAttr = svgEl.getAttribute("height");
+                    const vbAttr = svgEl.getAttribute("viewBox");
+                    if (wAttr && hAttr) {
+                        const w = parseFloat(wAttr);
+                        const h = parseFloat(hAttr);
+                        if (!isNaN(w) && !isNaN(h) && w > 0 && h > 0) {
+                            contentWidth = w;
+                            contentHeight = h;
+                        }
+                    } else if (vbAttr) {
+                        const parts = vbAttr.trim().split(/[\s,]+/);
+                        if (parts.length === 4) {
+                            const w = parseFloat(parts[2]);
+                            const h = parseFloat(parts[3]);
+                            if (!isNaN(w) && !isNaN(h) && w > 0 && h > 0) {
+                                contentWidth = w;
+                                contentHeight = h;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not determine SVG dimensions", e);
+            }
+
+            // Scale down by approximately one-fifth (0.2x) so dropped SVGs are not enormous
+            const scaledWidth = Math.max(10, Math.round(contentWidth * 0.2));
+            const scaledHeight = Math.max(10, Math.round(contentHeight * 0.2));
+
+            const newId = Math.random().toString(16).slice(2);
+
+            const elementState: ISVGElement = {
+                id: newId,
+                type: "svg",
+                asset: {
+                    id: assetId,
+                    ref: reference
+                },
+                placementMode: {
+                    type: "free"
+                },
+                offset: [0, 0],
+                padding: [0, 0, 0, 0],
+                ref: reference,
+                parentId: ENGINE.handler.diagram.id,
+                x: Math.round(x),
+                y: Math.round(y),
+                contentWidth: scaledWidth,
+                contentHeight: scaledHeight,
+                style: {},
+                flipped: {
+                    x: false,
+                    y: false
+                }
+            };
+
+            ENGINE.handler.act({
+                type: "add",
+                input: {
+                    child: elementState
+                }
+            });
+
+            ENGINE.emitChange();
+
+            dispatch(setSelectedElementId(newId));
+
+            appToaster.show({
+                message: `Added SVG element '${reference}'`,
+                intent: "success",
+                timeout: 1500
+            });
+        } catch (error) {
+            console.error("Error adding SVG element from drop:", error);
+            appToaster.show({
+                message: `Failed to add SVG: ${error instanceof Error ? error.message : "Unknown error"}`,
+                intent: "danger"
             });
         }
     }

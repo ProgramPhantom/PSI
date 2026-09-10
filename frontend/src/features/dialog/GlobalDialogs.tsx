@@ -3,14 +3,17 @@ import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
     setLoadDialogOpen,
     setPNGDialogOpen,
+    setSVGDialogOpen,
     setSaveAsDialogOpen,
     setLoginDialogOpen,
     setUserDialogOpen,
     setDiagramsDialogOpen,
     setAssetStoreDialogOpen,
-    setAboutDialogOpen
+    setAboutDialogOpen,
+    setCiteDialogOpen
 } from "../../redux/slices/dialogSlice";
 import { PNGExportDialog } from "./PNGExportDialog";
+import { SVGExportDialog } from "./SVGExportDialog";
 import { LoadDiagramFileDialog } from "./LoadDiagramFileDialog";
 import { LoginDialog } from "./LoginDialog";
 import { UserDialog } from "../banner/UserDrawer";
@@ -21,18 +24,21 @@ import { WelcomeDialog } from "./WelcomeDialog";
 import { UnsavedDiagramAlert } from "./UnsavedDiagramAlert";
 import { UnsavedDiagramLogoutAlert } from "./UnsavedDiagramLogoutAlert";
 import { AboutDialog } from "./AboutDialog";
+import { CiteDialog } from "./CiteDialog";
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
     const {
         isPNGDialogOpen,
+        isSVGDialogOpen,
         isLoadDialogOpen,
         isSaveAsDialogOpen,
         isLoginDialogOpen,
         isUserDialogOpen,
         isDiagramsDialogOpen,
         isAssetStoreDialogOpen,
-        isAboutDialogOpen
+        isAboutDialogOpen,
+        isCiteDialogOpen
     } = useAppSelector((state) => state.dialog);
 
     return (
@@ -42,6 +48,11 @@ export const GlobalDialogs: React.FC = () => {
             <PNGExportDialog
                 close={() => dispatch(setPNGDialogOpen(false))}
                 isOpen={isPNGDialogOpen}
+            />
+
+            <SVGExportDialog
+                close={() => dispatch(setSVGDialogOpen(false))}
+                isOpen={isSVGDialogOpen}
             />
 
             <LoadDiagramFileDialog
@@ -77,6 +88,11 @@ export const GlobalDialogs: React.FC = () => {
             <AboutDialog
                 isOpen={isAboutDialogOpen}
                 onClose={() => dispatch(setAboutDialogOpen(false))}
+            />
+
+            <CiteDialog
+                isOpen={isCiteDialogOpen}
+                onClose={() => dispatch(setCiteDialogOpen(false))}
             />
 
             <UnsavedDiagramAlert />

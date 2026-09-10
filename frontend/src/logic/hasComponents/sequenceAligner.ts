@@ -26,6 +26,7 @@ export default class SequenceAligner extends Aligner<AlignerElement<Sequence>> i
 	constructor(params: ISequenceAligner) {
 		super(params);
 		this.placementMode = { type: "free" }
+		this.sizeMode = { x: "fit", y: "fit" }
 	}
 
 	public override add({ child, index }: AddDispatchData<AlignerElement<Sequence>>) {

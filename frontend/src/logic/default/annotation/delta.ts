@@ -1,7 +1,7 @@
 import { ILaTeX } from "../../latex"
 
 export const DEFAULT_ANNOTATION_DELTA: ILaTeX = {
-	"ref": "annotation-delta",
+	"ref": "delta",
 	"contentWidth": 10,
 	"contentHeight": 10,
 	"text": "\\delta",
@@ -9,7 +9,7 @@ export const DEFAULT_ANNOTATION_DELTA: ILaTeX = {
 	"offset": [0, 0],
 
 	"style": {
-		"fontSize": 35,
+		"fontSize": 10,
 		"colour": "black",
 		"background": null,
 		"display": "block"

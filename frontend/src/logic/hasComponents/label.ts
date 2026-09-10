@@ -60,6 +60,11 @@ export default class Label extends Aligner implements ILabel {
 			this.line.sizeMode = {
 				x: this.crossAxis === "x" ? "grow" : "fixed",
 				y: this.crossAxis === "y" ? "grow" : "fixed"
+			};
+			if (this.crossAxis === "y") {
+				this.line.endX = this.line.startX;
+			} else {
+				this.line.endY = this.line.startY;
 			}
 		}
 	}
@@ -78,10 +83,12 @@ export default class Label extends Aligner implements ILabel {
 		child.placementMode = {
 			type: "aligner",
 			config: {
-				alignment: { crossAxis: "centre" }
+				alignment: { crossAxis: "centre", mainAxis: "centre" }
 			}
 		}
-		child.padding = [0, 0, 0, 0];
+
+
+		child.placementControl = "auto"
 
 		if (this.labelConfig?.textPosition === "bottom") {
 			this.setChildIndex(child, 1);
@@ -98,9 +105,19 @@ export default class Label extends Aligner implements ILabel {
 			}
 		}
 
+		child.placementControl = "auto"
+
 		child.sizeMode = {
 			x: this.crossAxis === "x" ? "grow" : "fixed",
 			y: this.crossAxis === "y" ? "grow" : "fixed"
+		}
+
+		if (child instanceof Line) {
+			if (this.crossAxis === "y") {
+				child.endX = child.startX;
+			} else {
+				child.endY = child.startY;
+			}
 		}
 
 		if (this.labelConfig?.textPosition === "inline") {
