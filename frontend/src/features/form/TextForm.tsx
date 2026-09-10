@@ -1,8 +1,9 @@
-import { ControlGroup, HTMLSelect, InputGroup, NumericInput, Section } from "@blueprintjs/core";
+import { ControlGroup, HTMLSelect, InputGroup, Section } from "@blueprintjs/core";
 import { Controller, useFormContext } from "react-hook-form";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
 import { SimpleField } from "./fields/SimpleField";
+import { CustomNumericInput } from "./fields/CustomNumericInput";
 import sectionStyles from "./styles/FormSection.module.scss";
 import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
@@ -78,9 +79,9 @@ function TextForm(props: ITextFormProps) {
 								control={formControls.control}
 								name={`${fullPrefix}.style.fontSize`}
 								render={({ field }) => (
-									<NumericInput
+									<CustomNumericInput
 										{...field}
-										className={fieldStyles.compactNumericInput}
+										allowNegative={false}
 										onValueChange={field.onChange}
 										min={0}
 										max={120}
