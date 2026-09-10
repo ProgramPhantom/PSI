@@ -1,12 +1,12 @@
 import {
 	HTMLSelect,
-	NumericInput,
 	Switch
 } from "@blueprintjs/core";
 import React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { DoubleField } from "../fields/DoubleField";
 import { SimpleField } from "../fields/SimpleField";
+import { CustomNumericInput } from "../fields/CustomNumericInput";
 import styles from "../styles/FormContainers.module.scss";
 import fieldStyles from "../styles/FormFields.module.scss";
 
@@ -22,7 +22,7 @@ export const GridPlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix }) 
 						name={`${fullPrefix}placementMode.config.coords.row`}
 						defaultValue={0}
 						render={({ field }) => (
-							<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={0} size="small" fill />
+							<CustomNumericInput {...field} allowNegative={false} onValueChange={field.onChange} min={0} size="small" fill />
 						)}
 					/>
 				</SimpleField>
@@ -32,7 +32,7 @@ export const GridPlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix }) 
 						name={`${fullPrefix}placementMode.config.coords.col`}
 						defaultValue={0}
 						render={({ field }) => (
-							<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={0} size="small" fill />
+							<CustomNumericInput {...field} allowNegative={false} onValueChange={field.onChange} min={0} size="small" fill />
 						)}
 					/>
 				</SimpleField>
@@ -45,7 +45,7 @@ export const GridPlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix }) 
 						name={`${fullPrefix}placementMode.config.gridSize.noRows`}
 						defaultValue={1}
 						render={({ field }) => (
-							<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={1} size="small" fill />
+							<CustomNumericInput {...field} allowNegative={false} onValueChange={field.onChange} min={1} size="small" fill />
 						)}
 					/>
 				</SimpleField>
@@ -55,7 +55,7 @@ export const GridPlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix }) 
 						name={`${fullPrefix}placementMode.config.gridSize.noCols`}
 						defaultValue={1}
 						render={({ field }) => (
-							<NumericInput {...field} className={fieldStyles.compactNumericInput} onValueChange={field.onChange} min={1} size="small" fill />
+							<CustomNumericInput {...field} allowNegative={false} onValueChange={field.onChange} min={1} size="small" fill />
 						)}
 					/>
 				</SimpleField>

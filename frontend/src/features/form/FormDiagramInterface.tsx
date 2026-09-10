@@ -1,16 +1,15 @@
-import { AnchorButton, Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon, Tooltip } from "@blueprintjs/core";
-import { useRef, useState, useSyncExternalStore, useDeferredValue, useCallback } from "react";
+import { Button, Dialog, DialogBody, Divider, EntityTitle, H5, Icon } from "@blueprintjs/core";
+import { useState, useSyncExternalStore, useDeferredValue, useCallback } from "react";
 import { ObjectInspector } from "react-inspector";
 import ENGINE from "../../logic/engine";
 import { setSelectedElementId } from "../../redux/slices/applicationSlice";
 import { deleteSelectedElements } from "../../redux/thunks/actionThunks";
 import { useAppDispatch } from "../../redux/hooks";
 import { useSelectedElementId } from "../../hooks/useSelectedElements";
-import { AllComponentTypes, UserComponentType } from "../../logic/point";
+import { AllComponentTypes } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
-import { ElementForm, SubmitButtonRef } from "./ElementForm";
+import { ElementForm } from "./ElementForm";
 import DiagramForm from "./DiagramForm";
-import { FORM_DEFAULTS } from "./formDataRegistry";
 
 type FormEffect = "submit" | "modify";
 
@@ -25,12 +24,10 @@ export function FormDiagramInterface() {
 		dispatch(setSelectedElementId(val?.id));
 	}, [dispatch]);
 
-	var targetType: AllComponentTypes = target
+	const targetType: AllComponentTypes = target
 		? (target.constructor as typeof Visual).ElementType
 		: "channel";
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const submitRef = useRef<SubmitButtonRef>(null);
-	var [submissionValid, setSubmissionValid] = useState<boolean>(true);
 
 	// Submit function
 	const dispatchFormEffect = useCallback((
@@ -165,41 +162,11 @@ export function FormDiagramInterface() {
 				{target === undefined ? (
 					<DiagramForm />
 				) : (
-					<>
-						<ElementForm
-							key={targetType}
-							ref={submitRef}
-							objectType={targetType}
-							target={target}
-							callback={handleFormSubmit}></ElementForm>
-
-						{!FORM_DEFAULTS[targetType]?.hideApplyButton && (
-							<div
-								id="submit-area"
-								style={{
-									width: "100%",
-									alignSelf: "center",
-									margin: "4px 2px 4px 2px",
-									padding: "0px 4px 0px 4px",
-									flexShrink: 0,
-									display: "flex",
-									flexDirection: "column"
-								}}>
-								<Divider></Divider>
-
-								<Tooltip
-									content={`Modification for ${targetType} is not yet implemented`}
-									disabled={submissionValid} position="top">
-									<AnchorButton
-										style={{ width: "100%" }}
-										disabled={!submissionValid}
-										onClick={() => submitRef.current?.submit()}
-										text="Apply"
-										icon="tick"></AnchorButton>
-								</Tooltip>
-							</div>
-						)}
-					</>
+					<ElementForm
+						key={targetType}
+						objectType={targetType}
+						target={target}
+						callback={handleFormSubmit}></ElementForm>
 				)}
 			</div>
 

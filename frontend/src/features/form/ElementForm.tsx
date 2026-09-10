@@ -1,13 +1,11 @@
 import { Tab, Tabs } from "@blueprintjs/core";
-import React, { useImperativeHandle, useMemo } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import Collection from "../../logic/collection";
 import { AllComponentTypes } from "../../logic/point";
 import Visual, { IVisual } from "../../logic/visual";
-import { useAppDispatch } from "../../redux/hooks";
 import { CollectionChildrenList } from "./CollectionChildrenList";
 import {
-	ResolvedFormTargets,
 	formDataAssembler,
 	resolveFormDataFromTarget
 } from "./formHelpers";
@@ -22,6 +20,7 @@ export interface ElementFormProps {
 	target?: Visual;
 	objectType: AllComponentTypes;
 	callback: (val: IVisual) => void;
+	autoSubmitDelay?: number;
 
 	ref?: React.RefObject<SubmitButtonRef>;
 }
@@ -33,7 +32,6 @@ export type SubmitButtonRef = {
 
 export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementFormProps>(
 	(props, ref) => {
-		const dispatch = useAppDispatch();
 		const resolved = useMemo(() => {
 			try {
 				return resolveFormDataFromTarget(props.target, props.objectType);
@@ -62,10 +60,18 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 			mode: "onChange"
 		});
 
+		const timerRef = useRef<NodeJS.Timeout | null>(null);
+		const lastSubmittedJsonRef = useRef<string>(props.target ? JSON.stringify(props.target.state) : "");
 
-		useImperativeHandle(ref, () => ({
-			submit: onSubmit
-		}));
+		// Update baseline when target changes or on external target update
+		useEffect(() => {
+			if (props.target) {
+				lastSubmittedJsonRef.current = JSON.stringify(props.target.state);
+			}
+			return () => {
+				if (timerRef.current) clearTimeout(timerRef.current);
+			};
+		}, [props.target]);
 
 		// Submit function
 		const onSubmit = masterFormControls.handleSubmit(() => {
@@ -92,8 +98,51 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 				editableRoles: [...resolved.labelRoles, ...resolved.componentRoles],
 			});
 
-			props.callback(result);
+			// Prevent duplicate submissions and re-synchronization loops
+			const newJson = JSON.stringify(result);
+			if (newJson !== lastSubmittedJsonRef.current) {
+				lastSubmittedJsonRef.current = newJson;
+				props.callback(result);
+			}
 		});
+
+		const flushSubmit = useCallback(() => {
+			if (timerRef.current) {
+				clearTimeout(timerRef.current);
+				timerRef.current = null;
+			}
+			onSubmit();
+		}, [onSubmit]);
+
+		useImperativeHandle(ref, () => ({
+			submit: flushSubmit
+		}));
+
+		// Debounced auto-submit on form modifications (only for existing diagram elements)
+		useEffect(() => {
+			if (!props.target) return;
+
+			const delay = props.autoSubmitDelay ?? 100;
+			const onFormChange = (_: unknown, info: { name?: string }) => {
+				if (info.name !== undefined) {
+					if (timerRef.current) clearTimeout(timerRef.current);
+					timerRef.current = setTimeout(() => {
+						timerRef.current = null;
+						onSubmit();
+					}, delay);
+				}
+			};
+
+			const sub1 = masterFormControls.watch(onFormChange);
+			const sub2 = roleFormControls.watch(onFormChange);
+			const sub3 = childFormControls.watch(onFormChange);
+
+			return () => {
+				sub1.unsubscribe();
+				sub2.unsubscribe();
+				sub3.unsubscribe();
+			};
+		}, [props.target, props.autoSubmitDelay, onSubmit, masterFormControls, roleFormControls, childFormControls]);
 
 		if (!resolved) {
 			return <div></div>;
@@ -101,7 +150,6 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 
 		const {
 			primary: { Form: MasterForm },
-			coreChild,
 			allowLabels,
 			isLabelGroup,
 			isCollection,
@@ -117,6 +165,7 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 			<>
 				<form
 					onSubmit={onSubmit}
+					onBlurCapture={flushSubmit}
 					style={{
 						display: "flex",
 						flexDirection: "column",

@@ -241,7 +241,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			setHoveredElementRef.current(element, rawElement);
 		};
 
-		const handleGlobalPointerMove = (e: PointerEvent) => {
+		const handleGlobalPointerMove = (e: MouseEvent | PointerEvent) => {
 			lastCoords = { x: e.clientX, y: e.clientY };
 
 			if (isAltHeldRef.current && lastRawTargetIdRef.current) {
@@ -291,6 +291,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 	useEffect(() => {
+		lastRawTargetIdRef.current = null;
 		createHitboxDom();
 
 		if (hitboxSvgRef.current && hitboxSVG) {
