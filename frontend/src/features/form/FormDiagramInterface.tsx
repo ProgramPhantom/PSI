@@ -119,21 +119,12 @@ export function FormDiagramInterface() {
 
 						{target !== undefined ? (
 							<>
+
 								<Button
 									style={{
 										height: "100%",
 										alignSelf: "center",
 										marginLeft: "auto"
-									}} size="small"
-									icon="export"
-									variant="minimal"
-									onClick={() => { }/* ENGINE.saveComponentFile(target.state) */}
-									title="Export component"></Button>
-								<Button
-									style={{
-										height: "100%",
-										alignSelf: "center",
-										marginLeft: "8px"
 									}} size="small"
 									icon="trash"
 									intent="danger"
