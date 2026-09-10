@@ -1,0 +1,5 @@
+# SVG Element
+
+The `SVG element` is the primary visual unit that diagrams comprise of. They are objects that are contructed of a nested SVG object heirarchy, so can technically be any SVG image you wish. The primary use of this object is to create complicated pulse objects that comprise of SVG paths. This application is not designed to handle the direct creation of these elements, and hence it is expected that SVG pusle assets are to be imported from other SVG editors.
+
+Importing new SVGs can be done in two ways. You may either drag and drop an SVG file into the canvas, which creates an SVG element directly on the canvas, or you can import and SVG asset into the application directly using the `Asset Manager` window. An SVG element's SVG asset can be changed directly at any time by using the `Form`. This opens the `Asset Manager` where an SVG asset can be selected. 
