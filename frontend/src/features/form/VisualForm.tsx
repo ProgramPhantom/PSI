@@ -2,9 +2,18 @@ import {
 	ControlGroup,
 	HTMLSelect,
 	InputGroup,
-	NumericInput,
 	Section
 } from "@blueprintjs/core";
+import {
+	MAX_HEIGHT,
+	MAX_OFFSET_SIZE,
+	MAX_PADDING,
+	MAX_WIDTH,
+	MIN_HEIGHT,
+	MIN_OFFSET_SIZE,
+	MIN_PADDING,
+	MIN_WIDTH
+} from "../../appSettings";
 import React from "react";
 import { Controller, FieldErrors, useFormContext, useWatch } from "react-hook-form";
 import Collection from "../../logic/collection";
@@ -82,8 +91,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 			<ControlGroup vertical={true} className={styles.formGroupContainer}>
 				{/* Width and height */}
 				{(props.widthDisplay !== false || props.heightDisplay !== false) && (() => {
-					const minWidthVal = props.target?.minContentWidth ?? (widthActive ? 1 : 0);
-					const minHeightVal = props.target?.minContentHeight ?? (heightActive ? 1 : 0);
+					const minWidthVal = props.target?.minContentWidth ?? (widthActive ? MIN_WIDTH : 0);
+					const minHeightVal = props.target?.minContentHeight ?? (heightActive ? MIN_HEIGHT : 0);
 					return (
 						<DoubleField
 							label={(!widthActive || !heightActive) ? "Content Size (inherited)" : "Content Size"}
@@ -100,8 +109,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 												{...field}
 												id="width-input"
 												size="small"
-
-												min={0}
+												min={widthActive ? minWidthVal : 0}
+												max={MAX_WIDTH}
 												disabled={!widthActive}
 												title={!widthActive ? "Width inherited" : ""}
 												intent={errors?.contentWidth ? "danger" : "none"}
@@ -110,7 +119,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										rules={{
 											required: { value: widthActive, message: "Width required" },
 											min: { value: minWidthVal, message: `Width must be at least ${minWidthVal}` },
-											max: { value: 10000, message: "Width cannot exceed 10000" },
+											max: { value: MAX_WIDTH, message: `Width cannot exceed ${MAX_WIDTH}` },
 										}}></Controller>
 								) : undefined
 							}
@@ -125,7 +134,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 												{...field}
 												id="height-input"
 												size="small"
-												min={heightActive ? minHeightVal : undefined}
+												min={heightActive ? minHeightVal : 0}
+												max={MAX_HEIGHT}
 												disabled={!heightActive}
 												title={!heightActive ? "Height inherited" : ""}
 												intent={errors?.contentHeight ? "danger" : "none"}
@@ -134,7 +144,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										rules={{
 											required: { value: heightActive, message: "Height required" },
 											min: { value: minHeightVal, message: `Height must be at least ${minHeightVal}` },
-											max: { value: 10000, message: "Height cannot exceed 10000" },
+											max: { value: MAX_HEIGHT, message: `Height cannot exceed ${MAX_HEIGHT}` },
 										}}></Controller>
 								) : undefined
 							}
@@ -186,13 +196,13 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										allowNegative={false}
 										size="small"
 										fill
-										min={0}
-										max={2000}
+										min={MIN_PADDING}
+										max={MAX_PADDING}
 									/>
 								)}
 								rules={{
-									min: { value: 0, message: "Padding cannot be negative" },
-									max: { value: 2000, message: "Padding cannot exceed 2000" }
+									min: { value: MIN_PADDING, message: "Padding cannot be negative" },
+									max: { value: MAX_PADDING, message: `Padding cannot exceed ${MAX_PADDING}` }
 								}}
 							/>
 						}
@@ -208,13 +218,13 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										allowNegative={false}
 										size="small"
 										fill
-										min={0}
-										max={2000}
+										min={MIN_PADDING}
+										max={MAX_PADDING}
 									/>
 								)}
 								rules={{
-									min: { value: 0, message: "Padding cannot be negative" },
-									max: { value: 2000, message: "Padding cannot exceed 2000" }
+									min: { value: MIN_PADDING, message: "Padding cannot be negative" },
+									max: { value: MAX_PADDING, message: `Padding cannot exceed ${MAX_PADDING}` }
 								}}
 							/>
 						}
@@ -230,13 +240,13 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										allowNegative={false}
 										size="small"
 										fill
-										min={0}
-										max={2000}
+										min={MIN_PADDING}
+										max={MAX_PADDING}
 									/>
 								)}
 								rules={{
-									min: { value: 0, message: "Padding cannot be negative" },
-									max: { value: 2000, message: "Padding cannot exceed 2000" }
+									min: { value: MIN_PADDING, message: "Padding cannot be negative" },
+									max: { value: MAX_PADDING, message: `Padding cannot exceed ${MAX_PADDING}` }
 								}}
 							/>
 						}
@@ -252,13 +262,13 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 										allowNegative={false}
 										size="small"
 										fill
-										min={0}
-										max={2000}
+										min={MIN_PADDING}
+										max={MAX_PADDING}
 									/>
 								)}
 								rules={{
-									min: { value: 0, message: "Padding cannot be negative" },
-									max: { value: 2000, message: "Padding cannot exceed 2000" }
+									min: { value: MIN_PADDING, message: "Padding cannot be negative" },
+									max: { value: MAX_PADDING, message: `Padding cannot exceed ${MAX_PADDING}` }
 								}}
 							/>
 						}
@@ -294,8 +304,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 											{...field}
 											id="offset0"
 											allowNegative={true}
-											min={-2000}
-											max={2000}
+											min={MIN_OFFSET_SIZE}
+											max={MAX_OFFSET_SIZE}
 											size="small"
 											fill
 											intent={errors?.offset?.[0] ? "danger" : "none"}
@@ -304,10 +314,10 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									rules={{
 										required: "Offset is required",
 										min: {
-											value: -2000,
-											message: "Offset must be greater than -2000"
+											value: MIN_OFFSET_SIZE,
+											message: `Offset must be at least ${MIN_OFFSET_SIZE}`
 										},
-										max: { value: 2000, message: "Offset cannot exceed 2000" }
+										max: { value: MAX_OFFSET_SIZE, message: `Offset cannot exceed ${MAX_OFFSET_SIZE}` }
 									}}
 								/>
 							}
@@ -321,8 +331,8 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 											{...field}
 											id="offset1"
 											allowNegative={true}
-											min={-2000}
-											max={2000}
+											min={MIN_OFFSET_SIZE}
+											max={MAX_OFFSET_SIZE}
 											size="small"
 											fill
 											intent={errors?.offset?.[1] ? "danger" : "none"}
@@ -331,10 +341,10 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 									rules={{
 										required: "Offset is required",
 										min: {
-											value: -2000,
-											message: "Offset must be greater than -2000"
+											value: MIN_OFFSET_SIZE,
+											message: `Offset must be at least ${MIN_OFFSET_SIZE}`
 										},
-										max: { value: 2000, message: "Offset cannot exceed 2000" }
+										max: { value: MAX_OFFSET_SIZE, message: `Offset cannot exceed ${MAX_OFFSET_SIZE}` }
 									}}
 								/>
 							}

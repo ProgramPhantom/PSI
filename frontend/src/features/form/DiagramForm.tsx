@@ -25,6 +25,7 @@ import * as Actions from "../../redux/thunks/actionThunks";
 import { DoubleField } from "./fields/DoubleField";
 import { QuadField } from "./fields/QuadField";
 import { CustomNumericInput } from "./fields/CustomNumericInput";
+import { MAX_PADDING, MIN_PADDING } from "../../appSettings";
 import fieldStyles from "./styles/FormFields.module.scss";
 import styles from "./styles/FormContainers.module.scss";
 import sectionStyles from "./styles/FormSection.module.scss";
@@ -53,7 +54,7 @@ export const DiagramForm: React.FC = () => {
 			padding[2] ?? 0,
 			padding[3] ?? 0
 		];
-		nextPadding[index] = Math.min(2000, Math.max(0, val || 0));
+		nextPadding[index] = Math.min(MAX_PADDING, Math.max(MIN_PADDING, val || 0));
 
 		ENGINE.handler.act({
 			type: "modify",
@@ -136,8 +137,8 @@ export const DiagramForm: React.FC = () => {
 								onValueChange={(val) => handlePaddingChange(0, val)}
 								size="small"
 								fill
-								min={0}
-								max={2000}
+								min={MIN_PADDING}
+								max={MAX_PADDING}
 							/>
 						}
 						label2="Right"
@@ -149,8 +150,8 @@ export const DiagramForm: React.FC = () => {
 								onValueChange={(val) => handlePaddingChange(1, val)}
 								size="small"
 								fill
-								min={0}
-								max={2000}
+								min={MIN_PADDING}
+								max={MAX_PADDING}
 							/>
 						}
 						label3="Bottom"
@@ -162,8 +163,8 @@ export const DiagramForm: React.FC = () => {
 								onValueChange={(val) => handlePaddingChange(2, val)}
 								size="small"
 								fill
-								min={0}
-								max={2000}
+								min={MIN_PADDING}
+								max={MAX_PADDING}
 							/>
 						}
 						label4="Left"
@@ -175,8 +176,8 @@ export const DiagramForm: React.FC = () => {
 								onValueChange={(val) => handlePaddingChange(3, val)}
 								size="small"
 								fill
-								min={0}
-								max={2000}
+								min={MIN_PADDING}
+								max={MAX_PADDING}
 							/>
 						}
 					/>

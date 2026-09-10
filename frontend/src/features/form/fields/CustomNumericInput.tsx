@@ -634,6 +634,4 @@ export const CustomNumericInput = React.forwardRef<HTMLInputElement, CustomNumer
 
 CustomNumericInput.displayName = "CustomNumericInput";
 
-export const CustomNumericalInput = CustomNumericInput;
-
 export default CustomNumericInput;
