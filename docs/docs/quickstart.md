@@ -6,32 +6,31 @@ sidebar_position: 1
 
 # Quickstart
 
-This file shows you exactly how to create your first pulse sequence!
+When you first load Pulse Planner, you will be met with a simple diagram: a single proton channel.
 
 ## 1. The default channel
 
-When you first open Pulse Planner, a $^1H$ channel is already on the canvas — you don't need to create one to get started.
+When you first open Pulse Planner, a $^1\text{H}$ channel is already on the canvas — you don't need to create one to get started.
 
-## 2. Rename a channel
+## 2. Drag a pulse onto the canvas
 
-1. Click the channel to select it. A **Modify** panel opens on the right.
-2. Click the **Components** tab.
-3. Under **Label**, edit the **Text (LaTeX)** field — e.g. `$^{13}\textrm{C}$`.
-4. Click **Apply** at the bottom of the panel to confirm.
+In order to start adding pulses to your diagram, simply drag from the Element Draw and drop them to the desired location on the canvas. By dropping an element in any open space on the canvas, you have created what is called a “free” element: an element that behaves the way you would expect in a standard SVG editor. 
 
-![Renaming a channel](/gif/quickstart-rename-channel.gif)
-## 3. Add a common channel
+## 3. Drag a pulse onto a channel
 
-A row of common channel presets sits in the top-right of the canvas — including nuclei ($^{13}C$, $^1H$, $^{19}F$), a gradient channel ($G_z$), and a generic $RF$ channel.
+When dragging the pulse, you may have noticed a blue area appear around the proton channel. By dragging and dropping a pulse, such that the mouse is released over one of these blue areas, a “pulse” element is created. This is an SVG element that has been placed into the layout manager of the application. It’s position is now automatically controlled by the application. If you added a wider pulse, you may notice that the channel has repositioned itself around this pulse, and grown the width of the bar on which the pulse sits. You can remove the pulse from the automatic positioning by grabbing the pulse directly from the canvas and dropping it elsewhere on the diagram. Again, you will notice the channel automatically updates to respond. 
 
-1. Click a preset to add it as a new channel.
-2. For anything not shown, click **...** to see more options.
+## 4. Add a new channel
 
-![Adding a common channel](/gif/quickstart-add-common-channel.gif)
+Now, click one of the inbuilt channels from the channel panel in the top right of the canvas. The channel will appear instantly, and be automatically positioned with respect to the initial channel. By dragging another pulse, you will see that this channel has it’s own blue insert areas, and pulses can be inserted into that channel by dragging and dropping.
 
-## 4. Delete a channel
+## 5. Removing elements
 
-1. Click the channel to select it.
-2. Press **Backspace** or the bin in the top-left menu to delete it.
+In order to remove elements from the canvas, including channels, simply click on them so that a blue and grey box appears around the object. Then press the red bin icon in the top right of the `Form` or press `DEL`/`BACKSPACE`. 
 
-![Deleting a channel](/gif/quickstart-delete-channel.gif)
+## 6. Adding, removing and resizing columns
+
+Inspect the area immediately above the first hydrogen channel. You will see some blue `+` icons and a grey vertical bar. Pressing the blue buttons adds a column into the diagram. The grey handle can be used to resize the column in which the pulses reside. Adding a column also reveals a red `-` symbol, that can be used to remove an entire column. 
+
+> [!WARNING]
+> Deleting columns containing pulses cannot be undone. 
