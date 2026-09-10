@@ -1,7 +1,8 @@
-import { Checkbox, Menu, MenuDivider, MenuItem, NumericInput } from "@blueprintjs/core";
+import { Checkbox, Menu, MenuDivider, MenuItem } from "@blueprintjs/core";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import { setSelectedTool } from "../../../redux/slices/applicationSlice";
+import { CustomNumericInput } from "../../form/fields/CustomNumericInput";
 
 const COLOR_PRESETS = [
     "#000000",
@@ -344,8 +345,9 @@ export const BoxToolPopup: React.FC = React.memo(() => {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
                         <span style={{ fontSize: "11px", fontWeight: 500, color: "#5f6b7c" }}>Opacity:</span>
                         <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
-                            <NumericInput
+                            <CustomNumericInput
                                 value={fillOpacity}
+                                allowNegative={false}
                                 onValueChange={(val) => handleOpacityChange(val)}
                                 min={0}
                                 max={100}

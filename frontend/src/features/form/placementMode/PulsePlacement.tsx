@@ -1,13 +1,13 @@
 import {
 	Card,
 	HTMLSelect,
-	NumericInput,
 	Switch
 } from "@blueprintjs/core";
 import React from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { DoubleField } from "../fields/DoubleField";
 import { SimpleField } from "../fields/SimpleField";
+import { CustomNumericInput } from "../fields/CustomNumericInput";
 import fieldStyles from "../styles/FormFields.module.scss";
 
 export const PulsePlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix }) => {
@@ -89,9 +89,9 @@ export const PulsePlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix })
 					name={`${fullPrefix}pulseLayoutConfig.noSections`}
 					defaultValue={1}
 					render={({ field }) => (
-						<NumericInput
+						<CustomNumericInput
 							{...field}
-							className={fieldStyles.compactNumericInput}
+							allowNegative={false}
 							onValueChange={field.onChange}
 							min={1}
 							max={10}

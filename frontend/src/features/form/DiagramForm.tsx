@@ -6,7 +6,6 @@ import {
 	FormGroup,
 	Icon,
 	InputGroup,
-	NumericInput,
 	Section,
 	Tag,
 	Tooltip
@@ -25,6 +24,7 @@ import { setPNGDialogOpen, setSVGDialogOpen } from "../../redux/slices/dialogSli
 import * as Actions from "../../redux/thunks/actionThunks";
 import { DoubleField } from "./fields/DoubleField";
 import { QuadField } from "./fields/QuadField";
+import { CustomNumericInput } from "./fields/CustomNumericInput";
 import fieldStyles from "./styles/FormFields.module.scss";
 import styles from "./styles/FormContainers.module.scss";
 import sectionStyles from "./styles/FormSection.module.scss";
@@ -46,14 +46,14 @@ export const DiagramForm: React.FC = () => {
 	const padding = diagram?.padding ?? [0, 0, 0, 0];
 
 	const handlePaddingChange = (index: number, val: number) => {
-		if (!diagram) return;
+		if (!diagram || isNaN(val)) return;
 		const nextPadding: [number, number, number, number] = [
 			padding[0] ?? 0,
 			padding[1] ?? 0,
 			padding[2] ?? 0,
 			padding[3] ?? 0
 		];
-		nextPadding[index] = Math.max(0, val || 0);
+		nextPadding[index] = Math.min(2000, Math.max(0, val || 0));
 
 		ENGINE.handler.act({
 			type: "modify",
@@ -129,54 +129,54 @@ export const DiagramForm: React.FC = () => {
 					<QuadField
 						label1="Top"
 						field1={
-							<NumericInput
+							<CustomNumericInput
 								id="diagram-padding-top"
-								className={fieldStyles.compactNumericInput}
 								value={padding[0] ?? 0}
+								allowNegative={false}
 								onValueChange={(val) => handlePaddingChange(0, val)}
 								size="small"
 								fill
 								min={0}
-								allowNumericCharactersOnly={true}
+								max={2000}
 							/>
 						}
 						label2="Right"
 						field2={
-							<NumericInput
+							<CustomNumericInput
 								id="diagram-padding-right"
-								className={fieldStyles.compactNumericInput}
 								value={padding[1] ?? 0}
+								allowNegative={false}
 								onValueChange={(val) => handlePaddingChange(1, val)}
 								size="small"
 								fill
 								min={0}
-								allowNumericCharactersOnly={true}
+								max={2000}
 							/>
 						}
 						label3="Bottom"
 						field3={
-							<NumericInput
+							<CustomNumericInput
 								id="diagram-padding-bottom"
-								className={fieldStyles.compactNumericInput}
 								value={padding[2] ?? 0}
+								allowNegative={false}
 								onValueChange={(val) => handlePaddingChange(2, val)}
 								size="small"
 								fill
 								min={0}
-								allowNumericCharactersOnly={true}
+								max={2000}
 							/>
 						}
 						label4="Left"
 						field4={
-							<NumericInput
+							<CustomNumericInput
 								id="diagram-padding-left"
-								className={fieldStyles.compactNumericInput}
 								value={padding[3] ?? 0}
+								allowNegative={false}
 								onValueChange={(val) => handlePaddingChange(3, val)}
 								size="small"
 								fill
 								min={0}
-								allowNumericCharactersOnly={true}
+								max={2000}
 							/>
 						}
 					/>

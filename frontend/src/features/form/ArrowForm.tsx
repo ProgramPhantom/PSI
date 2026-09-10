@@ -1,8 +1,9 @@
-import { ControlGroup, HTMLSelect, NumericInput, Section } from "@blueprintjs/core";
+import { ControlGroup, HTMLSelect, Section } from "@blueprintjs/core";
 import { Controller, useFormContext } from "react-hook-form";
 import { FormRequirements } from "./FormBase";
 import { DoubleField } from "./fields/DoubleField";
 import { SimpleField } from "./fields/SimpleField";
+import { CustomNumericInput } from "./fields/CustomNumericInput";
 import fieldStyles from "./styles/FormFields.module.scss";
 import styles from "./styles/FormContainers.module.scss";
 import sectionStyles from "./styles/FormSection.module.scss";
@@ -33,11 +34,11 @@ function ArrowForm(props: IArrowFormProps) {
 								control={formControls.control}
 								name={`${fullPrefix}thickness`}
 								render={({ field }) => (
-									<NumericInput
+									<CustomNumericInput
 										{...field} size="small"
-										className={fieldStyles.compactNumericInput}
+										allowNegative={false}
 										onValueChange={field.onChange}
-										min={1}></NumericInput>
+										min={1}></CustomNumericInput>
 								)}></Controller>
 						</SimpleField>
 
@@ -60,14 +61,14 @@ function ArrowForm(props: IArrowFormProps) {
 									control={formControls.control}
 									name={`${fullPrefix}lineStyle.dashing.0`}
 									render={({ field }) => (
-										<NumericInput fill={true}
+										<CustomNumericInput fill={true}
 											{...field}
-											className={fieldStyles.compactNumericInput}
+											allowNegative={true}
 											min={-100}
 											max={100}
 											onValueChange={field.onChange}
 											size="small"
-										></NumericInput>
+										></CustomNumericInput>
 									)}></Controller>
 							}
 							rightLabel="Gap"
@@ -76,13 +77,13 @@ function ArrowForm(props: IArrowFormProps) {
 									control={formControls.control}
 									name={`${fullPrefix}lineStyle.dashing.1`}
 									render={({ field }) => (
-										<NumericInput fill={true}
+										<CustomNumericInput fill={true}
 											{...field}
-											className={fieldStyles.compactNumericInput}
+											allowNegative={true}
 											min={-100}
 											max={100}
 											onValueChange={field.onChange}
-											size="small"></NumericInput>
+											size="small"></CustomNumericInput>
 									)}></Controller>
 							}
 						/>
@@ -129,14 +130,14 @@ function ArrowForm(props: IArrowFormProps) {
 							control={formControls.control}
 							name={`${fullPrefix}adjustment.0`}
 							render={({ field }) => (
-								<NumericInput fill={true}
+								<CustomNumericInput fill={true}
 									{...field}
-									className={fieldStyles.compactNumericInput}
+									allowNegative={true}
 									min={-2000}
 									max={2000}
 									onValueChange={field.onChange}
 									size="small"
-								></NumericInput>
+								></CustomNumericInput>
 							)}></Controller>
 					}
 					rightLabel="End"
@@ -145,13 +146,13 @@ function ArrowForm(props: IArrowFormProps) {
 							control={formControls.control}
 							name={`${fullPrefix}adjustment.1`}
 							render={({ field }) => (
-								<NumericInput fill={true}
+								<CustomNumericInput fill={true}
 									{...field}
-									className={fieldStyles.compactNumericInput}
+									allowNegative={true}
 									min={-2000}
 									max={2000}
 									onValueChange={field.onChange}
-									size="small"></NumericInput>
+									size="small"></CustomNumericInput>
 							)}></Controller>
 					}
 				/>

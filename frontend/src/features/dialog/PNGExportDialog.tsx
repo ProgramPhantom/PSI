@@ -9,7 +9,6 @@ import {
 	FormGroup,
 	Icon,
 	InputGroup,
-	NumericInput,
 	Tag,
 	Tooltip
 } from "@blueprintjs/core";
@@ -18,6 +17,7 @@ import ENGINE from "../../logic/engine";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { selectCurrentTitle } from "../../redux/selectors/diagramSelectors";
 import * as Actions from "../../redux/thunks/actionThunks";
+import { CustomNumericInput } from "../form/fields/CustomNumericInput";
 import styles from "./PNGExportDialog.module.scss";
 
 interface IPNGExportDialogProps {
@@ -304,9 +304,10 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 					</div>
 					<div className={styles.inlineContainer}>
 						<FormGroup label={`Width (${unit})`} labelFor="png-width-input">
-							<NumericInput
+							<CustomNumericInput
 								id="png-width-input"
 								value={displayWidth}
+								allowNegative={false}
 								onValueChange={(val) => handleWidthInputChange(val)}
 								min={minUnitVal}
 								max={maxUnitVal}
@@ -328,9 +329,10 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 						</Tooltip>
 
 						<FormGroup label={`Height (${unit})`} labelFor="png-height-input">
-							<NumericInput
+							<CustomNumericInput
 								id="png-height-input"
 								value={displayHeight}
+								allowNegative={false}
 								onValueChange={(val) => handleHeightInputChange(val)}
 								min={minUnitVal}
 								max={maxUnitVal}
