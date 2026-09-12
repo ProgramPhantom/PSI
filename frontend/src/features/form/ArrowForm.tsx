@@ -102,6 +102,7 @@ function ArrowForm(props: IArrowFormProps) {
 								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
 									<option value={"default"}>Default</option>
 									<option value={"thin"}>Thin</option>
+									<option value={"bracket"}>Bracket</option>
 									<option value={"none"}>None</option>
 								</HTMLSelect>
 							)}></Controller>
@@ -115,6 +116,7 @@ function ArrowForm(props: IArrowFormProps) {
 								<HTMLSelect {...field} className={fieldStyles.compactHTMLSelect} iconName="caret-down">
 									<option value={"default"}>Default</option>
 									<option value={"thin"}>Thin</option>
+									<option value={"bracket"}>Bracket</option>
 									<option value={"none"}>None</option>
 								</HTMLSelect>
 							)}></Controller>

@@ -6,7 +6,12 @@ import { showSVGRecursively } from "./util2";
 import { Size } from "./spacial";
 
 
-export type HeadStyle = "default" | "thin" | "none"
+export type HeadStyle = "default" | "thin" | "bracket" | "none"
+
+export interface IMarkerWidth {
+	left: number;
+	right: number;
+}
 
 export interface ILineStyle {
 	headStyle: [HeadStyle, HeadStyle];
@@ -20,16 +25,26 @@ export interface ILine extends ILineLike {
 
 export default class Line extends LineLike implements ILine {
 	static ElementType: UserComponentType = "line";
-	private static readonly MARKER_LENGTHS: Record<HeadStyle, number> = {
+	public static readonly BRACKET_ARM_LENGTH: number = 3;
+
+	public static readonly MARKER_LENGTHS: Record<HeadStyle, number> = {
 		default: 3,
 		thin: 4,
+		bracket: 0.5,
 		none: 0
 	};
 
-	private static readonly MARKER_WIDTHS: Record<HeadStyle, number> = {
-		default: 3,
-		thin: 2,
-		none: 0
+	/**
+	 * Marker extent perpendicular to the line (in multiples of line thickness),
+	 * looking along the line vector from start to end:
+	 * - `left`: counter-clockwise from the line vector (-y in local unrotated line coords).
+	 * - `right`: clockwise from the line vector (+y in local unrotated line coords).
+	 */
+	public static readonly MARKER_WIDTHS: Record<HeadStyle, IMarkerWidth> = {
+		default: { left: 1.5, right: 1.5 },
+		thin: { left: 1, right: 1 },
+		bracket: { left: 0.5, right: Line.BRACKET_ARM_LENGTH },
+		none: { left: 0.5, right: 0.5 }
 	};
 
 	static arbitraryAdjustment: number = 1;
@@ -57,13 +72,14 @@ export default class Line extends LineLike implements ILine {
 
 		var startStyle = this.lineStyle?.headStyle?.[0] ?? "none";
 		var endStyle = this.lineStyle?.headStyle?.[1] ?? "none";
-		var startWidth = Line.MARKER_WIDTHS[startStyle] * this.thickness;
-		var endWidth = Line.MARKER_WIDTHS[endStyle] * this.thickness;
-		var maxMarkerWidth = Math.max(startWidth, endWidth);
+		var startMarker = Line.MARKER_WIDTHS[startStyle] ?? Line.MARKER_WIDTHS.none;
+		var endMarker = Line.MARKER_WIDTHS[endStyle] ?? Line.MARKER_WIDTHS.none;
+		var maxLeftWidth = Math.max(startMarker.left, endMarker.left) * this.thickness;
+		var maxRightWidth = Math.max(startMarker.right, endMarker.right) * this.thickness;
 
-		var hitboxHeight: number = Math.max(this.thickness, maxMarkerWidth) + LineLike.HitboxPadding;
+		var hitboxHeight: number = maxLeftWidth + maxRightWidth + LineLike.HitboxPadding;
 		hitbox.size(this.length, hitboxHeight);
-		hitbox.move(this.startX, this.startY - hitboxHeight / 2);
+		hitbox.move(this.startX, this.startY - maxLeftWidth - LineLike.HitboxPadding / 2);
 		hitbox.rotate((this.angle / Math.PI) * 180, this.startX, this.startY);
 
 		// hitbox.move(this.x, this.y)
@@ -71,26 +87,79 @@ export default class Line extends LineLike implements ILine {
 		return hitbox;
 	}
 
-	public override computeBoundingBox(): Size {
+	public override computeBoundingBox(): { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number } {
+		var startStyle = this.lineStyle?.headStyle?.[0] ?? "none";
+		var endStyle = this.lineStyle?.headStyle?.[1] ?? "none";
+		var startMarker = Line.MARKER_WIDTHS[startStyle] ?? Line.MARKER_WIDTHS.none;
+		var endMarker = Line.MARKER_WIDTHS[endStyle] ?? Line.MARKER_WIDTHS.none;
+
+		var maxLeft = Math.max(startMarker.left, endMarker.left) * this.thickness + LineLike.HitboxPadding / 2;
+		var maxRight = Math.max(startMarker.right, endMarker.right) * this.thickness + LineLike.HitboxPadding / 2;
+
+		var len = this.length;
+		var dx = len > 0 ? (this.endX - this.startX) / len : 1;
+		var dy = len > 0 ? (this.endY - this.startY) / len : 0;
+
+		var x1 = this.startX + maxLeft * dy;
+		var y1 = this.startY - maxLeft * dx;
+
+		var x2 = this.endX + maxLeft * dy;
+		var y2 = this.endY - maxLeft * dx;
+
+		var x3 = this.endX - maxRight * dy;
+		var y3 = this.endY + maxRight * dx;
+
+		var x4 = this.startX - maxRight * dy;
+		var y4 = this.startY + maxRight * dx;
+
+		var minX = Math.min(x1, x2, x3, x4);
+		var maxX = Math.max(x1, x2, x3, x4);
+		var minY = Math.min(y1, y2, y3, y4);
+		var maxY = Math.max(y1, y2, y3, y4);
+
+		var width = Math.max(maxX - minX, this.thickness);
+		var height = Math.max(maxY - minY, this.thickness);
+
+		return {
+			minX,
+			maxX,
+			minY,
+			maxY,
+			width,
+			height
+		};
+	}
+
+
+
+	public override get cx(): number {
 		if (!this.lineStyle || !this.lineStyle.headStyle) {
-			return super.computeBoundingBox();
+			return super.cx;
 		}
-		let rect: Size = { width: 0, height: 0 };
+		return this.computeBoundingBox().minX;
+	}
+	public override set cx(v: number) {
+		let currCX: number = this.cx;
+		let delta = v - currCX;
+		this.startX += delta;
+		this.endX += delta;
+		this._x = v - this.padding[3];
+		this.dirty = true;
+	}
 
-		var startStyle = this.lineStyle.headStyle[0];
-		var endStyle = this.lineStyle.headStyle[1];
-		var startWidth = Line.MARKER_WIDTHS[startStyle] * this.thickness;
-		var endWidth = Line.MARKER_WIDTHS[endStyle] * this.thickness;
-		var maxMarkerWidth = Math.max(startWidth, endWidth);
-
-		let h: number = Math.max(this.thickness, maxMarkerWidth) + LineLike.HitboxPadding;
-		let l: number = Math.max(this.length, h);
-		let theta: number = this.angle;
-
-		rect.width = l * Math.abs(Math.cos(theta)) + h * Math.abs(Math.sin(theta));
-		rect.height = l * Math.abs(Math.sin(theta)) + h * Math.abs(Math.cos(theta));
-
-		return rect;
+	public override get cy(): number {
+		if (!this.lineStyle || !this.lineStyle.headStyle) {
+			return super.cy;
+		}
+		return this.computeBoundingBox().minY;
+	}
+	public override set cy(v: number) {
+		let currCY: number = this.cy;
+		let delta = v - currCY;
+		this.startY += delta;
+		this.endY += delta;
+		this._y = v - this.padding[0];
+		this.dirty = true;
 	}
 
 	public getInternalRepresentation(containerSize?: Size): Element | undefined {
@@ -149,7 +218,23 @@ export default class Line extends LineLike implements ILine {
 			})
 			.add(thinPath);
 
-		return new Defs().add(defaultMarker).add(thinMarker);
+		var bracketHeight = Line.BRACKET_ARM_LENGTH;
+		var bracketPath = new Path().attr({
+			d: `M 0.5 0 L 1.5 0 L 1.5 ${bracketHeight} L 0.5 ${bracketHeight} z`,
+			fill: this.lineStyle.stroke
+		});
+		var bracketMarker = new Marker()
+			.id(`bracket-${this.id}`)
+			.attr({
+				refX: "1",
+				refY: "0.5",
+				markerWidth: "2",
+				markerHeight: `${bracketHeight}`,
+				orient: "auto"
+			})
+			.add(bracketPath);
+
+		return new Defs().add(defaultMarker).add(thinMarker).add(bracketMarker);
 	}
 
 	public override draw(surface: Element): void {
