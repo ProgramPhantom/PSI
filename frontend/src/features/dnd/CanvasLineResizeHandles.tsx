@@ -47,11 +47,7 @@ interface DragInitialState {
 	element: LineLike;
 }
 
-const MARKER_LENGTHS: Record<HeadStyle, number> = {
-	default: 3,
-	thin: 4,
-	none: 0
-};
+
 
 export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = React.memo(
 	function CanvasLineResizeHandles({ element, scale = 1, onResize, hoveredElement }: CanvasLineResizeHandlesProps) {
@@ -480,8 +476,8 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 		const dy = currentEndY - currentStartY;
 		const length = Math.hypot(dx, dy);
 
-		const startMarkerLength = MARKER_LENGTHS[headStyle[0]] ?? 0;
-		const endMarkerLength = MARKER_LENGTHS[headStyle[1]] ?? 0;
+		const startMarkerLength = Line.MARKER_LENGTHS[headStyle[0]] ?? 0;
+		const endMarkerLength = Line.MARKER_LENGTHS[headStyle[1]] ?? 0;
 		const startOffset = thickness * startMarkerLength;
 		const endOffset = thickness * endMarkerLength;
 
@@ -563,6 +559,16 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 									orient="auto-start-reverse"
 								>
 									<path d="M 0 0 L 4 1 L 0 2 z" fill={stroke} />
+								</marker>
+								<marker
+									id="line-resize-preview-marker-bracket"
+									refX={1}
+									refY={0.5}
+									markerWidth={2}
+									markerHeight={Line.BRACKET_ARM_LENGTH}
+									orient="auto"
+								>
+									<path d={`M 0.5 0 L 1.5 0 L 1.5 ${Line.BRACKET_ARM_LENGTH} L 0.5 ${Line.BRACKET_ARM_LENGTH} z`} fill={stroke} />
 								</marker>
 							</defs>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { IToolConfig, Tool } from "../../app/App";
 import { DEFAULT_LINE } from "../../logic/default/line";
 import ENGINE from "../../logic/engine";
-import { HeadStyle, ILineStyle, ILine } from "../../logic/line";
+import Line, { HeadStyle, ILineStyle, ILine } from "../../logic/line";
 import Spacial, { PlacementConfiguration, ISequenceBindingRule } from "../../logic/spacial";
 import Visual from "../../logic/visual";
 import { useAppDispatch } from "../../redux/hooks";
@@ -28,11 +28,6 @@ interface IDrawArrowProps {
 	setTool: (tool: Tool) => void;
 }
 
-const MARKER_LENGTHS: Record<HeadStyle, number> = {
-	default: 3,
-	thin: 4,
-	none: 0
-};
 
 export function LineTool(props: IDrawArrowProps) {
 	const dispatch = useAppDispatch();
@@ -349,8 +344,8 @@ export function LineTool(props: IDrawArrowProps) {
 		const dy = currentPoint.y - startPoint.y;
 		const length = Math.hypot(dx, dy);
 
-		const startMarkerLength = MARKER_LENGTHS[headStyle[0]] ?? 0;
-		const endMarkerLength = MARKER_LENGTHS[headStyle[1]] ?? 0;
+		const startMarkerLength = Line.MARKER_LENGTHS[headStyle[0]] ?? 0;
+		const endMarkerLength = Line.MARKER_LENGTHS[headStyle[1]] ?? 0;
 
 		const startOffset = thickness * startMarkerLength;
 		const endOffset = thickness * endMarkerLength;
@@ -434,6 +429,16 @@ export function LineTool(props: IDrawArrowProps) {
 							orient="auto-start-reverse"
 						>
 							<path d="M 0 0 L 4 1 L 0 2 z" fill={stroke} />
+						</marker>
+						<marker
+							id="preview-marker-bracket"
+							refX={1}
+							refY={0.5}
+							markerWidth={2}
+							markerHeight={Line.BRACKET_ARM_LENGTH}
+							orient="auto"
+						>
+							<path d={`M 0.5 0 L 1.5 0 L 1.5 ${Line.BRACKET_ARM_LENGTH} L 0.5 ${Line.BRACKET_ARM_LENGTH} z`} fill={stroke} />
 						</marker>
 					</defs>
 

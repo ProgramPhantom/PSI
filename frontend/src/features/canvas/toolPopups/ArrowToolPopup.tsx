@@ -162,6 +162,11 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                                         active={selectedHeadStyle[0] === 'thin'}
                                         onClick={() => handleStartHeadSelect('thin')}
                                     />
+                                    <MenuItem
+                                        text="Bracket"
+                                        active={selectedHeadStyle[0] === 'bracket'}
+                                        onClick={() => handleStartHeadSelect('bracket')}
+                                    />
                                 </Menu>
                             }
                         >
@@ -198,6 +203,11 @@ export const ArrowToolPopup: React.FC = React.memo(() => {
                                         text="Thin"
                                         active={selectedHeadStyle[1] === 'thin'}
                                         onClick={() => handleEndHeadSelect('thin')}
+                                    />
+                                    <MenuItem
+                                        text="Bracket"
+                                        active={selectedHeadStyle[1] === 'bracket'}
+                                        onClick={() => handleEndHeadSelect('bracket')}
                                     />
                                 </Menu>
                             }
