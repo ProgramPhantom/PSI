@@ -1,5 +1,4 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import { sha256 } from 'js-sha256';
 import { appToaster } from "../app/Toaster.tsx";
 import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } from "./collection.ts";
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
@@ -157,9 +156,18 @@ export default class DiagramHandler implements IDraw {
 
 	public visualRTree: RBush<RBushItem> = new RBush<RBushItem>();
 
+	private _revision: number = 0;
+
+	public bumpRevision(): void {
+		this._revision++;
+	}
+
+	get revision(): number {
+		return this._revision;
+	}
+
 	get id(): string {
-		let id: string = sha256(JSON.stringify(this.diagram.state))
-		return id;
+		return `rev-${this._revision}`;
 	}
 	syncExternal: () => void;
 
@@ -237,6 +245,7 @@ export default class DiagramHandler implements IDraw {
 			})
 		}
 
+		this._revision++;
 		this.syncExternal();
 	}
 

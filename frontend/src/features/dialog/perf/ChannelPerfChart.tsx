@@ -272,7 +272,7 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 							padding: 24,
 							font: {
 								size: 18,
-								weight: "500",
+								weight: "normal",
 								family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
 							},
 							color: "#182026"
