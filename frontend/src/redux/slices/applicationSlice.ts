@@ -29,7 +29,8 @@ export const DefaultDebugSelection: Record<AllComponentTypes, boolean> = {
     "simple-label-group": false,
     "sequence-aligner": false,
     grid: false,
-    subgrid: false
+    subgrid: false,
+    "labelled-line": false
 };
 
 export interface CanvasMousePosition {

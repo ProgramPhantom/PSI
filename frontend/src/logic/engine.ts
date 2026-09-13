@@ -10,6 +10,7 @@ import Diagram, { IDiagram } from "./hasComponents/diagram";
 import Label, { ILabel } from "./hasComponents/label";
 import LabelGroup, { ILabelGroup } from "./hasComponents/labelGroup";
 import SimpleLabelGroup, { ISimpleLabelGroup } from "./hasComponents/SimpleLabelGroup"
+import LabelledLine, { ILabelledLine } from "./hasComponents/labelledLine";
 import Sequence, { ISequence } from "./hasComponents/sequence";
 import SequenceAligner, { ISequenceAligner } from "./hasComponents/sequenceAligner";
 import { AllComponentTypes, ID } from "./point";
@@ -159,6 +160,9 @@ class ENGINE {
 				break;
 			case "label":
 				element = new Label(parameters as ILabel);
+				break;
+			case "labelled-line":
+				element = new LabelledLine(parameters as ILabelledLine);
 				break;
 			case "sequence-aligner":
 				element = new SequenceAligner(parameters as ISequenceAligner);

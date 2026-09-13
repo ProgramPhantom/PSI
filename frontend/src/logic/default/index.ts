@@ -9,6 +9,7 @@ import { DEFAULT_TEXT } from "./text";
 import { DEFAULT_VISUAL } from "./visual";
 import { DEFAULT_SIMPLE_LABEL_GROUP } from "./simpleLabelGroup";
 import { DEFAULT_COLLECTION } from "./collection";
+import { DEFAULT_LABELLED_LINE } from "./labelledLine";
 
 
 export const defaultVisual = DEFAULT_VISUAL;
@@ -22,3 +23,4 @@ export const defaultChannel = DEFAULT_CHANNEL;
 export const defaultLine = DEFAULT_LINE;
 export const defaultSimpleLabelGroup = DEFAULT_SIMPLE_LABEL_GROUP;
 export const defaultCollection = DEFAULT_COLLECTION;
+export const defaultLabelledLine = DEFAULT_LABELLED_LINE;

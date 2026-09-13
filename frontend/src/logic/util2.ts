@@ -38,6 +38,9 @@ export function getByPath(obj: any, path: string | undefined) {
 }
 
 export const downloadBlob = (function () {
+	if (typeof document === "undefined") {
+		return function () { };
+	}
 	var a = document.createElement("a");
 	document.body.appendChild(a);
 	a.style = "display: none";

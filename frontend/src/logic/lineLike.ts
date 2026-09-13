@@ -198,6 +198,10 @@ export default abstract class LineLike extends Visual {
 		return (this.startY + this.endY) / 2
 	}
 
+	public override getCentre(dimension: Dimensions, ofContent: boolean = false): number {
+		return dimension === "x" ? this.centreX : this.centreY;
+	}
+
 
 	public moveRelative(
 		coordinate: [number, number],
