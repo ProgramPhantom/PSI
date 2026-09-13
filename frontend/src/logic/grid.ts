@@ -241,7 +241,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		// First job is to compute the sizes of all children
 		for (let child of this.children) {
-			child.computeSize();
+			if (child.dirtyLayout) {
+				child.computeSize();
+			}
 		}
 
 		// Compute the size of the grid by finding the maximum width and height
@@ -1083,10 +1085,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	private refreshSubgrids() {
 		this.subgridChildren.forEach((sg) => {
-			// TODO: if state dirty:
-
-			this.removeMatrix(sg);
-			this.addSubgrid(sg);
+			if (sg.dirtyLayout) {
+				this.removeMatrix(sg);
+				this.addSubgrid(sg);
+			}
 		})
 	}
 	//#endregion
@@ -1564,6 +1566,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.shiftColumnIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
+		this.markDirtyLayout();
 	}
 
 	public insertEmptyRow(index?: number): void {
@@ -1619,6 +1622,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.shiftRowIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
+		this.markDirtyLayout();
 	}
 
 	public removeColumn(index?: number, remove: true | "if-empty" = true) {
@@ -1670,6 +1674,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			}
 
 		})
+		this.markDirtyLayout();
 	}
 
 	public removeRow(index?: number, onlyIfEmpty: boolean = false) {
@@ -1703,6 +1708,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		this.shiftRowIndexes(INDEX, -1);
+		this.markDirtyLayout();
 	}
 
 	// --- Helpers ----
@@ -2073,6 +2079,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.removeMatrix(child);
 		this.elementCoordMap.set(child.id, { ...location });
 		this.appendElementsInRegion(region, location);
+		this.markDirtyLayout();
 	}
 
 	protected getChildRegion(child: GridElement<C>, overridePosition?: { row: number, col: number }): OccupiedCell<C>[][] | undefined {

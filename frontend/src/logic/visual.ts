@@ -52,12 +52,41 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return true;
 	}
 
-	private _dirty: boolean = true;
+	protected _dirtyRender: boolean = true;
+	public get dirtyRender(): boolean {
+		return this._dirtyRender;
+	}
+
 	public get dirty(): boolean {
-		return this._dirty;
+		return this._dirtyRender;
 	}
 	public set dirty(value: boolean) {
-		this._dirty = value;
+		if (value) {
+			this.markDirtyRender();
+		} else {
+			this._dirtyRender = false;
+		}
+	}
+
+	public markDirtyRender(): void {
+		this._dirtyRender = true;
+		if (this.parent instanceof Visual) {
+			this.parent.markDirtyRender();
+		}
+	}
+
+	public override markDirtyLayout(): void {
+		this._dirtyRender = true;
+		super.markDirtyLayout();
+	}
+
+	protected override onPositionChange(): void {
+		this.markDirtyRender();
+	}
+
+	public override cleanDirtyFlags(): void {
+		super.cleanDirtyFlags();
+		this._dirtyRender = false;
 	}
 
 	offset: [number, number];
@@ -134,6 +163,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 
 	erase(): void {
 		this.svg?.remove();
+		this.svg = undefined;
 		if (this.maskBlock) {
 			this.maskBlock.remove();
 			this.maskBlock = undefined;

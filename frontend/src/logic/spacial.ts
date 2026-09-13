@@ -243,6 +243,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 	public set placementMode(value: PlacementConfiguration) {
 		this._placementMode = value;
+		this.markDirtyLayout();
 	}
 
 	public get isFree(): boolean {
@@ -261,6 +262,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 	public set pulseLayoutConfig(value: IPulseConfig | undefined) {
 		this._pulseLayoutConfig = value;
+		this.markDirtyLayout();
 	}
 
 	bindings: IBinding[] = []; // Investigate (enforce is called from point before bindings=[] is initialised in spacial)
@@ -324,11 +326,11 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		let dh: number = 0;
 
 
-		if (this.sizeMode.x === "grow") {
+		if (this.sizeMode.x === "grow" && this.width !== containerSize.width) {
 			dw = containerSize.width - this.width;
 			this.width = containerSize.width;
 		}
-		if (this.sizeMode.y === "grow") {
+		if (this.sizeMode.y === "grow" && this.height !== containerSize.height) {
 			dh = containerSize.height - this.height;
 			this.height = containerSize.height;
 		}
@@ -378,14 +380,20 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return this._minContentWidth;
 	}
 	set minContentWidth(v: number) {
-		this._minContentWidth = v;
+		if (this._minContentWidth !== v) {
+			this._minContentWidth = v;
+			this.markDirtyLayout();
+		}
 	}
 
 	get minContentHeight(): number {
 		return this._minContentHeight;
 	}
 	set minContentHeight(v: number) {
-		this._minContentHeight = v;
+		if (this._minContentHeight !== v) {
+			this._minContentHeight = v;
+			this.markDirtyLayout();
+		}
 	}
 
 	get minWidth(): number {
@@ -406,14 +414,20 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 		return this._contentWidth;
 	}
 	set contentWidth(v: number) {
-		this._contentWidth = v;
+		if (this._contentWidth !== v) {
+			this._contentWidth = v;
+			this.markDirtyLayout();
+		}
 	}
 
 	get contentHeight(): number {
 		return this._contentHeight;
 	}
 	set contentHeight(v: number) {
-		this._contentHeight = v;
+		if (this._contentHeight !== v) {
+			this._contentHeight = v;
+			this.markDirtyLayout();
+		}
 	}
 
 	get width(): number {

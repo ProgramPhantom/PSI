@@ -245,6 +245,8 @@ export default class DiagramHandler implements IDraw {
 			})
 		}
 
+		this.diagram.cleanDirtyFlags();
+
 		this._revision++;
 		this.syncExternal();
 	}
@@ -253,7 +255,10 @@ export default class DiagramHandler implements IDraw {
 		this.diagram?.erase();
 	}
 
-	computeDiagram() {
+	computeDiagram(force: boolean = false) {
+		if (!force && !this.diagram.dirtyLayout) {
+			return;
+		}
 		const start = performance.now();
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);

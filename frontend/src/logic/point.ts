@@ -70,6 +70,28 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		};
 	}
 
+	public parent?: Point;
+	protected _dirtyLayout: boolean = true;
+
+	public get dirtyLayout(): boolean {
+		return this._dirtyLayout;
+	}
+
+	public markDirtyLayout(): void {
+		this._dirtyLayout = true;
+		if (this.parent) {
+			this.parent.markDirtyLayout();
+		}
+	}
+
+	public cleanDirtyFlags(): void {
+		this._dirtyLayout = false;
+	}
+
+	protected onPositionChange(): void {
+		// Hook for subclasses (such as Visual) to mark rendering dirty
+	}
+
 	protected _x: number;
 	protected _y: number;
 
@@ -112,10 +134,18 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		return this._y;
 	}
 	public set x(val: number) {
-		this._x = Math.round(val)
+		const rounded = Math.round(val);
+		if (this._x !== rounded) {
+			this._x = rounded;
+			this.onPositionChange();
+		}
 	}
 	public set y(val: number) {
-		this._y = Math.round(val);
+		const rounded = Math.round(val);
+		if (this._y !== rounded) {
+			this._y = rounded;
+			this.onPositionChange();
+		}
 	}
 
 	move({ dx, dy }: Shift) {

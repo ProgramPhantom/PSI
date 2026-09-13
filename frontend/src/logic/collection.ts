@@ -188,7 +188,9 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		var right = -Infinity;
 
 		this.children.forEach((c) => {
-			c.computeSize();
+			if (c.dirtyLayout) {
+				c.computeSize();
+			}
 
 			top = c.y < top ? c.y : top;
 			var far = c.getFar("y");
@@ -272,27 +274,32 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	// ----------------- Visual methods -----------------
 	//#region 
 	draw(surface: Element) {
-		if (this.svg) {
-			this.svg.remove();
+		const offset = this.placementMode?.type === "free" ? [0, 0] : this.offset;
+
+		if (!this.svg || (this.svg.node.parentElement as any) !== surface.node) {
+			if (this.svg) {
+				try {
+					this.svg.remove();
+				} catch { }
+			}
+			var group = new G().id(this.id).attr({ title: this.ref });
+			this.svg = group;
+			surface.add(this.svg);
 		}
 
-		const offset = this.placementMode?.type === "free" ? [0, 0] : this.offset;
-		var group = new G().id(this.id).attr({ title: this.ref });
-		group.attr({
+		this.svg.attr({
 			transform: `translate(${offset[0]}, ${offset[1]})`
 		});
 
-		this.svg = group;
-
-		surface.add(this.svg);
-
 		this.children.forEach((uc) => {
 			if (doesDraw(uc)) {
-				uc.draw(this.svg!);
+				if (!(uc instanceof Visual) || uc.dirtyRender || !uc.svg || !uc.svg.node.parentElement) {
+					uc.draw(this.svg!);
+				}
 			}
 		});
 
-		super.draw(surface)
+		super.draw(surface);
 	}
 
 	public getHitbox(): Rect {
@@ -331,22 +338,11 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		return internalSVG;
 	}
 
-	get dirty(): boolean {
-		var isDirty = false;
-		this.children.forEach((c) => {
-			if (c instanceof Visual && (c as Visual).dirty) {
-				isDirty = true;
-			}
-		});
-
-		return isDirty;
-	}
-	set dirty(v: boolean) {
-		this.children?.forEach((c) => {
-			if (c instanceof Visual) {
-				(c as Visual).dirty = v;
-			}
-		});
+	public override cleanDirtyFlags(): void {
+		super.cleanDirtyFlags();
+		for (const child of this.children) {
+			child.cleanDirtyFlags();
+		}
 	}
 
 	erase(): void {
@@ -372,6 +368,8 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	//#region 
 	public add({ child, index }: AddDispatchData<C>) {
 		child.parentId = this.id;
+		child.parent = this;
+		this.markDirtyLayout();
 
 		this.children.splice(index ?? this.numChildren, 0, child);
 
@@ -424,8 +422,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			}
 		}
 
+		child.parent = undefined;
 		child.erase();
 		this.children.splice(index, 1);
+		this.markDirtyLayout();
 	}
 
 
