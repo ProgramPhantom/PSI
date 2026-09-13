@@ -3,6 +3,8 @@ import Line from "../line";
 import { LaTeX } from "../latex";
 import { UserComponentType } from "../point";
 import Visual from "../visual";
+import LineLike from "../lineLike";
+import { Size } from "../spacial";
 
 export type LineTextPosition = "start" | "centre" | "end";
 
@@ -19,7 +21,7 @@ export default class LabelledLine extends Collection implements ILabelledLine {
 		return {
 			...super.state,
 			type: "labelled-line",
-			textPosition: this.textPosition
+			textPosition: this.textPosition,
 		};
 	}
 
@@ -56,7 +58,29 @@ export default class LabelledLine extends Collection implements ILabelledLine {
 		this.textPosition = params.textPosition ?? "centre";
 	}
 
+	public override computePositions(root: { x: number; y: number }): void {
+		const line = this.line;
+		if (line) {
+			this.cx = line.x;
+			this.cy = line.y;
+			return;
+		}
+		super.computePositions(root);
+	}
+
+	public override computeSize(): Size {
+		const line = this.line;
+		if (line) {
+			const bbox = line.computeBoundingBox();
+			this.contentWidth = bbox.width;
+			this.contentHeight = bbox.height;
+			return { width: bbox.width, height: bbox.height };
+		}
+		return super.computeSize();
+	}
+
 	private initialiseLine({ child }: AddDispatchData<Visual>) {
+		child.placementMode = { type: "free" };
 		if (this.text) {
 			this.bindText();
 		}

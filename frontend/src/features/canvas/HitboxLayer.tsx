@@ -32,18 +32,20 @@ export const FocusRules: IFocusRules = {
 
 		"label-group",
 		"simple-label-group",
+		"labelled-line",
 		(element: Visual) => element.pulseLayoutConfig !== undefined && element.placementMode?.type === "grid"
 	],
 	notSelectableIfChildOf: {
-		"svg": ["label-group", "simple-label-group", "collection"],
-		"rect": ["label-group", "simple-label-group", "collection"],
-		"line": ["label-group", "simple-label-group", "collection"],
-		"latex": ["collection"],
-		"text": ["collection"],
-		"label": ["collection"],
-		"label-group": ["collection"],
-		"simple-label-group": ["collection"],
-		"collection": ["collection"]
+		"svg": ["label-group", "simple-label-group", "collection", "labelled-line"],
+		"rect": ["label-group", "simple-label-group", "collection", "labelled-line"],
+		"line": ["label-group", "simple-label-group", "collection", "labelled-line"],
+		"latex": ["collection", "labelled-line"],
+		"text": ["collection", "labelled-line"],
+		"label": ["collection", "labelled-line"],
+		"label-group": ["collection", "labelled-line"],
+		"simple-label-group": ["collection", "labelled-line"],
+		"collection": ["collection", "labelled-line"],
+		"labelled-line": ["collection"]
 	}
 };
 

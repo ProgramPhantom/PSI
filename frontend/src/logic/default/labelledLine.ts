@@ -1,5 +1,6 @@
 import { ILabelledLine } from "../hasComponents/labelledLine";
 import { ILaTeX } from "../latex";
+import { ILine } from "../line";
 import { DEFAULT_LINE } from "./line";
 
 export const DEFAULT_LABELLED_LINE: ILabelledLine = {
@@ -13,8 +14,13 @@ export const DEFAULT_LABELLED_LINE: ILabelledLine = {
 	children: [
 		{
 			...DEFAULT_LINE,
+			placementMode: { type: "free" },
+			startX: 0,
+			startY: 0,
+			endX: 100,
+			endY: 0,
 			role: "line"
-		},
+		} as ILine,
 		{
 			contentWidth: 10,
 			contentHeight: 10,

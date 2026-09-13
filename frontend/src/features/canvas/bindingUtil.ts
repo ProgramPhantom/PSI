@@ -4,6 +4,7 @@ import RectElement from "../../logic/rectElement";
 import Spacial, { SiteNames } from "../../logic/spacial";
 import { GridColumn, isGridColumn } from "../../logic/grid";
 import { ISelectedBindingInfo } from "../../logic/bindingUtil";
+import LabelledLine from "../../logic/hasComponents/labelledLine";
 
 
 /**
@@ -102,7 +103,8 @@ export const BINDING_DISALLOWED_TARGET_ELEMENTS: Array<
 	(abstract new (...args: any[]) => Spacial) | BindingTargetAllowedCheck
 > = [
 		LineLike,
-		isElementBound
+		isElementBound,
+		LabelledLine
 	];
 
 /**

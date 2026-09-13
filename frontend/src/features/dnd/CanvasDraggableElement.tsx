@@ -6,6 +6,7 @@ import { getEmptyImage } from "react-dnd-html5-backend";
 import Collection, { ClearIDs } from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import LabelGroup from "../../logic/hasComponents/labelGroup";
+import LabelledLine from "../../logic/hasComponents/labelledLine";
 import LineLike, { ILineLike, isLineLike } from "../../logic/lineLike";
 import Point from "../../logic/point";
 import Spacial, { isPulse } from "../../logic/spacial";
@@ -68,6 +69,16 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 		const mouseDownPosRef = useRef<{ x: number, y: number } | null>(null);
 		const [livePreview, setLivePreview] = useState<PreviewState | null>(null);
 		const [lineLivePreview, setLineLivePreview] = useState<LinePreviewState | null>(null);
+
+		const targetLine: LineLike | undefined = useMemo(() => {
+			if (props.element instanceof LineLike) {
+				return props.element;
+			}
+			if (props.element instanceof LabelledLine) {
+				return (props.element as LabelledLine).line;
+			}
+			return undefined;
+		}, [props.element]);
 
 		const isMultiSelected = Boolean(
 			props.selectedElements &&
@@ -537,7 +548,7 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								strokeDasharray: "2 2",
 							}}></rect>
 					)}
-					{props.visualState === "selected" && !isMultiSelected && !(props.element instanceof LineLike) && (
+					{props.visualState === "selected" && !isMultiSelected && !targetLine && (
 						<rect
 							className="selection-single-box"
 							x={visualX}
@@ -609,9 +620,9 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 				</svg>
 
 				{props.visualState === "selected" && !isMultiSelected && !isDraggingThisOrPeer && !props.isHidden && props.element.placementControl !== "auto" && (
-					props.element instanceof LineLike ? (
+					targetLine ? (
 						<CanvasLineResizeHandles
-							element={props.element}
+							element={targetLine}
 							scale={props.scale}
 							onResize={setLineLivePreview}
 							hoveredElement={props.hoveredElement}

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import Collection from "../../logic/collection";
 import ENGINE from "../../logic/engine";
 import Line, { HeadStyle } from "../../logic/line";
 import LineLike, { ILineLike } from "../../logic/lineLike";
@@ -45,6 +46,36 @@ interface DragInitialState {
 	endY: number;
 	effectiveScale: number;
 	element: LineLike;
+}
+
+function commitLineResize(targetLine: LineLike, lineState: ILineLike, minX: number, minY: number): void {
+	const parent = targetLine.parentId && targetLine.parentId !== ENGINE.handler?.diagram?.id
+		? ENGINE.handler.identifyElement(targetLine.parentId)
+		: undefined;
+
+	if (parent && parent instanceof Collection) {
+		const newParentState = {
+			...parent.state,
+			x: minX,
+			y: minY,
+			children: parent.children.map((c) => (c.id === targetLine.id ? lineState : c.state))
+		};
+		ENGINE.handler.act({
+			type: "modify",
+			input: {
+				target: parent,
+				child: newParentState
+			}
+		});
+	} else {
+		ENGINE.handler.act({
+			type: "modify",
+			input: {
+				target: targetLine,
+				child: lineState
+			}
+		});
+	}
 }
 
 
@@ -111,6 +142,9 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				const finalEndX = handle === "end" ? info.point.x : currentElement.endX;
 				const finalEndY = handle === "end" ? info.point.y : currentElement.endY;
 
+				const minX = Math.min(finalStartX, finalEndX);
+				const minY = Math.min(finalStartY, finalEndY);
+
 				const newLineState: ILineLike = {
 					...currentElement.state,
 					placementMode: updatedPlacementMode,
@@ -118,17 +152,11 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 					startY: finalStartY,
 					endX: finalEndX,
 					endY: finalEndY,
-					x: Math.min(finalStartX, finalEndX),
-					y: Math.min(finalStartY, finalEndY)
+					x: minX,
+					y: minY
 				};
 
-				ENGINE.handler.act({
-					type: "modify",
-					input: {
-						target: currentElement,
-						child: newLineState
-					}
-				});
+				commitLineResize(currentElement, newLineState, minX, minY);
 
 				SnapStore.clear();
 				dispatch(setIsResizing(false));
@@ -366,24 +394,21 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 						clearBindingRuleFromAnchor(r, initial.element);
 					}
 
+					const minX = Math.min(finalResult.startX, finalResult.endX);
+					const minY = Math.min(finalResult.startY, finalResult.endY);
+
 					const newLineState: ILineLike = {
 						...initial.element.state,
-						placementMode: updatedPlacementMode,
+						placementMode: (updatedPlacementMode?.type === "prefab" || !updatedPlacementMode) ? { type: "free" } : updatedPlacementMode,
 						startX: finalResult.startX,
 						startY: finalResult.startY,
 						endX: finalResult.endX,
 						endY: finalResult.endY,
-						x: Math.min(finalResult.startX, finalResult.endX),
-						y: Math.min(finalResult.startY, finalResult.endY)
+						x: minX,
+						y: minY
 					};
 
-					ENGINE.handler.act({
-						type: "modify",
-						input: {
-							target: initial.element,
-							child: newLineState
-						}
-					});
+					commitLineResize(initial.element, newLineState, minX, minY);
 				}
 			};
 
