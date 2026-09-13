@@ -100,13 +100,22 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		};
 	}
 	override get allElements(): Record<ID, Visual> {
-		var elements: Record<ID, Visual> = { [this.id]: this };
-
-		this.children.forEach((c) => {
-			let childElements = c.allElements;
-			elements = { ...elements, ...childElements };
-		});
+		const elements: Record<ID, Visual> = {};
+		this.collectElements(elements);
 		return elements;
+	}
+
+	public collectElements(elements: Record<ID, Visual>): void {
+
+		elements[this.id] = this;
+
+		for (const c of this.children) {
+			if (Collection.isCollection(c)) {
+				c.collectElements(elements);
+			} else if (c.id) {
+				elements[c.id] = c;
+			}
+		}
 	}
 
 

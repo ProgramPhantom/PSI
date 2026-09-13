@@ -13,6 +13,34 @@ export interface IDiagram extends ICollection {
 
 export default class Diagram extends Collection<Visual> implements IDiagram {
 	static ElementType: UserComponentType = "diagram";
+	public elementRegistry: Record<ID, Visual> = {};
+
+	override get allElements(): Record<ID, Visual> {
+		return this.elementRegistry;
+	}
+
+	public register(element: Visual): void {
+		if (element.id) {
+			this.elementRegistry[element.id] = element;
+		}
+		if (Collection.isCollection(element)) {
+			for (const child of element.children) {
+				this.register(child);
+			}
+		}
+	}
+
+	public unregister(element: Visual): void {
+		if (element.id) {
+			delete this.elementRegistry[element.id];
+		}
+		if (Collection.isCollection(element)) {
+			for (const child of element.children) {
+				this.unregister(child);
+			}
+		}
+	}
+
 	get state(): IDiagram {
 		return {
 			...super.state
@@ -76,6 +104,9 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 
 	constructor(params: IDiagram) {
 		super(params);
+		this.elementRegistry = {};
+
+		this.elementRegistry[this.id] = this;
 	}
 
 	public override getTopLeft(): { x: number, y: number } {

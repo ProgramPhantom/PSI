@@ -500,6 +500,7 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		this.diagram = newDiagram;
+		this.diagram.register(this.diagram)
 		this.diagram.computeSize();
 		this.createElementBindings(this.diagram);
 		this.diagram.svg?.show();
@@ -517,7 +518,9 @@ export default class DiagramHandler implements IDraw {
 	@draws
 	public emptyDiagram(): Diagram {
 		const newDiagram = this.EngineConstructor(structuredClone(BLANK_DIAGRAM), "diagram") as Diagram | undefined;
-		return newDiagram ?? new Diagram(BLANK_DIAGRAM);
+		const diagram = newDiagram ?? new Diagram(BLANK_DIAGRAM);
+		diagram.register(diagram);
+		return diagram;
 	}
 
 	@draws
@@ -621,6 +624,7 @@ export default class DiagramHandler implements IDraw {
 						result = { ok: false, error: `Parent ${parent.ref}` }
 					} else {
 						parent.add({ ...edit.data });
+						this.diagram.register(edit.data.child);
 						result = { ok: true, value: parent }
 					}
 					break;
@@ -628,6 +632,7 @@ export default class DiagramHandler implements IDraw {
 					if (!CanRemove(parent)) {
 						result = { ok: false, error: `Parent ${parent.ref}` }
 					} else {
+						this.diagram.unregister(edit.data.child);
 						parent.remove({ ...edit.data });
 						result = { ok: true, value: parent }
 					}
@@ -732,6 +737,7 @@ export default class DiagramHandler implements IDraw {
 			this.unregisterIncomingBindings(target);
 			target.erase();
 			this.diagram = childInstance;
+			this.diagram.register(this.diagram);
 			this.createElementBindings(childInstance);
 			this.diagram.svg?.show();
 			return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } };
