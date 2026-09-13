@@ -123,9 +123,18 @@ type ActionRegistry = {
 	[K in ActionNames]: DispatchAction<K>
 }
 
-interface IDispatchAction<T extends ActionNames> {
+export interface IDispatchAction<T extends ActionNames = ActionNames> {
 	type: T,
 	input: InputData<T>;
+}
+
+export interface ActExecutionMetrics<T extends ActionNames = ActionNames> {
+	ok: boolean;
+	type: T;
+	duration: number;
+	computeDuration: number;
+	actionResult: ActionResult<T>;
+	error?: string;
 }
 
 interface ICompletedAction<T extends ActionNames> extends IDispatchAction<T> {
@@ -235,6 +244,8 @@ export default class DiagramHandler implements IDraw {
 		this.diagram?.erase();
 	}
 
+	public lastComputeDuration: number = 0;
+
 	computeDiagram() {
 		const start = performance.now();
 		this.diagram.computeSize();
@@ -243,6 +254,7 @@ export default class DiagramHandler implements IDraw {
 		this.diagram.enforceBindings();
 		this.computeBoundaryTree();
 		const end = performance.now();
+		this.lastComputeDuration = end - start;
 		console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
 	}
 
@@ -508,7 +520,7 @@ export default class DiagramHandler implements IDraw {
 	}
 
 
-	public act<T extends ActionNames>(action: IDispatchAction<T>) {
+	public act<T extends ActionNames>(action: IDispatchAction<T>): ActExecutionMetrics<T> {
 		const start = performance.now();
 		let actionResult: ActionResult<T> = this.dispatchAction(
 			action.type,
@@ -534,7 +546,17 @@ export default class DiagramHandler implements IDraw {
 			this.redoStack = [];
 		}
 		const end = performance.now();
-		console.log(`act (${action.type}) took ${(end - start).toFixed(2)} ms`);
+		const duration = end - start;
+		console.log(`act (${action.type}) took ${duration.toFixed(2)} ms`);
+
+		return {
+			ok: actionResult.ok,
+			type: action.type,
+			duration,
+			computeDuration: this.lastComputeDuration,
+			actionResult,
+			error: actionResult.ok ? undefined : actionResult.error
+		};
 	}
 
 	public undo() {
