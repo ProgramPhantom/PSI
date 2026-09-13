@@ -17,6 +17,7 @@ import {
 import { DEFAULT_180S } from "../logic/default/svgPulse/180Soft";
 import { DEFAULT_RECT_ELEMENT } from "../logic/default/rectElement";
 import { DEFAULT_LABEL } from "../logic/default/label";
+import { DEFAULT_TEXT } from "../logic/default/text";
 
 export interface PerfMetricItem {
 	index: number;
@@ -54,7 +55,7 @@ export interface ChannelBenchmarkResult {
 	addedChannelIds: string[];
 }
 
-export type FreeElementType = "svg" | "rect" | "label";
+export type FreeElementType = "svg" | "rect" | "label" | "text";
 
 export interface FreeElementMetric extends PerfMetricItem {
 	elementType: FreeElementType;
@@ -137,7 +138,8 @@ export const BENCHMARK_CHANNEL_TEMPLATES = [
 export const FREE_ELEMENT_DEFAULTS: Record<FreeElementType, IVisual> = {
 	svg: DEFAULT_180S,
 	rect: DEFAULT_RECT_ELEMENT,
-	label: DEFAULT_LABEL
+	label: DEFAULT_LABEL,
+	text: DEFAULT_TEXT
 };
 
 /**
@@ -169,14 +171,20 @@ export function createBenchmarkChannel(template: IChannel, parentId?: string): I
 /**
  * Creates a "free" placed element configured with unique IDs and positioned on the canvas.
  */
-export function createFreeElement(type: FreeElementType, index: number): IVisual {
+export function createFreeElement(
+	type: FreeElementType,
+	index: number,
+	offset?: { x: number; y: number }
+): IVisual {
 	const template = FREE_ELEMENT_DEFAULTS[type];
 	const element = JSON.parse(JSON.stringify(template)) as IVisual;
 	element.id = Math.random().toString(16).slice(2);
 	element.parentId = ENGINE.handler.diagram.id;
 	element.placementMode = { type: "free" };
-	element.x = 20 + (index % 10) * 80;
-	element.y = 20 + Math.floor(index / 10) * 80;
+	const baseX = offset?.x ?? 20;
+	const baseY = offset?.y ?? 20;
+	element.x = baseX + (index % 10) * 80;
+	element.y = baseY + Math.floor(index / 10) * 80;
 
 	const assignChildIds = (item: IVisual) => {
 		const children = (item as unknown as { children?: IVisual[] }).children;
@@ -651,6 +659,180 @@ export async function runColumnBenchmark(
 		avgRemoveDurationMs,
 		minRemoveDurationMs,
 		maxRemoveDurationMs
+	};
+}
+
+export interface ModifyScalingMetric extends PerfMetricItem {
+	ambientCount: number;
+	ambientType: FreeElementType;
+	targetType: FreeElementType;
+}
+
+export interface ModifyBenchmarkResult {
+	ambientCount: number;
+	ambientType: FreeElementType;
+	targetType: FreeElementType;
+	metrics: ModifyScalingMetric[];
+	totalDurationMs: number;
+	avgDurationMs: number;
+	minDurationMs: number;
+	maxDurationMs: number;
+	medianDurationMs: number;
+}
+
+/**
+ * Runs the Modify Action Scaling benchmark:
+ * Sequentially introduces ambient elements (1 to ambientCount) to populate the canvas,
+ * and at each ambient count step creates a target element of a decidable type, executes a
+ * single .act("modify") changing contentWidth and contentHeight, records the execution time,
+ * removes the target element, and cleans up all ambient elements at the end.
+ */
+export async function runModifyScalingBenchmark(
+	ambientType: FreeElementType,
+	ambientCount: number,
+	targetType: FreeElementType,
+	options: {
+		onProgress?: (progress: BenchmarkProgress) => void;
+	} = {}
+): Promise<ModifyBenchmarkResult> {
+	const metrics: ModifyScalingMetric[] = [];
+	const ambientElementIds: string[] = [];
+	const totalSteps = ambientCount * 2;
+
+	try {
+		for (let i = 1; i <= ambientCount; i++) {
+			// 1. Add ambient element to canvas (execution time not recorded)
+			const ambientElement = createFreeElement(ambientType, i - 1, { x: 120, y: 30 });
+			const ambientId = ambientElement.id!;
+			ambientElementIds.push(ambientId);
+
+			ENGINE.handler.act({
+				type: "add",
+				input: { child: ambientElement }
+			});
+
+			options.onProgress?.({
+				current: i,
+				total: totalSteps,
+				message: `Step ${i}/${ambientCount}: modifying ${targetType.toUpperCase()} with ${i} ambient ${ambientType.toUpperCase()} elements...`,
+				percent: Math.round((i / totalSteps) * 100)
+			});
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			// 2. Create target element of decidable type
+			const targetElement = createFreeElement(targetType, 0, { x: 20, y: 30 });
+			const targetId = targetElement.id!;
+
+			ENGINE.handler.act({
+				type: "add",
+				input: { child: targetElement }
+			});
+
+			const targetInstance = ENGINE.handler.identifyElement(targetId);
+			if (!targetInstance) {
+				throw new Error(`Failed to identify target element ${targetId} for modification`);
+			}
+
+			// 3. Prepare modified state with altered contentWidth and contentHeight
+			const baseWidth = targetInstance.contentWidth ?? 20;
+			const baseHeight = targetInstance.contentHeight ?? 20;
+			const modifiedChild: IVisual = {
+				...targetInstance.state,
+				contentWidth: baseWidth + 25,
+				contentHeight: baseHeight + 25
+			};
+
+			const modifiedChildRecord = modifiedChild as unknown as { children?: IVisual[] };
+			if (modifiedChildRecord.children && modifiedChildRecord.children.length > 0) {
+				modifiedChildRecord.children = modifiedChildRecord.children.map((c: IVisual) => ({
+					...c,
+					contentWidth: (c.contentWidth ?? 10) + 25,
+					contentHeight: (c.contentHeight ?? 10) + 25
+				}));
+			}
+
+			// 4. Execute single modify action and capture timing metrics
+			const modifyMetrics = ENGINE.handler.act({
+				type: "modify",
+				input: {
+					target: targetInstance,
+					child: modifiedChild
+				}
+			});
+
+			metrics.push({
+				index: i,
+				ambientCount: i,
+				ambientType,
+				targetType,
+				elementId: targetId,
+				templateRef: `Modify (${targetType}) with ${i} ${ambientType} ambients`,
+				duration: modifyMetrics.duration,
+				computeDuration: modifyMetrics.computeDuration,
+				totalElementsAfterAdd: i + 1,
+				timestamp: Date.now()
+			});
+
+			// 5. Remove target element so only ambient elements carry over
+			const modifiedTargetInstance = ENGINE.handler.identifyElement(targetId);
+			if (modifiedTargetInstance) {
+				ENGINE.handler.act({
+					type: "remove",
+					input: { child: modifiedTargetInstance }
+				});
+			}
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		}
+	} finally {
+		// Clean up all ambient elements in reverse order (LIFO)
+		const idsToRemove = [...ambientElementIds].reverse();
+		for (let j = 0; j < idsToRemove.length; j++) {
+			const id = idsToRemove[j];
+			const el = ENGINE.handler.identifyElement(id);
+
+			options.onProgress?.({
+				current: ambientCount + j + 1,
+				total: totalSteps,
+				message: `Cleaning up ambient element ${j + 1}/${idsToRemove.length}...`,
+				percent: Math.round(((ambientCount + j + 1) / totalSteps) * 100)
+			});
+
+			if (el) {
+				ENGINE.handler.act({
+					type: "remove",
+					input: { child: el }
+				});
+			}
+
+			if (j % 5 === 0) {
+				await new Promise((resolve) => setTimeout(resolve, 0));
+			}
+		}
+	}
+
+	// Statistical aggregates
+	const durations = metrics.map((m) => m.duration);
+	const totalDurationMs = durations.reduce((a, b) => a + b, 0);
+	const avgDurationMs = durations.length ? totalDurationMs / durations.length : 0;
+	const minDurationMs = durations.length ? Math.min(...durations) : 0;
+	const maxDurationMs = durations.length ? Math.max(...durations) : 0;
+	const sortedDurations = [...durations].sort((a, b) => a - b);
+	const medianDurationMs = sortedDurations.length
+		? sortedDurations[Math.floor(sortedDurations.length / 2)]
+		: 0;
+
+	return {
+		ambientCount,
+		ambientType,
+		targetType,
+		metrics,
+		totalDurationMs,
+		avgDurationMs,
+		minDurationMs,
+		maxDurationMs,
+		medianDurationMs
 	};
 }
 

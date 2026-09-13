@@ -11,6 +11,7 @@ export interface IChannelPerfChartProps {
 	fillColor?: string;
 	computeLineColor?: string;
 	downloadFilenamePrefix?: string;
+	labelFormatter?: (m: PerfMetricItem) => string;
 }
 
 export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
@@ -20,7 +21,8 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 	lineColor = "#2d72d2",
 	fillColor = "rgba(45, 114, 210, 0.12)",
 	computeLineColor = "#d9822b",
-	downloadFilenamePrefix = "benchmark"
+	downloadFilenamePrefix = "benchmark",
+	labelFormatter
 }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const chartInstanceRef = useRef<Chart | null>(null);
@@ -37,7 +39,7 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 		const ctx = canvasRef.current.getContext("2d");
 		if (!ctx) return;
 
-		const labels = metrics.map((m) => `#${m.index}`);
+		const labels = metrics.map(labelFormatter || ((m) => `#${m.index}`));
 		const actDurations = metrics.map((m) => Number(m.duration.toFixed(2)));
 		const computeDurations = metrics.map((m) => Number(m.computeDuration.toFixed(2)));
 
@@ -167,7 +169,7 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 				chartInstanceRef.current = null;
 			}
 		};
-	}, [metrics, title, xAxisLabel, lineColor, fillColor, computeLineColor]);
+	}, [metrics, title, xAxisLabel, lineColor, fillColor, computeLineColor, labelFormatter]);
 
 	const handleDownload = () => {
 		const canvas = canvasRef.current;

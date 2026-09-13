@@ -17,13 +17,15 @@ import {
 	ColumnBenchmarkResult,
 	FreeElementBenchmarkResult,
 	FreeElementType,
+	ModifyBenchmarkResult,
 	runChannelAddBenchmark,
 	runColumnBenchmark,
-	runFreeElementBenchmark
+	runFreeElementBenchmark,
+	runModifyScalingBenchmark
 } from "../../../test/perfTests";
 import { ChannelPerfChart } from "./ChannelPerfChart";
 
-type BenchmarkTab = "channel" | "column" | "free";
+type BenchmarkTab = "channel" | "column" | "free" | "modify";
 
 export function PerfDialog() {
 	const dispatch = useAppDispatch();
@@ -43,6 +45,12 @@ export function PerfDialog() {
 	const [freeElementType, setFreeElementType] = useState<FreeElementType>("svg");
 	const [freeElementCount, setFreeElementCount] = useState<number>(10);
 	const [freeResult, setFreeResult] = useState<FreeElementBenchmarkResult | null>(null);
+
+	// Modify Scaling Benchmark State
+	const [modifyAmbientType, setModifyAmbientType] = useState<FreeElementType>("svg");
+	const [modifyAmbientCount, setModifyAmbientCount] = useState<number>(20);
+	const [modifyTargetType, setModifyTargetType] = useState<FreeElementType>("rect");
+	const [modifyResult, setModifyResult] = useState<ModifyBenchmarkResult | null>(null);
 
 	// Shared execution state
 	const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -105,6 +113,35 @@ export function PerfDialog() {
 		}
 	};
 
+	// Run Modify Scaling benchmark
+	const handleRunModifyBenchmark = async () => {
+		setIsRunning(true);
+		setModifyResult(null);
+		setProgress({
+			current: 0,
+			total: modifyAmbientCount * 2,
+			message: `Starting modify scaling test with ${modifyAmbientCount} ${modifyAmbientType.toUpperCase()} ambients...`,
+			percent: 0
+		});
+
+		try {
+			const result = await runModifyScalingBenchmark(
+				modifyAmbientType,
+				modifyAmbientCount,
+				modifyTargetType,
+				{
+					onProgress: (p) => setProgress(p)
+				}
+			);
+			setModifyResult(result);
+		} catch (error) {
+			console.error("Modify scaling benchmark error:", error);
+		} finally {
+			setIsRunning(false);
+			setProgress(null);
+		}
+	};
+
 	const getCurrentMetrics = () => {
 		if (activeTab === "channel") {
 			return {
@@ -132,16 +169,29 @@ export function PerfDialog() {
 				removeXLabel: "Deletion Step (#)"
 			};
 		}
+		if (activeTab === "free") {
+			return {
+				result: freeResult,
+				addMetrics: freeResult?.addMetrics,
+				removeMetrics: freeResult?.removeMetrics,
+				addTitle: `Free ${freeResult?.elementType.toUpperCase()} Additions (${freeResult?.addMetrics.length ?? 0})`,
+				removeTitle: `Free ${freeResult?.elementType.toUpperCase()} Removals (${freeResult?.removeMetrics.length ?? 0})`,
+				addPrefix: "free-additions",
+				removePrefix: "free-removals",
+				addXLabel: "Addition Step (#)",
+				removeXLabel: "Removal Step (#)"
+			};
+		}
 		return {
-			result: freeResult,
-			addMetrics: freeResult?.addMetrics,
-			removeMetrics: freeResult?.removeMetrics,
-			addTitle: `Free ${freeResult?.elementType.toUpperCase()} Additions (${freeResult?.addMetrics.length ?? 0})`,
-			removeTitle: `Free ${freeResult?.elementType.toUpperCase()} Removals (${freeResult?.removeMetrics.length ?? 0})`,
-			addPrefix: "free-additions",
-			removePrefix: "free-removals",
-			addXLabel: "Addition Step (#)",
-			removeXLabel: "Removal Step (#)"
+			result: null,
+			addMetrics: undefined,
+			removeMetrics: undefined,
+			addTitle: "",
+			removeTitle: "",
+			addPrefix: "",
+			removePrefix: "",
+			addXLabel: "",
+			removeXLabel: ""
 		};
 	};
 
@@ -170,7 +220,8 @@ export function PerfDialog() {
 						options={[
 							{ label: "Channels", value: "channel" },
 							{ label: "Columns", value: "column" },
-							{ label: "Free Elements", value: "free" }
+							{ label: "Free Elements", value: "free" },
+							{ label: "Modify Scaling", value: "modify" }
 						]}
 					/>
 				</div>
@@ -324,7 +375,8 @@ export function PerfDialog() {
 									options={[
 										{ label: "SVG Element (180Soft)", value: "svg" },
 										{ label: "Rect Element (Rect)", value: "rect" },
-										{ label: "Label Component (LaTeX)", value: "label" }
+										{ label: "Label Component (LaTeX)", value: "label" },
+										{ label: "Text Element (Text)", value: "text" }
 									]}
 								/>
 							</div>
@@ -360,6 +412,94 @@ export function PerfDialog() {
 					</div>
 				)}
 
+				{/* TAB 4: Modify Action Scaling */}
+				{activeTab === "modify" && (
+					<div>
+						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+							<div style={{ fontWeight: 600, fontSize: "14px" }}>
+								Modify Action Scaling vs Ambient Elements
+							</div>
+							{modifyResult && (
+								<Tag intent="success" round minimal>
+									{modifyResult.metrics.length} Modify Steps Tested ({modifyResult.ambientCount} Ambients)
+								</Tag>
+							)}
+						</div>
+						<div style={{ color: "#5c7080", fontSize: "12px", marginTop: "2px", marginBottom: "12px" }}>
+							Sequentially adds ambient elements (1 to N) to populate the canvas, and at each step creates
+							a target element of a chosen type, runs a single .act('modify') changing its contentWidth & contentHeight,
+							and measures how modification execution time scales with canvas density.
+						</div>
+
+						<div
+							style={{
+								display: "flex",
+								flexWrap: "wrap",
+								alignItems: "center",
+								gap: "12px",
+								marginBottom: "12px"
+							}}>
+							<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+								<span style={{ fontSize: "12px", fontWeight: 500 }}>Ambient Type:</span>
+								<HTMLSelect
+									value={modifyAmbientType}
+									disabled={isRunning}
+									onChange={(e) => setModifyAmbientType(e.target.value as FreeElementType)}
+									options={[
+										{ label: "SVG Element (180Soft)", value: "svg" },
+										{ label: "Rect Element (Rect)", value: "rect" },
+										{ label: "Label Component (LaTeX)", value: "label" },
+										{ label: "Text Element (Text)", value: "text" }
+									]}
+								/>
+							</div>
+
+							<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+								<span style={{ fontSize: "12px", fontWeight: 500 }}>Ambient Count:</span>
+								<HTMLSelect
+									value={modifyAmbientCount}
+									disabled={isRunning}
+									onChange={(e) => setModifyAmbientCount(Number(e.target.value))}
+									options={[
+										{ label: "5 elements", value: 5 },
+										{ label: "10 elements", value: 10 },
+										{ label: "15 elements", value: 15 },
+										{ label: "20 elements", value: 20 },
+										{ label: "30 elements", value: 30 },
+										{ label: "50 elements", value: 50 },
+										{ label: "100 elements", value: 100 }
+									]}
+								/>
+							</div>
+
+							<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+								<span style={{ fontSize: "12px", fontWeight: 500 }}>Target Type:</span>
+								<HTMLSelect
+									value={modifyTargetType}
+									disabled={isRunning}
+									onChange={(e) => setModifyTargetType(e.target.value as FreeElementType)}
+									options={[
+										{ label: "Rect Element (Rect)", value: "rect" },
+										{ label: "SVG Element (180Soft)", value: "svg" },
+										{ label: "Label Component (LaTeX)", value: "label" },
+										{ label: "Text Element (Text)", value: "text" }
+									]}
+								/>
+							</div>
+
+							<div style={{ marginLeft: "auto" }}>
+								<Button
+									icon="play"
+									intent="primary"
+									text="Run Modify Benchmark"
+									loading={isRunning}
+									onClick={handleRunModifyBenchmark}
+								/>
+							</div>
+						</div>
+					</div>
+				)}
+
 				{/* Progress bar */}
 				{isRunning && progress && (
 					<div style={{ marginBottom: "12px" }}>
@@ -381,8 +521,8 @@ export function PerfDialog() {
 					</div>
 				)}
 
-				{/* Summary metrics: Additions/Insertions AND Removals/Deletions */}
-				{result && (
+				{/* Summary metrics: Additions/Insertions AND Removals/Deletions (Tabs 1-3) */}
+				{activeTab !== "modify" && result && (
 					<Card style={{ padding: "12px", marginTop: "8px", backgroundColor: "#f5f8fa" }}>
 						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
 							<span style={{ fontWeight: 600, fontSize: "13px" }}>Benchmark Metrics Summary</span>
@@ -479,8 +619,59 @@ export function PerfDialog() {
 					</Card>
 				)}
 
-				{/* Two Benchmark Graphs Along Side Each Other */}
-				{addMetrics && addMetrics.length > 0 && removeMetrics && removeMetrics.length > 0 && (
+				{/* Summary metrics: Modify Scaling (Tab 4) */}
+				{activeTab === "modify" && modifyResult && (
+					<Card style={{ padding: "12px", marginTop: "8px", backgroundColor: "#f5f8fa" }}>
+						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+							<span style={{ fontWeight: 600, fontSize: "13px" }}>
+								Modify Scaling Summary ({modifyResult.targetType.toUpperCase()} Target with 1..{modifyResult.ambientCount} {modifyResult.ambientType.toUpperCase()} Ambients)
+							</span>
+							<Tag intent="primary" minimal>
+								Median: {modifyResult.medianDurationMs.toFixed(2)} ms
+							</Tag>
+						</div>
+
+						<div
+							style={{
+								display: "grid",
+								gridTemplateColumns: "repeat(4, 1fr)",
+								gap: "8px",
+								textAlign: "center",
+								backgroundColor: "#ffffff",
+								padding: "6px",
+								borderRadius: "3px",
+								border: "1px solid #e1e8ed"
+							}}>
+							<div>
+								<div style={{ fontSize: "10px", color: "#5c7080" }}>TOTAL TIME</div>
+								<div style={{ fontSize: "14px", fontWeight: "bold", color: "#8a3ffc" }}>
+									{modifyResult.totalDurationMs.toFixed(1)} ms
+								</div>
+							</div>
+							<div>
+								<div style={{ fontSize: "10px", color: "#5c7080" }}>AVG / STEP</div>
+								<div style={{ fontSize: "14px", fontWeight: "bold", color: "#0f9960" }}>
+									{modifyResult.avgDurationMs.toFixed(2)} ms
+								</div>
+							</div>
+							<div>
+								<div style={{ fontSize: "10px", color: "#5c7080" }}>MIN / STEP</div>
+								<div style={{ fontSize: "14px", fontWeight: "bold", color: "#5c7080" }}>
+									{modifyResult.minDurationMs.toFixed(1)} ms
+								</div>
+							</div>
+							<div>
+								<div style={{ fontSize: "10px", color: "#5c7080" }}>MAX / STEP</div>
+								<div style={{ fontSize: "14px", fontWeight: "bold", color: "#d9822b" }}>
+									{modifyResult.maxDurationMs.toFixed(1)} ms
+								</div>
+							</div>
+						</div>
+					</Card>
+				)}
+
+				{/* Two Benchmark Graphs Along Side Each Other (Tabs 1-3) */}
+				{activeTab !== "modify" && addMetrics && addMetrics.length > 0 && removeMetrics && removeMetrics.length > 0 && (
 					<div
 						style={{
 							display: "grid",
@@ -508,6 +699,22 @@ export function PerfDialog() {
 							fillColor="rgba(219, 55, 55, 0.12)"
 							computeLineColor="#d9822b"
 							downloadFilenamePrefix={removePrefix}
+						/>
+					</div>
+				)}
+
+				{/* Modify Scaling Graph (Tab 4) */}
+				{activeTab === "modify" && modifyResult && modifyResult.metrics.length > 0 && (
+					<div style={{ marginTop: "12px" }}>
+						<ChannelPerfChart
+							metrics={modifyResult.metrics}
+							title={`Modify Duration vs Ambient Elements (${modifyResult.targetType.toUpperCase()} Target, ${modifyResult.ambientType.toUpperCase()} Ambients)`}
+							xAxisLabel="Ambient Elements (#)"
+							lineColor="#8a3ffc"
+							fillColor="rgba(138, 63, 252, 0.12)"
+							computeLineColor="#d9822b"
+							downloadFilenamePrefix={`modify-scaling-${modifyResult.targetType}-with-${modifyResult.ambientType}`}
+							labelFormatter={(m) => `${m.index}`}
 						/>
 					</div>
 				)}
