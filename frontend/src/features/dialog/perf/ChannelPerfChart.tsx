@@ -172,29 +172,181 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 	}, [metrics, title, xAxisLabel, lineColor, fillColor, computeLineColor, labelFormatter]);
 
 	const handleDownload = () => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
+		if (metrics.length === 0) return;
 
+		// Create dedicated high-resolution offscreen canvas (2400x1400, 300 DPI publication quality)
 		const exportCanvas = document.createElement("canvas");
-		const scale = 2; // 2x resolution
-		exportCanvas.width = canvas.width * scale;
-		exportCanvas.height = canvas.height * scale;
-		const ctx = exportCanvas.getContext("2d");
+		const width = 1200;
+		const height = 800;
+		exportCanvas.width = width;
+		exportCanvas.height = height;
 
-		if (ctx) {
-			ctx.scale(scale, scale);
-			ctx.fillStyle = "#ffffff";
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			ctx.drawImage(canvas, 0, 0);
+		const exportCtx = exportCanvas.getContext("2d");
+		if (!exportCtx) return;
 
-			const dataUrl = exportCanvas.toDataURL("image/png");
-			const link = document.createElement("a");
-			link.href = dataUrl;
-			link.download = `${downloadFilenamePrefix}-${Date.now()}.png`;
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-		}
+		const labels = metrics.map(labelFormatter || ((m) => `#${m.index}`));
+		const actDurations = metrics.map((m) => Number(m.duration.toFixed(2)));
+		const computeDurations = metrics.map((m) => Number(m.computeDuration.toFixed(2)));
+
+		// Render a crisp vector chart at full high resolution
+		const exportChart = new Chart(exportCtx, {
+			type: "line",
+			data: {
+				labels,
+				datasets: [
+					{
+						label: "Total .act() Time (ms)",
+						data: actDurations,
+						borderColor: lineColor,
+						backgroundColor: fillColor,
+						borderWidth: 4,
+						pointBackgroundColor: lineColor,
+						pointBorderColor: "#ffffff",
+						pointBorderWidth: 2,
+						pointRadius: 6,
+						pointHoverRadius: 8,
+						tension: 0.2,
+						fill: true
+					},
+					{
+						label: "Layout Compute Time (ms)",
+						data: computeDurations,
+						borderColor: computeLineColor,
+						backgroundColor: "rgba(217, 130, 43, 0.08)",
+						borderWidth: 4,
+						borderDash: [8, 8],
+						pointBackgroundColor: computeLineColor,
+						pointBorderColor: "#ffffff",
+						pointBorderWidth: 2,
+						pointRadius: 5,
+						pointHoverRadius: 7,
+						tension: 0.2,
+						fill: false
+					}
+				]
+			},
+			plugins: [
+				{
+					id: "publicationWhiteBackground",
+					beforeDraw: (chart) => {
+						const { ctx: c, width: chartWidth, height: chartHeight } = chart;
+						c.save();
+						c.fillStyle = "#ffffff";
+						c.fillRect(0, 0, chartWidth, chartHeight);
+						c.restore();
+					}
+				}
+			],
+			options: {
+				responsive: false,
+				maintainAspectRatio: false,
+				animation: false,
+				layout: {
+					padding: {
+						top: 24,
+						bottom: 24,
+						left: 32,
+						right: 36
+					}
+				},
+				plugins: {
+					title: {
+						display: true,
+						text: title,
+						font: {
+							size: 28,
+							weight: "bold",
+							family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+						},
+						color: "#182026",
+						padding: {
+							top: 10,
+							bottom: 24
+						}
+					},
+					legend: {
+						position: "top",
+						labels: {
+							boxWidth: 28,
+							boxHeight: 14,
+							padding: 24,
+							font: {
+								size: 18,
+								weight: "500",
+								family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+							},
+							color: "#182026"
+						}
+					},
+					tooltip: {
+						enabled: false
+					}
+				},
+				scales: {
+					x: {
+						title: {
+							display: true,
+							text: xAxisLabel,
+							font: {
+								size: 20,
+								weight: "bold",
+								family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+							},
+							color: "#182026",
+							padding: { top: 14 }
+						},
+						ticks: {
+							font: {
+								size: 16,
+								family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+							},
+							color: "#5c7080",
+							maxRotation: 45
+						},
+						grid: {
+							color: "rgba(128, 128, 128, 0.2)",
+							lineWidth: 1.5
+						}
+					},
+					y: {
+						title: {
+							display: true,
+							text: "Time (ms)",
+							font: {
+								size: 20,
+								weight: "bold",
+								family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+							},
+							color: "#182026",
+							padding: { bottom: 14 }
+						},
+						beginAtZero: true,
+						ticks: {
+							font: {
+								size: 16,
+								family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+							},
+							color: "#5c7080"
+						},
+						grid: {
+							color: "rgba(128, 128, 128, 0.2)",
+							lineWidth: 1.5
+						}
+					}
+				}
+			}
+		});
+
+		// Export high-res PNG
+		const dataUrl = exportCanvas.toDataURL("image/png", 1.0);
+		exportChart.destroy();
+
+		const link = document.createElement("a");
+		link.href = dataUrl;
+		link.download = `${downloadFilenamePrefix}-${Date.now()}.png`;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
 	};
 
 	if (metrics.length === 0) {
@@ -211,6 +363,7 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 					minimal
 					intent="primary"
 					text="Download (PNG)"
+					title="Export high-resolution PNG (2400x1400) for publication"
 					onClick={handleDownload}
 				/>
 			</div>
