@@ -81,6 +81,27 @@ export interface FreeElementBenchmarkResult {
 	addedElementIds: string[];
 }
 
+export interface ColumnBenchmarkMetric extends PerfMetricItem {
+	sequenceId: string;
+	colIndex: number;
+}
+
+export interface ColumnBenchmarkResult {
+	sequenceId: string;
+	columnCount: number;
+	addMetrics: ColumnBenchmarkMetric[];
+	removeMetrics: ColumnBenchmarkMetric[];
+	totalAddDurationMs: number;
+	avgAddDurationMs: number;
+	minAddDurationMs: number;
+	maxAddDurationMs: number;
+	medianAddDurationMs: number;
+	totalRemoveDurationMs: number;
+	avgRemoveDurationMs: number;
+	minRemoveDurationMs: number;
+	maxRemoveDurationMs: number;
+}
+
 export interface PureLayoutBenchmarkResult {
 	iterations: number;
 	durations: number[];
@@ -509,3 +530,127 @@ export async function runPureLayoutBenchmark(
 		opsPerSec
 	};
 }
+
+/**
+ * Runs a stress-test benchmark by inserting columns one by one into the active sequence grid,
+ * and subsequently deleting them one by one, measuring layout recalculation times.
+ */
+export async function runColumnBenchmark(
+	count: number,
+	options: {
+		onProgress?: (progress: BenchmarkProgress) => void;
+	} = {}
+): Promise<ColumnBenchmarkResult> {
+	if (ENGINE.handler.diagram.sequences.length === 0) {
+		throw new Error("No sequence found in diagram to benchmark columns");
+	}
+
+	const sequence = ENGINE.handler.diagram.sequences[0];
+	const sequenceId = sequence.id;
+	const addMetrics: ColumnBenchmarkMetric[] = [];
+	const removeMetrics: ColumnBenchmarkMetric[] = [];
+	const totalSteps = count * 2;
+
+	// 1. Insert Columns one by one
+	for (let i = 0; i < count; i++) {
+		const targetIndex = sequence.numColumns;
+
+		options.onProgress?.({
+			current: i + 1,
+			total: totalSteps,
+			message: `Inserting column ${i + 1}/${count} at index ${targetIndex}...`,
+			percent: Math.round(((i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const metrics = ENGINE.handler.act({
+			type: "insertColumn",
+			input: {
+				sequenceId,
+				index: targetIndex
+			}
+		});
+
+		addMetrics.push({
+			index: i + 1,
+			elementId: `col-${targetIndex}`,
+			sequenceId,
+			colIndex: targetIndex,
+			templateRef: `Col #${targetIndex}`,
+			duration: metrics.duration,
+			computeDuration: metrics.computeDuration,
+			totalElementsAfterAdd: sequence.numColumns,
+			timestamp: Date.now()
+		});
+	}
+
+	// 2. Delete Columns in reverse order (Always executed)
+	for (let i = 0; i < count; i++) {
+		const targetIndex = sequence.numColumns - 1;
+
+		options.onProgress?.({
+			current: count + i + 1,
+			total: totalSteps,
+			message: `Deleting column ${i + 1}/${count} at index ${targetIndex}...`,
+			percent: Math.round(((count + i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const metrics = ENGINE.handler.act({
+			type: "deleteColumn",
+			input: {
+				sequenceId,
+				index: targetIndex
+			}
+		});
+
+		removeMetrics.push({
+			index: i + 1,
+			elementId: `col-${targetIndex}`,
+			sequenceId,
+			colIndex: targetIndex,
+			templateRef: `Delete #${targetIndex}`,
+			duration: metrics.duration,
+			computeDuration: metrics.computeDuration,
+			totalElementsAfterAdd: sequence.numColumns,
+			timestamp: Date.now()
+		});
+	}
+
+	// Statistical aggregates for additions (insertions)
+	const addDurations = addMetrics.map((m) => m.duration);
+	const totalAddDurationMs = addDurations.reduce((a, b) => a + b, 0);
+	const avgAddDurationMs = addDurations.length ? totalAddDurationMs / addDurations.length : 0;
+	const minAddDurationMs = addDurations.length ? Math.min(...addDurations) : 0;
+	const maxAddDurationMs = addDurations.length ? Math.max(...addDurations) : 0;
+	const sortedAddDurations = [...addDurations].sort((a, b) => a - b);
+	const medianAddDurationMs = sortedAddDurations.length
+		? sortedAddDurations[Math.floor(sortedAddDurations.length / 2)]
+		: 0;
+
+	// Statistical aggregates for removals (deletions)
+	const removeDurations = removeMetrics.map((m) => m.duration);
+	const totalRemoveDurationMs = removeDurations.reduce((a, b) => a + b, 0);
+	const avgRemoveDurationMs = removeDurations.length ? totalRemoveDurationMs / removeDurations.length : 0;
+	const minRemoveDurationMs = removeDurations.length ? Math.min(...removeDurations) : 0;
+	const maxRemoveDurationMs = removeDurations.length ? Math.max(...removeDurations) : 0;
+
+	return {
+		sequenceId,
+		columnCount: count,
+		addMetrics,
+		removeMetrics,
+		totalAddDurationMs,
+		avgAddDurationMs,
+		minAddDurationMs,
+		maxAddDurationMs,
+		medianAddDurationMs,
+		totalRemoveDurationMs,
+		avgRemoveDurationMs,
+		minRemoveDurationMs,
+		maxRemoveDurationMs
+	};
+}
+

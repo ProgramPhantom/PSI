@@ -14,14 +14,16 @@ import { setPerfDialogOpen } from "../../../redux/slices/dialogSlice";
 import {
 	BenchmarkProgress,
 	ChannelBenchmarkResult,
+	ColumnBenchmarkResult,
 	FreeElementBenchmarkResult,
 	FreeElementType,
 	runChannelAddBenchmark,
+	runColumnBenchmark,
 	runFreeElementBenchmark
 } from "../../../test/perfTests";
 import { ChannelPerfChart } from "./ChannelPerfChart";
 
-type BenchmarkTab = "channel" | "free";
+type BenchmarkTab = "channel" | "column" | "free";
 
 export function PerfDialog() {
 	const dispatch = useAppDispatch();
@@ -32,6 +34,10 @@ export function PerfDialog() {
 	// Channel Benchmark State
 	const [channelCount, setChannelCount] = useState<number>(10);
 	const [channelResult, setChannelResult] = useState<ChannelBenchmarkResult | null>(null);
+
+	// Column Benchmark State
+	const [columnCount, setColumnCount] = useState<number>(10);
+	const [columnResult, setColumnResult] = useState<ColumnBenchmarkResult | null>(null);
 
 	// Free Element Benchmark State
 	const [freeElementType, setFreeElementType] = useState<FreeElementType>("svg");
@@ -61,6 +67,25 @@ export function PerfDialog() {
 		}
 	};
 
+	// Run Column benchmark (always includes deletions)
+	const handleRunColumnBenchmark = async () => {
+		setIsRunning(true);
+		setColumnResult(null);
+		setProgress({ current: 0, total: columnCount * 2, message: "Starting column insertions...", percent: 0 });
+
+		try {
+			const result = await runColumnBenchmark(columnCount, {
+				onProgress: (p) => setProgress(p)
+			});
+			setColumnResult(result);
+		} catch (error) {
+			console.error("Column benchmark error:", error);
+		} finally {
+			setIsRunning(false);
+			setProgress(null);
+		}
+	};
+
 	// Run Free Element benchmark (always includes removals)
 	const handleRunFreeBenchmark = async () => {
 		setIsRunning(true);
@@ -80,9 +105,48 @@ export function PerfDialog() {
 		}
 	};
 
-	const currentResult = activeTab === "channel" ? channelResult : freeResult;
-	const addMetrics = activeTab === "channel" ? channelResult?.addMetrics : freeResult?.addMetrics;
-	const removeMetrics = activeTab === "channel" ? channelResult?.removeMetrics : freeResult?.removeMetrics;
+	const getCurrentMetrics = () => {
+		if (activeTab === "channel") {
+			return {
+				result: channelResult,
+				addMetrics: channelResult?.addMetrics,
+				removeMetrics: channelResult?.removeMetrics,
+				addTitle: `Channel Additions (${channelResult?.addMetrics.length ?? 0})`,
+				removeTitle: `Channel Removals (${channelResult?.removeMetrics.length ?? 0})`,
+				addPrefix: "channel-additions",
+				removePrefix: "channel-removals",
+				addXLabel: "Addition Step (#)",
+				removeXLabel: "Removal Step (#)"
+			};
+		}
+		if (activeTab === "column") {
+			return {
+				result: columnResult,
+				addMetrics: columnResult?.addMetrics,
+				removeMetrics: columnResult?.removeMetrics,
+				addTitle: `Column Insertions (${columnResult?.addMetrics.length ?? 0})`,
+				removeTitle: `Column Deletions (${columnResult?.removeMetrics.length ?? 0})`,
+				addPrefix: "column-insertions",
+				removePrefix: "column-deletions",
+				addXLabel: "Insertion Step (#)",
+				removeXLabel: "Deletion Step (#)"
+			};
+		}
+		return {
+			result: freeResult,
+			addMetrics: freeResult?.addMetrics,
+			removeMetrics: freeResult?.removeMetrics,
+			addTitle: `Free ${freeResult?.elementType.toUpperCase()} Additions (${freeResult?.addMetrics.length ?? 0})`,
+			removeTitle: `Free ${freeResult?.elementType.toUpperCase()} Removals (${freeResult?.removeMetrics.length ?? 0})`,
+			addPrefix: "free-additions",
+			removePrefix: "free-removals",
+			addXLabel: "Addition Step (#)",
+			removeXLabel: "Removal Step (#)"
+		};
+	};
+
+	const { result, addMetrics, removeMetrics, addTitle, removeTitle, addPrefix, removePrefix, addXLabel, removeXLabel } =
+		getCurrentMetrics();
 
 	return (
 		<Dialog
@@ -104,8 +168,9 @@ export function PerfDialog() {
 						value={activeTab}
 						onValueChange={(val) => setActiveTab(val as BenchmarkTab)}
 						options={[
-							{ label: "Channel Benchmarks", value: "channel" },
-							{ label: "Free Element Benchmarks", value: "free" }
+							{ label: "Channels", value: "channel" },
+							{ label: "Columns", value: "column" },
+							{ label: "Free Elements", value: "free" }
 						]}
 					/>
 				</div>
@@ -167,7 +232,64 @@ export function PerfDialog() {
 					</div>
 				)}
 
-				{/* TAB 2: Free Element Benchmark */}
+				{/* TAB 2: Column Benchmark */}
+				{activeTab === "column" && (
+					<div>
+						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+							<div style={{ fontWeight: 600, fontSize: "14px" }}>
+								Sequence Column Insertions & Deletions
+							</div>
+							{columnResult && (
+								<Tag intent="success" round minimal>
+									{columnResult.columnCount} Columns Benchmarked (Insert & Delete)
+								</Tag>
+							)}
+						</div>
+						<div style={{ color: "#5c7080", fontSize: "12px", marginTop: "2px", marginBottom: "12px" }}>
+							Sequentially inserts empty columns into the active sequence grid, then deletes each column,
+							capturing execution metrics from each .act() call and plotting insertion and deletion times side by side.
+						</div>
+
+						<div
+							style={{
+								display: "flex",
+								flexWrap: "wrap",
+								alignItems: "center",
+								gap: "12px",
+								marginBottom: "12px"
+							}}>
+							<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+								<span style={{ fontSize: "12px", fontWeight: 500 }}>Column Count:</span>
+								<HTMLSelect
+									value={columnCount}
+									disabled={isRunning}
+									onChange={(e) => setColumnCount(Number(e.target.value))}
+									options={[
+										{ label: "5 columns", value: 5 },
+										{ label: "10 columns", value: 10 },
+										{ label: "15 columns", value: 15 },
+										{ label: "20 columns", value: 20 },
+										{ label: "30 columns", value: 30 },
+										{ label: "50 columns", value: 50 },
+										{ label: "100 columns", value: 100 }
+									]}
+								/>
+							</div>
+
+							<div style={{ marginLeft: "auto" }}>
+								<Button
+									icon="play"
+									intent="primary"
+									text="Run Column Benchmark"
+									loading={isRunning}
+									onClick={handleRunColumnBenchmark}
+								/>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* TAB 3: Free Element Benchmark */}
 				{activeTab === "free" && (
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -259,20 +381,20 @@ export function PerfDialog() {
 					</div>
 				)}
 
-				{/* Summary metrics: Additions AND Removals */}
-				{currentResult && (
+				{/* Summary metrics: Additions/Insertions AND Removals/Deletions */}
+				{result && (
 					<Card style={{ padding: "12px", marginTop: "8px", backgroundColor: "#f5f8fa" }}>
 						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
 							<span style={{ fontWeight: 600, fontSize: "13px" }}>Benchmark Metrics Summary</span>
 							<Tag intent="primary" minimal>
-								Total Cycle: {(currentResult.totalAddDurationMs + currentResult.totalRemoveDurationMs).toFixed(1)} ms
+								Total Cycle: {(result.totalAddDurationMs + result.totalRemoveDurationMs).toFixed(1)} ms
 							</Tag>
 						</div>
 
-						{/* Additions Row */}
+						{/* Additions / Insertions Row */}
 						<div style={{ marginBottom: "8px" }}>
 							<div style={{ fontSize: "11px", fontWeight: 600, color: "#106ba3", marginBottom: "4px" }}>
-								ADDITIONS ({currentResult.addMetrics.length} steps)
+								{activeTab === "column" ? "INSERTIONS" : "ADDITIONS"} ({result.addMetrics.length} steps)
 							</div>
 							<div
 								style={{
@@ -288,34 +410,34 @@ export function PerfDialog() {
 								<div>
 									<div style={{ fontSize: "10px", color: "#5c7080" }}>TOTAL TIME</div>
 									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#106ba3" }}>
-										{currentResult.totalAddDurationMs.toFixed(1)} ms
+										{result.totalAddDurationMs.toFixed(1)} ms
 									</div>
 								</div>
 								<div>
 									<div style={{ fontSize: "10px", color: "#5c7080" }}>AVG / STEP</div>
 									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#0f9960" }}>
-										{currentResult.avgAddDurationMs.toFixed(2)} ms
+										{result.avgAddDurationMs.toFixed(2)} ms
 									</div>
 								</div>
 								<div>
 									<div style={{ fontSize: "10px", color: "#5c7080" }}>MIN / STEP</div>
 									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#5c7080" }}>
-										{currentResult.minAddDurationMs.toFixed(1)} ms
+										{result.minAddDurationMs.toFixed(1)} ms
 									</div>
 								</div>
 								<div>
 									<div style={{ fontSize: "10px", color: "#5c7080" }}>MAX / STEP</div>
 									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#d9822b" }}>
-										{currentResult.maxAddDurationMs.toFixed(1)} ms
+										{result.maxAddDurationMs.toFixed(1)} ms
 									</div>
 								</div>
 							</div>
 						</div>
 
-						{/* Removals Row */}
+						{/* Removals / Deletions Row */}
 						<div>
 							<div style={{ fontSize: "11px", fontWeight: 600, color: "#db3737", marginBottom: "4px" }}>
-								REMOVALS ({currentResult.removeMetrics.length} steps)
+								{activeTab === "column" ? "DELETIONS" : "REMOVALS"} ({result.removeMetrics.length} steps)
 							</div>
 							<div
 								style={{
@@ -331,25 +453,25 @@ export function PerfDialog() {
 								<div>
 									<div style={{ fontSize: "10px", color: "#5c7080" }}>TOTAL TIME</div>
 									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#db3737" }}>
-										{currentResult.totalRemoveDurationMs.toFixed(1)} ms
+										{result.totalRemoveDurationMs.toFixed(1)} ms
 									</div>
 								</div>
 								<div>
 									<div style={{ fontSize: "10px", color: "#5c7080" }}>AVG / STEP</div>
 									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#0f9960" }}>
-										{currentResult.avgRemoveDurationMs.toFixed(2)} ms
+										{result.avgRemoveDurationMs.toFixed(2)} ms
 									</div>
 								</div>
 								<div>
 									<div style={{ fontSize: "10px", color: "#5c7080" }}>MIN / STEP</div>
 									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#5c7080" }}>
-										{currentResult.minRemoveDurationMs.toFixed(1)} ms
+										{result.minRemoveDurationMs.toFixed(1)} ms
 									</div>
 								</div>
 								<div>
 									<div style={{ fontSize: "10px", color: "#5c7080" }}>MAX / STEP</div>
 									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#d9822b" }}>
-										{currentResult.maxRemoveDurationMs.toFixed(1)} ms
+										{result.maxRemoveDurationMs.toFixed(1)} ms
 									</div>
 								</div>
 							</div>
@@ -366,34 +488,26 @@ export function PerfDialog() {
 							gap: "10px",
 							marginTop: "12px"
 						}}>
-						{/* Graph 1: Additions */}
+						{/* Graph 1: Additions / Insertions */}
 						<ChannelPerfChart
 							metrics={addMetrics}
-							title={
-								activeTab === "channel"
-									? `Channel Additions (${addMetrics.length})`
-									: `Free ${freeResult?.elementType.toUpperCase()} Additions (${addMetrics.length})`
-							}
-							xAxisLabel="Addition Step (#)"
+							title={addTitle}
+							xAxisLabel={addXLabel}
 							lineColor="#2d72d2"
 							fillColor="rgba(45, 114, 210, 0.12)"
 							computeLineColor="#d9822b"
-							downloadFilenamePrefix="additions-benchmark"
+							downloadFilenamePrefix={addPrefix}
 						/>
 
-						{/* Graph 2: Removals Along Side Additions */}
+						{/* Graph 2: Removals / Deletions */}
 						<ChannelPerfChart
 							metrics={removeMetrics}
-							title={
-								activeTab === "channel"
-									? `Channel Removals (${removeMetrics.length})`
-									: `Free ${freeResult?.elementType.toUpperCase()} Removals (${removeMetrics.length})`
-							}
-							xAxisLabel="Removal Step (#)"
+							title={removeTitle}
+							xAxisLabel={removeXLabel}
 							lineColor="#db3737"
 							fillColor="rgba(219, 55, 55, 0.12)"
 							computeLineColor="#d9822b"
-							downloadFilenamePrefix="removals-benchmark"
+							downloadFilenamePrefix={removePrefix}
 						/>
 					</div>
 				)}
