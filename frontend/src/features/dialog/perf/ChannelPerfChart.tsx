@@ -1,16 +1,18 @@
 import React, { useEffect, useRef } from "react";
 import { Button, Card, Elevation } from "@blueprintjs/core";
 import { Chart } from "chart.js/auto";
-import { ChannelAddMetric } from "../../../test/perfTests";
+import { PerfMetricItem } from "../../../test/perfTests";
 
 export interface IChannelPerfChartProps {
-	metrics: ChannelAddMetric[];
+	metrics: PerfMetricItem[];
 	title?: string;
+	xAxisLabel?: string;
 }
 
 export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 	metrics,
-	title = "Channel Addition Execution Time"
+	title = "Addition Execution Time",
+	xAxisLabel = "Addition Step (#)"
 }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const chartInstanceRef = useRef<Chart | null>(null);
@@ -101,7 +103,8 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 							afterBody: (tooltipItems) => {
 								const idx = tooltipItems[0]?.dataIndex ?? 0;
 								const m = metrics[idx];
-								return [`Total Channels: ${m?.totalChannelsAfterAdd ?? ""}`];
+								const count = m?.totalElementsAfterAdd;
+								return count !== undefined ? [`Total Elements: ${count}`] : [];
 							}
 						}
 					},
@@ -120,7 +123,7 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 					x: {
 						title: {
 							display: true,
-							text: "Channel Addition Step (#)",
+							text: xAxisLabel,
 							font: {
 								size: 12,
 								weight: "bold"

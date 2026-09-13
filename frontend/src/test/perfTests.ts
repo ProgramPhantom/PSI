@@ -14,15 +14,23 @@ import {
 	CHANNEL_11B,
 	CHANNEL_27Al
 } from "../logic/default/channels";
+import { DEFAULT_180S } from "../logic/default/svgPulse/180Soft";
+import { DEFAULT_RECT_ELEMENT } from "../logic/default/rectElement";
+import { DEFAULT_LABEL } from "../logic/default/label";
 
-export interface ChannelAddMetric {
+export interface PerfMetricItem {
 	index: number;
-	channelId: string;
+	elementId: string;
 	templateRef: string;
 	duration: number; // total act() duration in ms
 	computeDuration: number; // isolated computeDiagram() duration in ms
-	totalChannelsAfterAdd: number;
+	totalElementsAfterAdd?: number;
 	timestamp: number;
+}
+
+export interface ChannelAddMetric extends PerfMetricItem {
+	channelId: string;
+	totalChannelsAfterAdd: number;
 }
 
 export interface ChannelRemoveMetric {
@@ -48,6 +56,29 @@ export interface ChannelBenchmarkResult {
 	minRemoveDurationMs: number;
 	maxRemoveDurationMs: number;
 	addedChannelIds: string[];
+}
+
+export type FreeElementType = "svg" | "rect" | "label";
+
+export interface FreeElementMetric extends PerfMetricItem {
+	elementType: FreeElementType;
+}
+
+export interface FreeElementBenchmarkResult {
+	elementType: FreeElementType;
+	elementCount: number;
+	addMetrics: FreeElementMetric[];
+	removeMetrics: { index: number; elementId: string; duration: number; computeDuration: number }[];
+	totalAddDurationMs: number;
+	avgAddDurationMs: number;
+	minAddDurationMs: number;
+	maxAddDurationMs: number;
+	medianAddDurationMs: number;
+	totalRemoveDurationMs: number;
+	avgRemoveDurationMs: number;
+	minRemoveDurationMs: number;
+	maxRemoveDurationMs: number;
+	addedElementIds: string[];
 }
 
 export interface PureLayoutBenchmarkResult {
@@ -82,6 +113,12 @@ export const BENCHMARK_CHANNEL_TEMPLATES = [
 	CHANNEL_27Al
 ];
 
+export const FREE_ELEMENT_DEFAULTS: Record<FreeElementType, IVisual> = {
+	svg: DEFAULT_180S,
+	rect: DEFAULT_RECT_ELEMENT,
+	label: DEFAULT_LABEL
+};
+
 /**
  * Creates a unique channel state cloned from a template, with unique IDs
  * generated for the channel and its child elements.
@@ -106,6 +143,33 @@ export function createBenchmarkChannel(template: IChannel, parentId?: string): I
 	}
 
 	return newChannel;
+}
+
+/**
+ * Creates a "free" placed element configured with unique IDs and positioned on the canvas.
+ */
+export function createFreeElement(type: FreeElementType, index: number): IVisual {
+	const template = FREE_ELEMENT_DEFAULTS[type];
+	const element = JSON.parse(JSON.stringify(template)) as IVisual;
+	element.id = Math.random().toString(16).slice(2);
+	element.parentId = ENGINE.handler.diagram.id;
+	element.placementMode = { type: "free" };
+	element.x = 20 + (index % 10) * 80;
+	element.y = 20 + Math.floor(index / 10) * 80;
+
+	const assignChildIds = (item: IVisual) => {
+		const children = (item as unknown as { children?: IVisual[] }).children;
+		if (children && Array.isArray(children)) {
+			children.forEach((c: IVisual) => {
+				c.id = Math.random().toString(16).slice(2);
+				c.parentId = item.id;
+				assignChildIds(c);
+			});
+		}
+	};
+	assignChildIds(element);
+
+	return element;
 }
 
 /**
@@ -151,10 +215,12 @@ export async function runChannelAddBenchmark(
 		addMetrics.push({
 			index: i + 1,
 			channelId,
+			elementId: channelId,
 			templateRef: template.ref || `channel-${i + 1}`,
 			duration: metrics.duration,
 			computeDuration: metrics.computeDuration,
 			totalChannelsAfterAdd: channelsCount,
+			totalElementsAfterAdd: channelsCount,
 			timestamp: Date.now()
 		});
 	}
@@ -214,21 +280,6 @@ export async function runChannelAddBenchmark(
 	const minRemoveDurationMs = removeDurations.length ? Math.min(...removeDurations) : 0;
 	const maxRemoveDurationMs = removeDurations.length ? Math.max(...removeDurations) : 0;
 
-	console.group("🏁 Layout Engine Benchmark Results: Channel Additions");
-	console.table(
-		addMetrics.map((m) => ({
-			Step: `#${m.index}`,
-			Channel: m.templateRef,
-			"Act Duration (ms)": m.duration.toFixed(2),
-			"Compute Layout (ms)": m.computeDuration.toFixed(2),
-			"Total Channels": m.totalChannelsAfterAdd
-		}))
-	);
-	console.log(
-		`Add Summary: Total: ${totalAddDurationMs.toFixed(2)}ms | Avg: ${avgAddDurationMs.toFixed(2)}ms | Min: ${minAddDurationMs.toFixed(2)}ms | Max: ${maxAddDurationMs.toFixed(2)}ms`
-	);
-	console.groupEnd();
-
 	return {
 		channelCount: count,
 		addMetrics,
@@ -247,50 +298,169 @@ export async function runChannelAddBenchmark(
 }
 
 /**
- * Cleanly removes a list of channels by their IDs in reverse order (LIFO),
+ * Runs a stress-test benchmark by adding "free" placed elements to the canvas one by one,
+ * of a given type ("svg" | "rect" | "label"), retrieving execution metrics from .act().
+ */
+export async function runFreeElementBenchmark(
+	type: FreeElementType,
+	count: number,
+	options: {
+		autoRemove?: boolean;
+		onProgress?: (progress: BenchmarkProgress) => void;
+	} = {}
+): Promise<FreeElementBenchmarkResult> {
+	const addMetrics: FreeElementMetric[] = [];
+	const addedElementIds: string[] = [];
+	const totalSteps = options.autoRemove ? count * 2 : count;
+
+	// 1. Sequential Additions of Free Elements
+	for (let i = 0; i < count; i++) {
+		const element = createFreeElement(type, i);
+		const elementId = element.id!;
+		addedElementIds.push(elementId);
+
+		options.onProgress?.({
+			current: i + 1,
+			total: totalSteps,
+			message: `Adding free ${type} element ${i + 1}/${count}...`,
+			percent: Math.round(((i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const metrics = ENGINE.handler.act({
+			type: "add",
+			input: {
+				child: element
+			}
+		});
+
+		addMetrics.push({
+			index: i + 1,
+			elementId,
+			elementType: type,
+			templateRef: element.ref || `${type}-${i + 1}`,
+			duration: metrics.duration,
+			computeDuration: metrics.computeDuration,
+			timestamp: Date.now()
+		});
+	}
+
+	// 2. Sequential Removals (if autoRemove is enabled)
+	const removeMetrics: { index: number; elementId: string; duration: number; computeDuration: number }[] = [];
+	if (options.autoRemove) {
+		const idsToRemove = [...addedElementIds].reverse();
+		for (let i = 0; i < idsToRemove.length; i++) {
+			const id = idsToRemove[i];
+			const elementInstance = ENGINE.handler.identifyElement(id);
+
+			options.onProgress?.({
+				current: count + i + 1,
+				total: totalSteps,
+				message: `Removing free ${type} element ${i + 1}/${count}...`,
+				percent: Math.round(((count + i + 1) / totalSteps) * 100)
+			});
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			if (elementInstance) {
+				const metrics = ENGINE.handler.act({
+					type: "remove",
+					input: {
+						child: elementInstance
+					}
+				});
+
+				removeMetrics.push({
+					index: i + 1,
+					elementId: id,
+					duration: metrics.duration,
+					computeDuration: metrics.computeDuration
+				});
+			}
+		}
+	}
+
+	// Statistics
+	const addDurations = addMetrics.map((m) => m.duration);
+	const totalAddDurationMs = addDurations.reduce((a, b) => a + b, 0);
+	const avgAddDurationMs = addDurations.length ? totalAddDurationMs / addDurations.length : 0;
+	const minAddDurationMs = addDurations.length ? Math.min(...addDurations) : 0;
+	const maxAddDurationMs = addDurations.length ? Math.max(...addDurations) : 0;
+	const sortedAddDurations = [...addDurations].sort((a, b) => a - b);
+	const medianAddDurationMs = sortedAddDurations.length
+		? sortedAddDurations[Math.floor(sortedAddDurations.length / 2)]
+		: 0;
+
+	const removeDurations = removeMetrics.map((m) => m.duration);
+	const totalRemoveDurationMs = removeDurations.reduce((a, b) => a + b, 0);
+	const avgRemoveDurationMs = removeDurations.length ? totalRemoveDurationMs / removeDurations.length : 0;
+	const minRemoveDurationMs = removeDurations.length ? Math.min(...removeDurations) : 0;
+	const maxRemoveDurationMs = removeDurations.length ? Math.max(...removeDurations) : 0;
+
+	return {
+		elementType: type,
+		elementCount: count,
+		addMetrics,
+		removeMetrics,
+		totalAddDurationMs,
+		avgAddDurationMs,
+		minAddDurationMs,
+		maxAddDurationMs,
+		medianAddDurationMs,
+		totalRemoveDurationMs,
+		avgRemoveDurationMs,
+		minRemoveDurationMs,
+		maxRemoveDurationMs,
+		addedElementIds
+	};
+}
+
+/**
+ * Cleanly removes a list of elements by their IDs in reverse order (LIFO),
  * capturing removal timings from ENGINE.handler.act().
  */
-export async function removeBenchmarkChannels(
-	channelIds: string[],
+export async function removeBenchmarkElements(
+	elementIds: string[],
 	onProgress?: (progress: BenchmarkProgress) => void
-): Promise<ChannelRemoveMetric[]> {
-	const removeMetrics: ChannelRemoveMetric[] = [];
-	const idsToRemove = [...channelIds].reverse();
+): Promise<{ index: number; elementId: string; duration: number; computeDuration: number }[]> {
+	const removeMetrics: { index: number; elementId: string; duration: number; computeDuration: number }[] = [];
+	const idsToRemove = [...elementIds].reverse();
 
 	for (let i = 0; i < idsToRemove.length; i++) {
 		const id = idsToRemove[i];
-		const channelInstance = ENGINE.handler.identifyElement(id);
+		const elementInstance = ENGINE.handler.identifyElement(id);
 
 		onProgress?.({
 			current: i + 1,
 			total: idsToRemove.length,
-			message: `Removing channel ${i + 1}/${idsToRemove.length}...`,
+			message: `Removing element ${i + 1}/${idsToRemove.length}...`,
 			percent: Math.round(((i + 1) / idsToRemove.length) * 100)
 		});
 
 		await new Promise((resolve) => setTimeout(resolve, 0));
 
-		if (channelInstance) {
+		if (elementInstance) {
 			const metrics = ENGINE.handler.act({
 				type: "remove",
 				input: {
-					child: channelInstance
+					child: elementInstance
 				}
 			});
 
 			removeMetrics.push({
 				index: i + 1,
-				channelId: id,
+				elementId: id,
 				duration: metrics.duration,
-				computeDuration: metrics.computeDuration,
-				totalChannelsAfterRemove: ENGINE.handler.diagram.channels.length,
-				timestamp: Date.now()
+				computeDuration: metrics.computeDuration
 			});
 		}
 	}
 
 	return removeMetrics;
 }
+
+export const removeBenchmarkChannels = removeBenchmarkElements;
 
 /**
  * Pure layout compute benchmark: runs computeDiagram() repeatedly on the current diagram state
