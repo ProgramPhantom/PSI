@@ -208,6 +208,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	protected squeeze: boolean = true;
 
 	protected gridMatrix: GridCell<C>[][] = [];
+	protected elementCoordMap: Map<ID, { row: number, col: number }> = new Map();
 
 	public gridSizes: { columns: GridColumn[], rows: Spacial[] } = { columns: [], rows: [] };
 	public cells: PaddedBox[][];
@@ -1160,12 +1161,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			throw new Error(`Could not construct cell region for element ${child.ref}`)
 		}
 
+		this.elementCoordMap.set(child.id, { row: insertCoords.row, col: insertCoords.col });
 		this.appendElementsInRegion(region, { row: insertCoords.row, col: insertCoords.col });
 	}
 
 	private addSubgrid(child: Subgrid<C>) {
 		let subgridRegion: GridCell<C>[][] = child.getSubgridRegion();
 
+		this.elementCoordMap.set(child.id, { ...child.placementMode.config.coords });
 		this.appendElementsInRegion(subgridRegion, child.placementMode.config.coords);
 	}
 
@@ -1229,14 +1232,34 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.gridMatrix[coords.row][coords.column] = gridEntry;
 	}
 
+	public rebuildElementCoordMap(): void {
+		this.elementCoordMap.clear();
+		for (let r = 0; r < this.numRows; r++) {
+			const row = this.gridMatrix[r];
+			if (!row) continue;
+			for (let c = 0; c < this.numColumns; c++) {
+				const cell = row[c];
+				if (cell?.elements) {
+					for (const child of cell.elements) {
+						if (!this.elementCoordMap.has(child.id)) {
+							this.elementCoordMap.set(child.id, { row: r, col: c });
+						}
+					}
+				}
+			}
+		}
+	}
+
 	public setGrid(grid: GridCell<C>[][], sizes: { columns: GridColumn[], rows: Spacial[] }, cells: PaddedBox[][]) {
 		this.gridMatrix = grid;
 		this.gridSizes = sizes;
 		this.cells = cells;
+		this.rebuildElementCoordMap();
 	}
 
 	public setMatrix(matrix: GridCell<C>[][]) {
 		this.gridMatrix = matrix;
+		this.rebuildElementCoordMap();
 	}
 
 	public setMatrixRegion(gridRegion: GridCell<C>[][], coords?: { row: number, col: number }) {
@@ -1347,6 +1370,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				}
 			}
 		}
+
+		this.elementCoordMap.delete(child.id);
 	}
 
 	public deleteCellAtCoord(coords: { row: number, col: number }, deleteIfEmpty?: { row: boolean, col: boolean }) {
@@ -1355,6 +1380,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		if (targetCell === undefined) {
 			console.warn(`Removing child in cell outside of matrix in grid ${this.ref}`)
 			return
+		}
+
+		if (targetCell?.elements) {
+			for (const child of targetCell.elements) {
+				this.elementCoordMap.delete(child.id);
+			}
 		}
 
 		this.gridMatrix[coords.row][coords.col] = undefined;
@@ -1785,6 +1816,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						if (gridConfig.coords !== undefined) {
 							gridConfig.coords.col += amount;
 						}
+						this.elementCoordMap.set(element.id, { row: row_index, col: col_index });
 					})
 				}
 
@@ -1825,6 +1857,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						if (gridConfig.coords !== undefined) {
 							gridConfig.coords.row += amount;
 						}
+						this.elementCoordMap.set(element.id, { row: row_index, col: col_index });
 					})
 				}
 
@@ -1891,24 +1924,22 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	protected locateElement(target: GridElement<C>): { row: number, col: number } | undefined {
-		var coords: { row: number, col: number } | undefined = undefined;
+		// 1. Check indexed coordinate map
+		const cached = this.elementCoordMap.get(target.id);
+		if (
+			cached !== undefined &&
+			cached.row >= 0 &&
+			cached.col >= 0 &&
+			cached.row < this.numRows &&
+			cached.col < this.numColumns
+		) {
+			const cell = this.gridMatrix[cached.row]?.[cached.col];
+			if (cell?.elements?.some((el) => el.id === target.id)) {
+				return cached;
+			}
+		}
 
-		this.gridMatrix.forEach((row, row_index) => {
-			row.forEach((cell, column_index) => {
-				if (cell?.elements !== undefined) {
-
-					cell.elements.forEach((child, child_index) => {
-						if (child.id === target.id && coords === undefined) {
-							coords = { row: row_index, col: column_index }
-						}
-					})
-
-
-				}
-			})
-		})
-
-		return coords;
+		return undefined;
 	}
 
 	protected getFirstAvailableCell(): { row: number, col: number } {
@@ -2040,6 +2071,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		this.removeMatrix(child);
+		this.elementCoordMap.set(child.id, { ...location });
 		this.appendElementsInRegion(region, location);
 	}
 
@@ -2301,6 +2333,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			return
 		}
 
+		this.elementCoordMap.set(child.id, { ...position });
 		this.appendElementsInRegion(region, position);
 	}
 }
