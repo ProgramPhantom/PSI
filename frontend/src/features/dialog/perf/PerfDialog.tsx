@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import {
 	Button,
-	ButtonGroup,
 	Card,
-	Checkbox,
 	Dialog,
 	DialogBody,
 	HTMLSelect,
@@ -18,7 +16,6 @@ import {
 	ChannelBenchmarkResult,
 	FreeElementBenchmarkResult,
 	FreeElementType,
-	removeBenchmarkElements,
 	runChannelAddBenchmark,
 	runFreeElementBenchmark
 } from "../../../test/perfTests";
@@ -34,40 +31,28 @@ export function PerfDialog() {
 
 	// Channel Benchmark State
 	const [channelCount, setChannelCount] = useState<number>(10);
-	const [channelAutoRemove, setChannelAutoRemove] = useState<boolean>(true);
 	const [channelResult, setChannelResult] = useState<ChannelBenchmarkResult | null>(null);
-	const [activeChannelIds, setActiveChannelIds] = useState<string[]>([]);
 
 	// Free Element Benchmark State
 	const [freeElementType, setFreeElementType] = useState<FreeElementType>("svg");
 	const [freeElementCount, setFreeElementCount] = useState<number>(10);
-	const [freeAutoRemove, setFreeAutoRemove] = useState<boolean>(true);
 	const [freeResult, setFreeResult] = useState<FreeElementBenchmarkResult | null>(null);
-	const [activeFreeElementIds, setActiveFreeElementIds] = useState<string[]>([]);
 
 	// Shared execution state
 	const [isRunning, setIsRunning] = useState<boolean>(false);
 	const [progress, setProgress] = useState<BenchmarkProgress | null>(null);
-	const [isCleaningUp, setIsCleaningUp] = useState<boolean>(false);
 
-	// Run Channel benchmark
+	// Run Channel benchmark (always includes removals)
 	const handleRunChannelBenchmark = async () => {
 		setIsRunning(true);
 		setChannelResult(null);
-		setProgress({ current: 0, total: channelCount, message: "Starting channel benchmark...", percent: 0 });
+		setProgress({ current: 0, total: channelCount * 2, message: "Starting channel additions...", percent: 0 });
 
 		try {
 			const result = await runChannelAddBenchmark(channelCount, {
-				autoRemove: channelAutoRemove,
 				onProgress: (p) => setProgress(p)
 			});
-
 			setChannelResult(result);
-			if (!channelAutoRemove) {
-				setActiveChannelIds(result.addedChannelIds);
-			} else {
-				setActiveChannelIds([]);
-			}
 		} catch (error) {
 			console.error("Channel benchmark error:", error);
 		} finally {
@@ -76,24 +61,17 @@ export function PerfDialog() {
 		}
 	};
 
-	// Run Free Element benchmark
+	// Run Free Element benchmark (always includes removals)
 	const handleRunFreeBenchmark = async () => {
 		setIsRunning(true);
 		setFreeResult(null);
-		setProgress({ current: 0, total: freeElementCount, message: `Starting ${freeElementType} benchmark...`, percent: 0 });
+		setProgress({ current: 0, total: freeElementCount * 2, message: `Starting ${freeElementType} additions...`, percent: 0 });
 
 		try {
 			const result = await runFreeElementBenchmark(freeElementType, freeElementCount, {
-				autoRemove: freeAutoRemove,
 				onProgress: (p) => setProgress(p)
 			});
-
 			setFreeResult(result);
-			if (!freeAutoRemove) {
-				setActiveFreeElementIds(result.addedElementIds);
-			} else {
-				setActiveFreeElementIds([]);
-			}
 		} catch (error) {
 			console.error("Free element benchmark error:", error);
 		} finally {
@@ -102,56 +80,13 @@ export function PerfDialog() {
 		}
 	};
 
-	// Cleanup channels
-	const handleRemoveChannels = async () => {
-		if (activeChannelIds.length === 0) return;
-		setIsCleaningUp(true);
-		try {
-			await removeBenchmarkElements(activeChannelIds, (p) => {
-				setProgress({
-					current: p.current,
-					total: p.total,
-					message: `Cleaning up channel ${p.current}/${p.total}...`,
-					percent: p.percent
-				});
-			});
-			setActiveChannelIds([]);
-		} catch (error) {
-			console.error("Error removing channels:", error);
-		} finally {
-			setIsCleaningUp(false);
-			setProgress(null);
-		}
-	};
-
-	// Cleanup free elements
-	const handleRemoveFreeElements = async () => {
-		if (activeFreeElementIds.length === 0) return;
-		setIsCleaningUp(true);
-		try {
-			await removeBenchmarkElements(activeFreeElementIds, (p) => {
-				setProgress({
-					current: p.current,
-					total: p.total,
-					message: `Cleaning up element ${p.current}/${p.total}...`,
-					percent: p.percent
-				});
-			});
-			setActiveFreeElementIds([]);
-		} catch (error) {
-			console.error("Error removing free elements:", error);
-		} finally {
-			setIsCleaningUp(false);
-			setProgress(null);
-		}
-	};
-
 	const currentResult = activeTab === "channel" ? channelResult : freeResult;
-	const currentMetrics = activeTab === "channel" ? channelResult?.addMetrics : freeResult?.addMetrics;
+	const addMetrics = activeTab === "channel" ? channelResult?.addMetrics : freeResult?.addMetrics;
+	const removeMetrics = activeTab === "channel" ? channelResult?.removeMetrics : freeResult?.removeMetrics;
 
 	return (
 		<Dialog
-			style={{ width: "580px", maxWidth: "95vw" }}
+			style={{ width: "740px", maxWidth: "96vw" }}
 			isOpen={open}
 			onClose={() => {
 				dispatch(setPerfDialogOpen(false));
@@ -180,17 +115,17 @@ export function PerfDialog() {
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 							<div style={{ fontWeight: 600, fontSize: "14px" }}>
-								Sequence Channel Additions
+								Sequence Channel Additions & Removals
 							</div>
 							{channelResult && (
 								<Tag intent="success" round minimal>
-									{channelResult.channelCount} Channels Benchmarked
+									{channelResult.channelCount} Channels Benchmarked (Add & Remove)
 								</Tag>
 							)}
 						</div>
 						<div style={{ color: "#5c7080", fontSize: "12px", marginTop: "2px", marginBottom: "12px" }}>
-							Sequentially adds channels to the sequence grid, captures execution metrics from each .act() call,
-							and plots the time taken per addition.
+							Sequentially adds channels to the sequence grid, then removes each channel, capturing execution
+							metrics from each .act() call and plotting addition and removal durations side by side.
 						</div>
 
 						<div
@@ -202,10 +137,10 @@ export function PerfDialog() {
 								marginBottom: "12px"
 							}}>
 							<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-								<span style={{ fontSize: "12px", fontWeight: 500 }}>Count:</span>
+								<span style={{ fontSize: "12px", fontWeight: 500 }}>Channel Count:</span>
 								<HTMLSelect
 									value={channelCount}
-									disabled={isRunning || isCleaningUp}
+									disabled={isRunning}
 									onChange={(e) => setChannelCount(Number(e.target.value))}
 									options={[
 										{ label: "5 channels", value: 5 },
@@ -213,39 +148,21 @@ export function PerfDialog() {
 										{ label: "15 channels", value: 15 },
 										{ label: "20 channels", value: 20 },
 										{ label: "30 channels", value: 30 },
-										{ label: "50 channels", value: 50 }
+										{ label: "50 channels", value: 50 },
+										{ label: "100 channels", value: 100 }
 									]}
 								/>
 							</div>
 
-							<Checkbox
-								label="Auto-remove channels"
-								checked={channelAutoRemove}
-								disabled={isRunning || isCleaningUp}
-								style={{ marginBottom: 0 }}
-								onChange={(e) => setChannelAutoRemove((e.target as HTMLInputElement).checked)}
-							/>
-
-							<ButtonGroup style={{ marginLeft: "auto" }}>
-								{activeChannelIds.length > 0 && (
-									<Button
-										icon="trash"
-										intent="warning"
-										text={`Remove Channels (${activeChannelIds.length})`}
-										loading={isCleaningUp}
-										disabled={isRunning}
-										onClick={handleRemoveChannels}
-									/>
-								)}
+							<div style={{ marginLeft: "auto" }}>
 								<Button
 									icon="play"
 									intent="primary"
-									text="Run Benchmark"
+									text="Run Channel Benchmark"
 									loading={isRunning}
-									disabled={isCleaningUp}
 									onClick={handleRunChannelBenchmark}
 								/>
-							</ButtonGroup>
+							</div>
 						</div>
 					</div>
 				)}
@@ -255,7 +172,7 @@ export function PerfDialog() {
 					<div>
 						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 							<div style={{ fontWeight: 600, fontSize: "14px" }}>
-								Free Canvas Elements
+								Free Canvas Elements Additions & Removals
 							</div>
 							{freeResult && (
 								<Tag intent="success" round minimal>
@@ -265,7 +182,7 @@ export function PerfDialog() {
 						</div>
 						<div style={{ color: "#5c7080", fontSize: "12px", marginTop: "2px", marginBottom: "12px" }}>
 							Sequentially adds freely-placed elements (SVG, Rect, or Label) directly to the diagram canvas,
-							captures execution metrics from each .act() call, and plots the time taken.
+							then removes each element, measuring addition and removal performance side by side.
 						</div>
 
 						<div
@@ -280,7 +197,7 @@ export function PerfDialog() {
 								<span style={{ fontSize: "12px", fontWeight: 500 }}>Type:</span>
 								<HTMLSelect
 									value={freeElementType}
-									disabled={isRunning || isCleaningUp}
+									disabled={isRunning}
 									onChange={(e) => setFreeElementType(e.target.value as FreeElementType)}
 									options={[
 										{ label: "SVG Element (180Soft)", value: "svg" },
@@ -294,7 +211,7 @@ export function PerfDialog() {
 								<span style={{ fontSize: "12px", fontWeight: 500 }}>Count:</span>
 								<HTMLSelect
 									value={freeElementCount}
-									disabled={isRunning || isCleaningUp}
+									disabled={isRunning}
 									onChange={(e) => setFreeElementCount(Number(e.target.value))}
 									options={[
 										{ label: "5 elements", value: 5 },
@@ -308,40 +225,21 @@ export function PerfDialog() {
 								/>
 							</div>
 
-							<Checkbox
-								label="Auto-remove elements"
-								checked={freeAutoRemove}
-								disabled={isRunning || isCleaningUp}
-								style={{ marginBottom: 0 }}
-								onChange={(e) => setFreeAutoRemove((e.target as HTMLInputElement).checked)}
-							/>
-
-							<ButtonGroup style={{ marginLeft: "auto" }}>
-								{activeFreeElementIds.length > 0 && (
-									<Button
-										icon="trash"
-										intent="warning"
-										text={`Remove Elements (${activeFreeElementIds.length})`}
-										loading={isCleaningUp}
-										disabled={isRunning}
-										onClick={handleRemoveFreeElements}
-									/>
-								)}
+							<div style={{ marginLeft: "auto" }}>
 								<Button
 									icon="play"
 									intent="primary"
-									text="Run Benchmark"
+									text="Run Free Element Benchmark"
 									loading={isRunning}
-									disabled={isCleaningUp}
 									onClick={handleRunFreeBenchmark}
 								/>
-							</ButtonGroup>
+							</div>
 						</div>
 					</div>
 				)}
 
 				{/* Progress bar */}
-				{(isRunning || isCleaningUp) && progress && (
+				{isRunning && progress && (
 					<div style={{ marginBottom: "12px" }}>
 						<ProgressBar
 							value={progress.percent / 100}
@@ -361,67 +259,143 @@ export function PerfDialog() {
 					</div>
 				)}
 
-				{/* Summary metrics */}
+				{/* Summary metrics: Additions AND Removals */}
 				{currentResult && (
-					<Card style={{ padding: "10px", marginTop: "8px", backgroundColor: "#f5f8fa" }}>
-						<div
-							style={{
-								display: "grid",
-								gridTemplateColumns: "repeat(4, 1fr)",
-								gap: "8px",
-								textAlign: "center"
-							}}>
-							<div>
-								<div style={{ fontSize: "11px", color: "#5c7080", textTransform: "uppercase" }}>
-									Total Add Time
+					<Card style={{ padding: "12px", marginTop: "8px", backgroundColor: "#f5f8fa" }}>
+						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+							<span style={{ fontWeight: 600, fontSize: "13px" }}>Benchmark Metrics Summary</span>
+							<Tag intent="primary" minimal>
+								Total Cycle: {(currentResult.totalAddDurationMs + currentResult.totalRemoveDurationMs).toFixed(1)} ms
+							</Tag>
+						</div>
+
+						{/* Additions Row */}
+						<div style={{ marginBottom: "8px" }}>
+							<div style={{ fontSize: "11px", fontWeight: 600, color: "#106ba3", marginBottom: "4px" }}>
+								ADDITIONS ({currentResult.addMetrics.length} steps)
+							</div>
+							<div
+								style={{
+									display: "grid",
+									gridTemplateColumns: "repeat(4, 1fr)",
+									gap: "8px",
+									textAlign: "center",
+									backgroundColor: "#ffffff",
+									padding: "6px",
+									borderRadius: "3px",
+									border: "1px solid #e1e8ed"
+								}}>
+								<div>
+									<div style={{ fontSize: "10px", color: "#5c7080" }}>TOTAL TIME</div>
+									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#106ba3" }}>
+										{currentResult.totalAddDurationMs.toFixed(1)} ms
+									</div>
 								</div>
-								<div style={{ fontSize: "16px", fontWeight: "bold", color: "#106ba3" }}>
-									{currentResult.totalAddDurationMs.toFixed(1)} ms
+								<div>
+									<div style={{ fontSize: "10px", color: "#5c7080" }}>AVG / STEP</div>
+									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#0f9960" }}>
+										{currentResult.avgAddDurationMs.toFixed(2)} ms
+									</div>
+								</div>
+								<div>
+									<div style={{ fontSize: "10px", color: "#5c7080" }}>MIN / STEP</div>
+									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#5c7080" }}>
+										{currentResult.minAddDurationMs.toFixed(1)} ms
+									</div>
+								</div>
+								<div>
+									<div style={{ fontSize: "10px", color: "#5c7080" }}>MAX / STEP</div>
+									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#d9822b" }}>
+										{currentResult.maxAddDurationMs.toFixed(1)} ms
+									</div>
 								</div>
 							</div>
-							<div>
-								<div style={{ fontSize: "11px", color: "#5c7080", textTransform: "uppercase" }}>
-									Avg / Add
-								</div>
-								<div style={{ fontSize: "16px", fontWeight: "bold", color: "#0f9960" }}>
-									{currentResult.avgAddDurationMs.toFixed(2)} ms
-								</div>
+						</div>
+
+						{/* Removals Row */}
+						<div>
+							<div style={{ fontSize: "11px", fontWeight: 600, color: "#db3737", marginBottom: "4px" }}>
+								REMOVALS ({currentResult.removeMetrics.length} steps)
 							</div>
-							<div>
-								<div style={{ fontSize: "11px", color: "#5c7080", textTransform: "uppercase" }}>
-									Min / Add
+							<div
+								style={{
+									display: "grid",
+									gridTemplateColumns: "repeat(4, 1fr)",
+									gap: "8px",
+									textAlign: "center",
+									backgroundColor: "#ffffff",
+									padding: "6px",
+									borderRadius: "3px",
+									border: "1px solid #e1e8ed"
+								}}>
+								<div>
+									<div style={{ fontSize: "10px", color: "#5c7080" }}>TOTAL TIME</div>
+									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#db3737" }}>
+										{currentResult.totalRemoveDurationMs.toFixed(1)} ms
+									</div>
 								</div>
-								<div style={{ fontSize: "16px", fontWeight: "bold", color: "#5c7080" }}>
-									{currentResult.minAddDurationMs.toFixed(1)} ms
+								<div>
+									<div style={{ fontSize: "10px", color: "#5c7080" }}>AVG / STEP</div>
+									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#0f9960" }}>
+										{currentResult.avgRemoveDurationMs.toFixed(2)} ms
+									</div>
 								</div>
-							</div>
-							<div>
-								<div style={{ fontSize: "11px", color: "#5c7080", textTransform: "uppercase" }}>
-									Max / Add
+								<div>
+									<div style={{ fontSize: "10px", color: "#5c7080" }}>MIN / STEP</div>
+									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#5c7080" }}>
+										{currentResult.minRemoveDurationMs.toFixed(1)} ms
+									</div>
 								</div>
-								<div style={{ fontSize: "16px", fontWeight: "bold", color: "#d9822b" }}>
-									{currentResult.maxAddDurationMs.toFixed(1)} ms
+								<div>
+									<div style={{ fontSize: "10px", color: "#5c7080" }}>MAX / STEP</div>
+									<div style={{ fontSize: "14px", fontWeight: "bold", color: "#d9822b" }}>
+										{currentResult.maxRemoveDurationMs.toFixed(1)} ms
+									</div>
 								</div>
 							</div>
 						</div>
 					</Card>
 				)}
 
-				{/* Benchmark Chart with integrated Download Button */}
-				{currentMetrics && currentMetrics.length > 0 && (
-					<ChannelPerfChart
-						metrics={currentMetrics}
-						title={
-							activeTab === "channel"
-								? `Channel Addition Benchmark (${channelResult?.channelCount} Channels)`
-								: `Free ${freeResult?.elementType.toUpperCase()} Elements Benchmark (${freeResult?.elementCount} Elements)`
-						}
-						xAxisLabel={
-							activeTab === "channel"
-								? "Channel Addition Step (#)"
-								: `Free ${freeResult?.elementType.toUpperCase()} Addition Step (#)`
-						}
-					/>
+				{/* Two Benchmark Graphs Along Side Each Other */}
+				{addMetrics && addMetrics.length > 0 && removeMetrics && removeMetrics.length > 0 && (
+					<div
+						style={{
+							display: "grid",
+							gridTemplateColumns: "1fr 1fr",
+							gap: "10px",
+							marginTop: "12px"
+						}}>
+						{/* Graph 1: Additions */}
+						<ChannelPerfChart
+							metrics={addMetrics}
+							title={
+								activeTab === "channel"
+									? `Channel Additions (${addMetrics.length})`
+									: `Free ${freeResult?.elementType.toUpperCase()} Additions (${addMetrics.length})`
+							}
+							xAxisLabel="Addition Step (#)"
+							lineColor="#2d72d2"
+							fillColor="rgba(45, 114, 210, 0.12)"
+							computeLineColor="#d9822b"
+							downloadFilenamePrefix="additions-benchmark"
+						/>
+
+						{/* Graph 2: Removals Along Side Additions */}
+						<ChannelPerfChart
+							metrics={removeMetrics}
+							title={
+								activeTab === "channel"
+									? `Channel Removals (${removeMetrics.length})`
+									: `Free ${freeResult?.elementType.toUpperCase()} Removals (${removeMetrics.length})`
+							}
+							xAxisLabel="Removal Step (#)"
+							lineColor="#db3737"
+							fillColor="rgba(219, 55, 55, 0.12)"
+							computeLineColor="#d9822b"
+							downloadFilenamePrefix="removals-benchmark"
+						/>
+					</div>
 				)}
 			</DialogBody>
 		</Dialog>

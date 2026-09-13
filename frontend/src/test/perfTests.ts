@@ -33,13 +33,9 @@ export interface ChannelAddMetric extends PerfMetricItem {
 	totalChannelsAfterAdd: number;
 }
 
-export interface ChannelRemoveMetric {
-	index: number;
+export interface ChannelRemoveMetric extends PerfMetricItem {
 	channelId: string;
-	duration: number;
-	computeDuration: number;
 	totalChannelsAfterRemove: number;
-	timestamp: number;
 }
 
 export interface ChannelBenchmarkResult {
@@ -64,11 +60,15 @@ export interface FreeElementMetric extends PerfMetricItem {
 	elementType: FreeElementType;
 }
 
+export interface FreeElementRemoveMetric extends PerfMetricItem {
+	elementType: FreeElementType;
+}
+
 export interface FreeElementBenchmarkResult {
 	elementType: FreeElementType;
 	elementCount: number;
 	addMetrics: FreeElementMetric[];
-	removeMetrics: { index: number; elementId: string; duration: number; computeDuration: number }[];
+	removeMetrics: FreeElementRemoveMetric[];
 	totalAddDurationMs: number;
 	avgAddDurationMs: number;
 	minAddDurationMs: number;
@@ -174,18 +174,17 @@ export function createFreeElement(type: FreeElementType, index: number): IVisual
 
 /**
  * Runs a stress-test benchmark by adding channels one by one, retrieving the execution
- * time metrics from ENGINE.handler.act(), and optionally removing them.
+ * time metrics from ENGINE.handler.act(), and subsequently removing them one by one.
  */
 export async function runChannelAddBenchmark(
 	count: number,
 	options: {
-		autoRemove?: boolean;
 		onProgress?: (progress: BenchmarkProgress) => void;
 	} = {}
 ): Promise<ChannelBenchmarkResult> {
 	const addMetrics: ChannelAddMetric[] = [];
 	const addedChannelIds: string[] = [];
-	const totalSteps = options.autoRemove ? count * 2 : count;
+	const totalSteps = count * 2; // Always includes removals
 
 	// 1. Sequential Channel Additions
 	for (let i = 0; i < count; i++) {
@@ -225,44 +224,46 @@ export async function runChannelAddBenchmark(
 		});
 	}
 
-	// 2. Sequential Channel Removals (if autoRemove is enabled)
+	// 2. Sequential Channel Removals (Always executed)
 	const removeMetrics: ChannelRemoveMetric[] = [];
-	if (options.autoRemove) {
-		const idsToRemove = [...addedChannelIds].reverse();
-		for (let i = 0; i < idsToRemove.length; i++) {
-			const id = idsToRemove[i];
-			const channelInstance = ENGINE.handler.identifyElement(id);
+	const idsToRemove = [...addedChannelIds].reverse();
+	for (let i = 0; i < idsToRemove.length; i++) {
+		const id = idsToRemove[i];
+		const channelInstance = ENGINE.handler.identifyElement(id);
 
-			options.onProgress?.({
-				current: count + i + 1,
-				total: totalSteps,
-				message: `Removing channel ${i + 1}/${count}...`,
-				percent: Math.round(((count + i + 1) / totalSteps) * 100)
+		options.onProgress?.({
+			current: count + i + 1,
+			total: totalSteps,
+			message: `Removing channel ${i + 1}/${count}...`,
+			percent: Math.round(((count + i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		if (channelInstance) {
+			const metrics = ENGINE.handler.act({
+				type: "remove",
+				input: {
+					child: channelInstance
+				}
 			});
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
-
-			if (channelInstance) {
-				const metrics = ENGINE.handler.act({
-					type: "remove",
-					input: {
-						child: channelInstance
-					}
-				});
-
-				removeMetrics.push({
-					index: i + 1,
-					channelId: id,
-					duration: metrics.duration,
-					computeDuration: metrics.computeDuration,
-					totalChannelsAfterRemove: ENGINE.handler.diagram.channels.length,
-					timestamp: Date.now()
-				});
-			}
+			const channelsRemaining = ENGINE.handler.diagram.channels.length;
+			removeMetrics.push({
+				index: i + 1,
+				channelId: id,
+				elementId: id,
+				templateRef: `Remove #${i + 1}`,
+				duration: metrics.duration,
+				computeDuration: metrics.computeDuration,
+				totalChannelsAfterRemove: channelsRemaining,
+				totalElementsAfterAdd: channelsRemaining,
+				timestamp: Date.now()
+			});
 		}
 	}
 
-	// Calculate statistical aggregates for additions
+	// Statistical aggregates for additions
 	const addDurations = addMetrics.map((m) => m.duration);
 	const totalAddDurationMs = addDurations.reduce((a, b) => a + b, 0);
 	const avgAddDurationMs = addDurations.length ? totalAddDurationMs / addDurations.length : 0;
@@ -299,19 +300,18 @@ export async function runChannelAddBenchmark(
 
 /**
  * Runs a stress-test benchmark by adding "free" placed elements to the canvas one by one,
- * of a given type ("svg" | "rect" | "label"), retrieving execution metrics from .act().
+ * and subsequently removing them one by one.
  */
 export async function runFreeElementBenchmark(
 	type: FreeElementType,
 	count: number,
 	options: {
-		autoRemove?: boolean;
 		onProgress?: (progress: BenchmarkProgress) => void;
 	} = {}
 ): Promise<FreeElementBenchmarkResult> {
 	const addMetrics: FreeElementMetric[] = [];
 	const addedElementIds: string[] = [];
-	const totalSteps = options.autoRemove ? count * 2 : count;
+	const totalSteps = count * 2; // Always includes removals
 
 	// 1. Sequential Additions of Free Elements
 	for (let i = 0; i < count; i++) {
@@ -346,38 +346,39 @@ export async function runFreeElementBenchmark(
 		});
 	}
 
-	// 2. Sequential Removals (if autoRemove is enabled)
-	const removeMetrics: { index: number; elementId: string; duration: number; computeDuration: number }[] = [];
-	if (options.autoRemove) {
-		const idsToRemove = [...addedElementIds].reverse();
-		for (let i = 0; i < idsToRemove.length; i++) {
-			const id = idsToRemove[i];
-			const elementInstance = ENGINE.handler.identifyElement(id);
+	// 2. Sequential Removals (Always executed)
+	const removeMetrics: FreeElementRemoveMetric[] = [];
+	const idsToRemove = [...addedElementIds].reverse();
+	for (let i = 0; i < idsToRemove.length; i++) {
+		const id = idsToRemove[i];
+		const elementInstance = ENGINE.handler.identifyElement(id);
 
-			options.onProgress?.({
-				current: count + i + 1,
-				total: totalSteps,
-				message: `Removing free ${type} element ${i + 1}/${count}...`,
-				percent: Math.round(((count + i + 1) / totalSteps) * 100)
+		options.onProgress?.({
+			current: count + i + 1,
+			total: totalSteps,
+			message: `Removing free ${type} element ${i + 1}/${count}...`,
+			percent: Math.round(((count + i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		if (elementInstance) {
+			const metrics = ENGINE.handler.act({
+				type: "remove",
+				input: {
+					child: elementInstance
+				}
 			});
 
-			await new Promise((resolve) => setTimeout(resolve, 0));
-
-			if (elementInstance) {
-				const metrics = ENGINE.handler.act({
-					type: "remove",
-					input: {
-						child: elementInstance
-					}
-				});
-
-				removeMetrics.push({
-					index: i + 1,
-					elementId: id,
-					duration: metrics.duration,
-					computeDuration: metrics.computeDuration
-				});
-			}
+			removeMetrics.push({
+				index: i + 1,
+				elementId: id,
+				elementType: type,
+				templateRef: `Remove #${i + 1}`,
+				duration: metrics.duration,
+				computeDuration: metrics.computeDuration,
+				timestamp: Date.now()
+			});
 		}
 	}
 

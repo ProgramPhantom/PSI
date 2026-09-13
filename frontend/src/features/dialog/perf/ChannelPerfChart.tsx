@@ -7,12 +7,20 @@ export interface IChannelPerfChartProps {
 	metrics: PerfMetricItem[];
 	title?: string;
 	xAxisLabel?: string;
+	lineColor?: string;
+	fillColor?: string;
+	computeLineColor?: string;
+	downloadFilenamePrefix?: string;
 }
 
 export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 	metrics,
-	title = "Addition Execution Time",
-	xAxisLabel = "Addition Step (#)"
+	title = "Execution Time",
+	xAxisLabel = "Step (#)",
+	lineColor = "#2d72d2",
+	fillColor = "rgba(45, 114, 210, 0.12)",
+	computeLineColor = "#d9822b",
+	downloadFilenamePrefix = "benchmark"
 }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const chartInstanceRef = useRef<Chart | null>(null);
@@ -41,10 +49,10 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 					{
 						label: "Total .act() Time (ms)",
 						data: actDurations,
-						borderColor: "#2d72d2",
-						backgroundColor: "rgba(45, 114, 210, 0.12)",
+						borderColor: lineColor,
+						backgroundColor: fillColor,
 						borderWidth: 2,
-						pointBackgroundColor: "#2d72d2",
+						pointBackgroundColor: lineColor,
 						pointBorderColor: "#ffffff",
 						pointRadius: 4,
 						pointHoverRadius: 6,
@@ -54,11 +62,11 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 					{
 						label: "Layout Compute Time (ms)",
 						data: computeDurations,
-						borderColor: "#d9822b",
+						borderColor: computeLineColor,
 						backgroundColor: "rgba(217, 130, 43, 0.08)",
 						borderWidth: 2,
 						borderDash: [4, 4],
-						pointBackgroundColor: "#d9822b",
+						pointBackgroundColor: computeLineColor,
 						pointBorderColor: "#ffffff",
 						pointRadius: 3,
 						pointHoverRadius: 5,
@@ -82,12 +90,12 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 						display: true,
 						text: title,
 						font: {
-							size: 14,
+							size: 13,
 							weight: "bold"
 						},
 						padding: {
 							top: 6,
-							bottom: 12
+							bottom: 10
 						}
 					},
 					tooltip: {
@@ -95,7 +103,7 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 							title: (tooltipItems) => {
 								const idx = tooltipItems[0]?.dataIndex ?? 0;
 								const m = metrics[idx];
-								return `Addition #${idx + 1} (${m?.templateRef || "Channel"})`;
+								return `Step #${idx + 1} (${m?.templateRef || "Item"})`;
 							},
 							label: (tooltipItem) => {
 								return ` ${tooltipItem.dataset.label}: ${tooltipItem.formattedValue} ms`;
@@ -111,8 +119,8 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 					legend: {
 						position: "top",
 						labels: {
-							boxWidth: 14,
-							padding: 10,
+							boxWidth: 12,
+							padding: 8,
 							font: {
 								size: 11
 							}
@@ -125,7 +133,7 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 							display: true,
 							text: xAxisLabel,
 							font: {
-								size: 12,
+								size: 11,
 								weight: "bold"
 							}
 						},
@@ -136,9 +144,9 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 					y: {
 						title: {
 							display: true,
-							text: "Execution Time (ms)",
+							text: "Time (ms)",
 							font: {
-								size: 12,
+								size: 11,
 								weight: "bold"
 							}
 						},
@@ -159,15 +167,14 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 				chartInstanceRef.current = null;
 			}
 		};
-	}, [metrics, title]);
+	}, [metrics, title, xAxisLabel, lineColor, fillColor, computeLineColor]);
 
 	const handleDownload = () => {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 
-		// Create a high-quality export canvas with a solid white background
 		const exportCanvas = document.createElement("canvas");
-		const scale = 2; // 2x resolution for crisp download
+		const scale = 2; // 2x resolution
 		exportCanvas.width = canvas.width * scale;
 		exportCanvas.height = canvas.height * scale;
 		const ctx = exportCanvas.getContext("2d");
@@ -176,14 +183,12 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 			ctx.scale(scale, scale);
 			ctx.fillStyle = "#ffffff";
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-			// Draw header banner with metadata
 			ctx.drawImage(canvas, 0, 0);
 
 			const dataUrl = exportCanvas.toDataURL("image/png");
 			const link = document.createElement("a");
 			link.href = dataUrl;
-			link.download = `channel-addition-benchmark-${Date.now()}.png`;
+			link.download = `${downloadFilenamePrefix}-${Date.now()}.png`;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
@@ -195,19 +200,20 @@ export const ChannelPerfChart: React.FC<IChannelPerfChartProps> = ({
 	}
 
 	return (
-		<Card elevation={Elevation.ONE} style={{ marginTop: "12px", padding: "12px" }}>
-			<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-				<div style={{ fontWeight: 600, fontSize: "13px" }}>Benchmark Graph</div>
+		<Card elevation={Elevation.ONE} style={{ padding: "10px" }}>
+			<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+				<div style={{ fontWeight: 600, fontSize: "12px" }}>{title}</div>
 				<Button
 					icon="download"
 					small
+					minimal
 					intent="primary"
-					text="Download Graph (PNG)"
+					text="Download (PNG)"
 					onClick={handleDownload}
 				/>
 			</div>
 
-			<div style={{ position: "relative", width: "100%", height: "260px" }}>
+			<div style={{ position: "relative", width: "100%", height: "230px" }}>
 				<canvas ref={canvasRef} />
 			</div>
 		</Card>
