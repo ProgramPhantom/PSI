@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Button, Card, Elevation } from "@blueprintjs/core";
 import { Chart } from "chart.js/auto";
-import { ChannelAddMetric } from "../../test/perfTests";
+import { ChannelAddMetric } from "../../../test/perfTests";
 
 export interface IChannelPerfChartProps {
 	metrics: ChannelAddMetric[];

@@ -149,7 +149,7 @@ type AnyCompletedAction = { [K in keyof Actions]: ICompletedAction<K> }[keyof Ac
 
 export default class DiagramHandler implements IDraw {
 	static MAX_UNDO_DEPTH = 25;
-
+	public lastComputeDuration: number = 0;
 	public diagram: Diagram;
 
 	surface?: Svg;
@@ -243,8 +243,6 @@ export default class DiagramHandler implements IDraw {
 	erase() {
 		this.diagram?.erase();
 	}
-
-	public lastComputeDuration: number = 0;
 
 	computeDiagram() {
 		const start = performance.now();

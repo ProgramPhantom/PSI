@@ -1,4 +1,6 @@
 import ENGINE from "../logic/engine";
+import { IChannel } from "../logic/hasComponents/channel";
+import { IVisual } from "../logic/visual";
 import {
 	CHANNEL_13C,
 	CHANNEL_19F,
@@ -84,8 +86,8 @@ export const BENCHMARK_CHANNEL_TEMPLATES = [
  * Creates a unique channel state cloned from a template, with unique IDs
  * generated for the channel and its child elements.
  */
-export function createBenchmarkChannel(template: any, parentId?: string) {
-	const newChannel = JSON.parse(JSON.stringify(template));
+export function createBenchmarkChannel(template: IChannel, parentId?: string): IChannel {
+	const newChannel = JSON.parse(JSON.stringify(template)) as IChannel;
 	newChannel.id = Math.random().toString(16).slice(2);
 
 	if (parentId) {
@@ -97,7 +99,7 @@ export function createBenchmarkChannel(template: any, parentId?: string) {
 	}
 
 	if (newChannel.children) {
-		newChannel.children = newChannel.children.map((child: any) => ({
+		newChannel.children = newChannel.children.map((child: IVisual) => ({
 			...child,
 			id: Math.random().toString(16).slice(2)
 		}));
@@ -125,7 +127,7 @@ export async function runChannelAddBenchmark(
 	for (let i = 0; i < count; i++) {
 		const template = BENCHMARK_CHANNEL_TEMPLATES[i % BENCHMARK_CHANNEL_TEMPLATES.length];
 		const channel = createBenchmarkChannel(template);
-		const channelId = channel.id;
+		const channelId = channel.id!;
 		addedChannelIds.push(channelId);
 
 		options.onProgress?.({
