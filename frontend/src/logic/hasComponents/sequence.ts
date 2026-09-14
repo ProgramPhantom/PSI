@@ -43,14 +43,6 @@ export default class Sequence extends Grid implements ISequence {
 	}
 
 
-	override get allElements(): Record<ID, Visual> {
-		var elements: Record<ID, Visual> = { [this.id]: this };
-
-		this.children.forEach((c) => {
-			elements = { ...elements, ...c.allElements };
-		});
-		return elements;
-	}
 
 
 	structuredChildren: {

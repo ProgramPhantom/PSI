@@ -21,6 +21,7 @@ import { addSvgElementFromDrop } from "../../redux/thunks/actionThunks";
 import Toolbar from "../banner/Toolbar";
 import Debug from "../debug/Debug";
 import { DebugLayerDialog } from "../dialog/DebugLayerDialog";
+import { PerfDialog } from "../dialog/perf/PerfDialog";
 import CanvasDraggableElement from "../dnd/CanvasDraggableElement";
 import { CanvasDragLayer } from "../dnd/CanvasDragLayer";
 import { CanvasDropContainer } from "../dnd/CanvasDropContainer";
@@ -841,6 +842,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 				</div>
 
 			<DebugLayerDialog />
+			<PerfDialog />
 		</>
 	);
 };
