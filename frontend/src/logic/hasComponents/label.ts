@@ -29,6 +29,10 @@ export default class Label extends Aligner implements ILabel {
 	}
 	static ElementType: UserComponentType = "label";
 
+	public override get isResizable(): boolean {
+		return true;
+	}
+
 	get text(): AlignerElement<LaTeX> | undefined {
 		return this.roles["text"]?.object as AlignerElement<LaTeX> | undefined;
 	}
