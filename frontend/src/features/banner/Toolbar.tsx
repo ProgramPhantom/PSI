@@ -100,16 +100,14 @@ const Toolbar: React.FC = () => {
 					<span style={{ marginRight: "4px" }}>Title:</span>
 					<EditableText defaultValue="Untitled"
 						value={title}
-						onChange={(v) => dispatch(setTitle(v.trim()))}
+						onChange={(v) => dispatch(setTitle(v))}
 						onConfirm={(v) => {
-							if (v.trim() === "") {
-								dispatch(setTitle("Untitled"));
-							}
+							const trimmed = v.trim();
+							dispatch(setTitle(trimmed === "" ? "Untitled" : trimmed));
 						}}
 						onCancel={(v) => {
-							if (v.trim() === "") {
-								dispatch(setTitle("Untitled"));
-							}
+							const trimmed = v.trim();
+							dispatch(setTitle(trimmed === "" ? "Untitled" : trimmed));
 						}}
 						placeholder="Diagram Title"
 						selectAllOnFocus={true}

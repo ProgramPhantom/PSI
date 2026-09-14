@@ -13,7 +13,7 @@ export const selectCurrentTitle = createSelector(
     (entities, uuid) => {
         if (uuid) {
             const diagram = entities[uuid];
-            if (diagram?.title) return diagram.title;
+            if (diagram && diagram.title !== undefined) return diagram.title;
         }
         return "Untitled";
     }
