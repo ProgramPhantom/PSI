@@ -7,7 +7,8 @@ import { DragElementTypes } from "./CanvasDropContainer";
 import LabelGroupDropArea, { ILabelGroupAreaSpec } from "./LabelGroupDropArea";
 
 interface ILabelGroupDropFieldProps {
-	pulse: Visual;
+	target?: Visual;
+	pulse?: Visual;
 }
 
 const isTextOrLabel = (element: any): boolean => {
@@ -19,7 +20,9 @@ const isTextOrLabel = (element: any): boolean => {
 // Inset in pixels to reduce the hover target area size relative to the pulse size, avoiding accidental triggering.
 const HOVER_INSET = 4;
 
-export default function LabelGroupDropField({ pulse }: ILabelGroupDropFieldProps) {
+export default function LabelGroupDropField({ target, pulse }: ILabelGroupDropFieldProps) {
+	const element = (target ?? pulse)!;
+
 	const [{ canDrop, isOver }, parentDropRef] = useDrop(() => ({
 		accept: [DragElementTypes.ATOMIC_PREFAB, DragElementTypes.FREE],
 		canDrop: (item: any) => {
@@ -29,20 +32,20 @@ export default function LabelGroupDropField({ pulse }: ILabelGroupDropFieldProps
 			isOver: monitor.isOver({ shallow: false }),
 			canDrop: monitor.canDrop()
 		})
-	}), [pulse]);
+	}), [element]);
 
 	if (!canDrop) return null;
 
-	// Resolve the target element (the pulse itself, or its parent LabelGroup if it is already wrapped)
-	let targetElement: Visual = pulse;
-	const parentElement = pulse.parentId ? ENGINE.handler.identifyElement(pulse.parentId) : undefined;
+	// Resolve the target element (the element itself, or its parent LabelGroup if it is already wrapped)
+	let targetElement: Visual = element;
+	const parentElement = element.parentId ? ENGINE.handler.identifyElement(element.parentId) : undefined;
 	if (parentElement && LabelGroup.isLabelGroup(parentElement)) {
 		targetElement = parentElement;
 	}
 
 	const isRoleOccupied = (role: string): boolean => {
 		if (LabelGroup.isLabelGroup(targetElement)) {
-			const roleConfig = (targetElement.roles as any)[role];
+			const roleConfig = (targetElement.roles as any)?.[role];
 			if (roleConfig) {
 				return roleConfig.object !== undefined;
 			}
@@ -55,35 +58,40 @@ export default function LabelGroupDropField({ pulse }: ILabelGroupDropFieldProps
 		return false;
 	};
 
-	const inset = Math.min(HOVER_INSET, pulse.width * 0.15, pulse.height * 0.15);
-	const W = pulse.width - 2 * inset;
-	const H = pulse.height - 2 * inset;
+	// Determine the core visual element for positioning (coreChild if inside LabelGroup, otherwise targetElement)
+	const coreVisual: Visual = (LabelGroup.isLabelGroup(targetElement) && targetElement.coreChild)
+		? targetElement.coreChild
+		: targetElement;
+
+	const inset = Math.min(HOVER_INSET, coreVisual.width * 0.15, coreVisual.height * 0.15);
+	const W = coreVisual.width - 2 * inset;
+	const H = coreVisual.height - 2 * inset;
 	const T = Math.min(8, H * 0.25, W * 0.25); // Thickness of side zones
 	const CS = Math.min(16, Math.min(W, H) * 0.4); // Center size
 
 	const areas: ILabelGroupAreaSpec[] = [
 		{
-			pulseId: pulse.id,
+			pulseId: targetElement.id,
 			role: "labelTop",
 			style: { top: 0, left: 0, width: W, height: T }
 		},
 		{
-			pulseId: pulse.id,
+			pulseId: targetElement.id,
 			role: "labelBottom",
 			style: { top: H - T, left: 0, width: W, height: T }
 		},
 		{
-			pulseId: pulse.id,
+			pulseId: targetElement.id,
 			role: "labelLeft",
 			style: { top: T, left: 0, width: T, height: H - 2 * T }
 		},
 		{
-			pulseId: pulse.id,
+			pulseId: targetElement.id,
 			role: "labelRight",
 			style: { top: T, left: W - T, width: T, height: H - 2 * T }
 		},
 		{
-			pulseId: pulse.id,
+			pulseId: targetElement.id,
 			role: "labelCentre",
 			style: { top: (H - CS) / 2, left: (W - CS) / 2, width: CS, height: CS }
 		}
@@ -94,8 +102,8 @@ export default function LabelGroupDropField({ pulse }: ILabelGroupDropFieldProps
 
 	const fieldStyle: React.CSSProperties = {
 		position: "absolute",
-		left: pulse.drawX + inset,
-		top: pulse.drawY + inset,
+		left: coreVisual.drawX + inset,
+		top: coreVisual.drawY + inset,
 		width: W,
 		height: H,
 		pointerEvents: "auto",
