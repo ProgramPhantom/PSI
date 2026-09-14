@@ -563,7 +563,7 @@ export default class DiagramHandler implements IDraw {
 		}
 		const end = performance.now();
 		const duration = end - start;
-		// console.log(`act (${action.type}) took ${duration.toFixed(2)} ms`);
+		console.log(`act (${action.type}) took ${duration.toFixed(2)} ms`);
 
 		return {
 			ok: actionResult.ok,
