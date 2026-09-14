@@ -646,7 +646,15 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 							maxScale={5}
 							minScale={0.5}
+							smooth={true}
+							wheel={{
+								step: 0.1,
+								smoothStep: 0.008,
+								wheelDisabled: true,
+								touchPadDisabled: false,
+							}}
 							panning={{
+								wheelPanning: true,
 								allowLeftClickPan: isSpacePressed,
 								allowMiddleClickPan: true,
 								allowRightClickPan: false,
