@@ -287,6 +287,19 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                 preventDefault: true
             },
             {
+                combo: "ctrl+x",
+                global: true,
+                label: "Cut selected element",
+                onKeyDown: (e) => {
+                    const target = e.target as HTMLElement | null;
+                    if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+                        return;
+                    }
+                    dispatch(Actions.handleCutElement());
+                },
+                preventDefault: true
+            },
+            {
                 combo: "ctrl+c",
                 global: true,
                 label: "Copy selected element",

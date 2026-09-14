@@ -241,6 +241,14 @@ export const handleCopyElement = createAsyncThunk(
     }
 );
 
+export const handleCutElement = createAsyncThunk(
+    'actions/handleCutElement',
+    async (_, { dispatch }) => {
+        await dispatch(handleCopyElement());
+        await dispatch(deleteSelectedElements());
+    }
+);
+
 export const deleteSelectedElements = createAsyncThunk<void, string[] | void>(
     'actions/deleteSelectedElements',
     async (targetIds, { dispatch, getState }) => {

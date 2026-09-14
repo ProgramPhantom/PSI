@@ -33,6 +33,7 @@ const SHORTCUT_GROUPS: IShortcutCategory[] = [
 		shortcuts: [
 			{ label: "Undo", combo: "Ctrl + Z" },
 			{ label: "Redo", combo: "Ctrl + Y" },
+			{ label: "Cut Element", combo: "Ctrl + X" },
 			{ label: "Copy Element", combo: "Ctrl + C" },
 			{ label: "Paste Element", combo: "Ctrl + V" },
 			{ label: "Copy State JSON", combo: "Ctrl + Shift + C" },
@@ -54,7 +55,7 @@ const SHORTCUT_GROUPS: IShortcutCategory[] = [
 		category: "Tools & Help",
 		icon: "help",
 		shortcuts: [
-			{ label: "Keyboard Shortcuts", combo: "? / Shift + /" },
+			{ label: "Keyboard Shortcuts", combo: "Ctrl + /" },
 			{ label: "Debug Layer Dialog", combo: "Ctrl + D" },
 			{ label: "Benchmark Dialog", combo: "Ctrl + Alt + J" },
 			{ label: "Report Bug (GitHub)", combo: "Ctrl + B" },
