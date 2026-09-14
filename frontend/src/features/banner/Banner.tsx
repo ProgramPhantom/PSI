@@ -3,7 +3,7 @@ import React, { useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import { useGetMeQuery } from "../../redux/api/api";
 import { useAppDispatch } from "../../redux/hooks";
-import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setCiteDialogOpen, setSVGDialogOpen } from "../../redux/slices/dialogSlice";
+import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setCiteDialogOpen, setSVGDialogOpen, setKeyboardShortcutsDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import logoUrl from "../../assets/app/Logo1.svg";
 
@@ -106,8 +106,18 @@ export default function Banner() {
 			</Navbar.Group>
 
 			<Navbar.Group align={"right"}>
-				<Tooltip content="Cite this project" position={Position.BOTTOM}>
+				<Tooltip content="Keyboard Shortcuts" position={Position.BOTTOM}>
 					<Button
+						variant="minimal"
+						icon="key"
+						text="Shortcuts"
+						onClick={() => dispatch(setKeyboardShortcutsDialogOpen(true))}
+						style={{ marginRight: "10px" }}
+					/>
+				</Tooltip>
+				<Tooltip content="Paper in progress!" position={Position.BOTTOM}>
+					<Button
+						disabled
 						variant="minimal"
 						icon="citation"
 						text="Cite Me"

@@ -1,0 +1,143 @@
+.dialog {
+	width: 780px;
+	max-width: 95vw;
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.dialogBody {
+	padding: 16px 20px !important;
+	max-height: 75vh;
+	overflow-y: auto;
+}
+
+.shortcutsGrid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+
+@media (max-width: 640px) {
+	.shortcutsGrid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.groupCard {
+	border: 1px solid #e1e8ed;
+	border-radius: 8px;
+	background: #ffffff;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+:global(.bp5-dark) .groupCard {
+	border-color: #383e47;
+	background: #2b323b;
+}
+
+.groupHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	background: #f7f9fa;
+	border-bottom: 1px solid #e1e8ed;
+	font-weight: 600;
+	font-size: 12px;
+	color: #106ba3;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+:global(.bp5-dark) .groupHeader {
+	background: #20262d;
+	border-bottom: 1px solid #383e47;
+	color: #48aff0;
+}
+
+.shortcutsList {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+}
+
+.shortcutRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 12px;
+	border-bottom: 1px solid #edf2f5;
+	gap: 12px;
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	&:hover {
+		background-color: #f7f9fa;
+	}
+}
+
+:global(.bp5-dark) .shortcutRow {
+	border-bottom: 1px solid #343c46;
+
+	&:hover {
+		background-color: #343c46;
+	}
+}
+
+.shortcutLabel {
+	font-size: 13px;
+	font-weight: 500;
+	color: #202b33;
+}
+
+:global(.bp5-dark) .shortcutLabel {
+	color: #f5f8fa;
+}
+
+.shortcutKeys {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.keyBadge {
+	display: inline-block;
+	padding: 3px 6px;
+	min-width: 20px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+	text-align: center;
+	color: #202b33;
+	background-color: #ebf1f5;
+	border: 1px solid #c5d2dc;
+	border-bottom-width: 2px;
+	border-radius: 4px;
+	box-shadow: 0 1px 1px rgba(16, 22, 26, 0.1);
+}
+
+:global(.bp5-dark) .keyBadge {
+	color: #f5f8fa;
+	background-color: #383e47;
+	border-color: #495361;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.keyPlus {
+	font-size: 11px;
+	color: #738694;
+	font-weight: 600;
+}
+
+.keySeparator {
+	font-size: 11px;
+	color: #8a9ba8;
+	margin: 0 2px;
+}

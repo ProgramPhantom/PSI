@@ -10,7 +10,8 @@ import {
     setDiagramsDialogOpen,
     setAssetStoreDialogOpen,
     setAboutDialogOpen,
-    setCiteDialogOpen
+    setCiteDialogOpen,
+    setKeyboardShortcutsDialogOpen
 } from "../../redux/slices/dialogSlice";
 import { PNGExportDialog } from "./PNGExportDialog";
 import { SVGExportDialog } from "./SVGExportDialog";
@@ -26,6 +27,7 @@ import { UnsavedDiagramLogoutAlert } from "./UnsavedDiagramLogoutAlert";
 import { ResetAppAlert } from "./ResetAppAlert";
 import { AboutDialog } from "./AboutDialog";
 import { CiteDialog } from "./CiteDialog";
+import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -39,7 +41,8 @@ export const GlobalDialogs: React.FC = () => {
         isDiagramsDialogOpen,
         isAssetStoreDialogOpen,
         isAboutDialogOpen,
-        isCiteDialogOpen
+        isCiteDialogOpen,
+        isKeyboardShortcutsDialogOpen
     } = useAppSelector((state) => state.dialog);
 
     return (
@@ -94,6 +97,11 @@ export const GlobalDialogs: React.FC = () => {
             <CiteDialog
                 isOpen={isCiteDialogOpen}
                 onClose={() => dispatch(setCiteDialogOpen(false))}
+            />
+
+            <KeyboardShortcutsDialog
+                isOpen={isKeyboardShortcutsDialogOpen}
+                onClose={() => dispatch(setKeyboardShortcutsDialogOpen(false))}
             />
 
             <UnsavedDiagramAlert />
