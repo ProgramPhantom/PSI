@@ -26,7 +26,7 @@ export const OFFSET_INDICATOR_THRESHOLD = 3;
 const FLOATING_ACTION_CONTAINER_STYLE: React.CSSProperties = {
 	position: "absolute",
 	transform: "translate(6px, -12px)",
-	zIndex: 31000,
+	zIndex: 65000,
 	pointerEvents: "auto"
 };
 

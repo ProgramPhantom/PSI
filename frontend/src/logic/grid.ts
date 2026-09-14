@@ -699,7 +699,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						cellRect.internalImmediateBind(element, "x", alignment.x, true)
 						cellRect.internalImmediateBind(element, "y", alignment.y, true)
 
-						if (element.x === prevX && element.y === prevY) {
+						if (!element.dirtyLayout && element.x === prevX && element.y === prevY) {
 							continue;
 						}
 
