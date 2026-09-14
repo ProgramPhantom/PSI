@@ -193,8 +193,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	const diagramSvgRef = useRef<HTMLDivElement | null>(null);
 	const transformComponentRef = useRef<ReactZoomPanPinchContentRef | null>(null);
-	const canvasViewportRef = useRef<HTMLDivElement | null>(null);
-	const lastTrackpadTimeRef = useRef<number>(0);
 	const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
 	const store = useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
@@ -479,108 +477,6 @@ const Canvas: React.FC<ICanvasProps> = () => {
 		dispatch(setSaveState("unsaved"))
 	}, [store]);
 
-	// Intercept wheel events to distinguish trackpad two-finger panning/pinching from mouse wheel zoom
-	useEffect(() => {
-		const container = canvasViewportRef.current;
-		if (!container) return;
-
-		const isMouseWheel = (e: WheelEvent): boolean => {
-			// Line or page scrolling is always a physical mouse wheel
-			if (e.deltaMode !== 0) return true;
-
-			const absX = Math.abs(e.deltaX);
-			const absY = Math.abs(e.deltaY);
-
-			// Trackpad indicators:
-			// - Horizontal movement (deltaX !== 0)
-			// - Fractional/subpixel values (delta % 1 !== 0)
-			// - Small granular pixel deltas (< 40) typical of trackpad movement
-			const isTrackpadEvent = absX > 0 || absY % 1 !== 0 || absX % 1 !== 0 || (absY > 0 && absY < 40);
-
-			if (isTrackpadEvent) {
-				lastTrackpadTimeRef.current = performance.now();
-				return false;
-			}
-
-			// If we recently saw a trackpad event within 250ms, this event is part of trackpad gesture inertia
-			if (performance.now() - lastTrackpadTimeRef.current < 250) {
-				return false;
-			}
-
-			// Physical mouse wheels notch in discrete integer bursts of >= 40 (typically 100 or 120)
-			return absY >= 40 && Number.isInteger(absY);
-		};
-
-		const handleWheel = (e: WheelEvent) => {
-			const target = e.target as HTMLElement | null;
-			// Don't intercept scroll inside dialogs, dropdowns, inputs, or frosted toolbars
-			if (
-				target &&
-				(target.closest(".bp5-dialog") ||
-					target.closest(".bp5-menu") ||
-					target.closest(".bp5-portal") ||
-					target.closest("input") ||
-					target.closest("textarea") ||
-					target.closest(`.${styles["frosted-toolbar"]}`))
-			) {
-				return;
-			}
-
-			e.preventDefault();
-			e.stopPropagation();
-
-			const ctx = transformComponentRef.current;
-			if (!ctx) return;
-
-			const { positionX, positionY, scale } = ctx.instance.transformState;
-
-			// Check if this should be a zoom action:
-			// 1. Pinch gesture on trackpad (browser sets e.ctrlKey === true)
-			// 2. Ctrl + physical mouse wheel (e.ctrlKey === true)
-			// 3. Normal physical mouse wheel scroll (isMouseWheel(e) === true)
-			const isPinch = e.ctrlKey;
-			const isMouse = isMouseWheel(e);
-
-			if (isPinch || isMouse) {
-				// ZOOM ACTION
-				let newScale: number;
-				if (isPinch) {
-					// Trackpad pinch: smooth continuous exponential zoom
-					const pinchFactor = Math.exp(-e.deltaY * 0.008);
-					newScale = scale * pinchFactor;
-				} else {
-					// Physical mouse wheel notch: clean stepped zoom (~12% per notch)
-					const step = e.deltaY < 0 ? 1.12 : 1 / 1.12;
-					newScale = scale * step;
-				}
-
-				newScale = Math.min(Math.max(newScale, 0.5), 5);
-				if (newScale === scale) return;
-
-				// Anchor zoom to mouse cursor position
-				const rect = container.getBoundingClientRect();
-				const mouseX = e.clientX - rect.left;
-				const mouseY = e.clientY - rect.top;
-
-				const newX = mouseX - (mouseX - positionX) * (newScale / scale);
-				const newY = mouseY - (mouseY - positionY) * (newScale / scale);
-
-				ctx.setTransform(newX, newY, newScale, 0);
-				setZoom(newScale);
-			} else {
-				// TRACKPAD TWO-FINGER PAN ACTION
-				const newX = positionX - e.deltaX;
-				const newY = positionY - e.deltaY;
-				ctx.setTransform(newX, newY, scale, 0);
-			}
-		};
-
-		container.addEventListener("wheel", handleWheel, { passive: false });
-		return () => {
-			container.removeEventListener("wheel", handleWheel);
-		};
-	}, []);
-
 	return (
 		<>
 			<div
@@ -645,7 +541,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 					}
 				}}>
 				<Toolbar />
-				<div ref={canvasViewportRef} style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
+				<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
 					<div
 						style={{
 							position: "absolute",
@@ -750,7 +646,11 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 							maxScale={5}
 							minScale={0.5}
-							wheel={{ disabled: true }}
+							smooth={true}
+							wheel={{
+								step: 0.2,
+								smoothStep: 0.006,
+							}}
 							panning={{
 								allowLeftClickPan: isSpacePressed,
 								allowMiddleClickPan: true,
@@ -772,21 +672,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								wrapperStyle={{
 									width: "100%", height: "100%", position: "absolute",
 								}}>
-								{/* Large background grid that moves with transform */}
-								<div
-									style={{
-										position: "absolute",
-										width: "10000px",
-										height: "10000px",
-										left: "-5000px",
-										top: "-5000px",
-										backgroundImage:
-											"radial-gradient(circle,rgba(204, 204, 204, 0.12) 0.6px, transparent 1px)",
-										backgroundSize: "5px 5px",
-										backgroundPosition: "0 0",
-										pointerEvents: "none",
-										zIndex: -1
-									}}></div>
+
 
 
 								<div
