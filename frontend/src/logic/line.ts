@@ -97,8 +97,9 @@ export default class Line extends LineLike implements ILine {
 		var maxRight = Math.max(startMarker.right, endMarker.right) * this.thickness + LineLike.HitboxPadding / 2;
 
 		var len = this.length;
-		var dx = len > 0 ? (this.endX - this.startX) / len : 1;
-		var dy = len > 0 ? (this.endY - this.startY) / len : 0;
+		var isVert = this.isVertical;
+		var dx = len > 1e-6 ? (this.endX - this.startX) / len : (isVert ? 0 : 1);
+		var dy = len > 1e-6 ? (this.endY - this.startY) / len : (isVert ? 1 : 0);
 
 		var x1 = this.startX + maxLeft * dy;
 		var y1 = this.startY - maxLeft * dx;

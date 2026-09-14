@@ -108,6 +108,13 @@ export default abstract class LineLike extends Visual {
 		return rect
 	}
 
+	public get isVertical(): boolean {
+		if (this.length > 1e-6) {
+			return Math.abs(this.endX - this.startX) < Math.abs(this.endY - this.startY);
+		}
+		return (this.sizeMode?.y === "grow" && this.sizeMode?.x !== "grow")
+	}
+
 	public get length(): number {
 		return Math.sqrt(Math.pow(this.endX - this.startX, 2) + Math.pow(this.endY - this.startY, 2));
 	}
@@ -115,6 +122,10 @@ export default abstract class LineLike extends Visual {
 	public get angle(): number {
 		var dx = this.endX - this.startX;
 		var dy = this.endY - this.startY;
+
+		if (Math.abs(dx) < 1e-6 && Math.abs(dy) < 1e-6) {
+			return this.isVertical ? Math.PI / 2 : 0;
+		}
 
 		var angle = Math.atan2(dy, dx);
 		return angle;
@@ -222,7 +233,7 @@ export default abstract class LineLike extends Visual {
 		return val;
 	}
 	public override set contentWidth(v: number) {
-		if (this.sizeMode?.x === "fixed" && this.sizeMode?.y === "grow") {
+		if (this.isVertical) {
 			// Vertical line growing along Y axis - keep X endpoints aligned
 			this.endX = this.startX;
 			return;
@@ -243,7 +254,7 @@ export default abstract class LineLike extends Visual {
 		return val;
 	}
 	public override set contentHeight(v: number) {
-		if (this.sizeMode?.y === "fixed" && this.sizeMode?.x === "grow") {
+		if (!this.isVertical && (this.sizeMode?.y === "fixed" || this.sizeMode?.x === "grow")) {
 			// Horizontal line growing along X axis - keep Y endpoints aligned
 			this.endY = this.startY;
 			return;

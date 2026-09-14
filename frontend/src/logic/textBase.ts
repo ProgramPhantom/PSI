@@ -47,17 +47,17 @@ export abstract class TextBase extends Visual implements ITextBase {
 	abstract constructSVG(): void;
 
 	draw(surface: Element) {
-		if (this.dirty) {
-			if (this.svg) {
-				this.svg.remove();
-			}
 
-			this.svg?.move(this.drawCX, this.drawCY);
-
-			if (this.svg) {
-				surface.add(this.svg);
-			}
+		if (this.svg) {
+			this.svg.remove();
 		}
+
+		this.svg?.move(this.drawCX, this.drawCY);
+
+		if (this.svg) {
+			surface.add(this.svg);
+		}
+
 
 		super.draw(surface);
 	}

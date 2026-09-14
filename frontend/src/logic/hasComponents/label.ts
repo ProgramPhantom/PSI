@@ -66,6 +66,7 @@ export default class Label extends Aligner implements ILabel {
 			} else {
 				this.line.endY = this.line.startY;
 			}
+			this.line.markDirtyLayout();
 		}
 	}
 
