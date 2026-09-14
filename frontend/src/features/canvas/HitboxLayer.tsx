@@ -21,13 +21,24 @@ interface IFocusRules {
 	notSelectableIfChildOf: Partial<Record<AllComponentTypes, AllComponentTypes[]>>;
 }
 
+export const isElementAlwaysSelectable = (element: Spacial | undefined): boolean => {
+	if (!element || !(element instanceof Visual)) return false;
+	const type: AllComponentTypes = element.type ?? (element.constructor as typeof Visual).ElementType;
+	return FocusRules.alwaysSelectable.some((rule) => {
+		if (typeof rule === "function") {
+			return rule(element);
+		}
+		return rule === type;
+	});
+};
+
 export const FocusRules: IFocusRules = {
 	neverSelectable: ["diagram", "sequence-aligner", "sequence"],
 	alwaysSelectable: [
-		"channel",
-		"collection",
+
+
 		"svg",
-		(element: Visual) => element.type === "line" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
+		(element: Visual) => element.type === "line" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds" || element.placementMode?.type === "sequenceBind"),
 		(element: Visual) => element.type === "rect" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
 
 		"label-group",
@@ -46,6 +57,8 @@ export const FocusRules: IFocusRules = {
 		"collection": ["collection"]
 	}
 };
+
+
 
 export function HitboxLayer(props: IHitboxLayerProps) {
 	let diagramSVG: Element | undefined = ENGINE.handler.diagram.svg;
@@ -121,12 +134,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 			const type: AllComponentTypes = bottomUpCurr.type ?? (bottomUpCurr.constructor as typeof Visual).ElementType;
 			const exceptions: AllComponentTypes[] = FocusRules.notSelectableIfChildOf[type] || [];
 
-			const isAlwaysSelectable = FocusRules.alwaysSelectable.some((rule) => {
-				if (typeof rule === "function") {
-					return rule(bottomUpCurr!);
-				}
-				return rule === type;
-			});
+			const isAlwaysSelectable = isElementAlwaysSelectable(bottomUpCurr);
 
 			if (isAlwaysSelectable) {
 				let excluded = false;
@@ -212,33 +220,56 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
 			const elements = document.elementsFromPoint(lastCoords.x, lastCoords.y);
 
-			let rawTargetId: string | undefined = undefined;
+			const candidateHitboxIds: string[] = [];
 			for (let i = 0; i < elements.length; i++) {
 				const el = elements[i];
 				// Ignore the layer container itself
 				if (el === hitboxSvgRef.current) continue;
 				// Check if the element is a child of our hitbox SVG and has an ID
 				if (el.id && hitboxSvgRef.current.contains(el)) {
-					rawTargetId = el.id;
+					candidateHitboxIds.push(el.id);
+				}
+			}
+
+			if (candidateHitboxIds.length === 0) {
+				if (lastRawTargetIdRef.current !== undefined) {
+					lastRawTargetIdRef.current = undefined;
+					setHoveredElementRef.current(undefined);
+				}
+				return;
+			}
+
+			// Prioritize alwaysSelectable elements (like lines or pulses) over background containers (like channels)
+			let selectedRawTargetId: string = candidateHitboxIds[0];
+			let selectedRawElement: Spacial | undefined = undefined;
+			let selectedElement: Spacial | undefined = undefined;
+
+			for (const rawId of candidateHitboxIds) {
+				const parsedId = rawId.replace(/-hitbox$/, "");
+				const rawEl = ENGINE.handler.identifyElementOrStructure(parsedId);
+				const el = getMouseElementFromIDRef.current(parsedId);
+
+				if (selectedElement === undefined && selectedRawElement === undefined) {
+					selectedRawTargetId = rawId;
+					selectedRawElement = rawEl;
+					selectedElement = el;
+				}
+
+				if (isElementAlwaysSelectable(el) || isElementAlwaysSelectable(rawEl)) {
+					selectedRawTargetId = rawId;
+					selectedRawElement = rawEl;
+					selectedElement = el;
 					break;
 				}
 			}
 
 			// Avoid re-calculating if the hovered target hasn't changed
-			if (rawTargetId === lastRawTargetIdRef.current) {
+			if (selectedRawTargetId === lastRawTargetIdRef.current) {
 				return;
 			}
-			lastRawTargetIdRef.current = rawTargetId;
+			lastRawTargetIdRef.current = selectedRawTargetId;
 
-			if (rawTargetId === undefined) {
-				setHoveredElementRef.current(undefined);
-				return;
-			}
-
-			let parsedId: string = rawTargetId.replace(/-hitbox$/, "");
-			let rawElement: Spacial | undefined = ENGINE.handler.identifyElementOrStructure(parsedId);
-			let element: Spacial | undefined = getMouseElementFromIDRef.current(parsedId);
-			setHoveredElementRef.current(element, rawElement);
+			setHoveredElementRef.current(selectedElement, selectedRawElement);
 		};
 
 		const handleGlobalPointerMove = (e: MouseEvent | PointerEvent) => {
