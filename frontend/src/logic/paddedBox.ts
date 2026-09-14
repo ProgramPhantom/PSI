@@ -70,7 +70,14 @@ export default class PaddedBox extends Spacial implements IPaddedBox {
 		};
 	}
 
-	padding: [number, number, number, number] = [0, 0, 0, 0];
+	protected _padding: [number, number, number, number] = [0, 0, 0, 0];
+	get padding(): [number, number, number, number] {
+		return this._padding;
+	}
+	set padding(value: [number, number, number, number]) {
+		this._padding = value;
+		this.markDirtyLayout();
+	}
 
 	constructor(
 		params: IPaddedBox = {

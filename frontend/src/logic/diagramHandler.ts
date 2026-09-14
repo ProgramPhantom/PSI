@@ -1,5 +1,4 @@
 import { Rect, Svg } from "@svgdotjs/svg.js";
-import { sha256 } from 'js-sha256';
 import { appToaster } from "../app/Toaster.tsx";
 import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } from "./collection.ts";
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
@@ -123,9 +122,18 @@ type ActionRegistry = {
 	[K in ActionNames]: DispatchAction<K>
 }
 
-interface IDispatchAction<T extends ActionNames> {
+export interface IDispatchAction<T extends ActionNames = ActionNames> {
 	type: T,
 	input: InputData<T>;
+}
+
+export interface ActExecutionMetrics<T extends ActionNames = ActionNames> {
+	ok: boolean;
+	type: T;
+	duration: number;
+	computeDuration: number;
+	actionResult: ActionResult<T>;
+	error?: string;
 }
 
 interface ICompletedAction<T extends ActionNames> extends IDispatchAction<T> {
@@ -140,7 +148,7 @@ type AnyCompletedAction = { [K in keyof Actions]: ICompletedAction<K> }[keyof Ac
 
 export default class DiagramHandler implements IDraw {
 	static MAX_UNDO_DEPTH = 25;
-
+	public lastComputeDuration: number = 0;
 	public diagram: Diagram;
 
 	surface?: Svg;
@@ -148,9 +156,18 @@ export default class DiagramHandler implements IDraw {
 
 	public visualRTree: RBush<RBushItem> = new RBush<RBushItem>();
 
+	private _revision: number = 0;
+
+	public bumpRevision(): void {
+		this._revision++;
+	}
+
+	get revision(): number {
+		return this._revision;
+	}
+
 	get id(): string {
-		let id: string = sha256(JSON.stringify(this.diagram.state))
-		return id;
+		return `rev-${this._revision}`;
 	}
 	syncExternal: () => void;
 
@@ -228,6 +245,9 @@ export default class DiagramHandler implements IDraw {
 			})
 		}
 
+		this.diagram.cleanDirtyFlags();
+
+		this._revision++;
 		this.syncExternal();
 	}
 
@@ -235,7 +255,10 @@ export default class DiagramHandler implements IDraw {
 		this.diagram?.erase();
 	}
 
-	computeDiagram() {
+	computeDiagram(force: boolean = false) {
+		if (!force && !this.diagram.dirtyLayout) {
+			return;
+		}
 		const start = performance.now();
 		this.diagram.computeSize();
 		this.diagram.growElement(this.diagram.size);
@@ -243,7 +266,9 @@ export default class DiagramHandler implements IDraw {
 		this.diagram.enforceBindings();
 		this.computeBoundaryTree();
 		const end = performance.now();
-		console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
+		this.lastComputeDuration = end - start;
+
+		// console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
 	}
 
 	/**
@@ -481,6 +506,7 @@ export default class DiagramHandler implements IDraw {
 		}
 
 		this.diagram = newDiagram;
+		this.diagram.register(this.diagram)
 		this.diagram.computeSize();
 		this.createElementBindings(this.diagram);
 		this.diagram.svg?.show();
@@ -498,7 +524,9 @@ export default class DiagramHandler implements IDraw {
 	@draws
 	public emptyDiagram(): Diagram {
 		const newDiagram = this.EngineConstructor(structuredClone(BLANK_DIAGRAM), "diagram") as Diagram | undefined;
-		return newDiagram ?? new Diagram(BLANK_DIAGRAM);
+		const diagram = newDiagram ?? new Diagram(BLANK_DIAGRAM);
+		diagram.register(diagram);
+		return diagram;
 	}
 
 	@draws
@@ -508,7 +536,7 @@ export default class DiagramHandler implements IDraw {
 	}
 
 
-	public act<T extends ActionNames>(action: IDispatchAction<T>) {
+	public act<T extends ActionNames>(action: IDispatchAction<T>): ActExecutionMetrics<T> {
 		const start = performance.now();
 		let actionResult: ActionResult<T> = this.dispatchAction(
 			action.type,
@@ -534,7 +562,17 @@ export default class DiagramHandler implements IDraw {
 			this.redoStack = [];
 		}
 		const end = performance.now();
-		console.log(`act (${action.type}) took ${(end - start).toFixed(2)} ms`);
+		const duration = end - start;
+		console.log(`act (${action.type}) took ${duration.toFixed(2)} ms`);
+
+		return {
+			ok: actionResult.ok,
+			type: action.type,
+			duration,
+			computeDuration: this.lastComputeDuration,
+			actionResult,
+			error: actionResult.ok ? undefined : actionResult.error
+		};
 	}
 
 	public undo() {
@@ -592,6 +630,7 @@ export default class DiagramHandler implements IDraw {
 						result = { ok: false, error: `Parent ${parent.ref}` }
 					} else {
 						parent.add({ ...edit.data });
+						this.diagram.register(edit.data.child);
 						result = { ok: true, value: parent }
 					}
 					break;
@@ -599,6 +638,7 @@ export default class DiagramHandler implements IDraw {
 					if (!CanRemove(parent)) {
 						result = { ok: false, error: `Parent ${parent.ref}` }
 					} else {
+						this.diagram.unregister(edit.data.child);
 						parent.remove({ ...edit.data });
 						result = { ok: true, value: parent }
 					}
@@ -703,6 +743,7 @@ export default class DiagramHandler implements IDraw {
 			this.unregisterIncomingBindings(target);
 			target.erase();
 			this.diagram = childInstance;
+			this.diagram.register(this.diagram);
 			this.createElementBindings(childInstance);
 			this.diagram.svg?.show();
 			return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } };

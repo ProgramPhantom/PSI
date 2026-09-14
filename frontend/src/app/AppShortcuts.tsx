@@ -5,13 +5,14 @@ import ENGINE from "../logic/engine";
 import Visual, { IVisual } from "../logic/visual";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { clearSelection, setSelectedElementId, toggleColumnMode } from "../redux/slices/applicationSlice";
-import { setDebugLayerDialogOpen, setLoadDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setSVGDialogOpen } from "../redux/slices/dialogSlice";
+import { setDebugLayerDialogOpen, setLoadDialogOpen, setPNGDialogOpen, setPerfDialogOpen, setSaveAsDialogOpen, setSVGDialogOpen } from "../redux/slices/dialogSlice";
 import * as Actions from "../redux/thunks/actionThunks";
 import { useSelectedElement, useSelectedElements } from "../hooks/useSelectedElements";
 
 export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const dispatch = useAppDispatch();
     const isDebugLayerDialogOpen = useAppSelector((state) => state.dialog.isDebugLayerDialogOpen);
+    const isPerfDialogOpen = useAppSelector((state) => state.dialog.isPerfDialogOpen);
 
     const selectedElements = useSelectedElements();
     const selectedElement = useSelectedElement();
@@ -130,6 +131,15 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                 label: "Open debug dialog",
                 onKeyDown: () => {
                     dispatch(setDebugLayerDialogOpen(!isDebugLayerDialogOpen));
+                },
+                preventDefault: true
+            },
+            {
+                combo: "ctrl+alt+j",
+                global: true,
+                label: "Open performance benchmark dialog",
+                onKeyDown: () => {
+                    dispatch(setPerfDialogOpen(!isPerfDialogOpen));
                 },
                 preventDefault: true
             },
@@ -365,7 +375,7 @@ export const AppShortcuts: React.FC<{ children: React.ReactNode }> = ({ children
                 preventDefault: true
             },
         ],
-        [dispatch, handleNudge, handleDelete, handleResetOffset, isDebugLayerDialogOpen, selectedElement]
+        [dispatch, handleNudge, handleDelete, handleResetOffset, isDebugLayerDialogOpen, isPerfDialogOpen, selectedElement]
     );
 
     useHotkeys(hotkeys);

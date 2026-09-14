@@ -1,5 +1,5 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
-import Point, { AllComponentTypes, ID } from "./point";
+import Point, { AllComponentTypes, ID, dirtiesLayout } from "./point";
 import Spacial, { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 import { showSVGRecursively } from "./util2";
@@ -100,13 +100,22 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		};
 	}
 	override get allElements(): Record<ID, Visual> {
-		var elements: Record<ID, Visual> = { [this.id]: this };
-
-		this.children.forEach((c) => {
-			let childElements = c.allElements;
-			elements = { ...elements, ...childElements };
-		});
+		const elements: Record<ID, Visual> = {};
+		this.collectElements(elements);
 		return elements;
+	}
+
+	public collectElements(elements: Record<ID, Visual>): void {
+
+		elements[this.id] = this;
+
+		for (const c of this.children) {
+			if (Collection.isCollection(c)) {
+				c.collectElements(elements);
+			} else if (c.id) {
+				elements[c.id] = c;
+			}
+		}
 	}
 
 
@@ -179,7 +188,9 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		var right = -Infinity;
 
 		this.children.forEach((c) => {
-			c.computeSize();
+			if (c.dirtyLayout) {
+				c.computeSize();
+			}
 
 			top = c.y < top ? c.y : top;
 			var far = c.getFar("y");
@@ -215,7 +226,14 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	public computePositions(root: { x: number; y: number; }): void {
 		super.computePositions(root);
 
+		this.computeChildrenPositions();
+	}
+
+	protected computeChildrenPositions(): void {
 		this.children.forEach((c) => {
+			if (!c.dirtyLayout && (c.placementMode?.type === "free" || (c.x === this.cx && c.y === this.cy))) {
+				return;
+			}
 			c.computePositions({ x: this.cx, y: this.cy });
 		});
 
@@ -240,10 +258,12 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	public override growElement(containerSize: Size): Record<Dimensions, number> {
 		let sizeDiff = super.growElement(containerSize)
 
-		// TODO:
+
 		this.children.forEach((child) => {
 			if (child.placementMode.type === "free") {
-				child.growElement(this.size);
+				if (child.dirtyLayout || child.sizeMode?.x === "grow" || child.sizeMode?.y === "grow") {
+					child.growElement(this.size);
+				}
 			}
 		})
 
@@ -263,27 +283,32 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	// ----------------- Visual methods -----------------
 	//#region 
 	draw(surface: Element) {
-		if (this.svg) {
-			this.svg.remove();
+		const offset = this.placementMode?.type === "free" ? [0, 0] : this.offset;
+
+		if (!this.svg || (this.svg.node.parentElement as any) !== surface.node) {
+			if (this.svg) {
+				try {
+					this.svg.remove();
+				} catch { }
+			}
+			var group = new G().id(this.id).attr({ title: this.ref });
+			this.svg = group;
+			surface.add(this.svg);
 		}
 
-		const offset = this.placementMode?.type === "free" ? [0, 0] : this.offset;
-		var group = new G().id(this.id).attr({ title: this.ref });
-		group.attr({
+		this.svg.attr({
 			transform: `translate(${offset[0]}, ${offset[1]})`
 		});
 
-		this.svg = group;
-
-		surface.add(this.svg);
-
 		this.children.forEach((uc) => {
 			if (doesDraw(uc)) {
-				uc.draw(this.svg!);
+				if (!(uc instanceof Visual) || uc.dirtyRender || !uc.svg || !uc.svg.node.parentElement) {
+					uc.draw(this.svg!);
+				}
 			}
 		});
 
-		super.draw(surface)
+		super.draw(surface);
 	}
 
 	public getHitbox(): Rect {
@@ -322,22 +347,13 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		return internalSVG;
 	}
 
-	get dirty(): boolean {
-		var isDirty = false;
-		this.children.forEach((c) => {
-			if (c instanceof Visual && (c as Visual).dirty) {
-				isDirty = true;
+	public override cleanDirtyFlags(): void {
+		super.cleanDirtyFlags();
+		for (const child of this.children) {
+			if (child.dirtyLayout || (child instanceof Visual && child.dirtyRender)) {
+				child.cleanDirtyFlags();
 			}
-		});
-
-		return isDirty;
-	}
-	set dirty(v: boolean) {
-		this.children?.forEach((c) => {
-			if (c instanceof Visual) {
-				(c as Visual).dirty = v;
-			}
-		});
+		}
 	}
 
 	erase(): void {
@@ -361,8 +377,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 	// ----------------- Collection methods -------------
 	//#region 
+	@dirtiesLayout
 	public add({ child, index }: AddDispatchData<C>) {
 		child.parentId = this.id;
+		child.parent = this;
 
 		this.children.splice(index ?? this.numChildren, 0, child);
 
@@ -385,6 +403,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		}
 	}
 
+	@dirtiesLayout
 	public remove({ child }: RemoveDispatchData<C>) {
 		var index: number | undefined = this.childIndex(child);
 
@@ -415,6 +434,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			}
 		}
 
+		child.parent = undefined;
 		child.erase();
 		this.children.splice(index, 1);
 	}

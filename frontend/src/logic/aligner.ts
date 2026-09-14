@@ -34,7 +34,10 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		return this._mainAxis;
 	}
 	public set mainAxis(value: Dimensions) {
-		this._mainAxis = value;
+		if (this._mainAxis !== value) {
+			this._mainAxis = value;
+			this.markDirtyLayout();
+		}
 	}
 	get crossAxis(): Dimensions {
 		return this.mainAxis === "x" ? "y" : "x";
@@ -57,7 +60,11 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 	// ---------------- Compute Methods ----------------
 	//#region 
 	public computeSize(): Size {
-		this.children.forEach((c) => c.computeSize());
+		this.children.forEach((c) => {
+			if (c.dirtyLayout) {
+				c.computeSize();
+			}
+		});
 
 		this.cells = Array.from({ length: this.numChildren }, () => new Spacial());
 
@@ -135,6 +142,10 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 		return { width: this.width, height: this.height };
 	}
 
+	protected override computeChildrenPositions(): void {
+		// Aligner positions its children explicitly along its mainAxis alignment cells in computePositions.
+	}
+
 	public computePositions(root: { x: number, y: number }): void {
 		super.computePositions(root);
 
@@ -175,8 +186,14 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 					mainAlign = child.placementMode.config.alignment.mainAxis;
 				}
 
+				const prevX = child.x;
+				const prevY = child.y;
 				alignmentCell.internalImmediateBind(child, "y", crossAlign);
 				alignmentCell.internalImmediateBind(child, "x", mainAlign ?? "here");
+
+				if (!child.dirtyLayout && child.x === prevX && child.y === prevY) {
+					return;
+				}
 
 				child.computePositions({ x: child.x, y: child.y });
 			});
@@ -213,8 +230,14 @@ export default class Aligner<T extends AlignerElement = AlignerElement> extends 
 					mainAlign = child.placementMode.config.alignment.mainAxis;
 				}
 
+				const prevX = child.x;
+				const prevY = child.y;
 				alignmentCell.internalImmediateBind(child, "x", crossAlign);
 				alignmentCell.internalImmediateBind(child, "y", mainAlign ?? "here");
+
+				if (!child.dirtyLayout && child.x === prevX && child.y === prevY) {
+					return;
+				}
 
 				child.computePositions({ x: child.x, y: child.y });
 			});

@@ -64,8 +64,8 @@ class ENGINE {
 			ENGINE.listeners = ENGINE.listeners.filter((l) => l !== listener);
 		}).bind(ENGINE);
 	}
-	static getSnapshot() {
-		return ENGINE.handler.id
+	static getSnapshot(): string {
+		return ENGINE._handler ? ENGINE._handler.id : "initial";
 	}
 	static emitChange() {
 		ENGINE.listeners.forEach((l) => {

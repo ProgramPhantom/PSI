@@ -1,0 +1,838 @@
+import ENGINE from "../logic/engine";
+import { IChannel } from "../logic/hasComponents/channel";
+import { IVisual } from "../logic/visual";
+import {
+	CHANNEL_13C,
+	CHANNEL_19F,
+	CHANNEL_1H,
+	CHANNEL_Gz,
+	CHANNEL_RF,
+	CHANNEL_15N,
+	CHANNEL_2H,
+	CHANNEL_31P,
+	CHANNEL_29Si,
+	CHANNEL_11B,
+	CHANNEL_27Al
+} from "../logic/default/channels";
+import { DEFAULT_180S } from "../logic/default/svgPulse/180Soft";
+import { DEFAULT_RECT_ELEMENT } from "../logic/default/rectElement";
+import { DEFAULT_LABEL } from "../logic/default/label";
+import { DEFAULT_TEXT } from "../logic/default/text";
+
+export interface PerfMetricItem {
+	index: number;
+	elementId: string;
+	templateRef: string;
+	duration: number; // total act() duration in ms
+	computeDuration: number; // isolated computeDiagram() duration in ms
+	totalElementsAfterAdd?: number;
+	timestamp: number;
+}
+
+export interface ChannelAddMetric extends PerfMetricItem {
+	channelId: string;
+	totalChannelsAfterAdd: number;
+}
+
+export interface ChannelRemoveMetric extends PerfMetricItem {
+	channelId: string;
+	totalChannelsAfterRemove: number;
+}
+
+export interface ChannelBenchmarkResult {
+	channelCount: number;
+	addMetrics: ChannelAddMetric[];
+	removeMetrics: ChannelRemoveMetric[];
+	totalAddDurationMs: number;
+	avgAddDurationMs: number;
+	minAddDurationMs: number;
+	maxAddDurationMs: number;
+	medianAddDurationMs: number;
+	totalRemoveDurationMs: number;
+	avgRemoveDurationMs: number;
+	minRemoveDurationMs: number;
+	maxRemoveDurationMs: number;
+	addedChannelIds: string[];
+}
+
+export type FreeElementType = "svg" | "rect" | "label" | "text";
+
+export interface FreeElementMetric extends PerfMetricItem {
+	elementType: FreeElementType;
+}
+
+export interface FreeElementRemoveMetric extends PerfMetricItem {
+	elementType: FreeElementType;
+}
+
+export interface FreeElementBenchmarkResult {
+	elementType: FreeElementType;
+	elementCount: number;
+	addMetrics: FreeElementMetric[];
+	removeMetrics: FreeElementRemoveMetric[];
+	totalAddDurationMs: number;
+	avgAddDurationMs: number;
+	minAddDurationMs: number;
+	maxAddDurationMs: number;
+	medianAddDurationMs: number;
+	totalRemoveDurationMs: number;
+	avgRemoveDurationMs: number;
+	minRemoveDurationMs: number;
+	maxRemoveDurationMs: number;
+	addedElementIds: string[];
+}
+
+export interface ColumnBenchmarkMetric extends PerfMetricItem {
+	sequenceId: string;
+	colIndex: number;
+}
+
+export interface ColumnBenchmarkResult {
+	sequenceId: string;
+	columnCount: number;
+	addMetrics: ColumnBenchmarkMetric[];
+	removeMetrics: ColumnBenchmarkMetric[];
+	totalAddDurationMs: number;
+	avgAddDurationMs: number;
+	minAddDurationMs: number;
+	maxAddDurationMs: number;
+	medianAddDurationMs: number;
+	totalRemoveDurationMs: number;
+	avgRemoveDurationMs: number;
+	minRemoveDurationMs: number;
+	maxRemoveDurationMs: number;
+}
+
+export interface PureLayoutBenchmarkResult {
+	iterations: number;
+	durations: number[];
+	totalDurationMs: number;
+	avgDurationMs: number;
+	minDurationMs: number;
+	maxDurationMs: number;
+	medianDurationMs: number;
+	opsPerSec: number;
+}
+
+export interface BenchmarkProgress {
+	current: number;
+	total: number;
+	message: string;
+	percent: number;
+}
+
+export const BENCHMARK_CHANNEL_TEMPLATES = [
+	CHANNEL_13C,
+	CHANNEL_1H,
+	CHANNEL_19F,
+	CHANNEL_Gz,
+	CHANNEL_RF,
+	CHANNEL_15N,
+	CHANNEL_2H,
+	CHANNEL_31P,
+	CHANNEL_29Si,
+	CHANNEL_11B,
+	CHANNEL_27Al
+];
+
+export const FREE_ELEMENT_DEFAULTS: Record<FreeElementType, IVisual> = {
+	svg: DEFAULT_180S,
+	rect: DEFAULT_RECT_ELEMENT,
+	label: DEFAULT_LABEL,
+	text: DEFAULT_TEXT
+};
+
+/**
+ * Creates a unique channel state cloned from a template, with unique IDs
+ * generated for the channel and its child elements.
+ */
+export function createBenchmarkChannel(template: IChannel, parentId?: string): IChannel {
+	const newChannel = JSON.parse(JSON.stringify(template)) as IChannel;
+	newChannel.id = Math.random().toString(16).slice(2);
+
+	if (parentId) {
+		newChannel.parentId = parentId;
+	} else if (ENGINE.handler.diagram.sequences.length > 0) {
+		newChannel.parentId = ENGINE.handler.diagram.sequences[0].id;
+	} else {
+		newChannel.parentId = ENGINE.handler.diagram.id;
+	}
+
+	if (newChannel.children) {
+		newChannel.children = newChannel.children.map((child: IVisual) => ({
+			...child,
+			id: Math.random().toString(16).slice(2)
+		}));
+	}
+
+	return newChannel;
+}
+
+/**
+ * Creates a "free" placed element configured with unique IDs and positioned on the canvas.
+ */
+export function createFreeElement(
+	type: FreeElementType,
+	index: number,
+	offset?: { x: number; y: number }
+): IVisual {
+	const template = FREE_ELEMENT_DEFAULTS[type];
+	const element = JSON.parse(JSON.stringify(template)) as IVisual;
+	element.id = Math.random().toString(16).slice(2);
+	element.parentId = ENGINE.handler.diagram.id;
+	element.placementMode = { type: "free" };
+	const baseX = offset?.x ?? 20;
+	const baseY = offset?.y ?? 20;
+	element.x = baseX + (index % 10) * 80;
+	element.y = baseY + Math.floor(index / 10) * 80;
+
+	const assignChildIds = (item: IVisual) => {
+		const children = (item as unknown as { children?: IVisual[] }).children;
+		if (children && Array.isArray(children)) {
+			children.forEach((c: IVisual) => {
+				c.id = Math.random().toString(16).slice(2);
+				c.parentId = item.id;
+				assignChildIds(c);
+			});
+		}
+	};
+	assignChildIds(element);
+
+	return element;
+}
+
+/**
+ * Runs a stress-test benchmark by adding channels one by one, retrieving the execution
+ * time metrics from ENGINE.handler.act(), and subsequently removing them one by one.
+ */
+export async function runChannelAddBenchmark(
+	count: number,
+	options: {
+		onProgress?: (progress: BenchmarkProgress) => void;
+	} = {}
+): Promise<ChannelBenchmarkResult> {
+	const addMetrics: ChannelAddMetric[] = [];
+	const addedChannelIds: string[] = [];
+	const totalSteps = count * 2; // Always includes removals
+
+	// 1. Sequential Channel Additions
+	for (let i = 0; i < count; i++) {
+		const template = BENCHMARK_CHANNEL_TEMPLATES[i % BENCHMARK_CHANNEL_TEMPLATES.length];
+		const channel = createBenchmarkChannel(template);
+		const channelId = channel.id!;
+		addedChannelIds.push(channelId);
+
+		options.onProgress?.({
+			current: i + 1,
+			total: totalSteps,
+			message: `Adding channel ${i + 1}/${count} (${template.ref || "channel"})...`,
+			percent: Math.round(((i + 1) / totalSteps) * 100)
+		});
+
+		// Yield to event loop to allow UI updates and SVG re-render
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const metrics = ENGINE.handler.act({
+			type: "add",
+			input: {
+				child: channel
+			}
+		});
+
+		const channelsCount = ENGINE.handler.diagram.channels.length;
+		addMetrics.push({
+			index: i + 1,
+			channelId,
+			elementId: channelId,
+			templateRef: template.ref || `channel-${i + 1}`,
+			duration: metrics.duration,
+			computeDuration: metrics.computeDuration,
+			totalChannelsAfterAdd: channelsCount,
+			totalElementsAfterAdd: channelsCount,
+			timestamp: Date.now()
+		});
+	}
+
+	// 2. Sequential Channel Removals (Always executed)
+	const removeMetrics: ChannelRemoveMetric[] = [];
+	const idsToRemove = [...addedChannelIds].reverse();
+	for (let i = 0; i < idsToRemove.length; i++) {
+		const id = idsToRemove[i];
+		const channelInstance = ENGINE.handler.identifyElement(id);
+
+		options.onProgress?.({
+			current: count + i + 1,
+			total: totalSteps,
+			message: `Removing channel ${i + 1}/${count}...`,
+			percent: Math.round(((count + i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		if (channelInstance) {
+			const metrics = ENGINE.handler.act({
+				type: "remove",
+				input: {
+					child: channelInstance
+				}
+			});
+
+			const channelsRemaining = ENGINE.handler.diagram.channels.length;
+			removeMetrics.push({
+				index: i + 1,
+				channelId: id,
+				elementId: id,
+				templateRef: `Remove #${i + 1}`,
+				duration: metrics.duration,
+				computeDuration: metrics.computeDuration,
+				totalChannelsAfterRemove: channelsRemaining,
+				totalElementsAfterAdd: channelsRemaining,
+				timestamp: Date.now()
+			});
+		}
+	}
+
+	// Statistical aggregates for additions
+	const addDurations = addMetrics.map((m) => m.duration);
+	const totalAddDurationMs = addDurations.reduce((a, b) => a + b, 0);
+	const avgAddDurationMs = addDurations.length ? totalAddDurationMs / addDurations.length : 0;
+	const minAddDurationMs = addDurations.length ? Math.min(...addDurations) : 0;
+	const maxAddDurationMs = addDurations.length ? Math.max(...addDurations) : 0;
+	const sortedAddDurations = [...addDurations].sort((a, b) => a - b);
+	const medianAddDurationMs = sortedAddDurations.length
+		? sortedAddDurations[Math.floor(sortedAddDurations.length / 2)]
+		: 0;
+
+	// Statistical aggregates for removals
+	const removeDurations = removeMetrics.map((m) => m.duration);
+	const totalRemoveDurationMs = removeDurations.reduce((a, b) => a + b, 0);
+	const avgRemoveDurationMs = removeDurations.length ? totalRemoveDurationMs / removeDurations.length : 0;
+	const minRemoveDurationMs = removeDurations.length ? Math.min(...removeDurations) : 0;
+	const maxRemoveDurationMs = removeDurations.length ? Math.max(...removeDurations) : 0;
+
+	return {
+		channelCount: count,
+		addMetrics,
+		removeMetrics,
+		totalAddDurationMs,
+		avgAddDurationMs,
+		minAddDurationMs,
+		maxAddDurationMs,
+		medianAddDurationMs,
+		totalRemoveDurationMs,
+		avgRemoveDurationMs,
+		minRemoveDurationMs,
+		maxRemoveDurationMs,
+		addedChannelIds
+	};
+}
+
+/**
+ * Runs a stress-test benchmark by adding "free" placed elements to the canvas one by one,
+ * and subsequently removing them one by one.
+ */
+export async function runFreeElementBenchmark(
+	type: FreeElementType,
+	count: number,
+	options: {
+		onProgress?: (progress: BenchmarkProgress) => void;
+	} = {}
+): Promise<FreeElementBenchmarkResult> {
+	const addMetrics: FreeElementMetric[] = [];
+	const addedElementIds: string[] = [];
+	const totalSteps = count * 2; // Always includes removals
+
+	// 1. Sequential Additions of Free Elements
+	for (let i = 0; i < count; i++) {
+		const element = createFreeElement(type, i);
+		const elementId = element.id!;
+		addedElementIds.push(elementId);
+
+		options.onProgress?.({
+			current: i + 1,
+			total: totalSteps,
+			message: `Adding free ${type} element ${i + 1}/${count}...`,
+			percent: Math.round(((i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const metrics = ENGINE.handler.act({
+			type: "add",
+			input: {
+				child: element
+			}
+		});
+
+		addMetrics.push({
+			index: i + 1,
+			elementId,
+			elementType: type,
+			templateRef: element.ref || `${type}-${i + 1}`,
+			duration: metrics.duration,
+			computeDuration: metrics.computeDuration,
+			timestamp: Date.now()
+		});
+	}
+
+	// 2. Sequential Removals (Always executed)
+	const removeMetrics: FreeElementRemoveMetric[] = [];
+	const idsToRemove = [...addedElementIds].reverse();
+	for (let i = 0; i < idsToRemove.length; i++) {
+		const id = idsToRemove[i];
+		const elementInstance = ENGINE.handler.identifyElement(id);
+
+		options.onProgress?.({
+			current: count + i + 1,
+			total: totalSteps,
+			message: `Removing free ${type} element ${i + 1}/${count}...`,
+			percent: Math.round(((count + i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		if (elementInstance) {
+			const metrics = ENGINE.handler.act({
+				type: "remove",
+				input: {
+					child: elementInstance
+				}
+			});
+
+			removeMetrics.push({
+				index: i + 1,
+				elementId: id,
+				elementType: type,
+				templateRef: `Remove #${i + 1}`,
+				duration: metrics.duration,
+				computeDuration: metrics.computeDuration,
+				timestamp: Date.now()
+			});
+		}
+	}
+
+	// Statistics
+	const addDurations = addMetrics.map((m) => m.duration);
+	const totalAddDurationMs = addDurations.reduce((a, b) => a + b, 0);
+	const avgAddDurationMs = addDurations.length ? totalAddDurationMs / addDurations.length : 0;
+	const minAddDurationMs = addDurations.length ? Math.min(...addDurations) : 0;
+	const maxAddDurationMs = addDurations.length ? Math.max(...addDurations) : 0;
+	const sortedAddDurations = [...addDurations].sort((a, b) => a - b);
+	const medianAddDurationMs = sortedAddDurations.length
+		? sortedAddDurations[Math.floor(sortedAddDurations.length / 2)]
+		: 0;
+
+	const removeDurations = removeMetrics.map((m) => m.duration);
+	const totalRemoveDurationMs = removeDurations.reduce((a, b) => a + b, 0);
+	const avgRemoveDurationMs = removeDurations.length ? totalRemoveDurationMs / removeDurations.length : 0;
+	const minRemoveDurationMs = removeDurations.length ? Math.min(...removeDurations) : 0;
+	const maxRemoveDurationMs = removeDurations.length ? Math.max(...removeDurations) : 0;
+
+	return {
+		elementType: type,
+		elementCount: count,
+		addMetrics,
+		removeMetrics,
+		totalAddDurationMs,
+		avgAddDurationMs,
+		minAddDurationMs,
+		maxAddDurationMs,
+		medianAddDurationMs,
+		totalRemoveDurationMs,
+		avgRemoveDurationMs,
+		minRemoveDurationMs,
+		maxRemoveDurationMs,
+		addedElementIds
+	};
+}
+
+/**
+ * Cleanly removes a list of elements by their IDs in reverse order (LIFO),
+ * capturing removal timings from ENGINE.handler.act().
+ */
+export async function removeBenchmarkElements(
+	elementIds: string[],
+	onProgress?: (progress: BenchmarkProgress) => void
+): Promise<{ index: number; elementId: string; duration: number; computeDuration: number }[]> {
+	const removeMetrics: { index: number; elementId: string; duration: number; computeDuration: number }[] = [];
+	const idsToRemove = [...elementIds].reverse();
+
+	for (let i = 0; i < idsToRemove.length; i++) {
+		const id = idsToRemove[i];
+		const elementInstance = ENGINE.handler.identifyElement(id);
+
+		onProgress?.({
+			current: i + 1,
+			total: idsToRemove.length,
+			message: `Removing element ${i + 1}/${idsToRemove.length}...`,
+			percent: Math.round(((i + 1) / idsToRemove.length) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		if (elementInstance) {
+			const metrics = ENGINE.handler.act({
+				type: "remove",
+				input: {
+					child: elementInstance
+				}
+			});
+
+			removeMetrics.push({
+				index: i + 1,
+				elementId: id,
+				duration: metrics.duration,
+				computeDuration: metrics.computeDuration
+			});
+		}
+	}
+
+	return removeMetrics;
+}
+
+export const removeBenchmarkChannels = removeBenchmarkElements;
+
+/**
+ * Pure layout compute benchmark: runs computeDiagram() repeatedly on the current diagram state
+ * without triggering SVG redraws or action dispatching, isolating custom layout calculations.
+ */
+export async function runPureLayoutBenchmark(
+	iterations: number = 50,
+	onProgress?: (progress: BenchmarkProgress) => void
+): Promise<PureLayoutBenchmarkResult> {
+	const durations: number[] = [];
+
+	for (let i = 0; i < iterations; i++) {
+		if (i % 5 === 0) {
+			onProgress?.({
+				current: i + 1,
+				total: iterations,
+				message: `Computing layout ${i + 1}/${iterations}...`,
+				percent: Math.round(((i + 1) / iterations) * 100)
+			});
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		}
+
+		const start = performance.now();
+		ENGINE.handler.computeDiagram();
+		const end = performance.now();
+		durations.push(end - start);
+	}
+
+	const totalDurationMs = durations.reduce((a, b) => a + b, 0);
+	const avgDurationMs = totalDurationMs / durations.length;
+	const minDurationMs = Math.min(...durations);
+	const maxDurationMs = Math.max(...durations);
+	const sorted = [...durations].sort((a, b) => a - b);
+	const medianDurationMs = sorted[Math.floor(sorted.length / 2)];
+	const opsPerSec = totalDurationMs > 0 ? (iterations / totalDurationMs) * 1000 : 0;
+
+	return {
+		iterations,
+		durations,
+		totalDurationMs,
+		avgDurationMs,
+		minDurationMs,
+		maxDurationMs,
+		medianDurationMs,
+		opsPerSec
+	};
+}
+
+/**
+ * Runs a stress-test benchmark by inserting columns one by one into the active sequence grid,
+ * and subsequently deleting them one by one, measuring layout recalculation times.
+ */
+export async function runColumnBenchmark(
+	count: number,
+	options: {
+		onProgress?: (progress: BenchmarkProgress) => void;
+	} = {}
+): Promise<ColumnBenchmarkResult> {
+	if (ENGINE.handler.diagram.sequences.length === 0) {
+		throw new Error("No sequence found in diagram to benchmark columns");
+	}
+
+	const sequence = ENGINE.handler.diagram.sequences[0];
+	const sequenceId = sequence.id;
+	const addMetrics: ColumnBenchmarkMetric[] = [];
+	const removeMetrics: ColumnBenchmarkMetric[] = [];
+	const totalSteps = count * 2;
+
+	// 1. Insert Columns one by one
+	for (let i = 0; i < count; i++) {
+		const targetIndex = sequence.numColumns;
+
+		options.onProgress?.({
+			current: i + 1,
+			total: totalSteps,
+			message: `Inserting column ${i + 1}/${count} at index ${targetIndex}...`,
+			percent: Math.round(((i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const metrics = ENGINE.handler.act({
+			type: "insertColumn",
+			input: {
+				sequenceId,
+				index: targetIndex
+			}
+		});
+
+		addMetrics.push({
+			index: i + 1,
+			elementId: `col-${targetIndex}`,
+			sequenceId,
+			colIndex: targetIndex,
+			templateRef: `Col #${targetIndex}`,
+			duration: metrics.duration,
+			computeDuration: metrics.computeDuration,
+			totalElementsAfterAdd: sequence.numColumns,
+			timestamp: Date.now()
+		});
+	}
+
+	// 2. Delete Columns in reverse order (Always executed)
+	for (let i = 0; i < count; i++) {
+		const targetIndex = sequence.numColumns - 1;
+
+		options.onProgress?.({
+			current: count + i + 1,
+			total: totalSteps,
+			message: `Deleting column ${i + 1}/${count} at index ${targetIndex}...`,
+			percent: Math.round(((count + i + 1) / totalSteps) * 100)
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const metrics = ENGINE.handler.act({
+			type: "deleteColumn",
+			input: {
+				sequenceId,
+				index: targetIndex
+			}
+		});
+
+		removeMetrics.push({
+			index: i + 1,
+			elementId: `col-${targetIndex}`,
+			sequenceId,
+			colIndex: targetIndex,
+			templateRef: `Delete #${targetIndex}`,
+			duration: metrics.duration,
+			computeDuration: metrics.computeDuration,
+			totalElementsAfterAdd: sequence.numColumns,
+			timestamp: Date.now()
+		});
+	}
+
+	// Statistical aggregates for additions (insertions)
+	const addDurations = addMetrics.map((m) => m.duration);
+	const totalAddDurationMs = addDurations.reduce((a, b) => a + b, 0);
+	const avgAddDurationMs = addDurations.length ? totalAddDurationMs / addDurations.length : 0;
+	const minAddDurationMs = addDurations.length ? Math.min(...addDurations) : 0;
+	const maxAddDurationMs = addDurations.length ? Math.max(...addDurations) : 0;
+	const sortedAddDurations = [...addDurations].sort((a, b) => a - b);
+	const medianAddDurationMs = sortedAddDurations.length
+		? sortedAddDurations[Math.floor(sortedAddDurations.length / 2)]
+		: 0;
+
+	// Statistical aggregates for removals (deletions)
+	const removeDurations = removeMetrics.map((m) => m.duration);
+	const totalRemoveDurationMs = removeDurations.reduce((a, b) => a + b, 0);
+	const avgRemoveDurationMs = removeDurations.length ? totalRemoveDurationMs / removeDurations.length : 0;
+	const minRemoveDurationMs = removeDurations.length ? Math.min(...removeDurations) : 0;
+	const maxRemoveDurationMs = removeDurations.length ? Math.max(...removeDurations) : 0;
+
+	return {
+		sequenceId,
+		columnCount: count,
+		addMetrics,
+		removeMetrics,
+		totalAddDurationMs,
+		avgAddDurationMs,
+		minAddDurationMs,
+		maxAddDurationMs,
+		medianAddDurationMs,
+		totalRemoveDurationMs,
+		avgRemoveDurationMs,
+		minRemoveDurationMs,
+		maxRemoveDurationMs
+	};
+}
+
+export interface ModifyScalingMetric extends PerfMetricItem {
+	ambientCount: number;
+	ambientType: FreeElementType;
+	targetType: FreeElementType;
+}
+
+export interface ModifyBenchmarkResult {
+	ambientCount: number;
+	ambientType: FreeElementType;
+	targetType: FreeElementType;
+	metrics: ModifyScalingMetric[];
+	totalDurationMs: number;
+	avgDurationMs: number;
+	minDurationMs: number;
+	maxDurationMs: number;
+	medianDurationMs: number;
+}
+
+/**
+ * Runs the Modify Action Scaling benchmark:
+ * Sequentially introduces ambient elements (1 to ambientCount) to populate the canvas,
+ * and at each ambient count step creates a target element of a decidable type, executes a
+ * single .act("modify") changing contentWidth and contentHeight, records the execution time,
+ * removes the target element, and cleans up all ambient elements at the end.
+ */
+export async function runModifyScalingBenchmark(
+	ambientType: FreeElementType,
+	ambientCount: number,
+	targetType: FreeElementType,
+	options: {
+		onProgress?: (progress: BenchmarkProgress) => void;
+	} = {}
+): Promise<ModifyBenchmarkResult> {
+	const metrics: ModifyScalingMetric[] = [];
+	const ambientElementIds: string[] = [];
+	const totalSteps = ambientCount * 2;
+
+	try {
+		for (let i = 1; i <= ambientCount; i++) {
+			// 1. Add ambient element to canvas (execution time not recorded)
+			const ambientElement = createFreeElement(ambientType, i - 1, { x: 120, y: 30 });
+			const ambientId = ambientElement.id!;
+			ambientElementIds.push(ambientId);
+
+			ENGINE.handler.act({
+				type: "add",
+				input: { child: ambientElement }
+			});
+
+			options.onProgress?.({
+				current: i,
+				total: totalSteps,
+				message: `Step ${i}/${ambientCount}: modifying ${targetType.toUpperCase()} with ${i} ambient ${ambientType.toUpperCase()} elements...`,
+				percent: Math.round((i / totalSteps) * 100)
+			});
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			// 2. Create target element of decidable type
+			const targetElement = createFreeElement(targetType, 0, { x: 20, y: 30 });
+			const targetId = targetElement.id!;
+
+			ENGINE.handler.act({
+				type: "add",
+				input: { child: targetElement }
+			});
+
+			const targetInstance = ENGINE.handler.identifyElement(targetId);
+			if (!targetInstance) {
+				throw new Error(`Failed to identify target element ${targetId} for modification`);
+			}
+
+			// 3. Prepare modified state with altered contentWidth and contentHeight
+			const baseWidth = targetInstance.contentWidth ?? 20;
+			const baseHeight = targetInstance.contentHeight ?? 20;
+			const modifiedChild: IVisual = {
+				...targetInstance.state,
+				contentWidth: baseWidth + 25,
+				contentHeight: baseHeight + 25
+			};
+
+			const modifiedChildRecord = modifiedChild as unknown as { children?: IVisual[] };
+			if (modifiedChildRecord.children && modifiedChildRecord.children.length > 0) {
+				modifiedChildRecord.children = modifiedChildRecord.children.map((c: IVisual) => ({
+					...c,
+					contentWidth: (c.contentWidth ?? 10) + 25,
+					contentHeight: (c.contentHeight ?? 10) + 25
+				}));
+			}
+
+			// 4. Execute single modify action and capture timing metrics
+			const modifyMetrics = ENGINE.handler.act({
+				type: "modify",
+				input: {
+					target: targetInstance,
+					child: modifiedChild
+				}
+			});
+
+			metrics.push({
+				index: i,
+				ambientCount: i,
+				ambientType,
+				targetType,
+				elementId: targetId,
+				templateRef: `Modify (${targetType}) with ${i} ${ambientType} ambients`,
+				duration: modifyMetrics.duration,
+				computeDuration: modifyMetrics.computeDuration,
+				totalElementsAfterAdd: i + 1,
+				timestamp: Date.now()
+			});
+
+			// 5. Remove target element so only ambient elements carry over
+			const modifiedTargetInstance = ENGINE.handler.identifyElement(targetId);
+			if (modifiedTargetInstance) {
+				ENGINE.handler.act({
+					type: "remove",
+					input: { child: modifiedTargetInstance }
+				});
+			}
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		}
+	} finally {
+		// Clean up all ambient elements in reverse order (LIFO)
+		const idsToRemove = [...ambientElementIds].reverse();
+		for (let j = 0; j < idsToRemove.length; j++) {
+			const id = idsToRemove[j];
+			const el = ENGINE.handler.identifyElement(id);
+
+			options.onProgress?.({
+				current: ambientCount + j + 1,
+				total: totalSteps,
+				message: `Cleaning up ambient element ${j + 1}/${idsToRemove.length}...`,
+				percent: Math.round(((ambientCount + j + 1) / totalSteps) * 100)
+			});
+
+			if (el) {
+				ENGINE.handler.act({
+					type: "remove",
+					input: { child: el }
+				});
+			}
+
+			if (j % 5 === 0) {
+				await new Promise((resolve) => setTimeout(resolve, 0));
+			}
+		}
+	}
+
+	// Statistical aggregates
+	const durations = metrics.map((m) => m.duration);
+	const totalDurationMs = durations.reduce((a, b) => a + b, 0);
+	const avgDurationMs = durations.length ? totalDurationMs / durations.length : 0;
+	const minDurationMs = durations.length ? Math.min(...durations) : 0;
+	const maxDurationMs = durations.length ? Math.max(...durations) : 0;
+	const sortedDurations = [...durations].sort((a, b) => a - b);
+	const medianDurationMs = sortedDurations.length
+		? sortedDurations[Math.floor(sortedDurations.length / 2)]
+		: 0;
+
+	return {
+		ambientCount,
+		ambientType,
+		targetType,
+		metrics,
+		totalDurationMs,
+		avgDurationMs,
+		minDurationMs,
+		maxDurationMs,
+		medianDurationMs
+	};
+}
+
