@@ -238,56 +238,33 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
 			const elements = document.elementsFromPoint(lastCoords.x, lastCoords.y);
 
-			const candidateHitboxIds: string[] = [];
+			let rawTargetId: string | undefined = undefined;
 			for (let i = 0; i < elements.length; i++) {
 				const el = elements[i];
 				// Ignore the layer container itself
 				if (el === hitboxSvgRef.current) continue;
 				// Check if the element is a child of our hitbox SVG and has an ID
 				if (el.id && hitboxSvgRef.current.contains(el)) {
-					candidateHitboxIds.push(el.id);
-				}
-			}
-
-			if (candidateHitboxIds.length === 0) {
-				if (lastRawTargetIdRef.current !== undefined) {
-					lastRawTargetIdRef.current = undefined;
-					setHoveredElementRef.current(undefined);
-				}
-				return;
-			}
-
-			// Prioritize alwaysSelectable elements (like lines or pulses) over background containers (like channels)
-			let selectedRawTargetId: string = candidateHitboxIds[0];
-			let selectedRawElement: Spacial | undefined = undefined;
-			let selectedElement: Spacial | undefined = undefined;
-
-			for (const rawId of candidateHitboxIds) {
-				const parsedId = rawId.replace(/-hitbox$/, "");
-				const rawEl = ENGINE.handler.identifyElementOrStructure(parsedId);
-				const el = getMouseElementFromIDRef.current(parsedId);
-
-				if (selectedElement === undefined && selectedRawElement === undefined) {
-					selectedRawTargetId = rawId;
-					selectedRawElement = rawEl;
-					selectedElement = el;
-				}
-
-				if (isElementAlwaysSelectable(el) || isElementAlwaysSelectable(rawEl)) {
-					selectedRawTargetId = rawId;
-					selectedRawElement = rawEl;
-					selectedElement = el;
+					rawTargetId = el.id;
 					break;
 				}
 			}
 
 			// Avoid re-calculating if the hovered target hasn't changed
-			if (selectedRawTargetId === lastRawTargetIdRef.current) {
+			if (rawTargetId === lastRawTargetIdRef.current) {
 				return;
 			}
-			lastRawTargetIdRef.current = selectedRawTargetId;
+			lastRawTargetIdRef.current = rawTargetId;
 
-			setHoveredElementRef.current(selectedElement, selectedRawElement);
+			if (rawTargetId === undefined) {
+				setHoveredElementRef.current(undefined);
+				return;
+			}
+
+			let parsedId: string = rawTargetId.replace(/-hitbox$/, "");
+			let rawElement: Spacial | undefined = ENGINE.handler.identifyElementOrStructure(parsedId);
+			let element: Spacial | undefined = getMouseElementFromIDRef.current(parsedId);
+			setHoveredElementRef.current(element, rawElement);
 		};
 
 		const handleGlobalPointerMove = (e: MouseEvent | PointerEvent) => {
