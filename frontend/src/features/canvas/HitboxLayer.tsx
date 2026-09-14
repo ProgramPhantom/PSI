@@ -39,7 +39,7 @@ export const FocusRules: IFocusRules = {
 
 		"svg",
 		(element: Visual) => element.type === "line" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds" || element.placementMode?.type === "sequenceBind"),
-		(element: Visual) => element.type === "rect" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds"),
+		(element: Visual) => element.type === "rect" && (element.placementMode?.type === "free" || element.placementMode?.type === "binds" || element.placementMode?.type === "sequenceBind"),
 
 		"label-group",
 		"simple-label-group",
