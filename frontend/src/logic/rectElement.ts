@@ -49,13 +49,6 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 	}
 
 	draw(surface: Element) {
-
-		if (this.svg) {
-			try {
-				this.svg.remove();
-			} catch { }
-		}
-
 		const dashingAttr = this.style.dashing && this.style.dashing[0] > 0
 			? { "stroke-dasharray": `${this.style.dashing[0]} ${this.style.dashing[1]}` }
 			: {};
@@ -63,6 +56,27 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 		const fillOpacityAttr = typeof this.style.fillOpacity === "number"
 			? { "fill-opacity": Math.max(0, Math.min(100, this.style.fillOpacity)) / 100 }
 			: {};
+
+		// If SVG already exists and is attached, and layout did not change, patch attributes in place
+		if (this.svg && !this.dirtyLayout) {
+			this.svg
+				.size(this.contentWidth, this.contentHeight)
+				.attr({ fill: this.style.fill ?? "none", stroke: this.style.stroke, ...fillOpacityAttr })
+				.move(this.drawCX, this.drawCY)
+				.attr({
+					"stroke-width": this.style.strokeWidth,
+					"shape-rendering": "crispEdges",
+					...dashingAttr
+				});
+			super.draw(surface);
+			return;
+		}
+
+		if (this.svg) {
+			try {
+				this.svg.remove();
+			} catch { }
+		}
 
 		this.svg = new Rect()
 			.size(this.contentWidth, this.contentHeight)

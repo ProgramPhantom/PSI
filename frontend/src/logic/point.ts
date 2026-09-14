@@ -172,3 +172,64 @@ export default class Point implements IPoint, IHaveState<IPoint> {
 		return Point.shiftPointState({ ...this.state }, deltaX, deltaY);
 	}
 }
+
+/**
+ * Method decorator that marks layout dirty on the instance after the method executes.
+ * Automatically invokes this.markDirtyLayout() on the target instance and bubbles to parents.
+ */
+export function dirtiesLayout<T extends (...args: any[]) => any>(
+	target: any,
+	propertyKey: string,
+	descriptor: TypedPropertyDescriptor<T>
+): TypedPropertyDescriptor<T> | void {
+	const originalMethod = descriptor.value;
+	if (originalMethod) {
+		descriptor.value = function (this: any, ...args: any[]) {
+			const result = originalMethod.apply(this, args);
+			if (result instanceof Promise) {
+				return result.then((res) => {
+					if (typeof this.markDirtyLayout === "function") {
+						this.markDirtyLayout();
+					}
+					return res;
+				});
+			}
+			if (typeof this.markDirtyLayout === "function") {
+				this.markDirtyLayout();
+			}
+			return result;
+		} as T;
+	}
+	return descriptor;
+}
+
+/**
+ * Method decorator that marks render dirty on the instance after the method executes.
+ * Automatically invokes this.markDirtyRender() on the target instance and bubbles to parents.
+ */
+export function dirtiesRender<T extends (...args: any[]) => any>(
+	target: any,
+	propertyKey: string,
+	descriptor: TypedPropertyDescriptor<T>
+): TypedPropertyDescriptor<T> | void {
+	const originalMethod = descriptor.value;
+	if (originalMethod) {
+		descriptor.value = function (this: any, ...args: any[]) {
+			const result = originalMethod.apply(this, args);
+			if (result instanceof Promise) {
+				return result.then((res) => {
+					if (typeof this.markDirtyRender === "function") {
+						this.markDirtyRender();
+					}
+					return res;
+				});
+			}
+			if (typeof this.markDirtyRender === "function") {
+				this.markDirtyRender();
+			}
+			return result;
+		} as T;
+	}
+	return descriptor;
+}
+

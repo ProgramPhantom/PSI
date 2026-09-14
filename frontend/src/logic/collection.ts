@@ -1,5 +1,5 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
-import Point, { AllComponentTypes, ID } from "./point";
+import Point, { AllComponentTypes, ID, dirtiesLayout } from "./point";
 import Spacial, { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 import { showSVGRecursively } from "./util2";
@@ -226,7 +226,14 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	public computePositions(root: { x: number; y: number; }): void {
 		super.computePositions(root);
 
+		this.computeChildrenPositions();
+	}
+
+	protected computeChildrenPositions(): void {
 		this.children.forEach((c) => {
+			if (!c.dirtyLayout && (c.placementMode?.type === "free" || (c.x === this.cx && c.y === this.cy))) {
+				return;
+			}
 			c.computePositions({ x: this.cx, y: this.cy });
 		});
 
@@ -251,10 +258,12 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	public override growElement(containerSize: Size): Record<Dimensions, number> {
 		let sizeDiff = super.growElement(containerSize)
 
-		// TODO:
+
 		this.children.forEach((child) => {
 			if (child.placementMode.type === "free") {
-				child.growElement(this.size);
+				if (child.dirtyLayout || child.sizeMode?.x === "grow" || child.sizeMode?.y === "grow") {
+					child.growElement(this.size);
+				}
 			}
 		})
 
@@ -341,7 +350,9 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	public override cleanDirtyFlags(): void {
 		super.cleanDirtyFlags();
 		for (const child of this.children) {
-			child.cleanDirtyFlags();
+			if (child.dirtyLayout || (child instanceof Visual && child.dirtyRender)) {
+				child.cleanDirtyFlags();
+			}
 		}
 	}
 
@@ -366,10 +377,10 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 
 	// ----------------- Collection methods -------------
 	//#region 
+	@dirtiesLayout
 	public add({ child, index }: AddDispatchData<C>) {
 		child.parentId = this.id;
 		child.parent = this;
-		this.markDirtyLayout();
 
 		this.children.splice(index ?? this.numChildren, 0, child);
 
@@ -392,6 +403,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		}
 	}
 
+	@dirtiesLayout
 	public remove({ child }: RemoveDispatchData<C>) {
 		var index: number | undefined = this.childIndex(child);
 
@@ -425,7 +437,6 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		child.parent = undefined;
 		child.erase();
 		this.children.splice(index, 1);
-		this.markDirtyLayout();
 	}
 
 

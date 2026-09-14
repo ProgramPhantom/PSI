@@ -267,7 +267,8 @@ export default class DiagramHandler implements IDraw {
 		this.computeBoundaryTree();
 		const end = performance.now();
 		this.lastComputeDuration = end - start;
-		console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
+
+		// console.log(`computeDiagram took ${(end - start).toFixed(2)} ms`);
 	}
 
 	/**
@@ -562,7 +563,7 @@ export default class DiagramHandler implements IDraw {
 		}
 		const end = performance.now();
 		const duration = end - start;
-		console.log(`act (${action.type}) took ${duration.toFixed(2)} ms`);
+		// console.log(`act (${action.type}) took ${duration.toFixed(2)} ms`);
 
 		return {
 			ok: actionResult.ok,

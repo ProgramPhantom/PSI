@@ -1,7 +1,7 @@
 import { Element } from "@svgdotjs/svg.js";
 import RBush from "rbush";
 import Collection, { AddDispatchData, ICollection, RemoveDispatchData } from "./collection";
-import { ID } from "./point";
+import { ID, dirtiesLayout } from "./point";
 import Spacial, { Dimensions, GhostTemplate, IGridConfig, ISubgridConfig, PlacementConfiguration, SiteNames, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { GridCellElement, IDraw, IVisual } from "./visual";
 import PaddedBox from "./paddedBox";
@@ -416,14 +416,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			if (leftRow !== undefined) {
 				leftRow.width = Math.max(maxLeftSpill, leftRow.width);
 			} else if (maxLeftSpill > 0) {
-				console.warn(`Element spilling to left of grid ${this.ref}`);
 				this.spill.left = Math.max(this.spill.left, maxLeftSpill);
 			}
 
 			if (rightRow !== undefined) {
 				rightRow.width = Math.max(maxRightSpill, rightRow.width);
 			} else if (maxRightSpill > 0) {
-				console.warn(`Element spilling to right of grid ${this.ref}`);
 				this.spill.right = Math.max(this.spill.right, maxRightSpill);
 			}
 		})
@@ -597,14 +595,12 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			if (aboveRow !== undefined) {
 				aboveRow.height = Math.max(maxAboveSpill, aboveRow.height);
 			} else if (maxAboveSpill > 0) {
-				console.warn(`Element spilling above grid ${this.ref}`);
 				this.spill.top = Math.max(this.spill.top, maxAboveSpill);
 			}
 
 			if (belowRow !== undefined) {
 				belowRow.height = Math.max(maxBelowSpill, belowRow.height);
 			} else if (maxBelowSpill > 0) {
-				console.warn(`Element spilling below grid ${this.ref}`);
 				this.spill.bottom = Math.max(this.spill.bottom, maxBelowSpill);
 			}
 		})
@@ -656,6 +652,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return { width: this.width, height: this.height };
 	}
 
+	protected override computeChildrenPositions(): void {
+		// Grid positions its children explicitly via its gridMatrix and cellRect bindings in computePositions.
+	}
+
 	public computePositions(root: { x: number, y: number }): void {
 		super.computePositions(root);
 
@@ -676,8 +676,11 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 							continue
 						}
 
-						// Don't do this for subgrid this for subgrid children, they are already positioned.
+						// Don't do this for subgrid children, they are already positioned.
 						if (this.isSubgridChild(element)) {
+							if (!element.dirtyLayout) {
+								continue;
+							}
 							element.computePositions({ x: element.x, y: element.y });
 							continue;
 						}
@@ -693,8 +696,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						var alignment: { x: SiteNames, y: SiteNames } = gridConfig.alignment ?? { x: "here", y: "here" }
 
+						const prevX = element.x;
+						const prevY = element.y;
 						cellRect.internalImmediateBind(element, "x", alignment.x, true)
 						cellRect.internalImmediateBind(element, "y", alignment.y, true)
+
+						if (!element.dirtyLayout && element.x === prevX && element.y === prevY) {
+							continue;
+						}
 
 						element.computePositions({ x: element.x, y: element.y });
 					}
@@ -1110,6 +1119,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	// ---------------- Add Methods ----------------
 	//#region
+	@dirtiesLayout
 	public override add({ child, index }: AddDispatchData<C>) {
 		super.add({ child, index });
 
@@ -1335,7 +1345,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 				let cell: GridCell<C> = this.gridMatrix[row]?.[col]
 				if (cell?.elements === undefined) {
-					console.warn(`Erroneous form for element ${child.ref}`)
+					// console.warn(`Erroneous form for element ${child.ref}`)
 					continue
 				}
 
@@ -1515,6 +1525,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 	}
 
+	@dirtiesLayout
 	public insertEmptyColumn(index?: number) {
 		let newColumn: GridCell<C>[] = Array<GridCell<C>>(this.numRows).fill(undefined);
 		let INDEX: number | undefined = index;
@@ -1566,9 +1577,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.shiftColumnIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
-		this.markDirtyLayout();
 	}
 
+	@dirtiesLayout
 	public insertEmptyRow(index?: number): void {
 		var newRow: GridCell<C>[] = Array<GridCell<C>>(this.numColumns).fill(undefined)
 		let INDEX: number | undefined = index;
@@ -1622,9 +1633,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.shiftRowIndexes(INDEX + 1, 1);
 
 		this.growSubgrids();
-		this.markDirtyLayout();
 	}
 
+	@dirtiesLayout
 	public removeColumn(index?: number, remove: true | "if-empty" = true) {
 		if (index === undefined || index < 0 || index > this.numColumns - 1) {
 			var INDEX = this.numColumns - 1;
@@ -1674,9 +1685,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 			}
 
 		})
-		this.markDirtyLayout();
 	}
 
+	@dirtiesLayout
 	public removeRow(index?: number, onlyIfEmpty: boolean = false) {
 		if (index === undefined || index < 0 || index > this.numRows - 1) {
 			var INDEX = this.numRows - 1;
@@ -1708,7 +1719,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		this.shiftRowIndexes(INDEX, -1);
-		this.markDirtyLayout();
 	}
 
 	// --- Helpers ----
@@ -2055,6 +2065,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	// -------------- Child sizing -------------------
 	//#region 
+	@dirtiesLayout
 	public setChildSize(child: GridElement<C>, size: { noRows: number, noCols: number }) {
 		let location: { row: number, col: number } | undefined = this.locateElement(child)
 		// let location: { row: number, col: number } | undefined = child.placementMode.config.coords
@@ -2079,7 +2090,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		this.removeMatrix(child);
 		this.elementCoordMap.set(child.id, { ...location });
 		this.appendElementsInRegion(region, location);
-		this.markDirtyLayout();
 	}
 
 	protected getChildRegion(child: GridElement<C>, overridePosition?: { row: number, col: number }): OccupiedCell<C>[][] | undefined {
@@ -2406,6 +2416,7 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 		return row - this.placementMode.config.coords.row;
 	}
 
+	@dirtiesLayout
 	public override removeRow(index?: number, onlyIfEmpty?: boolean): void {
 		super.removeRow(index, onlyIfEmpty);
 
@@ -2414,6 +2425,7 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 		}
 	}
 
+	@dirtiesLayout
 	public override removeColumn(index?: number, remove?: true | "if-empty"): void {
 		super.removeColumn(index, remove);
 

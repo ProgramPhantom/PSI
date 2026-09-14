@@ -135,7 +135,9 @@ export default class Diagram extends Collection<Visual> implements IDiagram {
 		var right = -Infinity;
 
 		this.children.forEach((c) => {
-			c.computeSize();
+			if (c.dirtyLayout) {
+				c.computeSize();
+			}
 
 			const cb = c.drawBound;
 			top = cb.top < top ? cb.top : top;
