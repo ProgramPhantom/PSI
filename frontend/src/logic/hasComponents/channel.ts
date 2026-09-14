@@ -76,6 +76,8 @@ export default class Channel extends Subgrid implements IChannel {
 
 		this.initialiseChannel()
 		this.role = "channel"
+		this.padding[3] = 0
+		this.padding[1] = 0
 	}
 
 	override computeSize(): Size {
