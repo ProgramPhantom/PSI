@@ -110,8 +110,18 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 					setSelectedFile(null);
 				}}
 				title="Load Diagram File"
-				icon="upload">
-				<DialogBody>
+				icon="upload"
+				style={{ width: "800px", maxWidth: "95vw", height: "85vh" }}>
+				<DialogBody
+					useOverflowScrollContainer={false}
+					style={{
+						overflow: "hidden",
+						display: "flex",
+						flexDirection: "column",
+						flex: 1,
+						minHeight: 0,
+						padding: "2px 4px"
+					}}>
 					<UploadArea
 						selectedFile={selectedFile}
 						onFileSelected={handleFileSelect}
@@ -119,81 +129,100 @@ export function LoadDiagramFileDialog(props: ILoadStateDialogProps) {
 						accept={".nmrd"}
 						promptText={"Drag and drop an NMRD diagram file here, or"}
 						buttonText={"Choose File"}
+						style={{ minHeight: "130px", padding: "16px", flexShrink: 0 }}
 						setInputRef={(el) => {
 							if (fileInputRef) (fileInputRef as any).current = el;
 						}}
 					/>
-					<div style={{ marginTop: "24px" }}>
-						<Section icon="book"
-							title="Example Sequences"
-							collapsible={false}
-						>
-							<SectionCard style={{ padding: 0 }}>
-								{exampleSequences.length === 0 ? (
-									<div style={{ padding: "16px" }}>
-										<NonIdealState description="No example sequences found" icon="document" />
-									</div>
-								) : (
-									<HTMLTable bordered striped interactive style={{ width: "100%", margin: 0 }}>
 
-										<tbody>
-											{exampleSequences.map((example) => (
-												<tr
-													key={example.name}
-													onClick={() => handleOpenExample(example.name, example.url)}
-													style={{ cursor: "pointer" }}
-													title="Click to open example sequence"
-												>
-													<td style={{ paddingTop: 6, paddingBottom: 6 }}>
-														<span style={{ fontWeight: 600 }}>{example.name}</span>
-													</td>
+					<div style={{ flex: 1, minHeight: 0, display: "flex", gap: "16px", marginTop: "16px", padding: "2px" }}>
+						{/* Example Sequences */}
+						<div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", minHeight: 0 }}>
+							<Section
+								icon="book"
+								title="Example Sequences"
+								collapsible={false}
+								style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", margin: "1px" }}
+							>
+								<SectionCard style={{ padding: 0, flex: 1, minHeight: 0, overflowY: "auto" }}>
+									{exampleSequences.length === 0 ? (
+										<div style={{ padding: "16px", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+											<NonIdealState description="No example sequences found" icon="document" />
+										</div>
+									) : (
+										<HTMLTable bordered striped interactive style={{ width: "100%", margin: 0 }}>
+											<thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
+												<tr>
+													<th>Name</th>
 												</tr>
-											))}
-										</tbody>
-									</HTMLTable>
-								)}
-							</SectionCard>
-						</Section>
-					</div>
-
-					<div style={{ marginTop: "24px" }}>
-						<Section icon="download"
-							title="Local Diagrams"
-							collapsible={false}
-						>
-							<SectionCard style={{ padding: 0 }}>
-								{!recentDiagrams || recentDiagrams.length === 0 ? (
-									<div style={{ padding: "16px" }}>
-										<NonIdealState description="No recent diagrams" icon="history" />
-									</div>
-								) : (
-									<HTMLTable bordered striped interactive style={{ width: "100%", margin: 0 }}>
-										<thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
-											<tr>
-												<th>Title</th>
-												<th>Last Opened</th>
-											</tr>
-										</thead>
-										<tbody>
-											{recentDiagrams.map((entry: RecentDiagram, i: number) => {
-												const date = new Date(entry.opened);
-												const displayName = entry.title || "Untitled";
-												return (
+											</thead>
+											<tbody>
+												{exampleSequences.map((example) => (
 													<tr
-														key={entry.diagramUUID || i}
-														onClick={() => handleOpenRecent(entry.diagramUUID, displayName)}
+														key={example.name}
+														onClick={() => handleOpenExample(example.name, example.url)}
 														style={{ cursor: "pointer" }}
+														title="Click to open example sequence"
 													>
-														<td style={{ paddingTop: 4, paddingBottom: 4 }}>{displayName}</td>
-														<td style={{ paddingTop: 4, paddingBottom: 4 }}>{date.toLocaleString()}</td>
+														<td style={{ paddingTop: 6, paddingBottom: 6 }}>
+															<span style={{ fontWeight: 600 }}>{example.name}</span>
+														</td>
 													</tr>
-												);
-											})}
-										</tbody>
-									</HTMLTable>
-								)}
-							</SectionCard>
-						</Section>
+												))}
+											</tbody>
+										</HTMLTable>
+									)}
+								</SectionCard>
+							</Section>
+						</div>
+
+						{/* Local Diagrams */}
+						<div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", minHeight: 0 }}>
+							<Section
+								icon="download"
+								title="Local Diagrams"
+								collapsible={false}
+								style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", margin: "1px" }}
+							>
+								<SectionCard style={{ padding: 0, flex: 1, minHeight: 0, overflowY: "auto" }}>
+									{!recentDiagrams || recentDiagrams.length === 0 ? (
+										<div style={{ padding: "16px", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+											<NonIdealState description="No recent diagrams" icon="history" />
+										</div>
+									) : (
+										<HTMLTable bordered striped interactive style={{ width: "100%", margin: 0 }}>
+											<thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--pt-app-background-color, #fff)" }}>
+												<tr>
+													<th>Title</th>
+													<th style={{ width: "150px" }}>Last Opened</th>
+												</tr>
+											</thead>
+											<tbody>
+												{recentDiagrams.map((entry: RecentDiagram, i: number) => {
+													const date = new Date(entry.opened);
+													const displayName = entry.title || "Untitled";
+													return (
+														<tr
+															key={entry.diagramUUID || i}
+															onClick={() => handleOpenRecent(entry.diagramUUID, displayName)}
+															style={{ cursor: "pointer" }}
+															title={`Click to open ${displayName}`}
+														>
+															<td style={{ paddingTop: 6, paddingBottom: 6, maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+																{displayName}
+															</td>
+															<td style={{ paddingTop: 6, paddingBottom: 6, whiteSpace: "nowrap" }}>
+																{date.toLocaleString()}
+															</td>
+														</tr>
+													);
+												})}
+											</tbody>
+										</HTMLTable>
+									)}
+								</SectionCard>
+							</Section>
+						</div>
 					</div>
 				</DialogBody>
 
