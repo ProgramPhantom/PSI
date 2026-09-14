@@ -36,6 +36,8 @@ import { CanvasToolToolbar } from "./CanvasToolToolbar";
 import { ChannelAddToolbar } from "./ChannelAddToolbar";
 import { ChannelReorderButtons } from "./ChannelReorderButtons";
 import { LayerButtons } from "./LayerButtons";
+import { OverlaySelector } from "./OverlaySelector";
+import { ColumnModeButton } from "./ColumnModeButton";
 import { HitboxLayer, FocusRules } from "./HitboxLayer";
 import { LineTool } from "./LineTool";
 import { BoxTool } from "./BoxTool";
@@ -176,7 +178,9 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const [zoom, setZoom] = useState(2);
 	const [zoomString, setZoomString] = useState("2");
 	const [isZoomEditing, setIsZoomEditing] = useState(false);
-	const [showDiagramBoundary, setShowDiagramBoundary] = useState(false);
+	const showDiagramOutline = useAppSelector((state) => state.application.showDiagramOutline);
+	const showSequenceColumnEditor = useAppSelector((state) => state.application.showSequenceColumnEditor);
+	const showSequenceChannelPaddingEditor = useAppSelector((state) => state.application.showSequenceChannelPaddingEditor);
 	const [textInputPending, setTextInputPending] = useState<{
 		x: number;
 		y: number;
@@ -474,372 +478,370 @@ const Canvas: React.FC<ICanvasProps> = () => {
 
 	return (
 		<>
-				<div
-					style={{
-						width: "100%",
-						height: "100%",
-						display: "flex",
-						flexDirection: "column",
-						position: "relative",
-						cursor: isSpacePressed ? "grab" : activeToolBehavior.cursor
-					}}
-					onMouseMove={(e) => {
-						const coords = getCoordinates(e);
-						const rx = Math.round(coords.x);
-						const ry = Math.round(coords.y);
+			<div
+				style={{
+					width: "100%",
+					height: "100%",
+					display: "flex",
+					flexDirection: "column",
+					position: "relative",
+					cursor: isSpacePressed ? "grab" : activeToolBehavior.cursor
+				}}
+				onMouseMove={(e) => {
+					const coords = getCoordinates(e);
+					const rx = Math.round(coords.x);
+					const ry = Math.round(coords.y);
 
-						if (lastCoordsRef.current?.rx === rx && lastCoordsRef.current?.ry === ry) {
-							return;
-						}
-						lastCoordsRef.current = { rx, ry };
+					if (lastCoordsRef.current?.rx === rx && lastCoordsRef.current?.ry === ry) {
+						return;
+					}
+					lastCoordsRef.current = { rx, ry };
 
-						if (rafIdRef.current === null) {
-							rafIdRef.current = requestAnimationFrame(() => {
-								dispatch(setCanvasMousePosition({ isMouseOverCanvas: true, position: coords }));
-								rafIdRef.current = null;
-							});
-						}
-					}}
-					onMouseLeave={() => {
-						stopHover();
-						if (rafIdRef.current !== null) {
-							cancelAnimationFrame(rafIdRef.current);
+					if (rafIdRef.current === null) {
+						rafIdRef.current = requestAnimationFrame(() => {
+							dispatch(setCanvasMousePosition({ isMouseOverCanvas: true, position: coords }));
 							rafIdRef.current = null;
-						}
-						lastCoordsRef.current = null;
-						dispatch(setCanvasMousePosition({ isMouseOverCanvas: false, position: undefined }));
-					}}
-					onMouseDown={(e) => {
-						dragStartRef.current = { x: e.clientX, y: e.clientY };
-					}}
-					onClick={(e) => {
-						if (didDrag(e)) {
-							return;
-						}
-						if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) {
-							document.activeElement.blur();
-						}
-						const coords = getCoordinates(e);
-						if (activeToolBehavior.onClick) {
-							activeToolBehavior.onClick(e, coords);
-						}
-					}}
-					onDoubleClick={(e) => {
-						if (activeToolBehavior.onDoubleClick) {
-							activeToolBehavior.onDoubleClick(e);
-						}
-					}}
-					onMouseUp={(e) => {
-						const coords = getCoordinates(e);
-						if (activeToolBehavior.onMouseUp) {
-							activeToolBehavior.onMouseUp(e, coords);
-						}
-					}}>
-					<Toolbar />
-					<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
-						<div
-							style={{
-								position: "absolute",
-								top: "6px",
-								left: "6px",
-								zIndex: 10,
-								display: "flex",
-								flexDirection: "column",
-								alignItems: "flex-start",
-								gap: "4px"
-							}}>
-							<div
-								className={styles["frosted-toolbar"]}
-								onClick={(e) => e.stopPropagation()}
-								onMouseUp={(e) => e.stopPropagation()}
-								onMouseDown={(e) => e.stopPropagation()}
-							>
-								<Button size="small" variant="minimal"
-									icon="target"
-									onClick={() => transformComponentRef.current?.centerView()}
-								/>
-								<Button
-									size="small"
-									variant="minimal"
-									active={showDiagramBoundary}
-									onClick={() => setShowDiagramBoundary(!showDiagramBoundary)}
-									title="Toggle Diagram Boundary"
-									icon="selection-box"
-								/>
-								<div className={styles["zoom-indicator"]}>
-									<EditableText minWidth={18}
-										value={zoomString}
+						});
+					}
+				}}
+				onMouseLeave={() => {
+					stopHover();
+					if (rafIdRef.current !== null) {
+						cancelAnimationFrame(rafIdRef.current);
+						rafIdRef.current = null;
+					}
+					lastCoordsRef.current = null;
+					dispatch(setCanvasMousePosition({ isMouseOverCanvas: false, position: undefined }));
+				}}
+				onMouseDown={(e) => {
+					dragStartRef.current = { x: e.clientX, y: e.clientY };
+				}}
+				onClick={(e) => {
+					if (didDrag(e)) {
+						return;
+					}
+					if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) {
+						document.activeElement.blur();
+					}
+					const coords = getCoordinates(e);
+					if (activeToolBehavior.onClick) {
+						activeToolBehavior.onClick(e, coords);
+					}
+				}}
+				onDoubleClick={(e) => {
+					if (activeToolBehavior.onDoubleClick) {
+						activeToolBehavior.onDoubleClick(e);
+					}
+				}}
+				onMouseUp={(e) => {
+					const coords = getCoordinates(e);
+					if (activeToolBehavior.onMouseUp) {
+						activeToolBehavior.onMouseUp(e, coords);
+					}
+				}}>
+				<Toolbar />
+				<div style={{ flex: 1, position: "relative", width: "100%", overflow: "hidden" }}>
+					<div
+						style={{
+							position: "absolute",
+							top: "6px",
+							left: "6px",
+							zIndex: 10,
+							display: "flex",
+							flexDirection: "column",
+							alignItems: "flex-start",
+							gap: "4px"
+						}}>
+						<ColumnModeButton />
+						<OverlaySelector />
 
-										onChange={(val) => setZoomString(val)}
-										onConfirm={onConfirmZoomEntry}
-										onEdit={() => setIsZoomEditing(true)}
-										selectAllOnFocus={true}
-									/>
-									<span className={styles["zoom-suffix"]}>x</span>
-								</div>
+
+						<div
+							className={styles["frosted-toolbar"]}
+							onClick={(e) => e.stopPropagation()}
+							onMouseUp={(e) => e.stopPropagation()}
+							onMouseDown={(e) => e.stopPropagation()}
+						>
+							<Button size="small" variant="minimal"
+								icon="target"
+								onClick={() => transformComponentRef.current?.centerView()}
+							/>
+							<div className={styles["zoom-indicator"]}>
+								<EditableText minWidth={18}
+									value={zoomString}
+
+									onChange={(val) => setZoomString(val)}
+									onConfirm={onConfirmZoomEntry}
+									onEdit={() => setIsZoomEditing(true)}
+									selectAllOnFocus={true}
+								/>
+								<span className={styles["zoom-suffix"]}>x</span>
 							</div>
-
-							<CanvasMouseCoordinates />
 						</div>
 
-						<div
-							style={{
-								position: "absolute",
-								top: "6px",
-								right: "6px",
-								zIndex: 10,
-							}}>
-							<ChannelAddToolbar />
-						</div>
 
-						<div
-							style={{
-								position: "absolute",
-								bottom: "8px",
-								right: "8px",
-								display: "flex",
-								flexDirection: "column",
-								alignItems: "flex-end",
-								gap: "6px",
-								zIndex: 10,
-								pointerEvents: "none",
-							}}>
-							{isLayerableElement && (
-								<div style={{ pointerEvents: "auto" }}>
-									<LayerButtons element={selectedElement!} />
-								</div>
-							)}
+
+						<CanvasMouseCoordinates />
+					</div>
+
+					<div
+						style={{
+							position: "absolute",
+							top: "6px",
+							right: "6px",
+							zIndex: 10,
+						}}>
+						<ChannelAddToolbar />
+					</div>
+
+					<div
+						style={{
+							position: "absolute",
+							bottom: "8px",
+							right: "8px",
+							display: "flex",
+							flexDirection: "column",
+							alignItems: "flex-end",
+							gap: "6px",
+							zIndex: 10,
+							pointerEvents: "none",
+						}}>
+						{isLayerableElement && (
 							<div style={{ pointerEvents: "auto" }}>
-								<CanvasToolToolbar />
-							</div>
-						</div>
-
-						{selectedElement instanceof Channel && (
-							<div
-								style={{
-									position: "absolute",
-									top: "50%",
-									right: "8px",
-									transform: "translateY(-50%)",
-									zIndex: 10,
-								}}>
-								<ChannelReorderButtons channel={selectedElement} />
+								<LayerButtons element={selectedElement!} />
 							</div>
 						)}
+						<div style={{ pointerEvents: "auto" }}>
+							<CanvasToolToolbar />
+						</div>
+					</div>
+
+					{selectedElement instanceof Channel && (
+						<div
+							style={{
+								position: "absolute",
+								top: "50%",
+								right: "8px",
+								transform: "translateY(-50%)",
+								zIndex: 10,
+							}}>
+							<ChannelReorderButtons channel={selectedElement} />
+						</div>
+					)}
 
 
-						<CanvasDropContainer scale={zoom} onFileDrop={handleSvgFileDrop}>
-							<TransformWrapper
-								ref={transformComponentRef}
-								initialScale={zoom}
-								onZoom={(z) => {
-									setZoom(z.state.scale);
-								}}
-								onZoomStop={(z) => {
-									setZoom(z.state.scale);
-								}}
-								centerOnInit={true}
-								limitToBounds={false}
+					<CanvasDropContainer scale={zoom} onFileDrop={handleSvgFileDrop}>
+						<TransformWrapper
+							ref={transformComponentRef}
+							initialScale={zoom}
+							onZoom={(z) => {
+								setZoom(z.state.scale);
+							}}
+							onZoomStop={(z) => {
+								setZoom(z.state.scale);
+							}}
+							centerOnInit={true}
+							limitToBounds={false}
 
-								maxScale={5}
-								minScale={0.5}
-								panning={{
-									allowLeftClickPan: isSpacePressed,
-									allowMiddleClickPan: true,
-									allowRightClickPan: false,
-									excluded: []
-								}}
-								doubleClick={{ disabled: true }}>
+							maxScale={5}
+							minScale={0.5}
+							panning={{
+								allowLeftClickPan: isSpacePressed,
+								allowMiddleClickPan: true,
+								allowRightClickPan: false,
+								excluded: []
+							}}
+							doubleClick={{ disabled: true }}>
 
 
-								<TransformComponent
-									wrapperStyle={{
-										width: "100%", height: "100%", position: "absolute",
-									}}>
-									{/* Large background grid that moves with transform */}
+							<TransformComponent
+								wrapperStyle={{
+									width: "100%", height: "100%", position: "absolute",
+								}}>
+								{/* Large background grid that moves with transform */}
+								<div
+									style={{
+										position: "absolute",
+										width: "10000px",
+										height: "10000px",
+										left: "-5000px",
+										top: "-5000px",
+										backgroundImage:
+											"radial-gradient(circle,rgba(204, 204, 204, 0.12) 0.6px, transparent 1px)",
+										backgroundSize: "5px 5px",
+										backgroundPosition: "0 0",
+										pointerEvents: "none",
+										zIndex: -1
+									}}></div>
+
+
+								<div
+									style={{
+										width: "100%",
+										height: "100%",
+										display: "inline-block",
+										position: "relative",
+										/*border: "dashed",
+										borderWidth: "0.2px",
+										borderColor: "#0000003d" */
+									}}
+									onMouseLeave={() => stopHover()}>
+
+									{/* Transformed Overlay Layer */}
 									<div
 										style={{
 											position: "absolute",
-											width: "10000px",
-											height: "10000px",
-											left: "-5000px",
-											top: "-5000px",
-											backgroundImage:
-												"radial-gradient(circle,rgba(204, 204, 204, 0.12) 0.6px, transparent 1px)",
-											backgroundSize: "5px 5px",
-											backgroundPosition: "0 0",
-											pointerEvents: "none",
-											zIndex: -1
-										}}></div>
-
-
-									<div
-										style={{
+											top: 0,
+											left: 0,
 											width: "100%",
 											height: "100%",
-											display: "inline-block",
-											position: "relative",
-											/*border: "dashed",
-											borderWidth: "0.2px",
-											borderColor: "#0000003d" */
-										}}
-										onMouseLeave={() => stopHover()}>
+											zIndex: 10001,
+											pointerEvents: "none",
+											transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
+												}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0
+												}px)`
+										}}>
 
-										{/* Transformed Overlay Layer */}
-										<div
-											style={{
-												position: "absolute",
-												top: 0,
-												left: 0,
-												width: "100%",
-												height: "100%",
-												zIndex: 10001,
-												pointerEvents: "none",
-												transform: `translate(${ENGINE.handler.diagram.x < 0 ? Math.abs(ENGINE.handler.diagram.x) : 0
-													}px, ${ENGINE.handler.diagram.y < 0 ? Math.abs(ENGINE.handler.diagram.y) : 0
-													}px)`
-											}}>
-
-											{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
-											{interactiveElements.map((el) => (
-												<CanvasDraggableElement
-													key={el.id}
-													reselect={reselect}
-													name={el.ref}
-													element={el}
-													visualState={selectedElementIds.includes(el.id) ? "selected" : "hovered"}
-													selectedElements={selectedElements}
-													x={el.x}
-													y={el.y}
-													scale={zoom}
-													isSpacePressed={isSpacePressed}
-													isHidden={el.id === editingElementId}
-													hoveredElement={rawHoveredElement ?? hoveredElement}></CanvasDraggableElement>
-											))}
+										{/* Draggable elements - Render for Selected OR Hovered (if select tool) */}
+										{interactiveElements.map((el) => (
+											<CanvasDraggableElement
+												key={el.id}
+												reselect={reselect}
+												name={el.ref}
+												element={el}
+												visualState={selectedElementIds.includes(el.id) ? "selected" : "hovered"}
+												selectedElements={selectedElements}
+												x={el.x}
+												y={el.y}
+												scale={zoom}
+												isSpacePressed={isSpacePressed}
+												isHidden={el.id === editingElementId}
+												hoveredElement={rawHoveredElement ?? hoveredElement}></CanvasDraggableElement>
+										))}
 
 
 
-											{/* Tools */}
-											{selectedTool.type === "select" ? (
-												<SelectionMarqueeOverlay
+										{/* Tools */}
+										{selectedTool.type === "select" ? (
+											<SelectionMarqueeOverlay
+												zoom={zoom}
+												isSpacePressed={isSpacePressed}
+											/>
+										) : null}
+
+										{selectedTool.type === "arrow" ? (
+											<div style={{ pointerEvents: isSpacePressed ? "none" : "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+												<LineTool
+													hoveredElement={rawHoveredElement ?? hoveredElement}
+													config={selectedTool.config}
 													zoom={zoom}
-													isSpacePressed={isSpacePressed}
-												/>
-											) : null}
-
-											{selectedTool.type === "arrow" ? (
-												<div style={{ pointerEvents: isSpacePressed ? "none" : "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
-													<LineTool
-														hoveredElement={rawHoveredElement ?? hoveredElement}
-														config={selectedTool.config}
-														zoom={zoom}
-														setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
-												</div>
-											) : (
-												<></>
-											)}
-
-											{selectedTool.type === "box" ? (
-												<div style={{ pointerEvents: isSpacePressed ? "none" : "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
-													<BoxTool
-														hoveredElement={rawHoveredElement ?? hoveredElement}
-														config={selectedTool.config}
-														zoom={zoom}
-														setTool={(tool) => dispatch(setSelectedTool(tool))}></BoxTool>
-												</div>
-											) : (
-												<></>
-											)}
-
-											{textInputPending && (
-												<CanvasTextInput
-													x={textInputPending.x}
-													y={textInputPending.y}
-													initialValue={textInputPending.initialValue}
-													onConfirm={textInputPending.onConfirm}
-													onCancel={textInputPending.onCancel}
-													onClose={() => setTextInputPending(null)}
-												/>
-											)}
-
-											{/* Drop field */}
-											<div className="nopan" style={{ pointerEvents: "auto" }}>
-												{ENGINE.handler.sequences[0] &&
-													<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
-												}
-												<SequencesPulseDropField></SequencesPulseDropField>
-												<SequencesColumnEditor scale={zoom}></SequencesColumnEditor>
-												<SequencesChannelPaddingEditor scale={zoom}></SequencesChannelPaddingEditor>
-												<LabelGroupDropFields></LabelGroupDropFields>
+													setTool={(tool) => dispatch(setSelectedTool(tool))}></LineTool>
 											</div>
+										) : (
+											<></>
+										)}
 
-											<SequenceColumnsOverlay hoveredElement={rawHoveredElement ?? hoveredElement} />
-											<SnapGuidesOverlay />
+										{selectedTool.type === "box" ? (
+											<div style={{ pointerEvents: isSpacePressed ? "none" : "auto", width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}>
+												<BoxTool
+													hoveredElement={rawHoveredElement ?? hoveredElement}
+													config={selectedTool.config}
+													zoom={zoom}
+													setTool={(tool) => dispatch(setSelectedTool(tool))}></BoxTool>
+											</div>
+										) : (
+											<></>
+										)}
 
-											{/* Debug layers */}
-											<Debug
-												debugGroupSelection={debugSelectionTypes}
-												debugSelection={debugElements}></Debug>
+										{textInputPending && (
+											<CanvasTextInput
+												x={textInputPending.x}
+												y={textInputPending.y}
+												initialValue={textInputPending.initialValue}
+												onConfirm={textInputPending.onConfirm}
+												onCancel={textInputPending.onCancel}
+												onClose={() => setTextInputPending(null)}
+											/>
+										)}
 
-											{/* Diagram boundary SVG overlay */}
-											{showDiagramBoundary && (
-												<svg
-													style={{
-														position: "absolute",
-														left: ENGINE.handler.diagram.x,
-														top: ENGINE.handler.diagram.y,
-														width: ENGINE.handler.diagram.width,
-														height: ENGINE.handler.diagram.height,
-														pointerEvents: "none",
-														zIndex: 10000
-													}}>
-													{/* Content boundary */}
-													<rect
-														x={ENGINE.handler.diagram.cx - ENGINE.handler.diagram.x}
-														y={ENGINE.handler.diagram.cy - ENGINE.handler.diagram.y}
-														width={ENGINE.handler.diagram.contentWidth !== undefined ? ENGINE.handler.diagram.contentWidth : 0}
-														height={ENGINE.handler.diagram.contentHeight !== undefined ? ENGINE.handler.diagram.contentHeight : 0}
-														fill="none"
-														stroke={Colors.BLUE5}
-														strokeOpacity={0.7}
-														strokeWidth="1"
-														strokeDasharray="1,1"
-													/>
-													{/* Padded boundary */}
-													<rect
-														x={0}
-														y={0}
-														width={ENGINE.handler.diagram.width}
-														height={ENGINE.handler.diagram.height}
-														fill="none"
-														stroke={Colors.GRAY3}
-														strokeOpacity={0.7}
-														strokeWidth="1.5"
-														strokeDasharray="3,4"
-													/>
-												</svg>
-											)}
-
+										{/* Drop field */}
+										<div className="nopan" style={{ pointerEvents: "auto" }}>
+											{ENGINE.handler.sequences[0] &&
+												<GridDropField target={ENGINE.handler.sequences[0]} ></GridDropField>
+											}
+											<SequencesPulseDropField></SequencesPulseDropField>
+											{showSequenceColumnEditor && <SequencesColumnEditor scale={zoom}></SequencesColumnEditor>}
+											{showSequenceChannelPaddingEditor && <SequencesChannelPaddingEditor scale={zoom}></SequencesChannelPaddingEditor>}
+											<LabelGroupDropFields></LabelGroupDropFields>
 										</div>
 
+										<SequenceColumnsOverlay hoveredElement={rawHoveredElement ?? hoveredElement} />
+										<SnapGuidesOverlay />
 
-										{/* Hitbox layer */}
-										<HitboxLayer
-											selectedElementId={selectedElementId}
-											setHoveredElement={constOnHitboxHover}></HitboxLayer>
+										{/* Debug layers */}
+										<Debug
+											debugGroupSelection={debugSelectionTypes}
+											debugSelection={debugElements}></Debug>
 
-										{/* Image */}
-										<div id="drawDiv" ref={diagramSvgRef}></div>
+										{/* Diagram boundary SVG overlay */}
+										{showDiagramOutline && (
+											<svg
+												style={{
+													position: "absolute",
+													left: ENGINE.handler.diagram.x,
+													top: ENGINE.handler.diagram.y,
+													width: ENGINE.handler.diagram.width,
+													height: ENGINE.handler.diagram.height,
+													pointerEvents: "none",
+													zIndex: 10000
+												}}>
+												{/* Content boundary */}
+												<rect
+													x={ENGINE.handler.diagram.cx - ENGINE.handler.diagram.x}
+													y={ENGINE.handler.diagram.cy - ENGINE.handler.diagram.y}
+													width={ENGINE.handler.diagram.contentWidth !== undefined ? ENGINE.handler.diagram.contentWidth : 0}
+													height={ENGINE.handler.diagram.contentHeight !== undefined ? ENGINE.handler.diagram.contentHeight : 0}
+													fill="none"
+													stroke={Colors.BLUE5}
+													strokeOpacity={0.7}
+													strokeWidth="1"
+													strokeDasharray="1,1"
+												/>
+												{/* Padded boundary */}
+												<rect
+													x={0}
+													y={0}
+													width={ENGINE.handler.diagram.width}
+													height={ENGINE.handler.diagram.height}
+													fill="none"
+													stroke={Colors.GRAY3}
+													strokeOpacity={0.7}
+													strokeWidth="1.5"
+													strokeDasharray="3,4"
+												/>
+											</svg>
+										)}
+
 									</div>
-								</TransformComponent>
 
-								<SeamlessPanner />
-							</TransformWrapper>
 
-							<CanvasDragLayer scale={zoom} />
-						</CanvasDropContainer>
-					</div>
+									{/* Hitbox layer */}
+									<HitboxLayer
+										selectedElementId={selectedElementId}
+										setHoveredElement={constOnHitboxHover}></HitboxLayer>
+
+									{/* Image */}
+									<div id="drawDiv" ref={diagramSvgRef}></div>
+								</div>
+							</TransformComponent>
+
+							<SeamlessPanner />
+						</TransformWrapper>
+
+						<CanvasDragLayer scale={zoom} />
+					</CanvasDropContainer>
 				</div>
+			</div>
 
 			<DebugLayerDialog />
 			<PerfDialog />

@@ -47,6 +47,9 @@ export interface ApplicationState {
     canvasMousePosition: CanvasMousePosition | undefined;
     isResizing: boolean;
     columnMode: boolean;
+    showDiagramOutline: boolean;
+    showSequenceColumnEditor: boolean;
+    showSequenceChannelPaddingEditor: boolean;
 }
 
 const initialState: ApplicationState = {
@@ -55,6 +58,9 @@ const initialState: ApplicationState = {
     debugSelectedElement: false,
     isResizing: false,
     columnMode: false,
+    showDiagramOutline: false,
+    showSequenceColumnEditor: true,
+    showSequenceChannelPaddingEditor: true,
     selectedTool: {
         type: 'select',
         config: {}
@@ -167,6 +173,24 @@ export const applicationSlice = createSlice({
         },
         toggleColumnMode: (state) => {
             state.columnMode = !state.columnMode;
+        },
+        setShowDiagramOutline: (state, action: PayloadAction<boolean>) => {
+            state.showDiagramOutline = action.payload;
+        },
+        toggleDiagramOutline: (state) => {
+            state.showDiagramOutline = !state.showDiagramOutline;
+        },
+        setShowSequenceColumnEditor: (state, action: PayloadAction<boolean>) => {
+            state.showSequenceColumnEditor = action.payload;
+        },
+        toggleSequenceColumnEditor: (state) => {
+            state.showSequenceColumnEditor = !state.showSequenceColumnEditor;
+        },
+        setShowSequenceChannelPaddingEditor: (state, action: PayloadAction<boolean>) => {
+            state.showSequenceChannelPaddingEditor = action.payload;
+        },
+        toggleSequenceChannelPaddingEditor: (state) => {
+            state.showSequenceChannelPaddingEditor = !state.showSequenceChannelPaddingEditor;
         }
     },
 });
@@ -184,7 +208,13 @@ export const {
     setCanvasMousePosition,
     setIsResizing,
     setColumnMode,
-    toggleColumnMode
+    toggleColumnMode,
+    setShowDiagramOutline,
+    toggleDiagramOutline,
+    setShowSequenceColumnEditor,
+    toggleSequenceColumnEditor,
+    setShowSequenceChannelPaddingEditor,
+    toggleSequenceChannelPaddingEditor
 } = applicationSlice.actions;
 
 export const selectSelectedElementId = (state: { application: ApplicationState }): string | undefined => {
