@@ -649,7 +649,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 							smooth={true}
 							wheel={{
 								step: 0.1,
-								smoothStep: 0.0025,
+								smoothStep: 0.008,
 								wheelDisabled: true,
 								touchPadDisabled: false,
 							}}
