@@ -23,6 +23,7 @@ import { SaveAsDialog } from "./SaveAsDialog";
 import { WelcomeDialog } from "./WelcomeDialog";
 import { UnsavedDiagramAlert } from "./UnsavedDiagramAlert";
 import { UnsavedDiagramLogoutAlert } from "./UnsavedDiagramLogoutAlert";
+import { ResetAppAlert } from "./ResetAppAlert";
 import { AboutDialog } from "./AboutDialog";
 import { CiteDialog } from "./CiteDialog";
 
@@ -97,6 +98,7 @@ export const GlobalDialogs: React.FC = () => {
 
             <UnsavedDiagramAlert />
             <UnsavedDiagramLogoutAlert />
+            <ResetAppAlert />
         </>
     );
 };

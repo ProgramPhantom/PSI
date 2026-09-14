@@ -10,7 +10,7 @@ import Visual, { IVisual } from "../../logic/visual";
 import LineLike, { ILineLike, isLineLike } from "../../logic/lineLike";
 import Channel from "../../logic/hasComponents/channel";
 import { RootState } from "../rootReducer";
-import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen } from "../slices/dialogSlice";
+import { setNewDiagramAlertOpen, setUnsavedDiagramLogoutAlertOpen, setResetAppAlertOpen } from "../slices/dialogSlice";
 import { setSelectedElementId, setSelectedElementIds, selectSelectedElementId, clearSelection } from "../slices/applicationSlice";
 import { api } from "../api/api";
 import { newDiagram, saveDiagram } from "./diagramThunks";
@@ -47,6 +47,13 @@ function canCopyElement(element: Visual): boolean {
 
 export const resetApp = createAsyncThunk(
     'actions/resetApp',
+    async (_, { dispatch }) => {
+        dispatch(setResetAppAlertOpen(true));
+    }
+);
+
+export const confirmResetApp = createAsyncThunk(
+    'actions/confirmResetApp',
     async () => {
         localStorage.clear();
         await localforage.clear();

@@ -25,6 +25,7 @@ export interface DialogState {
     isUnsavedDiagramLogoutAlertOpen: boolean;
     isAboutDialogOpen: boolean;
     isCiteDialogOpen: boolean;
+    isResetAppAlertOpen: boolean;
     roleSubformStack: RoleSubformLevel[];
 }
 
@@ -43,6 +44,7 @@ const initialState: DialogState = {
     isUnsavedDiagramLogoutAlertOpen: false,
     isAboutDialogOpen: false,
     isCiteDialogOpen: false,
+    isResetAppAlertOpen: false,
     roleSubformStack: []
 };
 
@@ -92,6 +94,9 @@ export const dialogSlice = createSlice({
         setCiteDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isCiteDialogOpen = action.payload;
         },
+        setResetAppAlertOpen: (state, action: PayloadAction<boolean>) => {
+            state.isResetAppAlertOpen = action.payload;
+        },
         pushRoleSubform: (state, action: PayloadAction<RoleSubformLevel>) => {
             state.roleSubformStack.push(action.payload);
         },
@@ -119,6 +124,7 @@ export const {
     setUnsavedDiagramLogoutAlertOpen,
     setAboutDialogOpen,
     setCiteDialogOpen,
+    setResetAppAlertOpen,
     pushRoleSubform,
     popRoleSubform,
     closeAllRoleSubforms
