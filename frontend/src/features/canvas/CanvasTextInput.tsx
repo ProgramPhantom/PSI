@@ -46,7 +46,7 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 				if (selectedTool.type === "text") {
 					newText = structuredClone(defaultText);
 					newText.type = "text";
-					newText.fontFamily = selectedTool.config?.fontFamily ?? "sans-serif";
+					newText.fontFamily = selectedTool.config?.fontFamily ?? defaultText.fontFamily ?? "Helvetica, Arial, sans-serif";
 					if (selectedTool.config?.fontSize) {
 						newText.style.fontSize = selectedTool.config.fontSize;
 					}

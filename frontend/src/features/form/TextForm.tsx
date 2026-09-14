@@ -52,24 +52,42 @@ function TextForm(props: ITextFormProps) {
 							<Controller
 								control={formControls.control}
 								name={`${fullPrefix}fontFamily`}
-								render={({ field }) => (
-									<HTMLSelect
-										{...field}
-										value={field.value || "sans-serif"}
-										id="font-family-select"
-										className={fieldStyles.compactHTMLSelect}
-										iconName="caret-down"
-										fill={true}
-										options={[
-											{ label: "Sans Serif", value: "sans-serif" },
-											{ label: "Serif", value: "serif" },
-											{ label: "Monospace", value: "monospace" },
-											{ label: "Georgia", value: "Georgia, serif" },
-											{ label: "Arial", value: "Arial, sans-serif" },
-											{ label: "Times New Roman", value: "Times New Roman, serif" }
-										]}
-									/>
-								)}></Controller>
+								render={({ field }) => {
+									const normalizeFont = (val?: string) => {
+										if (!val) return "Helvetica, Arial, sans-serif";
+										if (
+											val === "Helvetica, Arial, sans-serif" ||
+											val === "sans-serif" ||
+											val === "Arial" ||
+											val === "Arial, sans-serif" ||
+											val === "Helvetica" ||
+											val === "Helvetica, sans-serif"
+										) {
+											return "Helvetica, Arial, sans-serif";
+										}
+										if (val === "Georgia") return "Georgia, serif";
+										if (val === "Times New Roman") return "Times New Roman, serif";
+										return val;
+									};
+
+									return (
+										<HTMLSelect
+											{...field}
+											value={normalizeFont(field.value)}
+											id="font-family-select"
+											className={fieldStyles.compactHTMLSelect}
+											iconName="caret-down"
+											fill={true}
+											options={[
+												{ label: "Arial (Helvetica)", value: "Helvetica, Arial, sans-serif" },
+												{ label: "Serif", value: "serif" },
+												{ label: "Monospace", value: "monospace" },
+												{ label: "Georgia", value: "Georgia, serif" },
+												{ label: "Times New Roman", value: "Times New Roman, serif" }
+											]}
+										/>
+									);
+								}}></Controller>
 						</SimpleField>
 
 						<SimpleField

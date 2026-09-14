@@ -9,7 +9,7 @@ export const TextToolPopup: React.FC = React.memo(() => {
     const selectedTool = useAppSelector((state) => state.application.selectedTool);
     const config = selectedTool.type === 'text' ? selectedTool.config : toolConfigs?.text;
 
-    const selectedFont = config?.fontFamily ?? 'sans-serif';
+    const selectedFont = config?.fontFamily ?? 'Helvetica, Arial, sans-serif';
     const selectedFontSize = config?.fontSize ?? 20;
 
     const handleFontSelect = (fontFamily: string) => {
@@ -32,49 +32,57 @@ export const TextToolPopup: React.FC = React.memo(() => {
         }));
     };
 
+    const isFontActive = (font: string) => {
+        if (selectedFont === font) return true;
+        if (font === 'Helvetica, Arial, sans-serif' && (
+            selectedFont === 'Helvetica, Arial, sans-serif' ||
+            selectedFont === 'sans-serif' ||
+            selectedFont === 'Arial' ||
+            selectedFont === 'Arial, sans-serif' ||
+            selectedFont === 'Helvetica' ||
+            selectedFont === 'Helvetica, sans-serif'
+        )) return true;
+        if (font === 'Georgia, serif' && selectedFont === 'Georgia') return true;
+        if (font === 'Times New Roman, serif' && selectedFont === 'Times New Roman') return true;
+        return false;
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'row' }}>
-            <Menu style={{ minWidth: 130 }}>
+            <Menu style={{ minWidth: 140 }}>
                 <MenuDivider title="Font Family" />
                 <MenuItem
-                    text="Sans Serif"
+                    text="Arial (Helvetica)"
                     shouldDismissPopover={false}
-                    active={selectedFont === 'sans-serif'}
-                    onClick={() => handleFontSelect('sans-serif')}
-                    style={{ fontFamily: 'sans-serif' }}
+                    active={isFontActive('Helvetica, Arial, sans-serif')}
+                    onClick={() => handleFontSelect('Helvetica, Arial, sans-serif')}
+                    style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
                 />
                 <MenuItem
                     text="Serif"
                     shouldDismissPopover={false}
-                    active={selectedFont === 'serif'}
+                    active={isFontActive('serif')}
                     onClick={() => handleFontSelect('serif')}
                     style={{ fontFamily: 'serif' }}
                 />
                 <MenuItem
                     text="Monospace"
                     shouldDismissPopover={false}
-                    active={selectedFont === 'monospace'}
+                    active={isFontActive('monospace')}
                     onClick={() => handleFontSelect('monospace')}
                     style={{ fontFamily: 'monospace' }}
                 />
                 <MenuItem
                     text="Georgia"
                     shouldDismissPopover={false}
-                    active={selectedFont === 'Georgia, serif'}
+                    active={isFontActive('Georgia, serif')}
                     onClick={() => handleFontSelect('Georgia, serif')}
                     style={{ fontFamily: 'Georgia, serif' }}
                 />
                 <MenuItem
-                    text="Arial"
-                    shouldDismissPopover={false}
-                    active={selectedFont === 'Arial, sans-serif'}
-                    onClick={() => handleFontSelect('Arial, sans-serif')}
-                    style={{ fontFamily: 'Arial, sans-serif' }}
-                />
-                <MenuItem
                     text="Times New Roman"
                     shouldDismissPopover={false}
-                    active={selectedFont === 'Times New Roman, serif'}
+                    active={isFontActive('Times New Roman, serif')}
                     onClick={() => handleFontSelect('Times New Roman, serif')}
                     style={{ fontFamily: 'Times New Roman, serif' }}
                 />

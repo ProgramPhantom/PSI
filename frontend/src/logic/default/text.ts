@@ -17,5 +17,5 @@ export const DEFAULT_TEXT: IText = {
 
 	"sizeMode": { x: "fit", y: "fit" },
 	"type": "text",
-	"fontFamily": "sans-serif"
+	"fontFamily": "Helvetica, Arial, sans-serif"
 }

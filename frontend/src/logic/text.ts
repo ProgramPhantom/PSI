@@ -26,7 +26,7 @@ export class Text extends TextBase implements IText {
 	constructor(params: IText) {
 		super(params);
 		this.type = "text";
-		this.fontFamily = params.fontFamily ?? "sans-serif";
+		this.fontFamily = params.fontFamily ?? "Helvetica, Arial, sans-serif";
 
 		this.intrinsicSize = this.resolveDimensions();
 		this.wHRatio = this.intrinsicSize.height > 0 ? (this.intrinsicSize.width / this.intrinsicSize.height) : 1;

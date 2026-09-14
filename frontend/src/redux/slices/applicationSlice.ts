@@ -68,7 +68,7 @@ const initialState: ApplicationState = {
     toolConfigs: {
         select: {},
         text: {
-            fontFamily: 'sans-serif',
+            fontFamily: 'Helvetica, Arial, sans-serif',
             fontSize: 20
         },
         latex: {
