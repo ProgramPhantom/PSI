@@ -37,7 +37,7 @@ const Toolbar: React.FC = () => {
 			}}>
 			<div style={{ flex: 1, display: "flex", alignItems: "center" }}>
 				<ButtonGroup variant="outlined" size="small">
-					<Popover hoverOpenDelay={0} interactionKind="click" minimal={true}
+					<Popover hoverOpenDelay={0} interactionKind="hover" minimal={true}
 						hoverCloseDelay={0}
 						position={Position.BOTTOM_LEFT}
 						content={
@@ -50,7 +50,7 @@ const Toolbar: React.FC = () => {
 						}>
 						<Button text="File" />
 					</Popover>
-					<Popover hoverOpenDelay={0} interactionKind="click"
+					<Popover hoverOpenDelay={0} interactionKind="hover"
 						hoverCloseDelay={0} minimal={true}
 						position={Position.BOTTOM_LEFT}
 						content={
@@ -65,7 +65,7 @@ const Toolbar: React.FC = () => {
 						}>
 						<Button text="Edit" />
 					</Popover>
-					<Popover hoverOpenDelay={0} interactionKind="click"
+					<Popover hoverOpenDelay={0} interactionKind="hover"
 						hoverCloseDelay={0} minimal={true}
 						position={Position.BOTTOM_LEFT}
 						content={
@@ -78,7 +78,7 @@ const Toolbar: React.FC = () => {
 						}>
 						<Button text="Export" />
 					</Popover>
-					<Popover hoverOpenDelay={0} interactionKind="click"
+					<Popover hoverOpenDelay={0} interactionKind="hover"
 						hoverCloseDelay={0} minimal={true}
 						position={Position.BOTTOM_LEFT}
 						content={
@@ -115,7 +115,7 @@ const Toolbar: React.FC = () => {
 					{saveState !== 'saved' && <span style={{ marginLeft: "2px" }}>*</span>}
 				</div>
 
-				{saveState === "saved" && 
+				{saveState === "saved" &&
 					<Tooltip content={diagramSource === "server" ? "Saved on server" : "Saved locally"} position={Position.BOTTOM}>
 						<Icon icon={diagramSource === "server" ? "cloud" : "floppy-disk"} size={14} style={{ marginLeft: "6px", marginBottom: "2px", color: Colors.GRAY3 }} />
 					</Tooltip>
