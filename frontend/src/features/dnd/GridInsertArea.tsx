@@ -1,5 +1,5 @@
 import { Colors } from "@blueprintjs/core";
-import { CSSProperties, useEffect, useRef } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useDrop } from "react-dnd";
 import { DragElementTypes, } from "./CanvasDropContainer";
 import { IDraggableElementDropItem } from "./TemplateDraggableElement";
@@ -18,14 +18,9 @@ export interface IGridArea {
 	index: number
 }
 
-export interface IGridAreaResult {
-	coords: { row: number, col: number }
-	id: string
-}
-export type GridDropResultType = { type: "grid", data: IGridAreaResult }
+export type GridDropResultType = { type: "grid", data: { coords: { row: number, col: number }, id: string } }
 
-
-interface IGridInsertAreaProps {
+export interface IGridInsertAreaProps {
 	areaSpec: IGridArea;
 	isHighlighted?: boolean;
 	onSetHighlights?: (cells: Set<string>) => void;
@@ -67,6 +62,19 @@ function GridInsertArea(props: IGridInsertAreaProps) {
 
 	})); // Added dependencies
 
+	const [isDropActive, setIsDropActive] = useState(false);
+
+	useEffect(() => {
+		if (canDrop) {
+			const timer = setTimeout(() => {
+				setIsDropActive(true);
+			}, 50);
+			return () => clearTimeout(timer);
+		} else {
+			setIsDropActive(false);
+		}
+	}, [canDrop]);
+
 
 	useEffect(() => {
 		if (!isOver && props.onSetHighlights) {
@@ -97,14 +105,15 @@ function GridInsertArea(props: IGridInsertAreaProps) {
 		top: `${props.areaSpec.area.y}px`,
 		left: `${props.areaSpec.area.x}px`,
 		opacity: 0.4,
-		zIndex: canDrop ? (isActive ? 40000 : 35000) : 200,
-		border: "2px dashed rgba(80, 80, 80, 1)"
+		zIndex: isDropActive ? (isActive ? 60000 : 55000) : 200,
+		border: "2px dashed rgba(80, 80, 80, 1)",
+		pointerEvents: isDropActive ? "auto" : "none"
 	};
 
 	return (
 		<div id={`(${props.areaSpec.coords.row}, ${props.areaSpec.coords.col})`}
 			ref={drop}
-			style={{ ...style, backgroundColor, pointerEvents: "auto", }}
+			style={{ ...style, backgroundColor }}
 		></div>
 	);
 }

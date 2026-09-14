@@ -1,5 +1,5 @@
 import { Colors } from "@blueprintjs/core";
-import { CSSProperties } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import { ID } from "../../logic/point";
 import { DragElementTypes } from "./CanvasDropContainer";
@@ -51,6 +51,19 @@ function PulseInsertArea(props: { areaSpec: IPulseArea; key: string }) {
 		})
 	}));
 
+	const [isDropActive, setIsDropActive] = useState(false);
+
+	useEffect(() => {
+		if (canDrop) {
+			const timer = setTimeout(() => {
+				setIsDropActive(true);
+			}, 50);
+			return () => clearTimeout(timer);
+		} else {
+			setIsDropActive(false);
+		}
+	}, [canDrop]);
+
 	const isActive = canDrop && isOver;
 	let backgroundColor = "transparent";
 	let border = "2px solid rgba(0, 0, 0, 0)";
@@ -71,13 +84,14 @@ function PulseInsertArea(props: { areaSpec: IPulseArea; key: string }) {
 		top: `${props.areaSpec.area.y}px`,
 		left: `${props.areaSpec.area.x}px`,
 		opacity: 0.4,
-		zIndex: canDrop ? (isActive ? 40000 : 35000) : 200
+		zIndex: isDropActive ? (isActive ? 60000 : 55000) : 200,
+		pointerEvents: isDropActive ? "auto" : "none"
 	};
 
 	return (
 		<div
 			ref={drop}
-			style={{ ...style, backgroundColor, pointerEvents: "auto", }}
+			style={{ ...style, backgroundColor }}
 			data-testid={props.areaSpec.channelID + props.areaSpec.index}
 			key={props.key}></div>
 	);
