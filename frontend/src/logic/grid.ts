@@ -678,9 +678,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 						// Don't do this for subgrid children, they are already positioned.
 						if (this.isSubgridChild(element)) {
-							if (!element.dirtyLayout) {
-								continue;
-							}
+
 							element.computePositions({ x: element.x, y: element.y });
 							continue;
 						}
@@ -701,7 +699,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						cellRect.internalImmediateBind(element, "x", alignment.x, true)
 						cellRect.internalImmediateBind(element, "y", alignment.y, true)
 
-						if (!element.dirtyLayout && element.x === prevX && element.y === prevY) {
+						if (element.x === prevX && element.y === prevY) {
 							continue;
 						}
 

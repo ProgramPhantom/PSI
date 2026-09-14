@@ -1,9 +1,10 @@
-import { Colors } from "@blueprintjs/core";
+import { Icon } from "@blueprintjs/core";
 import { CSSProperties, useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import { ID } from "../../logic/point";
 import { DragElementTypes } from "./CanvasDropContainer";
 import { Orientation } from "../../logic/spacial";
+import styles from "./styles/PulseInsertArea.module.scss";
 
 
 export interface IPulseArea {
@@ -65,25 +66,23 @@ function PulseInsertArea(props: { areaSpec: IPulseArea; key: string }) {
 	}, [canDrop]);
 
 	const isActive = canDrop && isOver;
-	let backgroundColor = "transparent";
-	let border = "2px solid rgba(0, 0, 0, 0)";
-	if (isActive) {
-		backgroundColor = Colors.BLUE3;
-	} else if (canDrop) {
-		backgroundColor = Colors.BLUE5;
-		border = "2px solid rgba(80, 80, 80, 0)";
-	}
 
-	let style: CSSProperties = {
-		height: `${props.areaSpec.area.height}px`,
-		width: `${props.areaSpec.area.width}px`,
+	const GAP = 2; // 2px inset on all sides creates a 4px gap between adjacent insert areas
+	const areaX = props.areaSpec.area.x + GAP;
+	const areaY = props.areaSpec.area.y + GAP;
+	const areaWidth = Math.max(0, props.areaSpec.area.width - GAP * 2);
+	const areaHeight = Math.max(0, props.areaSpec.area.height - GAP * 2);
 
-		backgroundColor: "transparent",
-		visibility: canDrop ? "visible" : "hidden",
+	const badgeSize = Math.min(22, Math.max(14, Math.min(areaHeight, areaWidth) - 6));
+	const iconSize = Math.max(10, Math.min(13, badgeSize - 6));
+
+	const style: CSSProperties = {
+		height: `${areaHeight}px`,
+		width: `${areaWidth}px`,
 		position: "absolute",
-		top: `${props.areaSpec.area.y}px`,
-		left: `${props.areaSpec.area.x}px`,
-		opacity: 0.4,
+		top: `${areaY}px`,
+		left: `${areaX}px`,
+		visibility: canDrop ? "visible" : "hidden",
 		zIndex: isDropActive ? (isActive ? 60000 : 55000) : 200,
 		pointerEvents: isDropActive ? "auto" : "none"
 	};
@@ -91,9 +90,20 @@ function PulseInsertArea(props: { areaSpec: IPulseArea; key: string }) {
 	return (
 		<div
 			ref={drop}
-			style={{ ...style, backgroundColor }}
+			className={`${styles.pulseInsertArea} ${isActive ? styles.active : ""}`}
+			style={style}
 			data-testid={props.areaSpec.channelID + props.areaSpec.index}
-			key={props.key}></div>
+			key={props.key}>
+			<div
+				className={styles.badge}
+				style={{
+					width: `${badgeSize}px`,
+					height: `${badgeSize}px`
+				}}
+			>
+				+
+			</div>
+		</div>
 	);
 }
 

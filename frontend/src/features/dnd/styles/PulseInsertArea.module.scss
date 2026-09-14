@@ -1,0 +1,38 @@
+@use "@blueprintjs/core/lib/scss/variables" as bp;
+
+.pulseInsertArea {
+	padding: 5px;
+
+	box-sizing: border-box;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.05s ease-in-out, border-color 0.05s ease-in-out, box-shadow 0.05s ease-in-out, color 0.05s ease-in-out;
+	user-select: none;
+	background-color: rgba(bp.$blue3, 0.08);
+	border: 1.5px dashed rgba(bp.$blue3, 0.65);
+
+	&.active {
+		background-color: rgba(bp.$blue3, 0.25);
+		border: 2px solid bp.$blue3;
+		box-shadow: 0 0 10px rgba(bp.$blue3, 0.4), inset 0 0 8px rgba(bp.$blue3, 0.2);
+
+		.badge {
+			color: #ffffff;
+		}
+	}
+}
+
+.badge {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: bp.$blue3;
+	transition: color 0.05s ease-in-out;
+	pointer-events: none;
+
+	svg {
+		fill: currentColor;
+	}
+}
