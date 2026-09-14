@@ -18,12 +18,10 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 
 	return (
 		<>
-			<VisualForm target={props.target} widthDisplay={true} heightDisplay={true} prefix={props.prefix}></VisualForm>
-
 			{/* Style stuff */}
 			<Section
 				className={sectionStyles.minimalSection}
-				collapseProps={{ defaultIsOpen: false }}
+				collapseProps={{ defaultIsOpen: true }}
 				compact={true}
 				title={"Style"}
 				collapsible={true}>
@@ -97,6 +95,8 @@ const RectElementForm: React.FC<IRectFormProps> = (props) => {
 					</SimpleField>
 				</ControlGroup>
 			</Section>
+
+			<VisualForm target={props.target} widthDisplay={true} heightDisplay={true} prefix={props.prefix}></VisualForm>
 		</>
 	);
 };

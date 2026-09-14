@@ -15,3 +15,7 @@ export const MAX_PADDING = 200;
 // Offset constraints (applied symmetrically as min -400 and max +400)
 export const MAX_OFFSET_SIZE = 400;
 export const MIN_OFFSET_SIZE = -MAX_OFFSET_SIZE;
+
+// Font size constraints
+export const MIN_FONT_SIZE = 4;
+export const MAX_FONT_SIZE = 144;

@@ -161,12 +161,53 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				collapseProps={{
 					defaultIsOpen: false,
 					transitionDuration: 0,
+					keepChildrenMounted: true
 				}}
 				compact={true}
 				title={"Placement"}
 				collapsible={true}>
 				<ControlGroup vertical={true} className={styles.formGroupContainer}>
 					<PlacementModeConfig fullPrefix={fullPrefix}></PlacementModeConfig>
+					{/* Size Mode */}
+					<DoubleField
+						label={(<InformationLabel text="Size Mode" helpType="sizeMode"></InformationLabel>)}
+						leftLabel="W"
+						leftField={
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}sizeMode.x`}
+								defaultValue={currentX}
+								render={({ field }) => (
+									<HTMLSelect
+										{...field}
+										id="size-mode-x"
+										className={fieldStyles.compactHTMLSelect}
+										fill
+										options={sizeOptions}
+										disabled={placementControl === "auto"}
+									/>
+								)}
+							/>
+						}
+						rightLabel="H"
+						rightField={
+							<Controller
+								control={formControls.control}
+								name={`${fullPrefix}sizeMode.y`}
+								defaultValue={currentY}
+								render={({ field }) => (
+									<HTMLSelect
+										{...field}
+										id="size-mode-y"
+										className={fieldStyles.compactHTMLSelect}
+										fill
+										options={sizeOptions}
+										disabled={placementControl === "auto"}
+									/>
+								)}
+							/>
+						}
+					/>
 				</ControlGroup>
 			</Section>
 
@@ -353,60 +394,7 @@ const VisualForm: React.FC<IVisualFormProps> = (props) => {
 				</Section>
 			)}
 
-			{/* Advanced */}
-			<Section
-				className={sectionStyles.minimalSection}
-				collapseProps={{
-					defaultIsOpen: false,
-					transitionDuration: 0,
-					keepChildrenMounted: true
-				}}
-				compact={true}
-				title="Advanced"
-				collapsible={true}>
-				<ControlGroup vertical={true} className={styles.formGroupContainer}>
-					{/* Size Mode */}
-					<DoubleField
-						label={(<InformationLabel text="Size Mode" helpType="sizeMode"></InformationLabel>)}
-						leftLabel="W"
-						leftField={
-							<Controller
-								control={formControls.control}
-								name={`${fullPrefix}sizeMode.x`}
-								defaultValue={currentX}
-								render={({ field }) => (
-									<HTMLSelect
-										{...field}
-										id="size-mode-x"
-										className={fieldStyles.compactHTMLSelect}
-										fill
-										options={sizeOptions}
-										disabled={placementControl === "auto"}
-									/>
-								)}
-							/>
-						}
-						rightLabel="H"
-						rightField={
-							<Controller
-								control={formControls.control}
-								name={`${fullPrefix}sizeMode.y`}
-								defaultValue={currentY}
-								render={({ field }) => (
-									<HTMLSelect
-										{...field}
-										id="size-mode-y"
-										className={fieldStyles.compactHTMLSelect}
-										fill
-										options={sizeOptions}
-										disabled={placementControl === "auto"}
-									/>
-								)}
-							/>
-						}
-					/>
-				</ControlGroup>
-			</Section>
+
 		</>
 	);
 };
