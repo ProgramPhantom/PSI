@@ -1,5 +1,5 @@
 import { Element, G, Rect, SVG } from "@svgdotjs/svg.js";
-import Point, { AllComponentTypes, ID, dirtiesLayout } from "./point";
+import Point, { AllComponentTypes, ID, dirtiesLayout, dirtiesRender } from "./point";
 import Spacial, { ContainerSizeMethod, Dimensions, Size, Bounds, RBushItem } from "./spacial";
 import Visual, { IDraw, IVisual, doesDraw } from "./visual";
 import { showSVGRecursively } from "./util2";
@@ -308,6 +308,14 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 			}
 		});
 
+		if (this.children.length > 1) {
+			for (const uc of this.children) {
+				if (uc instanceof Visual && uc.svg && uc.svg.node.parentNode === this.svg.node) {
+					this.svg.node.appendChild(uc.svg.node);
+				}
+			}
+		}
+
 		super.draw(surface);
 	}
 
@@ -475,6 +483,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 		return this.children.findIndex((c) => c.id === id);
 	}
 
+	@dirtiesRender
 	public changeChildIndex(fromIndex: number, toIndex: number): boolean {
 		if (fromIndex < 0 || fromIndex >= this.children.length) return false;
 		if (toIndex < 0 || toIndex >= this.children.length) return false;

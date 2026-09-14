@@ -2,6 +2,7 @@ import { Button, ButtonGroup, Position, Tooltip } from "@blueprintjs/core";
 import React, { useSyncExternalStore } from "react";
 import ENGINE from "../../logic/engine";
 import Visual from "../../logic/visual";
+import Collection from "../../logic/collection";
 import styles from "./styles/toolbars.module.scss";
 
 interface LayerButtonsProps {
@@ -13,8 +14,11 @@ export const LayerButtons: React.FC<LayerButtonsProps> = React.memo(({ element }
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
 	const diagram = ENGINE.handler.diagram;
-	const index = diagram.childIndexById(element.id);
-	const numChildren = diagram.numChildren;
+	const parentId = element.parentId ?? diagram.id;
+	const parent = (diagram.id === parentId ? diagram : ENGINE.handler.identifyElement(parentId)) as Collection | undefined;
+	const parentCollection = parent && Collection.isCollection(parent) ? parent : diagram;
+	const index = parentCollection.childIndexById(element.id);
+	const numChildren = parentCollection.numChildren;
 
 	const isAtBack = index === undefined || index <= 0;
 	const isAtFront = index === undefined || index >= numChildren - 1;

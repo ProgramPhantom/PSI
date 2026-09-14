@@ -6,6 +6,7 @@ import Visual from "../../logic/visual";
 import Spacial from "../../logic/spacial";
 import { useAppSelector } from "../../redux/hooks";
 import { isGridColumn } from "../../logic/grid";
+import Collection from "../../logic/collection";
 
 interface IHitboxLayerProps {
 	selectedElementId: string | undefined;
@@ -75,9 +76,26 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 	const createHitboxDom = () => {
 		hitboxSVG = new G();
 
+		const visited = new Set<ID>();
+		const addHitboxesRecursively = (element: Visual) => {
+			if (element.id) {
+				visited.add(element.id);
+			}
+			if (!FocusRules.neverSelectable.includes(element.type)) {
+				hitboxSVG.add(element.getHitbox());
+			}
+			if (Collection.isCollection(element)) {
+				for (const child of element.children) {
+					addHitboxesRecursively(child);
+				}
+			}
+		};
+
+		addHitboxesRecursively(ENGINE.handler.diagram);
+
 		Object.values(ENGINE.handler.allElements).forEach((e) => {
-			if (!FocusRules.neverSelectable.includes(e.type)) {
-				hitboxSVG.add(e.getHitbox())
+			if (e.id && !visited.has(e.id) && !FocusRules.neverSelectable.includes(e.type)) {
+				hitboxSVG.add(e.getHitbox());
 			}
 		});
 
