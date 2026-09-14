@@ -188,8 +188,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 								targetState.placementMode = {
 									type: "free",
 								};
-								if (!isTargetInsideGroup) {
-									delete targetState.pulseLayoutConfig;
+								if (!isTargetInsideGroup && targetState.pulseLayoutConfig) {
+									targetState.pulseLayoutConfig = {
+										...targetState.pulseLayoutConfig,
+										channelID: undefined,
+										sequenceID: undefined,
+										index: undefined
+									};
 								}
 
 								ENGINE.handler.act({
@@ -213,8 +218,13 @@ const CanvasDraggableElement: React.FC<IDraggableElementProps> = memo(
 									targetState.placementMode = {
 										type: "free",
 									};
-									if (!isTargetInsideGroup) {
-										delete targetState.pulseLayoutConfig;
+									if (!isTargetInsideGroup && targetState.pulseLayoutConfig) {
+										targetState.pulseLayoutConfig = {
+											...targetState.pulseLayoutConfig,
+											channelID: undefined,
+											sequenceID: undefined,
+											index: undefined
+										};
 									}
 
 									return {

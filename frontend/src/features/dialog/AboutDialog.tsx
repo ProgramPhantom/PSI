@@ -155,7 +155,7 @@ export function AboutDialog(props: IAboutDialogProps) {
 										</tr>
 										<tr>
 											<td><strong>Development Version</strong></td>
-											<td>v0.9.2 (Pre-release)</td>
+											<td>v0.9.9 (Pre-release)</td>
 										</tr>
 									</tbody>
 								</table>

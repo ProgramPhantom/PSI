@@ -567,17 +567,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								icon="target"
 								onClick={() => transformComponentRef.current?.centerView()}
 							/>
-							<div className={styles["zoom-indicator"]}>
-								<EditableText minWidth={18}
-									value={zoomString}
 
-									onChange={(val) => setZoomString(val)}
-									onConfirm={onConfirmZoomEntry}
-									onEdit={() => setIsZoomEditing(true)}
-									selectAllOnFocus={true}
-								/>
-								<span className={styles["zoom-suffix"]}>x</span>
-							</div>
 						</div>
 
 
@@ -644,12 +634,12 @@ const Canvas: React.FC<ICanvasProps> = () => {
 							centerOnInit={true}
 							limitToBounds={false}
 
-							maxScale={5}
-							minScale={0.5}
+							maxScale={10}
+							minScale={0.3}
 							smooth={true}
 							wheel={{
-								step: 0.1,
-								smoothStep: 0.008,
+								step: 0.01,
+								smoothStep: 0.001,
 								wheelDisabled: true,
 								touchPadDisabled: false,
 							}}

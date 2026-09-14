@@ -6,6 +6,10 @@ import { useAppDispatch } from "../../redux/hooks";
 import { setDiagramsDialogOpen, setLoadDialogOpen, setLoginDialogOpen, setPNGDialogOpen, setSaveAsDialogOpen, setUserDialogOpen, setAboutDialogOpen, setCiteDialogOpen, setSVGDialogOpen, setKeyboardShortcutsDialogOpen } from "../../redux/slices/dialogSlice";
 import * as Actions from "../../redux/thunks/actionThunks";
 import logoUrl from "../../assets/app/Logo1.svg";
+import bmcLogoUrl from "../../assets/app/bmc-logo.svg";
+
+// Replace with your actual Buy Me a Coffee page username or link:
+const BUY_ME_A_COFFEE_URL = "https://buymeacoffee.com/henryvarley";
 
 export default function Banner() {
 	const { data: user } = useGetMeQuery();
@@ -16,7 +20,7 @@ export default function Banner() {
 		<Navbar>
 			<Navbar.Group>
 				<img src={logoUrl} width={30} height={20} style={{ marginRight: "10px", cursor: "help" }} alt="Pulse Logo" onClick={() => dispatch(setAboutDialogOpen(true))} />
-				<Navbar.Heading>Pulse Planner v0.9.2 (Pre-release)</Navbar.Heading>
+				<Navbar.Heading>Pulse Planner v0.9.9 (Pre-release)</Navbar.Heading>
 				<Tooltip content="Open (Ctrl+O)" position={Position.BOTTOM}>
 					<Button
 						size="medium"
@@ -106,6 +110,15 @@ export default function Banner() {
 			</Navbar.Group>
 
 			<Navbar.Group align={"right"}>
+				<Tooltip content="Buy me a coffee to support development!" position={Position.BOTTOM}>
+					<Button
+						variant="minimal"
+						icon={<img src={bmcLogoUrl} alt="Buy me a coffee" width={16} height={16} style={{ verticalAlign: "middle", objectFit: "contain" }} />}
+						text="Buy me a coffee"
+						onClick={() => window.open(BUY_ME_A_COFFEE_URL, "_blank", "noopener,noreferrer")}
+						style={{ marginRight: "10px" }}
+					/>
+				</Tooltip>
 				<Tooltip content="Keyboard Shortcuts" position={Position.BOTTOM}>
 					<Button
 						variant="minimal"
