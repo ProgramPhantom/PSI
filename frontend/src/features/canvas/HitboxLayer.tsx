@@ -93,11 +93,7 @@ export function HitboxLayer(props: IHitboxLayerProps) {
 
 		addHitboxesRecursively(ENGINE.handler.diagram);
 
-		Object.values(ENGINE.handler.allElements).forEach((e) => {
-			if (e.id && !visited.has(e.id) && !FocusRules.neverSelectable.includes(e.type)) {
-				hitboxSVG.add(e.getHitbox());
-			}
-		});
+
 
 		if (columnMode) {
 			for (const seq of ENGINE.handler.sequences) {
