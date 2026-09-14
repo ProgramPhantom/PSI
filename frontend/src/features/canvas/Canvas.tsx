@@ -131,6 +131,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 	const isResizing = useAppSelector((state) => state.application.isResizing);
 
 	const [isSpacePressed, setIsSpacePressed] = useState(false);
+	const [isMiddleMousePanning, setIsMiddleMousePanning] = useState(false);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -301,7 +302,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 			case "select":
 			default:
 				return {
-					cursor: isSpacePressed ? "grab" : "default",
+					cursor: (isSpacePressed || isMiddleMousePanning) ? "grab" : "default",
 					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
 						const element: Spacial | undefined = hoveredElement;
 						if (element === undefined) {
@@ -485,7 +486,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 					display: "flex",
 					flexDirection: "column",
 					position: "relative",
-					cursor: isSpacePressed ? "grab" : activeToolBehavior.cursor
+					cursor: (isSpacePressed || isMiddleMousePanning) ? "grab" : activeToolBehavior.cursor
 				}}
 				onMouseMove={(e) => {
 					const coords = getCoordinates(e);
@@ -651,6 +652,14 @@ const Canvas: React.FC<ICanvasProps> = () => {
 								allowRightClickPan: false,
 								excluded: []
 							}}
+							onPanningStart={(_ref, e) => {
+								if ("button" in e && e.button === 1) {
+									setIsMiddleMousePanning(true);
+								}
+							}}
+							onPanningStop={() => {
+								setIsMiddleMousePanning(false);
+							}}
 							doubleClick={{ disabled: true }}>
 
 
@@ -726,6 +735,7 @@ const Canvas: React.FC<ICanvasProps> = () => {
 											<SelectionMarqueeOverlay
 												zoom={zoom}
 												isSpacePressed={isSpacePressed}
+												isMiddleMousePanning={isMiddleMousePanning}
 											/>
 										) : null}
 

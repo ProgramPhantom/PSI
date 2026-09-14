@@ -37,7 +37,7 @@ export const CanvasToolToolbar: React.FC = React.memo(() => {
         >
             <Tooltip hoverOpenDelay={2000} content="Select Tool" position={Position.TOP}>
                 <Button
-                    icon="move"
+                    icon="hand-up"
                     active={selectedTool.type === 'select'}
                     intent={selectedTool.type === 'select' ? 'primary' : 'none'}
                     onClick={() => {

@@ -9,11 +9,13 @@ import { getElementCenter, isEligibleForMultiSelect, isPointInBox } from "./sele
 interface SelectionMarqueeOverlayProps {
 	zoom: number;
 	isSpacePressed: boolean;
+	isMiddleMousePanning?: boolean;
 }
 
 export const SelectionMarqueeOverlay: React.FC<SelectionMarqueeOverlayProps> = ({
 	zoom,
-	isSpacePressed
+	isSpacePressed,
+	isMiddleMousePanning = false
 }) => {
 	const dispatch = useAppDispatch();
 	const selectedElementIds = useAppSelector((state) => state.application.selectedElementIds);
@@ -212,7 +214,7 @@ export const SelectionMarqueeOverlay: React.FC<SelectionMarqueeOverlayProps> = (
 					width: "100000px",
 					height: "100000px",
 					pointerEvents: isSpacePressed ? "none" : "auto",
-					cursor: isSpacePressed ? "grab" : "default",
+					cursor: (isSpacePressed || isMiddleMousePanning) ? "grab" : "default",
 					zIndex: 500,
 					background: "transparent"
 				}}
