@@ -168,10 +168,10 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 				handle,
 				clientX,
 				clientY,
-				startX: currentElement.startX,
-				startY: currentElement.startY,
-				endX: currentElement.endX,
-				endY: currentElement.endY,
+				startX: currentElement.drawStartX,
+				startY: currentElement.drawStartY,
+				endX: currentElement.drawEndX,
+				endY: currentElement.drawEndY,
 				effectiveScale: effectiveScale > 0 ? effectiveScale : 1,
 				element: currentElement
 			};
@@ -366,15 +366,24 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 						clearBindingRuleFromAnchor(r, initial.element);
 					}
 
+					const isNewModeFree = updatedPlacementMode.type === "free";
+					const effectiveOffsetX = isNewModeFree ? 0 : initial.element.drawOffsetX;
+					const effectiveOffsetY = isNewModeFree ? 0 : initial.element.drawOffsetY;
+
+					const finalStartX = finalResult.startX - effectiveOffsetX;
+					const finalStartY = finalResult.startY - effectiveOffsetY;
+					const finalEndX = finalResult.endX - effectiveOffsetX;
+					const finalEndY = finalResult.endY - effectiveOffsetY;
+
 					const newLineState: ILineLike = {
 						...initial.element.state,
 						placementMode: updatedPlacementMode,
-						startX: finalResult.startX,
-						startY: finalResult.startY,
-						endX: finalResult.endX,
-						endY: finalResult.endY,
-						x: Math.min(finalResult.startX, finalResult.endX),
-						y: Math.min(finalResult.startY, finalResult.endY)
+						startX: finalStartX,
+						startY: finalStartY,
+						endX: finalEndX,
+						endY: finalEndY,
+						x: Math.min(finalStartX, finalEndX),
+						y: Math.min(finalStartY, finalEndY)
 					};
 
 					ENGINE.handler.act({
@@ -431,10 +440,10 @@ export const CanvasLineResizeHandles: React.FC<CanvasLineResizeHandlesProps> = R
 			[startResize]
 		);
 
-		const currentStartX = previewState ? previewState.startX : element.startX;
-		const currentStartY = previewState ? previewState.startY : element.startY;
-		const currentEndX = previewState ? previewState.endX : element.endX;
-		const currentEndY = previewState ? previewState.endY : element.endY;
+		const currentStartX = previewState ? previewState.startX : element.drawStartX;
+		const currentStartY = previewState ? previewState.startY : element.drawStartY;
+		const currentEndX = previewState ? previewState.endX : element.drawEndX;
+		const currentEndY = previewState ? previewState.endY : element.drawEndY;
 
 		const isHandleBound = useCallback(
 			(handle: LineHandleType): boolean => {

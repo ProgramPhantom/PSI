@@ -209,6 +209,107 @@ export default abstract class LineLike extends Visual {
 		return (this.startY + this.endY) / 2
 	}
 
+	public get drawStartX(): number {
+		return this.startX + this.drawOffsetX;
+	}
+	public set drawStartX(v: number) {
+		this.startX = v - this.drawOffsetX;
+	}
+
+	public get drawStartY(): number {
+		return this.startY + this.drawOffsetY;
+	}
+	public set drawStartY(v: number) {
+		this.startY = v - this.drawOffsetY;
+	}
+
+	public get drawEndX(): number {
+		return this.endX + this.drawOffsetX;
+	}
+	public set drawEndX(v: number) {
+		this.endX = v - this.drawOffsetX;
+	}
+
+	public get drawEndY(): number {
+		return this.endY + this.drawOffsetY;
+	}
+	public set drawEndY(v: number) {
+		this.endY = v - this.drawOffsetY;
+	}
+
+	public get startCX(): number {
+		return this.startX;
+	}
+	public set startCX(v: number) {
+		this.startX = v;
+	}
+
+	public get startCY(): number {
+		return this.startY;
+	}
+	public set startCY(v: number) {
+		this.startY = v;
+	}
+
+	public get endCX(): number {
+		return this.endX;
+	}
+	public set endCX(v: number) {
+		this.endX = v;
+	}
+
+	public get endCY(): number {
+		return this.endY;
+	}
+	public set endCY(v: number) {
+		this.endY = v;
+	}
+
+	public get drawStartCX(): number {
+		return this.drawStartX;
+	}
+	public set drawStartCX(v: number) {
+		this.drawStartX = v;
+	}
+
+	public get drawStartCY(): number {
+		return this.drawStartY;
+	}
+	public set drawStartCY(v: number) {
+		this.drawStartY = v;
+	}
+
+	public get drawEndCX(): number {
+		return this.drawEndX;
+	}
+	public set drawEndCX(v: number) {
+		this.drawEndX = v;
+	}
+
+	public get drawEndCY(): number {
+		return this.drawEndY;
+	}
+	public set drawEndCY(v: number) {
+		this.drawEndY = v;
+	}
+
+	public get drawPosition(): { startX: number; startY: number; endX: number; endY: number } {
+		return {
+			startX: this.drawStartX,
+			startY: this.drawStartY,
+			endX: this.drawEndX,
+			endY: this.drawEndY
+		};
+	}
+
+	public get drawCentreX(): number {
+		return (this.drawStartX + this.drawEndX) / 2;
+	}
+
+	public get drawCentreY(): number {
+		return (this.drawStartY + this.drawEndY) / 2;
+	}
+
 
 	public moveRelative(
 		coordinate: [number, number],

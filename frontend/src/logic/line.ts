@@ -79,8 +79,8 @@ export default class Line extends LineLike implements ILine {
 
 		var hitboxHeight: number = maxLeftWidth + maxRightWidth + LineLike.HitboxPadding;
 		hitbox.size(this.length, hitboxHeight);
-		hitbox.move(this.startX, this.startY - maxLeftWidth - LineLike.HitboxPadding / 2);
-		hitbox.rotate((this.angle / Math.PI) * 180, this.startX, this.startY);
+		hitbox.move(this.drawStartX, this.drawStartY - maxLeftWidth - LineLike.HitboxPadding / 2);
+		hitbox.rotate((this.angle / Math.PI) * 180, this.drawStartX, this.drawStartY);
 
 		// hitbox.move(this.x, this.y)
 		hitbox.fill(`transparent`).opacity(0.3);
@@ -267,10 +267,10 @@ export default class Line extends LineLike implements ILine {
 			var startOffset = this.thickness * startMarkerLength - startAdj;
 			var endOffset = this.thickness * endMarkerLength - endAdj;
 
-			var adjustedStartX = this.startX + cos * startOffset;
-			var adjustedStartY = this.startY + sin * startOffset;
-			var adjustedEndX = this.endX - cos * endOffset;
-			var adjustedEndY = this.endY - sin * endOffset;
+			var adjustedStartX = this.drawStartX + cos * startOffset;
+			var adjustedStartY = this.drawStartY + sin * startOffset;
+			var adjustedEndX = this.drawEndX - cos * endOffset;
+			var adjustedEndY = this.drawEndY - sin * endOffset;
 
 			var pathData: string = `M ${adjustedStartX} ${adjustedStartY} L ${adjustedEndX} ${adjustedEndY}`;
 

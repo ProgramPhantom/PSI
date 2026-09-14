@@ -70,10 +70,10 @@ export function isEligibleForMultiSelect(
  */
 export function getElementCenter(element: Visual): { x: number; y: number } {
 	if (element instanceof LineLike) {
-		const sx = element.startX ?? element.x ?? 0;
-		const sy = element.startY ?? element.y ?? 0;
-		const ex = element.endX ?? sx;
-		const ey = element.endY ?? sy;
+		const sx = element.drawStartX ?? element.drawX ?? 0;
+		const sy = element.drawStartY ?? element.drawY ?? 0;
+		const ex = element.drawEndX ?? sx;
+		const ey = element.drawEndY ?? sy;
 		return {
 			x: (sx + ex) / 2,
 			y: (sy + ey) / 2

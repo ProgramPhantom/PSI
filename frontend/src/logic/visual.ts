@@ -259,32 +259,39 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 		return this.minContentHeight;
 	}
 
+	public get drawOffsetX(): number {
+		return this.placementMode?.type === "free" ? 0 : (this.offset?.[0] ?? 0);
+	}
+	public get drawOffsetY(): number {
+		return this.placementMode?.type === "free" ? 0 : (this.offset?.[1] ?? 0);
+	}
+
 	public get drawCX(): number {
-		return this.cx + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
+		return this.cx + this.drawOffsetX;
 	}
 	public set drawCX(val: number) {
-		this.cx = val - (this.placementMode?.type === "free" ? 0 : this.offset[0]);
+		this.cx = val - this.drawOffsetX;
 	}
 
 	public get drawCY(): number {
-		return this.cy + (this.placementMode?.type === "free" ? 0 : this.offset[1]);
+		return this.cy + this.drawOffsetY;
 	}
 	public set drawCY(val: number) {
-		this.cy = val - (this.placementMode?.type === "free" ? 0 : this.offset[1]);
+		this.cy = val - this.drawOffsetY;
 	}
 
 	public get drawX(): number {
-		return this.x + (this.placementMode?.type === "free" ? 0 : this.offset[0]);
+		return this.x + this.drawOffsetX;
 	}
 	public set drawX(val: number) {
-		this.x = val - (this.placementMode?.type === "free" ? 0 : this.offset[0]);
+		this.x = val - this.drawOffsetX;
 	}
 
 	public get drawY(): number {
-		return this.y + (this.placementMode?.type === "free" ? 0 : this.offset[1]);
+		return this.y + this.drawOffsetY;
 	}
 	public set drawY(val: number) {
-		this.y = val - (this.placementMode?.type === "free" ? 0 : this.offset[1]);
+		this.y = val - this.drawOffsetY;
 	}
 
 	public getHitbox(): Rect {
