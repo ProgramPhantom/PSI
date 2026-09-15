@@ -105,14 +105,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 			y: isPulse(this) && this.pulseLayoutConfig?.orientation === "bottom"
 		};
 
-		if (this.flipped.y) {
-			this.padding = [this.padding[2], this.padding[1], this.padding[0], this.padding[3]];
-			this.offset = [this.offset[0], -Math.abs(this.offset[1])];
-		}
-		if (this.flipped.x) {
-			this.padding = [this.padding[0], this.padding[3], this.padding[2], this.padding[1]];
-			this.offset = [-Math.abs(this.offset[0]), this.offset[1]];
-		}
+
 	}
 
 
