@@ -58,7 +58,7 @@ export default class RectElement extends Visual implements IRectElement, IDraw {
 			: {};
 
 		// If SVG already exists and is attached, and layout did not change, patch attributes in place
-		if (this.svg && !this.dirtyLayout) {
+		if (this.svg && this.svg.node.parentNode === surface.node && !this.dirtyLayout) {
 			this.svg
 				.size(this.contentWidth, this.contentHeight)
 				.attr({ fill: this.style.fill ?? "none", stroke: this.style.stroke, ...fillOpacityAttr })

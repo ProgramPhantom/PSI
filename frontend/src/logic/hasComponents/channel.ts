@@ -162,6 +162,11 @@ export default class Channel extends Subgrid implements IChannel {
 		this.sizeBar();
 	}
 
+	public override removeColumn(index?: number, remove?: true | "if-empty"): void {
+		super.removeColumn(index, remove);
+		this.sizeBar();
+	}
+
 	private initialiseBar({ child, index }: AddDispatchData) {
 		child.maskId = BAR_MASK_ID;
 		child.placementMode = {

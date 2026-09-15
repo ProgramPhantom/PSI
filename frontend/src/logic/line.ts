@@ -239,7 +239,7 @@ export default class Line extends LineLike implements ILine {
 	}
 
 	public override draw(surface: Element): void {
-		if (this.dirty) {
+		if (this.dirty || !this.svg || this.svg.node.parentNode !== surface.node) {
 			// Clear old svg
 			if (this.svg) {
 				this.svg.remove();

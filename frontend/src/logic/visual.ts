@@ -156,7 +156,7 @@ export default abstract class Visual extends PaddedBox implements IVisual {
 
 	erase(): void {
 		this.svg?.remove();
-		this.svg = undefined;
+
 		if (this.maskBlock) {
 			this.maskBlock.remove();
 			this.maskBlock = undefined;

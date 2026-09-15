@@ -285,7 +285,7 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 	draw(surface: Element) {
 		const offset = this.placementMode?.type === "free" ? [0, 0] : this.offset;
 
-		if (!this.svg || (this.svg.node.parentElement as any) !== surface.node) {
+		if (!this.svg || this.svg.node.parentNode !== surface.node) {
 			if (this.svg) {
 				try {
 					this.svg.remove();

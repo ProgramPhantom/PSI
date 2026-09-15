@@ -1457,28 +1457,34 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var rowDiff: number = coords.row !== undefined ? coords.row - this.numRows + 1 : 0;
 		var colDiff: number = coords.col !== undefined ? coords.col - this.numColumns + 1 : 0;
 
+		const hadChanges = rowDiff !== 0 || colDiff !== 0;
+
 		// There are missing rows needed to add this coord
 		while (rowDiff >= 1) {
-			this.insertEmptyRow()
-			rowDiff -= 1
+			this.insertEmptyRow(undefined, false);
+			rowDiff -= 1;
 		}
 
 		while (colDiff >= 1) {
-			this.insertEmptyColumn();
-			colDiff -= 1
+			this.insertEmptyColumn(undefined, false);
+			colDiff -= 1;
 		}
 
 		if (onlyGrow === false) {
 			// Or if negative, we need to remove rows
 			while (rowDiff < 0) {
 				this.removeRow();
-				rowDiff += 1
+				rowDiff += 1;
 			}
 
 			while (colDiff < 0) {
 				this.removeColumn();
-				colDiff += 1
+				colDiff += 1;
 			}
+		}
+
+		if (hadChanges) {
+			this.growSubgrids();
 		}
 	}
 
@@ -1505,7 +1511,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		// Squeeze top and left
 		var firstRow: GridCell<C>[] | undefined = this.getRow(0) ?? []
-		var firstColumn: GridCell<C>[] | undefined = this.getColumn(this.numColumns - 1) ?? []
+		var firstColumn: GridCell<C>[] | undefined = this.getColumn(0) ?? []
 
 		var firstRowEmpty: boolean = this.isCellArrayEmpty(firstRow);
 		var firstColumnEmpty: boolean = this.isCellArrayEmpty(firstColumn);
@@ -1524,7 +1530,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	@dirtiesLayout
-	public insertEmptyColumn(index?: number) {
+	public insertEmptyColumn(index?: number, growSubgrids: boolean = true) {
 		let newColumn: GridCell<C>[] = Array<GridCell<C>>(this.numRows).fill(undefined);
 		let INDEX: number | undefined = index;
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numColumns) {
@@ -1574,11 +1580,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		this.shiftColumnIndexes(INDEX + 1, 1);
 
-		this.growSubgrids();
+		if (growSubgrids) {
+			this.growSubgrids();
+		}
+
 	}
 
 	@dirtiesLayout
-	public insertEmptyRow(index?: number): void {
+	public insertEmptyRow(index?: number, growSubgrids: boolean = false): void {
 		var newRow: GridCell<C>[] = Array<GridCell<C>>(this.numColumns).fill(undefined)
 		let INDEX: number | undefined = index;
 		if (INDEX === undefined || INDEX < 0 || INDEX > this.numRows) {
@@ -1630,7 +1639,9 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		this.shiftRowIndexes(INDEX + 1, 1);
 
-		this.growSubgrids();
+		if (growSubgrids) {
+			this.growSubgrids();
+		}
 	}
 
 	@dirtiesLayout
@@ -1648,7 +1659,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		if (remove === "if-empty" && empty === false) { return }
 
-		let splitElements: Set<GridElement<C>> = this.getColumnSplitElements(INDEX);
+		let splitElements: Set<GridElement<C>> = this.getElementsCoveringColumn(INDEX);
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);
@@ -1674,15 +1685,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		// from subgrid or reducing grid-size;
 		splitElements.forEach((element) => {
 			if (this.isSubgridChild(element)) {
-				element.removeColumn(INDEX)
+				element.removeColumn(element.getRelativeCol(INDEX));
 			} else if (element.placementMode.config.gridSize !== undefined) {
 				element.placementMode.config.gridSize = {
 					noRows: element.placementMode.config.gridSize.noRows,
 					noCols: element.placementMode.config.gridSize.noCols - 1
-				}
+				};
 			}
-
-		})
+		});
 	}
 
 	@dirtiesLayout
@@ -1699,6 +1709,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		var empty: boolean = this.isCellArrayEmpty(targetRow)
 
 		if (onlyIfEmpty === true && !empty) { return }
+
+		let splitElements: Set<GridElement<C>> = this.getElementsCoveringRow(INDEX);
 
 		this.gridMatrix.splice(INDEX, 1);
 
@@ -1717,6 +1729,17 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		this.shiftRowIndexes(INDEX, -1);
+
+		splitElements.forEach((element) => {
+			if (this.isSubgridChild(element)) {
+				element.removeRow(element.getRelativeRow(INDEX));
+			} else if (element.placementMode.config.gridSize !== undefined) {
+				element.placementMode.config.gridSize = {
+					noRows: element.placementMode.config.gridSize.noRows - 1,
+					noCols: element.placementMode.config.gridSize.noCols
+				};
+			}
+		});
 	}
 
 	// --- Helpers ----
@@ -1768,6 +1791,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return elements;
 	}
 
+	/**
+	 * Returns elements straddling the boundary between column `index - 1` and `index`
+	 * (used when inserting an empty column at `index`).
+	 */
 	protected getColumnSplitElements(index: number): Set<GridElement<C>> {
 		if (index > this.numColumns || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
@@ -1791,7 +1818,10 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		return elements;
 	}
 
-
+	/**
+	 * Returns elements straddling the boundary between row `index - 1` and `index`
+	 * (used when inserting an empty row at `index`).
+	 */
 	protected getRowSplitElements(index: number): Set<GridElement<C>> {
 		if (index > this.numRows || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
@@ -1811,6 +1841,58 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				}
 			}
 		})
+
+		return elements;
+	}
+
+	/**
+	 * Returns elements occupying column `index` that span multiple columns or are Subgrids
+	 * and need their widths reduced when column `index` is removed.
+	 */
+	protected getElementsCoveringColumn(index: number): Set<GridElement<C>> {
+		if (index >= this.numColumns || index < 0) {
+			return new Set<GridElement<C>>();
+		}
+
+		const elements: Set<GridElement<C>> = new Set<GridElement<C>>();
+
+		this.getRows().forEach((row) => {
+			const targetCell: GridCell<C> = row[index];
+
+			for (const child of (targetCell?.elements ?? [])) {
+				if (this.isSubgridChild(child)) {
+					elements.add(child);
+				} else if (child.placementMode.type === "grid" && (child.placementMode.config.gridSize?.noCols ?? 1) > 1) {
+					elements.add(child);
+				}
+			}
+		});
+
+		return elements;
+	}
+
+	/**
+	 * Returns elements occupying row `index` that span multiple rows or are Subgrids
+	 * and need their heights reduced when row `index` is removed.
+	 */
+	protected getElementsCoveringRow(index: number): Set<GridElement<C>> {
+		if (index >= this.numRows || index < 0) {
+			return new Set<GridElement<C>>();
+		}
+
+		const elements: Set<GridElement<C>> = new Set<GridElement<C>>();
+
+		this.getColumns().forEach((col) => {
+			const targetCell: GridCell<C> = col[index];
+
+			for (const child of (targetCell?.elements ?? [])) {
+				if (this.isSubgridChild(child)) {
+					elements.add(child);
+				} else if (child.placementMode.type === "grid" && (child.placementMode.config.gridSize?.noRows ?? 1) > 1) {
+					elements.add(child);
+				}
+			}
+		});
 
 		return elements;
 	}
@@ -2065,19 +2147,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	//#region 
 	@dirtiesLayout
 	public setChildSize(child: GridElement<C>, size: { noRows: number, noCols: number }) {
-		let location: { row: number, col: number } | undefined = this.locateElement(child)
-		// let location: { row: number, col: number } | undefined = child.placementMode.config.coords
+		let location: { row: number, col: number } | undefined = this.locateElement(child) ?? child.placementMode?.config?.coords;
 
 		if (location === undefined) {
-			console.warn(`Cannot locate child for size change ${child.ref}`)
-			return
+			console.warn(`Cannot locate child for size change ${child.ref}`);
+			return;
 		}
 
 
 		if (this.isCellChild(child)) {
-			child.placementMode.config.gridSize = { noRows: size.noRows, noCols: size.noCols }
+			child.placementMode.config.gridSize = { noRows: size.noRows, noCols: size.noCols };
 		} else if (this.isSubgridChild(child)) {
-			child.setMatrixBottomRight({ row: size.noRows - 1, col: size.noCols - 1 })
+			child.setMatrixBottomRight({ row: size.noRows - 1, col: size.noCols - 1 });
 		}
 
 		let region: OccupiedCell<C>[][] | undefined = this.getChildRegion(child);
