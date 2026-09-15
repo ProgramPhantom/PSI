@@ -20,7 +20,7 @@ export interface CachedTeXData {
 
 const texCache = new Map<string, CachedTeXData>();
 
-export async function waitForMathJax(timeoutMs = 15000): Promise<boolean> {
+export async function waitForMathJax(timeoutMs = 60000): Promise<boolean> {
 	const startTime = Date.now();
 	while (Date.now() - startTime < timeoutMs) {
 		const mathjax = (window as any).MathJax;
