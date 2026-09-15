@@ -20,6 +20,26 @@ export interface CachedTeXData {
 
 const texCache = new Map<string, CachedTeXData>();
 
+export async function waitForMathJax(timeoutMs = 15000): Promise<boolean> {
+	const startTime = Date.now();
+	while (Date.now() - startTime < timeoutMs) {
+		const mathjax = (window as any).MathJax;
+		if (mathjax && typeof mathjax.tex2svg === "function") {
+			if (mathjax.startup?.promise) {
+				try {
+					await mathjax.startup.promise;
+				} catch (e) {
+					console.warn("MathJax startup promise error:", e);
+				}
+			}
+			return true;
+		}
+		await new Promise((resolve) => setTimeout(resolve, 50));
+	}
+	console.warn(`MathJax did not finish loading within ${timeoutMs}ms`);
+	return false;
+}
+
 function renderTeXToRawSVG(tex: string): { svg: string; canCache: boolean } {
 	const mathjax = (window as any).MathJax;
 	if (mathjax && typeof mathjax.tex2svg === "function") {

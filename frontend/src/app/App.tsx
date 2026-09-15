@@ -19,6 +19,7 @@ import { selectCurrentDiagramSource } from "../redux/selectors/diagramSelectors"
 import { initialiseAssets } from "../redux/thunks/assetThunks";
 import { loadDiagram, newDiagram, openDiagram } from "../redux/thunks/diagramThunks";
 import { syncUserSchemes } from "../redux/thunks/schemeThunks";
+import { waitForMathJax } from "../logic/latex";
 
 ENGINE.surface = SVG().attr({ "pointer-events": "bounding-box" });
 
@@ -42,10 +43,11 @@ function App() {
 		let isMounted = true;
 
 		async function startApp() {
-			// 1. Initialize core application assets
-			await dispatch(initialiseAssets());
+			// Start MathJax script loading and core assets concurrently
+			const mathJaxPromise = waitForMathJax();
+			const assetsPromise = dispatch(initialiseAssets());
 
-			// 2. Await the authentication state 
+			// Await the authentication state 
 			// (Either it succeeds to load the user, or it predictably fails because we are not logged in)
 			try {
 				await dispatch(api.endpoints.getMe.initiate(undefined)).unwrap();
@@ -53,8 +55,11 @@ function App() {
 				// Handled inherently by RTK Query / auth logic downstream
 			}
 
-			// 3. Sync schemes. This only does anything if step 2 succeeded, fetching user schemes from the DB.
+			// Sync schemes. This only does anything if auth succeeded, fetching user schemes from the DB.
 			await dispatch(syncUserSchemes());
+
+			// Ensure MathJax (tex-svg.js) and assets are fully loaded before rendering the diagram
+			await Promise.all([mathJaxPromise, assetsPromise]);
 
 			if (isMounted) {
 				// 4. Open local diagram file
