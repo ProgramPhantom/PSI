@@ -13,7 +13,7 @@ const BUY_ME_A_COFFEE_URL = "https://buymeacoffee.com/henryvarley";
 const WIKI_URL = `${import.meta.env.BASE_URL}wiki/`;
 
 export default function Banner() {
-	const { data: user } = useGetMeQuery();
+
 	const dispatch = useAppDispatch();
 	useSyncExternalStore(ENGINE.subscribe, ENGINE.getSnapshot);
 
@@ -122,7 +122,7 @@ export default function Banner() {
 			</Navbar.Group>
 
 			<Navbar.Group align={"right"}>
-				<Tooltip content="Documentation & Wiki" position={Position.BOTTOM}>
+				<Tooltip content="Documentation & Wiki (under construction)" position={Position.BOTTOM}>
 					<Button
 						variant="minimal"
 						icon="book"

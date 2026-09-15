@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import { nodePolyfills } from "vite-plugin-node-polyfills";
 import react from "@vitejs/plugin-react";
 import CircularDependencyPlugin from "vite-plugin-circular-dependency";
 import path from "path";
@@ -16,16 +15,16 @@ function serveStaticWikiPlugin() {
 		configureServer(server) {
 			server.middlewares.use((req, res, next) => {
 				const url = req.url ? req.url.split('?')[0].split('#')[0] : '';
-				
+
 				if (url.startsWith('/PSI/wiki') || url === '/PSI/wiki') {
 					let relativePath = url.slice('/PSI/wiki'.length);
-					
+
 					if (relativePath === '' || relativePath === '/') {
 						relativePath = '/index.html';
 					}
-					
+
 					const filePath = path.resolve(__dirname, '../docs/build', relativePath.startsWith('/') ? relativePath.slice(1) : relativePath);
-					
+
 					if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
 						const ext = path.extname(filePath).toLowerCase();
 						const contentTypes: Record<string, string> = {
@@ -43,7 +42,7 @@ function serveStaticWikiPlugin() {
 							'.woff2': 'font/woff2',
 							'.ttf': 'font/ttf',
 						};
-						
+
 						res.setHeader('Content-Type', contentTypes[ext] || 'application/octet-stream');
 						res.end(fs.readFileSync(filePath));
 						return;
@@ -79,27 +78,6 @@ export default defineConfig({
 	plugins: [
 		serveStaticWikiPlugin(),
 		react(),
-		nodePolyfills({
-			// To add only specific polyfills, add them here. If no option is passed, adds all polyfills
-			include: ["path"],
-			// To exclude specific polyfills, add them to this list. Note: if include is provided, this has no effect
-			exclude: [
-				"http" // Excludes the polyfill for `http` and `node:http`.
-			],
-			// Whether to polyfill specific globals.
-			globals: {
-				Buffer: true, // can also be 'build', 'dev', or false
-				global: true,
-				process: true
-			},
-			// Override the default polyfills for specific modules.
-			overrides: {
-				// Since `fs` is not supported in browsers, we can use the `memfs` package to polyfill it.
-				fs: "memfs"
-			},
-			// Whether to polyfill `node:` protocol imports.
-			protocolImports: true
-		}),
 		CircularDependencyPlugin({
 			outputFilePath: "./circleDep",
 			include: ["/\.ts$/"],
@@ -114,6 +92,9 @@ export default defineConfig({
 					if (id.includes("node_modules")) {
 						if (id.includes("@blueprintjs")) {
 							return "blueprintjs";
+						}
+						if (id.includes("chart.js") || id.includes("@kurkle/color")) {
+							return "charts";
 						}
 						return "vendor";
 					}

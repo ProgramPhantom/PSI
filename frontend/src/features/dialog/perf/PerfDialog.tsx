@@ -23,7 +23,10 @@ import {
 	runFreeElementBenchmark,
 	runModifyScalingBenchmark
 } from "../../../test/perfTests";
-import { ChannelPerfChart } from "./ChannelPerfChart";
+
+const ChannelPerfChart = React.lazy(() =>
+	import("./ChannelPerfChart").then((m) => ({ default: m.ChannelPerfChart }))
+);
 
 type BenchmarkTab = "channel" | "column" | "free" | "modify";
 
@@ -672,51 +675,55 @@ export function PerfDialog() {
 
 				{/* Two Benchmark Graphs Along Side Each Other (Tabs 1-3) */}
 				{activeTab !== "modify" && addMetrics && addMetrics.length > 0 && removeMetrics && removeMetrics.length > 0 && (
-					<div
-						style={{
-							display: "grid",
-							gridTemplateColumns: "1fr 1fr",
-							gap: "10px",
-							marginTop: "12px"
-						}}>
-						{/* Graph 1: Additions / Insertions */}
-						<ChannelPerfChart
-							metrics={addMetrics}
-							title={addTitle}
-							xAxisLabel={addXLabel}
-							lineColor="#2d72d2"
-							fillColor="rgba(45, 114, 210, 0.12)"
-							computeLineColor="#d9822b"
-							downloadFilenamePrefix={addPrefix}
-						/>
+					<React.Suspense fallback={<div style={{ padding: "12px", textAlign: "center" }}>Loading chart...</div>}>
+						<div
+							style={{
+								display: "grid",
+								gridTemplateColumns: "1fr 1fr",
+								gap: "10px",
+								marginTop: "12px"
+							}}>
+							{/* Graph 1: Additions / Insertions */}
+							<ChannelPerfChart
+								metrics={addMetrics}
+								title={addTitle}
+								xAxisLabel={addXLabel}
+								lineColor="#2d72d2"
+								fillColor="rgba(45, 114, 210, 0.12)"
+								computeLineColor="#d9822b"
+								downloadFilenamePrefix={addPrefix}
+							/>
 
-						{/* Graph 2: Removals / Deletions */}
-						<ChannelPerfChart
-							metrics={removeMetrics}
-							title={removeTitle}
-							xAxisLabel={removeXLabel}
-							lineColor="#db3737"
-							fillColor="rgba(219, 55, 55, 0.12)"
-							computeLineColor="#d9822b"
-							downloadFilenamePrefix={removePrefix}
-						/>
-					</div>
+							{/* Graph 2: Removals / Deletions */}
+							<ChannelPerfChart
+								metrics={removeMetrics}
+								title={removeTitle}
+								xAxisLabel={removeXLabel}
+								lineColor="#db3737"
+								fillColor="rgba(219, 55, 55, 0.12)"
+								computeLineColor="#d9822b"
+								downloadFilenamePrefix={removePrefix}
+							/>
+						</div>
+					</React.Suspense>
 				)}
 
 				{/* Modify Scaling Graph (Tab 4) */}
 				{activeTab === "modify" && modifyResult && modifyResult.metrics.length > 0 && (
-					<div style={{ marginTop: "12px" }}>
-						<ChannelPerfChart
-							metrics={modifyResult.metrics}
-							title={`Modify Duration vs Ambient Elements (${modifyResult.targetType.toUpperCase()} Target, ${modifyResult.ambientType.toUpperCase()} Ambients)`}
-							xAxisLabel="Ambient Elements (#)"
-							lineColor="#8a3ffc"
-							fillColor="rgba(138, 63, 252, 0.12)"
-							computeLineColor="#d9822b"
-							downloadFilenamePrefix={`modify-scaling-${modifyResult.targetType}-with-${modifyResult.ambientType}`}
-							labelFormatter={(m) => `${m.index}`}
-						/>
-					</div>
+					<React.Suspense fallback={<div style={{ padding: "12px", textAlign: "center" }}>Loading chart...</div>}>
+						<div style={{ marginTop: "12px" }}>
+							<ChannelPerfChart
+								metrics={modifyResult.metrics}
+								title={`Modify Duration vs Ambient Elements (${modifyResult.targetType.toUpperCase()} Target, ${modifyResult.ambientType.toUpperCase()} Ambients)`}
+								xAxisLabel="Ambient Elements (#)"
+								lineColor="#8a3ffc"
+								fillColor="rgba(138, 63, 252, 0.12)"
+								computeLineColor="#d9822b"
+								downloadFilenamePrefix={`modify-scaling-${modifyResult.targetType}-with-${modifyResult.ambientType}`}
+								labelFormatter={(m) => `${m.index}`}
+							/>
+						</div>
+					</React.Suspense>
 				)}
 			</DialogBody>
 		</Dialog>

@@ -3,7 +3,6 @@ import { Controller, useFormContext } from "react-hook-form";
 import { MAX_FONT_SIZE, MIN_FONT_SIZE } from "../../appSettings";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
-import { MathJax } from "better-react-mathjax";
 import { SimpleField } from "./fields/SimpleField";
 import { CustomNumericInput } from "./fields/CustomNumericInput";
 import sectionStyles from "./styles/FormSection.module.scss";
@@ -30,18 +29,14 @@ function LaTeXForm(props: ILaTeXFormProps) {
 						control={formControls.control}
 						name={`${fullPrefix}text`}
 						render={({ field }) => (
-							<div style={{ display: "flex", flexDirection: "row" }}>
-								<InputGroup
-									{...field}
-									id="text"
-									className={fieldStyles.compactInputGroup}
-									placeholder="_1\textrm{H}"
-									size="small"
-								/>
-								<div style={{ marginLeft: "16px", display: "flex", alignItems: "center" }}>
-									<MathJax>{`\\(${field.value || ""}\\)`}</MathJax>
-								</div>
-							</div>
+							<InputGroup
+								{...field}
+								id="text"
+								className={fieldStyles.compactInputGroup}
+								placeholder="_1\textrm{H}"
+								size="small"
+								fill={true}
+							/>
 						)}></Controller>
 				</SimpleField>
 

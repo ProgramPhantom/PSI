@@ -126,8 +126,8 @@ export const initialiseAssets = createAsyncThunk<void, void>(
             let localStoreAssetData: Set<SVGDBEntry> = new Set<SVGDBEntry>;
             try {
                 const keys = await localforage.keys();
-                for (const key of keys) {
-                    const svgStore: SVGDBEntry | null = await localforage.getItem<SVGDBEntry>(key);
+                const items = await Promise.all(keys.map((key) => localforage.getItem<SVGDBEntry>(key)));
+                for (const svgStore of items) {
                     if (
                         svgStore &&
                         typeof svgStore === "object" &&

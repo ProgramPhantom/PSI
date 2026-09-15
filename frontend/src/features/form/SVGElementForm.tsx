@@ -4,15 +4,18 @@ import {
     ControlGroup,
     Switch
 } from "@blueprintjs/core";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import ENGINE from "../../logic/engine";
 import VisualForm from "./VisualForm";
 import { FormRequirements } from "./FormBase";
-import { AssetStoreDialog } from "../dialog/AssetStoreDialog";
 import { DoubleField } from "./fields/DoubleField";
 import styles from "./styles/FormContainers.module.scss";
 import fieldStyles from "./styles/FormFields.module.scss";
+
+const AssetStoreDialog = React.lazy(() =>
+    import("../dialog/AssetStoreDialog").then((m) => ({ default: m.AssetStoreDialog }))
+);
 
 interface ISVGElementFormProps extends FormRequirements { }
 
@@ -60,15 +63,19 @@ const SVGElementForm: React.FC<ISVGElementFormProps> = (props) => {
                                     />
                                 </div>
 
-                                <AssetStoreDialog
-                                    isOpen={isAssetStoreDialogOpen}
-                                    onClose={() => setIsAssetStoreDialogOpen(false)}
-                                    selectedAssetId={currentId}
-                                    onSelect={(selectedAsset) => {
-                                        onChange({ id: selectedAsset.id, ref: selectedAsset.ref });
-                                        setIsAssetStoreDialogOpen(false);
-                                    }}
-                                />
+                                {isAssetStoreDialogOpen && (
+                                    <Suspense fallback={null}>
+                                        <AssetStoreDialog
+                                            isOpen={isAssetStoreDialogOpen}
+                                            onClose={() => setIsAssetStoreDialogOpen(false)}
+                                            selectedAssetId={currentId}
+                                            onSelect={(selectedAsset) => {
+                                                onChange({ id: selectedAsset.id, ref: selectedAsset.ref });
+                                                setIsAssetStoreDialogOpen(false);
+                                            }}
+                                        />
+                                    </Suspense>
+                                )}
                             </>
                         );
                     }}

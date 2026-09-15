@@ -1,5 +1,4 @@
 import { Button, Classes, Dialog, DialogBody, DialogFooter, HTMLTable, NonIdealState, Spinner, Section, SectionCard, SpinnerSize } from "@blueprintjs/core";
-import { More } from "@blueprintjs/icons";
 import { useEffect, useState } from "react";
 import { appToaster } from "../../app/Toaster";
 import { BLANK_DIAGRAM } from "../../logic/default/blankDiagram";
@@ -124,7 +123,7 @@ export function DiagramsDialog(props: IDiagramsDialogProps) {
         if (!data?.diagrams || data.diagrams.length === 0) {
             return (
                 <div style={{ padding: "16px" }}>
-                    <NonIdealState description="No cloud diagrams found" icon={<More />} />
+                    <NonIdealState description="No cloud diagrams found" icon="more" />
                 </div>)
         }
         return (
