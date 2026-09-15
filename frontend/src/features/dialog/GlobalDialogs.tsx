@@ -21,7 +21,6 @@ import { UserDialog } from "../banner/UserDrawer";
 import { DiagramsDialog } from "./DiagramsDialog";
 import { AssetStoreDialog } from "./AssetStoreDialog";
 import { SaveAsDialog } from "./SaveAsDialog";
-import { WelcomeDialog } from "./WelcomeDialog";
 import { UnsavedDiagramAlert } from "./UnsavedDiagramAlert";
 import { UnsavedDiagramLogoutAlert } from "./UnsavedDiagramLogoutAlert";
 import { ResetAppAlert } from "./ResetAppAlert";
@@ -47,7 +46,6 @@ export const GlobalDialogs: React.FC = () => {
 
     return (
         <>
-            <WelcomeDialog></WelcomeDialog>
 
             <PNGExportDialog
                 close={() => dispatch(setPNGDialogOpen(false))}

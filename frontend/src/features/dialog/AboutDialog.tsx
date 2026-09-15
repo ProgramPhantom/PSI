@@ -1,16 +1,35 @@
-import React, { useState } from "react";
-import { Button, Dialog, DialogBody, DialogFooter, Icon, Tab, Tabs } from "@blueprintjs/core";
+import React, { useEffect, useState } from "react";
+import { AnchorButton, Button, Dialog, DialogBody, DialogFooter, Icon, Tab, Tabs } from "@blueprintjs/core";
+import { useAppDispatch } from "../../redux/hooks";
+import { setAboutDialogOpen } from "../../redux/slices/dialogSlice";
 import styles from "./styles/AboutDialog.module.scss";
 
 const logoUrl = `${import.meta.env.BASE_URL}Logo1_white.svg`;
+const wikiUrl = `${import.meta.env.BASE_URL}wiki/`;
 
 interface IAboutDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
+	initialTab?: string;
 }
 
 export function AboutDialog(props: IAboutDialogProps) {
-	const [currentTabId, setCurrentTabId] = useState<string>("overview");
+	const dispatch = useAppDispatch();
+	const [currentTabId, setCurrentTabId] = useState<string>(props.initialTab || "welcome");
+
+	useEffect(() => {
+		const hasSeen = localStorage.getItem("hasSeenWelcome");
+		if (hasSeen !== "true") {
+			dispatch(setAboutDialogOpen(true));
+			localStorage.setItem("hasSeenWelcome", "true");
+		}
+	}, [dispatch]);
+
+	useEffect(() => {
+		if (props.isOpen) {
+			setCurrentTabId(props.initialTab || "welcome");
+		}
+	}, [props.isOpen, props.initialTab]);
 
 	return (
 		<Dialog
@@ -36,6 +55,19 @@ export function AboutDialog(props: IAboutDialogProps) {
 							Interactive Pulse Sequence Designer • Version 0.7.5 (BETA)
 						</p>
 					</div>
+					<div className={styles.headerRight}>
+						<AnchorButton
+							href={wikiUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							intent="primary"
+							icon="book"
+							rightIcon="share"
+							large
+							className={styles.wikiButton}
+							text="PSI / Wiki 📖"
+						/>
+					</div>
 				</div>
 
 				{/* Tabs Navigation and Content */}
@@ -47,6 +79,7 @@ export function AboutDialog(props: IAboutDialogProps) {
 							selectedTabId={currentTabId}
 							vertical={true}
 						>
+							<Tab id="welcome" title="Welcome" />
 							<Tab id="overview" title="Overview" />
 							<Tab id="features" title="Key Features" />
 							<Tab id="technical" title="Technical Details" />
@@ -55,6 +88,36 @@ export function AboutDialog(props: IAboutDialogProps) {
 					</div>
 
 					<div className={styles.tabContent}>
+						{currentTabId === "welcome" && (
+							<div className={styles.fadeIn}>
+								<h3 className={styles.tabHeader}>Welcome to Pulse Planner (PSI)</h3>
+								<p className={styles.paragraphText}>
+									Welcome to PSI! This application allows you to create, edit, and export
+									pulse sequence diagrams easily and intuitively.
+								</p>
+
+								<div className={styles.infoCallout}>
+									<h4 className={styles.infoCalloutTitle}>Quick Start Guide</h4>
+									<ul className={styles.infoCalloutList}>
+										<li className={styles.infoCalloutListItem}>
+											<strong>Toolbar:</strong> Use the toolbar at the top to save your diagrams as SVG or PNG, manage files, and customize view settings.
+										</li>
+										<li className={styles.infoCalloutListItem}>
+											<strong>Channels & Elements:</strong> Create a channel on the canvas or right menu, select elements from the library, and drag them onto the channel.
+										</li>
+										<li className={styles.infoCalloutListItem}>
+											<strong>Inspector:</strong> Edit individual elements and channels by clicking to select them and using the inspector panel on the right.
+										</li>
+									</ul>
+								</div>
+
+								<div style={{ marginTop: "24px", display: "flex", gap: "12px", alignItems: "center" }}>
+									<Button intent="primary" icon="play" text="Get Started" onClick={props.onClose} />
+									<Button minimal text="Learn More" icon="arrow-right" onClick={() => setCurrentTabId("overview")} />
+								</div>
+							</div>
+						)}
+
 						{currentTabId === "overview" && (
 							<div className={styles.fadeIn}>
 								<h3 className={styles.tabHeader}>What is Pulse Planner?</h3>
@@ -185,6 +248,14 @@ export function AboutDialog(props: IAboutDialogProps) {
 											<div className={styles.memberRole}>Started construction of the backend</div>
 										</div>
 									</div>
+
+									<div className={styles.teamMember}>
+										<div className={`${styles.avatar} ${styles.avatarOrange}`}>GV</div>
+										<div>
+											<strong className={styles.memberName}>Gabriel Vilella Nilsson</strong>
+											<div className={styles.memberRole}>Contributor</div>
+										</div>
+									</div>
 								</div>
 
 								{/* <div className={styles.copyright}>
@@ -196,6 +267,13 @@ export function AboutDialog(props: IAboutDialogProps) {
 				</div>
 			</DialogBody>
 
+			<DialogFooter
+				actions={
+					<Button intent="primary" onClick={props.onClose}>
+						{currentTabId === "welcome" ? "Got it!" : "Close"}
+					</Button>
+				}
+			/>
 		</Dialog>
 	);
 }
