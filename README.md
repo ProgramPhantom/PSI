@@ -4,6 +4,10 @@
   🔥 <a href="https://www.nmr.chemistry.manchester.ac.uk/PSI/">Link to page</a> 🔥
 </div>
 
+<div align="center">
+  🌐 <a href="https://www.nmr.chemistry.manchester.ac.uk/PSI/wiki">Link to wiki</a>
+</div>
+
 ---
 
 <p align="center">
@@ -15,12 +19,6 @@
   ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E) ![Github Pages](https://img.shields.io/badge/github%20pages-121013?style=for-the-badge&logo=github&logoColor=white) [![pages-build-deployment](https://github.com/ProgramPhantom/PSI/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/ProgramPhantom/PSI/actions/workflows/pages/pages-build-deployment) ![NPM Version](https://img.shields.io/npm/v/npm)
   
 </div>
-
-<div align="center">
-  🌐 <a href="https://www.nmr.chemistry.manchester.ac.uk/PSI/wiki">Link to wiki</a>
-</div>
-
----
 
 Pulse Planner is a web application for creating Nuclear Magnetic Resonance (NMR) pulse sequence diagrams. These diagrams describe sequences of electromagnetic pulses that are fired at samples to determine their molecular makeup. By recording the feedback from these pulses coming off the sample, precise information can be acquired regarding the composition of the sample. The specifics of the type of pulses and the order in which they are fired can change the accuracy of the results, making construction of NMR pulse sequences an important, highly useful area of Chemistry.
 
