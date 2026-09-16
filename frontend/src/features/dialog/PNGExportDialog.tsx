@@ -28,7 +28,7 @@ interface IPNGExportDialogProps {
 type AspectPreset = "original" | "16:9" | "4:3" | "1:1" | "custom";
 type SizeUnit = "px" | "cm" | "in";
 
-const MAX_PX = 4000;
+const MAX_PX = 10000;
 const MIN_PX = 10;
 
 const capPx = (v: number) => Math.min(MAX_PX, Math.max(MIN_PX, Math.round(v)));
@@ -61,6 +61,25 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 	const baseHeight = Math.max(1, Math.round(ENGINE.handler.diagram?.height || 600));
 	const originalRatio = baseWidth / baseHeight;
 
+	const getDimensionsForDpi = (dpi: number, ratio: number) => {
+		const scale = dpi / 72;
+		let w = baseWidth * scale;
+		let h = w / ratio;
+
+		if (w > MAX_PX) {
+			w = MAX_PX;
+			h = w / ratio;
+		}
+		if (h > MAX_PX) {
+			h = MAX_PX;
+			w = h * ratio;
+		}
+		return {
+			width: capPx(w),
+			height: capPx(h)
+		};
+	};
+
 	const [pngFilename, setPngFilename] = useState(currentTitle || "pulse-diagram");
 	const [selectedDpi, setSelectedDpi] = useState<number>(300);
 	const [unit, setUnit] = useState<SizeUnit>("px");
@@ -68,8 +87,9 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 	const [aspectPreset, setAspectPreset] = useState<AspectPreset>("original");
 	const [currentRatio, setCurrentRatio] = useState<number>(originalRatio);
 
-	const [pngWidth, setPngWidth] = useState<number>(capPx(baseWidth * (300 / 72)));
-	const [pngHeight, setPngHeight] = useState<number>(capPx(baseHeight * (300 / 72)));
+	const initialDims = getDimensionsForDpi(300, originalRatio);
+	const [pngWidth, setPngWidth] = useState<number>(initialDims.width);
+	const [pngHeight, setPngHeight] = useState<number>(initialDims.height);
 
 	// Reset values when dialog opens
 	useEffect(() => {
@@ -81,18 +101,15 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 			setIsAspectLocked(true);
 			setAspectPreset("original");
 			setCurrentRatio(originalRatio);
-			const defaultW = capPx(baseWidth * (300 / 72));
-			const defaultH = capPx(baseHeight * (300 / 72));
-			setPngWidth(defaultW);
-			setPngHeight(defaultH);
+			const dims = getDimensionsForDpi(300, originalRatio);
+			setPngWidth(dims.width);
+			setPngHeight(dims.height);
 		}
 	}, [props.isOpen, baseWidth, baseHeight, originalRatio, currentTitle]);
 
 	const handleDpiChange = (dpi: number) => {
 		setSelectedDpi(dpi);
-		const scale = dpi / 72;
-		const newW = capPx(baseWidth * scale);
-		const newH = capPx(newW / currentRatio);
+		const { width: newW, height: newH } = getDimensionsForDpi(dpi, currentRatio);
 		setPngWidth(newW);
 		setPngHeight(newH);
 	};
@@ -120,7 +137,13 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 
 		setCurrentRatio(targetRatio);
 		setIsAspectLocked(true);
-		const newH = capPx(pngWidth / targetRatio);
+		let newH = capPx(pngWidth / targetRatio);
+		let newW = pngWidth;
+		if (newH > MAX_PX) {
+			newH = MAX_PX;
+			newW = capPx(newH * targetRatio);
+			setPngWidth(newW);
+		}
 		setPngHeight(newH);
 	};
 
@@ -159,6 +182,9 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 		setPngHeight(capH);
 		setCurrentRatio(capW / capH);
 		setAspectPreset(presetLabel || "custom");
+
+		const isOriginalRatio16_9 = Math.abs(originalRatio - 16 / 9) < 0.001;
+		setIsAspectLocked(isOriginalRatio16_9);
 	};
 
 	const handleSavePNG = () => {
@@ -266,7 +292,7 @@ export function PNGExportDialog(props: IPNGExportDialogProps) {
 				{/* Standard Resolutions */}
 				<div className={styles.formGroupContainer}>
 					<div className={styles.sectionHeader}>
-						<span>Standard Resolutions (Capped at 4000px)</span>
+						<span>Standard Resolutions (Capped at {MAX_PX}px)</span>
 					</div>
 					<ButtonGroup fill size="small" variant="outlined" className={styles.presetGroup}>
 						<Button
