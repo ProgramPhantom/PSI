@@ -15,6 +15,7 @@ import { InternalSchemeId, updateComponent } from "../../redux/slices/schemesSli
 import { deleteComponentThunk } from "../../redux/thunks/schemeThunks";
 import { AllDropResultTypes, DragElementTypes } from "./CanvasDropContainer";
 import { SnapStore } from "../../logic/snapping";
+import { DEFAULT_SCHEME_SET } from "../../logic/default/schemeSet";
 
 
 
@@ -304,7 +305,7 @@ const TemplateDraggableElement: React.FC<ITemplateDraggableElementProps> = (prop
 				setShowBin(false);
 			}}
 			title={`Drag ${props.element.ref} to canvas`}>
-			{props.schemeId !== InternalSchemeId ? (
+			{props.schemeId !== InternalSchemeId || !DEFAULT_SCHEME_SET[InternalSchemeId]?.scheme.components[props.templateId] ? (
 				<Button
 					title={`Delete ${props.element.ref}`}
 					icon="trash"

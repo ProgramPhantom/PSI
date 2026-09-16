@@ -6,9 +6,10 @@ import { RootState } from '../rootReducer';
 import {
     addComponent, addScheme,
     deleteComponent,
+    InternalSchemeId,
     updateComponent
 } from '../slices/schemesSlice';
-import { deloadServerSchemes, saveSchemeByID, syncUserSchemes, uploadSchemeServer } from '../thunks/schemeThunks';
+import { deloadServerSchemes, saveInternalScheme, saveSchemeByID, syncUserSchemes, uploadSchemeServer } from '../thunks/schemeThunks';
 import ENGINE from '../../logic/engine';
 
 export const schemeListenerMiddleware = createListenerMiddleware();
@@ -30,7 +31,7 @@ schemeListenerMiddleware.startListening({
     }
 });
 
-// On add/delete/update component: re-upload scheme to server if it lives on the server
+// On add/delete/update component: save internal scheme locally or re-upload scheme to server
 schemeListenerMiddleware.startListening({
     matcher: isAnyOf(addComponent, deleteComponent, updateComponent),
     effect: async (action, listenerApi) => {
@@ -38,7 +39,17 @@ schemeListenerMiddleware.startListening({
         const schemeId = (action.payload as { schemeId: ID }).schemeId;
         const entry = state.schemes.schemes[schemeId];
 
-        if (!entry || entry.location !== "server") {
+        if (!entry) {
+            return;
+        }
+
+        if (schemeId === InternalSchemeId || entry.location === "builtin") {
+            await listenerApi.dispatch(saveInternalScheme());
+            ENGINE.handler.refreshDiagram();
+            return;
+        }
+
+        if (entry.location !== "server") {
             return;
         }
 

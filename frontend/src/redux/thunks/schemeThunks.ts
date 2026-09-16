@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { sha256 } from "js-sha256";
 import JSZip from "jszip";
+import localforage from "localforage";
 import { appToaster } from "../../app/Toaster";
 import ENGINE from "../../logic/engine";
 import { createSchemeFile } from "../../fileCreation/createSchemeFile";
@@ -10,10 +11,39 @@ import Visual, { IVisual } from "../../logic/visual";
 import { IScheme, SchemeSource } from "../../types/schemes";
 import { api } from "../api/api";
 import { RootState } from "../rootReducer";
-import { addComponent, addScheme, deleteComponent, removeScheme, selectAssociatedAssetsBySchemeId, setSchemeLocation } from "../slices/schemesSlice";
+import { addComponent, addScheme, deleteComponent, InternalSchemeId, removeScheme, selectAssociatedAssetsBySchemeId, setInternalScheme, setSchemeLocation } from "../slices/schemesSlice";
 import { loadAsset, removeDependencyAndCheckDeload } from "./assetThunks";
 import { selectAssetSourceById } from "../slices/assetSlice";
 import { IPulseData } from "../../logic/pulseData";
+
+export const loadInternalScheme = createAsyncThunk<void, void>(
+    'schemes/loadInternalScheme',
+    async (_, thunkAPI) => {
+        try {
+            const savedScheme = await localforage.getItem<IScheme>(`scheme-${InternalSchemeId}`);
+            if (savedScheme && savedScheme.components) {
+                thunkAPI.dispatch(setInternalScheme(savedScheme));
+            }
+        } catch (error) {
+            console.warn("Failed to load internal scheme from localforage", error);
+        }
+    }
+);
+
+export const saveInternalScheme = createAsyncThunk<void, void>(
+    'schemes/saveInternalScheme',
+    async (_, thunkAPI) => {
+        try {
+            const state = thunkAPI.getState() as RootState;
+            const internalEntry = state.schemes.schemes[InternalSchemeId];
+            if (!internalEntry) return;
+
+            await localforage.setItem(`scheme-${InternalSchemeId}`, internalEntry.scheme);
+        } catch (error) {
+            console.error("Failed to save internal scheme to localforage", error);
+        }
+    }
+);
 
 
 export const uploadSchemeServer = createAsyncThunk<void, string>(

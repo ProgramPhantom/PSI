@@ -57,6 +57,35 @@ const schemesSlice = createSlice({
                 state.schemes[schemeId].scheme.components[componentId] = component;
             }
         },
+        setInternalScheme(state, action: PayloadAction<IScheme>) {
+            const defaultScheme = DEFAULT_SCHEME_SET[InternalSchemeId]?.scheme;
+            const defaultComponents = defaultScheme ? defaultScheme.components : {};
+
+            const mergedComponents = {
+                ...defaultComponents,
+                ...(action.payload.components ?? {}),
+            };
+
+            if (state.schemes[InternalSchemeId]) {
+                state.schemes[InternalSchemeId].scheme = {
+                    ...state.schemes[InternalSchemeId].scheme,
+                    ...action.payload,
+                    components: mergedComponents,
+                };
+            } else {
+                state.schemes[InternalSchemeId] = {
+                    location: "builtin",
+                    scheme: {
+                        metadata: action.payload.metadata || defaultScheme?.metadata || {
+                            name: "internal",
+                            id: "internal",
+                            format: "psi-scheme-format"
+                        },
+                        components: mergedComponents,
+                    }
+                };
+            }
+        },
         setSchemeLocation(state, action: PayloadAction<{ id: ID; location: SchemeSource }>) {
             const { id, location } = action.payload;
             if (state.schemes[id]) {
@@ -121,6 +150,7 @@ const schemesSlice = createSlice({
 
 export const {
     setSchemes,
+    setInternalScheme,
     addScheme,
     removeScheme,
     updateSchemeMetadata,
