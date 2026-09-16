@@ -1,6 +1,6 @@
 {
-    "typescript.tsdk": "node_modules\\typescript\\lib",
-    "cSpell.words": [
+	"typescript.tsdk": "node_modules\\typescript\\lib",
+	"cSpell.words": [
 		"blueprintjs",
 		"Colour",
 		"hitbox",
@@ -15,6 +15,7 @@
 		"subgrids",
 		"svgdotjs",
 		"SVGS",
+		"trackpad",
 		"viewbox"
 	]
 }
