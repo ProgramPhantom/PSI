@@ -2,6 +2,7 @@ import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup } from 
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { selectCurrentTitle } from "../../redux/selectors/diagramSelectors";
+import { setTitle } from "../../redux/slices/diagramSlice";
 import { saveDiagram } from "../../redux/thunks/diagramThunks";
 
 export interface ISaveAsDialogProps {
@@ -10,18 +11,20 @@ export interface ISaveAsDialogProps {
 }
 
 export function SaveAsDialog(props: ISaveAsDialogProps) {
-    const title = useAppSelector(selectCurrentTitle);
-    const [name, setName] = useState(title);
-    const dispatch = useAppDispatch()
+    const currentTitle = useAppSelector(selectCurrentTitle);
+    const [name, setName] = useState(currentTitle);
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (props.isOpen) {
-            setName(title);
+            setName(currentTitle);
         }
-    }, [props.isOpen, title]);
+    }, [props.isOpen, currentTitle]);
 
     const handleSave = () => {
-        dispatch(saveDiagram({fileName: name}))
+        const trimmedTitle = name.trim() || "Untitled";
+        dispatch(setTitle(trimmedTitle));
+        dispatch(saveDiagram({ title: trimmedTitle, fileName: `${trimmedTitle}.nmrd` }));
         props.onClose();
     };
 
@@ -42,7 +45,13 @@ export function SaveAsDialog(props: ISaveAsDialogProps) {
                         id="diagram-title"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                handleSave();
+                            }
+                        }}
                         placeholder="e.g. My Diagram"
+                        autoFocus={true}
                     />
                 </FormGroup>
             </DialogBody>

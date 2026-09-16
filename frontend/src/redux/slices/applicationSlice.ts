@@ -50,6 +50,7 @@ export interface ApplicationState {
     showDiagramOutline: boolean;
     showSequenceColumnEditor: boolean;
     showSequenceChannelPaddingEditor: boolean;
+    showPulseInsertAreas: boolean;
 }
 
 const initialState: ApplicationState = {
@@ -61,6 +62,7 @@ const initialState: ApplicationState = {
     showDiagramOutline: false,
     showSequenceColumnEditor: true,
     showSequenceChannelPaddingEditor: true,
+    showPulseInsertAreas: true,
     selectedTool: {
         type: 'select',
         config: {}
@@ -191,6 +193,12 @@ export const applicationSlice = createSlice({
         },
         toggleSequenceChannelPaddingEditor: (state) => {
             state.showSequenceChannelPaddingEditor = !state.showSequenceChannelPaddingEditor;
+        },
+        setShowPulseInsertAreas: (state, action: PayloadAction<boolean>) => {
+            state.showPulseInsertAreas = action.payload;
+        },
+        togglePulseInsertAreas: (state) => {
+            state.showPulseInsertAreas = !state.showPulseInsertAreas;
         }
     },
 });
@@ -214,7 +222,9 @@ export const {
     setShowSequenceColumnEditor,
     toggleSequenceColumnEditor,
     setShowSequenceChannelPaddingEditor,
-    toggleSequenceChannelPaddingEditor
+    toggleSequenceChannelPaddingEditor,
+    setShowPulseInsertAreas,
+    togglePulseInsertAreas
 } = applicationSlice.actions;
 
 export const selectSelectedElementId = (state: { application: ApplicationState }): string | undefined => {

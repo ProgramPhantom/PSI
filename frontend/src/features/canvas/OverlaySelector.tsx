@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
     toggleDiagramOutline,
+    togglePulseInsertAreas,
     toggleSequenceChannelPaddingEditor,
     toggleSequenceColumnEditor
 } from "../../redux/slices/applicationSlice";
@@ -13,6 +14,7 @@ export const OverlaySelector: React.FC = React.memo(() => {
     const showDiagramOutline = useAppSelector((state) => state.application.showDiagramOutline);
     const showSequenceColumnEditor = useAppSelector((state) => state.application.showSequenceColumnEditor);
     const showSequenceChannelPaddingEditor = useAppSelector((state) => state.application.showSequenceChannelPaddingEditor);
+    const showPulseInsertAreas = useAppSelector((state) => state.application.showPulseInsertAreas);
     const [isOpen, setIsOpen] = useState(false);
 
     const menuContent = (
@@ -39,6 +41,12 @@ export const OverlaySelector: React.FC = React.memo(() => {
                 checked={showSequenceChannelPaddingEditor}
                 onChange={() => dispatch(toggleSequenceChannelPaddingEditor())}
                 label="Padding Editor"
+            />
+            <Checkbox
+                alignIndicator="right"
+                checked={showPulseInsertAreas}
+                onChange={() => dispatch(togglePulseInsertAreas())}
+                label="Pulse Insert Areas"
             />
         </div>
     );

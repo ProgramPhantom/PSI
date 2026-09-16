@@ -1,6 +1,7 @@
 import { Icon } from "@blueprintjs/core";
 import { CSSProperties, useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
+import { useAppSelector } from "../../redux/hooks";
 import { ID } from "../../logic/point";
 import { DragElementTypes } from "./CanvasDropContainer";
 import { Orientation } from "../../logic/spacial";
@@ -32,6 +33,7 @@ export type PulseDropResultType = { type: "pulse", data: IPulseDataAreaResult }
 
 
 function PulseInsertArea(props: { areaSpec: IPulseArea; key: string }) {
+	const showPulseInsertAreas = useAppSelector((state) => state.application.showPulseInsertAreas);
 	const [{ canDrop, isOver }, drop] = useDrop(() => ({
 		accept: [DragElementTypes.PULSE, DragElementTypes.ATOMIC_PREFAB, DragElementTypes.FREE],
 		drop: () =>
@@ -64,6 +66,10 @@ function PulseInsertArea(props: { areaSpec: IPulseArea; key: string }) {
 			setIsDropActive(false);
 		}
 	}, [canDrop]);
+
+	if (!showPulseInsertAreas) {
+		return null;
+	}
 
 	const isActive = canDrop && isOver;
 

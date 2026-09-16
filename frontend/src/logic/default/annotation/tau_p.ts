@@ -4,7 +4,7 @@ export const DEFAULT_ANNOTATION_TAU_P: ILaTeX = {
 	"ref": "tau-p",
 	"contentWidth": 10,
 	"contentHeight": 10,
-	"text": "\\tau_\text{p}",
+	"text": "\\tau_\\text{p}",
 	"padding": [8, 8, 8, 8],
 	"offset": [0, 0],
 
