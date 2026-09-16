@@ -3,7 +3,7 @@ import { appToaster } from "../app/Toaster.tsx";
 import Collection, { AddDispatchData, CanAdd, CanRemove, RemoveDispatchData } from "./collection.ts";
 import { BLANK_DIAGRAM } from "./default/blankDiagram.ts";
 import { DEFAULT_DIAGRAM } from "./default/defaultDiagram.ts";
-import { ISubgrid } from "./grid.ts";
+import { ISubgrid, RemovedGridChildren } from "./grid.ts";
 import Grid from "./grid.ts";
 import Channel, { IChannel } from "./hasComponents/channel.ts";
 import Diagram, { IDiagram } from "./hasComponents/diagram.ts";
@@ -55,7 +55,11 @@ type AddInput = { child: IVisual, index?: number }
 type RemoveInput = RemoveDispatchData
 type AddSubgridInput = { subgrid: ISubgrid };
 
-export type ColumnActionInput = { sequenceId: ID; index: number };
+export type ColumnActionInput = {
+	sequenceId: ID;
+	index: number;
+	restoreElements?: Visual[];
+};
 export type ReorderChildInput = {
 	elementId: ID;
 	toIndex: number;
@@ -785,12 +789,22 @@ export default class DiagramHandler implements IDraw {
 		return { ok: true, undo: { action: "modify", data: { child: target, target: childInstance } } }
 	}
 
-	protected insertColumn({ sequenceId, index }: ColumnActionInput): ActionResult<"insertColumn"> {
+	protected insertColumn({ sequenceId, index, restoreElements }: ColumnActionInput): ActionResult<"insertColumn"> {
 		const sequence = this.diagram.sequenceDict[sequenceId];
 		if (!sequence) {
 			return { ok: false, error: `Sequence ${sequenceId} not found` };
 		}
 		sequence.insertEmptyColumn(index);
+
+		if (restoreElements && restoreElements.length > 0) {
+			for (const child of restoreElements) {
+				const addResult = this.add({ child });
+				if (!addResult.ok) {
+					return { ok: false, error: addResult.error };
+				}
+			}
+		}
+
 		return {
 			ok: true,
 			undo: {
@@ -805,12 +819,29 @@ export default class DiagramHandler implements IDraw {
 		if (!sequence) {
 			return { ok: false, error: `Sequence ${sequenceId} not found` };
 		}
-		sequence.removeColumn(index);
+		const removedChildren = sequence.removeColumn(index);
+
+		const childrenToRemove = this.collectRemovedGridChildren(removedChildren);
+		if (childrenToRemove.length > 0) {
+			const removalActions: BatchInput = childrenToRemove.map((child) => ({
+				type: "remove",
+				input: { child }
+			}));
+			const batchResult = this.dispatchBatch(removalActions);
+			if (!batchResult.ok) {
+				return { ok: false, error: batchResult.error };
+			}
+		}
+
 		return {
 			ok: true,
 			undo: {
 				action: "insertColumn",
-				data: { sequenceId, index }
+				data: {
+					sequenceId,
+					index,
+					restoreElements: childrenToRemove.length > 0 ? childrenToRemove : undefined
+				}
 			}
 		};
 	}
@@ -1022,6 +1053,24 @@ export default class DiagramHandler implements IDraw {
 		});
 
 		return { ok: true, value: {} };
+	}
+
+
+	private collectRemovedGridChildren(removed: RemovedGridChildren): Visual[] {
+		const children: Visual[] = [];
+
+		for (const id of removed.elements) {
+			const child = this.identifyElement(id);
+			if (child) {
+				children.push(child);
+			}
+		}
+
+		for (const subgrid of Object.values(removed.subgrids)) {
+			children.push(...this.collectRemovedGridChildren(subgrid));
+		}
+
+		return children;
 	}
 
 

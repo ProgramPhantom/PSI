@@ -1,6 +1,6 @@
 import { Element } from "@svgdotjs/svg.js";
 import { AddDispatchData, RemoveDispatchData, StructuredChildEntry } from "../collection";
-import Grid, { GridCell, GridColumn, IGrid, Subgrid } from "../grid";
+import Grid, { GridCell, GridColumn, IGrid, RemovedGridChildren, Subgrid } from "../grid";
 import { ID, UserComponentType } from "../point";
 import { Size, } from "../spacial";
 import Visual from "../visual";
@@ -171,18 +171,8 @@ export default class Sequence extends Grid implements ISequence {
 		return elementsInCol;
 	}
 
-	public override removeColumn(index?: number, remove?: true | "if-empty"): void {
+	public override removeColumn(index?: number, remove?: true | "if-empty"): RemovedGridChildren {
 		if (index !== undefined) {
-			// Remove pulses 
-			let nonStructureElements = this.getNonStructureElementsInCol(index);
-			for (let el of nonStructureElements) {
-				for (let ch of this.channels) {
-					if (ch.children.some(c => c.id === el.id)) {
-						ch.remove({ child: el });
-					}
-				}
-			}
-
 			// Clean up placement rules on elements bound to this deleted column
 			const removedCol = this.gridSizes.columns[index];
 			if (removedCol) {
@@ -200,7 +190,7 @@ export default class Sequence extends Grid implements ISequence {
 				}
 			}
 		}
-		super.removeColumn(index, remove);
+		return super.removeColumn(index, remove);
 	}
 
 	protected override shiftColumnIndexes(from: number, amount: number = 1): void {

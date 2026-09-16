@@ -17,6 +17,11 @@ export interface IGrid<C extends IVisual = IVisual> extends ICollection<C> {
 	minColWidths?: number[]
 }
 
+export interface RemovedGridChildren {
+	elements: ID[];
+	subgrids: Record<ID, RemovedGridChildren>;
+}
+
 type GridElement<S extends Visual = Visual> = GridCellElement<S> | Subgrid<S>;
 
 export type GridCell<S extends Visual = Visual> = OccupiedCell<S> | undefined
@@ -1645,7 +1650,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	@dirtiesLayout
-	public removeColumn(index?: number, remove: true | "if-empty" = true) {
+	public removeColumn(index?: number, remove: true | "if-empty" = true): RemovedGridChildren {
 		if (index === undefined || index < 0 || index > this.numColumns - 1) {
 			var INDEX = this.numColumns - 1;
 		} else {
@@ -1653,13 +1658,24 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		var targetColumn: GridCell<C>[] | undefined = this.getColumn(INDEX);
-		if (targetColumn === undefined) { return }
+		if (targetColumn === undefined) { return { elements: [], subgrids: {} }; }
 
 		var empty: boolean = this.isCellArrayEmpty(targetColumn)
 
-		if (remove === "if-empty" && empty === false) { return }
+		if (remove === "if-empty" && empty === false) { return { elements: [], subgrids: {} }; }
 
 		let splitElements: Set<GridElement<C>> = this.getElementsCoveringColumn(INDEX);
+
+		const removedElementIds = new Set<ID>();
+		for (const cell of targetColumn) {
+			if (cell?.elements) {
+				for (const child of cell.elements) {
+					if (!this.isSubgridChild(child) && !splitElements.has(child)) {
+						removedElementIds.add(child.id);
+					}
+				}
+			}
+		}
 
 		for (let i = 0; i < this.numRows; i++) {
 			this.gridMatrix[i].splice(INDEX, 1);
@@ -1681,11 +1697,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		this.shiftColumnIndexes(INDEX, -1);
 
+		const removedSubgrids: Record<ID, RemovedGridChildren> = {};
+
 		// Shrink split elements by either removing a col
 		// from subgrid or reducing grid-size;
 		splitElements.forEach((element) => {
 			if (this.isSubgridChild(element)) {
-				element.removeColumn(element.getRelativeCol(INDEX));
+				const subResult = element.removeColumn(element.getRelativeCol(INDEX), remove);
+				if (subResult && (subResult.elements.length > 0 || Object.keys(subResult.subgrids).length > 0)) {
+					removedSubgrids[element.id] = subResult;
+				}
 			} else if (element.placementMode.config.gridSize !== undefined) {
 				element.placementMode.config.gridSize = {
 					noRows: element.placementMode.config.gridSize.noRows,
@@ -1693,10 +1714,15 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				};
 			}
 		});
+
+		return {
+			elements: Array.from(removedElementIds),
+			subgrids: removedSubgrids
+		};
 	}
 
 	@dirtiesLayout
-	public removeRow(index?: number, onlyIfEmpty: boolean = false) {
+	public removeRow(index?: number, onlyIfEmpty: boolean = false): RemovedGridChildren {
 		if (index === undefined || index < 0 || index > this.numRows - 1) {
 			var INDEX = this.numRows - 1;
 		} else {
@@ -1704,13 +1730,24 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 		}
 
 		var targetRow: GridCell<C>[] | undefined = this.getRow(INDEX);
-		if (targetRow === undefined) { return }
+		if (targetRow === undefined) { return { elements: [], subgrids: {} }; }
 
 		var empty: boolean = this.isCellArrayEmpty(targetRow)
 
-		if (onlyIfEmpty === true && !empty) { return }
+		if (onlyIfEmpty === true && !empty) { return { elements: [], subgrids: {} }; }
 
 		let splitElements: Set<GridElement<C>> = this.getElementsCoveringRow(INDEX);
+
+		const removedElementIds = new Set<ID>();
+		for (const cell of targetRow) {
+			if (cell?.elements) {
+				for (const child of cell.elements) {
+					if (!this.isSubgridChild(child) && !splitElements.has(child)) {
+						removedElementIds.add(child.id);
+					}
+				}
+			}
+		}
 
 		this.gridMatrix.splice(INDEX, 1);
 
@@ -1730,9 +1767,14 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		this.shiftRowIndexes(INDEX, -1);
 
+		const removedSubgrids: Record<ID, RemovedGridChildren> = {};
+
 		splitElements.forEach((element) => {
 			if (this.isSubgridChild(element)) {
-				element.removeRow(element.getRelativeRow(INDEX));
+				const subResult = element.removeRow(element.getRelativeRow(INDEX), onlyIfEmpty);
+				if (subResult && (subResult.elements.length > 0 || Object.keys(subResult.subgrids).length > 0)) {
+					removedSubgrids[element.id] = subResult;
+				}
 			} else if (element.placementMode.config.gridSize !== undefined) {
 				element.placementMode.config.gridSize = {
 					noRows: element.placementMode.config.gridSize.noRows - 1,
@@ -1740,6 +1782,11 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 				};
 			}
 		});
+
+		return {
+			elements: Array.from(removedElementIds),
+			subgrids: removedSubgrids
+		};
 	}
 
 	// --- Helpers ----
@@ -2496,20 +2543,24 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 	}
 
 	@dirtiesLayout
-	public override removeRow(index?: number, onlyIfEmpty?: boolean): void {
-		super.removeRow(index, onlyIfEmpty);
+	public override removeRow(index?: number, onlyIfEmpty?: boolean): RemovedGridChildren {
+		const result = super.removeRow(index, onlyIfEmpty);
 
 		if (index === 0) {
 			this.placementMode.config.coords.row += 1;
 		}
+
+		return result;
 	}
 
 	@dirtiesLayout
-	public override removeColumn(index?: number, remove?: true | "if-empty"): void {
-		super.removeColumn(index, remove);
+	public override removeColumn(index?: number, remove?: true | "if-empty"): RemovedGridChildren {
+		const result = super.removeColumn(index, remove);
 
 		if (index === 0) {
 			this.placementMode.config.coords.col += 1;
 		}
+
+		return result;
 	}
 }

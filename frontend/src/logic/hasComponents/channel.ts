@@ -1,6 +1,6 @@
 import { Element } from "@svgdotjs/svg.js";
 import { AddDispatchData, Components, RemoveDispatchData } from "../collection";
-import Grid, { Elements, Ghost, GridCell, IGrid, ISubgrid, Subgrid } from "../grid";
+import Grid, { Elements, Ghost, GridCell, IGrid, ISubgrid, RemovedGridChildren, Subgrid } from "../grid";
 import { BAR_MASK_ID, ID, UserComponentType } from "../point";
 import RectElement from "../rectElement";
 import { Dimensions, IGridConfig, IPulseConfig, isPulse, ISubgridConfig, Orientation, SiteNames, Size } from "../spacial";
@@ -162,9 +162,10 @@ export default class Channel extends Subgrid implements IChannel {
 		this.sizeBar();
 	}
 
-	public override removeColumn(index?: number, remove?: true | "if-empty"): void {
-		super.removeColumn(index, remove);
+	public override removeColumn(index?: number, remove?: true | "if-empty"): RemovedGridChildren {
+		const result = super.removeColumn(index, remove);
 		this.sizeBar();
+		return result;
 	}
 
 	private initialiseBar({ child, index }: AddDispatchData) {

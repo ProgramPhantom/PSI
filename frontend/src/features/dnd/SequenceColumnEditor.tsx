@@ -281,9 +281,6 @@ export default function SequenceColumnEditor({ sequence, scale = 1 }: SequenceCo
 				<p style={{ margin: 0 }}>
 					This column contains pulses. Are you sure you want to delete it?
 				</p>
-				<p style={{ marginTop: 8, marginBottom: 0, fontWeight: 600, color: "var(--bp-intent-danger, #d9822b)" }}>
-					Warning: Deleted pulses cannot be restored via undo.
-				</p>
 			</Alert>
 		</>
 	);
