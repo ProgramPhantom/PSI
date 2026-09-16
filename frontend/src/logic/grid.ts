@@ -1664,7 +1664,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		if (remove === "if-empty" && empty === false) { return { elements: [], subgrids: {} }; }
 
-		let splitElements: Set<GridElement<C>> = this.getElementsCoveringColumn(INDEX);
+		let splitElements: Set<GridElement<C>> = this.getMultiCellElementsOverColumn(INDEX);
+
+		const elementRoots = new Map<ID, { row: number, col: number }>();
+		splitElements.forEach((el) => {
+			if (!this.isSubgridChild(el)) {
+				const rootCol = el.placementMode.config.coords?.col ?? this.elementCoordMap.get(el.id)?.col ?? 0;
+				const rootRow = el.placementMode.config.coords?.row ?? this.elementCoordMap.get(el.id)?.row ?? 0;
+				elementRoots.set(el.id, { row: rootRow, col: rootCol });
+			}
+		});
 
 		const removedElementIds = new Set<ID>();
 		for (const cell of targetColumn) {
@@ -1708,10 +1717,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 					removedSubgrids[element.id] = subResult;
 				}
 			} else if (element.placementMode.config.gridSize !== undefined) {
+				const initialRoot = elementRoots.get(element.id);
+				const wasRoot = initialRoot !== undefined && initialRoot.col === INDEX;
+				const rootRow = initialRoot?.row ?? 0;
+
 				element.placementMode.config.gridSize = {
 					noRows: element.placementMode.config.gridSize.noRows,
 					noCols: element.placementMode.config.gridSize.noCols - 1
 				};
+
+				if (wasRoot) {
+					this.setChildRoot(element, { row: rootRow, col: INDEX });
+				}
 			}
 		});
 
@@ -1736,7 +1753,16 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 		if (onlyIfEmpty === true && !empty) { return { elements: [], subgrids: {} }; }
 
-		let splitElements: Set<GridElement<C>> = this.getElementsCoveringRow(INDEX);
+		let splitElements: Set<GridElement<C>> = this.getMultiCellElementsOverRow(INDEX);
+
+		const elementRoots = new Map<ID, { row: number, col: number }>();
+		splitElements.forEach((el) => {
+			if (!this.isSubgridChild(el)) {
+				const rootCol = el.placementMode.config.coords?.col ?? this.elementCoordMap.get(el.id)?.col ?? 0;
+				const rootRow = el.placementMode.config.coords?.row ?? this.elementCoordMap.get(el.id)?.row ?? 0;
+				elementRoots.set(el.id, { row: rootRow, col: rootCol });
+			}
+		});
 
 		const removedElementIds = new Set<ID>();
 		for (const cell of targetRow) {
@@ -1776,10 +1802,18 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 					removedSubgrids[element.id] = subResult;
 				}
 			} else if (element.placementMode.config.gridSize !== undefined) {
+				const initialRoot = elementRoots.get(element.id);
+				const wasRoot = initialRoot !== undefined && initialRoot.row === INDEX;
+				const rootCol = initialRoot?.col ?? 0;
+
 				element.placementMode.config.gridSize = {
 					noRows: element.placementMode.config.gridSize.noRows - 1,
 					noCols: element.placementMode.config.gridSize.noCols
 				};
+
+				if (wasRoot) {
+					this.setChildRoot(element, { row: INDEX, col: rootCol });
+				}
 			}
 		});
 
@@ -1790,6 +1824,32 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	}
 
 	// --- Helpers ----
+	/**
+	 * Updates the root cell coordinates of a multi-cell element and promotes the new cell as source.
+	 * 
+	 * Note: Secondary cell sources (`cell.sources[child.id]`) do not need to be manually updated
+	 * because they share the exact same `{ row, col }` object reference in memory with
+	 * `child.placementMode.config.coords` (established in `getChildRegion`). Updating `coords.row`
+	 * and `coords.col` in place automatically keeps all secondary cells' root pointers synchronized.
+	 */
+	protected setChildRoot(child: GridElement<C>, coords: { row: number, col: number }): void {
+		if (child.placementMode.config.coords) {
+			child.placementMode.config.coords.row = coords.row;
+			child.placementMode.config.coords.col = coords.col;
+		} else {
+			child.placementMode.config.coords = { row: coords.row, col: coords.col };
+		}
+		this.elementCoordMap.set(child.id, { row: coords.row, col: coords.col });
+
+		const rootCell = this.gridMatrix[coords.row]?.[coords.col];
+		if (rootCell?.sources) {
+			delete rootCell.sources[child.id];
+			if (Object.keys(rootCell.sources).length === 0) {
+				rootCell.sources = undefined;
+			}
+		}
+	}
+
 	protected getStructuredColumnSplitElements(index: number): GridElement<C>[][] {
 		if (index > this.numColumns || index < 0) {
 			throw new Error(`Index ${index} is out of bounds`)
@@ -1896,7 +1956,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	 * Returns elements occupying column `index` that span multiple columns or are Subgrids
 	 * and need their widths reduced when column `index` is removed.
 	 */
-	protected getElementsCoveringColumn(index: number): Set<GridElement<C>> {
+	protected getMultiCellElementsOverColumn(index: number): Set<GridElement<C>> {
 		if (index >= this.numColumns || index < 0) {
 			return new Set<GridElement<C>>();
 		}
@@ -1922,7 +1982,7 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 	 * Returns elements occupying row `index` that span multiple rows or are Subgrids
 	 * and need their heights reduced when row `index` is removed.
 	 */
-	protected getElementsCoveringRow(index: number): Set<GridElement<C>> {
+	protected getMultiCellElementsOverRow(index: number): Set<GridElement<C>> {
 		if (index >= this.numRows || index < 0) {
 			return new Set<GridElement<C>>();
 		}
@@ -1962,15 +2022,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						this.elementCoordMap.set(element.id, { row: row_index, col: col_index });
 					})
 				}
-
-				// Update sources
-				if (cell?.sources !== undefined) {
-					Object.entries(cell.sources).forEach(([id, coord]) => {
-						if (coord.col >= from) {
-							coord.col += amount
-						}
-					})
-				}
 			})
 		}
 
@@ -2001,15 +2052,6 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 							gridConfig.coords.row += amount;
 						}
 						this.elementCoordMap.set(element.id, { row: row_index, col: col_index });
-					})
-				}
-
-				// Update sources
-				if (cell?.sources !== undefined) {
-					Object.entries(cell.sources).forEach(([id, coord]) => {
-						if (coord.row >= from) {
-							coord.row += amount
-						}
 					})
 				}
 			})
@@ -2510,8 +2552,7 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 	}
 
 	public getSubgridRegion(): OccupiedCell<C>[][] {
-		// Be careful not to cause reference type linkage here. Causes problems ->
-		let root: { row: number, col: number } = { ...this.placementMode.config.coords };
+		let root: { row: number, col: number } = this.placementMode.config.coords;
 		let numRows: number = this.numRows;
 		let numCols: number = this.numColumns;
 
