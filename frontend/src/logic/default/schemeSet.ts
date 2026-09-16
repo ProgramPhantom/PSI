@@ -49,6 +49,8 @@ import { DEFAULT_ANNOTATION_LABEL_DELTA_CAP } from "./annotation/label_Delta_cap
 import { DEFAULT_ANNOTATION_LABEL_TAU } from "./annotation/label_tau";
 import { DEFAULT_ANNOTATION_LABEL_T1 } from "./annotation/label_t1";
 import { DEFAULT_ANNOTATION_LABEL_T1_HALF } from "./annotation/label_t1_half";
+import { DEFAULT_ANNOTATION_PHI_REC } from "./annotation/phi_rec";
+import { DEFAULT_ANNOTATION_TAU_P } from "./annotation/tau_p";
 
 export const DEFAULT_SCHEME_SET: SchemeDict = {
 	"internal": {
@@ -100,6 +102,8 @@ export const DEFAULT_SCHEME_SET: SchemeDict = {
 				"c6313a4a-3050-40b6-9590-40cf2365ac72": DEFAULT_ANNOTATION_PHI_2,
 				"c8477883-1e2f-4b24-af91-5cf9ff5c3e5e": DEFAULT_ANNOTATION_PHI_3,
 				"1777ad4d-ab7d-4ea5-800e-e82338a0b956": DEFAULT_ANNOTATION_PHI_4,
+				"1776ad4d-ab7d-4ea5-800e-e82338a0b956": DEFAULT_ANNOTATION_PHI_REC,
+				"1778ad4d-ab7d-4ea5-800e-e82338a0b956": DEFAULT_ANNOTATION_TAU_P,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e81": DEFAULT_ANNOTATION_LABEL_DELTA,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e82": DEFAULT_ANNOTATION_LABEL_DELTA_CAP,
 				"5c3d4a2d-2d4e-4f30-8a42-5f69c5e53e83": DEFAULT_ANNOTATION_LABEL_TAU,

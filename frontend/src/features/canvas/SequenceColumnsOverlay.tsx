@@ -74,7 +74,7 @@ export const SequenceColumnsOverlay: React.FC<SequenceColumnsOverlayProps> = ({ 
 									pointerEvents: "none"
 								}}
 							>
-								Col {idx}
+								{idx}
 							</div>
 						</div>
 					);

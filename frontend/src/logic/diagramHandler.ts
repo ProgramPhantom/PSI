@@ -523,6 +523,8 @@ export default class DiagramHandler implements IDraw {
 	@draws
 	public resetDiagram() {
 		this.constructDiagram(structuredClone(DEFAULT_DIAGRAM));
+		this.undoStack = []
+		this.redoStack = []
 	}
 
 	@draws

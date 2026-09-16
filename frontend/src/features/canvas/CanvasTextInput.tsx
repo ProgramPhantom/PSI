@@ -118,10 +118,13 @@ export const CanvasTextInput: React.FC<CanvasTextInputProps> = ({
 				position: "absolute",
 				left: x,
 				top: y,
-				zIndex: 10002,
+				zIndex: 70000,
 				pointerEvents: "auto",
 				transform: "translate(-2px, -6px)"
 			}}
+			onMouseDown={(e) => e.stopPropagation()}
+			onPointerDown={(e) => e.stopPropagation()}
+			onClick={(e) => e.stopPropagation()}
 		>
 			<InputGroup
 				inputRef={inputRef}

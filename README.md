@@ -16,18 +16,18 @@
   
 </div>
 
-Pulse Planner is a web application for creating Nuclear Magnetic Resonance (NMR) pulse sequence diagrams. These diagrams describe sequences of electromagnetic pulses that are fired at samples to determine their molecular makeup. By recording the feedback from these pulses coming off the sample, precise information can be acquired regarding the composition of the sample. The specifics of the type of pulses and the order in which they are fired can change the accuracy of the results, making construction of NMR pulse sequences an important and highly useful area of Chemistry.
+Pulse Planner is a web application for creating Nuclear Magnetic Resonance (NMR) pulse sequence diagrams. These diagrams describe sequences of electromagnetic pulses that are fired at samples to determine their molecular makeup. By recording the feedback from these pulses coming off the sample, precise information can be acquired regarding the composition of the sample. The specifics of the type of pulses and the order in which they are fired can change the accuracy of the results, making construction of NMR pulse sequences an important, highly useful area of Chemistry.
 
 You can check out some example pulse sequnce diagrams on the Manchester NMR Methodology Group's website [here](https://www.nmr.chemistry.manchester.ac.uk/?q=node/327).
 
 ## 🔨 Features
 
-Pulse planner was created to revolutionise the way scientists can plan NMR pulses sequences. It allows the rapid prototyping, annotating and sharing beautifully formatted pulse sequence images. Pulse planner makes it as easy as a drag and a drop to start creating professional, scientific standard diagrams, and comes with unlimited customisation capabilities. Here are a few of the features this application provides:
+Pulse planner was created to revolutionise the way scientists can plan NMR pulses sequences. It allows the rapid prototyping, annotating and sharing beautifully formatted pulse sequence images. Pulse planner makes it as easy as a drag and a drop to start creating professional, publication ready, and contains with unlimited customisation capabilities. Here are a few of the features this application provides:
 
 - Enables the rapid prototyping of NMR pulses sequences
-- Provides a declarative interaction system, meaning users need not worry about formatting and positioning of graphical elements
-- Gives way to formalise syntax for pulse sequence diagrams
-- Has the ability to share and collaborate on pulse sequence diagrams
+- Provides a declarative positioning system, meaning users need not worry about formatting and positioning of graphical elements
+- Provides a platform to formalise syntax for pulse sequence diagrams
+- The ability to share and collaborate on pulse sequence diagrams
 - Inlcudes a flexible components based system, which allows concepts for new pulses to be uploaded and shared
 
 ## ✍ How to use
