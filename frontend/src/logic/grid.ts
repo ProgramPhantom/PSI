@@ -312,8 +312,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						let minW: number = child.minContentWidth ?? child.minWidth ?? child.width ?? 5;
 
 						if ((placementMode?.gridSize?.noCols ?? 0) > 1) {
-							width = 0;
-							minW = 0;
+							width = width / placementMode!.gridSize!.noCols;
+							minW = minW / placementMode!.gridSize!.noCols;
 						}
 
 						if (this.isSubgridChild(child)) {
@@ -485,8 +485,8 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 						let minH: number = child.minContentHeight ?? child.minHeight ?? child.height ?? 5;
 
 						if (placementMode !== undefined && (placementMode.gridSize?.noRows ?? 0) > 1) {
-							height = 0;
-							minH = 0;
+							height = height / placementMode.gridSize!.noRows;
+							minH = minH / placementMode.gridSize!.noRows;
 						}
 
 						if (this.isSubgridChild(child)) {

@@ -31,7 +31,7 @@ export default class LabelGroup
 				parentId: targetState.parentId,
 				pulseLayoutConfig: { ...pulseState.pulseLayoutConfig },
 				placementMode: structuredClone(pulseState.placementMode),
-				sizeMode: { x: "fit", y: "fit" },
+				sizeMode: { x: targetState.sizeMode?.x === "grow" ? "grow" : "fit", y: "fit" },
 				padding: targetState.padding ?? [0, 0, 0, 0],
 				offset: [0, 0],
 				x: targetState.x,

@@ -1,14 +1,13 @@
-> [!IMPORTANT]
-> This project is a WORK IN PROGESS ⌛
+
 
 <div align="center">
-  🔥 <a href="https://programphantom.github.io/PSI/">Link to page</a> 🔥
+  🔥 <a href="https://www.nmr.chemistry.manchester.ac.uk/PSI/">Link to page</a> 🔥
 </div>
 
 ---
 
 <p align="center">
-  <img src="Banner.png" />
+  <img src="PP.svg" />
 </p>
 
 <div align="center">
