@@ -20,6 +20,8 @@
   🌐 <a href="https://www.nmr.chemistry.manchester.ac.uk/PSI/wiki">Link to wiki</a>
 </div>
 
+---
+
 Pulse Planner is a web application for creating Nuclear Magnetic Resonance (NMR) pulse sequence diagrams. These diagrams describe sequences of electromagnetic pulses that are fired at samples to determine their molecular makeup. By recording the feedback from these pulses coming off the sample, precise information can be acquired regarding the composition of the sample. The specifics of the type of pulses and the order in which they are fired can change the accuracy of the results, making construction of NMR pulse sequences an important, highly useful area of Chemistry.
 
 You can check out some example pulse sequnce diagrams on the Manchester NMR Methodology Group's website [here](https://www.nmr.chemistry.manchester.ac.uk/?q=node/327).
