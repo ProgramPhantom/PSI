@@ -1,15 +1,9 @@
 # Diagram
 
-The `Diagram` class represents the root node of a sequence diagram. It inherits from `Collection<Visual>` and coordinates overall sizing, positioning, and sequence layout.
+The `Diagram` represents the entire visual document. It is technically an element like any other, but contains important metadata and cannot be removed from the application. 
 
-## Key Properties and Accessors
+## Altering the document data
 
-- **`sequences: Sequence[]`**: Retrieves the list of child sequence blocks aligned within the diagram.
-- **`channels: Channel[]`**: A flattened list of all channels across all sequences in the diagram.
-- **`allPulseElements: Visual[]`**: A flattened list of all pulse elements across all sequences.
-- **`sequenceAligner: SequenceAligner`**: The child aligner responsible for vertical positioning of sequences.
+When no element is selected in the document, the default `Diagram Form` will be present in the `Form` area. Here, the user can update the title of the diagram, and fill in Author and Institution information. Diagram padding can also be updated here, which changes how much whitespace is applied around the outmost objects on the canvas. This padding can be viewed by toggling the `View Diagram Boundary` button in the top left of the canvas. 
 
-## Layout Calculations
-
-- **`getTopLeft()`**: Computes the coordinates of the upper-left boundary of the entire diagram based on the bounding boxes (`drawBound`) of its child sequences.
-- **`computeSize()`**: Computes the sizing requirements by calculating the outer boundaries (top, bottom, left, right) of all child elements and updating its inner content size dimensions.
+There are also sections here for easy access to export controls, and a tab detailing some statistcs regarding the diagram. 
