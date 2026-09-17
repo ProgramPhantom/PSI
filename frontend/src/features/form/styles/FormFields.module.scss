@@ -1,14 +1,23 @@
 .compactNumericInput {
+    :global(.bp5-input-group) {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
     :global(.bp5-input) {
         font-size: 0.8em !important;
         height: 22px !important;
         padding-top: 2px !important;
         padding-bottom: 2px !important;
         padding-left: 6px !important;
+        padding-right: 4px !important;
+        min-width: 0;
+        width: 100%;
     }
 
     :global(.bp5-button-group.bp5-vertical) {
         min-width: 18px !important;
+        flex-shrink: 0;
 
         :global(.bp5-button) {
             min-height: 11px !important;

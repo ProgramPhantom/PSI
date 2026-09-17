@@ -602,7 +602,7 @@ export const CustomNumericInput = React.forwardRef<HTMLInputElement, CustomNumer
 		return (
 			<div className={containerClasses} style={style}>
 				{buttonPosition === "left" && renderButtons()}
-				<div className={`${Classes.INPUT_GROUP} ${isSmall ? Classes.SMALL : ""} ${fill ? Classes.FILL : ""}`}>
+				<div className={`${Classes.INPUT_GROUP} ${isSmall ? Classes.SMALL : ""} ${Classes.FILL}`}>
 					<input
 						{...restProps}
 						ref={inputRef}

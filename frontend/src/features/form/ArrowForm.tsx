@@ -17,78 +17,80 @@ function ArrowForm(props: IArrowFormProps) {
 
 	return (
 		<>
-			<ControlGroup vertical={true} className={styles.formGroupContainer}>
-				{/* Style */}
-				<Section
-					className={sectionStyles.minimalSection}
-					collapseProps={{ defaultIsOpen: true }}
-					compact={true}
-					title={"Style"}
-					collapsible={true}>
-					<ControlGroup vertical={true} className={styles.formGroupContainer}>
-						<SimpleField
-							fill={true}
-							label="Stroke thickness"
-							labelFor="text-input">
+			{/* Style */}
+			<Section
+				className={sectionStyles.minimalSection}
+				collapseProps={{ defaultIsOpen: true }}
+				compact={true}
+				title={"Style"}
+				collapsible={true}>
+				<ControlGroup vertical={true} className={styles.formGroupContainer}>
+					<SimpleField
+						fill={true}
+						label="Stroke thickness"
+						labelFor="text-input">
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}thickness`}
+							render={({ field }) => (
+								<CustomNumericInput
+									{...field} size="small"
+									allowNegative={false}
+									onValueChange={field.onChange}
+									min={1}></CustomNumericInput>
+							)}></Controller>
+					</SimpleField>
+
+					<SimpleField
+						label="Stroke"
+						labelFor="text-input">
+						<Controller
+							control={formControls.control}
+							name={`${fullPrefix}lineStyle.stroke`}
+							render={({ field }) => (
+								<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
+							)}></Controller>
+					</SimpleField>
+
+					<DoubleField
+						label="Dashing"
+						leftLabel="Dash"
+						leftField={
 							<Controller
 								control={formControls.control}
-								name={`${fullPrefix}thickness`}
+								name={`${fullPrefix}lineStyle.dashing.0`}
 								render={({ field }) => (
-									<CustomNumericInput
-										{...field} size="small"
-										allowNegative={false}
+									<CustomNumericInput fill={true}
+										{...field}
+										allowNegative={true}
+										min={-100}
+										max={100}
 										onValueChange={field.onChange}
-										min={1}></CustomNumericInput>
+										size="small"
+									></CustomNumericInput>
 								)}></Controller>
-						</SimpleField>
-
-						<SimpleField
-							label="Stroke"
-							labelFor="text-input">
+						}
+						rightLabel="Gap"
+						rightField={
 							<Controller
 								control={formControls.control}
-								name={`${fullPrefix}lineStyle.stroke`}
+								name={`${fullPrefix}lineStyle.dashing.1`}
 								render={({ field }) => (
-									<input type={"color"} className={fieldStyles.compactColorInput} {...field}></input>
+									<CustomNumericInput fill={true}
+										{...field}
+										allowNegative={true}
+										min={-100}
+										max={100}
+										onValueChange={field.onChange}
+										size="small"></CustomNumericInput>
 								)}></Controller>
-						</SimpleField>
+						}
+					/>
+				</ControlGroup>
+			</Section>
 
-						<DoubleField
-							label="Dashing"
-							leftLabel="Dash"
-							leftField={
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}lineStyle.dashing.0`}
-									render={({ field }) => (
-										<CustomNumericInput fill={true}
-											{...field}
-											allowNegative={true}
-											min={-100}
-											max={100}
-											onValueChange={field.onChange}
-											size="small"
-										></CustomNumericInput>
-									)}></Controller>
-							}
-							rightLabel="Gap"
-							rightField={
-								<Controller
-									control={formControls.control}
-									name={`${fullPrefix}lineStyle.dashing.1`}
-									render={({ field }) => (
-										<CustomNumericInput fill={true}
-											{...field}
-											allowNegative={true}
-											min={-100}
-											max={100}
-											onValueChange={field.onChange}
-											size="small"></CustomNumericInput>
-									)}></Controller>
-							}
-						/>
-					</ControlGroup>
-				</Section>
+			<ControlGroup vertical={true} className={styles.formGroupContainer}>
+
 
 				{/* Arrowhead style */}
 				<DoubleField
