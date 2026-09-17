@@ -10,7 +10,7 @@ title: Canvas
 
 The canvas is where the you construct your diagram. It contains a few pieces of interface that are important to get used to. See [Quickstart](../quickstart.md) for interaction controls.
 
-### Misc tools area (top left)
+### Misc tools area
 
 ![alt text](../../static/img/canvasMiscTools.png)
 
