@@ -1,6 +1,7 @@
 ---
 id: box
 title: Box Tool
+sidebar_position: 4
 ---
 
 # Box tool

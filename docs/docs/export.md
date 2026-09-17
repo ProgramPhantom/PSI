@@ -1,10 +1,25 @@
 ---
-id: form
-title: Form
+id: exporting
+title: Export
+sidebar_position: 2
 ---
 
 
-# The `.nmrd` file type
+# Exporting you diagram
+
+Pulse Planner contains three ways to export your pulse sequence diagram
+
+
+## SVG and PNG
+
+![alt text](../static/img/exportBanner.png)
+
+Select these buttons on the banner to either export as SVG or as PNG.
+
+
+## Export as .nmrd
+
+![alt text](../static/img/exportAsNMRD.png)
 
 The `.nmrd` filetype is a fully-custom file specification for the transport and storage of Pulse Planner diagram files. The file completely encapsulates all information relating to the drawing, including structure of the diagram and the assets used in its construction. This allows users to upload custom SVGs to the diagram, export it, and upload it on a separate computer, brining along that SVG.
 

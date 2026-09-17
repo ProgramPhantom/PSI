@@ -1,6 +1,7 @@
 ---
 id: latex
 title: LaTeX
+sidebar_position: 3
 ---
 
 # LaTeX

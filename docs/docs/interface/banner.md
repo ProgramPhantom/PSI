@@ -5,6 +5,8 @@ title: Banner
 
 # Banner
 
+![alt text](../../static/img/banner.png)
+
 The banner contains lots of useful actions for interacting with your pulse sequence diagram.
 
 - Open (`CTRL+O`): Open a diagram. This button opens the `Open Diagram` dialog, which is used for either opening a pulse sequence diagram from a file, one of the inbuilt sequences or one your 10 most recent worked-on diagrams.

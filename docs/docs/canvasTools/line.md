@@ -1,6 +1,7 @@
 ---
 id: line
 title: Line Tool
+sidebar_position: 5
 ---
 
 # Arrow Tool

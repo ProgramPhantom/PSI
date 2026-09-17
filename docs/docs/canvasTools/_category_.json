@@ -1,0 +1,9 @@
+{
+  "label": "Canvas Tools",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Guides and references for all the canvas tools.",
+    "slug": "/canvasTools"
+  }
+}
