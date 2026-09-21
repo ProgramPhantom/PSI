@@ -1,6 +1,7 @@
 import {
-	Card,
 	HTMLSelect,
+	Icon,
+	Popover,
 	Switch
 } from "@blueprintjs/core";
 import React from "react";
@@ -19,20 +20,124 @@ export const PulsePlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix })
 
 	return (
 		<>
-			{/* Read-only fields */}
-			<Card
+			{/* Read-only info row */}
+			<div
 				style={{
-					padding: "4px 8px",
-					fontSize: "0.8em",
-					opacity: 0.7,
 					display: "flex",
-					justifyContent: "space-between"
+					alignItems: "center",
+					justifyContent: "space-between",
+					minHeight: "22px",
+
 				}}
 			>
-				<span>Index: {pulseLayoutConfig?.index ?? "-"}</span>
-				<span>ChannelID: {pulseLayoutConfig?.channelID ?? "-"}</span>
-				<span>SequenceID: {pulseLayoutConfig?.sequenceID ?? "-"}</span>
-			</Card>
+				<span
+					style={{
+						fontSize: "0.75em",
+						fontWeight: 500,
+						opacity: 0.75
+					}}
+				>
+					Info
+				</span>
+				<Popover
+					position="left"
+					content={
+						<div
+							style={{
+								padding: "8px 12px",
+								display: "flex",
+								flexDirection: "column",
+								gap: "6px",
+								fontSize: "0.78em",
+								minWidth: "180px",
+								maxWidth: "280px"
+							}}
+						>
+							<div
+								style={{
+									fontWeight: 600,
+									fontSize: "0.95em",
+									borderBottom: "1px solid rgba(125, 140, 160, 0.2)",
+									paddingBottom: "4px",
+									marginBottom: "2px",
+									opacity: 0.85
+								}}
+							>
+								Pulse Layout Info
+							</div>
+							<div
+								style={{
+									display: "flex",
+									justifyContent: "space-between",
+									alignItems: "center",
+									gap: "8px"
+								}}
+							>
+								<span style={{ opacity: 0.65, fontWeight: 500 }}>Index</span>
+								<span style={{ fontWeight: 600, fontFamily: "monospace" }}>
+									{pulseLayoutConfig?.index ?? "-"}
+								</span>
+							</div>
+							<div
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									gap: "2px"
+								}}
+							>
+								<span style={{ opacity: 0.65, fontWeight: 500 }}>Channel ID</span>
+								<span
+									style={{
+										fontFamily: "monospace",
+										fontSize: "0.88em",
+										opacity: 0.85,
+										wordBreak: "break-all",
+										userSelect: "all"
+									}}
+								>
+									{pulseLayoutConfig?.channelID ?? "-"}
+								</span>
+							</div>
+							<div
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									gap: "2px"
+								}}
+							>
+								<span style={{ opacity: 0.65, fontWeight: 500 }}>Sequence ID</span>
+								<span
+									style={{
+										fontFamily: "monospace",
+										fontSize: "0.88em",
+										opacity: 0.85,
+										wordBreak: "break-all",
+										userSelect: "all"
+									}}
+								>
+									{pulseLayoutConfig?.sequenceID ?? "-"}
+								</span>
+							</div>
+						</div>
+					}
+				>
+					<span
+						style={{
+							display: "inline-flex",
+							alignItems: "center",
+							cursor: "pointer",
+							padding: "2px"
+						}}
+						title="View pulse layout info"
+					>
+						<Icon
+							icon="info-sign"
+							size={12}
+							style={{ opacity: 0.65 }}
+						/>
+					</span>
+				</Popover>
+			</div>
 
 			<SimpleField label="Orientation">
 				<Controller
@@ -83,7 +188,7 @@ export const PulsePlacement: React.FC<{ fullPrefix: string }> = ({ fullPrefix })
 				}
 			/>
 
-			<SimpleField label="No. Sections">
+			<SimpleField label="Num. Sections">
 				<Controller
 					control={control}
 					name={`${fullPrefix}pulseLayoutConfig.noSections`}

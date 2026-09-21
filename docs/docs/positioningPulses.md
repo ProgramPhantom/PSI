@@ -12,9 +12,18 @@ Positioning pulses in channels is the primary goal of Pulse Planner. Getting to 
 
 ## Pulse Data
 
-"Pulse Data" is the interface by which users can position pulse type elements in the diagram. This is a proxy for the grid placement mode, and is translated into the grid placement mode automatically. Its job is to expose simpler controls to the user to change how a pulse appears on a channel. Access the Pulse Data of an element placed in a channel by selecting it and navigating to the "Placement" dropdown. It contains the following data:
+"Pulse Data" is the interface by which users can position pulse type elements in the diagram. This is how you fine-tune the position of a pulse when it is added to a channel. To access the pulse data, add a pulse to a channel and select it, then navigate to the "Placement" tab on the right form. Here you will be provided with a few settings to change the positioning of the pulse.
 
-- Orientation ["Top", "Bottom", "Both"]: This control decides whether the pulse goes on the top or bottom of the channel, or is centred to the `Channel Bar`. 
+- Orientation ["Top", "Bottom", "Both"]: This control decides whether the pulse goes on the top or bottom of the channel, or is centred to the channel bar. 
+
+
+:::note
+
+When the orientation is set to "both", the Align Y value is forced to be "centre".
+
+:::
+
+
 - Align X ["Left", "Centre", "Right"]: Controls the horizontal alignment in the grid cell of the pulse.
 - Align Y ["Top", "Centre", "Bottom"]: Controls the vertical alignment in the grid cell of the pulse.
 - No. Sections [INT]: This controls the width of the pulse in columns. For pulses that span multiple pulses on different channels, the number of sections can be increased to show this.

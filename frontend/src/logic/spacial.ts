@@ -902,7 +902,7 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 
 		let alignment: Record<Dimensions, SiteNames> = {
 			x: pulseLayoutConfig.alignment?.x ?? "centre",
-			y: pulseLayoutConfig.alignment?.y ?? yAlign
+			y: yAlign === "centre" ? "centre" : pulseLayoutConfig.alignment?.y ?? yAlign
 		}
 
 		let contribution = this.placementMode.config.contribution;
