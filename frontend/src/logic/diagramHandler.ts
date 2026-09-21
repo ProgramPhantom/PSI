@@ -493,7 +493,9 @@ export default class DiagramHandler implements IDraw {
 
 	@draws
 	public constructDiagram(state: IDiagram): Result<Diagram> {
-		console.log("constructing diagram")
+		this.undoStack = []
+		this.redoStack = []
+
 		this.erase();
 
 		let newDiagram: Diagram | undefined = undefined;
@@ -585,17 +587,27 @@ export default class DiagramHandler implements IDraw {
 		let action = this.undoStack.pop()
 
 		if (action?.result.ok === true) {
-			this.dispatchAction(
+			let result = this.dispatchAction(
 				action.result.undo.action,
 				action.result.undo.data
 			);
-			this.redoStack.push(action);
 
-			appToaster.show({
-				intent: "success",
-				"message": "Undo",
-				"icon": "undo",
-			})
+			if (result.ok === true) {
+				this.redoStack.push(action);
+
+				appToaster.show({
+					intent: "success",
+					"message": "Undo",
+					"icon": "undo",
+				})
+			} else {
+				this.undoStack.push(action);
+				appToaster.show({
+					intent: "danger",
+					message: `Undo failed: ${result.error ?? "Unknown error"}`,
+					icon: "error"
+				})
+			}
 		}
 	}
 
@@ -603,17 +615,27 @@ export default class DiagramHandler implements IDraw {
 		let action = this.redoStack.pop();
 
 		if (action?.result.ok === true) {
-			this.dispatchAction(
+			let result = this.dispatchAction(
 				action.type,
 				action.input
 			);
-			this.undoStack.push(action);
 
-			appToaster.show({
-				intent: "success",
-				"message": "Redo",
-				"icon": "redo"
-			})
+			if (result.ok === true) {
+				this.undoStack.push(action);
+
+				appToaster.show({
+					intent: "success",
+					"message": "Redo",
+					"icon": "redo"
+				})
+			} else {
+				this.redoStack.push(action);
+				appToaster.show({
+					intent: "danger",
+					message: `Redo failed: ${result.error ?? "Unknown error"}`,
+					icon: "error"
+				})
+			}
 		}
 	}
 
@@ -692,6 +714,14 @@ export default class DiagramHandler implements IDraw {
 	protected remove({ child }: RemoveInput): ActionResult<"remove"> {
 		this.unregisterElementBindings(child);
 
+		// Record original child index in parent collection if available
+		const parentId = child.parentId ?? this.diagram.id;
+		const parent = this.diagram.id === parentId ? this.diagram : this.identifyElement(parentId);
+		let childIndex: number | undefined = undefined;
+		if (parent && Collection.isCollection(parent)) {
+			childIndex = parent.childIndex(child);
+		}
+
 		let editResult: Result<Visual> = this.editDiagram({
 			type: "remove",
 			data: { child: child },
@@ -706,7 +736,7 @@ export default class DiagramHandler implements IDraw {
 
 		return {
 			ok: true,
-			undo: { action: "add", data: { child: child } }
+			undo: { action: "add", data: { child: child, index: childIndex } }
 		}
 	}
 
@@ -977,6 +1007,13 @@ export default class DiagramHandler implements IDraw {
 		let temp = seqState.children[index];
 		seqState.children[index] = seqState.children[targetIndex];
 		seqState.children[targetIndex] = temp;
+
+		// Set sequence channel coords 
+		seqState.children.forEach((c, i) => {
+			if (c.placementMode?.type === "subgrid" && c.placementMode.config.coords) {
+				c.placementMode.config.coords.row = i * 3;
+			}
+		});
 
 		let tempResult = this.createVisual<Sequence>(seqState, "sequence");
 		if (tempResult.ok === false) {

@@ -51,7 +51,6 @@ export default class Sequence extends Grid implements ISequence {
 			"channel": {
 				objects: [],
 				initialiser: this.configureChannel.bind(this),
-				destructor: this.destroyChannel.bind(this)
 			}
 		}
 
@@ -89,7 +88,13 @@ export default class Sequence extends Grid implements ISequence {
 	// ----------------- Add Methods -----------------
 	//#region
 	public override add({ child, index }: AddDispatchData<Subgrid>) {
-		super.add({ child, index })
+		if (index !== undefined && index < this.numChannels) {
+			const startRow = index * 3;
+			for (let i = 0; i < 3; i++) {
+				this.insertEmptyRow(startRow);
+			}
+		}
+		super.add({ child, index });
 	}
 	//#endregion
 	// -----------------------------------------------
@@ -115,20 +120,11 @@ export default class Sequence extends Grid implements ISequence {
 	private configureChannel({ child, index }: AddDispatchData<Channel>) {
 		// Fires after the channel has been added to structured children
 		child.placementControl = "auto";
+		const channelIndex = index !== undefined ? index : (this.numChannels - 1);
 		child.placementMode = {
 			type: "subgrid", config: {
-				coords: { row: (this.numChannels - 1) * 3, col: 0, },
+				coords: { row: channelIndex * 3, col: 0, },
 				fill: { cols: true, rows: false }
-			}
-		}
-	}
-
-	private destroyChannel({ child }: RemoveDispatchData<Channel>) {
-		let startRow = child.placementMode?.config?.coords?.row ?? this.locateElement(child)?.row;
-		if (startRow !== undefined && startRow >= 0) {
-			let noRows = child.numRows ?? 3;
-			for (let i = 0; i < noRows; i++) {
-				this.removeRow(startRow);
 			}
 		}
 	}

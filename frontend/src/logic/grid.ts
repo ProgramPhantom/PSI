@@ -1329,8 +1329,20 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 	private removeMatrix(child: GridElement<C>, deleteIfEmpty?: { row: boolean, col: boolean }) {
 		// First we need to locate this child in the matrix:
-		let { topLeft, bottomRight } = this.getElementRegionCoords(child);
-		topLeft = this.locateElement(child) ?? { row: 0, col: 0 };
+		let topLeft = this.locateElement(child) ?? child.placementMode?.config?.coords ?? { row: 0, col: 0 };
+		let bottomRight: { row: number, col: number };
+
+		if (this.isCellChild(child)) {
+			bottomRight = {
+				row: topLeft.row + (child.placementMode?.config?.gridSize?.noRows ?? 1) - 1,
+				col: topLeft.col + (child.placementMode?.config?.gridSize?.noCols ?? 1) - 1
+			};
+		} else {
+			bottomRight = {
+				row: topLeft.row + child.numRows - 1,
+				col: topLeft.col + child.numColumns - 1
+			};
+		}
 
 		if (topLeft === undefined || bottomRight === undefined) {
 			console.warn(`Cannot locate child ${child.ref} in grid object ${this.ref}`)
@@ -1374,19 +1386,30 @@ export default class Grid<C extends Visual = Visual> extends Collection<C | Subg
 
 				// Set cell to undefined
 				this.setCellUndefinedIfEmpty({ row: row, col: col });
-
-				// Remove row/column
-				if (deleteIfEmpty?.row === true) {
-					this.removeRow(row, true)
-				}
-
-				if (deleteIfEmpty?.col === true) {
-					this.removeColumn(col, true)
-				}
 			}
 		}
 
 		this.elementCoordMap.delete(child.id);
+
+		// Clean up rows and columns that are now empty:
+		// Iterate backwards from bottomRight to topLeft so row/col removals do not invalidate unvisited indices
+		if (deleteIfEmpty?.row === true) {
+			for (let r = bottomRight.row; r >= topLeft.row; r--) {
+				let row = this.getRow(r);
+				if (row && this.isCellArrayEmpty(row)) {
+					this.removeRow(r, true);
+				}
+			}
+		}
+
+		if (deleteIfEmpty?.col === true) {
+			for (let c = bottomRight.col; c >= topLeft.col; c--) {
+				let col = this.getColumn(c);
+				if (col && this.isCellArrayEmpty(col)) {
+					this.removeColumn(c, true);
+				}
+			}
+		}
 	}
 
 	public deleteCellAtCoord(coords: { row: number, col: number }, deleteIfEmpty?: { row: boolean, col: boolean }) {
@@ -2563,7 +2586,9 @@ export class Subgrid<C extends Visual = Visual> extends Grid<C> implements ISubg
 
 
 		// Put the top left back to just the element:
-		region[0][0] = { elements: [this] };
+		if (numRows > 0 && numCols > 0) {
+			region[0][0] = { elements: [this] };
+		}
 
 		return region;
 	}

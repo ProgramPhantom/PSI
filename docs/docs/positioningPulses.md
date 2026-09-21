@@ -1,6 +1,13 @@
+---
+id: positioningPulses
+title: Positioning Pulses
+sidebar_position: 4
+---
+
+
 # Pulse Positioning
 
-Positioning pulses in chanels is the primary goal of Pulse Planner. Getting to grips with the concepts in this file is highly important to using Pulse Planner effectively.
+Positioning pulses in channels is the primary goal of Pulse Planner. Getting to grips with the concepts in this file is highly important to using Pulse Planner effectively.
 
 
 ## Pulse Data
@@ -17,8 +24,19 @@ Positioning pulses in chanels is the primary goal of Pulse Planner. Getting to g
 
 ## Dragging and dropping pulses into the diagram
 
-When dragging elements, blue insert areas appear in each column on each channel. These blue insert areas correspond to different positions in the diagram, and dropping an element there automatically populates the element with the correct pulse data to be positioned in the respective cell of the sequence. 
+When dragging elements, blue insert areas appear in each column on each channel. These blue insert areas correspond to different positions in the diagram, and dropping an element there automatically populates the element with the correct pulse data to be positioned in the respective cell of the sequence.
 
-By default, dropping an element to a blue insert area above the channel assigns the "Top" orientation data and hence the element appears above the `Channel Bar`. Alternatively, inserting an element below the `Channel Bar` assigns the "Bottom" orientation, and also automatically applies a visual flip to an element. This can altered by selecting the element and changing the state of the flipped field.
+![alt text](../static/video/puttingYourFirstPulseInAChannel.gif)
 
-To centre an element to the `Channel Bar`, simply select the "Both" orientation and change the Align Y option to "Centre". 
+By default, dropping an element to a blue insert area above the channel assigns the "top" orientation data and hence the element appears above the channel bar. Alternatively, inserting an element below the channel bar assigns the "bottom" orientation, and also automatically applies a visual flip to an element. This can altered by selecting the element and changing the state of the flipped field.
+
+To centre an element to the channel bar, simply select the "both" orientation and change the Align Y option to "centre".
+
+
+![alt text](../static/video/mountElementOnBottom.gif)
+
+
+
+
+
+

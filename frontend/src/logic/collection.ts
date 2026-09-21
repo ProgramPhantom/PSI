@@ -401,7 +401,11 @@ export default class Collection<C extends Visual = Visual> extends Visual implem
 					initialiser({ child, index });
 				}
 			} else if (Object.keys(this.structuredChildren).includes(child.role ?? "")) {
-				this.structuredChildren[child.role].objects.push(child);
+				if (index !== undefined) {
+					this.structuredChildren[child.role].objects.splice(index, 0, child);
+				} else {
+					this.structuredChildren[child.role].objects.push(child);
+				}
 				let initialiser: (({ child, index }: AddDispatchData<C>) => void) | undefined = this.structuredChildren[child.role].initialiser;
 
 				if (initialiser !== undefined) {

@@ -6,8 +6,25 @@ Offset comes in handy when an imported SVG element has not had its boundary fit 
 
 ![alt text](../../static/img/OffsetPreOffset.png)
 
-In order to fix this, an offset of 1 pixel on the Y axis can be applied to let the pulse lie flush with the `Channel Bar`:
+In order to fix this, an offset of 1 pixel on the Y axis can be applied to let the pulse lie flush with the channel bar`:
 
 ![alt text](../../static/img/OffsetComplete.png)
 
 Offset can be applied by selecting an element and changing the values under the "Offset" section or by selecting an element and using the arrow keys. Please note that Offset does not apply to elements with the "free" placement mode.
+
+You can also increase the offset increment by holding `SHIFT` when using the arrow keys, and `r` sets the offset back to (0, 0).
+
+![alt text](../../static/video/applyOffsetArrows.gif)
+
+
+:::note
+
+"free" canvas elements do not have offset applied. Instead, the arrow keys change the x, y coordinates of the element directly. 
+
+:::
+
+:::note
+
+Currently, collection type objects (objects containing more than one child) do not accept offset.
+
+:::
