@@ -145,7 +145,8 @@ export const isBindingAllowedAsTarget = (
 };
 
 const ANCHOR_LOCATIONS: SiteNames[] = ["here", "centre", "far"];
-const DEFAULT_SNAP_THRESHOLD_PX = 24;
+export const BINDING_HANDLE_SIZE = 8;
+export const DEFAULT_SNAP_THRESHOLD_PX = 8;
 
 export interface AnchorSnapResult {
 	bindingInfo: ISelectedBindingInfo;
@@ -168,17 +169,39 @@ export function findClosestBindingAnchor(
 
 	let bestDist = Infinity;
 	let bestResult: AnchorSnapResult | null = null;
+	const halfHandle = BINDING_HANDLE_SIZE / 2;
 
-	for (const xA of ANCHOR_LOCATIONS) {
-		for (const yA of ANCHOR_LOCATIONS) {
+	const xMin = candidate.AnchorFunctions["here"]?.get("x", false);
+	const xMax = candidate.AnchorFunctions["far"]?.get("x", false);
+	const yMin = candidate.AnchorFunctions["here"]?.get("y", false);
+	const yMax = candidate.AnchorFunctions["far"]?.get("y", false);
+
+	const candWidth = xMin !== undefined && xMax !== undefined ? xMax - xMin : candidate.width;
+	const candHeight = yMin !== undefined && yMax !== undefined ? yMax - yMin : candidate.height;
+
+	const xLocations = candWidth !== undefined && candWidth < 10 ? ANCHOR_LOCATIONS.filter((a) => a !== "centre") : ANCHOR_LOCATIONS;
+	const yLocations = candHeight !== undefined && candHeight < 10 ? ANCHOR_LOCATIONS.filter((a) => a !== "centre") : ANCHOR_LOCATIONS;
+
+	for (const xA of xLocations) {
+		for (const yA of yLocations) {
 			const sx = candidate.AnchorFunctions[xA]?.get("x", false);
 			const sy = candidate.AnchorFunctions[yA]?.get("y", false);
 			if (sx === undefined || sy === undefined) continue;
 
-			const distPx = Math.hypot(targetPoint.x - sx, targetPoint.y - sy) * effectiveScale;
+			// Distance to the centre of the node from the edge:
+			// Centre node needs no translation.
+			// Top right needs to be moved to the left and down etc.
+			const hx = xA === "here" ? sx + halfHandle : xA === "far" ? sx - halfHandle : sx;
+			const hy = yA === "here" ? sy + halfHandle : yA === "far" ? sy - halfHandle : sy;
+
+			const dx = Math.abs(targetPoint.x - hx);
+			const dy = Math.abs(targetPoint.y - hy);
+			const isInsideNode = dx <= halfHandle && dy <= halfHandle;
+
+			const distPx = Math.hypot(targetPoint.x - hx, targetPoint.y - hy) * effectiveScale;
 			if (distPx < bestDist) {
 				bestDist = distPx;
-				if (distPx <= maxDistancePx) {
+				if (isInsideNode || distPx <= maxDistancePx) {
 					bestResult = {
 						bindingInfo: {
 							anchorObject: candidate,

@@ -392,7 +392,7 @@ export function BoxTool(props: IDrawBoxProps) {
 						height: "100%",
 						pointerEvents: "none",
 						overflow: "visible",
-						zIndex: 10003
+						zIndex: 85000
 					}}
 				>
 					<rect

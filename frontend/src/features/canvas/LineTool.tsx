@@ -406,7 +406,7 @@ export function LineTool(props: IDrawArrowProps) {
 						height: "100%",
 						pointerEvents: "none",
 						overflow: "visible",
-						zIndex: 10003
+						zIndex: 85000
 					}}
 				>
 					<defs>
