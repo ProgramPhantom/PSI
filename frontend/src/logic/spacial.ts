@@ -373,8 +373,8 @@ export default class Spacial extends Point implements ISpacial, IHaveSize {
 	}
 
 	// ----------- Size --------------
-	protected _minContentWidth: number = 5;
-	protected _minContentHeight: number = 5;
+	protected _minContentWidth: number = 1;
+	protected _minContentHeight: number = 1;
 
 	get minContentWidth(): number {
 		return this._minContentWidth;

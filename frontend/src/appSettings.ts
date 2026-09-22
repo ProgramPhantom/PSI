@@ -3,9 +3,9 @@
  */
 
 // Content size constraints
-export const MIN_WIDTH = 5;
+export const MIN_WIDTH = 1;
 export const MAX_WIDTH = 2000;
-export const MIN_HEIGHT = 5;
+export const MIN_HEIGHT = 1;
 export const MAX_HEIGHT = 2000;
 
 // Padding constraints
