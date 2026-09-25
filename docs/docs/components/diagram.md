@@ -2,7 +2,7 @@
 
 The diagram is the entire visual document. It is technically an element like any other, but contains important metadata and cannot be removed from the application. These things can be modified in the diagram form.
 
-![alt text](image.png)
+![alt text](../../static/img/diagramForm.png)
 
 ## Altering the document data
 
