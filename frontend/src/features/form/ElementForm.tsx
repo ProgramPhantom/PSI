@@ -178,7 +178,9 @@ export const ElementForm = React.memo(React.forwardRef<SubmitButtonRef, ElementF
 					<button type="submit" style={{ display: "none" }} />
 
 					{hasComponentRoles && (
-						<RoleButtonStrip roles={componentRoles} />
+						<FormProvider {...roleFormControls}>
+							<RoleButtonStrip roles={componentRoles} target={props.target} />
+						</FormProvider>
 					)}
 
 					<div

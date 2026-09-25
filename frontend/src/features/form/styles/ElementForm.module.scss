@@ -40,6 +40,17 @@
 	}
 }
 
+.missingRoleButton {
+	opacity: 0.35 !important;
+	filter: grayscale(100%);
+	cursor: pointer !important;
+
+	&:hover {
+		opacity: 0.75 !important;
+		filter: grayscale(30%);
+	}
+}
+
 .elementFormTabs {
 	display: flex;
 	flex-direction: column;
@@ -66,4 +77,5 @@
 	roleLabel: roleLabel;
 	roleButtons: roleButtons;
 	compactRoleButton: compactRoleButton;
+	missingRoleButton: missingRoleButton;
 }

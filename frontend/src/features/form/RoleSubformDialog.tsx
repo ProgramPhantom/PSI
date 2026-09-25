@@ -12,7 +12,7 @@ interface RoleSubformDialogProps {
 	target?: Visual;
 }
 
-export const RoleSubformDialog: React.FC<RoleSubformDialogProps> = () => {
+export const RoleSubformDialog: React.FC<RoleSubformDialogProps> = ({ target }) => {
 	const dispatch = useAppDispatch();
 	const roleSubformStack = useAppSelector((state) => state.dialog.roleSubformStack);
 
@@ -40,7 +40,7 @@ export const RoleSubformDialog: React.FC<RoleSubformDialogProps> = () => {
 						style={{ width: "30vw", maxWidth: "90vw", height: "80vh" }}
 					>
 						<DialogBody style={{ maxHeight: "70vh", overflowY: "auto", padding: "16px" }}>
-							<RoleButtonStrip elementType={level.elementType} prefix={level.prefix} />
+							<RoleButtonStrip elementType={level.elementType} prefix={level.prefix} target={target} />
 							{SubForm ? (
 								<SubForm prefix={level.prefix} />
 							) : (
