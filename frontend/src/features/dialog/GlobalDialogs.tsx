@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
     setLoadDialogOpen,
@@ -10,6 +10,7 @@ import {
     setDiagramsDialogOpen,
     setAssetStoreDialogOpen,
     setAboutDialogOpen,
+    setCanvasControlsDialogOpen,
     setCiteDialogOpen,
     setKeyboardShortcutsDialogOpen
 } from "../../redux/slices/dialogSlice";
@@ -44,6 +45,9 @@ const SaveAsDialog = React.lazy(() =>
 const AboutDialog = React.lazy(() =>
     import("./AboutDialog").then((m) => ({ default: m.AboutDialog }))
 );
+const CanvasControlsDialog = React.lazy(() =>
+    import("./CanvasControlsDialog").then((m) => ({ default: m.CanvasControlsDialog }))
+);
 const CiteDialog = React.lazy(() =>
     import("./CiteDialog").then((m) => ({ default: m.CiteDialog }))
 );
@@ -53,6 +57,8 @@ const KeyboardShortcutsDialog = React.lazy(() =>
 
 export const GlobalDialogs: React.FC = () => {
     const dispatch = useAppDispatch();
+    const isWelcomeFlowRef = useRef(false);
+
     const {
         isPNGDialogOpen,
         isSVGDialogOpen,
@@ -63,9 +69,32 @@ export const GlobalDialogs: React.FC = () => {
         isDiagramsDialogOpen,
         isAssetStoreDialogOpen,
         isAboutDialogOpen,
+        isCanvasControlsDialogOpen,
         isCiteDialogOpen,
         isKeyboardShortcutsDialogOpen
     } = useAppSelector((state) => state.dialog);
+
+    useEffect(() => {
+        const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
+        const hasSeenControls = localStorage.getItem("hasSeenCanvasControls");
+        if (hasSeenWelcome !== "true") {
+            isWelcomeFlowRef.current = true;
+            dispatch(setAboutDialogOpen(true));
+        } else if (hasSeenControls !== "true") {
+            dispatch(setCanvasControlsDialogOpen(true));
+        }
+    }, [dispatch]);
+
+    const handleAboutDialogClose = () => {
+        localStorage.setItem("hasSeenWelcome", "true");
+        dispatch(setAboutDialogOpen(false));
+        if (isWelcomeFlowRef.current) {
+            isWelcomeFlowRef.current = false;
+            if (localStorage.getItem("hasSeenCanvasControls") !== "true") {
+                dispatch(setCanvasControlsDialogOpen(true));
+            }
+        }
+    };
 
     return (
         <Suspense fallback={null}>
@@ -128,7 +157,14 @@ export const GlobalDialogs: React.FC = () => {
             {isAboutDialogOpen && (
                 <AboutDialog
                     isOpen={isAboutDialogOpen}
-                    onClose={() => dispatch(setAboutDialogOpen(false))}
+                    onClose={handleAboutDialogClose}
+                />
+            )}
+
+            {isCanvasControlsDialogOpen && (
+                <CanvasControlsDialog
+                    isOpen={isCanvasControlsDialogOpen}
+                    onClose={() => dispatch(setCanvasControlsDialogOpen(false))}
                 />
             )}
 

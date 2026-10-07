@@ -1,6 +1,6 @@
 # Rect Element
 
-The rect element is a simple rectangular object one can add to the canvas. You can change its fill colour, stroke colour and stroke thickness. This object is used for creating simple visual elements such as hard pulses.
+The rect element is a simple rectangular object one can add to the canvas. You can change its fill colour, stroke colour and stroke thickness. This object is used for creating simple visual elements such as hard pulses. The easiest way to create a rect element is by using the [box tool](../canvasTools/box.md).
 
 ![alt text](../../static/img/rectDemo.png)
 

@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { AnchorButton, Button, Dialog, DialogBody, DialogFooter, Icon, Tab, Tabs } from "@blueprintjs/core";
-import { useAppDispatch } from "../../redux/hooks";
-import { setAboutDialogOpen } from "../../redux/slices/dialogSlice";
 import styles from "./styles/AboutDialog.module.scss";
 
 const logoUrl = `${import.meta.env.BASE_URL}Logo1_white.svg`;
@@ -14,16 +12,7 @@ interface IAboutDialogProps {
 }
 
 export function AboutDialog(props: IAboutDialogProps) {
-	const dispatch = useAppDispatch();
 	const [currentTabId, setCurrentTabId] = useState<string>(props.initialTab || "welcome");
-
-	useEffect(() => {
-		const hasSeen = localStorage.getItem("hasSeenWelcome");
-		if (hasSeen !== "true") {
-			dispatch(setAboutDialogOpen(true));
-			localStorage.setItem("hasSeenWelcome", "true");
-		}
-	}, [dispatch]);
 
 	useEffect(() => {
 		if (props.isOpen) {

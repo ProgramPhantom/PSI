@@ -32,7 +32,7 @@ In the top right of the canvas you have access to a toolbar to quickly add commo
 
 ![](../../static/img/canvasToolToolbar.png)
 
-In the bottom right you will find the canvas toolbar. See [Canvas Tools](../canvasTools/) for how these work.
+In the bottom right you will find the canvas toolbar. See [Canvas Tools](../canvasTools/select.md) for how these work.
 
 
 ### Layer modifier

@@ -24,6 +24,7 @@ export interface DialogState {
     isNewDiagramAlertOpen: boolean;
     isUnsavedDiagramLogoutAlertOpen: boolean;
     isAboutDialogOpen: boolean;
+    isCanvasControlsDialogOpen: boolean;
     isCiteDialogOpen: boolean;
     isKeyboardShortcutsDialogOpen: boolean;
     isResetAppAlertOpen: boolean;
@@ -44,6 +45,7 @@ const initialState: DialogState = {
     isNewDiagramAlertOpen: false,
     isUnsavedDiagramLogoutAlertOpen: false,
     isAboutDialogOpen: false,
+    isCanvasControlsDialogOpen: false,
     isCiteDialogOpen: false,
     isKeyboardShortcutsDialogOpen: false,
     isResetAppAlertOpen: false,
@@ -93,6 +95,9 @@ export const dialogSlice = createSlice({
         setAboutDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isAboutDialogOpen = action.payload;
         },
+        setCanvasControlsDialogOpen: (state, action: PayloadAction<boolean>) => {
+            state.isCanvasControlsDialogOpen = action.payload;
+        },
         setCiteDialogOpen: (state, action: PayloadAction<boolean>) => {
             state.isCiteDialogOpen = action.payload;
         },
@@ -128,6 +133,7 @@ export const {
     setNewDiagramAlertOpen,
     setUnsavedDiagramLogoutAlertOpen,
     setAboutDialogOpen,
+    setCanvasControlsDialogOpen,
     setCiteDialogOpen,
     setKeyboardShortcutsDialogOpen,
     setResetAppAlertOpen,

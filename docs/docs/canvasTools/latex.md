@@ -1,10 +1,10 @@
 ---
 id: latex
-title: LaTeX
+title: LaTeX Tool
 sidebar_position: 3
 ---
 
-# LaTeX
+# LaTeX Tool
 
 ![docs/static/img/latex.png](../../static/img/latex.png)
 

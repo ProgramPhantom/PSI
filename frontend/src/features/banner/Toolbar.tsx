@@ -2,7 +2,7 @@ import { Button, ButtonGroup, Colors, EditableText, Icon, Menu, MenuDivider, Men
 import React from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import * as Actions from "../../redux/thunks/actionThunks";
-import { setLoadDialogOpen, setPNGDialogOpen, setSVGDialogOpen, setSaveAsDialogOpen, setAboutDialogOpen } from "../../redux/slices/dialogSlice";
+import { setLoadDialogOpen, setPNGDialogOpen, setSVGDialogOpen, setSaveAsDialogOpen, setAboutDialogOpen, setCanvasControlsDialogOpen } from "../../redux/slices/dialogSlice";
 import { setTitle } from "../../redux/slices/diagramSlice";
 import { selectCurrentDiagramSource, selectCurrentTitle } from "../../redux/selectors/diagramSelectors";
 
@@ -87,6 +87,7 @@ const Toolbar: React.FC = () => {
 								<MenuItem disabled icon="envelope" text="Report bug (Email)" label="Ctrl+Alt+B" onClick={() => dispatch(Actions.handleReportBugEmail())} />
 								<MenuItem icon="reset" text="Reset App" onClick={() => dispatch(Actions.resetApp())} />
 								<MenuDivider />
+								<MenuItem icon="hand" text="Canvas Controls" onClick={() => dispatch(setCanvasControlsDialogOpen(true))} />
 								<MenuItem icon="info-sign" text="About" onClick={() => dispatch(setAboutDialogOpen(true))} />
 							</Menu>
 						}>
@@ -122,16 +123,16 @@ const Toolbar: React.FC = () => {
 				}
 
 				{diagramUUID && <>
-					<Tooltip content={diagramUUID || "No UUID"} position={Position.BOTTOM}>
+					{/* <Tooltip content={diagramUUID || "No UUID"} position={Position.BOTTOM}>
 						<Icon icon="info-sign" size={12} style={{ marginLeft: "6px", marginBottom: "2px", cursor: "help", color: Colors.GRAY3 }} />
-					</Tooltip>
+					</Tooltip> */}
 				</>}
 			</div>
 
 			<div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center", paddingRight: "32px" }}>
-				<Tooltip content={`Load Status: ${loadStatus}`} position={"bottom-right"}>
+				{/* <Tooltip content={`Load Status: ${loadStatus}`} position={"bottom-right"}>
 					{getLoadStatusIcon()}
-				</Tooltip>
+				</Tooltip> */}
 			</div>
 		</div>
 	);

@@ -1,10 +1,10 @@
 ---
 id: text
-title: Text
+title: Text Tool
 sidebar_position: 2
 ---
 
-# Text
+# Text Tool
 
 ![alt text](../../static/img/textTool.png)
 
